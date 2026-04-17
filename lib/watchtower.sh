@@ -20,15 +20,25 @@ _FW_WATCHTOWER_LOADED=1
 
 # _watchtower_url [TASK_ID]
 #
-# Returns the base Watchtower URL (e.g., http://192.168.10.107:3002) on stdout.
-# Resolution order: WATCHTOWER_URL env > PID file + ss > cwd match > port probe > config default.
+# Returns the base Watchtower URL (e.g., http://192.168.10.107:3000) on stdout.
 #
-# If TASK_ID is provided, port probing will verify the Watchtower instance knows
-# that task (prevents cross-project false matches).
+# T-1284 / T-1290 3-layer discovery (replaces the port-probe fallback that
+# accidentally matched any service returning 200, e.g. Open WebUI on :8080):
 #
-# Exit 0 + URL on stdout on success. Exit 1 if no Watchtower found.
+#   Fast path — WATCHTOWER_URL env override
+#   Layer 1  — authoritative triple (.pid/.port/.url) written by watchtower.sh
+#              at startup. Verify pid alive AND pid listens on that port, then
+#              return .url verbatim. No probing.
+#   Layer 2  — identity handshake. For the configured port, call
+#              /api/_identity and match only when service=="watchtower" AND
+#              project_root equals ours. No task-path heuristics.
+#   Layer 3  — fail loud. Exit 1 with actionable stderr message. Never return
+#              a URL to a service we didn't positively identify.
+#
+# TASK_ID is accepted for signature compatibility but no longer used for
+# probing — identity replaces it.
 _watchtower_url() {
-    local task_id="${1:-}"
+    local task_id="${1:-}"  # kept for signature compat; not used for probing
 
     # Fast path: explicit env override
     if [ -n "${WATCHTOWER_URL:-}" ]; then
@@ -36,78 +46,80 @@ _watchtower_url() {
         return 0
     fi
 
-    local wt_port="" wt_host=""
+    local _our_root="${PROJECT_ROOT:-${FRAMEWORK_ROOT:-}}"
 
-    # Try 1a: PID file → ss port lookup
-    # Check both PROJECT_ROOT and FRAMEWORK_ROOT for PID file (consumer vs framework)
-    local pid_locations=(
-        "$PROJECT_ROOT/.context/working/watchtower.pid"
-        "${FRAMEWORK_ROOT:-}/.context/working/watchtower.pid"
+    # Helper: verify a url is OUR Watchtower via /api/_identity. Returns 0 iff match.
+    _wt_identity_matches() {
+        local _u="$1"
+        local _json _svc _proot
+        _json=$(curl -sf --max-time 2 "${_u}/api/_identity" 2>/dev/null) || return 1
+        _svc=$(printf '%s' "$_json" | grep -oE '"service"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/')
+        _proot=$(printf '%s' "$_json" | grep -oE '"project_root"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/')
+        [ "$_svc" = "watchtower" ] && [ -n "$_our_root" ] && [ "$_proot" = "$_our_root" ]
+    }
+
+    # -----------------------------------------------------------------
+    # Layer 1 — authoritative triple (.pid/.port/.url), verified by identity
+    # -----------------------------------------------------------------
+    local triple_dirs=(
+        "$PROJECT_ROOT/.context/working"
+        "${FRAMEWORK_ROOT:-}/.context/working"
     )
-    for pid_file in "${pid_locations[@]}"; do
-        if [ -f "$pid_file" ]; then
-            local wt_pid
-            wt_pid=$(cat "$pid_file" 2>/dev/null)
-            if [ -n "$wt_pid" ] && kill -0 "$wt_pid" 2>/dev/null; then
-                wt_port=$(ss -tlnp 2>/dev/null | grep "pid=$wt_pid" | grep -oP ':(\d+)\s' | tr -d ': ' | head -1)
-                [ -n "$wt_port" ] && break
-            fi
+    local _dir
+    for _dir in "${triple_dirs[@]}"; do
+        [ -z "$_dir" ] && continue
+        local _pf="$_dir/watchtower.pid"
+        local _uf="$_dir/watchtower.url"
+        [ -f "$_pf" ] && [ -f "$_uf" ] || continue
+
+        local _pid _url
+        _pid=$(cat "$_pf" 2>/dev/null | tr -d '[:space:]')
+        _url=$(cat "$_uf" 2>/dev/null | tr -d '[:space:]')
+        [ -n "$_pid" ] && [ -n "$_url" ] || continue
+
+        # Verify process is alive (cheap kernel check)
+        kill -0 "$_pid" 2>/dev/null || continue
+
+        # Verify identity (confirms the url actually IS our Watchtower,
+        # not a masquerader that happened to bind the same port after restart)
+        if _wt_identity_matches "$_url"; then
+            echo "$_url"
+            return 0
         fi
     done
 
-    # Try 1b: Find Watchtower process by cwd match (no PID file needed)
-    # This handles multi-project setups where each Watchtower has a different cwd.
-    if [ -z "$wt_port" ]; then
-        local fw_root="${FRAMEWORK_ROOT:-$PROJECT_ROOT/.agentic-framework}"
-        local _pid
-        for _pid in $(ss -tlnp 2>/dev/null | grep -oP 'pid=\K\d+' | sort -u); do
-            local _cwd
-            _cwd=$(readlink "/proc/$_pid/cwd" 2>/dev/null) || continue
-            if [ "$_cwd" = "$fw_root" ] || [ "$_cwd" = "$PROJECT_ROOT" ]; then
-                wt_port=$(ss -tlnp 2>/dev/null | grep "pid=$_pid" | grep -oP ':(\d+)\s' | tr -d ': ' | head -1)
-                [ -n "$wt_port" ] && break
+    # -----------------------------------------------------------------
+    # Layer 2 — identity handshake on configured port (triple absent/stale)
+    # -----------------------------------------------------------------
+    local _cfg_port
+    _cfg_port=$(fw_config "PORT" 3000 2>/dev/null || echo 3000)
+
+    local _host
+    _host=$(hostname -I 2>/dev/null | awk '{print $1}')
+    _host="${_host:-localhost}"
+
+    local _probe_host
+    for _probe_host in "localhost" "$_host" ; do
+        [ -z "$_probe_host" ] && continue
+        local _try_url="http://${_probe_host}:${_cfg_port}"
+        if _wt_identity_matches "$_try_url"; then
+            # Prefer LAN host in returned url for external callers
+            if [ -n "$_host" ] && [ "$_host" != "localhost" ]; then
+                echo "http://${_host}:${_cfg_port}"
+            else
+                echo "$_try_url"
             fi
-        done
-    fi
-
-    # Try 2: Probe common ports
-    if [ -z "$wt_port" ]; then
-        local default_port
-        default_port=$(fw_config "PORT" 3000 2>/dev/null || echo 3000)
-
-        # If we have a task ID, check task-specific endpoints first (prevents cross-project match)
-        if [ -n "$task_id" ]; then
-            for probe_port in "$default_port" 3000 3001 3002 3003 8080; do
-                if curl -sf --max-time 2 "http://localhost:$probe_port/api/tasks/$task_id" >/dev/null 2>&1 \
-                   || curl -sf --max-time 2 "http://localhost:$probe_port/inception/$task_id" >/dev/null 2>&1 \
-                   || curl -sf --max-time 2 "http://localhost:$probe_port/review/$task_id" >/dev/null 2>&1; then
-                    wt_port="$probe_port"
-                    break
-                fi
-            done
+            return 0
         fi
+    done
 
-        # Fallback: any responding Watchtower
-        if [ -z "$wt_port" ]; then
-            for probe_port in "$default_port" 3000 3001 3002 3003 8080; do
-                if curl -sf --max-time 2 "http://localhost:$probe_port/" >/dev/null 2>&1; then
-                    wt_port="$probe_port"
-                    break
-                fi
-            done
-        fi
-    fi
-
-    # Host detection
-    wt_host=$(hostname -I 2>/dev/null | awk '{print $1}')
-    wt_host="${wt_host:-$(hostname 2>/dev/null)}"
-    wt_host="${wt_host:-localhost}"
-
-    # Final port fallback
-    wt_port="${wt_port:-$(fw_config "PORT" 3000 2>/dev/null || echo 3000)}"
-
-    echo "http://${wt_host}:${wt_port}"
-    return 0
+    # -----------------------------------------------------------------
+    # Layer 3 — fail loud (no silent wrong answer)
+    # -----------------------------------------------------------------
+    echo "No Watchtower reachable for project: ${_our_root:-(unknown)}" >&2
+    echo "  Start one with: fw serve" >&2
+    echo "  Or set WATCHTOWER_URL explicitly." >&2
+    return 1
 }
 
 # _watchtower_open URL
