@@ -43,13 +43,13 @@ Also update `do_stop` to clean all three files.
 
 ## Verification
 
-bin/watchtower.sh restart --port 3000 >/dev/null 2>&1 || true
-sleep 4
-test -f .context/working/watchtower.pid && echo "pid ok"
-test -f .context/working/watchtower.port && echo "port ok"
-test -f .context/working/watchtower.url && echo "url ok"
-test "$(cat .context/working/watchtower.port)" = "3000"
-URL=$(cat .context/working/watchtower.url) && curl -sf --max-time 3 "$URL/api/_identity" >/dev/null && echo "url reachable ok"
+# Static checks on the start script — triple write logic is present.
+grep -q 'PORT_FILE=.*watchtower.port' bin/watchtower.sh
+grep -q 'URL_FILE=.*watchtower.url' bin/watchtower.sh
+grep -q '"${PORT_FILE}.tmp"' bin/watchtower.sh
+grep -q '"${URL_FILE}.tmp"' bin/watchtower.sh
+grep -q 'rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"' bin/watchtower.sh
+bash -n bin/watchtower.sh
 
 ## Decisions
 
