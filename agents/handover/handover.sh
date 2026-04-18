@@ -751,15 +751,24 @@ if [ "$AUTO_COMMIT" = true ]; then
         PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Session handover $SESSION_ID"
 
         # Push to all remotes (T-1144: prevent unpushed commit accumulation)
+        # T-1277: bound the push so an unreachable remote (e.g. onedev behind a
+        # down VPN) cannot stall the auto-handover hook for hours. Default 15s,
+        # override via FW_HANDOVER_PUSH_TIMEOUT.
         echo ""
         echo -e "${CYAN}Pushing to remotes...${NC}"
         _push_failed=false
+        _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-15}"
         while IFS= read -r remote_name; do
             [ -z "$remote_name" ] && continue
-            if git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then
+            if timeout "$_push_timeout" git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then
                 echo -e "  ${GREEN}Pushed to $remote_name ✓${NC}"
             else
-                echo -e "  ${YELLOW}WARNING: Push to $remote_name failed (non-blocking)${NC}" >&2
+                _exit=$?
+                if [ "$_exit" -eq 124 ]; then
+                    echo -e "  ${YELLOW}WARNING: Push to $remote_name timed out after ${_push_timeout}s (non-blocking, T-1277)${NC}" >&2
+                else
+                    echo -e "  ${YELLOW}WARNING: Push to $remote_name failed (non-blocking)${NC}" >&2
+                fi
                 _push_failed=true
             fi
         done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)

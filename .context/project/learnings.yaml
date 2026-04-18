@@ -1784,3 +1784,10 @@ learnings:
   date: 2026-04-18
   context: Added via context agent
   application: TBD
+- id: L-017
+  learning: "Hooks that block on network IO must be bounded. Auto-handover at critical context invokes git push to all remotes; without timeout the hook can stall the Claude Code session for hours when a remote is unreachable. Pattern: any agent script invoked from a hook (PostToolUse, pre-compact) needs explicit per-call timeout AND an outer wall bound. Defaults: per-push 15s, total handover 60s. Configurable via FW_HANDOVER_PUSH_TIMEOUT and FW_HANDOVER_TOTAL_TIMEOUT."
+  source: field
+  task: T-1277
+  date: 2026-04-18
+  context: Added via context agent
+  application: TBD

@@ -159,7 +159,12 @@ warn_by_tokens() {
             echo "AUTO-HANDOVER: Triggering handover..." >&2
             echo "1" > "$handover_lock"
             date +%s > "$handover_cooldown"
-            if "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>&1 | tail -5 >&2; then
+            # T-1277: belt-and-braces — even with handover.sh's per-push timeout,
+            # bound the total auto-handover wall time so the PostToolUse hook
+            # cannot stall the Claude Code session for hours on slow networks.
+            # Default 60s (push×N + commit + audit + handover write).
+            _ah_total_timeout="${FW_HANDOVER_TOTAL_TIMEOUT:-60}"
+            if timeout "$_ah_total_timeout" "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>&1 | tail -5 >&2; then
                 echo "AUTO-HANDOVER: Handover committed. Fill [TODO] sections, then re-commit." >&2
                 # T-186: Write restart signal for wrapper script (T-179 auto-restart)
                 local restart_signal="$CONTEXT_DIR/working/.restart-requested"
