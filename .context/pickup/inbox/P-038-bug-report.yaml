@@ -1,0 +1,32 @@
+pickup_id: P-038
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1130"
+  agent: "claude-code"
+  timestamp: "2026-04-18T22:04:04Z"
+payload:
+  summary: "Vendored .agentic-framework/ tracks Python __pycache__ files — 'Uncommitted changes present' is the #1 audit trend (23×) for consumers"
+  detail: "Bug: consumer projects vendor .agentic-framework/ (per T-909). Running Watchtower / any python web/app.py creates .pyc files under .agentic-framework/web/**/__pycache__/, which are tracked in git because the vendored tree has no .gitignore excluding them. Result: every session produces 5–15 dirty files in git status, which trips 'Uncommitted changes present' (top audit trend on /opt/termlink — 23 repeats).
+
+Evidence (termlink @ HEAD, 2026-04-19):
+    $ git ls-files .agentic-framework/ | grep -c pycache
+    45
+    $ git status --short | grep pycache | wc -l
+    9
+
+Proposed framework patch: ship .agentic-framework/.gitignore in the framework template with:
+    **/__pycache__/
+    *.pyc
+    *.pyo
+
+Two-phase rollout to avoid consumer disruption:
+  1. Next fw upgrade: 'git rm -r --cached \"$AF/web/**/__pycache__\" 2>/dev/null; true' then drop the .gitignore file. Document the rm step in the upgrade output.
+  2. Optional: silence bytecode generation entirely via PYTHONDONTWRITEBYTECODE=1 in the Watchtower entrypoint (lib/watchtower.sh or equivalent) — costs ~5ms on first import, buys no more runtime dirt.
+
+Severity: medium — not a functional break, but chronic audit noise that masks real 'uncommitted changes' signals and inflates the audit trend counter.
+
+Consumer workaround (optional): consumers can add '.agentic-framework/**/__pycache__/' to their project .gitignore and 'git rm -r --cached .agentic-framework/**/__pycache__'. But that divides maintenance across every consumer — the framework-side fix is O(1)."
+  priority: medium
+  tags: [vendored, gitignore, pycache, audit-noise]

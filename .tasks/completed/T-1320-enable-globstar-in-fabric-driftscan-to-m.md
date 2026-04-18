@@ -4,7 +4,7 @@ name: "Enable globstar in fabric drift/scan to match recursive watch-patterns (T
 description: >
   Enable globstar in fabric drift/scan to match recursive watch-patterns (T-1319 GO)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T22:03:55Z
-last_update: 2026-04-18T22:03:55Z
-date_finished: null
+last_update: 2026-04-18T22:22:03Z
+date_finished: 2026-04-18T22:22:03Z
 ---
 
 # T-1320: Enable globstar in fabric drift/scan to match recursive watch-patterns (T-1319 GO)
@@ -69,3 +69,6 @@ cd "$PROJECT_ROOT" && bats tests/unit/fabric_globstar.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1320-enable-globstar-in-fabric-driftscan-to-m.md
 - **Context:** Initial task creation
+
+### 2026-04-18T22:22:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

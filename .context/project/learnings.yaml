@@ -1763,3 +1763,10 @@ learnings:
   date: 2026-04-18
   context: Added via context agent
   application: TBD
+- id: L-014
+  learning: "Bash glob loops referenced from .fabric/watch-patterns.yaml MUST enable 'shopt -s globstar' in scope; without it '**' silently collapses to '*' and produces a divergence loop with fw audit's Python glob(recursive=True). Add 'shopt -s globstar nullglob 2>/dev/null || true' at the top of any function that does 'for f in $user_glob' in the framework."
+  source: P-001
+  task: T-1320
+  date: 2026-04-18
+  context: Added via context agent
+  application: TBD

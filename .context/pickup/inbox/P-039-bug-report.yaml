@@ -1,0 +1,35 @@
+pickup_id: P-039
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1130"
+  agent: "claude-code"
+  timestamp: "2026-04-18T22:16:58Z"
+payload:
+  summary: "fw inception decide doesn't tick the RUBBER-STAMP 'Record go/no-go decision' Human AC — tasks stay in active/ forever"
+  detail: "Bug: when the operator records an inception decision via `fw inception decide T-XXX go|no-go`, the command appends a Decision block + an inception-decision Updates entry, and can even set status=work-completed. But the `### Human` acceptance criterion (typically '[RUBBER-STAMP] Record go/no-go decision') remains an unchecked box ([ ]). Per the Human-AC-real-work rule (T-372/T-373), the unchecked box keeps the task in .tasks/active/ — so tasks are structurally stuck in 'partial-complete' despite their sole human AC being literally satisfied by the same command that just succeeded.
+
+Evidence (termlink @ HEAD 2026-04-19):
+    $ ls .tasks/active/T-9{47,50,52,53,54,55,56,57,58,59}-*.md | wc -l
+    10
+    $ for t in 947 950 952 953 954 955 956 957 958 959; do
+        grep -l 'Decision.*:.*GO\|Decision.*:.*NO-GO' .tasks/active/T-$t-*.md |
+          xargs grep -l '\[ \] \[RUBBER-STAMP\]' >/dev/null && echo T-$t stuck
+      done
+    T-947 stuck ... T-959 stuck (all 10)
+
+Example — T-947: decide recorded 2026-04-18T14:56:48Z with GO+rationale+evidence; Human AC '[ ] [RUBBER-STAMP] Record go/no-go decision' still unchecked; task stays in active/ under status=work-completed indefinitely. This is the direct root cause of G-008 ('64 tasks stuck in partial-complete').
+
+Proposed fix (surgical): in fw inception decide, after writing the Decision block:
+  1. If the task has a single Human AC matching '\[RUBBER-STAMP\]' with 'Record go/no-go decision' text, auto-tick it ('- [ ]' → '- [x]') since the decide-action IS the rubber-stamp.
+  2. Do NOT auto-tick [REVIEW] ACs — those require genuine human judgment (and are qualitatively different from a decide click).
+  3. Optionally: after ticking, run the existing work-completed gate path so the task moves to completed/ automatically when all other ACs are satisfied.
+
+Alternative (less surgical): add a new 'fw task rubber-stamp T-XXX' sub-command that ticks the box explicitly; document that decide + rubber-stamp are two steps.
+
+Severity: medium (user-visible workflow broken; source of chronic active/ bloat; the framework rule 'never check a ### Human AC' gets violated in spirit — the human DID the verification by running decide, the framework just doesn't record that).
+
+Related: G-008 (64 tasks in partial-complete), T-1112 (the umbrella-inception that was going to backfill recommendations didn't address the sticky-checkbox issue)."
+  priority: medium
+  tags: [inception, decide, rubber-stamp, partial-complete, G-008]
