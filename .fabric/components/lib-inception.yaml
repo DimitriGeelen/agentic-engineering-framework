@@ -20,4 +20,14 @@ depended_by:
 - target: tests/unit/lib_inception.bats
   type: called_by
 - tests/lint/inception-decision-exact-match.bats
-last_enriched: '2026-04-13'
+- target: docs/reports/T-1125-termlink-send-file-delivery-semantics.md
+  type: produced-by_by
+- target: docs/reports/T-1129-termlink-session-learnings.md
+  type: produced-by_by
+- target: docs/reports/T-1136-session-init-concerns-check.md
+  type: produced-by_by
+- target: docs/reports/T-1212-consumer-watchtower-rca.md
+  type: produced-by_by
+- target: docs/reports/T-607-correction-refinement-loop.md
+  type: produced-by_by
+last_enriched: '2026-04-19'

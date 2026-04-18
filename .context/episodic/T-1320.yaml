@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1320: Enable globstar in fabric drift/scan to match recursive watch-patterns (T-1319 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-18T23:04:51Z
+# ============================================================================
+
+task_id: T-1320
+task_name: "Enable globstar in fabric drift/scan to match recursive watch-patterns (T-1319 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T22:03:55Z
+completed: 2026-04-18T22:22:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-19T00:21:51+02:00
+last_commit: 2026-04-19T00:22:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Enable globstar in fabric drift/scan for recursive watch-patterns. Move to completed + L-014 learning + session artifacts
+
+# Key outcomes
+outcomes:
+  - "`agents/fabric/lib/drift.sh:do_drift` enables `shopt -s globstar nullglob 2>/dev/null || true` before its glob loop"
+  - "`agents/fabric/lib/register.sh:do_scan` enables `shopt -s globstar nullglob 2>/dev/null || true` before its glob loop"
+  - "Bats regression test in `tests/unit/fabric_globstar.bats` covers source invariants, behavior contract for shopt, and integration (fabric scan registers deeply-nested file, fabric drift reports it) — 6 tests"
+  - "`bats tests/unit/fabric_globstar.bats` passes (6/6)"
+  - "Existing `tests/unit/fabric.bats` still passes (10/10)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/fabric/lib/drift.sh"
+  - "agents/fabric/lib/register.sh"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/pickup/dedup.log"
+  - ".context/pickup/inbox/P-038-bug-report.yaml"
+  - ".context/pickup/inbox/P-039-bug-report.yaml"
+  - ".context/pickup/processed/P-037-bug-report.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-1319-pickup-fw-fabric-drift-and-scan-miss-rec.md"
+  - ".tasks/active/T-1320-enable-globstar-in-fabric-driftscan-to-m.md"
+  - ".tasks/completed/T-1320-enable-globstar-in-fabric-driftscan-to-m.md"
+  - "tests/unit/fabric_globstar.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-19T00:21:51"
+    action: "T-1320: Enable globstar in fabric drift/scan for recursive watch-patterns"
+  - time: "2026-04-19T00:22:34"
+    action: "T-1320: Move to completed + L-014 learning + session artifacts"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 2
+  files_changed: 16
+  lines_added: 283
+  lines_removed: 147
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1320-enable-globstar-in-fabric-driftscan-to-m.md
+generated_by: context-agent-hybrid

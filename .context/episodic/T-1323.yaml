@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1323: Ship vendored .agentic-framework/.gitignore + upgrade hint for stale pyc (T-1321 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-18T23:04:53Z
+# ============================================================================
+
+task_id: T-1323
+task_name: "Ship vendored .agentic-framework/.gitignore + upgrade hint for stale pyc (T-1321 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T22:26:09Z
+completed: 2026-04-18T22:30:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-19T00:29:53+02:00
+last_commit: 2026-04-19T00:30:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Ship vendored .agentic-framework/.gitignore + upgrade hint for stale pyc. Move to completed + L-015 learning + session artifacts
+
+# Key outcomes
+outcomes:
+  - "`do_vendor` (bin/fw) writes a `.gitignore` to the vendored directory containing `__pycache__/`, `*.pyc`, `*.pyo`, `.DS_Store`"
+  - "`lib/upgrade.sh` prints a one-line WARN with cleanup command when stale tracked pyc files are detected in `.agentic-framework/`"
+  - "Bats regression in `tests/unit/vendor_gitignore.bats` covers: vendored .gitignore exists, has right entries, vendor output mentions it, git check-ignore proves a real .pyc would be ignored — 4 tests"
+  - "`bats tests/unit/vendor_gitignore.bats` passes (4/4)"
+  - "`bash -n` syntax check passes for both bin/fw and lib/upgrade.sh"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/pickup/dedup.log"
+  - ".context/pickup/processed/P-038-bug-report.yaml"
+  - ".context/pickup/processed/P-039-bug-report.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/working/session.yaml"
+  - "lib/upgrade.sh"
+  - ".tasks/active/T-1321-pickup-vendored-agentic-framework-tracks.md"
+  - ".tasks/active/T-1322-pickup-fw-inception-decide-doesnt-tick-t.md"
+  - ".tasks/active/T-1323-ship-vendored-agentic-frameworkgitignore.md"
+  - ".tasks/completed/T-1323-ship-vendored-agentic-frameworkgitignore.md"
+  - "tests/unit/vendor_gitignore.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-19T00:29:53"
+    action: "T-1323: Ship vendored .agentic-framework/.gitignore + upgrade hint for stale pyc"
+  - time: "2026-04-19T00:30:35"
+    action: "T-1323: Move to completed + L-015 learning + session artifacts"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 13
+  lines_added: 293
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1323-ship-vendored-agentic-frameworkgitignore.md
+generated_by: context-agent-hybrid

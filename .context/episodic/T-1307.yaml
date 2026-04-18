@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1307: Filter load_latest_audit glob to date-named YAML only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-18T23:04:47Z
+# ============================================================================
+
+task_id: T-1307
+task_name: "Filter load_latest_audit glob to date-named YAML only"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T19:49:34Z
+completed: 2026-04-18T19:51:27Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-18T21:51:10+02:00
+last_commit: 2026-04-18T21:51:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Filter load_latest_audit glob to date-named YAML only
+
+# Key outcomes
+outcomes:
+  - "`web/shared.py::load_latest_audit` globs `[0-9][0-9][0-9][0-9]-*.yaml` instead of `*.yaml`"
+  - "Reverse-sort behaviour preserved (newest date wins)"
+  - "Regression test proves a non-date YAML in a tmp audit dir is ignored"
+  - "`fw test web` still passes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1305-pickup-watchtower-loadlatestaudit-picks-.md"
+  - ".tasks/active/T-1307-filter-loadlatestaudit-glob-to-date-name.md"
+  - "tests/web/test_load_latest_audit.py"
+  - "web/shared.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-18T21:51:10"
+    action: "T-1307: Filter load_latest_audit glob to date-named YAML only"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 4
+  lines_added: 153
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1307-filter-loadlatestaudit-glob-to-date-name.md
+generated_by: context-agent-hybrid

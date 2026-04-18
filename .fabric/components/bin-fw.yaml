@@ -4,9 +4,8 @@ type: script
 subsystem: framework-core
 location: bin/fw
 tags: []
-purpose: Single entry point for all framework operations. Reads .framework.yaml from
-  the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate
-  agent. Supports both in-repo and shared tooling modes.
+purpose: Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT,
+  then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes.
 depends_on:
 - target: agents/task-create/create-task.sh
   type: calls
@@ -96,7 +95,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-13'
+last_enriched: '2026-04-19'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -280,3 +279,5 @@ depended_by:
 - target: tests/integration/fw_work_on.bats
   type: called_by
 - tests/integration/cron_install.bats
+- target: lib/release.sh
+  type: called_by_by

@@ -1,0 +1,14 @@
+id: web/templates/prompt_detail.html
+name: prompt_detail
+type: template
+subsystem: watchtower
+location: web/templates/prompt_detail.html
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by:
+- target: web/blueprints/prompts.py
+  type: rendered_by
+last_verified: 2026-04-18
+created_by: unknown
+last_enriched: '2026-04-19'
