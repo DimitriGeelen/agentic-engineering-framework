@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1317: Verification gate cd to PROJECT_ROOT before eval (T-1044 fix from email-archive)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-18T23:32:46Z
+# ============================================================================
+
+task_id: T-1317
+task_name: "Verification gate cd to PROJECT_ROOT before eval (T-1044 fix from email-archive)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T20:36:11Z
+completed: 2026-04-18T23:32:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-18T22:51:06+02:00
+last_commit: 2026-04-18T22:51:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Verification gate cd to PROJECT_ROOT before eval
+
+# Key outcomes
+outcomes:
+  - "`agents/task-create/update-task.sh:223` evals verification commands inside `cd \"$PROJECT_ROOT\" && eval \"$cmd\"` subshell"
+  - "Existing T-739 behaviour preserved (`unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED` still applied)"
+  - "Bats regression test exercises a verification command using a relative path from a non-PROJECT_ROOT CWD"
+  - "`bats tests/unit/update_task_verification.bats` passes"
+  - "Existing tests still green (targeted suites: update_task.bats 15/15, update_task_verification.bats 2/2, lib_inception.bats 16/16, inception_decide_ac_tick.bats 10/10 — all pass post-T-1317)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - "docs/proposals/T-1315-from-email-archive-vendored-mode-blindspot.md"
+  - "docs/proposals/T-1316-from-email-archive-watchtower-verification-cwd.md"
+  - ".tasks/active/T-1311-pickup-codify-rpc-resilience-tier-taxono.md"
+  - ".tasks/active/T-1312-pickup-ship-watchtowerservice-systemd-te.md"
+  - ".tasks/active/T-1313-pickup-anti-pattern-detected-umbrella-in.md"
+  - ".tasks/active/T-1314-pickup-watchtower-fabric-crashes-keyerro.md"
+  - ".tasks/active/T-1315-pickup-from-email-archive-vendored-vs-re.md"
+  - ".tasks/active/T-1316-pickup-from-email-archive-watchtower-ver.md"
+  - ".tasks/active/T-1317-verification-gate-cd-to-projectroot-befo.md"
+  - "tests/unit/update_task_verification.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-18T22:51:06"
+    action: "T-1317: Verification gate cd to PROJECT_ROOT before eval"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 175 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 175
+  commits: 1
+  files_changed: 11
+  lines_added: 1255
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1317-verification-gate-cd-to-projectroot-befo.md
+generated_by: context-agent-hybrid
