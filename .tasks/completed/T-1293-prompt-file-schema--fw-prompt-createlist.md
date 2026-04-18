@@ -4,7 +4,7 @@ name: "Prompt file schema + fw prompt create/list/show/copy CLI (T-1283 B1)"
 description: >
   Prompt file schema + fw prompt create/list/show/copy CLI (T-1283 B1)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T08:53:33Z
-last_update: 2026-04-18T08:53:33Z
-date_finished: null
+last_update: 2026-04-18T09:04:26Z
+date_finished: 2026-04-18T09:04:26Z
 ---
 
 # T-1293: Prompt file schema + fw prompt create/list/show/copy CLI (T-1283 B1)
@@ -75,3 +75,6 @@ bats tests/unit/lib_prompt.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1293-prompt-file-schema--fw-prompt-createlist.md
 - **Context:** Initial task creation
+
+### 2026-04-18T09:04:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
