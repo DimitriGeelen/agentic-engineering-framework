@@ -1,0 +1,48 @@
+pickup_id: P-037
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1130"
+  agent: "claude-code"
+  timestamp: "2026-04-18T21:57:43Z"
+payload:
+  summary: "fw fabric drift and scan miss recursive glob matches — bash '**' needs shopt -s globstar"
+  detail: "Bug: fw fabric drift and fw fabric scan both silently miss files that .fabric/watch-patterns.yaml patterns like 'crates/*/src/**/*.rs' should match. Meanwhile fw audit flags them via Python glob(recursive=True) — producing a loop where audit warns, operator runs 'fw fabric scan' (as audit suggests), nothing changes, warning persists.
+
+Root cause: both agents/fabric/lib/drift.sh (do_drift) and agents/fabric/lib/register.sh (do_scan) use:
+    for file in $glob_pattern
+without 'shopt -s globstar' in scope. Bash default treats '**' as single-level '*', so recursive patterns under-match.
+
+Evidence (on /opt/termlink):
+    $ bash -c 'for f in crates/*/src/**/*.rs; do echo $f; done' | wc -l
+    14
+    $ bash -c 'shopt -s globstar; for f in crates/*/src/**/*.rs; do echo $f; done' | wc -l
+    68
+
+Consumer workaround (T-1130): registered the missing card manually. Audit warning cleared. But the next file that appears under the recursive glob will be invisible to scan/drift again until manually registered.
+
+Proposed framework patch:
+
+--- a/agents/fabric/lib/drift.sh
++++ b/agents/fabric/lib/drift.sh
+@@ do_drift()
+     if [ -f "$watch_file" ]; then
++        shopt -s globstar nullglob 2>/dev/null || true
+         local registered
+         registered=$(grep '^location:' "$COMPONENTS_DIR"/*.yaml 2>/dev/null | sed 's/.*location: //' | sort -u)
+
+--- a/agents/fabric/lib/register.sh
++++ b/agents/fabric/lib/register.sh
+@@ do_scan()
+     local created=0
+     local skipped=0
++    shopt -s globstar nullglob 2>/dev/null || true
+
+Either shopt in-function or replace the bash for-loop with a python glob(recursive=True) to match audit.sh semantics. Python route is more robust (brace expansion, consistent with audit detector) but the shopt is a one-liner.
+
+Test: after the fix, 'fw fabric drift' and 'fw fabric scan' on termlink @ commit before T-1130 should find 1 unregistered file (crates/termlink-cli/src/test_env_lock.rs) matching the audit.
+
+Severity: medium (silent — no data loss, but produces persistent audit noise + false 'all clear' from scan; detector-vs-remediator divergence erodes trust)."
+  priority: medium
+  tags: [fabric, audit, bash, globstar]

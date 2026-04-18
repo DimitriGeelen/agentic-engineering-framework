@@ -1,6 +1,6 @@
-FW_SECRET_KEY not set — using auto-generated key. Set FW_SECRET_KEY for production deployment.
+FW_SECRET_KEY not set — using file key at PROJECT_ROOT/.context/working/.fw-secret-key. Set FW_SECRET_KEY for production deployment.
 Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
-Watchtower running at http://0.0.0.0:3000
+Watchtower running at http://0.0.0.0:3005
   Project root: /opt/999-Agentic-Engineering-Framework
   Framework:    /opt/999-Agentic-Engineering-Framework
 
@@ -8,21 +8,24 @@ Watchtower running at http://0.0.0.0:3000
  * Debug mode: off
 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
  * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:3000
- * Running on http://192.168.10.144:3000
+ * Running on http://127.0.0.1:3005
+ * Running on http://192.168.10.144:3005
 Press CTRL+C to quit
-127.0.0.1 - - [18/Apr/2026 17:37:12] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:37:20] "HEAD /prompts HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:37:20] "GET /prompts HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:37:25] "HEAD /prompts/consumer-upgrade-and-test HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:37:25] "HEAD /prompts/107/P-001 HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:38:03] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:39:04] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:40:05] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:41:04] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:42:05] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:43:04] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:44:04] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:45:05] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:46:04] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [18/Apr/2026 17:47:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Apr/2026 23:01:26] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [18/Apr/2026 23:01:28] "GET /health HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:09] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:10] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:12] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:13] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:13] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:14] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:15] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:39] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:40] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:04:41] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:08:20] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:08:23] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:08:26] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:08:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:08:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [18/Apr/2026 23:08:27] "GET / HTTP/1.1" 200 -

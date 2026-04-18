@@ -4,7 +4,7 @@ name: "Fix _load_subsystems KeyError on subsystems.yaml entries with name only (
 description: >
   Fix _load_subsystems KeyError on subsystems.yaml entries with name only (T-1314 GO)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T21:16:06Z
-last_update: 2026-04-18T21:16:06Z
-date_finished: null
+last_update: 2026-04-18T22:00:18Z
+date_finished: 2026-04-18T22:00:18Z
 ---
 
 # T-1318: Fix _load_subsystems KeyError on subsystems.yaml entries with name only (T-1314 GO)
@@ -52,3 +52,6 @@ cd "$PROJECT_ROOT" && pytest tests/web/test_fabric_loader.py -q --tb=short
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1318-fix-loadsubsystems-keyerror-on-subsystem.md
 - **Context:** Initial task creation
+
+### 2026-04-18T22:00:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
