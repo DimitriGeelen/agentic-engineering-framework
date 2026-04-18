@@ -220,7 +220,10 @@ print(text)
         # Run in subshell with framework path derivatives unset so child
         # processes re-derive TASKS_DIR/CONTEXT_DIR from their own PROJECT_ROOT.
         # Prevents bats tests from inheriting the parent's stale TASKS_DIR (T-739).
-        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; eval "$cmd") > /tmp/verify-$$.out 2>&1; then
+        # T-1317: cd to PROJECT_ROOT first so relative paths in verification
+        # commands resolve consistently regardless of caller CWD (Watchtower
+        # launches from FRAMEWORK_ROOT, CLI from PROJECT_ROOT).
+        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; cd "$PROJECT_ROOT" && eval "$cmd") > /tmp/verify-$$.out 2>&1; then
             echo -e "  ${GREEN}PASS${NC}: $display_cmd"
             verify_pass=$((verify_pass + 1))
         else

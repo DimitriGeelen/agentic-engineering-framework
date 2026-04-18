@@ -1,0 +1,74 @@
+---
+id: T-1317
+name: "Verification gate cd to PROJECT_ROOT before eval (T-1044 fix from email-archive)"
+description: >
+  One-line fix in agents/task-create/update-task.sh:223 — add 'cd "$PROJECT_ROOT" && ' inside the eval subshell so verification commands resolve relative paths against PROJECT_ROOT regardless of caller CWD. Sibling to T-1316 inception. Email-archive proposal at docs/proposals/T-1316-from-email-archive-watchtower-verification-cwd.md.
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-18T20:36:11Z
+last_update: 2026-04-18T20:36:34Z
+date_finished: null
+---
+
+# T-1317: Verification gate cd to PROJECT_ROOT before eval (T-1044 fix from email-archive)
+
+## Context
+
+Sibling to inception T-1316 (pickup from email-archive T-1044). One-line fix to the verification subshell.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `agents/task-create/update-task.sh:223` evals verification commands inside `cd "$PROJECT_ROOT" && eval "$cmd"` subshell
+- [x] Existing T-739 behaviour preserved (`unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED` still applied)
+- [x] Bats regression test exercises a verification command using a relative path from a non-PROJECT_ROOT CWD
+- [x] `bats tests/unit/update_task_verification.bats` passes
+- [ ] Existing tests still green (`bats tests/unit/`)  <!-- pending full suite confirm -->
+
+
+### Human
+<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
+     Remove this section if all criteria are agent-verifiable.
+     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
+     Example:
+       - [ ] [REVIEW] Dashboard renders correctly
+         **Steps:**
+         1. Open https://example.com/dashboard in browser
+         2. Verify all panels load within 2 seconds
+         3. Check browser console for errors
+         **Expected:** All panels visible, no console errors
+         **If not:** Screenshot the broken panel and note the console error
+-->
+
+## Verification
+
+grep -q 'cd "$PROJECT_ROOT" && eval' agents/task-create/update-task.sh
+bats tests/unit/update_task_verification.bats
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-18T20:36:11Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1317-verification-gate-cd-to-projectroot-befo.md
+- **Context:** Initial task creation
+
+### 2026-04-18T20:36:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
