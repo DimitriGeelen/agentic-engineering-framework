@@ -298,7 +298,9 @@ def load_latest_audit():
     audit_dir = PROJECT_ROOT / ".context" / "audits"
     if not audit_dir.exists():
         return None, {}, []
-    audit_files = sorted(audit_dir.glob("*.yaml"), reverse=True)
+    # T-1307: filter to date-named audits only so stray non-date YAML
+    # (e.g. upgrades.yaml) can't win the reverse-sort.
+    audit_files = sorted(audit_dir.glob("[0-9][0-9][0-9][0-9]-*.yaml"), reverse=True)
     if not audit_files:
         return None, {}, []
     data = load_yaml(audit_files[0], label="audit report")

@@ -4,15 +4,15 @@ name: "Pickup: Watchtower load_latest_audit picks upgrades.yaml instead of newes
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1128. Type: bug-report.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T18:44:08Z
-last_update: 2026-04-18T18:44:08Z
+last_update: 2026-04-18T19:48:49Z
 date_finished: null
 ---
 
@@ -20,27 +20,29 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+`web/shared.py:301` uses `sorted(audit_dir.glob("*.yaml"), reverse=True)[0]` to pick the latest audit. When any non-date YAML sits in `.context/audits/` (termlink has `upgrades.yaml`; framework could develop similar), reverse-alphabetical sort puts it first. That file lacks a `summary` key, so `load_latest_audit()` returns empty data and the Watchtower ambient strip shows "Audit: unknown" even when fresh audits exist.
+
+Source: pickup P-032 from termlink (T-1128). Upstream fix already proven.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. Audit files follow the `YYYY-MM-DD.yaml` convention (verified — all 50+ existing audits match).
+2. No legitimate audit filename begins with non-digit characters.
+3. Filter pattern `[0-9][0-9][0-9][0-9]-*.yaml` is a safe subset.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+None needed — fix is a one-character-class glob change. Already proven upstream.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- `Path.glob` supports character classes (Python `pathlib` wraps fnmatch).
+- Must keep the reverse-sort behaviour so newest wins.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Change one glob pattern in `web/shared.py::load_latest_audit`.
+**OUT:** Restructure audit filenames, migrate existing audits, add schema validation.
 
 ## Acceptance Criteria
 
@@ -71,21 +73,19 @@ date_finished: null
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
+grep -q 'glob("\[0-9\]\[0-9\]\[0-9\]\[0-9\]-\*\.yaml")' web/shared.py
+python3 -m pytest tests/web/ -q
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** One-character-class glob change. Fix is already implemented and verified upstream (termlink@T-1128). Defensive — framework hasn't yet grown a non-date YAML in `.context/audits/`, but nothing prevents it (e.g. future `upgrades.yaml` following consumer conventions).
+
+**Evidence:**
+- `web/shared.py:301` globs `*.yaml` then reverse-sorts — no content validation.
+- All existing 50+ audit files in `.context/audits/` match `[0-9][0-9][0-9][0-9]-*.yaml`.
+- Termlink hit this bug when `upgrades.yaml` was written into their audits dir by a cron; same class of file could land here.
 
 ## Decisions
 
@@ -106,3 +106,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-18T19:48:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
