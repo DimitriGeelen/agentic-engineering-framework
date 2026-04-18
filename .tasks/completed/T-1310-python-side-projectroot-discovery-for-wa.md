@@ -4,7 +4,7 @@ name: "Python-side PROJECT_ROOT discovery for Watchtower (walk up for .framework
 description: >
   Add _discover_project_root() walking up from CWD for .framework.yaml, and _resolve_project_root() returning (path, source_label). PROJECT_ROOT = env > discovered > FRAMEWORK_ROOT. Log source at import. Sibling to T-1303 inception (pickup from termlink T-1123).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T20:02:09Z
-last_update: 2026-04-18T20:03:27Z
-date_finished: null
+last_update: 2026-04-18T20:05:18Z
+date_finished: 2026-04-18T20:05:18Z
 ---
 
 # T-1310: Python-side PROJECT_ROOT discovery for Watchtower (walk up for .framework.yaml)
@@ -25,13 +25,13 @@ Sibling to inception T-1303 (pickup P-030 from termlink T-1123). Python-side fal
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_discover_project_root(start)` helper walks up from `start` looking for `.framework.yaml`, returns Path or None
-- [ ] `_resolve_project_root()` helper returns `(path, source_label)` where source ∈ {`env`, `discovered`, `framework`}
-- [ ] Module-level `PROJECT_ROOT` derived from `_resolve_project_root()` at import
-- [ ] One log line at import reports the source label (DEBUG unless source != `env`)
-- [ ] Env-var path unchanged (env still wins)
-- [ ] Regression tests cover env-wins, discovery-from-child-dir, fallback-to-framework
-- [ ] `fw test web` still passes
+- [x] `_discover_project_root(start)` helper walks up from `start` looking for `.framework.yaml`, returns Path or None
+- [x] `_resolve_project_root()` helper returns `(path, source_label)` where source ∈ {`env`, `discovered`, `framework`}
+- [x] Module-level `PROJECT_ROOT` derived from `_resolve_project_root()` at import
+- [x] One log line at import reports the source label (DEBUG unless source != `env`)
+- [x] Env-var path unchanged (env still wins)
+- [x] Regression tests cover env-wins, discovery-from-child-dir, fallback-to-framework
+- [x] `fw test web` still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -75,3 +75,6 @@ python3 -m pytest tests/web/ -q
 
 ### 2026-04-18T20:02:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T20:05:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

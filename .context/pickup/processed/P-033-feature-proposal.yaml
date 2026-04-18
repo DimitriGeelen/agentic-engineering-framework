@@ -1,0 +1,21 @@
+pickup_id: P-033
+version: 1
+type: feature-proposal
+source:
+  project: "termlink"
+  task_id: "T-1071"
+  agent: "claude-code"
+  timestamp: "2026-04-18T19:44:58Z"
+payload:
+  summary: "Codify RPC resilience-tier taxonomy + version skew enforcement (Tier-A opaque vs Tier-B typed)"
+  detail: "T-1071 inception (in /opt/termlink) recommends GO with 3 follow-ups, two of which are framework-level:
+
+1. Resilience-tier taxonomy as first-class framework guidance: tag every RPC method as Tier-A (opaque-payload, drift-tolerant, e.g. event.broadcast) or Tier-B (typed-struct, drift-fragile, e.g. command.inject). Doc comments in the protocol crate, surfaced by fleet doctor.
+
+2. Wire protocol_version enforcement at the hub: each registered session's declared version is recorded; on RPC with version-incompatible method, return structured error PROTOCOL_VERSION_TOO_OLD with minimum required version, instead of opaque serde parse failure.
+
+Originating evidence: Capabilities.protocol_version field already exists at crates/termlink-protocol/src/control.rs:79 but has zero enforcement code. The existing event.broadcast resilience (12/12 sessions reached on 2026-04-15 despite KeyEntry skew) is real and worth promoting from happy accident to deliberate tier.
+
+Full research artifact: /opt/termlink/docs/reports/T-1071-protocol-skew-resilience-tier-recommendation.md (committed in 8fcc6fed)."
+  priority: medium
+  tags: [protocol, rpc, resilience, version-skew]

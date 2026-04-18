@@ -4,7 +4,7 @@ name: "build_ambient reads focus.yaml::current_task for Watchtower ambient strip
 description: >
   web/shared.py::build_ambient currently picks the first active task alphabetically as focus_task. Change to read .context/working/focus.yaml::current_task first, falling back to existing logic only if null/missing. Sibling to T-1304 inception (pickup from termlink T-1127).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T19:53:20Z
-last_update: 2026-04-18T19:53:41Z
-date_finished: null
+last_update: 2026-04-18T20:00:15Z
+date_finished: 2026-04-18T20:00:15Z
 ---
 
 # T-1308: build_ambient reads focus.yaml::current_task for Watchtower ambient strip
@@ -25,11 +25,11 @@ Sibling to inception T-1304 (pickup from termlink T-1127). Ambient strip on Watc
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `build_ambient()` reads `.context/working/focus.yaml::current_task` and uses it as `focus_task` when non-null
-- [ ] Falls back to first-active-task when focus is missing, malformed, or null
-- [ ] Regression test proves focus.yaml `current_task: T-XXX` wins over alphabetical first
-- [ ] Regression test proves graceful fallback when focus.yaml is missing
-- [ ] `fw test web` still passes
+- [x] `build_ambient()` reads `.context/working/focus.yaml::current_task` and uses it as `focus_task` when non-null
+- [x] Falls back to first-active-task when focus is missing, malformed, or null
+- [x] Regression test proves focus.yaml `current_task: T-XXX` wins over alphabetical first
+- [x] Regression test proves graceful fallback when focus.yaml is missing
+- [x] `fw test web` still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -72,3 +72,6 @@ python3 -m pytest tests/web/ -q
 
 ### 2026-04-18T19:53:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T20:00:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

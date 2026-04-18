@@ -1,0 +1,24 @@
+pickup_id: P-036
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1129"
+  agent: "claude-code"
+  timestamp: "2026-04-18T20:08:57Z"
+payload:
+  summary: "Watchtower /fabric crashes (KeyError: 'id') on subsystems.yaml without id key — loader should fall back to name"
+  detail: "Bug: web/blueprints/fabric.py:93 does `registered_ids = {s['id'] for s in subsystems}` which crashes with KeyError when a consumer project's .fabric/subsystems.yaml entries use `name:` as the identifier instead of `id:`.
+
+Repro:
+1. Consumer project ships .fabric/subsystems.yaml with entries like `- name: protocol` (no `id` field).
+2. Open http://localhost:3000/fabric → HTTP 500.
+3. Traceback: KeyError: 'id' at fabric.py:93.
+
+Workaround applied in termlink (T-1129): added `id:` field to each subsystem entry in /opt/termlink/.fabric/subsystems.yaml.
+
+Proper fix in framework: fabric.py:93 should be `{s.get('id') or s.get('name') for s in subsystems}`. The file's own docstring at _load_subsystems already says it supports list-of-dicts `[{id, name, ...}]` — but it doesn't actually fall back to `name` when `id` is missing. Pick one: enforce id presence via a clear schema check at load time with actionable error, OR support both keys at use site. Preference: enforce schema at load time with a friendly migration hint (`add 'id: <name>' to each entry`).
+
+The same pattern (l-of-d entries keyed by name not id) likely affects other consumer projects that hand-rolled their subsystems.yaml before the schema solidified."
+  priority: medium
+  tags: [watchtower, fabric, robustness, schema]

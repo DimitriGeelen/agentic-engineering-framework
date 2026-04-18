@@ -1,0 +1,23 @@
+pickup_id: P-035
+version: 1
+type: pattern
+source:
+  project: "termlink"
+  task_id: "T-1112"
+  agent: "claude-code"
+  timestamp: "2026-04-18T19:45:26Z"
+payload:
+  summary: "Anti-pattern detected: umbrella inceptions bundling N independent decisions (T-1112 NO-GO)"
+  detail: "T-1112 (in /opt/termlink) was an umbrella inception asking one agent session to backfill Recommendation sections for 51 stalled inception tasks. Recommended NO-GO and committed (bea73c13).
+
+Pattern: backfill-N-things-at-once tasks should always decompose. CLAUDE.md already states 'One inception = one question' but T-1112 slipped through anyway. Strengthening:
+
+1. Capture as project-memory in framework: 'Umbrella inception anti-pattern recommended NO-GO at T-1112 — pattern: backfill-N-things-at-once tasks should always decompose.'
+
+2. Consider a fw inception triage tool (or extending fw inception status) that lists pending-decision inceptions sorted by age and flags those whose Recommendation section is empty separately from those awaiting human decide. This is operator-facing triage, not bulk automation.
+
+3. Optionally, fw task create --type inception could refuse names matching /backfill|all|every/i unless --umbrella-acknowledged is set, with helpful error.
+
+Full research artifact: /opt/termlink/docs/reports/T-1112-overscoped-umbrella-recommendation.md (committed bea73c13)."
+  priority: low
+  tags: [inception, task-sizing, anti-pattern, governance]

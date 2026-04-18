@@ -4,7 +4,7 @@ name: "Filter load_latest_audit glob to date-named YAML only"
 description: >
   Change web/shared.py::load_latest_audit glob from '*.yaml' to '[0-9][0-9][0-9][0-9]-*.yaml' so stray non-date YAML in .context/audits/ (e.g. future upgrades.yaml) can't be mis-selected by reverse-alphabetical sort. Sibling to T-1305 inception (pickup from termlink T-1128).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T19:49:34Z
-last_update: 2026-04-18T19:49:55Z
-date_finished: null
+last_update: 2026-04-18T19:51:27Z
+date_finished: 2026-04-18T19:51:27Z
 ---
 
 # T-1307: Filter load_latest_audit glob to date-named YAML only
@@ -25,10 +25,10 @@ Sibling to inception T-1305 (pickup P-032 from termlink T-1128). Defensive glob 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `web/shared.py::load_latest_audit` globs `[0-9][0-9][0-9][0-9]-*.yaml` instead of `*.yaml`
-- [ ] Reverse-sort behaviour preserved (newest date wins)
-- [ ] Regression test proves a non-date YAML in a tmp audit dir is ignored
-- [ ] `fw test web` still passes
+- [x] `web/shared.py::load_latest_audit` globs `[0-9][0-9][0-9][0-9]-*.yaml` instead of `*.yaml`
+- [x] Reverse-sort behaviour preserved (newest date wins)
+- [x] Regression test proves a non-date YAML in a tmp audit dir is ignored
+- [x] `fw test web` still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -71,3 +71,6 @@ python3 -m pytest tests/web/ -q
 
 ### 2026-04-18T19:49:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T19:51:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

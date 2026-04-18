@@ -1,0 +1,24 @@
+pickup_id: P-034
+version: 1
+type: feature-proposal
+source:
+  project: "termlink"
+  task_id: "T-1122"
+  agent: "claude-code"
+  timestamp: "2026-04-18T19:45:12Z"
+payload:
+  summary: "Ship watchtower.service systemd template — fixes restart races without WSGI-server swap"
+  detail: "T-1122 inception (in /opt/termlink) recommends DEFER on Werkzeug → gunicorn/waitress migration; GO on systemd wrapping as the actual root cause.
+
+Key finding: the failure mode that motivated the inception (restart races during dev sessions) is a process-management problem, not a WSGI-server problem. Swapping Werkzeug for gunicorn does not fix restart races; systemd does. Adding gunicorn + gevent + flask-socketio_websocket adds dependency surface without proportional benefit on a single-host LAN tool.
+
+Multi-worker WSGI is incompatible with the framework's hook model — the .context/working/.tool-counter race-prone across workers, _client_sessions dict in-process. Single-worker is the only safe option, which negates the main concurrency argument for migration.
+
+Proposed framework follow-ups:
+1. Ship watchtower.service systemd unit template under agents/monitor/. Type=notify if practical, Restart=on-failure, RestartSec=2.
+2. fw watchtower start learns to detect and prefer systemctl --user start watchtower over direct spawn.
+3. Suppress or document the Werkzeug warning explicitly.
+
+Full research artifact: /opt/termlink/docs/reports/T-1122-watchtower-wsgi-migration-recommendation.md (committed in 8fcc6fed)."
+  priority: medium
+  tags: [watchtower, systemd, reliability]

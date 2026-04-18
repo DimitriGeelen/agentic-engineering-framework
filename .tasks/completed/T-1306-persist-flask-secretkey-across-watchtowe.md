@@ -4,7 +4,7 @@ name: "Persist Flask secret_key across Watchtower restarts (absorb termlink patt
 description: >
   Implement _resolve_secret_key() helper in web/app.py: env var wins, else load from PROJECT_ROOT/.context/working/.fw-secret-key (chmod 600), else generate and persist. Add gitignore entry. Regression test proves stability across two create_app() invocations. Sibling to T-1302 inception.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T19:42:05Z
-last_update: 2026-04-18T19:42:28Z
-date_finished: null
+last_update: 2026-04-18T19:44:31Z
+date_finished: 2026-04-18T19:44:31Z
 ---
 
 # T-1306: Persist Flask secret_key across Watchtower restarts (absorb termlink pattern)
@@ -27,13 +27,13 @@ Current `web/app.py:47-55` generates a new Flask `secret_key` on every startup w
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_resolve_secret_key(project_root)` helper added to `web/app.py` with three-source resolution (env → file → generate+persist)
-- [ ] `create_app()` calls the helper instead of the inline block (lines 47-55 replaced)
-- [ ] Persisted key file is chmod 0600 at write time
-- [ ] Log message reports source label (`env` / `file` / `generated`), never the key material
-- [ ] `.context/working/.fw-secret-key` added to `.gitignore`
-- [ ] New pytest in `tests/web/test_secret_key.py` verifies key stability across two `create_app()` invocations
-- [ ] `fw test web` passes (existing pytests still green)
+- [x] `_resolve_secret_key(project_root)` helper added to `web/app.py` with three-source resolution (env → file → generate+persist)
+- [x] `create_app()` calls the helper instead of the inline block (lines 47-55 replaced)
+- [x] Persisted key file is chmod 0600 at write time
+- [x] Log message reports source label (`env` / `file` / `generated`), never the key material
+- [x] `.context/working/.fw-secret-key` added to `.gitignore`
+- [x] New pytest in `tests/web/test_secret_key.py` verifies key stability across two `create_app()` invocations
+- [x] `fw test web` passes (existing pytests still green)
 
 ## Verification
 
@@ -63,3 +63,6 @@ python3 -m pytest tests/web/test_secret_key.py -q
 
 ### 2026-04-18T19:42:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T19:44:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
