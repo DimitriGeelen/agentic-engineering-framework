@@ -804,6 +804,21 @@ EOF
         skipped=$((skipped + 1))
     fi
 
+    # T-1323: Detect stale tracked __pycache__ files inside vendored framework.
+    # do_vendor now ships a .gitignore that prevents future leaks; this advisory
+    # tells the consumer how to clean up files already added to their git index.
+    if [ -d "$target_dir/.agentic-framework" ] && command -v git &>/dev/null; then
+        local pyc_count
+        pyc_count=$(cd "$target_dir" && git ls-files .agentic-framework/ 2>/dev/null \
+            | grep -c -E '__pycache__|\.pyc$' 2>/dev/null || echo 0)
+        if [ "$pyc_count" -gt 0 ]; then
+            echo ""
+            echo -e "${YELLOW}WARN${NC}  Vendored framework has $pyc_count tracked __pycache__/.pyc file(s)"
+            echo -e "        Cleanup (one-time): cd $target_dir && git rm -r --cached '.agentic-framework/**/__pycache__' '.agentic-framework/**/*.pyc'"
+            echo -e "        Future runs will not add these files (.gitignore now ships in vendored dir)"
+        fi
+    fi
+
     # ── Summary ──
     echo ""
     if [ "$dry_run" = true ]; then
