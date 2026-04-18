@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1324: fw inception decide auto-ticks the REVIEW/RUBBER-STAMP Human AC
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-18T22:59:14Z
+# ============================================================================
+
+task_id: T-1324
+task_name: "fw inception decide auto-ticks the REVIEW/RUBBER-STAMP Human AC"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T22:53:49Z
+completed: 2026-04-18T22:58:45Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`lib/inception.sh` defines `tick_inception_decide_acs <task_file>` (helper function, sourceable)"
+  - "`do_inception_decide` calls `tick_inception_decide_acs` after writing the Decision block, before invoking `update-task.sh --status work-completed`"
+  - "Helper ticks `### Human` ACs whose text matches `[REVIEW].*go/?no-go decision` (case-insensitive) OR `[RUBBER-STAMP].*[Rr]ecord.*decision`"
+  - "Helper is idempotent: already-ticked ACs unchanged, no errors"
+  - "Helper does NOT touch `### Agent` ACs or unmatched custom Human ACs"
+  - "New bats file `tests/unit/inception_decide_ac_tick.bats` covers: tick template `[REVIEW]`, tick `[RUBBER-STAMP]` variant, idempotent, no over-match on custom ACs, leaves Agent section alone"
+  - "All bats in `tests/unit/lib_inception.bats` and the new file pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1324-fw-inception-decide-auto-ticks-the-revie.md
+generated_by: context-agent-hybrid

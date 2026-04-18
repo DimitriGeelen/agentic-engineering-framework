@@ -1777,3 +1777,10 @@ learnings:
   date: 2026-04-18
   context: Added via context agent
   application: TBD
+- id: L-016
+  learning: "Inception decide must tick its own authorizing Human AC. The decide command is the action the [REVIEW] AC describes — recording the decision satisfies the AC by definition. Without ticking it, the work-completed gate keeps every decided inception in partial-complete forever. Pattern: any command that fulfills a templated AC must mutate the file to reflect that fulfillment, not rely on the human to chase a checkbox the agent already earned."
+  source: P-039
+  task: T-1324
+  date: 2026-04-18
+  context: Added via context agent
+  application: TBD
