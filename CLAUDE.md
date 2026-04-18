@@ -1115,6 +1115,7 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Upstream report | `fw upstream` | Report issues to upstream repo |
 | Validate init | `fw validate-init` | Verify fw init output correctness |
 | Vendor framework | `fw vendor` | Copy framework for full isolation |
+| Prompt register | `fw prompt list` | Reusable agent-prompt register (create/list/show/copy/edit/delete/backfill-qid) |
 | **Auto-restart** | **`claude-fw [args...]`** | Wrapper: runs claude, auto-restarts on handover signal |
 | No auto-restart | `claude-fw --no-restart [args...]` | Wrapper with auto-restart disabled |
 
