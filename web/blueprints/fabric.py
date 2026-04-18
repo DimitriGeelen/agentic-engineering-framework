@@ -70,7 +70,15 @@ def _load_subsystems():
     raw = data.get("subsystems", [])
     if isinstance(raw, dict):
         return [{"id": k, **v} for k, v in raw.items() if isinstance(v, dict)]
-    return raw
+    if isinstance(raw, list):
+        # Normalize: fill `id` from `name` when missing so downstream callers
+        # can rely on the docstring's promised shape `[{id, name, ...}]`.
+        return [
+            {**s, "id": s.get("id") or s.get("name")}
+            for s in raw
+            if isinstance(s, dict) and (s.get("id") or s.get("name"))
+        ]
+    return []
 
 
 
