@@ -17,6 +17,8 @@ do_drift() {
     local stale=0
 
     if [ -f "$watch_file" ]; then
+        # T-1320: enable recursive ** matching to align with fw audit (Python glob).
+        shopt -s globstar nullglob 2>/dev/null || true
         local registered
         registered=$(grep "^location:" "$COMPONENTS_DIR"/*.yaml 2>/dev/null | sed 's/.*location: //' | sort -u)
 

@@ -284,6 +284,8 @@ do_scan() {
     registered=$(grep "^location:" "$COMPONENTS_DIR"/*.yaml 2>/dev/null | sed 's/.*location: //' | sort -u)
 
     # Parse watch patterns and find unregistered files
+    # T-1320: enable recursive ** matching to align with fw audit (Python glob).
+    shopt -s globstar nullglob 2>/dev/null || true
     local created=0
     local skipped=0
 
