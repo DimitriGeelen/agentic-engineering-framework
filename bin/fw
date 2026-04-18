@@ -459,6 +459,7 @@ show_help() {
     echo -e "  ${GREEN}consolidate${NC} <cmd>   Memory consolidation (scan, apply, report)"
     echo -e "  ${GREEN}mcp${NC} <cmd>            MCP server process management (reap orphans)"
     echo -e "  ${GREEN}fix-learned${NC} T-XXX \"text\"  Capture bugfix learning (G-016 shortcut)"
+    echo -e "  ${GREEN}prompt${NC} <cmd>           Reusable agent prompts (create, list, show, copy)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}notify${NC} <cmd>          Push notifications (setup, test, enable, disable, status)"
     echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
@@ -2965,6 +2966,10 @@ print('0')
     harvest)
         source "$FW_LIB_DIR/harvest.sh"
         do_harvest "$@"
+        ;;
+    prompt)
+        source "$FW_LIB_DIR/prompt.sh"
+        do_prompt "$@"
         ;;
     termlink)
         exec "$AGENTS_DIR/termlink/termlink.sh" "$@"

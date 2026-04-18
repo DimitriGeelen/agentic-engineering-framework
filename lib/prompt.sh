@@ -1,0 +1,281 @@
+#!/bin/bash
+# fw prompt — reusable agent-prompt register (T-1283)
+#
+# Subcommands:
+#   create   Create a new prompt file under prompts/
+#   list     List all prompts
+#   show     Print the body of a prompt (frontmatter stripped)
+#   copy     Print the body with {{var}} substitutions applied
+#
+# Prompt file schema: markdown with YAML frontmatter.
+#   ---
+#   id: <slug>
+#   name: <string>
+#   description: <string>
+#   kind: agent|system|user
+#   tags: [csv]
+#   variables: [csv of {{var}} names]
+#   created: <ISO-8601>
+#   updated: <ISO-8601>
+#   ---
+#   <prompt body, may contain {{var}} placeholders>
+
+set -uo pipefail
+
+_prompt_dir() {
+    printf '%s' "${PROJECT_ROOT:-$PWD}/prompts"
+}
+
+_prompt_path() {
+    local id="$1"
+    printf '%s/%s.md' "$(_prompt_dir)" "$id"
+}
+
+_prompt_slug() {
+    # Lowercase, replace non-alphanumerics with hyphen, trim.
+    printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]\+/-/g; s/^-\+//; s/-\+$//'
+}
+
+_prompt_iso_now() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
+
+_prompt_extract_vars() {
+    # Extract unique {{var}} names from stdin.
+    # grep returns non-zero on no-match; swallow that to 0 so callers
+    # under `set -e` don't blow up on bodies without placeholders.
+    local all
+    all=$(cat)
+    printf '%s' "$all" \
+        | grep -oE '\{\{[a-zA-Z_][a-zA-Z0-9_]*\}\}' 2>/dev/null \
+        | sed 's/[{}]//g' \
+        | sort -u \
+        | tr '\n' ',' | sed 's/,$//' || true
+}
+
+_prompt_get_field() {
+    # Read a top-level YAML frontmatter field from a prompt file.
+    local file="$1" key="$2"
+    awk -v k="$key" '
+        BEGIN { in_fm = 0; found = 0 }
+        /^---$/ { in_fm = !in_fm; if (!in_fm && found) exit; next }
+        in_fm && $0 ~ "^" k ":" {
+            sub("^" k ":[[:space:]]*", "")
+            gsub(/^"/, ""); gsub(/"$/, "")
+            print; found = 1; exit
+        }
+    ' "$file"
+}
+
+_prompt_body() {
+    # Print body (everything after the closing frontmatter ---).
+    awk '
+        BEGIN { seen = 0; in_fm = 0 }
+        /^---$/ {
+            if (!seen) { in_fm = 1; seen = 1; next }
+            else if (in_fm) { in_fm = 0; next }
+        }
+        !in_fm && seen { print }
+    ' "$1"
+}
+
+do_prompt_create() {
+    local name="" description="" kind="agent" tags="" body="" id=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --name) name="$2"; shift 2 ;;
+            --description) description="$2"; shift 2 ;;
+            --kind) kind="$2"; shift 2 ;;
+            --tags) tags="$2"; shift 2 ;;
+            --body) body="$2"; shift 2 ;;
+            --id) id="$2"; shift 2 ;;
+            -h|--help)
+                cat <<'EOF'
+fw prompt create - Create a prompt file
+
+Usage: fw prompt create --name "NAME" [options]
+
+Options:
+  --name NAME         Human-readable name (required)
+  --description DESC  One-line description
+  --kind KIND         agent | system | user (default: agent)
+  --tags "a,b"        Comma-separated tags
+  --body TEXT         Prompt text (can include {{var}} placeholders)
+  --id SLUG           Explicit slug id (default: derived from --name)
+EOF
+                return 0
+                ;;
+            *)
+                echo "Unknown argument: $1" >&2
+                return 2
+                ;;
+        esac
+    done
+
+    if [ -z "$name" ]; then
+        echo "ERROR: --name is required" >&2
+        return 2
+    fi
+    case "$kind" in agent|system|user) ;; *)
+        echo "ERROR: --kind must be agent|system|user (got: $kind)" >&2
+        return 2
+    ;; esac
+
+    [ -z "$id" ] && id="$(_prompt_slug "$name")"
+    local dir; dir="$(_prompt_dir)"
+    mkdir -p "$dir"
+    local path; path="$(_prompt_path "$id")"
+
+    if [ -e "$path" ]; then
+        echo "ERROR: prompt already exists: $path" >&2
+        return 1
+    fi
+
+    local variables; variables="$(printf '%s' "$body" | _prompt_extract_vars)"
+    local now; now="$(_prompt_iso_now)"
+
+    {
+        printf -- '---\n'
+        printf 'id: %s\n' "$id"
+        printf 'name: "%s"\n' "$name"
+        printf 'description: "%s"\n' "$description"
+        printf 'kind: %s\n' "$kind"
+        printf 'tags: [%s]\n' "$tags"
+        printf 'variables: [%s]\n' "$variables"
+        printf 'created: %s\n' "$now"
+        printf 'updated: %s\n' "$now"
+        printf -- '---\n\n'
+        printf '%s\n' "$body"
+    } > "$path"
+
+    echo "Created: $path"
+    if [ -n "$variables" ]; then
+        echo "  Variables: $variables"
+    fi
+    return 0
+}
+
+do_prompt_list() {
+    local dir; dir="$(_prompt_dir)"
+    if [ ! -d "$dir" ]; then
+        echo "No prompts directory yet (expected: $dir)" >&2
+        return 0
+    fi
+    local count=0
+    local f
+    for f in "$dir"/*.md; do
+        [ -f "$f" ] || continue
+        [ "$(basename "$f")" = "README.md" ] && continue
+        local id name kind tags
+        id="$(_prompt_get_field "$f" id)"
+        name="$(_prompt_get_field "$f" name)"
+        kind="$(_prompt_get_field "$f" kind)"
+        tags="$(_prompt_get_field "$f" tags)"
+        printf '%-28s  %-8s  %-30s  %s\n' "${id:-?}" "${kind:-?}" "${name:-?}" "${tags:-}"
+        count=$((count + 1))
+    done
+    if [ "$count" = 0 ]; then
+        echo "(no prompts yet — use 'fw prompt create')"
+    fi
+    return 0
+}
+
+do_prompt_show() {
+    local id="${1:-}"
+    if [ -z "$id" ]; then
+        echo "Usage: fw prompt show <id>" >&2
+        return 2
+    fi
+    local path; path="$(_prompt_path "$id")"
+    if [ ! -f "$path" ]; then
+        echo "ERROR: prompt not found: $id (expected: $path)" >&2
+        return 1
+    fi
+    _prompt_body "$path"
+}
+
+do_prompt_copy() {
+    local id="" raw=0
+    declare -A vars
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --var)
+                if [[ "${2:-}" != *=* ]]; then
+                    echo "ERROR: --var expects KEY=VALUE (got: ${2:-})" >&2
+                    return 2
+                fi
+                vars["${2%%=*}"]="${2#*=}"
+                shift 2
+                ;;
+            --raw) raw=1; shift ;;
+            -h|--help)
+                cat <<'EOF'
+fw prompt copy - Print prompt body with variable substitutions
+
+Usage: fw prompt copy <id> [--var KEY=VALUE]... [--raw]
+
+  --var KEY=VALUE   Substitute {{KEY}} → VALUE in body (repeatable)
+  --raw             Skip substitution; print as-is
+EOF
+                return 0
+                ;;
+            *)
+                if [ -z "$id" ]; then id="$1"; shift
+                else echo "Unknown argument: $1" >&2; return 2
+                fi
+                ;;
+        esac
+    done
+    if [ -z "$id" ]; then
+        echo "Usage: fw prompt copy <id> [--var KEY=VALUE]..." >&2
+        return 2
+    fi
+    local path; path="$(_prompt_path "$id")"
+    if [ ! -f "$path" ]; then
+        echo "ERROR: prompt not found: $id" >&2
+        return 1
+    fi
+    local body; body="$(_prompt_body "$path")"
+    if [ "$raw" = 1 ] || [ "${#vars[@]}" = 0 ]; then
+        printf '%s\n' "$body"
+        return 0
+    fi
+    local k v
+    for k in "${!vars[@]}"; do
+        v="${vars[$k]}"
+        # Escape sed special chars in replacement.
+        local esc_v
+        esc_v=$(printf '%s' "$v" | sed -e 's/[\/&]/\\&/g')
+        body=$(printf '%s' "$body" | sed "s/{{${k}}}/${esc_v}/g")
+    done
+    printf '%s\n' "$body"
+}
+
+do_prompt() {
+    local sub="${1:-}"
+    shift 2>/dev/null || true
+    case "$sub" in
+        create) do_prompt_create "$@" ;;
+        list|ls) do_prompt_list "$@" ;;
+        show|cat) do_prompt_show "$@" ;;
+        copy|render) do_prompt_copy "$@" ;;
+        ""|-h|--help|help)
+            cat <<'EOF'
+fw prompt - Reusable agent-prompt register
+
+Usage: fw prompt <subcommand> [options]
+
+Subcommands:
+  create  Create a new prompt file
+  list    List prompts
+  show    Print the body of a prompt
+  copy    Print body with {{var}} substitutions applied
+
+See 'fw prompt <subcommand> --help' for details.
+EOF
+            ;;
+        *)
+            echo "Unknown subcommand: $sub" >&2
+            echo "Run 'fw prompt --help' for usage." >&2
+            return 2
+            ;;
+    esac
+}
