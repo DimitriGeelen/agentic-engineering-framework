@@ -4,15 +4,15 @@ name: "Pickup: Ship watchtower.service systemd template — fixes restart races 
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1122. Type: feature-proposal.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-18T20:23:09Z
-last_update: 2026-04-18T20:23:09Z
+last_update: 2026-04-18T21:04:55Z
 date_finished: null
 ---
 
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Termlink T-1122 proposes shipping a `watchtower.service` systemd template that fixes Watchtower restart races without swapping the WSGI server. **Already captured locally as T-1309** — `docs/reports/T-1309-watchtower-systemd-from-termlink-T-1122.md` exists with the same proposal. This pickup is a duplicate.
 
 ## Assumptions
 
@@ -45,9 +45,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (duplicate of T-1309)
+- [x] Assumptions tested (artifact exists at docs/reports/T-1309-...)
+- [x] Recommendation written with rationale (DEFER as duplicate)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +77,14 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (duplicate)
+
+**Rationale:** This pickup proposes the same change already captured locally as T-1309. Closing this duplicate keeps the inception queue lean. The actual design + decision lives at T-1309 / `docs/reports/T-1309-watchtower-systemd-from-termlink-T-1122.md`.
+
+**Evidence:**
+- T-1309 exists in `.tasks/active/`
+- Proposal artifact `docs/reports/T-1309-watchtower-systemd-from-termlink-T-1122.md` already on disk
+- Same source task referenced (termlink T-1122)
 
 ## Decisions
 
@@ -106,3 +105,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-18T21:04:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

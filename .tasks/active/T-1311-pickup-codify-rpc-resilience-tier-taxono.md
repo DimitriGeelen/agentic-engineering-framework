@@ -4,15 +4,15 @@ name: "Pickup: Codify RPC resilience-tier taxonomy + version skew enforcement (T
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1071. Type: feature-proposal.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-18T20:22:51Z
-last_update: 2026-04-18T20:22:51Z
+last_update: 2026-04-18T21:04:53Z
 date_finished: null
 ---
 
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Termlink T-1071 proposes the framework formally codify a two-tier RPC taxonomy (Tier-A "opaque pass-through" vs Tier-B "typed envelope") and add version-skew enforcement at MCP/TermLink boundaries. Today the framework has no documented RPC taxonomy and no skew checks at boundaries — but also no recurring incidents pointing to skew as the cause of failures.
 
 ## Assumptions
 
@@ -45,9 +45,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested (no current incident; no consumer asking)
+- [x] Recommendation written with rationale (DEFER pending concrete need)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +77,15 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER
+
+**Rationale:** Real proposal but premature. Codifying an RPC taxonomy is high-cost (touches MCP, TermLink, fw bus, dispatch protocol) and the framework has no recurring skew incidents to anchor the design against. Premature taxonomies become wrong taxonomies. Ack the proposal, capture for revisit if a concrete skew incident occurs.
+
+**Evidence:**
+- No concrete incidents in episodic memory pointing to RPC version skew as a failure cause
+- Existing dispatch protocols (Task vs TermLink, fw bus, dispatch.send) are documented in CLAUDE.md without needing tier nomenclature
+- Codification cost (touching 3+ subsystems) outweighs current evidence
+- Termlink can promote to GO if a concrete skew incident appears
 
 ## Decisions
 
@@ -106,3 +106,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-18T21:04:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

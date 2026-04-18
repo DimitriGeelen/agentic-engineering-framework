@@ -4,15 +4,15 @@ name: "Pickup: Anti-pattern detected: umbrella inceptions bundling N independent
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1112. Type: pattern.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, pattern]
 components: []
 related_tasks: []
 created: 2026-04-18T20:23:38Z
-last_update: 2026-04-18T20:23:38Z
+last_update: 2026-04-18T21:04:56Z
 date_finished: null
 ---
 
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Termlink (sourced from T-1112) reports a recurring anti-pattern: "umbrella inceptions" that bundle N independent decisions into a single go/no-go gate. Symptom: T-1112 went NO-GO because two of its three sub-questions were undecidable; the one tractable sub-question was lost. The framework already has a written rule against this — CLAUDE.md "Task Sizing Rules" line: "One inception = one question. Umbrella inceptions that bundle independent explorations create all-or-nothing decisions and coarse progress tracking."
 
 ## Assumptions
 
@@ -45,9 +45,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (rule already in CLAUDE.md "Task Sizing Rules")
+- [x] Assumptions tested (no enforcement gate exists; rule is advisory)
+- [x] Recommendation written with rationale (DEFER — codified, no enforcement appetite)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +77,15 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (already codified)
+
+**Rationale:** The rule is already in CLAUDE.md ("One inception = one question. Umbrella inceptions that bundle independent explorations create all-or-nothing decisions and coarse progress tracking."). T-1112's NO-GO is exactly the failure mode the rule predicts. Adding a structural enforcement gate (e.g., "block decide if >N sub-questions detected in problem statement") is hard — what counts as a sub-question is a judgment call, not a regex. Better to let the existing rule + episodic evidence (T-1112 NO-GO) reinforce the discipline.
+
+**Evidence:**
+- CLAUDE.md "Task Sizing Rules" already names the anti-pattern
+- T-1112 NO-GO is itself the evidence the rule is being enforced via human judgment at decide time
+- Structural enforcement would require parsing problem statements for "and" / multiple questions — high false-positive risk
+- Codification cost > benefit; leave as advisory
 
 ## Decisions
 
@@ -106,3 +106,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-18T21:04:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
