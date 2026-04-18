@@ -9,7 +9,10 @@
 #
 # Prompt file schema: markdown with YAML frontmatter.
 #   ---
-#   id: <slug>
+#   id: <slug>                     # filename stem; unique within this repo
+#   qid: <agent-id>/P-NNN          # cross-fleet stable reference (B2)
+#   agent_id: <agent-id>           # originating host id (B2)
+#   counter: NNN                   # sequential within originating agent (B2)
 #   name: <string>
 #   description: <string>
 #   kind: agent|system|user
@@ -37,6 +40,101 @@ _prompt_slug() {
 }
 
 _prompt_iso_now() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
+
+_prompt_resolve_agent_id() {
+    # Env override beats everything.
+    if [ -n "${FW_AGENT_ID:-}" ]; then
+        printf '%s' "$FW_AGENT_ID"
+        return 0
+    fi
+    # Explicit config in .framework.yaml
+    local cfg="${PROJECT_ROOT:-$PWD}/.framework.yaml"
+    if [ -f "$cfg" ]; then
+        local cfg_id
+        cfg_id=$(awk -F: '/^agent_id:/ {sub(/^[[:space:]]+/,"",$2); sub(/[[:space:]]+$/,"",$2); gsub(/"/,"",$2); print $2; exit}' "$cfg")
+        if [ -n "$cfg_id" ]; then
+            printf '%s' "$cfg_id"
+            return 0
+        fi
+    fi
+    # Derive from last octet of first non-loopback IPv4.
+    local ip
+    ip=$(hostname -I 2>/dev/null | awk '{for(i=1;i<=NF;i++) if ($i ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/ && $i != "127.0.0.1") {print $i; exit}}')
+    if [ -n "$ip" ]; then
+        printf '%s' "${ip##*.}"
+        return 0
+    fi
+    printf '%s' "local"
+}
+
+_prompt_counter_file() {
+    printf '%s' "${PROJECT_ROOT:-$PWD}/.context/working/.prompt-counter"
+}
+
+_prompt_next_counter() {
+    local file; file="$(_prompt_counter_file)"
+    mkdir -p "$(dirname "$file")"
+    [ -f "$file" ] || echo 0 > "$file"
+    local next
+    if command -v flock >/dev/null 2>&1; then
+        next=$(flock "$file" bash -c '
+            cur=$(cat "$1" 2>/dev/null)
+            [ -z "$cur" ] && cur=0
+            n=$((cur + 1))
+            echo "$n" > "$1"
+            printf "%s" "$n"
+        ' _ "$file")
+    else
+        local cur; cur=$(cat "$file" 2>/dev/null)
+        [ -z "$cur" ] && cur=0
+        next=$((cur + 1))
+        echo "$next" > "$file"
+    fi
+    printf '%s' "$next"
+}
+
+_prompt_format_qid() {
+    # Format counter as zero-padded 3-digit inside agent-id/P- prefix.
+    local agent_id="$1" counter="$2"
+    printf '%s/P-%03d' "$agent_id" "$counter"
+}
+
+_prompt_resolve_qid() {
+    # Given an FQID (e.g., 107/P-042), print the local slug if found.
+    local qid="$1"
+    local dir; dir="$(_prompt_dir)"
+    [ -d "$dir" ] || return 1
+    local f
+    for f in "$dir"/*.md; do
+        [ -f "$f" ] || continue
+        [ "$(basename "$f")" = "README.md" ] && continue
+        local file_qid
+        file_qid="$(_prompt_get_field "$f" qid)"
+        if [ "$file_qid" = "$qid" ]; then
+            basename "$f" .md
+            return 0
+        fi
+    done
+    return 1
+}
+
+_prompt_find_path() {
+    # Accepts a local slug OR an FQID (<agent-id>/P-NNN); prints the file path.
+    local ref="$1"
+    local direct; direct="$(_prompt_path "$ref")"
+    if [ -f "$direct" ]; then
+        printf '%s' "$direct"
+        return 0
+    fi
+    if [[ "$ref" == */P-* ]]; then
+        local slug
+        if slug="$(_prompt_resolve_qid "$ref")"; then
+            printf '%s' "$(_prompt_path "$slug")"
+            return 0
+        fi
+    fi
+    return 1
+}
 
 _prompt_extract_vars() {
     # Extract unique {{var}} names from stdin.
@@ -131,10 +229,16 @@ EOF
 
     local variables; variables="$(printf '%s' "$body" | _prompt_extract_vars)"
     local now; now="$(_prompt_iso_now)"
+    local agent_id; agent_id="$(_prompt_resolve_agent_id)"
+    local counter; counter="$(_prompt_next_counter)"
+    local qid; qid="$(_prompt_format_qid "$agent_id" "$counter")"
 
     {
         printf -- '---\n'
         printf 'id: %s\n' "$id"
+        printf 'qid: %s\n' "$qid"
+        printf 'agent_id: %s\n' "$agent_id"
+        printf 'counter: %s\n' "$counter"
         printf 'name: "%s"\n' "$name"
         printf 'description: "%s"\n' "$description"
         printf 'kind: %s\n' "$kind"
@@ -147,6 +251,7 @@ EOF
     } > "$path"
 
     echo "Created: $path"
+    echo "  QID: $qid"
     if [ -n "$variables" ]; then
         echo "  Variables: $variables"
     fi
@@ -164,12 +269,13 @@ do_prompt_list() {
     for f in "$dir"/*.md; do
         [ -f "$f" ] || continue
         [ "$(basename "$f")" = "README.md" ] && continue
-        local id name kind tags
+        local id qid name kind tags
         id="$(_prompt_get_field "$f" id)"
+        qid="$(_prompt_get_field "$f" qid)"
         name="$(_prompt_get_field "$f" name)"
         kind="$(_prompt_get_field "$f" kind)"
         tags="$(_prompt_get_field "$f" tags)"
-        printf '%-28s  %-8s  %-30s  %s\n' "${id:-?}" "${kind:-?}" "${name:-?}" "${tags:-}"
+        printf '%-28s  %-14s  %-8s  %-30s  %s\n' "${id:-?}" "${qid:--}" "${kind:-?}" "${name:-?}" "${tags:-}"
         count=$((count + 1))
     done
     if [ "$count" = 0 ]; then
@@ -181,12 +287,12 @@ do_prompt_list() {
 do_prompt_show() {
     local id="${1:-}"
     if [ -z "$id" ]; then
-        echo "Usage: fw prompt show <id>" >&2
+        echo "Usage: fw prompt show <id|qid>" >&2
         return 2
     fi
-    local path; path="$(_prompt_path "$id")"
-    if [ ! -f "$path" ]; then
-        echo "ERROR: prompt not found: $id (expected: $path)" >&2
+    local path
+    if ! path="$(_prompt_find_path "$id")"; then
+        echo "ERROR: prompt not found: $id" >&2
         return 1
     fi
     _prompt_body "$path"
@@ -225,11 +331,11 @@ EOF
         esac
     done
     if [ -z "$id" ]; then
-        echo "Usage: fw prompt copy <id> [--var KEY=VALUE]..." >&2
+        echo "Usage: fw prompt copy <id|qid> [--var KEY=VALUE]..." >&2
         return 2
     fi
-    local path; path="$(_prompt_path "$id")"
-    if [ ! -f "$path" ]; then
+    local path
+    if ! path="$(_prompt_find_path "$id")"; then
         echo "ERROR: prompt not found: $id" >&2
         return 1
     fi

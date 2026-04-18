@@ -118,3 +118,69 @@ teardown() {
     [ "$status" != 0 ]
     [[ "$output" == *"KEY=VALUE"* ]]
 }
+
+# ---- B2: cross-agent ID namespacing ----
+
+@test "B2: FW_AGENT_ID env overrides agent-id resolution" {
+    FW_AGENT_ID=xyz run _prompt_resolve_agent_id
+    [ "$status" = 0 ]
+    [ "$output" = "xyz" ]
+}
+
+@test "B2: counter allocates sequentially and monotonically" {
+    local a b c
+    a="$(_prompt_next_counter)"
+    b="$(_prompt_next_counter)"
+    c="$(_prompt_next_counter)"
+    [ "$a" = 1 ]
+    [ "$b" = 2 ]
+    [ "$c" = 3 ]
+}
+
+@test "B2: create writes qid, agent_id, and counter to frontmatter" {
+    FW_AGENT_ID=testhost do_prompt_create --name "With qid" --body "hi"
+    local file="$PROJECT_ROOT/prompts/with-qid.md"
+    [ -f "$file" ]
+    grep -q '^agent_id: testhost$' "$file"
+    grep -q '^counter: 1$' "$file"
+    grep -q '^qid: testhost/P-001$' "$file"
+}
+
+@test "B2: qid zero-pads counter to 3 digits" {
+    FW_AGENT_ID=th do_prompt_create --name "first" --body "a"
+    FW_AGENT_ID=th do_prompt_create --name "second" --body "b"
+    local f2="$PROJECT_ROOT/prompts/second.md"
+    grep -q '^qid: th/P-002$' "$f2"
+}
+
+@test "B2: show accepts FQID as well as slug" {
+    FW_AGENT_ID=h1 do_prompt_create --name "Hello two" --body "hello body"
+    # slug lookup works
+    run do_prompt_show "hello-two"
+    [ "$status" = 0 ]
+    [[ "$output" == *"hello body"* ]]
+    # qid lookup works
+    run do_prompt_show "h1/P-001"
+    [ "$status" = 0 ]
+    [[ "$output" == *"hello body"* ]]
+}
+
+@test "B2: copy accepts FQID and applies substitutions" {
+    FW_AGENT_ID=h2 do_prompt_create --name "Greeting" --body "Hello {{name}}"
+    run do_prompt_copy "h2/P-001" --var "name=fleet"
+    [ "$status" = 0 ]
+    [[ "$output" == *"Hello fleet"* ]]
+}
+
+@test "B2: list shows qid column" {
+    FW_AGENT_ID=h3 do_prompt_create --name "One listed" --body "x"
+    run do_prompt_list
+    [ "$status" = 0 ]
+    [[ "$output" == *"h3/P-001"* ]]
+}
+
+@test "B2: show on nonexistent qid fails cleanly" {
+    run do_prompt_show "missing/P-999"
+    [ "$status" != 0 ]
+    [[ "$output" == *"not found"* ]]
+}
