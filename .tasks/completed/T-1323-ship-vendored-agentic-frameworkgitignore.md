@@ -4,7 +4,7 @@ name: "Ship vendored .agentic-framework/.gitignore + upgrade hint for stale pyc 
 description: >
   Ship vendored .agentic-framework/.gitignore + upgrade hint for stale pyc (T-1321 GO)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T22:26:09Z
-last_update: 2026-04-18T22:26:09Z
-date_finished: null
+last_update: 2026-04-18T22:30:04Z
+date_finished: 2026-04-18T22:30:04Z
 ---
 
 # T-1323: Ship vendored .agentic-framework/.gitignore + upgrade hint for stale pyc (T-1321 GO)
@@ -68,3 +68,6 @@ cd "$PROJECT_ROOT" && bats tests/unit/vendor_gitignore.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1323-ship-vendored-agentic-frameworkgitignore.md
 - **Context:** Initial task creation
+
+### 2026-04-18T22:30:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

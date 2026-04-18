@@ -1,28 +1,26 @@
 ---
-id: T-1321
-name: "Pickup: Vendored .agentic-framework/ tracks Python __pycache__ files — Uncommitted changes present is the #1 audit trend (23×) for consumers (from termlink)"
+id: T-1322
+name: "Pickup: fw inception decide doesnt tick the RUBBER-STAMP Record go/no-go decision Human AC — tasks stay in active/ forever (from termlink)"
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1130. Type: bug-report.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: next
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
-created: 2026-04-18T22:23:00Z
-last_update: 2026-04-18T22:26:03Z
+created: 2026-04-18T22:23:27Z
+last_update: 2026-04-18T22:23:27Z
 date_finished: null
 ---
 
-# T-1321: Pickup: Vendored .agentic-framework/ tracks Python __pycache__ files — Uncommitted changes present is the #1 audit trend (23×) for consumers (from termlink)
+# T-1322: Pickup: fw inception decide doesnt tick the RUBBER-STAMP Record go/no-go decision Human AC — tasks stay in active/ forever (from termlink)
 
 ## Problem Statement
 
-Consumer projects vendor the framework into `.agentic-framework/` (per T-909). The vendored copy has no `.gitignore` of its own, so when Watchtower (or any `python3 web/...` invocation) runs from inside the vendored tree, fresh `__pycache__/*.pyc` files get added to the consumer's git index. Over time, every session leaves 5-15 dirty files, which trips the audit's "Uncommitted changes present" check repeatedly. Termlink reports this as the #1 audit trend (23×) on `/opt/termlink`. The recurring noise masks real "uncommitted changes" signals.
-
-Source: termlink T-1130 pickup (P-038).
+<!-- What problem are we exploring? For whom? Why now? -->
 
 ## Assumptions
 
@@ -47,9 +45,9 @@ Source: termlink T-1130 pickup (P-038).
 ## Acceptance Criteria
 
 ### Agent
-- [x] Problem statement validated (do_vendor at bin/fw:181-202 has __pycache__ in excludes for COPY but doesn't ship a .gitignore for RUNTIME-generated files)
-- [x] Assumptions tested (framework's own .gitignore excludes __pycache__/ globally; consumer has no equivalent; vendored .agentic-framework/ has no .gitignore)
-- [x] Recommendation written with rationale (GO — build sibling T-1323)
+- [ ] Problem statement validated
+- [ ] Assumptions tested
+- [ ] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -79,16 +77,15 @@ Source: termlink T-1130 pickup (P-038).
 
 ## Recommendation
 
-**Recommendation:** GO
-
-**Rationale:** Concrete, verified bug. The fix is minimal: ship a `.gitignore` inside the vendored `.agentic-framework/` directory at vendor time. `do_vendor` already excludes `__pycache__` from the COPY step but doesn't prevent RUNTIME pyc creation from being tracked. Side benefit: closes a recurring audit-noise loop that masks real signal (#1 trend at 23 occurrences on a single consumer). Risk near zero — `.gitignore` files are universally understood and additive.
-
-**Evidence:**
-- Confirmed `do_vendor` (bin/fw:181-202) excludes `__pycache__` and `*.pyc` from the rsync COPY but does NOT write a `.gitignore` to `$dest`
-- Framework repo's own `.gitignore` line 1 is `__pycache__/` — the framework needs the same protection in its vendored form
-- Termlink reproduces: `git ls-files .agentic-framework/ | grep -c pycache → 45`
-- Termlink trend: "Uncommitted changes present" #1 audit warning, 23 repeats
-- Build sibling T-1323 ships the fix + cleanup hint + bats regression
+<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
+     Watchtower reads this section — if it's empty, the human sees nothing.
+     Format:
+     **Recommendation:** GO / NO-GO / DEFER
+     **Rationale:** Why (cite evidence from exploration)
+     **Evidence:**
+     - Finding 1
+     - Finding 2
+-->
 
 ## Decisions
 
@@ -109,7 +106,3 @@ Source: termlink T-1130 pickup (P-038).
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
-
-### 2026-04-18T22:24:21Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)

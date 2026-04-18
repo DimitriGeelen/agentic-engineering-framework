@@ -1770,3 +1770,10 @@ learnings:
   date: 2026-04-18
   context: Added via context agent
   application: TBD
+- id: L-015
+  learning: "Vendored framework copies need their own .gitignore. Excluding __pycache__ from rsync at vendor time prevents adding it during COPY but does NOT prevent the consumer's git from tracking files generated at RUNTIME (e.g., when Watchtower imports modules). Always ship a .gitignore inside the vendored .agentic-framework/."
+  source: P-001
+  task: T-1323
+  date: 2026-04-18
+  context: Added via context agent
+  application: TBD
