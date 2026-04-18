@@ -1,0 +1,26 @@
+pickup_id: P-025
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1123"
+  agent: "claude-code"
+  timestamp: "2026-04-18T15:20:18Z"
+payload:
+  summary: "Watchtower PROJECT_ROOT defaults to FRAMEWORK_ROOT — ambient strip silently reads framework's own state"
+  detail: "Observed on termlink (.107) 2026-04-18 while adding ambient-strip session-ID tooltip (T-1121).
+
+SYMPTOM: Ambient strip shows session_age='unknown' and no focus task, even though both exist in the project's .context/handovers/ and .tasks/active/.
+
+ROOT CAUSE: web/shared.py line 22 — PROJECT_ROOT = Path(os.environ.get('PROJECT_ROOT', str(FRAMEWORK_ROOT))). When PROJECT_ROOT env is unset, it falls back to FRAMEWORK_ROOT, which points at .agentic-framework/ itself. build_ambient() then reads .agentic-framework/.context/handovers/ (doesn't exist) and .agentic-framework/.tasks/active/ (doesn't exist) — silently returns empty.
+
+The 'fw watchtower start' wrapper sets PROJECT_ROOT correctly, but any ad-hoc restart (e.g. 'python3 -m web.app' from the framework dir) inherits no env and hits the fallback. No warning is emitted.
+
+FIX PATH: In shared.py, walk up from os.getcwd() looking for a directory containing BOTH .context/ and .tasks/ subdirs. Fall back to FRAMEWORK_ROOT only if no project found, and log a WARNING when falling back so operators see the silent misconfiguration.
+
+IMMEDIATE MITIGATION (applied): restart Watchtower with 'PROJECT_ROOT=/opt/termlink python3 -m web.app'. Captured as T-1123 in termlink for follow-up build work.
+
+RELATED:
+- T-1121 (termlink): session ID tooltip on ambient strip (the task that surfaced this)."
+  priority: medium
+  tags: [watchtower, project-root, ambient-strip]

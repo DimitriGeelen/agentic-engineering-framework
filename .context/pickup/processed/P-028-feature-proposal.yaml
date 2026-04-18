@@ -1,0 +1,34 @@
+pickup_id: P-028
+version: 1
+type: feature-proposal
+source:
+  project: "termlink"
+  task_id: ""
+  agent: "claude-code"
+  timestamp: "2026-04-18T15:21:20Z"
+payload:
+  summary: "Ambient strip pattern (T-1117..T-1121) — single-source linked status chrome worth codifying as framework default"
+  detail: "Outcome of 5-task arc on termlink (2026-04-18):
+
+PATTERN: The ambient strip in base.html became a fully-linked operator dashboard:
+- Focus task ID → /tasks/<id>
+- Session age → tooltip shows session ID (S-YYYY-MMDD-HHMM)
+- Audit status → /quality
+- Attention count (N items need attention) → /tasks
+- Fleet dot + 'N/M up' → /fleet (async loaded via fetch)
+- Project root → /project
+
+EVERY page in Watchtower now gives 1-click access to the 6 operational surfaces the operator cares about. Previously focus task and audit were plain text, fleet was a separate home-page widget, session age was opaque. Reduced clicks from 2-3 to 1 for routine navigation.
+
+COMMITS (all on termlink main):
+- 1912669d  T-1117: fleet ambient indicator (async load, color-coded dot)
+- 8b3dfb6b  T-1118: remove duplicate fleet widgets from home/cockpit
+- 55beeaf5  T-1119: focus/audit/attention → clickable links
+- 2b2987cf  T-1120: project root → /project link
+- 9a8dc542  T-1121: session ID tooltip on session age
+
+PROPOSED: Adopt this ambient-strip contract as the framework default for base.html. The pattern is portable (any project with the same blueprints) and the URLs resolve through url_for() so they survive blueprint refactors.
+
+One async-load pattern worth codifying separately: the fleet element uses 'fetch /api/fleet/status' so a 2-5s CLI subprocess call never blocks page render. Same pattern applies to any ambient element whose data comes from a slow subprocess."
+  priority: medium
+  tags: [watchtower, ambient-strip, operator-ux]

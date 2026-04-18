@@ -1,0 +1,29 @@
+pickup_id: P-026
+version: 1
+type: pattern
+source:
+  project: "termlink"
+  task_id: ""
+  agent: "claude-code"
+  timestamp: "2026-04-18T15:20:41Z"
+payload:
+  summary: "Inception template GO/NO-GO placeholders propagate to auto-created tasks — detected only at decide time"
+  detail: "Observed on termlink (.107) 2026-04-18 while helping operator decide on 9 pending inceptions.
+
+SYMPTOM: Operator opened /approvals, clicked 'Record decision' on T-947, T-950, T-952, T-953, T-956, T-957, T-959 (and later T-952 etc.) — each returned HTTP 500 with stderr 'ERROR: Placeholder content detected in task file — Line 62: [Criterion 1]'. Tasks sat with placeholders for 6 days before the detector fired.
+
+ROOT CAUSE: The inception task template contains literal '[Criterion 1]' / '[Criterion 2]' placeholders in the '## Go/No-Go Criteria' section. When pickup-auto-created tasks (from cross-project envelopes, T-940 lineage) scaffold from this template, the placeholders are carried forward verbatim. No one notices during triage; the tasks transition to work-completed based on other evidence; later, when the operator tries to record a go/no-go decision, the placeholder detector (from T-1111 RCA) correctly blocks — but by then the task history is deep and filling the criteria retroactively requires reconstructing intent from the Recommendation section.
+
+STRUCTURAL FIX OPTIONS:
+A) Fire the placeholder detector at task-CREATION time (not just decide), so scaffolding from template fails loudly until placeholders are filled.
+B) Replace template placeholders with empty sections + HTML comments ('<!-- Fill BEFORE review -->'), so the file parses clean until a human or agent actually writes criteria.
+C) Provide 'fw inception fill-criteria T-XXX' helper that reads the Recommendation + Evidence sections and proposes criteria for the human to approve/edit.
+D) Make auto-pickup-created tasks (tag: pickup) skip the GO/NO-GO requirement — their 'decision' is really just acknowledgement of a learning.
+
+IMMEDIATE MITIGATION (applied on termlink): manually filled GO/NO-GO criteria for T-947, T-950, T-952, T-953, T-956, T-957, T-959 based on each task's existing Recommendation section. 4 more remain with the same problem (T-235, T-243, T-909, T-940) — not touched because they aren't simple pickup-canaries and need individual context.
+
+RELATED:
+- docs/reports/T-1111-placeholder-sections-rca.md (framework): the RCA that introduced the detector.
+- G-008 (termlink): partial-complete rubber-stamp queue — same human-AC-awaiting-sig pattern."
+  priority: medium
+  tags: [inception-template, placeholder-detector, pickup]

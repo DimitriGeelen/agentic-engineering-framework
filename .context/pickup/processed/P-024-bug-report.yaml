@@ -1,0 +1,30 @@
+pickup_id: P-024
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1125"
+  agent: "claude-code"
+  timestamp: "2026-04-18T15:20:01Z"
+payload:
+  summary: "Watchtower CSRF 403 after restart — auto-regenerated FW_SECRET_KEY + multi-process leak"
+  detail: "Observed on termlink (.107) 2026-04-18:
+
+SYMPTOM: User gets 403 Forbidden on every POST form (Record decision, task updates) after the Watchtower process is restarted, even after browser refresh. Error page embeds base.html starting with wt-theme script.
+
+ROOT CAUSE (dual):
+1. app.py:50 auto-generates a new secret_key on every start when FW_SECRET_KEY env not set. This invalidates all previously-issued session cookies — CSRF token in the form no longer matches the empty session.
+2. Restart-via-Claude-Code-session is non-idempotent. Over a work session we ended up with THREE watchtower processes on ports :3000, :3001, :4050 — each with a different secret_key. Flask session cookies are host-scoped (not port-scoped) by default, so the browser sent the same cookie to all three; only one could decrypt it → silent session invalidation on the others.
+
+FIX PATHS:
+A) Persist FW_SECRET_KEY in $PROJECT_ROOT/.context/working/.fw-secret-key (chmod 600), generate on first start, reuse on every restart. Matches the pattern used for hub.secret.
+B) Make 'fw watchtower start' idempotent — kill existing process on the target port before binding. Currently dev has to pkill manually.
+C) Emit a visible warning banner in the UI when FW_SECRET_KEY is auto-generated (not production-safe).
+
+IMMEDIATE MITIGATION (applied on termlink): generated .context/working/.fw-secret-key (64-char hex), killed leaked processes, started single canonical :3000 with FW_SECRET_KEY=$(cat ...). This persists across session restarts during the work session; won't survive reboot without tooling.
+
+RELATED:
+- T-1122 (termlink): inception to migrate Watchtower off Werkzeug dev server — would unlock production WSGI with proper secret_key handling.
+- G-007 / Watchtower restart fragility observed across multiple sessions."
+  priority: high
+  tags: [watchtower, csrf, secret-key, restart-fragility]

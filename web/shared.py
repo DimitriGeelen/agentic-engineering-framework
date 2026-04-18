@@ -41,6 +41,7 @@ NAV_GROUPS = [
         ("Inception",   "inception.inception_list",  None),
         ("Assumptions", "inception.assumptions_list", None),
         ("Timeline",    "timeline.timeline",         None),
+        ("Prompts",     "prompts.prompts_list",      None),
     ]),
     ("Knowledge", [
         ("Learnings",   "discovery.learnings",   None),

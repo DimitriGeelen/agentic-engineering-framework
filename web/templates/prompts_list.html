@@ -1,0 +1,40 @@
+<div style="padding:1rem;">
+  <h2>Prompts</h2>
+  <p style="color:var(--pico-muted-color);font-size:0.9rem;">
+    Reusable agent-prompt register. Every prompt has a local slug and a
+    fully-qualified ID (<code>agent-id/P-NNN</code>) for cross-fleet reference.
+    Created via <code>fw prompt create</code>. See
+    <a href="/file/docs/reports/T-1283-prompt-register.md">T-1283 design notes</a>.
+  </p>
+
+  {% if prompts %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID (slug)</th>
+          <th>QID</th>
+          <th>Kind</th>
+          <th>Name</th>
+          <th>Tags</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in prompts %}
+          <tr>
+            <td><a href="/prompts/{{ p['_slug'] }}"><code>{{ p['_slug'] }}</code></a></td>
+            <td>{% if p.get('qid') %}<a href="/prompts/{{ p['qid'] }}"><code>{{ p['qid'] }}</code></a>{% else %}<span style="color:var(--pico-muted-color);">—</span>{% endif %}</td>
+            <td>{{ p.get('kind', '?') }}</td>
+            <td>{{ p.get('name', '?') }}</td>
+            <td>
+              {% for tag in (p.get('tags') or []) %}
+                <span style="background:var(--pico-secondary-background);padding:0.1rem 0.4rem;border-radius:3px;font-size:0.85em;margin-right:0.25rem;">{{ tag }}</span>
+              {% endfor %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p style="color:var(--pico-muted-color);">No prompts yet. Create one with <code>fw prompt create</code>.</p>
+  {% endif %}
+</div>

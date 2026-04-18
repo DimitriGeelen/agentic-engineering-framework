@@ -1,0 +1,22 @@
+pickup_id: P-027
+version: 1
+type: learning
+source:
+  project: "termlink"
+  task_id: "T-1117"
+  agent: "claude-code"
+  timestamp: "2026-04-18T15:20:57Z"
+payload:
+  summary: "Watchtower restart from Claude Code session requires setsid + Jinja cache requires full process kill"
+  detail: "Two related learnings captured during T-1117..T-1121 UI work on termlink:
+
+1) SETSID REQUIRED: Restarting Watchtower from within a Claude Code Bash tool invocation must use 'setsid python3 -m web.app > log 2>&1 < /dev/null &'. Plain 'nohup ... &' or '... & disown' do NOT survive — the new process inherits the harness session and dies when the parent shell command completes. Symptom: 'running' echoed, then curl immediately returns 'not running'. Took ~4 failed restart attempts to diagnose.
+
+2) JINJA CACHE SURVIVES .pyc DELETION: Flask production mode caches compiled Jinja2 templates in memory. Editing a .html file is NOT picked up until the Python process is fully killed. 'find __pycache__ -delete' is NOT sufficient — the cache is in-memory, not in .pyc files. Symptom: template change invisible; curl shows old HTML; pkill + setsid start shows new HTML.
+
+PROPOSED CODIFICATION: 'fw watchtower start' wrapper should (a) use setsid when detecting CLAUDECODE=1 env, (b) always kill existing process on target port before binding, (c) document the in-memory Jinja cache behavior in watchtower.md or similar.
+
+RELATED:
+- T-1122 (termlink) — inception to migrate off Werkzeug; a production WSGI server with a proper process manager would handle both of these cleanly."
+  priority: low
+  tags: [watchtower, restart, setsid, claude-code, jinja-cache]
