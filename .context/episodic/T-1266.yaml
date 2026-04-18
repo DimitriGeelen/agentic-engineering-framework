@@ -1,0 +1,70 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1266: T-1258 fix probe RCA
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-15T18:01:57Z
+# ============================================================================
+
+task_id: T-1266
+task_name: "T-1258 fix probe RCA"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-15T18:00:50Z
+completed: 2026-04-15T18:01:49Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Probe 2 for T-1258 spike — matches T-1262 shape (fix/RCA name + Chose decision)"
+  - "Traces completion flow with strace"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Direct strace on live completion flow to map all writes to learnings.yaml"
+    rationale: "Static grep missed the culprit; runtime trace reveals actual syscalls"
+    alternatives_rejected: ["Disabling handlers one-at-a-time (slower; risks partial fix hiding the bug)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1266-t-1258-fix-probe-rca.md
+generated_by: context-agent-hybrid

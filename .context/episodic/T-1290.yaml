@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1290: Rewrite _watchtower_url as 3-layer discovery (T-1284 B3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-18T08:52:18Z
+# ============================================================================
+
+task_id: T-1290
+task_name: "Rewrite _watchtower_url as 3-layer discovery (T-1284 B3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-17T20:27:14Z
+completed: 2026-04-18T08:52:14Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-04-18T00:00:26+02:00
+last_commit: 2026-04-18T00:00:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  B3 — Rewrite _watchtower_url as 3-layer discovery (T-1284 fix)
+
+# Key outcomes
+outcomes:
+  - "When valid triple exists + pid alive + identity matches:"
+  - "When triple is missing/stale: falls through to Layer 2 identity"
+  - "When no Watchtower reachable: writes actionable error to stderr"
+  - "Existing `WATCHTOWER_URL` env var still takes precedence"
+  - "With Open WebUI (:8080) running + Watchtower NOT running,"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "B3 — Rewrite _watchtower_url as 3-layer discovery (T-1284 fix)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/watchtower.sh"
+  - ".tasks/active/T-1290-rewrite-watchtowerurl-as-3-layer-discove.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-18T00:00:26"
+    action: "T-1290: B3 — Rewrite _watchtower_url as 3-layer discovery (T-1284 fix)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 745 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 745
+  commits: 1
+  files_changed: 2
+  lines_added: 168
+  lines_removed: 71
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1290-rewrite-watchtowerurl-as-3-layer-discove.md
+generated_by: context-agent-hybrid

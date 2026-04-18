@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T12:58:31Z
-last_update: 2026-04-13T11:31:37Z
+last_update: 2026-04-17T21:26:29Z
 date_finished: 2026-04-13T11:30:46Z
 ---
 
@@ -73,6 +73,20 @@ Hardcoded 300K context window default doesn't adapt to model capabilities (Opus 
      The completion gate runs each command — if any exits non-zero, completion is blocked.
      For inception tasks, verification is often not needed (decisions, not code).
 -->
+
+## Decision
+
+**Decision**: NO-GO
+
+**Rationale**: Recommendation: NO-GO
+Rationale: 300K default + FW_CONTEXT_WINDOW env var is sufficient. Auto-detection adds complexity without clear benefit — the user explicitly wants 300K for quality+cost control, not the model's maximum. Different models have different optimal working windows that don't equal their context limits.
+Evidence:
+- User feedback: explicit preference for 300K, NOT 1M (even on Opus 4.6 with 1M context)
+- FW_CONTEXT_WINDOW env var already provides per-project override capability
+- Auto-detection would require API calls or model metadata that may not be available offline
+- The "right" context window is a user preference, not a model property
+
+**Date**: 2026-04-17T21:26:29Z
 
 ## Recommendation
 
@@ -182,6 +196,17 @@ Evidence:
 - **Reason:** Inception decision: NO-GO
 
 ### 2026-04-13T11:31:37Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+Rationale: 300K default + FW_CONTEXT_WINDOW env var is sufficient. Auto-detection adds complexity without clear benefit — the user explicitly wants 300K for quality+cost control, not the model's maximum. Different models have different optimal working windows that don't equal their context limits.
+Evidence:
+- User feedback: explicit preference for 300K, NOT 1M (even on Opus 4.6 with 1M context)
+- FW_CONTEXT_WINDOW env var already provides per-project override capability
+- Auto-detection would require API calls or model metadata that may not be available offline
+- The "right" context window is a user preference, not a model property
+
+### 2026-04-17T21:26:29Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** NO-GO
 - **Rationale:** Recommendation: NO-GO

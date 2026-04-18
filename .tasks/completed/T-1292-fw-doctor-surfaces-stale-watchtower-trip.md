@@ -4,16 +4,16 @@ name: "fw doctor surfaces stale watchtower triple (T-1284 B4)"
 description: >
   fw doctor surfaces stale watchtower triple (T-1284 B4)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-04-17T22:13:32Z
-last_update: 2026-04-17T22:13:32Z
-date_finished: null
+last_update: 2026-04-18T08:50:09Z
+date_finished: 2026-04-18T08:50:09Z
 ---
 
 # T-1292: fw doctor surfaces stale watchtower triple (T-1284 B4)
@@ -69,3 +69,6 @@ grep -q 'Watchtower not running (no triple)' bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1292-fw-doctor-surfaces-stale-watchtower-trip.md
 - **Context:** Initial task creation
+
+### 2026-04-18T08:50:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

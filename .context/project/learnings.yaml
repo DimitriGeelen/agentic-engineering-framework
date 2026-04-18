@@ -1735,3 +1735,24 @@ learnings:
   date: 2026-04-16
   context: Added via context agent
   application: TBD
+- id: PL-002
+  learning: "Fleet doctor observed auth-mismatch on hub 'ring20-dashboard' (192.168.10.121:9100). date_observed=2026-04-17T10:53:01Z hub_fingerprint=sha256:f75cd394003e3ae382bdc80b826d0547c896466800fcd6c8dd7ef5eed5721c76. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-17
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: PL-003
+  learning: "Fleet doctor observed auth-mismatch on hub 'ring20-dashboard' (192.168.10.121:9100). date_observed=2026-04-17T22:49:43Z hub_fingerprint=sha256:025f5a6a15ff4c9b91ea043c145a9f0404e2b097b68f3e212a15b633abc9fb07. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-17
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-012
+  learning: "Service discovery via port-probing with task-path heuristics is fundamentally unsafe — any sibling service answering on a probed port with 200 on any URL (e.g. Open WebUI on :8080) will masquerade as the target. Replace with explicit identity endpoint (/api/_identity returning service name + project_root) + authoritative triple file (.pid/.port/.url) written on successful bind, and fail loud when neither proves identity. Never fall back to port probing."
+  source: P-001
+  task: T-1290
+  date: 2026-04-18
+  context: Added via context agent
+  application: TBD

@@ -4,16 +4,16 @@ name: "Monitor termlink hub + Claude instance liveness via cron (1-min + startup
 description: >
   Build: cron job that pings termlink hub and running claude instance every 1 min and on startup, logs results for observability
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/monitor/liveness-check.sh]
 related_tasks: []
 created: 2026-04-15T21:19:51Z
-last_update: 2026-04-15T21:20:12Z
-date_finished: null
+last_update: 2026-04-15T21:25:38Z
+date_finished: 2026-04-15T21:25:38Z
 ---
 
 # T-1269: Monitor termlink hub + Claude instance liveness via cron (1-min + startup)
@@ -72,3 +72,6 @@ Operator wants 1-min cadence liveness signals for: (a) TermLink hub, (b) Claude 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1269-monitor-termlink-hub--claude-instance-li.md
 - **Context:** Initial task creation
+
+### 2026-04-15T21:25:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

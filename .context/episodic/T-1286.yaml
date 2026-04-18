@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1286: Watchtower /api/_identity endpoint (T-1284 B1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-17T22:34:56Z
+# ============================================================================
+
+task_id: T-1286
+task_name: "Watchtower /api/_identity endpoint (T-1284 B1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-17T19:41:46Z
+completed: 2026-04-17T22:33:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-17T21:57:24+02:00
+last_commit: 2026-04-17T21:57:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  B1 — Watchtower /api/_identity endpoint (T-1284 Layer 2)
+
+# Key outcomes
+outcomes:
+  - "`/api/_identity` returns 200 with JSON body containing keys"
+  - "`service` equals the literal string `watchtower`"
+  - "`project_root` equals the current PROJECT_ROOT (absolute path)"
+  - "Endpoint is reachable on both 127.0.0.1:3000 and LAN IP:3000"
+  - "Handler costs < 50ms on cold request (no ollama calls, no DB, no git)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1283-prompt-register-in-watchtower--reusable-.md"
+  - ".tasks/active/T-1284-watchtower-port-discovery-regression--cu.md"
+  - ".tasks/active/T-1286-watchtower-apiidentity-endpoint-t-1284-b.md"
+  - "web/app.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-17T21:57:24"
+    action: "T-1286: B1 — Watchtower /api/_identity endpoint (T-1284 Layer 2)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 171 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 171
+  commits: 1
+  files_changed: 4
+  lines_added: 291
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1286-watchtower-apiidentity-endpoint-t-1284-b.md
+generated_by: context-agent-hybrid

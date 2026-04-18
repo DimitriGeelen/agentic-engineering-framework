@@ -1210,3 +1210,20 @@ concerns:
   last_reviewed: '2026-04-12'
   trigger_fired_date: null
   closed_date: null
+
+- id: G-045
+  type: gap
+  title: "TermLink hub 'ring20-dashboard' (192.168.10.121:9100) has been failing fleet-doctor with auth-mismatch for 3+ consecutive runs over >24h"
+  description: "Auto-registered by T-1053 under G-019 (framework-blind-to-persistent-failure guard). Hub has failed fleet-doctor with error class 'auth-mismatch' for 3 consecutive runs since 2026-04-16T04:39:06Z (first observed). This indicates either a genuinely broken hub auth state OR stale client credentials that were not refreshed after a hub rotation. Per T-1051 Option D, the heal path is: 1) confirm the hub is intended to be up (termlink remote ping 192.168.10.121:9100 from a trusted anchor), 2) if yes, refresh the client secret (termlink fleet reauth ring20-dashboard when T-1054 lands, or manually copy /var/lib/termlink/hub.secret via an out-of-band channel for now)."
+  spec_reference: "T-1051 inception, T-1053 implementation, .context/working/.fleet-failure-state.json"
+  severity: high
+  trigger_fired: true
+  trigger_event: "2026-04-17T10:53:01Z: 3 consecutive fleet-doctor failures on ring20-dashboard (192.168.10.121:9100) with class auth-mismatch, first observed 2026-04-16T04:39:06Z"
+  detection_lag_days: "1"
+  what_works_now: "Fleet doctor correctly classifies the error and emits a hint. T-1052 has already recorded an isolated learning. This concern escalates the sustained pattern to Watchtower visibility."
+  what_remains: "Operator must refresh the client's cached secret for this hub. Long-term fix: T-1054 (termlink fleet reauth) lands a one-command heal."
+  mitigation_candidate: "Ship T-1054 (fleet reauth Tier-1) and T-1055 (fleet reauth --bootstrap-from, Tier-2)."
+  status: watching
+  created: 2026-04-17
+  last_reviewed: 2026-04-17
+  related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055]

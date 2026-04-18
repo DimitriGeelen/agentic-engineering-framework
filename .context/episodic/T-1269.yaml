@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1269: Monitor termlink hub + Claude instance liveness via cron (1-min + startup)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-15T21:25:41Z
+# ============================================================================
+
+task_id: T-1269
+task_name: "Monitor termlink hub + Claude instance liveness via cron (1-min + startup)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-15T21:19:51Z
+completed: 2026-04-15T21:25:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-15T23:25:33+02:00
+last_commit: 2026-04-15T23:25:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  TermLink hub + Claude + Watchtower liveness monitor (1-min cron + @reboot)
+
+# Key outcomes
+outcomes:
+  - "`agents/monitor/liveness-check.sh` exists, executable, runs without error"
+  - "Outputs append to `.context/monitors/liveness.jsonl` (one JSON object per run)"
+  - "Writes snapshot to `.context/monitors/liveness-latest.yaml` with termlink.hub, claude_instances, watchtower fields"
+  - "Registered in `.context/cron-registry.yaml` as `liveness-1m` (schedule `* * * * *`) and `liveness-boot` (schedule `@reboot`)"
+  - "`fw cron generate` regenerates `.context/cron/agentic-audit.crontab` with both entries"
+  - "Dry-run of the script produces valid JSONL (jq parseable) and valid YAML (yaml.safe_load)"
+  - "Retention: file caps at 10080 lines (~1 week at 1-per-min)"
+  - "Installed to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` via `fw cron install` — verified entries present"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/monitor/liveness-check.sh"
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/cron-registry.yaml"
+  - ".fabric/components/agents-monitor-liveness-check.yaml"
+  - ".tasks/active/T-1269-monitor-termlink-hub--claude-instance-li.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-15T23:25:33"
+    action: "T-1269: TermLink hub + Claude + Watchtower liveness monitor (1-min cron + @reboot)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 5
+  lines_added: 182
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1269-monitor-termlink-hub--claude-instance-li.md
+generated_by: context-agent-hybrid

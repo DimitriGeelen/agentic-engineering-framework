@@ -4,7 +4,7 @@ name: "Regression test — _watchtower_url rejects masquerader (T-1284 B6)"
 description: >
   Regression test — _watchtower_url rejects masquerader (T-1284 B6)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T22:01:10Z
-last_update: 2026-04-17T22:01:10Z
-date_finished: null
+last_update: 2026-04-18T08:50:15Z
+date_finished: 2026-04-18T08:50:15Z
 ---
 
 # T-1291: Regression test — _watchtower_url rejects masquerader (T-1284 B6)
@@ -59,3 +59,6 @@ bats tests/unit/lib_watchtower.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1291-regression-test--watchtowerurl-rejects-m.md
 - **Context:** Initial task creation
+
+### 2026-04-18T08:50:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

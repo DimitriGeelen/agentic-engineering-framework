@@ -1,32 +1,34 @@
 {
-  "context7": {
-    "command": "npx",
-    "args": [
-      "-y",
-      "@upstash/context7-mcp"
-    ]
-  },
-  "playwright": {
-    "command": "npx",
-    "args": [
-      "@playwright/mcp@latest",
-      "--no-sandbox"
-    ]
-  },
-  "termlink": {
-    "command": "termlink",
-    "args": [
-      "mcp",
-      "serve"
-    ],
-    "env": {
-      "TERMLINK_TASK_GOVERNANCE": "1"
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--no-sandbox"
+      ]
+    },
+    "termlink": {
+      "command": "termlink",
+      "args": [
+        "mcp",
+        "serve"
+      ],
+      "env": {
+        "TERMLINK_TASK_GOVERNANCE": "1"
+      }
+    },
+    "skills": {
+      "command": "python3",
+      "args": [
+        "/opt/150-skills-manager/skills-mcp-server/server.py"
+      ]
     }
-  },
-  "skills": {
-    "command": "python3",
-    "args": [
-      "/opt/150-skills-manager/skills-mcp-server/server.py"
-    ]
   }
 }

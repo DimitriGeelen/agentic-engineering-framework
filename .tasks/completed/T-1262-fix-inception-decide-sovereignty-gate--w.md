@@ -5,16 +5,16 @@ description: >
   Watchtower /inception/T-XXX/decide POST inherits CLAUDECODE=1 from parent shell.
   Cross-project bug report from 003-NTB-ATC-Plugin T-012.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bugfix, inception, sovereignty, watchtower]
-components: [lib/inception.sh, web/blueprints/inception.py]
+components: [lib/inception.sh, tests/unit/lib_inception.bats, web/blueprints/inception.py, web/subprocess_utils.py]
 related_tasks: [T-1260, T-1259, T-1223]
 created: 2026-04-15T13:41:48Z
-last_update: 2026-04-15T13:41:48Z
-date_finished: null
+last_update: 2026-04-15T17:11:43Z
+date_finished: 2026-04-15T17:11:43Z
 ---
 
 # T-1262: Fix inception decide sovereignty gate — Watchtower CLAUDECODE inheritance (R-033 downstream)
@@ -55,3 +55,7 @@ test -f docs/reports/T-1262-inception-decide-sovereignty-bug.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1262-fix-inception-decide-sovereignty-gate--w.md
 - **Context:** Initial task creation
+
+### 2026-04-15T17:11:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** All 6 Agent ACs met. 16/16 bats pass. Design note written. Watchtower decide path restored.

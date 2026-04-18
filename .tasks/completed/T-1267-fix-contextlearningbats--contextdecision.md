@@ -4,16 +4,16 @@ name: "Fix context_learning.bats + context_decision.bats destroying framework YA
 description: >
   Implementation of T-1258 GO recommendation — alias FRAMEWORK_ROOT=TEST_TEMP_DIR in the two offending tests
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/unit/context_decision.bats, tests/unit/context_learning.bats]
 related_tasks: []
 created: 2026-04-15T18:58:11Z
-last_update: 2026-04-15T18:58:11Z
-date_finished: null
+last_update: 2026-04-15T19:11:07Z
+date_finished: 2026-04-15T19:11:07Z
 ---
 
 # T-1267: Fix context_learning.bats + context_decision.bats destroying framework YAML
@@ -55,3 +55,6 @@ bats tests/unit/context_learning.bats tests/unit/context_decision.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1267-fix-contextlearningbats--contextdecision.md
 - **Context:** Initial task creation
+
+### 2026-04-15T19:11:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

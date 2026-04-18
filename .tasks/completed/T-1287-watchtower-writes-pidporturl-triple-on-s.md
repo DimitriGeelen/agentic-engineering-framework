@@ -4,16 +4,16 @@ name: "Watchtower writes pid/port/url triple on startup (T-1284 B2)"
 description: >
   Watchtower writes pid/port/url triple on startup (T-1284 B2)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/watchtower.sh]
 related_tasks: []
 created: 2026-04-17T19:58:28Z
-last_update: 2026-04-17T19:58:28Z
-date_finished: null
+last_update: 2026-04-17T22:35:10Z
+date_finished: 2026-04-17T22:35:10Z
 ---
 
 # T-1287: Watchtower writes pid/port/url triple on startup (T-1284 B2)
@@ -68,3 +68,6 @@ bash -n bin/watchtower.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1287-watchtower-writes-pidporturl-triple-on-s.md
 - **Context:** Initial task creation
+
+### 2026-04-17T22:35:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

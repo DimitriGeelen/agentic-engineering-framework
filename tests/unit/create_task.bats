@@ -201,3 +201,42 @@ teardown() {
     slug_part=$(echo "$filename" | sed 's/^T-[0-9]*-//' | sed 's/\.md$//')
     [ "${#slug_part}" -le 40 ]
 }
+
+# --- T-1263: Inception template section validation ---
+
+@test "inception task has Recommendation and Decision sections" {
+    # Copy inception template
+    cp "$FRAMEWORK_ROOT/.tasks/templates/inception.md" "$TEST_DIR/templates/"
+    run "$CREATE_TASK" --name "Test inception sections" --description "test" --type inception --owner agent
+    [ "$status" -eq 0 ]
+
+    local task_file
+    task_file=$(ls "$TEST_DIR/active/T-"*.md 2>/dev/null | head -1)
+    [ -n "$task_file" ]
+    grep -q '^## Recommendation' "$task_file"
+    grep -q '^## Decision' "$task_file"
+}
+
+@test "inception task fails when template lacks Recommendation section" {
+    # Create a broken inception template without ## Recommendation
+    cp "$FRAMEWORK_ROOT/.tasks/templates/inception.md" "$TEST_DIR/templates/"
+    sed -i '/^## Recommendation/,/^## /{ /^## Recommendation/d; /^## [^R]/!d; }' "$TEST_DIR/templates/inception.md"
+
+    run "$CREATE_TASK" --name "Test broken template" --description "test" --type inception --owner agent
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Inception template missing required sections"* ]]
+    [[ "$output" == *"Recommendation"* ]]
+    # Task file should have been cleaned up
+    [ -z "$(ls "$TEST_DIR/active/T-"*.md 2>/dev/null)" ]
+}
+
+@test "inception task fails when template lacks Decision section" {
+    # Create a broken inception template without ## Decision
+    cp "$FRAMEWORK_ROOT/.tasks/templates/inception.md" "$TEST_DIR/templates/"
+    sed -i '/^## Decision$/d' "$TEST_DIR/templates/inception.md"
+
+    run "$CREATE_TASK" --name "Test broken template 2" --description "test" --type inception --owner agent
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Inception template missing required sections"* ]]
+    [[ "$output" == *"Decision"* ]]
+}

@@ -376,6 +376,11 @@ CRONREGEOF
                 if [ "$dry_run" = true ]; then
                     echo -e "  ${CYAN}WOULD MIGRATE${NC}  Replace symlink with project-detecting shim"
                 else
+                    # T-1278: remove symlink before copy. Plain `cp` follows the
+                    # destination symlink and writes the shim *through* it into
+                    # the framework repo's bin/fw, corrupting the real CLI into
+                    # a shim → every fw call then infinite-exec-loops.
+                    rm -f "$current_fw"
                     cp "$shim_src" "$current_fw"
                     chmod +x "$current_fw"
                     changes=$((changes + 1))

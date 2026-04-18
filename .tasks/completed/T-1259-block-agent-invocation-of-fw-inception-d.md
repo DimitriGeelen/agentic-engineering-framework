@@ -4,16 +4,16 @@ name: "Block agent invocation of fw inception decide — enforce T-679 via CLAUD
 description: >
   Block agent invocation of fw inception decide — enforce T-679 via CLAUDECODE env check
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T22:53:22Z
-last_update: 2026-04-14T23:01:07Z
-date_finished: null
+last_update: 2026-04-15T13:49:33Z
+date_finished: 2026-04-15T13:49:33Z
 ---
 
 # T-1259: Block agent invocation of fw inception decide — enforce T-679 via CLAUDECODE env check
@@ -73,3 +73,12 @@ grep -q "T-1259\|CLAUDECODE" CLAUDE.md
 ### 2026-04-14T23:01:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-15T13:49:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Tests + CLAUDE.md done — closing
+
+### 2026-04-15T13:49:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** All 6 Agent ACs met: guard implemented (lib/inception.sh:204), tests pass (15/15), CLAUDE.md updated, regression flagged to T-1260

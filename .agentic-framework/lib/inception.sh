@@ -181,17 +181,40 @@ do_inception_decide() {
             ;;
     esac
 
-    # Parse rationale
+    # Parse rationale + --i-am-human override (T-1259) + --from-watchtower exemption (T-1262)
     local rationale=""
+    local i_am_human=false
+    local from_watchtower=false
     while [[ $# -gt 0 ]]; do
         case $1 in
             --rationale) rationale="$2"; shift 2 ;;
+            --i-am-human) i_am_human=true; shift ;;
+            --from-watchtower) from_watchtower=true; shift ;;
             *) shift ;;
         esac
     done
 
     if [ -z "$rationale" ]; then
         echo -e "${RED}Rationale required: --rationale 'explanation'${NC}"
+        exit 1
+    fi
+
+    # Gate (T-1259): block agent invocation — enforces T-679
+    # Agents must use `fw task review T-XXX` + Watchtower; never call decide directly.
+    # $CLAUDECODE=1 is set by Claude Code when running agent sessions.
+    # Overrides: --i-am-human (scripts/tests); --from-watchtower (T-1262, Flask subprocess).
+    if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ] && [ "$from_watchtower" = false ]; then
+        echo -e "${RED}ERROR: Agents must not invoke 'fw inception decide' directly (T-679, T-1259)${NC}" >&2
+        echo "" >&2
+        echo -e "You appear to be running inside Claude Code (\$CLAUDECODE=1)." >&2
+        echo -e "Inception decisions belong to the human, recorded via Watchtower." >&2
+        echo "" >&2
+        echo -e "Correct flow:" >&2
+        echo -e "  1. Agent: $(_emit_user_command "task review $task_id")" >&2
+        echo -e "  2. Human: open the Watchtower URL, record GO/NO-GO there" >&2
+        echo "" >&2
+        echo -e "If this is a human running inside an agent session (rare), pass --i-am-human." >&2
+        echo -e "See CLAUDE.md §Presenting Work for Human Review." >&2
         exit 1
     fi
 
@@ -269,7 +292,10 @@ task_file, decision, rationale, timestamp = sys.argv[1:5]
 with open(task_file, 'r') as f:
     content = f.read()
 
-# Find the Decision section and replace its content
+# T-1262: idempotent Decision section writer.
+# Previous bug: only the FIRST `## Decision` got replaced; duplicates from repeated
+# Watchtower clicks compounded (T-002 had 3+ duplicate blocks). Now we collapse ALL
+# `## Decision` sections into one with the latest decision content.
 lines = content.split('\n')
 new_lines = []
 in_decision = False
@@ -278,21 +304,24 @@ decision_written = False
 for line in lines:
     if line.strip() == '## Decision':
         in_decision = True
-        new_lines.append(line)
-        new_lines.append('')
-        new_lines.append(f'**Decision**: {decision}')
-        new_lines.append(f'')
-        new_lines.append(f'**Rationale**: {rationale}')
-        new_lines.append(f'')
-        new_lines.append(f'**Date**: {timestamp}')
-        decision_written = True
+        if not decision_written:
+            # First Decision section — emit new content
+            new_lines.append(line)
+            new_lines.append('')
+            new_lines.append(f'**Decision**: {decision}')
+            new_lines.append(f'')
+            new_lines.append(f'**Rationale**: {rationale}')
+            new_lines.append(f'')
+            new_lines.append(f'**Date**: {timestamp}')
+            decision_written = True
+        # Subsequent Decision sections (duplicates) — swallow entirely
         continue
     if in_decision:
         if line.startswith('## '):
             in_decision = False
             new_lines.append('')
             new_lines.append(line)
-        # Skip old decision content
+        # Skip old decision content (and any content inside duplicate Decision sections)
         continue
     new_lines.append(line)
 

@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1262: Fix inception decide sovereignty gate — Watchtower CLAUDECODE inheritance (R-033 downstream)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-15T17:11:46Z
+# ============================================================================
+
+task_id: T-1262
+task_name: "Fix inception decide sovereignty gate — Watchtower CLAUDECODE inheritance (R-033 downstream)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-15T13:41:48Z
+completed: 2026-04-15T17:11:43Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-15T19:11:37+02:00
+last_commit: 2026-04-15T19:11:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix Watchtower CLAUDECODE inheritance + Decision block idempotency
+
+# Key outcomes
+outcomes:
+  - "lib/inception.sh accepts --from-watchtower flag that exempts the CLAUDECODE guard (line 190 parser, line 204 condition)"
+  - "web/blueprints/inception.py passes --from-watchtower when calling fw inception decide (line 412)"
+  - "web/subprocess_utils.py strips CLAUDECODE from env when running fw commands (defense in depth, lines 50-51)"
+  - "Decision block writer in lib/inception.sh is idempotent — detects and swallows duplicate ## Decision sections (lines 295-325)"
+  - "Design note committed at docs/reports/T-1262-inception-decide-sovereignty-bug.md"
+  - "Existing tests pass: 16/16 bats tests/unit/lib_inception.bats (including new T-1262 test at position 16)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix Watchtower CLAUDECODE inheritance + Decision block idempotency"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Option 1 — --from-watchtower flag pass-through"
+    rationale: "Keeps the decide flow atomic. Option 2 risks stranded tasks."
+    alternatives_rejected: ["Option 2 (separate CLI command) — adds friction, contradicts one-click UX"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1262-inception-decide-sovereignty-bug.md"
+  - "lib/inception.sh"
+  - ".tasks/active/T-1262-fix-inception-decide-sovereignty-gate--w.md"
+  - "tests/unit/lib_inception.bats"
+  - "web/blueprints/inception.py"
+  - "web/subprocess_utils.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-15T19:11:37"
+    action: "T-1262: Fix Watchtower CLAUDECODE inheritance + Decision block idempotency"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 209 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bugfix, inception, sovereignty, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 209
+  commits: 1
+  files_changed: 6
+  lines_added: 167
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1262-fix-inception-decide-sovereignty-gate--w.md
+generated_by: context-agent-hybrid
