@@ -47,9 +47,9 @@ None — fix is surgical. Implementation: load `.context/working/focus.yaml`, re
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested (T-1308 build + 4 regression tests confirm)
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision

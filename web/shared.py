@@ -19,7 +19,44 @@ logger = logging.getLogger(__name__)
 
 APP_DIR = Path(__file__).resolve().parent
 FRAMEWORK_ROOT = APP_DIR.parent
-PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", str(FRAMEWORK_ROOT)))
+
+
+def _discover_project_root(start: Path) -> Path | None:
+    """Walk up from `start` looking for `.framework.yaml` (consumer marker).
+
+    Returns the first ancestor containing `.framework.yaml`, or None if
+    filesystem root is reached. Matches bash `paths.sh` behaviour (T-1310).
+    """
+    try:
+        cur = Path(start).resolve()
+    except OSError:
+        return None
+    while True:
+        if (cur / ".framework.yaml").is_file():
+            return cur
+        if cur.parent == cur:
+            return None
+        cur = cur.parent
+
+
+def _resolve_project_root() -> tuple[Path, str]:
+    """Resolve PROJECT_ROOT from (in order): env var, discovered, FRAMEWORK_ROOT.
+
+    Returns (path, source_label) where source ∈ {'env', 'discovered', 'framework'}.
+    Env wins unconditionally — operators and `bin/fw` rely on it.
+    """
+    env_val = os.environ.get("PROJECT_ROOT")
+    if env_val:
+        return Path(env_val), "env"
+    discovered = _discover_project_root(Path.cwd())
+    if discovered is not None:
+        return discovered, "discovered"
+    return FRAMEWORK_ROOT, "framework"
+
+
+PROJECT_ROOT, _PROJECT_ROOT_SOURCE = _resolve_project_root()
+if _PROJECT_ROOT_SOURCE != "env":
+    logger.debug("PROJECT_ROOT resolved via %s: %s", _PROJECT_ROOT_SOURCE, PROJECT_ROOT)
 
 
 def task_id_sort_key(value):

@@ -4,15 +4,15 @@ name: "Pickup: Watchtower shared.py PROJECT_ROOT fallback is wrong — falls to 
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1123. Type: bug-report.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T18:43:21Z
-last_update: 2026-04-18T18:43:21Z
+last_update: 2026-04-18T20:01:12Z
 date_finished: null
 ---
 
@@ -20,27 +20,33 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+`web/shared.py:22` reads `PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", str(FRAMEWORK_ROOT)))`. When `PROJECT_ROOT` is unset (e.g. `python3 -m web.app` from a consumer project), Python falls back to the framework's own directory — ambient strip is blank, approvals page empty, because reads hit framework's `.context/` / `.tasks/` instead of the consumer's.
+
+Bash-side `paths.sh` already does git-toplevel + `.framework.yaml` discovery. Python was never kept in sync.
+
+Source: pickup P-030 from termlink (T-1123). Fix ported from termlink commit `d3723d9c`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. Consumer projects have `.framework.yaml` at the project root — confirmed (fw init creates it).
+2. Walking up from `os.getcwd()` is the canonical discovery method — matches `paths.sh`.
+3. The env var must keep winning — operators and wrappers pass it explicitly.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+None — fix is surgical. Implementation: `_discover_project_root()` walks up from CWD looking for `.framework.yaml` (bounded at filesystem root). `_resolve_project_root()` returns `(path, source_label)` where source ∈ {`env`, `discovered`, `framework`}. Log source label at import.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- Must be non-intrusive: the env-var path (set by `bin/fw`) must continue to work unchanged.
+- Must not break when CWD is `/` or a parent of `.framework.yaml`-less dir — degrade to FRAMEWORK_ROOT.
+- No new dependencies.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** `_discover_project_root` + `_resolve_project_root` helpers in `web/shared.py`. PROJECT_ROOT derived from those. One log line at module load.
+
+**OUT:** Consumer auto-init, `.framework.yaml` schema validation, multi-root discovery.
 
 ## Acceptance Criteria
 
@@ -71,21 +77,20 @@ date_finished: null
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
+grep -q "_discover_project_root" web/shared.py
+grep -q "_resolve_project_root" web/shared.py
+python3 -m pytest tests/web/test_project_root_discovery.py -q
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Bash-side discovery in `paths.sh` is canonical; Python-side fallback is stale and bites anyone who bypasses `bin/fw`. Fix is bounded (two helpers + derived global), reversible, and proven upstream in termlink@d3723d9c.
+
+**Evidence:**
+- `web/shared.py:22` — FRAMEWORK_ROOT fallback with no discovery.
+- `bin/fw` and `lib/paths.sh` do walk-up-for-`.framework.yaml`. Python was ignored.
+- Termlink's T-1123 verified: cwd in `/opt/termlink/subdir` discovers `/opt/termlink`; cwd in `/tmp` falls back to framework; env still wins.
 
 ## Decisions
 
@@ -106,3 +111,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-18T20:01:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

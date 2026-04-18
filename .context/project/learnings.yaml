@@ -1756,3 +1756,10 @@ learnings:
   date: 2026-04-18
   context: Added via context agent
   application: TBD
+- id: L-013
+  learning: "Flask session cookies are signed with app.secret_key — regenerating the key on process start invalidates all sessions (breaks CSRF). Pattern: three-source resolver env > persisted file > generate+persist at 0o600. Applies to any process that signs cookies/tokens and is restarted."
+  source: P-029
+  task: T-1306
+  date: 2026-04-18
+  context: Added via context agent
+  application: TBD
