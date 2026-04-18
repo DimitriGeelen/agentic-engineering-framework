@@ -51,9 +51,9 @@ None — fix is surgical. Implementation: `_discover_project_root()` walks up fr
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested (T-1310 build + 4 regression tests confirm)
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision

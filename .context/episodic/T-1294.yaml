@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1294: Prompt register cross-agent ID namespacing (T-1283 B2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-18T20:09:57Z
+# ============================================================================
+
+task_id: T-1294
+task_name: "Prompt register cross-agent ID namespacing (T-1283 B2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T14:51:58Z
+completed: 2026-04-18T14:55:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-18T16:55:27+02:00
+last_commit: 2026-04-18T17:04:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1283 B2 — cross-agent ID namespacing for prompt register. Close (verification 5/5 passed)
+
+# Key outcomes
+outcomes:
+  - "`lib/prompt.sh` exposes `_prompt_resolve_agent_id` honoring env → config → hostname → fallback"
+  - "`lib/prompt.sh` exposes `_prompt_next_counter` with flock-guarded allocation"
+  - "`fw prompt create` writes `agent_id`, `counter`, and `qid` to frontmatter"
+  - "Counter increments strictly on each create (no gaps, no reuse)"
+  - "`fw prompt show <slug>` and `fw prompt show <qid>` both resolve the same prompt"
+  - "`fw prompt copy <slug>` and `fw prompt copy <qid>` both substitute variables"
+  - "`fw prompt list` shows the FQID column"
+  - "Env override works: `FW_AGENT_ID=xyz fw prompt create --name ...` yields `qid: xyz/P-NNN`"
+  - "`tests/unit/lib_prompt.bats` extended with ≥4 new tests covering agent-id"
+  - "All bats tests pass (existing 12 + new)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".context/audits/2026-04-18.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/.fleet-failure-state.json"
+  - ".context/working/focus.yaml"
+  - ".context/working/.prompt-counter"
+  - ".context/working/session.yaml"
+  - "lib/prompt.sh"
+  - "prompts/demo-b2-namespacing.md"
+  - ".tasks/active/T-1294-prompt-register-cross-agent-id-namespaci.md"
+  - ".tasks/completed/T-1294-prompt-register-cross-agent-id-namespaci.md"
+  - "tests/unit/lib_prompt.bats"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-18T16:55:27"
+    action: "T-1294: T-1283 B2 — cross-agent ID namespacing for prompt register"
+  - time: "2026-04-18T17:04:18"
+    action: "T-1294: Close (verification 5/5 passed)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 18
+  lines_added: 940
+  lines_removed: 435
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1294-prompt-register-cross-agent-id-namespaci.md
+generated_by: context-agent-hybrid

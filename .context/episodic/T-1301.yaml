@@ -1,0 +1,106 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1301: Prompt register CRUD completion: edit, delete, backfill (T-1283 B2-addendum)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-18T20:10:00Z
+# ============================================================================
+
+task_id: T-1301
+task_name: "Prompt register CRUD completion: edit, delete, backfill (T-1283 B2-addendum)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T18:38:46Z
+completed: 2026-04-18T18:41:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-18T20:41:38+02:00
+last_commit: 2026-04-18T20:42:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Prompt register CRUD completion — edit, delete, backfill. Close (verification 5/5 passed)
+
+# Key outcomes
+outcomes:
+  - "`fw prompt edit <id> --body TEXT` replaces the body, re-extracts"
+  - "`fw prompt edit <id> --tags a,b` updates tags in frontmatter"
+  - "`fw prompt edit <id> --description \"...\"` updates description"
+  - "`fw prompt edit <id> --name \"...\"` updates the display name (slug is"
+  - "`fw prompt delete <id>` removes the file and prints confirmation"
+  - "`fw prompt delete <id> --force` skips the \"are you sure\" (for scripts);"
+  - "`fw prompt backfill-qid` scans prompts/ and assigns qid/agent_id/counter"
+  - "All subcommands accept slug OR qid as the id arg where meaningful"
+  - "`tests/unit/lib_prompt.bats` extended with ≥6 new tests covering"
+  - "All bats tests pass (20 existing + new)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".context/audits/2026-04-18.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/pickup/inbox/P-029-bug-report.yaml"
+  - ".context/pickup/inbox/P-030-bug-report.yaml"
+  - ".context/pickup/inbox/P-031-bug-report.yaml"
+  - ".context/pickup/inbox/P-032-bug-report.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.prompt-counter"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "lib/prompt.sh"
+  - "prompts/consumer-upgrade-and-test.md"
+  - "prompts/demo-b2-namespacing.md"
+  - ".tasks/active/T-1301-prompt-register-crud-completion-edit-del.md"
+  - ".tasks/completed/T-1301-prompt-register-crud-completion-edit-del.md"
+  - "tests/unit/lib_prompt.bats"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-18T20:41:38"
+    action: "T-1301: Prompt register CRUD completion — edit, delete, backfill"
+  - time: "2026-04-18T20:42:18"
+    action: "T-1301: Close (verification 5/5 passed)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 23
+  lines_added: 815
+  lines_removed: 239
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1301-prompt-register-crud-completion-edit-del.md
+generated_by: context-agent-hybrid

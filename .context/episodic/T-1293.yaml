@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1293: Prompt file schema + fw prompt create/list/show/copy CLI (T-1283 B1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-18T20:09:55Z
+# ============================================================================
+
+task_id: T-1293
+task_name: "Prompt file schema + fw prompt create/list/show/copy CLI (T-1283 B1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T08:53:33Z
+completed: 2026-04-18T09:04:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-18T11:04:19+02:00
+last_commit: 2026-04-18T11:04:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1283 B1 — prompt file schema + fw prompt CLI. Close (verification 7/7 passed)
+
+# Key outcomes
+outcomes:
+  - "`prompts/` directory created with a README describing the schema"
+  - "`lib/prompt.sh` exists with subcommands: create, list, show, copy"
+  - "`bin/fw prompt <subcommand>` routes to `lib/prompt.sh`"
+  - "`fw prompt create --name \"foo\" --kind agent --body \"Hello {{name}}\"` writes"
+  - "`fw prompt list` outputs one line per prompt (id, name, kind, tags)"
+  - "`fw prompt show <id>` prints the full body (frontmatter stripped)"
+  - "`fw prompt copy <id> [--var name=world]` prints the body with `{{var}}`"
+  - "`fw help` mentions the `prompt` command"
+  - "`tests/unit/lib_prompt.bats` exists and passes (>=5 tests covering"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - "bin/fw"
+  - ".context/audits/2026-04-18.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "lib/prompt.sh"
+  - "prompts/consumer-upgrade-and-test.md"
+  - "prompts/README.md"
+  - ".tasks/active/T-1293-prompt-file-schema--fw-prompt-createlist.md"
+  - ".tasks/completed/T-1293-prompt-file-schema--fw-prompt-createlist.md"
+  - "tests/unit/lib_prompt.bats"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-18T11:04:19"
+    action: "T-1293: T-1283 B1 — prompt file schema + fw prompt CLI"
+  - time: "2026-04-18T11:04:32"
+    action: "T-1293: Close (verification 7/7 passed)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 2
+  files_changed: 18
+  lines_added: 601
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1293-prompt-file-schema--fw-prompt-createlist.md
+generated_by: context-agent-hybrid
