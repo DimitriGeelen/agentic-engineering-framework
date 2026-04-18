@@ -1,0 +1,17 @@
+pickup_id: P-032
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1128"
+  agent: "claude-code"
+  timestamp: "2026-04-18T18:40:48Z"
+payload:
+  summary: "Watchtower load_latest_audit picks upgrades.yaml instead of newest audit"
+  detail: "load_latest_audit() in web/shared.py does `sorted(audit_dir.glob('*.yaml'), reverse=True)[0]`. .context/audits/ contains date-named audit reports AND upgrades.yaml. Reverse alphabetical sort puts upgrades.yaml first; it has no 'summary' key, so the loader returns empty data and ambient strip shows 'Audit: unknown' even when fresh audits exist.
+
+FIX (T-1128 termlink): restrict glob to '[0-9][0-9][0-9][0-9]-*.yaml'.
+
+UPSTREAM ASK: Apply same filter in framework's web/shared.py."
+  priority: medium
+  tags: [watchtower, audit]

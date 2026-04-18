@@ -355,6 +355,203 @@ EOF
     printf '%s\n' "$body"
 }
 
+# ---- helpers for edit/backfill ----
+
+_prompt_update_field() {
+    # Replace a single top-level frontmatter field in-place.
+    # $1 = file, $2 = key, $3 = new value (already formatted, e.g. '"Some Name"' or '[a,b]')
+    local file="$1" key="$2" value="$3"
+    local tmp; tmp=$(mktemp)
+    awk -v k="$key" -v v="$value" '
+        BEGIN { fm = 0; replaced = 0 }
+        /^---$/ { fm = !fm; print; next }
+        fm && !replaced && $0 ~ "^" k ":" {
+            print k ": " v
+            replaced = 1
+            next
+        }
+        { print }
+    ' "$file" > "$tmp" && mv "$tmp" "$file"
+}
+
+_prompt_insert_field_after() {
+    # Insert a new field after another field, or at the start of frontmatter.
+    # $1 = file, $2 = after_key (or empty for start-of-frontmatter), $3 = new key, $4 = value
+    local file="$1" after="$2" key="$3" value="$4"
+    local tmp; tmp=$(mktemp)
+    awk -v after="$after" -v k="$key" -v v="$value" '
+        BEGIN { fm = 0; inserted = 0 }
+        /^---$/ {
+            fm = !fm
+            if (fm && after == "" && !inserted) {
+                print
+                print k ": " v
+                inserted = 1
+                next
+            }
+            print
+            next
+        }
+        fm && !inserted && after != "" && $0 ~ "^" after ":" {
+            print
+            print k ": " v
+            inserted = 1
+            next
+        }
+        { print }
+    ' "$file" > "$tmp" && mv "$tmp" "$file"
+}
+
+_prompt_replace_body() {
+    # Replace body (everything after closing ---) with new text.
+    # $1 = file, $2 = new body
+    local file="$1" new_body="$2"
+    local tmp; tmp=$(mktemp)
+    awk '
+        BEGIN { seen = 0; fm = 0 }
+        /^---$/ {
+            if (!seen) { fm = 1; seen = 1; print; next }
+            else if (fm) { fm = 0; print; print ""; exit }
+        }
+        { print }
+    ' "$file" > "$tmp"
+    printf '%s\n' "$new_body" >> "$tmp"
+    mv "$tmp" "$file"
+}
+
+do_prompt_edit() {
+    local id="" body="" tags="" description="" name=""
+    local set_body=0 set_tags=0 set_description=0 set_name=0
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --body) body="$2"; set_body=1; shift 2 ;;
+            --tags) tags="$2"; set_tags=1; shift 2 ;;
+            --description) description="$2"; set_description=1; shift 2 ;;
+            --name) name="$2"; set_name=1; shift 2 ;;
+            -h|--help)
+                cat <<'EOF'
+fw prompt edit - Edit an existing prompt
+
+Usage: fw prompt edit <id|qid> [options]
+
+Options:
+  --body TEXT         Replace the body (also re-extracts variables)
+  --tags "a,b"        Replace tags
+  --description TEXT  Update description
+  --name TEXT         Update display name (slug is preserved)
+EOF
+                return 0
+                ;;
+            *)
+                if [ -z "$id" ]; then id="$1"; shift
+                else echo "Unknown argument: $1" >&2; return 2
+                fi
+                ;;
+        esac
+    done
+    if [ -z "$id" ]; then
+        echo "Usage: fw prompt edit <id|qid> [options]" >&2
+        return 2
+    fi
+    local path
+    if ! path="$(_prompt_find_path "$id")"; then
+        echo "ERROR: prompt not found: $id" >&2
+        return 1
+    fi
+    local changed=0
+    if [ "$set_body" = 1 ]; then
+        _prompt_replace_body "$path" "$body"
+        local variables; variables="$(printf '%s' "$body" | _prompt_extract_vars)"
+        _prompt_update_field "$path" "variables" "[${variables}]"
+        changed=1
+    fi
+    if [ "$set_tags" = 1 ]; then
+        _prompt_update_field "$path" "tags" "[${tags}]"
+        changed=1
+    fi
+    if [ "$set_description" = 1 ]; then
+        _prompt_update_field "$path" "description" "\"${description}\""
+        changed=1
+    fi
+    if [ "$set_name" = 1 ]; then
+        _prompt_update_field "$path" "name" "\"${name}\""
+        changed=1
+    fi
+    if [ "$changed" = 1 ]; then
+        _prompt_update_field "$path" "updated" "$(_prompt_iso_now)"
+        echo "Updated: $path"
+    else
+        echo "No changes specified (use --body, --tags, --description, or --name)" >&2
+        return 2
+    fi
+    return 0
+}
+
+do_prompt_delete() {
+    local id="" force=0
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --force|-f) force=1; shift ;;
+            -h|--help)
+                echo "Usage: fw prompt delete <id|qid> [--force]"
+                return 0
+                ;;
+            *)
+                if [ -z "$id" ]; then id="$1"; shift
+                else echo "Unknown argument: $1" >&2; return 2
+                fi
+                ;;
+        esac
+    done
+    if [ -z "$id" ]; then
+        echo "Usage: fw prompt delete <id|qid> [--force]" >&2
+        return 2
+    fi
+    local path
+    if ! path="$(_prompt_find_path "$id")"; then
+        echo "ERROR: prompt not found: $id" >&2
+        return 1
+    fi
+    if [ "$force" = 0 ] && [ -t 0 ]; then
+        printf 'Delete %s? [y/N] ' "$path" >&2
+        local answer; read -r answer
+        case "${answer:-}" in y|Y|yes|YES) ;; *) echo "Cancelled" >&2; return 1 ;; esac
+    fi
+    rm -f "$path"
+    echo "Deleted: $path"
+    return 0
+}
+
+do_prompt_backfill() {
+    local dir; dir="$(_prompt_dir)"
+    if [ ! -d "$dir" ]; then
+        echo "No prompts directory (expected: $dir)" >&2
+        return 0
+    fi
+    local agent_id; agent_id="$(_prompt_resolve_agent_id)"
+    local backfilled=0 skipped=0
+    local f
+    for f in "$dir"/*.md; do
+        [ -f "$f" ] || continue
+        [ "$(basename "$f")" = "README.md" ] && continue
+        local existing_qid
+        existing_qid="$(_prompt_get_field "$f" qid)"
+        if [ -n "$existing_qid" ]; then
+            skipped=$((skipped + 1))
+            continue
+        fi
+        local counter; counter="$(_prompt_next_counter)"
+        local qid; qid="$(_prompt_format_qid "$agent_id" "$counter")"
+        _prompt_insert_field_after "$f" "id" "qid" "$qid"
+        _prompt_insert_field_after "$f" "qid" "agent_id" "$agent_id"
+        _prompt_insert_field_after "$f" "agent_id" "counter" "$counter"
+        echo "  $(basename "$f" .md) → $qid"
+        backfilled=$((backfilled + 1))
+    done
+    echo "Backfill: ${backfilled} prompt(s) assigned new QIDs, ${skipped} already had QIDs"
+    return 0
+}
+
 do_prompt() {
     local sub="${1:-}"
     shift 2>/dev/null || true
@@ -363,6 +560,9 @@ do_prompt() {
         list|ls) do_prompt_list "$@" ;;
         show|cat) do_prompt_show "$@" ;;
         copy|render) do_prompt_copy "$@" ;;
+        edit) do_prompt_edit "$@" ;;
+        delete|rm) do_prompt_delete "$@" ;;
+        backfill-qid|backfill) do_prompt_backfill "$@" ;;
         ""|-h|--help|help)
             cat <<'EOF'
 fw prompt - Reusable agent-prompt register
@@ -370,10 +570,13 @@ fw prompt - Reusable agent-prompt register
 Usage: fw prompt <subcommand> [options]
 
 Subcommands:
-  create  Create a new prompt file
-  list    List prompts
-  show    Print the body of a prompt
-  copy    Print body with {{var}} substitutions applied
+  create        Create a new prompt file
+  list          List prompts
+  show          Print the body of a prompt
+  copy          Print body with {{var}} substitutions applied
+  edit          Edit body/tags/description/name of an existing prompt
+  delete        Remove a prompt (--force to skip confirmation)
+  backfill-qid  Assign QIDs to any prompts missing them
 
 See 'fw prompt <subcommand> --help' for details.
 EOF

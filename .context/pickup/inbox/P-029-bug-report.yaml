@@ -1,0 +1,21 @@
+pickup_id: P-029
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1125"
+  agent: "claude-code"
+  timestamp: "2026-04-18T15:49:47Z"
+payload:
+  summary: "Watchtower Flask secret_key auto-regenerates on every restart — breaks CSRF for existing browser sessions"
+  detail: "REGRESSION: web/app.py auto-generates secret_key on every startup when FW_SECRET_KEY env is unset. Result: every watchtower restart invalidates all browser session cookies. Users hit '403 Forbidden — CSRF token missing or invalid' on Record decision / Record status and any other POST form until they hard-refresh every open tab.
+
+ROOT CAUSE: No persistence fallback in the secret-key resolution path. Only env var → auto-generated in-memory. No operator-free persistent option.
+
+FIX APPLIED LOCALLY (T-1125 @ termlink, commit 0373828e): new _resolve_secret_key() helper implementing load-or-generate-and-persist at PROJECT_ROOT/.context/working/.fw-secret-key (chmod 600). Env var still wins. Startup logs source label (env/file/generated), never the key itself.
+
+VERIFIED: key stable across two watchtower restart cycles. See learning PL-032 in termlink.
+
+UPSTREAM ASK: Apply this pattern in framework's web/app.py so consumers don't have to patch vendored copy. Local patch will be reverted on next fw upgrade unless absorbed."
+  priority: high
+  tags: [watchtower, security, csrf, flask]

@@ -1,0 +1,17 @@
+pickup_id: P-031
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1127"
+  agent: "claude-code"
+  timestamp: "2026-04-18T15:57:49Z"
+payload:
+  summary: "Watchtower ambient strip shows wrong task as focus — ignores focus.yaml"
+  detail: "build_ambient() in web/shared.py picks the lowest-numbered active task and calls it the focus, ignoring .context/working/focus.yaml's current_task. Result: ambient strip header links to a dormant horizon=later task (e.g., T-160 from weeks ago) instead of the operator's actual focus.
+
+FIX APPLIED LOCALLY (T-1127 @ termlink, commit c9762666): read current_task from focus.yaml first, fall back to first-sorted active task only if missing.
+
+UPSTREAM ASK: Absorb the focus.yaml precedence in framework's web/shared.py build_ambient()."
+  priority: medium
+  tags: [watchtower, ambient-strip]

@@ -1,5 +1,8 @@
 ---
 id: consumer-upgrade-and-test
+qid: 107/P-002
+agent_id: 107
+counter: 2
 name: "Consumer upgrade and test"
 description: "Cross-fleet: upgrade consumer via framework shim then run framework test suite"
 kind: agent

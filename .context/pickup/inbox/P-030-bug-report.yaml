@@ -1,0 +1,19 @@
+pickup_id: P-030
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1123"
+  agent: "claude-code"
+  timestamp: "2026-04-18T15:52:56Z"
+payload:
+  summary: "Watchtower shared.py PROJECT_ROOT fallback is wrong — falls to FRAMEWORK_ROOT, not discovered"
+  detail: "REGRESSION: web/shared.py:22 previously did PROJECT_ROOT = env.get('PROJECT_ROOT', str(FRAMEWORK_ROOT)). Without env, Python reads framework's own .context/.tasks, not consumer's — ambient strip is blank, approvals page is empty. Bash paths.sh already does git-toplevel discovery, but Python was not in sync.
+
+FIX APPLIED LOCALLY (T-1123 @ termlink, commit d3723d9c): _discover_project_root() walks up from CWD for .framework.yaml; _resolve_project_root() returns (path, source_label). Resolution: env > discovered > FRAMEWORK_ROOT. Startup logs source label.
+
+VERIFIED: cwd in /opt/termlink/somedir discovers /opt/termlink; cwd in /tmp falls back; env still wins.
+
+UPSTREAM ASK: Absorb the discovery pattern into framework's web/shared.py so `python3 -m web.app` direct invocations work consistently with `watchtower.sh` wrapper. Local patch will be reverted on next fw upgrade."
+  priority: medium
+  tags: [watchtower, path-resolution]

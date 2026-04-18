@@ -184,3 +184,95 @@ teardown() {
     [ "$status" != 0 ]
     [[ "$output" == *"not found"* ]]
 }
+
+# ---- T-1301: CRUD completion (edit, delete, backfill) ----
+
+@test "edit --body replaces body and re-extracts variables" {
+    do_prompt_create --name "Edit Target" --body "old text no vars"
+    run do_prompt_edit "edit-target" --body "new text with {{foo}} and {{bar}}"
+    [ "$status" = 0 ]
+    local file="$PROJECT_ROOT/prompts/edit-target.md"
+    grep -q "new text with" "$file"
+    ! grep -q "old text no vars" "$file"
+    grep -q '^variables: \[bar,foo\]$' "$file"
+}
+
+@test "edit --tags replaces tag list" {
+    do_prompt_create --name "Tag Target" --tags "old,tags" --body "x"
+    do_prompt_edit "tag-target" --tags "new,shiny,tags"
+    local file="$PROJECT_ROOT/prompts/tag-target.md"
+    grep -q '^tags: \[new,shiny,tags\]$' "$file"
+    ! grep -q 'tags: \[old,tags\]' "$file"
+}
+
+@test "edit --description updates description only" {
+    do_prompt_create --name "Desc Target" --description "original" --body "x"
+    do_prompt_edit "desc-target" --description "rewritten"
+    local file="$PROJECT_ROOT/prompts/desc-target.md"
+    grep -q '^description: "rewritten"$' "$file"
+}
+
+@test "edit preserves qid/agent_id/counter across edits" {
+    FW_AGENT_ID=stable do_prompt_create --name "Preserve QID" --body "a"
+    local file="$PROJECT_ROOT/prompts/preserve-qid.md"
+    local before_qid; before_qid=$(grep '^qid:' "$file")
+    do_prompt_edit "preserve-qid" --body "b"
+    local after_qid; after_qid=$(grep '^qid:' "$file")
+    [ "$before_qid" = "$after_qid" ]
+}
+
+@test "edit fails with helpful message when no fields supplied" {
+    do_prompt_create --name "No Edit" --body "x"
+    run do_prompt_edit "no-edit"
+    [ "$status" != 0 ]
+    [[ "$output" == *"No changes specified"* ]]
+}
+
+@test "delete --force removes the file" {
+    do_prompt_create --name "Delete me" --body "x"
+    local file="$PROJECT_ROOT/prompts/delete-me.md"
+    [ -f "$file" ]
+    run do_prompt_delete "delete-me" --force
+    [ "$status" = 0 ]
+    [ ! -f "$file" ]
+}
+
+@test "delete on unknown id fails" {
+    run do_prompt_delete "does-not-exist" --force
+    [ "$status" != 0 ]
+    [[ "$output" == *"not found"* ]]
+}
+
+@test "backfill assigns qid to prompts missing one" {
+    # Create a prompt via the file system directly (no qid, simulating a
+    # pre-B2 file).
+    mkdir -p "$PROJECT_ROOT/prompts"
+    cat > "$PROJECT_ROOT/prompts/legacy.md" <<'EOF'
+---
+id: legacy
+name: "Legacy prompt"
+description: ""
+kind: agent
+tags: []
+variables: []
+created: 2026-04-17T00:00:00Z
+updated: 2026-04-17T00:00:00Z
+---
+
+Legacy body.
+EOF
+    FW_AGENT_ID=bf run do_prompt_backfill
+    [ "$status" = 0 ]
+    grep -q '^qid: bf/P-001$' "$PROJECT_ROOT/prompts/legacy.md"
+    grep -q '^agent_id: bf$' "$PROJECT_ROOT/prompts/legacy.md"
+    grep -q '^counter: 1$' "$PROJECT_ROOT/prompts/legacy.md"
+}
+
+@test "backfill is idempotent for prompts that already have qid" {
+    FW_AGENT_ID=bf2 do_prompt_create --name "Has qid" --body "x"
+    local file="$PROJECT_ROOT/prompts/has-qid.md"
+    local original; original=$(cat "$file")
+    do_prompt_backfill
+    local after; after=$(cat "$file")
+    [ "$original" = "$after" ]
+}
