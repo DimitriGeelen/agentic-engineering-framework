@@ -4,15 +4,15 @@ name: "Pickup: Watchtower Flask secret_key auto-regenerates on every restart —
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1125. Type: bug-report.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T18:43:05Z
-last_update: 2026-04-18T18:43:05Z
+last_update: 2026-04-18T19:40:17Z
 date_finished: null
 ---
 
@@ -20,27 +20,35 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+`web/app.py` (lines 47-55) auto-generates a new Flask `secret_key` on every process start when `FW_SECRET_KEY` is unset. Because `session["_csrf_token"]` is cookie-signed with that key, every restart invalidates all existing browser sessions. Users hit `403 Forbidden — CSRF token missing or invalid` on any POST form until they hard-refresh every open tab.
+
+Source: pickup P-029 from termlink (T-1125). Fix already implemented upstream at `termlink@0373828e` and verified to hold across restarts. Upstream ask: absorb pattern so consumers don't patch vendored copies.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. Persisting the generated key to `PROJECT_ROOT/.context/working/.fw-secret-key` (chmod 600) is acceptable for dev and production environments alike.
+2. The env var (`FW_SECRET_KEY`) must continue to win when set — operators retain full override.
+3. `.context/working/` already exists and is git-ignored.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+No spikes required — the fix has already been implemented, deployed, and verified in termlink. Exploration reduces to:
+- Confirm the three assumptions against the framework's current file layout.
+- Confirm fix scope is one function + one import block (≤25 lines).
+- Design acceptance tests that prove the key is stable across two `create_app()` invocations.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- File must be written with mode `0o600` (key material — anyone with read access can forge CSRF tokens).
+- Must log the source label (`env` / `file` / `generated`), never the key itself.
+- Must work even if `.context/working/` doesn't exist yet (`mkdir -p` pattern).
+- Must not introduce a new Python dependency.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Replace the 4-line key resolution in `web/app.py` with a `_resolve_secret_key()` helper that does env → file → generate-and-persist. Add unit test proving stability across two `create_app()` calls.
+
+**OUT:** Rotation policy, encryption at rest, multi-instance key sharing (Watchtower is single-process). These are separate concerns.
 
 ## Acceptance Criteria
 
@@ -72,20 +80,23 @@ date_finished: null
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
+grep -q "_resolve_secret_key" web/app.py
+grep -q "\.fw-secret-key" web/app.py
+grep -q "\.fw-secret-key" .gitignore
+python3 -c "from web.app import create_app; a=create_app(); b=create_app(); assert a.secret_key == b.secret_key, 'key not stable across invocations'"
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Root cause is a missing persistence layer in `web/app.py:47-55`. The fix pattern is already proven upstream in termlink (commit `0373828e`), verified stable across restarts, and scope is minimal (one helper function, ~20 lines, one test). Matches all "GO if" criteria: root cause identified, fix bounded and reversible.
+
+**Evidence:**
+- `web/app.py:47-55` auto-generates a new key via `secrets.token_hex(32)` when `Config.SECRET_KEY` is unset. No persistence.
+- Session cookies at `session["_csrf_token"]` (app.py:63-65) are signed with `secret_key`. Key rotation ≡ session invalidation ≡ 403 on next POST.
+- termlink@0373828e demonstrates the three-source resolver (env → file → generate) and verified stability across two restart cycles.
+- `.context/working/` already exists in all framework deployments (session-state directory).
+- Sibling file T-1303 (`web/shared.py` PROJECT_ROOT fallback) has independent scope and is tracked separately.
 
 ## Decisions
 
@@ -106,3 +117,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-18T19:40:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

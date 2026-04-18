@@ -23,6 +23,7 @@ __pycache__/
 # Local-only deployment scripts (installation-specific, not for GitHub)
 deploy/onedev-pr-sync.sh
 .context/working/.onedev-pr-seen
+.context/working/.fw-secret-key
 
 # TypeScript build artifacts
 lib/ts/node_modules/

@@ -36,6 +36,31 @@ log = logging.getLogger(__name__)
 # Application factory
 # ---------------------------------------------------------------------------
 
+def _resolve_secret_key(project_root) -> tuple[str, str]:
+    """Three-source resolver: env → file → generate-and-persist.
+
+    Returns (key, source_label) so the caller can log the provenance
+    without logging the key itself. Persisted file is chmod 0600.
+
+    T-1302/T-1306: prevents CSRF breakage after every Watchtower restart.
+    """
+    if Config.SECRET_KEY:
+        return Config.SECRET_KEY, "env"
+
+    from pathlib import Path as _Path
+    key_file = _Path(project_root) / ".context" / "working" / ".fw-secret-key"
+    if key_file.is_file():
+        key = key_file.read_text().strip()
+        if key:
+            return key, "file"
+
+    key = secrets.token_hex(32)
+    key_file.parent.mkdir(parents=True, exist_ok=True)
+    key_file.write_text(key)
+    os.chmod(key_file, 0o600)
+    return key, "generated"
+
+
 def create_app() -> Flask:
     """Create and configure the Watchtower Flask application."""
     app = Flask(
@@ -44,14 +69,14 @@ def create_app() -> Flask:
         static_folder=str(APP_DIR / "static"),
     )
 
-    # Secret key: require FW_SECRET_KEY in production, auto-generate in dev
-    if Config.SECRET_KEY:
-        app.secret_key = Config.SECRET_KEY
-    else:
-        app.secret_key = secrets.token_hex(32)
+    # Secret key: env wins; else persisted file; else generate+persist (T-1306)
+    app.secret_key, _key_source = _resolve_secret_key(PROJECT_ROOT)
+    if _key_source != "env":
         log.warning(
-            "FW_SECRET_KEY not set — using auto-generated key. "
-            "Set FW_SECRET_KEY for production deployment."
+            "FW_SECRET_KEY not set — using %s key at "
+            "PROJECT_ROOT/.context/working/.fw-secret-key. "
+            "Set FW_SECRET_KEY for production deployment.",
+            _key_source,
         )
 
     # -------------------------------------------------------------------
