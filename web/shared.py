@@ -89,16 +89,23 @@ def build_ambient():
         "attention_count": 0,
     }
 
-    # Focus task — currently active tasks
+    # Focus task — prefer .context/working/focus.yaml (T-1308), fall back to
+    # first active task alphabetically when focus is null/missing/malformed.
     active_dir = PROJECT_ROOT / ".tasks" / "active"
+    focus_file = PROJECT_ROOT / ".context" / "working" / "focus.yaml"
+    focus_data = load_yaml(focus_file, label="focus.yaml") if focus_file.exists() else {}
+    current = (focus_data or {}).get("current_task")
+    if current and re_mod.match(r"^T-\d{3,}$", str(current)):
+        ambient["focus_task"] = str(current)
     if active_dir.exists():
         active_tasks = sorted(active_dir.glob("T-*.md"), key=task_id_sort_key)
         if active_tasks:
-            # Use the first active task as focus
-            stem = active_tasks[0].stem
-            match = re_mod.match(r"(T-\d{3,})", stem)
-            if match:
-                ambient["focus_task"] = match.group(1)
+            if not ambient["focus_task"]:
+                # Fallback: first active task alphabetically.
+                stem = active_tasks[0].stem
+                match = re_mod.match(r"(T-\d{3,})", stem)
+                if match:
+                    ambient["focus_task"] = match.group(1)
             ambient["attention_count"] = len(active_tasks)
 
     # Session age — from latest handover
