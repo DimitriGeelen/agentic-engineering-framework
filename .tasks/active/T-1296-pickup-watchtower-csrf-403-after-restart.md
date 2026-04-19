@@ -4,15 +4,15 @@ name: "Pickup: Watchtower CSRF 403 after restart — auto-regenerated FW_SECRET_
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1125. Type: bug-report.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T15:21:28Z
-last_update: 2026-04-18T15:21:28Z
+last_update: 2026-04-19T08:15:46Z
 date_finished: null
 ---
 
@@ -20,34 +20,32 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Duplicate of T-1302. Both tasks cite the same termlink source (T-1125) and the same bug report about Watchtower Flask `secret_key` auto-regeneration breaking CSRF. Pickup dedup missed the collision. See `docs/reports/T-1296-duplicate-of-T-1302.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1302 exists with same source — TESTED TRUE (both cite termlink T-1125)
+2. Work on both would be redundant — TESTED TRUE
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+None — confirmed duplicate via source-task-ID cross-check.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None applicable.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** close this task as duplicate.
+**OUT:** fixing the underlying CSRF bug (handled under T-1302).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (T-1296 cites termlink T-1125; T-1302 cites termlink T-1125)
+- [x] Assumptions tested (duplicate confirmed by source-task ID)
+- [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1302)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +75,15 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (duplicate of T-1302)
+
+**Rationale:** Same termlink source (T-1125) and same bug-report as T-1302. T-1302 is already in the triage pipeline. Keeping both open creates confusion and splits effort. Close this task; keep T-1302 as the canonical record.
+
+**Evidence:**
+- T-1296 frontmatter: "Source: termlink, task T-1125. Type: bug-report."
+- T-1302 frontmatter: "Source: termlink, task T-1125. Type: bug-report."
+- Both titles reference the same CSRF / secret_key regeneration issue
+- Full note: `docs/reports/T-1296-duplicate-of-T-1302.md`
 
 ## Decisions
 
@@ -106,3 +104,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-19T08:15:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
