@@ -123,10 +123,11 @@ if [ -n "$TASK_REF" ]; then
 
         if [ "$HAS_DECISION" = false ]; then
             # Count existing commits for this inception task.
-            # Anchor with ":" (T-1328) so substring overlaps don't overcount —
-            # e.g. T-1130 must not match T-11300, and a body mentioning "T-1130 pickup"
-            # in another task's commit must not count toward T-1130's gate.
-            INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF:" 2>/dev/null | wc -l | tr -d ' ')
+            # Match only commits whose SUBJECT starts with "T-XXX:" (T-1328) —
+            # using --grep against the full message would match body mentions of
+            # the same ID in unrelated commits. --oneline gives "<sha> <subject>"
+            # so anchor on the subject after the sha.
+            INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
 
             if [ "$INCEPTION_COMMITS" -ge "$INCEPTION_COMMIT_LIMIT" ]; then
                 echo ""
@@ -161,8 +162,8 @@ fi
 # First commit is allowed (task creation). Subsequent commits must have the artifact
 # either on disk already or in the staged changes.
 if [ -n "$TASK_REF" ] && [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
-    # T-1328: anchor with ":" so substring overlaps don't overcount
-    INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF:" 2>/dev/null | wc -l | tr -d ' ')
+    # T-1328: anchor on subject prefix so body-mentions don't inflate the count
+    INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
     if [ "$INCEPTION_COMMITS" -gt 0 ]; then
         # Check if docs/reports/ changes are in this commit
         HAS_STAGED_RESEARCH=$(git diff --cached --name-only | grep -c "^docs/reports/" || true)

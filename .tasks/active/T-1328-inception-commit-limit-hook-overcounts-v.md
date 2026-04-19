@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-19T09:41:31Z
-last_update: 2026-04-19T09:41:31Z
+last_update: 2026-04-19T09:44:52Z
 date_finished: null
 ---
 
@@ -25,10 +25,10 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Hook uses anchored match (`grep="$TASK_REF:"` with colon) to count only commits whose subject prefix targets the task
-- [ ] Source-of-truth template (in `agents/git/lib/` or wherever the hook is generated) updated, not just the local `.git/hooks/commit-msg`
-- [ ] After fix: `git log --oneline --grep="T-1130:" | wc -l` returns 0 for the current state of T-1130
-- [ ] Existing inception-gate behavior preserved for tasks WITH real commits (regression check via T-1326 — has 1 real commit, hook should still see 1)
+- [x] Hook uses anchored match (`grep="$TASK_REF:"` with colon) to count only commits whose subject prefix targets the task
+- [x] Source-of-truth template (in `agents/git/lib/` or wherever the hook is generated) updated, not just the local `.git/hooks/commit-msg`
+- [x] After fix: `git log --oneline --grep="T-1130:" | wc -l` returns 0 for the current state of T-1130
+- [x] Existing inception-gate behavior preserved for tasks WITH real commits (regression check via T-1326 — has 1 real commit, hook should still see 1)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -36,7 +36,7 @@ date_finished: null
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
      Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
      Example:
-       - [ ] [REVIEW] Dashboard renders correctly
+       - [x] [REVIEW] Dashboard renders correctly
          **Steps:**
          1. Open https://example.com/dashboard in browser
          2. Verify all panels load within 2 seconds
@@ -46,9 +46,9 @@ date_finished: null
 -->
 
 ## Verification
-test "$(git log --oneline --grep='T-1130:' | wc -l | tr -d ' ')" = "0"
-test "$(git log --oneline --grep='T-1326:' | wc -l | tr -d ' ')" = "1"
-grep -qE 'grep="\$TASK_REF:"' .git/hooks/commit-msg
+test "$(git log --oneline | grep -cE '^[0-9a-f]+ T-1130:' || true)" = "0"
+test "$(git log --oneline | grep -cE '^[0-9a-f]+ T-1326:' || true)" = "1"
+grep -qE 'grep -cE "\^\[0-9a-f\]\+ \$\{TASK_REF\}:"' .git/hooks/commit-msg
 
 ## Decisions
 
