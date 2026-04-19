@@ -1213,17 +1213,34 @@ concerns:
 
 - id: G-045
   type: gap
-  title: "TermLink hub 'ring20-dashboard' (192.168.10.121:9100) has been failing fleet-doctor with auth-mismatch for 3+ consecutive runs over >24h"
-  description: "Auto-registered by T-1053 under G-019 (framework-blind-to-persistent-failure guard). Hub has failed fleet-doctor with error class 'auth-mismatch' for 3 consecutive runs since 2026-04-16T04:39:06Z (first observed). This indicates either a genuinely broken hub auth state OR stale client credentials that were not refreshed after a hub rotation. Per T-1051 Option D, the heal path is: 1) confirm the hub is intended to be up (termlink remote ping 192.168.10.121:9100 from a trusted anchor), 2) if yes, refresh the client secret (termlink fleet reauth ring20-dashboard when T-1054 lands, or manually copy /var/lib/termlink/hub.secret via an out-of-band channel for now)."
-  spec_reference: "T-1051 inception, T-1053 implementation, .context/working/.fleet-failure-state.json"
+  title: "TermLink fleet cert/secret co-rotation — both .121 (ring20-dashboard) and .122 (ring20-management) hubs rotating TLS certs AND shared secrets, breaking cross-host coordination"
+  description: "Originally scoped to .122 only (auto-registered by T-1053 under G-019). 2026-04-19 widened to fleet-wide after .121 also failed: both hubs show rotating TLS fingerprints AND desynced shared secrets within 24h windows. Per T-1326 triage (this session): .122 fingerprint cbc43af8 → 5198d1fb → b90adf25 within 24h; .121 fingerprint 025f5a6a → 7f927cc0 with auth then failing 'invalid signature' after TOFU clear (cert AND secret rotated). Cross-host coordination is silently broken — the 2026-04-15 broadcast from .121 went unanswered for 4 days. Per T-1051 Option D, heal path: 1) confirm hub intent (termlink remote ping <ip>:9100 from trusted anchor), 2) refresh client secret (T-1054 fleet reauth when shipped, or manual scp of /var/lib/termlink/hub.secret out-of-band)."
+  spec_reference: "T-1051 inception, T-1053 implementation, T-1326 fleet-wide widening, .context/working/.fleet-failure-state.json"
   severity: high
   trigger_fired: true
-  trigger_event: "2026-04-17T10:53:01Z: 3 consecutive fleet-doctor failures on ring20-dashboard (192.168.10.121:9100) with class auth-mismatch, first observed 2026-04-16T04:39:06Z"
+  trigger_event: "2026-04-17: 3 consecutive fleet-doctor failures on .121 with class auth-mismatch. 2026-04-19: .121 widening + .122 third rotation observed, both confirmed via direct test from .107"
   detection_lag_days: "1"
-  what_works_now: "Fleet doctor correctly classifies the error and emits a hint. T-1052 has already recorded an isolated learning. This concern escalates the sustained pattern to Watchtower visibility."
-  what_remains: "Operator must refresh the client's cached secret for this hub. Long-term fix: T-1054 (termlink fleet reauth) lands a one-command heal."
-  mitigation_candidate: "Ship T-1054 (fleet reauth Tier-1) and T-1055 (fleet reauth --bootstrap-from, Tier-2)."
+  what_works_now: "Fleet doctor correctly classifies the error and emits a hint. T-1052 has already recorded an isolated learning. T-1326 inception filed this session with GO recommendation for T-1054 + fw doctor rotation-detection check."
+  what_remains: "Operator must refresh client secrets for BOTH .121 and .122. Long-term fix: T-1054 (termlink fleet reauth) lands one-command heal; T-1326 build sibling adds doctor rotation-detection."
+  mitigation_candidate: "Ship T-1054 (fleet reauth Tier-1), T-1055 (fleet reauth --bootstrap-from, Tier-2), and T-1326 doctor rotation-detection."
   status: watching
   created: 2026-04-17
-  last_reviewed: 2026-04-17
-  related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055]
+  last_reviewed: 2026-04-19
+  related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055, T-1326]
+
+- id: G-046
+  type: gap
+  title: "Pickup pipeline auto-creates self-pickup duplicates for already-completed source tasks — structural noise, repeated triage cost"
+  description: "When a learning, feature-proposal, or bug-report envelope arrives via the pickup pipeline, an inception task is auto-created regardless of whether the source task has already been work-completed in this same project. Self-pickups (source: 999-Agentic-Engineering-Framework) for source tasks already work-completed GO produce zero new scope, but each one still requires manual triage. Examples accumulated: T-1130 (←T-1126), T-1124 (←T-1122), T-1127 (←T-1125), T-1131 (←T-1125), T-1140 (←T-1135), T-1271 (self-pickup of T-1270 own work). All triaged DEFER as duplicates."
+  spec_reference: "agents/pickup/, T-1130 T-1124 T-1127 T-1131 T-1140 task files"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-19: 5 self-pickup duplicates batch-triaged DEFER in one session — same pattern as T-1271 last week"
+  detection_lag_days: "0"
+  what_works_now: "Pipeline correctly creates inception tasks for external pickups (genuine cross-project signals). Operator can DEFER duplicates manually via Watchtower."
+  what_remains: "Pipeline should skip envelopes whose source-task is already work-completed in the destination project, OR auto-DEFER them at pickup-process time with a duplicate-of pointer."
+  mitigation_candidate: "Add pre-create check in agents/pickup/pickup-process.sh: if source_project == this_project AND source_task is work-completed, skip envelope and log to .context/pickup/auto-deferred/."
+  status: watching
+  created: 2026-04-19
+  last_reviewed: 2026-04-19
+  related_tasks: [T-1130, T-1124, T-1127, T-1131, T-1140, T-1271]
