@@ -4,15 +4,15 @@ name: "Pickup: Watchtower PROJECT_ROOT defaults to FRAMEWORK_ROOT — ambient st
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1123. Type: bug-report.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T15:21:34Z
-last_update: 2026-04-18T15:21:34Z
+last_update: 2026-04-19T08:17:06Z
 date_finished: null
 ---
 
@@ -20,34 +20,32 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Duplicate of T-1303. Both cite termlink source T-1123 and describe the same `PROJECT_ROOT` fallback bug. Pickup dedup missed the collision. See `docs/reports/T-1297-duplicate-of-T-1303.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1303 exists with same source — TESTED TRUE (both cite termlink T-1123)
+2. Work on both would be redundant — TESTED TRUE
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+None — confirmed duplicate.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None applicable.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** close this task as duplicate.
+**OUT:** fixing the underlying PROJECT_ROOT fallback bug (handled under T-1303).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (T-1297 cites termlink T-1123; T-1303 cites termlink T-1123)
+- [x] Assumptions tested (duplicate confirmed by source-task ID)
+- [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1303)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +75,14 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (duplicate of T-1303)
+
+**Rationale:** Same termlink source (T-1123) and same bug-report as T-1303. Keeping both open creates confusion and splits effort. Close this task; keep T-1303 as canonical.
+
+**Evidence:**
+- T-1297 frontmatter: "Source: termlink, task T-1123. Type: bug-report."
+- T-1303 frontmatter: "Source: termlink, task T-1123. Type: bug-report."
+- Full note: `docs/reports/T-1297-duplicate-of-T-1303.md`
 
 ## Decisions
 
@@ -106,3 +103,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-19T08:17:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
