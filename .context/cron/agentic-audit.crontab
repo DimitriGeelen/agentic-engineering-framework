@@ -40,8 +40,8 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Cron audit file retention (daily)
 0 9 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 -c "import os,datetime; cutoff=str(datetime.date.today()-datetime.timedelta(days=7)); d='.context/audits/cron'; [os.remove(os.path.join(d,f)) for f in os.listdir(d) if f.endswith('.yaml') and len(f)>=15 and f[4]=='-' and f[:10]<cutoff]" 2>/dev/null
 
-# Pickup inbox processor (1 min)
-* * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" pickup process 2>/dev/null
+# Pickup inbox processor (1 min) — flock-wrapped to prevent orphan stacking (G-051)
+* * * * * root flock -n /var/lock/fw-pickup-process.lock -c 'PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" pickup process' 2>/dev/null
 
 # Weekly release tagging (Monday 10:00)
 0 10 * * 1 root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" release tag-and-release 2>/dev/null

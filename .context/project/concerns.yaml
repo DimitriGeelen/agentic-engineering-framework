@@ -1325,7 +1325,8 @@ concerns:
   what_works_now: "T-1331 landed flock on audit cron lines (9 entries). Pickup-process pipeline itself functions — inbox gets drained, tasks get created."
   what_remains: "Each slow pickup invocation stacks with the next 1-minute cron fire. Without flock, orphans accumulate indefinitely under any slowdown. Mitigation: add flock -n to pickup-process cron line, same pattern as audit lines."
   mitigation_candidate: "Edit .context/cron/agentic-audit.crontab pickup-process entry: wrap `fw pickup process` in `flock -n /var/lock/fw-pickup-process.lock -c '...'`. Reinstall to /etc/cron.d/. Kill existing orphans. Est. 5 min."
-  status: watching
+  mitigation_applied: "2026-04-19 T-1334: flock -n /var/lock/fw-pickup-process.lock wrapper added to .context/cron/agentic-audit.crontab + installed to /etc/cron.d/agentic-audit-999-agentic-engineering-framework. Skip-on-held-lock verified empirically."
+  status: mitigated
   created: 2026-04-19
   last_reviewed: 2026-04-19
-  related_tasks: [T-1330, T-1331]
+  related_tasks: [T-1330, T-1331, T-1334]
