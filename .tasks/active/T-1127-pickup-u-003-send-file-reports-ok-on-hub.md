@@ -20,34 +20,34 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Self-pickup auto-created from this framework's own T-1125 ("TermLink U-003: send-file reports ok on hub acceptance, not delivery — silent file loss"). T-1125 is already work-completed GO. This pickup contains no new scope; it is duplicate-by-design from the pickup pipeline auto-creating an inception task whenever a learning/feature/bug envelope arrives from a completed source task.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1125 already addresses the U-003 send-file silent loss — TESTED TRUE (status: work-completed GO)
+2. Nothing in this pickup envelope adds scope beyond T-1125 — TESTED TRUE (re-read pickup vs parent episodic)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+5-min time-box (done):
+- Verify T-1125 status — DONE (work-completed GO)
+- Diff pickup envelope vs parent task scope — DONE (no new items)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None. Triage decision, not implementation.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** decide whether T-1127 has any scope beyond what T-1125 GO already shipped.
+**OUT:** anything about send-file delivery semantics (already settled in T-1125 + L-006/CLAUDE.md).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (self-pickup of completed T-1125; no new scope)
+- [x] Assumptions tested (2/2 true)
+- [x] Recommendation written with rationale (DEFER — duplicate of completed T-1125)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -61,12 +61,10 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- Root cause identified with bounded fix
-- Fix is scoped and testable
+- New scope exists beyond what T-1125 already shipped
 
 **NO-GO if:**
-- Root cause identified with bounded fix
-- Fix is scoped and testable
+- The pickup re-states a problem already addressed and shipped (this is the case here)
 
 ## Verification
 
@@ -76,15 +74,16 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (close as duplicate)
+
+**Rationale:** Self-pickup auto-created by the framework's pickup pipeline when an envelope arrived from T-1125 ("TermLink U-003: send-file reports ok on hub acceptance, not delivery — silent file loss"). T-1125 is already work-completed GO and addresses the U-003 send-file silent loss. There is no new scope to explore. Keeping T-1127 open is structural noise — same anti-pattern as T-1130 / T-1271 (also DEFER as self-pickup duplicates).
+
+**Evidence:**
+- T-1125 status: work-completed, decision: GO (`bin/fw inception status | grep T-1125`)
+- Pickup envelope re-states the parent's problem; no new file paths, commands, or scope items
+- Established framework pattern: when a self-pickup arrives for an already-completed source task, the right action is DEFER
+
+**Structural follow-up (separate task):** the pickup pipeline should skip envelopes whose source-task is already work-completed. Tracked as part of the "pickup-pipeline-self-noise" class — to be filed if not already in concerns.yaml.
 
 ## Decisions
 
