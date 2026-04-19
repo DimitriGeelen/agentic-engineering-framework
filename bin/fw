@@ -15,8 +15,13 @@ set -euo pipefail
 # Falls back to VERSION file for consumer installs without git history
 _derive_version() {
     local fw_dir="${BASH_SOURCE[0]%/*}/.."
-    local desc
-    desc=$(git -C "$fw_dir" describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+    local desc=""
+    # G-049: only call `git describe` when $fw_dir has its own .git.
+    # In vendored mode, $fw_dir/.git is absent and walking up would
+    # find the consumer's repo and return the consumer's tag.
+    if [ -d "$fw_dir/.git" ] || [ -f "$fw_dir/.git" ]; then
+        desc=$(git -C "$fw_dir" describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+    fi
     if [ -n "$desc" ]; then
         # v1.4.0 → 1.4.0 | v1.4.0-5-gabc123 → 1.4.5
         desc="${desc#v}"  # strip leading v

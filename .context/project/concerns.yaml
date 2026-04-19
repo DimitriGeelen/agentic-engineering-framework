@@ -1291,9 +1291,11 @@ concerns:
   what_works_now: "Framework-repo (non-vendored) installs: _derive_version finds the framework's own .git and returns correct tag. VERSION file fallback works when there is no .git anywhere up the tree."
   what_remains: "Vendored installs (.agentic-framework inside a git-tracked consumer): git -C walks up, finds consumer .git, returns wrong tag. Mitigation: add `[ -d $fw_dir/.git ] || [ -f $fw_dir/.git ]` guard around git describe; fall through to VERSION file when absent. ~3-line change."
   mitigation_candidate: "Edit bin/fw _derive_version: only invoke git describe when $fw_dir has its own .git (file or dir); else read VERSION. Bats coverage: vendored test fixture confirms VERSION wins over containing repo's tag."
-  status: watching
+  mitigation_applied: "2026-04-19 T-1336: added `[ -d $fw_dir/.git ] || [ -f $fw_dir/.git ]` guard around git describe in bin/fw:_derive_version. Reproduced bug in sandbox (consumer repo tagged v0.12.1191 → pre-fix walked up and returned consumer tag). Framework-repo mode version preserved (fw v1.5.20)."
+  status: mitigated
   created: 2026-04-19
   last_reviewed: 2026-04-19
+  related_tasks: [T-1336]
   related_tasks: [T-1253]
 
 - id: G-050

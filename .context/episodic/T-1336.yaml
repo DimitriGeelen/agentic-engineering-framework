@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1336: G-049 mitigation: guard _derive_version git describe on framework-own .git to stop consumer-tag walk
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-19T15:57:50Z
+# ============================================================================
+
+task_id: T-1336
+task_name: "G-049 mitigation: guard _derive_version git describe on framework-own .git to stop consumer-tag walk"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-19T14:14:26Z
+completed: 2026-04-19T15:57:32Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`_derive_version` guards `git describe` on presence of `$fw_dir/.git` (dir or file)"
+  - "Framework-repo mode still reports correct tag-derived version (fw v1.5.20 unchanged)"
+  - "Simulated vendored test: consumer repo tagged v0.12.1191, vendored subdir VERSION=1.5.744 — without guard, git describe walks up and returns consumer tag; with guard, guard fails and control falls to VERSION file"
+  - "`bin/fw --version` unchanged in the framework repo (regression check)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 103 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 103
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1336-g-049-mitigation-guard-deriveversion-git.md
+generated_by: context-agent-hybrid
