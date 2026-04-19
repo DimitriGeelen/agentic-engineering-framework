@@ -20,34 +20,35 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Self-pickup auto-created from this framework's outgoing response to the dashboard-brain Q1-Q5 consultation. The actual response was authored as `docs/reports/T-1137-dashboard-brain-response.md` and delivered to ring20-dashboard. This pickup is the framework's own pipeline observing its own outgoing message — duplicate-by-design (same anti-pattern as G-046).
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. The Q1-Q5 consultation has already been answered — TESTED TRUE (`docs/reports/T-1137-dashboard-brain-response.md` exists, dated 2026-04-12)
+2. No additional response is required from this framework — TESTED TRUE (pickup is the framework's pipeline noticing its own outgoing message)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+5-min time-box (done):
+- Locate the original consultation — DONE (Q1-Q5 from dashboard-brain)
+- Locate the response — DONE (docs/reports/T-1137-dashboard-brain-response.md, 2026-04-12)
+- Verify whether dashboard-brain confirmed receipt — out of scope (downstream concern)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** decide whether T-1138 carries new scope beyond T-1137's response.
+**OUT:** the consultation's content (already answered in T-1137).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (self-pickup of T-1137 outgoing response)
+- [x] Assumptions tested (2/2 true)
+- [x] Recommendation written with rationale (DEFER — duplicate of T-1137 / G-046 class)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -61,12 +62,10 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- Root cause identified with bounded fix
-- Fix is scoped and testable
+- New scope exists beyond T-1137's response
 
 **NO-GO if:**
-- Root cause identified with bounded fix
-- Fix is scoped and testable
+- The pickup re-states an already-delivered response (this is the case here)
 
 ## Verification
 
@@ -76,15 +75,15 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (close as duplicate of T-1137 outgoing response)
+
+**Rationale:** The dashboard-brain Q1-Q5 consultation was answered in `docs/reports/T-1137-dashboard-brain-response.md` on 2026-04-12. This pickup is the framework's own pipeline auto-creating an inception when it observed the outgoing message. Same self-pickup-duplicate pattern as G-046 (just registered).
+
+**Evidence:**
+- `docs/reports/T-1137-dashboard-brain-response.md` exists, addresses Q1-Q5 with concrete answers (fw bus TTL cache, cross-project topology, init gaps)
+- Pickup envelope source: 999-Agentic-Engineering-Framework (this project)
+- T-1137 is in completed/ (work done)
+- G-046 (registered this session) covers this exact class — pickup pipeline self-noise
 
 ## Decisions
 
