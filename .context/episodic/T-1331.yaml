@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1331: Add flock wrapper to audit cron entries — prevent orphan audit accumulation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-19T13:01:43Z
+# ============================================================================
+
+task_id: T-1331
+task_name: "Add flock wrapper to audit cron entries — prevent orphan audit accumulation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-19T12:48:56Z
+completed: 2026-04-19T13:01:25Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`.context/cron/agentic-audit.crontab` wraps every `fw audit ... --cron` invocation in `flock -n /var/lock/fw-audit-<slug>.lock` so overlapping cron fires skip instead of stack"
+  - "Per-section lock file names (not one global) so different audit sections still run in parallel"
+  - "Updated crontab installed to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` (was `/etc/cron.d/agentic-audit`)"
+  - "No orphan accumulation after one 30-min cycle (post-fix count: 1 — was 139 pre-fix)"
+  - "Lock-skip behaviour tested: second `flock -n` on held lock exits 1 without running payload (empirical test, 2026-04-19)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1331-add-flock-wrapper-to-audit-cron-entries-.md
+generated_by: context-agent-hybrid

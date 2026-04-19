@@ -2,32 +2,37 @@
 # Source of truth: /opt/999-Agentic-Engineering-Framework/.context/cron/agentic-audit.crontab (git-tracked)
 # Installed to: /etc/cron.d/agentic-audit-999-agentic-engineering-framework
 # Project: /opt/999-Agentic-Engineering-Framework
+#
+# flock wrapper (T-1331): every `fw audit ... --cron` is wrapped in
+# `flock -n /var/lock/fw-audit-<section>.lock -c '...'` so overlapping
+# cron fires skip rather than stack. Prevents orphan accumulation
+# observed in T-1330 RCA (139 orphan processes, some running >24h).
 SHELL=/bin/bash
 PATH=/usr/local/bin:/usr/bin:/bin
 
 # Structural audits (30 min)
-*/30 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section structure,compliance,quality,discovery --cron 2>/dev/null
+*/30 * * * * root flock -n /var/lock/fw-audit-999-structure.lock -c 'PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section structure,compliance,quality,discovery --cron' 2>/dev/null
 
 # Git traceability + episodic (hourly)
-0 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section traceability,episodic,discovery-trends --cron 2>/dev/null
+0 * * * * root flock -n /var/lock/fw-audit-999-traceability.lock -c 'PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section traceability,episodic,discovery-trends --cron' 2>/dev/null
 
 # Observations + gaps (6 hourly)
-0 */6 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps --cron 2>/dev/null
+0 */6 * * * root flock -n /var/lock/fw-audit-999-observations.lock -c 'PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps --cron' 2>/dev/null
 
 # OE fast checks (30 min)
-15,45 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-fast,oe-research --cron 2>/dev/null
+15,45 * * * * root flock -n /var/lock/fw-audit-999-oe-fast.lock -c 'PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-fast,oe-research --cron' 2>/dev/null
 
 # OE hourly checks
-30 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-hourly --cron 2>/dev/null
+30 * * * * root flock -n /var/lock/fw-audit-999-oe-hourly.lock -c 'PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-hourly --cron' 2>/dev/null
 
 # OE daily checks
-0 7 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-daily --cron 2>/dev/null
+0 7 * * * root flock -n /var/lock/fw-audit-999-oe-daily.lock -c 'PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-daily --cron' 2>/dev/null
 
 # OE weekly checks
-0 9 * * 1 root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-weekly --cron 2>/dev/null
+0 9 * * 1 root flock -n /var/lock/fw-audit-999-oe-weekly.lock -c 'PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-weekly --cron' 2>/dev/null
 
 # Full audit (daily)
-0 8 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --cron 2>/dev/null
+0 8 * * * root flock -n /var/lock/fw-audit-999-full.lock -c 'PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --cron' 2>/dev/null
 
 # Component docs regeneration (daily)
 15 8 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" docs --all 2>/dev/null
