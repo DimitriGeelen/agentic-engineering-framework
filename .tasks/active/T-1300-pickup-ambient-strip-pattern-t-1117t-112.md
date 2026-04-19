@@ -4,15 +4,15 @@ name: "Pickup: Ambient strip pattern (T-1117..T-1121) — single-source linked s
 description: >
   Auto-created from pickup envelope. Source: termlink. Type: feature-proposal.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-18T15:21:53Z
-last_update: 2026-04-18T15:21:53Z
+last_update: 2026-04-19T08:19:52Z
 date_finished: null
 ---
 
@@ -20,34 +20,36 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Termlink's T-1117..T-1121 arc enhanced its base.html ambient strip into fully-linked operator chrome (focus→/tasks/id, audit→/quality, attention→/tasks, fleet→/fleet, project→/project). Pickup proposes adopting this as a framework default. See `docs/reports/T-1300-ambient-strip-codification.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. The framework's base.html has an ambient strip — TESTED TRUE (web/templates/base.html:315-331, 5 spans)
+2. The existing spans are NOT linked — TESTED TRUE (plain `<span>` elements)
+3. The fleet indicator from termlink applies here — TESTED FALSE (this machine isn't a fleet node; no fleet data source)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+10-min time-box (done):
+- Grep base.html for ambient-strip skeleton — DONE
+- Compare framework spans to termlink's proposal — DONE
+- Assess operational cost of missing links — DONE (no operator complaints recorded)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None — pure UI polish; `url_for()` is already in scope for blueprints.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** decision on whether to link the 5 existing ambient-strip spans.
+**OUT:** fleet indicator (framework isn't a fleet node); broader navigation refactor; copying termlink's CSS verbatim.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (pickup has concrete prior art in termlink commits; framework has partial implementation)
+- [x] Assumptions tested (2 true, 1 false — fleet doesn't apply here)
+- [x] Recommendation written with rationale (DEFER — polish, not functional gap)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +79,16 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER
+
+**Rationale:** The framework's ambient strip is already functional. Making elements clickable is UX polish, not a functional gap. No operator has complained about needing clicks where spans stand today. Fleet indicator (termlink's novel piece) doesn't apply here — this machine isn't a fleet node. Budget is better spent on real bugs. Revisit when an operator complains or a second project reports the same pain.
+
+**Evidence:**
+- `web/templates/base.html:315-331` renders 5 ambient-strip spans (focus, session, audit, attention, project-root) — plain text, not links
+- No issue in concerns.yaml or learnings.yaml flags navigation friction caused by unlinked ambient strip
+- Fleet dot piece needs a fleet endpoint the framework doesn't have
+- Small-scope fallback exists if reconsidered: wrap each span in `<a href="{{ url_for(...) }}">` (~5-line edit)
+- Full triage: `docs/reports/T-1300-ambient-strip-codification.md`
 
 ## Decisions
 
@@ -106,3 +109,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-19T08:19:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
