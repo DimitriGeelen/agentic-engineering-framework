@@ -4,16 +4,16 @@ name: "Audit detection quality: bugfix-learning denominator counts dev-discovere
 description: >
   Inception: Audit detection quality: bugfix-learning denominator counts dev-discovered bugs inflating FAIL threshold
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T07:02:11Z
-last_update: 2026-04-14T07:05:47Z
-date_finished: null
+last_update: 2026-04-18T22:42:06Z
+date_finished: 2026-04-18T22:42:06Z
 ---
 
 # T-1252: Audit detection quality: bugfix-learning denominator counts dev-discovered bugs inflating FAIL threshold
@@ -132,7 +132,25 @@ learning coverage rather than penalizing trivial dev cleanups.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — implement the narrower filter
+
+Rationale: Current audit denominator is ~2-3x too broad (66% inflation from
+dev-discovered fixes). Narrowing gives agents a truthful signal about field-bug
+learning coverage rather than penalizing trivial dev cleanups.
+
+Evidence:
+- Bulk classification run: 159/242 (66%) appear dev-discovered, not field-discovered
+- Proposed filter uses only metadata already present in task files (no schema change)
+- Coverage stays at FAIL even after narrowing — metric retains diagnostic value
+- See full research artifact: docs/reports/T-1252-bugfix-detection-quality.md
+
+Next step if GO: Create `T-1255-build: narrow bugfix-learning detector to field-discovered bugs in audit.sh`
+
+Complementary to: T-1251 (capture-side — why agents skip `fw fix-learned`)
+
+**Date**: 2026-04-18T22:42:06Z
 
 ## Updates
 
@@ -141,3 +159,26 @@ learning coverage rather than penalizing trivial dev cleanups.
 
 ### 2026-04-14T07:05:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T22:42:06Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — implement the narrower filter
+
+Rationale: Current audit denominator is ~2-3x too broad (66% inflation from
+dev-discovered fixes). Narrowing gives agents a truthful signal about field-bug
+learning coverage rather than penalizing trivial dev cleanups.
+
+Evidence:
+- Bulk classification run: 159/242 (66%) appear dev-discovered, not field-discovered
+- Proposed filter uses only metadata already present in task files (no schema change)
+- Coverage stays at FAIL even after narrowing — metric retains diagnostic value
+- See full research artifact: docs/reports/T-1252-bugfix-detection-quality.md
+
+Next step if GO: Create `T-1255-build: narrow bugfix-learning detector to field-discovered bugs in audit.sh`
+
+Complementary to: T-1251 (capture-side — why agents skip `fw fix-learned`)
+
+### 2026-04-18T22:42:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

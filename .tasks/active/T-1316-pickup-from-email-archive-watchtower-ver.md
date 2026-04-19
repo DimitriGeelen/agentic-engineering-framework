@@ -4,16 +4,16 @@ name: "Pickup from email-archive: Watchtower verification CWD bug (sourced T-104
 description: >
   Bug from /opt/050-email-archive (T-1044): Watchtower runs verification commands with CWD=.agentic-framework/ instead of PROJECT_ROOT, causing HTTP 500 on inception decide GO. Root cause verified: watchtower.sh:169 cd's to FRAMEWORK_ROOT; update-task.sh:223 evals verification with no cd to PROJECT_ROOT. One-line fix proposed (Option 1). Proposal artifact at docs/proposals/T-1316-from-email-archive-watchtower-verification-cwd.md.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T20:33:46Z
-last_update: 2026-04-18T20:34:26Z
-date_finished: null
+last_update: 2026-04-18T22:50:07Z
+date_finished: 2026-04-18T22:49:32Z
 ---
 
 # T-1316: Pickup from email-archive: Watchtower verification CWD bug (sourced T-1044)
@@ -109,7 +109,20 @@ bats tests/unit/update_task_verification.bats
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Reported with full RCA, verified line numbers (`bin/watchtower.sh:172`, `agents/task-create/update-task.sh:223`), Option 1 fix is one line and strictly more correct (relative paths now resolve where task authors expect). Risk near zero — verification commands in our own tasks already assume PROJECT_ROOT-relative paths.
+
+Evidence:
+- Confirmed `cd "$FRAMEWORK_ROOT"` at `bin/watchtower.sh:172`.
+- Confirmed `eval "$cmd"` with no CWD reset at `agents/task-create/update-task.sh:223`.
+- Email-archive provided live `/proc/PID/cwd` evidence.
+- Same bug class as T-1043/T-1315 (vendored-mode blind spot).
+- Option 2 (change watchtower.sh CWD) deferred — wider blast radius, separate task if needed.
+
+**Date**: 2026-04-18T22:50:07Z
 
 ## Updates
 
@@ -118,3 +131,35 @@ bats tests/unit/update_task_verification.bats
 
 ### 2026-04-18T20:34:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T22:49:32Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Reported with full RCA, verified line numbers (`bin/watchtower.sh:172`, `agents/task-create/update-task.sh:223`), Option 1 fix is one line and strictly more correct (relative paths now resolve where task authors expect). Risk near zero — verification commands in our own tasks already assume PROJECT_ROOT-relative paths.
+
+Evidence:
+- Confirmed `cd "$FRAMEWORK_ROOT"` at `bin/watchtower.sh:172`.
+- Confirmed `eval "$cmd"` with no CWD reset at `agents/task-create/update-task.sh:223`.
+- Email-archive provided live `/proc/PID/cwd` evidence.
+- Same bug class as T-1043/T-1315 (vendored-mode blind spot).
+- Option 2 (change watchtower.sh CWD) deferred — wider blast radius, separate task if needed.
+
+### 2026-04-18T22:49:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:50:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Reported with full RCA, verified line numbers (`bin/watchtower.sh:172`, `agents/task-create/update-task.sh:223`), Option 1 fix is one line and strictly more correct (relative paths now resolve where task authors expect). Risk near zero — verification commands in our own tasks already assume PROJECT_ROOT-relative paths.
+
+Evidence:
+- Confirmed `cd "$FRAMEWORK_ROOT"` at `bin/watchtower.sh:172`.
+- Confirmed `eval "$cmd"` with no CWD reset at `agents/task-create/update-task.sh:223`.
+- Email-archive provided live `/proc/PID/cwd` evidence.
+- Same bug class as T-1043/T-1315 (vendored-mode blind spot).
+- Option 2 (change watchtower.sh CWD) deferred — wider blast radius, separate task if needed.

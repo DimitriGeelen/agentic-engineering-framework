@@ -4,16 +4,16 @@ name: "Pickup: Vendored .agentic-framework/ tracks Python __pycache__ files — 
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1130. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T22:23:00Z
-last_update: 2026-04-18T22:26:03Z
-date_finished: null
+last_update: 2026-04-18T22:51:30Z
+date_finished: 2026-04-18T22:50:58Z
 ---
 
 # T-1321: Pickup: Vendored .agentic-framework/ tracks Python __pycache__ files — Uncommitted changes present is the #1 audit trend (23×) for consumers (from termlink)
@@ -103,7 +103,20 @@ Source: termlink T-1130 pickup (P-038).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Concrete, verified bug. The fix is minimal: ship a `.gitignore` inside the vendored `.agentic-framework/` directory at vendor time. `do_vendor` already excludes `__pycache__` from the COPY step but doesn't prevent RUNTIME pyc creation from being tracked. Side benefit: closes a recurring audit-noise loop that masks real signal (#1 trend at 23 occurrences on a single consumer). Risk near zero — `.gitignore` files are universally understood and additive.
+
+Evidence:
+- Confirmed `do_vendor` (bin/fw:181-202) excludes `__pycache__` and `.pyc` from the rsync COPY but does NOT write a `.gitignore` to `$dest`
+- Framework repo's own `.gitignore` line 1 is `__pycache__/` — the framework needs the same protection in its vendored form
+- Termlink reproduces: `git ls-files .agentic-framework/ | grep -c pycache → 45`
+- Termlink trend: "Uncommitted changes present" #1 audit warning, 23 repeats
+- Build sibling T-1323 ships the fix + cleanup hint + bats regression
+
+**Date**: 2026-04-18T22:51:30Z
 
 ## Updates
 
@@ -113,3 +126,35 @@ Source: termlink T-1130 pickup (P-038).
 ### 2026-04-18T22:24:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:50:58Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Concrete, verified bug. The fix is minimal: ship a `.gitignore` inside the vendored `.agentic-framework/` directory at vendor time. `do_vendor` already excludes `__pycache__` from the COPY step but doesn't prevent RUNTIME pyc creation from being tracked. Side benefit: closes a recurring audit-noise loop that masks real signal (#1 trend at 23 occurrences on a single consumer). Risk near zero — `.gitignore` files are universally understood and additive.
+
+Evidence:
+- Confirmed `do_vendor` (bin/fw:181-202) excludes `__pycache__` and `.pyc` from the rsync COPY but does NOT write a `.gitignore` to `$dest`
+- Framework repo's own `.gitignore` line 1 is `__pycache__/` — the framework needs the same protection in its vendored form
+- Termlink reproduces: `git ls-files .agentic-framework/ | grep -c pycache → 45`
+- Termlink trend: "Uncommitted changes present" #1 audit warning, 23 repeats
+- Build sibling T-1323 ships the fix + cleanup hint + bats regression
+
+### 2026-04-18T22:50:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:51:30Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Concrete, verified bug. The fix is minimal: ship a `.gitignore` inside the vendored `.agentic-framework/` directory at vendor time. `do_vendor` already excludes `__pycache__` from the COPY step but doesn't prevent RUNTIME pyc creation from being tracked. Side benefit: closes a recurring audit-noise loop that masks real signal (#1 trend at 23 occurrences on a single consumer). Risk near zero — `.gitignore` files are universally understood and additive.
+
+Evidence:
+- Confirmed `do_vendor` (bin/fw:181-202) excludes `__pycache__` and `.pyc` from the rsync COPY but does NOT write a `.gitignore` to `$dest`
+- Framework repo's own `.gitignore` line 1 is `__pycache__/` — the framework needs the same protection in its vendored form
+- Termlink reproduces: `git ls-files .agentic-framework/ | grep -c pycache → 45`
+- Termlink trend: "Uncommitted changes present" #1 audit warning, 23 repeats
+- Build sibling T-1323 ships the fix + cleanup hint + bats regression

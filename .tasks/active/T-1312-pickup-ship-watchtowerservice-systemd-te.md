@@ -99,7 +99,18 @@ Termlink T-1122 proposes shipping a `watchtower.service` systemd template that f
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (duplicate)
+
+Rationale: This pickup proposes the same change already captured locally as T-1309. Closing this duplicate keeps the inception queue lean. The actual design + decision lives at T-1309 / `docs/reports/T-1309-watchtower-systemd-from-termlink-T-1122.md`.
+
+Evidence:
+- T-1309 exists in `.tasks/active/`
+- Proposal artifact `docs/reports/T-1309-watchtower-systemd-from-termlink-T-1122.md` already on disk
+- Same source task referenced (termlink T-1122)
+
+**Date**: 2026-04-18T22:48:24Z
 
 ## Updates
 
@@ -109,3 +120,15 @@ Termlink T-1122 proposes shipping a `watchtower.service` systemd template that f
 ### 2026-04-18T21:04:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:48:24Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (duplicate)
+
+Rationale: This pickup proposes the same change already captured locally as T-1309. Closing this duplicate keeps the inception queue lean. The actual design + decision lives at T-1309 / `docs/reports/T-1309-watchtower-systemd-from-termlink-T-1122.md`.
+
+Evidence:
+- T-1309 exists in `.tasks/active/`
+- Proposal artifact `docs/reports/T-1309-watchtower-systemd-from-termlink-T-1122.md` already on disk
+- Same source task referenced (termlink T-1122)

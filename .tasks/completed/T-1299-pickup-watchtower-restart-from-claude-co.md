@@ -4,7 +4,7 @@ name: "Pickup: Watchtower restart from Claude Code session requires setsid + Jin
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1117. Type: learning.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [pickup, learning]
 components: []
 related_tasks: []
 created: 2026-04-18T15:21:47Z
-last_update: 2026-04-19T08:18:07Z
-date_finished: null
+last_update: 2026-04-19T08:57:23Z
+date_finished: 2026-04-19T08:57:23Z
 ---
 
 # T-1299: Pickup: Watchtower restart from Claude Code session requires setsid + Jinja cache requires full process kill (from termlink)
@@ -56,7 +56,7 @@ Proposed codification: `fw serve` (or a wrapper) detects `$CLAUDECODE=1` and pre
 - [x] Recommendation written with rationale (GO — build sibling deferred to next session)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -115,7 +115,28 @@ Proposed codification: `fw serve` (or a wrapper) detects `$CLAUDECODE=1` and pre
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Concrete operator pain (4 failed restart attempts on termlink, real diagnostic time lost). Both learnings are field-discovered and not yet codified at the framework level. The fix is bounded — extend `fw serve` with CLAUDECODE-aware setsid + pre-port-kill. Reversible, testable via bats. Build is well-scoped and suitable for a single session.
+
+Evidence:
+- Pickup payload names 4 failed restart attempts + symptom (silent death after "started" echo) — concrete evidence of cost
+- Grep confirms `setsid` is not in `.context/project/learnings.yaml` or CLAUDE.md — not codified
+- `fw serve` exists as the natural integration point; scope fits in <50 lines
+- Agent memory has partial Jinja learning; promoting to framework learnings + docs closes the gap
+- Full triage: `docs/reports/T-1299-watchtower-setsid-jinja.md`
+
+Build plan (deferred to next session as T-1326 or similar):
+1. Extend `fw serve` / `lib/serve.sh` — if `${CLAUDECODE:-0}` = 1, prepend setsid
+2. Pre-launch: kill process bound to target port (`fuser -k` or portable equivalent), confirm free
+3. Post-launch: poll `/health` up to 10s; exit non-zero if not ready
+4. L-??? + L-??? captured: setsid requirement + Jinja in-memory cache
+5. `tests/unit/watchtower_serve.bats` — fake CLAUDECODE, assert setsid in command; port-kill path
+6. `docs/watchtower.md`: "Restart from Claude Code sessions" section
+
+**Date**: 2026-04-19T08:57:22Z
 
 ## Updates
 
@@ -125,3 +146,29 @@ Proposed codification: `fw serve` (or a wrapper) detects `$CLAUDECODE=1` and pre
 ### 2026-04-19T08:18:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-19T08:57:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Concrete operator pain (4 failed restart attempts on termlink, real diagnostic time lost). Both learnings are field-discovered and not yet codified at the framework level. The fix is bounded — extend `fw serve` with CLAUDECODE-aware setsid + pre-port-kill. Reversible, testable via bats. Build is well-scoped and suitable for a single session.
+
+Evidence:
+- Pickup payload names 4 failed restart attempts + symptom (silent death after "started" echo) — concrete evidence of cost
+- Grep confirms `setsid` is not in `.context/project/learnings.yaml` or CLAUDE.md — not codified
+- `fw serve` exists as the natural integration point; scope fits in <50 lines
+- Agent memory has partial Jinja learning; promoting to framework learnings + docs closes the gap
+- Full triage: `docs/reports/T-1299-watchtower-setsid-jinja.md`
+
+Build plan (deferred to next session as T-1326 or similar):
+1. Extend `fw serve` / `lib/serve.sh` — if `${CLAUDECODE:-0}` = 1, prepend setsid
+2. Pre-launch: kill process bound to target port (`fuser -k` or portable equivalent), confirm free
+3. Post-launch: poll `/health` up to 10s; exit non-zero if not ready
+4. L-??? + L-??? captured: setsid requirement + Jinja in-memory cache
+5. `tests/unit/watchtower_serve.bats` — fake CLAUDECODE, assert setsid in command; port-kill path
+6. `docs/watchtower.md`: "Restart from Claude Code sessions" section
+
+### 2026-04-19T08:57:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -4,16 +4,16 @@ name: "RCA: Bugfix-learning coverage stuck at 0% despite T-1178 T-1192 remediati
 description: >
   Inception: RCA: Bugfix-learning coverage stuck at 0% despite T-1178 T-1192 remediation
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T07:01:51Z
-last_update: 2026-04-16T05:41:48Z
-date_finished: null
+last_update: 2026-04-18T22:41:56Z
+date_finished: 2026-04-18T22:41:21Z
 ---
 
 # T-1251: RCA: Bugfix-learning coverage stuck at 0% despite T-1178 T-1192 remediation
@@ -128,7 +128,27 @@ distinguish "skipped this learning" from "not learning-worthy".
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — two-part structural fix
+
+Rationale: T-1178/T-1192 shipped purely advisory remediation (yellow box, audit
+FAIL). Proven insufficient — coverage remained at 0%. Need (a) reduce capture cost
+via auto-draft from commit message, and (b) explicit opt-out flag so agents can
+distinguish "skipped this learning" from "not learning-worthy".
+
+Evidence:
+- T-1192 episodic confirms advisory-only shipping (no blocking, no retry)
+- Current prompt at update-task.sh:880-887 is visual noise easy to skip
+- `fw fix-learned` requires synthesizing one-sentence learning — high cognitive cost
+- Existing gates have opt-out patterns (--force, --skip-acceptance-criteria) — same design applies
+- See full research artifact: docs/reports/T-1251-bugfix-learning-rca.md
+
+Next step if GO: Create `T-1256-build: auto-draft bugfix learning + --no-learning opt-out flag`
+
+Complementary to: T-1252 (narrow audit denominator — parallel inception)
+
+**Date**: 2026-04-18T22:41:56Z
 
 ## Updates
 
@@ -137,3 +157,49 @@ distinguish "skipped this learning" from "not learning-worthy".
 
 ### 2026-04-14T07:05:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T22:41:21Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — two-part structural fix
+
+Rationale: T-1178/T-1192 shipped purely advisory remediation (yellow box, audit
+FAIL). Proven insufficient — coverage remained at 0%. Need (a) reduce capture cost
+via auto-draft from commit message, and (b) explicit opt-out flag so agents can
+distinguish "skipped this learning" from "not learning-worthy".
+
+Evidence:
+- T-1192 episodic confirms advisory-only shipping (no blocking, no retry)
+- Current prompt at update-task.sh:880-887 is visual noise easy to skip
+- `fw fix-learned` requires synthesizing one-sentence learning — high cognitive cost
+- Existing gates have opt-out patterns (--force, --skip-acceptance-criteria) — same design applies
+- See full research artifact: docs/reports/T-1251-bugfix-learning-rca.md
+
+Next step if GO: Create `T-1256-build: auto-draft bugfix learning + --no-learning opt-out flag`
+
+Complementary to: T-1252 (narrow audit denominator — parallel inception)
+
+### 2026-04-18T22:41:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:41:56Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — two-part structural fix
+
+Rationale: T-1178/T-1192 shipped purely advisory remediation (yellow box, audit
+FAIL). Proven insufficient — coverage remained at 0%. Need (a) reduce capture cost
+via auto-draft from commit message, and (b) explicit opt-out flag so agents can
+distinguish "skipped this learning" from "not learning-worthy".
+
+Evidence:
+- T-1192 episodic confirms advisory-only shipping (no blocking, no retry)
+- Current prompt at update-task.sh:880-887 is visual noise easy to skip
+- `fw fix-learned` requires synthesizing one-sentence learning — high cognitive cost
+- Existing gates have opt-out patterns (--force, --skip-acceptance-criteria) — same design applies
+- See full research artifact: docs/reports/T-1251-bugfix-learning-rca.md
+
+Next step if GO: Create `T-1256-build: auto-draft bugfix learning + --no-learning opt-out flag`
+
+Complementary to: T-1252 (narrow audit denominator — parallel inception)

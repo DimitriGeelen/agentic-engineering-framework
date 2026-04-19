@@ -99,7 +99,18 @@ Duplicate of T-1270. This task was auto-created by the pickup processor when P-0
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (duplicate)
+
+Rationale: T-1271 is a self-pickup duplicate. The pickup processor created this task when P-022 (the T-1270 propagation envelope) was ingested in the same project that authored it. All inception work lives in T-1270 (Problem Statement, 6 Assumptions, 6 Spikes, Technical Constraints, Scope Fence). This task should be shelved to avoid double-tracking.
+
+Evidence:
+- T-1270 has full inception content (`.tasks/active/T-1270-peer-learning-cron-every-15-min-connect-.md`)
+- P-022 envelope created in this project and processed in this project (`.context/pickup/processed/P-022-feature-proposal.yaml`)
+- Same pattern as T-1140 (previously shelved self-pickup from P-019)
+
+**Date**: 2026-04-18T22:45:21Z
 
 ## Updates
 
@@ -112,3 +123,15 @@ Duplicate of T-1270. This task was auto-created by the pickup processor when P-0
 ### 2026-04-16T05:29:02Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-18T22:45:21Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (duplicate)
+
+Rationale: T-1271 is a self-pickup duplicate. The pickup processor created this task when P-022 (the T-1270 propagation envelope) was ingested in the same project that authored it. All inception work lives in T-1270 (Problem Statement, 6 Assumptions, 6 Spikes, Technical Constraints, Scope Fence). This task should be shelved to avoid double-tracking.
+
+Evidence:
+- T-1270 has full inception content (`.tasks/active/T-1270-peer-learning-cron-every-15-min-connect-.md`)
+- P-022 envelope created in this project and processed in this project (`.context/pickup/processed/P-022-feature-proposal.yaml`)
+- Same pattern as T-1140 (previously shelved self-pickup from P-019)

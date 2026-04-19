@@ -4,16 +4,16 @@ name: "Pickup: fw fabric drift and scan miss recursive glob matches — bash ** 
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1130. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T22:01:09Z
-last_update: 2026-04-18T22:03:48Z
-date_finished: null
+last_update: 2026-04-18T22:50:48Z
+date_finished: 2026-04-18T22:50:21Z
 ---
 
 # T-1319: Pickup: fw fabric drift and scan miss recursive glob matches — bash ** needs shopt -s globstar (from termlink)
@@ -104,7 +104,19 @@ Source: termlink T-1130 pickup (P-037).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Concrete divergence between two enforcement paths (audit Python glob vs fabric.sh bash glob). Fix is two-line — add `shopt -s globstar nullglob 2>/dev/null || true` at the top of each affected function. Termlink provided live evidence (14 vs 68 file count). Risk near zero — `globstar` is opt-in per-shell, and `nullglob` only changes behavior for unmatched globs (today the loop body uses `[ -f "$file" ] || continue`, so nullglob is a strict improvement).
+
+Evidence:
+- Confirmed bug sites: `agents/fabric/lib/drift.sh:26`, `agents/fabric/lib/register.sh:292`
+- Live count proof from termlink: `/.rs` matches 14 entries without globstar, 68 with
+- No conflicting bats tests on these globs today (tests/unit/fabric.bats does not exercise recursive patterns)
+- Build sibling T-1320 ships fix + bats regression covering recursive globs
+
+**Date**: 2026-04-18T22:50:47Z
 
 ## Updates
 
@@ -114,3 +126,33 @@ Source: termlink T-1130 pickup (P-037).
 ### 2026-04-18T22:03:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:50:21Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Concrete divergence between two enforcement paths (audit Python glob vs fabric.sh bash glob). Fix is two-line — add `shopt -s globstar nullglob 2>/dev/null || true` at the top of each affected function. Termlink provided live evidence (14 vs 68 file count). Risk near zero — `globstar` is opt-in per-shell, and `nullglob` only changes behavior for unmatched globs (today the loop body uses `[ -f "$file" ] || continue`, so nullglob is a strict improvement).
+
+Evidence:
+- Confirmed bug sites: `agents/fabric/lib/drift.sh:26`, `agents/fabric/lib/register.sh:292`
+- Live count proof from termlink: `/.rs` matches 14 entries without globstar, 68 with
+- No conflicting bats tests on these globs today (tests/unit/fabric.bats does not exercise recursive patterns)
+- Build sibling T-1320 ships fix + bats regression covering recursive globs
+
+### 2026-04-18T22:50:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:50:47Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Concrete divergence between two enforcement paths (audit Python glob vs fabric.sh bash glob). Fix is two-line — add `shopt -s globstar nullglob 2>/dev/null || true` at the top of each affected function. Termlink provided live evidence (14 vs 68 file count). Risk near zero — `globstar` is opt-in per-shell, and `nullglob` only changes behavior for unmatched globs (today the loop body uses `[ -f "$file" ] || continue`, so nullglob is a strict improvement).
+
+Evidence:
+- Confirmed bug sites: `agents/fabric/lib/drift.sh:26`, `agents/fabric/lib/register.sh:292`
+- Live count proof from termlink: `/.rs` matches 14 entries without globstar, 68 with
+- No conflicting bats tests on these globs today (tests/unit/fabric.bats does not exercise recursive patterns)
+- Build sibling T-1320 ships fix + bats regression covering recursive globs

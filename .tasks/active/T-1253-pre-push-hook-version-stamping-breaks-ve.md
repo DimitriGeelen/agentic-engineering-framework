@@ -4,16 +4,16 @@ name: "Pre-push hook VERSION-stamping breaks version.json-based consumer project
 description: >
   Inception: Pre-push hook VERSION-stamping breaks version.json-based consumer projects (T-106 blocker, T-648 regression)
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T07:02:41Z
-last_update: 2026-04-14T07:11:29Z
-date_finished: null
+last_update: 2026-04-18T22:42:38Z
+date_finished: 2026-04-18T22:42:38Z
 ---
 
 # T-1253: Pre-push hook VERSION-stamping breaks version.json-based consumer projects (T-106 blocker, T-648 regression)
@@ -127,7 +127,24 @@ the installed copy in `.git/hooks/pre-push`), testable, and reversible.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Path 2 (auto-detect version.json / package.json / pyproject.toml)
+scores best on Usability and Portability with no regression for git-tag users.
+The fix is bounded (modify the stamping block in `agents/git/lib/hooks.sh` plus
+the installed copy in `.git/hooks/pre-push`), testable, and reversible.
+
+Evidence:
+- Stamping block isolated to ~20 lines (agents/git/lib/hooks.sh:385-403)
+- Real consumer bug demonstrated: /opt/050-email-archive has version.json=0.17.3 but VERSION=0.12.1055 (5 versions behind)
+- Detection signals are mechanical (file existence + grep for version key)
+- See full research artifact: docs/reports/T-1253-pre-push-version-stamping.md
+
+Next step if GO: Create `T-1254-build: implement version-scheme detection in pre-push stamping block`
+
+**Date**: 2026-04-18T22:42:37Z
 
 ## Updates
 
@@ -136,3 +153,25 @@ the installed copy in `.git/hooks/pre-push`), testable, and reversible.
 
 ### 2026-04-14T07:06:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T22:42:37Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Path 2 (auto-detect version.json / package.json / pyproject.toml)
+scores best on Usability and Portability with no regression for git-tag users.
+The fix is bounded (modify the stamping block in `agents/git/lib/hooks.sh` plus
+the installed copy in `.git/hooks/pre-push`), testable, and reversible.
+
+Evidence:
+- Stamping block isolated to ~20 lines (agents/git/lib/hooks.sh:385-403)
+- Real consumer bug demonstrated: /opt/050-email-archive has version.json=0.17.3 but VERSION=0.12.1055 (5 versions behind)
+- Detection signals are mechanical (file existence + grep for version key)
+- See full research artifact: docs/reports/T-1253-pre-push-version-stamping.md
+
+Next step if GO: Create `T-1254-build: implement version-scheme detection in pre-push stamping block`
+
+### 2026-04-18T22:42:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

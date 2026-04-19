@@ -4,16 +4,16 @@ name: "Pickup: Watchtower shared.py PROJECT_ROOT fallback is wrong — falls to 
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1123. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T18:43:21Z
-last_update: 2026-04-18T20:01:12Z
-date_finished: null
+last_update: 2026-04-18T22:46:29Z
+date_finished: 2026-04-18T22:46:05Z
 ---
 
 # T-1303: Pickup: Watchtower shared.py PROJECT_ROOT fallback is wrong — falls to FRAMEWORK_ROOT, not discovered (from termlink)
@@ -105,7 +105,18 @@ python3 -m pytest tests/web/test_project_root_discovery.py -q
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Bash-side discovery in `paths.sh` is canonical; Python-side fallback is stale and bites anyone who bypasses `bin/fw`. Fix is bounded (two helpers + derived global), reversible, and proven upstream in termlink@d3723d9c.
+
+Evidence:
+- `web/shared.py:22` — FRAMEWORK_ROOT fallback with no discovery.
+- `bin/fw` and `lib/paths.sh` do walk-up-for-`.framework.yaml`. Python was ignored.
+- Termlink's T-1123 verified: cwd in `/opt/termlink/subdir` discovers `/opt/termlink`; cwd in `/tmp` falls back to framework; env still wins.
+
+**Date**: 2026-04-18T22:46:29Z
 
 ## Updates
 
@@ -115,3 +126,31 @@ python3 -m pytest tests/web/test_project_root_discovery.py -q
 ### 2026-04-18T20:01:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:46:05Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Bash-side discovery in `paths.sh` is canonical; Python-side fallback is stale and bites anyone who bypasses `bin/fw`. Fix is bounded (two helpers + derived global), reversible, and proven upstream in termlink@d3723d9c.
+
+Evidence:
+- `web/shared.py:22` — FRAMEWORK_ROOT fallback with no discovery.
+- `bin/fw` and `lib/paths.sh` do walk-up-for-`.framework.yaml`. Python was ignored.
+- Termlink's T-1123 verified: cwd in `/opt/termlink/subdir` discovers `/opt/termlink`; cwd in `/tmp` falls back to framework; env still wins.
+
+### 2026-04-18T22:46:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:46:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Bash-side discovery in `paths.sh` is canonical; Python-side fallback is stale and bites anyone who bypasses `bin/fw`. Fix is bounded (two helpers + derived global), reversible, and proven upstream in termlink@d3723d9c.
+
+Evidence:
+- `web/shared.py:22` — FRAMEWORK_ROOT fallback with no discovery.
+- `bin/fw` and `lib/paths.sh` do walk-up-for-`.framework.yaml`. Python was ignored.
+- Termlink's T-1123 verified: cwd in `/opt/termlink/subdir` discovers `/opt/termlink`; cwd in `/tmp` falls back to framework; env still wins.

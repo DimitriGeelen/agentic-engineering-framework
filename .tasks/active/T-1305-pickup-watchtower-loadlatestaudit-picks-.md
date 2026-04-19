@@ -4,16 +4,16 @@ name: "Pickup: Watchtower load_latest_audit picks upgrades.yaml instead of newes
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1128. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T18:44:08Z
-last_update: 2026-04-18T19:48:49Z
-date_finished: null
+last_update: 2026-04-18T22:48:18Z
+date_finished: 2026-04-18T22:47:09Z
 ---
 
 # T-1305: Pickup: Watchtower load_latest_audit picks upgrades.yaml instead of newest audit (from termlink)
@@ -100,7 +100,18 @@ python3 -m pytest tests/web/ -q
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: One-character-class glob change. Fix is already implemented and verified upstream (termlink@T-1128). Defensive — framework hasn't yet grown a non-date YAML in `.context/audits/`, but nothing prevents it (e.g. future `upgrades.yaml` following consumer conventions).
+
+Evidence:
+- `web/shared.py:301` globs `.yaml` then reverse-sorts — no content validation.
+- All existing 50+ audit files in `.context/audits/` match `[0-9][0-9][0-9][0-9]-.yaml`.
+- Termlink hit this bug when `upgrades.yaml` was written into their audits dir by a cron; same class of file could land here.
+
+**Date**: 2026-04-18T22:48:17Z
 
 ## Updates
 
@@ -110,3 +121,31 @@ python3 -m pytest tests/web/ -q
 ### 2026-04-18T19:48:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:47:09Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: One-character-class glob change. Fix is already implemented and verified upstream (termlink@T-1128). Defensive — framework hasn't yet grown a non-date YAML in `.context/audits/`, but nothing prevents it (e.g. future `upgrades.yaml` following consumer conventions).
+
+Evidence:
+- `web/shared.py:301` globs `.yaml` then reverse-sorts — no content validation.
+- All existing 50+ audit files in `.context/audits/` match `[0-9][0-9][0-9][0-9]-.yaml`.
+- Termlink hit this bug when `upgrades.yaml` was written into their audits dir by a cron; same class of file could land here.
+
+### 2026-04-18T22:47:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:48:17Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: One-character-class glob change. Fix is already implemented and verified upstream (termlink@T-1128). Defensive — framework hasn't yet grown a non-date YAML in `.context/audits/`, but nothing prevents it (e.g. future `upgrades.yaml` following consumer conventions).
+
+Evidence:
+- `web/shared.py:301` globs `.yaml` then reverse-sorts — no content validation.
+- All existing 50+ audit files in `.context/audits/` match `[0-9][0-9][0-9][0-9]-.yaml`.
+- Termlink hit this bug when `upgrades.yaml` was written into their audits dir by a cron; same class of file could land here.

@@ -4,16 +4,16 @@ name: "Inception commit-limit hook overcounts via substring match (T-1130 vs T-1
 description: >
   Inception commit-limit hook overcounts via substring match (T-1130 vs T-11300, body-mentions)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh]
 related_tasks: []
 created: 2026-04-19T09:41:31Z
-last_update: 2026-04-19T09:44:52Z
-date_finished: null
+last_update: 2026-04-19T09:46:48Z
+date_finished: 2026-04-19T09:46:48Z
 ---
 
 # T-1328: Inception commit-limit hook overcounts via substring match (T-1130 vs T-11300, body-mentions)
@@ -67,3 +67,6 @@ grep -qE 'grep -cE "\^\[0-9a-f\]\+ \$\{TASK_REF\}:"' .git/hooks/commit-msg
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1328-inception-commit-limit-hook-overcounts-v.md
 - **Context:** Initial task creation
+
+### 2026-04-19T09:46:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

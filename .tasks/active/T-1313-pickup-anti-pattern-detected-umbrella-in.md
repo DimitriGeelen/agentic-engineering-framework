@@ -100,7 +100,19 @@ Termlink (sourced from T-1112) reports a recurring anti-pattern: "umbrella incep
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (already codified)
+
+Rationale: The rule is already in CLAUDE.md ("One inception = one question. Umbrella inceptions that bundle independent explorations create all-or-nothing decisions and coarse progress tracking."). T-1112's NO-GO is exactly the failure mode the rule predicts. Adding a structural enforcement gate (e.g., "block decide if >N sub-questions detected in problem statement") is hard — what counts as a sub-question is a judgment call, not a regex. Better to let the existing rule + episodic evidence (T-1112 NO-GO) reinforce the discipline.
+
+Evidence:
+- CLAUDE.md "Task Sizing Rules" already names the anti-pattern
+- T-1112 NO-GO is itself the evidence the rule is being enforced via human judgment at decide time
+- Structural enforcement would require parsing problem statements for "and" / multiple questions — high false-positive risk
+- Codification cost > benefit; leave as advisory
+
+**Date**: 2026-04-18T22:48:31Z
 
 ## Updates
 
@@ -110,3 +122,16 @@ Termlink (sourced from T-1112) reports a recurring anti-pattern: "umbrella incep
 ### 2026-04-18T21:04:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:48:31Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (already codified)
+
+Rationale: The rule is already in CLAUDE.md ("One inception = one question. Umbrella inceptions that bundle independent explorations create all-or-nothing decisions and coarse progress tracking."). T-1112's NO-GO is exactly the failure mode the rule predicts. Adding a structural enforcement gate (e.g., "block decide if >N sub-questions detected in problem statement") is hard — what counts as a sub-question is a judgment call, not a regex. Better to let the existing rule + episodic evidence (T-1112 NO-GO) reinforce the discipline.
+
+Evidence:
+- CLAUDE.md "Task Sizing Rules" already names the anti-pattern
+- T-1112 NO-GO is itself the evidence the rule is being enforced via human judgment at decide time
+- Structural enforcement would require parsing problem statements for "and" / multiple questions — high false-positive risk
+- Codification cost > benefit; leave as advisory

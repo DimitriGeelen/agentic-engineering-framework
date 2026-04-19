@@ -4,16 +4,16 @@ name: "Pickup: Watchtower Flask secret_key auto-regenerates on every restart —
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1125. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T18:43:05Z
-last_update: 2026-04-18T19:40:17Z
-date_finished: null
+last_update: 2026-04-18T22:45:58Z
+date_finished: 2026-04-18T22:45:32Z
 ---
 
 # T-1302: Pickup: Watchtower Flask secret_key auto-regenerates on every restart — breaks CSRF for existing browser sessions (from termlink)
@@ -111,7 +111,20 @@ python3 -c "from web.app import create_app; a=create_app(); b=create_app(); asse
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Root cause is a missing persistence layer in `web/app.py:47-55`. The fix pattern is already proven upstream in termlink (commit `0373828e`), verified stable across restarts, and scope is minimal (one helper function, ~20 lines, one test). Matches all "GO if" criteria: root cause identified, fix bounded and reversible.
+
+Evidence:
+- `web/app.py:47-55` auto-generates a new key via `secrets.token_hex(32)` when `Config.SECRET_KEY` is unset. No persistence.
+- Session cookies at `session["_csrf_token"]` (app.py:63-65) are signed with `secret_key`. Key rotation ≡ session invalidation ≡ 403 on next POST.
+- termlink@0373828e demonstrates the three-source resolver (env → file → generate) and verified stability across two restart cycles.
+- `.context/working/` already exists in all framework deployments (session-state directory).
+- Sibling file T-1303 (`web/shared.py` PROJECT_ROOT fallback) has independent scope and is tracked separately.
+
+**Date**: 2026-04-18T22:45:57Z
 
 ## Updates
 
@@ -121,3 +134,35 @@ python3 -c "from web.app import create_app; a=create_app(); b=create_app(); asse
 ### 2026-04-18T19:40:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:45:32Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Root cause is a missing persistence layer in `web/app.py:47-55`. The fix pattern is already proven upstream in termlink (commit `0373828e`), verified stable across restarts, and scope is minimal (one helper function, ~20 lines, one test). Matches all "GO if" criteria: root cause identified, fix bounded and reversible.
+
+Evidence:
+- `web/app.py:47-55` auto-generates a new key via `secrets.token_hex(32)` when `Config.SECRET_KEY` is unset. No persistence.
+- Session cookies at `session["_csrf_token"]` (app.py:63-65) are signed with `secret_key`. Key rotation ≡ session invalidation ≡ 403 on next POST.
+- termlink@0373828e demonstrates the three-source resolver (env → file → generate) and verified stability across two restart cycles.
+- `.context/working/` already exists in all framework deployments (session-state directory).
+- Sibling file T-1303 (`web/shared.py` PROJECT_ROOT fallback) has independent scope and is tracked separately.
+
+### 2026-04-18T22:45:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:45:57Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Root cause is a missing persistence layer in `web/app.py:47-55`. The fix pattern is already proven upstream in termlink (commit `0373828e`), verified stable across restarts, and scope is minimal (one helper function, ~20 lines, one test). Matches all "GO if" criteria: root cause identified, fix bounded and reversible.
+
+Evidence:
+- `web/app.py:47-55` auto-generates a new key via `secrets.token_hex(32)` when `Config.SECRET_KEY` is unset. No persistence.
+- Session cookies at `session["_csrf_token"]` (app.py:63-65) are signed with `secret_key`. Key rotation ≡ session invalidation ≡ 403 on next POST.
+- termlink@0373828e demonstrates the three-source resolver (env → file → generate) and verified stability across two restart cycles.
+- `.context/working/` already exists in all framework deployments (session-state directory).
+- Sibling file T-1303 (`web/shared.py` PROJECT_ROOT fallback) has independent scope and is tracked separately.

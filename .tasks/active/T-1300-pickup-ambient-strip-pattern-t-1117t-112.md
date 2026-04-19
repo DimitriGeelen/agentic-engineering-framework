@@ -52,7 +52,7 @@ None — pure UI polish; `url_for()` is already in scope for blueprints.
 - [x] Recommendation written with rationale (DEFER — polish, not functional gap)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -103,7 +103,20 @@ None — pure UI polish; `url_for()` is already in scope for blueprints.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER
+
+Rationale: The framework's ambient strip is already functional. Making elements clickable is UX polish, not a functional gap. No operator has complained about needing clicks where spans stand today. Fleet indicator (termlink's novel piece) doesn't apply here — this machine isn't a fleet node. Budget is better spent on real bugs. Revisit when an operator complains or a second project reports the same pain.
+
+Evidence:
+- `web/templates/base.html:315-331` renders 5 ambient-strip spans (focus, session, audit, attention, project-root) — plain text, not links
+- No issue in concerns.yaml or learnings.yaml flags navigation friction caused by unlinked ambient strip
+- Fleet dot piece needs a fleet endpoint the framework doesn't have
+- Small-scope fallback exists if reconsidered: wrap each span in `<a href="{{ url_for(...) }}">` (~5-line edit)
+- Full triage: `docs/reports/T-1300-ambient-strip-codification.md`
+
+**Date**: 2026-04-19T08:59:03Z
 
 ## Updates
 
@@ -113,3 +126,17 @@ None — pure UI polish; `url_for()` is already in scope for blueprints.
 ### 2026-04-19T08:19:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-19T08:59:03Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER
+
+Rationale: The framework's ambient strip is already functional. Making elements clickable is UX polish, not a functional gap. No operator has complained about needing clicks where spans stand today. Fleet indicator (termlink's novel piece) doesn't apply here — this machine isn't a fleet node. Budget is better spent on real bugs. Revisit when an operator complains or a second project reports the same pain.
+
+Evidence:
+- `web/templates/base.html:315-331` renders 5 ambient-strip spans (focus, session, audit, attention, project-root) — plain text, not links
+- No issue in concerns.yaml or learnings.yaml flags navigation friction caused by unlinked ambient strip
+- Fleet dot piece needs a fleet endpoint the framework doesn't have
+- Small-scope fallback exists if reconsidered: wrap each span in `<a href="{{ url_for(...) }}">` (~5-line edit)
+- Full triage: `docs/reports/T-1300-ambient-strip-codification.md`

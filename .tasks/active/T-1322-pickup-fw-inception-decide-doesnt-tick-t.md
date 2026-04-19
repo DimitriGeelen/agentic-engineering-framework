@@ -4,16 +4,16 @@ name: "Pickup: fw inception decide doesnt tick the RUBBER-STAMP Record go/no-go 
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1130. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T22:23:27Z
-last_update: 2026-04-18T22:32:25Z
-date_finished: null
+last_update: 2026-04-18T22:51:42Z
+date_finished: 2026-04-18T22:51:42Z
 ---
 
 # T-1322: Pickup: fw inception decide doesnt tick the RUBBER-STAMP Record go/no-go decision Human AC — tasks stay in active/ forever (from termlink)
@@ -112,7 +112,27 @@ Source: termlink T-1130 pickup (P-039).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Concrete bug with structural consequence — `decide` is the action the AC describes, so leaving the box unchecked is incoherent. Termlink shows the impact (10+ tasks stuck, contributing to G-008). Fix is surgical: in `do_inception_decide`, after writing the Decision block, scan the `### Human` section for an AC whose text matches `[RUBBER-STAMP].decision` or `[REVIEW].go/no-go decision`, and tick it. Idempotent — already-checked boxes are unchanged. Build deferred to next session — context budget at 78% in this session, and the fix has edge cases (matching the right AC text, not over-matching, handling multiple Human ACs) that benefit from fresh attention.
+
+Evidence:
+- `lib/inception.sh:do_inception_decide` writes Decision block + status update but never modifies the Acceptance Criteria section
+- Default inception template ships with `[ ] [REVIEW] Review exploration findings and approve go/no-go decision` as the human AC
+- Termlink reports 10 stuck tasks (T-947 through T-959)
+- G-008 ("64 tasks stuck in partial-complete") is the structural symptom of this missed tick
+- Risk near zero — only ticks the box if it matches the predicate; idempotent
+
+Build plan (T-1324, next session):
+1. After Decision block write, locate `### Human` section in the task file
+2. Find unchecked ACs matching `[RUBBER-STAMP].[Rr]ecord.decision` OR `[REVIEW].go/no-go decision`
+3. Replace `- [ ]` with `- [x]` for matched lines (line-level, idempotent)
+4. Re-run the work-completed gate so the task auto-finalizes if all other ACs pass
+5. Bats regression: create inception task with template, run `decide go`, verify AC ticked + task moved to completed/
+
+**Date**: 2026-04-18T22:51:42Z
 
 ## Updates
 
@@ -122,3 +142,28 @@ Source: termlink T-1130 pickup (P-039).
 ### 2026-04-18T22:31:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:51:42Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Concrete bug with structural consequence — `decide` is the action the AC describes, so leaving the box unchecked is incoherent. Termlink shows the impact (10+ tasks stuck, contributing to G-008). Fix is surgical: in `do_inception_decide`, after writing the Decision block, scan the `### Human` section for an AC whose text matches `[RUBBER-STAMP].decision` or `[REVIEW].go/no-go decision`, and tick it. Idempotent — already-checked boxes are unchanged. Build deferred to next session — context budget at 78% in this session, and the fix has edge cases (matching the right AC text, not over-matching, handling multiple Human ACs) that benefit from fresh attention.
+
+Evidence:
+- `lib/inception.sh:do_inception_decide` writes Decision block + status update but never modifies the Acceptance Criteria section
+- Default inception template ships with `[ ] [REVIEW] Review exploration findings and approve go/no-go decision` as the human AC
+- Termlink reports 10 stuck tasks (T-947 through T-959)
+- G-008 ("64 tasks stuck in partial-complete") is the structural symptom of this missed tick
+- Risk near zero — only ticks the box if it matches the predicate; idempotent
+
+Build plan (T-1324, next session):
+1. After Decision block write, locate `### Human` section in the task file
+2. Find unchecked ACs matching `[RUBBER-STAMP].[Rr]ecord.decision` OR `[REVIEW].go/no-go decision`
+3. Replace `- [ ]` with `- [x]` for matched lines (line-level, idempotent)
+4. Re-run the work-completed gate so the task auto-finalizes if all other ACs pass
+5. Bats regression: create inception task with template, run `decide go`, verify AC ticked + task moved to completed/
+
+### 2026-04-18T22:51:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

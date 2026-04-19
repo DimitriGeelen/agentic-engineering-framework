@@ -48,7 +48,7 @@ None applicable.
 - [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1302)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -98,7 +98,19 @@ None applicable.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (duplicate of T-1302)
+
+Rationale: Same termlink source (T-1125) and same bug-report as T-1302. T-1302 is already in the triage pipeline. Keeping both open creates confusion and splits effort. Close this task; keep T-1302 as the canonical record.
+
+Evidence:
+- T-1296 frontmatter: "Source: termlink, task T-1125. Type: bug-report."
+- T-1302 frontmatter: "Source: termlink, task T-1125. Type: bug-report."
+- Both titles reference the same CSRF / secret_key regeneration issue
+- Full note: `docs/reports/T-1296-duplicate-of-T-1302.md`
+
+**Date**: 2026-04-19T08:57:05Z
 
 ## Updates
 
@@ -108,3 +120,16 @@ None applicable.
 ### 2026-04-19T08:15:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-19T08:57:05Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (duplicate of T-1302)
+
+Rationale: Same termlink source (T-1125) and same bug-report as T-1302. T-1302 is already in the triage pipeline. Keeping both open creates confusion and splits effort. Close this task; keep T-1302 as the canonical record.
+
+Evidence:
+- T-1296 frontmatter: "Source: termlink, task T-1125. Type: bug-report."
+- T-1302 frontmatter: "Source: termlink, task T-1125. Type: bug-report."
+- Both titles reference the same CSRF / secret_key regeneration issue
+- Full note: `docs/reports/T-1296-duplicate-of-T-1302.md`

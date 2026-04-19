@@ -4,16 +4,16 @@ name: "Pickup: Watchtower /fabric crashes (KeyError: id) on subsystems.yaml with
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1129. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T20:23:58Z
-last_update: 2026-04-18T21:04:59Z
-date_finished: null
+last_update: 2026-04-18T22:48:58Z
+date_finished: 2026-04-18T22:48:38Z
 ---
 
 # T-1314: Pickup: Watchtower /fabric crashes (KeyError: id) on subsystems.yaml without id key — loader should fall back to name (from termlink)
@@ -104,7 +104,20 @@ None — RCA done. Build task T-1318 will ship the fix + regression test.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Concrete crash with verified line number (`web/blueprints/fabric.py:93`). Fix is one-line, idempotent, strictly more correct (matches the function's own docstring promise). Risk near zero — entries already having `id:` are unaffected. Build sibling T-1318 ships the fix + regression test.
+
+Evidence:
+- Confirmed crash site: `web/blueprints/fabric.py:93` `{s["id"] for s in subsystems}`
+- Confirmed sole call site of `_load_subsystems`: same file, line 81
+- Docstring already promises normalized shape: `_load_subsystems` at lines 53-58
+- Termlink P-036 envelope provides reproducible repro path
+- Workaround (add `id:`) is reasonable but every consumer would need to do it; framework-side fix is the right level
+
+**Date**: 2026-04-18T22:48:58Z
 
 ## Updates
 
@@ -114,3 +127,35 @@ None — RCA done. Build task T-1318 will ship the fix + regression test.
 ### 2026-04-18T21:04:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:48:38Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Concrete crash with verified line number (`web/blueprints/fabric.py:93`). Fix is one-line, idempotent, strictly more correct (matches the function's own docstring promise). Risk near zero — entries already having `id:` are unaffected. Build sibling T-1318 ships the fix + regression test.
+
+Evidence:
+- Confirmed crash site: `web/blueprints/fabric.py:93` `{s["id"] for s in subsystems}`
+- Confirmed sole call site of `_load_subsystems`: same file, line 81
+- Docstring already promises normalized shape: `_load_subsystems` at lines 53-58
+- Termlink P-036 envelope provides reproducible repro path
+- Workaround (add `id:`) is reasonable but every consumer would need to do it; framework-side fix is the right level
+
+### 2026-04-18T22:48:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:48:58Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Concrete crash with verified line number (`web/blueprints/fabric.py:93`). Fix is one-line, idempotent, strictly more correct (matches the function's own docstring promise). Risk near zero — entries already having `id:` are unaffected. Build sibling T-1318 ships the fix + regression test.
+
+Evidence:
+- Confirmed crash site: `web/blueprints/fabric.py:93` `{s["id"] for s in subsystems}`
+- Confirmed sole call site of `_load_subsystems`: same file, line 81
+- Docstring already promises normalized shape: `_load_subsystems` at lines 53-58
+- Termlink P-036 envelope provides reproducible repro path
+- Workaround (add `id:`) is reasonable but every consumer would need to do it; framework-side fix is the right level

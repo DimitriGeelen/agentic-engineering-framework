@@ -4,16 +4,16 @@ name: "Audit false-positive: strip inline backticks before placeholder pattern m
 description: >
   Audit false-positive: strip inline backticks before placeholder pattern match (T-1298 meta-block)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/task-audit.sh, tests/unit/lib_task_audit.bats]
 related_tasks: []
 created: 2026-04-19T09:12:56Z
-last_update: 2026-04-19T09:12:56Z
-date_finished: null
+last_update: 2026-04-19T09:30:29Z
+date_finished: 2026-04-19T09:30:29Z
 ---
 
 # T-1327: Audit false-positive: strip inline backticks before placeholder pattern match (T-1298 meta-block)
@@ -25,10 +25,10 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/task-audit.sh:audit_task_placeholders` strips inline backtick spans (`` `…` ``) before pattern match
-- [ ] New bats test in `tests/unit/lib_task_audit.bats` covers: inline-backticked `[TODO]` is NOT flagged; bare `[TODO]` IS flagged; mixed line with both bare and backticked is flagged
-- [ ] Existing bats `tests/unit/lib_task_audit.bats` still passes
-- [ ] Running audit against current `.tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md` exits 0
+- [x] `lib/task-audit.sh:audit_task_placeholders` strips inline backtick spans (`` `…` ``) before pattern match
+- [x] New bats test in `tests/unit/lib_task_audit.bats` covers: inline-backticked `[TODO]` is NOT flagged; bare `[TODO]` IS flagged; mixed line with both bare and backticked is flagged
+- [x] Existing bats `tests/unit/lib_task_audit.bats` still passes
+- [x] Running audit against current `.tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md` exits 0
 
 ## Verification
 bash -c 'source lib/task-audit.sh && audit_task_placeholders .tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md'
@@ -51,3 +51,6 @@ bats tests/unit/lib_task_audit.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1327-audit-false-positive-strip-inline-backti.md
 - **Context:** Initial task creation
+
+### 2026-04-19T09:30:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -48,7 +48,7 @@ None applicable.
 - [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1303)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -97,7 +97,18 @@ None applicable.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (duplicate of T-1303)
+
+Rationale: Same termlink source (T-1123) and same bug-report as T-1303. Keeping both open creates confusion and splits effort. Close this task; keep T-1303 as canonical.
+
+Evidence:
+- T-1297 frontmatter: "Source: termlink, task T-1123. Type: bug-report."
+- T-1303 frontmatter: "Source: termlink, task T-1123. Type: bug-report."
+- Full note: `docs/reports/T-1297-duplicate-of-T-1303.md`
+
+**Date**: 2026-04-19T08:57:10Z
 
 ## Updates
 
@@ -107,3 +118,15 @@ None applicable.
 ### 2026-04-19T08:17:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-19T08:57:10Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (duplicate of T-1303)
+
+Rationale: Same termlink source (T-1123) and same bug-report as T-1303. Keeping both open creates confusion and splits effort. Close this task; keep T-1303 as canonical.
+
+Evidence:
+- T-1297 frontmatter: "Source: termlink, task T-1123. Type: bug-report."
+- T-1303 frontmatter: "Source: termlink, task T-1123. Type: bug-report."
+- Full note: `docs/reports/T-1297-duplicate-of-T-1303.md`

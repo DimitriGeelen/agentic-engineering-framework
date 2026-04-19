@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T20:33:25Z
-last_update: 2026-04-18T20:44:18Z
+last_update: 2026-04-19T10:23:34Z
 date_finished: null
 ---
 
@@ -119,7 +119,21 @@ Spikes still warranted:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (with credit)
+
+Rationale: Two of the three concrete failure modes email-archive identified are already fixed in commits shipped today (T-1257, T-1310). The remaining gap (shell-side env-vs-pwd validation) is structural but not blocking — no incident has hit it after T-1310 closed the Python-side leak. Spending another 1-2 sessions on a shell-side preflight is real cost; recurrence risk after T-1310 is low. Recommend: acknowledge the pickup with the fixes shipped, ask email-archive to retest, defer the shell-side work to a follow-up if a fresh incident appears.
+
+Evidence:
+- T-1257 (CLAUDE.md context-aware path rule) directly addresses Incident A.
+- T-1310 (`_resolve_project_root`) directly addresses Incident B for the Watchtower (where the original incident occurred).
+- No equivalent leak has been observed for shell-side `fw` callers in our episodic memory.
+- `lib/paths.sh` already has walk-up discovery for shell — only the env-precedence guard is missing.
+
+Alternative if email-archive sees recurrence after retesting: Promote FS3b spike to a build task (~1 session), add `_validate_project_root` to `lib/paths.sh`, gated by `FW_STRICT_PROJECT_ROOT`.
+
+**Date**: 2026-04-18T22:49:20Z
 
 ## Updates
 
@@ -128,3 +142,18 @@ Spikes still warranted:
 
 ### 2026-04-18T20:44:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T22:49:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (with credit)
+
+Rationale: Two of the three concrete failure modes email-archive identified are already fixed in commits shipped today (T-1257, T-1310). The remaining gap (shell-side env-vs-pwd validation) is structural but not blocking — no incident has hit it after T-1310 closed the Python-side leak. Spending another 1-2 sessions on a shell-side preflight is real cost; recurrence risk after T-1310 is low. Recommend: acknowledge the pickup with the fixes shipped, ask email-archive to retest, defer the shell-side work to a follow-up if a fresh incident appears.
+
+Evidence:
+- T-1257 (CLAUDE.md context-aware path rule) directly addresses Incident A.
+- T-1310 (`_resolve_project_root`) directly addresses Incident B for the Watchtower (where the original incident occurred).
+- No equivalent leak has been observed for shell-side `fw` callers in our episodic memory.
+- `lib/paths.sh` already has walk-up discovery for shell — only the env-precedence guard is missing.
+
+Alternative if email-archive sees recurrence after retesting: Promote FS3b spike to a build task (~1 session), add `_validate_project_root` to `lib/paths.sh`, gated by `FW_STRICT_PROJECT_ROOT`.

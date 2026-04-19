@@ -10,7 +10,7 @@
 
 Path resolution
 
-## Used By (42)
+## Used By (43)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -56,6 +56,7 @@ Path resolution
 | `web/blueprints/config.py` | called_by |
 | `web/blueprints/costs.py` | called_by |
 | `web/blueprints/discovery.py` | called_by |
+| `web/blueprints/prompts.py` | called_by |
 
 ## Related
 

@@ -4,16 +4,16 @@ name: "Pickup: Codify RPC resilience-tier taxonomy + version skew enforcement (T
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1071. Type: feature-proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-18T20:22:51Z
-last_update: 2026-04-18T21:15:53Z
-date_finished: null
+last_update: 2026-04-18T22:48:09Z
+date_finished: 2026-04-18T22:47:41Z
 ---
 
 # T-1311: Pickup: Codify RPC resilience-tier taxonomy + version skew enforcement (Tier-A opaque vs Tier-B typed) (from termlink)
@@ -100,7 +100,19 @@ Termlink T-1071 proposes the framework formally codify a two-tier RPC taxonomy (
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: DEFER
+
+Rationale: Real proposal but premature. Codifying an RPC taxonomy is high-cost (touches MCP, TermLink, fw bus, dispatch protocol) and the framework has no recurring skew incidents to anchor the design against. Premature taxonomies become wrong taxonomies. Ack the proposal, capture for revisit if a concrete skew incident occurs.
+
+Evidence:
+- No concrete incidents in episodic memory pointing to RPC version skew as a failure cause
+- Existing dispatch protocols (Task vs TermLink, fw bus, dispatch.send) are documented in CLAUDE.md without needing tier nomenclature
+- Codification cost (touching 3+ subsystems) outweighs current evidence
+- Termlink can promote to GO if a concrete skew incident appears
+
+**Date**: 2026-04-18T22:48:09Z
 
 ## Updates
 
@@ -110,3 +122,33 @@ Termlink T-1071 proposes the framework formally codify a two-tier RPC taxonomy (
 ### 2026-04-18T21:04:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-18T22:47:41Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: DEFER
+
+Rationale: Real proposal but premature. Codifying an RPC taxonomy is high-cost (touches MCP, TermLink, fw bus, dispatch protocol) and the framework has no recurring skew incidents to anchor the design against. Premature taxonomies become wrong taxonomies. Ack the proposal, capture for revisit if a concrete skew incident occurs.
+
+Evidence:
+- No concrete incidents in episodic memory pointing to RPC version skew as a failure cause
+- Existing dispatch protocols (Task vs TermLink, fw bus, dispatch.send) are documented in CLAUDE.md without needing tier nomenclature
+- Codification cost (touching 3+ subsystems) outweighs current evidence
+- Termlink can promote to GO if a concrete skew incident appears
+
+### 2026-04-18T22:47:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:48:09Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: DEFER
+
+Rationale: Real proposal but premature. Codifying an RPC taxonomy is high-cost (touches MCP, TermLink, fw bus, dispatch protocol) and the framework has no recurring skew incidents to anchor the design against. Premature taxonomies become wrong taxonomies. Ack the proposal, capture for revisit if a concrete skew incident occurs.
+
+Evidence:
+- No concrete incidents in episodic memory pointing to RPC version skew as a failure cause
+- Existing dispatch protocols (Task vs TermLink, fw bus, dispatch.send) are documented in CLAUDE.md without needing tier nomenclature
+- Codification cost (touching 3+ subsystems) outweighs current evidence
+- Termlink can promote to GO if a concrete skew incident appears

@@ -80,7 +80,7 @@ fw upgrade /opt/my-project  # Sync framework to consumer project
 | `lib/task-audit.sh` | calls |
 | `lib/watchtower.sh` | calls |
 
-## Used By (88)
+## Used By (89)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -171,6 +171,7 @@ fw upgrade /opt/my-project  # Sync framework to consumer project
 | `tests/integration/fw_vendor.bats` | called_by |
 | `tests/integration/fw_version.bats` | called_by |
 | `tests/integration/fw_work_on.bats` | called_by |
+| `lib/release.sh` | called_by_by |
 
 ## Documentation
 

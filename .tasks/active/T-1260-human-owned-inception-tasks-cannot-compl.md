@@ -4,7 +4,7 @@ name: "Human-owned inception tasks cannot complete — 5 layered root causes (so
 description: >
   Inception: Human-owned inception tasks cannot complete — 5 layered root causes (sovereignty, dispatch, template drift, recommendation gate, tier0 hash)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T23:01:08Z
-last_update: 2026-04-15T13:41:13Z
-date_finished: null
+last_update: 2026-04-18T22:44:20Z
+date_finished: 2026-04-18T22:43:53Z
 ---
 
 # T-1260: Human-owned inception tasks cannot complete — 5 layered root causes (sovereignty, dispatch, template drift, recommendation gate, tier0 hash)
@@ -152,7 +152,32 @@ blocks from multiple Watchtower clicks), status never advances.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Five distinct failure surfaces identified across the inception-completion path. Most critical (P0) is a regression from my own T-1259 commit (`4589bc60`) — `lib/inception.sh:204` CLAUDECODE guard fires on Watchtower-driven decisions because Flask inherits `CLAUDECODE=1` from its parent Claude Code shell (`web/subprocess_utils.py:51` passes `{os.environ, ...}`). The fix is bounded (~30 LOC for B1-B3): pass `--from-watchtower` flag from `inception.py` to `fw inception decide`, exempt that flag from the guard. P1 fixes (B4-B5) prevent the T-002 stuck-state compounding (3+ duplicate Decision blocks from repeated clicks). Workaround validated: human's own terminal (no `CLAUDECODE` env) bypasses all five surfaces — T-006 transitioned cleanly via that path.
+
+Evidence:
+- `web/subprocess_utils.py:51` — `env={os.environ, ...}` inherits CLAUDECODE in subprocess
+- `echo $CLAUDECODE` in current session returns `1` — every fw subprocess inherits this
+- `lib/inception.sh:204` (T-1259) blocks on CLAUDECODE=1 unless `--i-am-human` passed; `web/blueprints/inception.py:411` does not pass any human-identity flag → regression confirmed
+- `lib/inception.sh:336` comment: `--skip-sovereignty` bypasses ONLY R-033, NOT P-010 (AC gate) or P-011 (verification gate) — explains "Status does NOT transition" when Agent ACs unchecked
+- `lib/inception.sh:295-318` Decision block writer appends rather than replacing → multiple clicks compound
+- `agents/context/check-tier0.sh:167` hashes raw command string (no normalization) → whitespace/quote drift between retries
+- `.tasks/templates/inception.md` confirmed has all three required sections; older inception tasks may need backfill (B7)
+- `grep -r fabric-purpose-fill` finds zero non-task references → stale worker name, recoverable
+- T-006 case validates workaround: direct human terminal bypasses CLAUDECODE+Watchtower+R-033 entirely
+
+Critical interim warning (until B1-B2 ship):
+> Watchtower GO/NO-GO buttons are likely broken for any session where Watchtower was started inside a Claude Code shell. Use human's own terminal:
+> ```bash
+> cd /path/to/project && [bin/fw|.agentic-framework/bin/fw] inception decide T-XXX go --rationale "..."
+> ```
+
+Research artifact: `docs/reports/T-1260-human-inception-completion.md` (full 6-spike findings, build decomposition B1-B9 with P0/P1/P2/P3 priority tags).
+
+**Date**: 2026-04-18T22:44:19Z
 
 ## Updates
 
@@ -161,3 +186,59 @@ blocks from multiple Watchtower clicks), status never advances.
 
 ### 2026-04-14T23:02:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-18T22:43:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Five distinct failure surfaces identified across the inception-completion path. Most critical (P0) is a regression from my own T-1259 commit (`4589bc60`) — `lib/inception.sh:204` CLAUDECODE guard fires on Watchtower-driven decisions because Flask inherits `CLAUDECODE=1` from its parent Claude Code shell (`web/subprocess_utils.py:51` passes `{os.environ, ...}`). The fix is bounded (~30 LOC for B1-B3): pass `--from-watchtower` flag from `inception.py` to `fw inception decide`, exempt that flag from the guard. P1 fixes (B4-B5) prevent the T-002 stuck-state compounding (3+ duplicate Decision blocks from repeated clicks). Workaround validated: human's own terminal (no `CLAUDECODE` env) bypasses all five surfaces — T-006 transitioned cleanly via that path.
+
+Evidence:
+- `web/subprocess_utils.py:51` — `env={os.environ, ...}` inherits CLAUDECODE in subprocess
+- `echo $CLAUDECODE` in current session returns `1` — every fw subprocess inherits this
+- `lib/inception.sh:204` (T-1259) blocks on CLAUDECODE=1 unless `--i-am-human` passed; `web/blueprints/inception.py:411` does not pass any human-identity flag → regression confirmed
+- `lib/inception.sh:336` comment: `--skip-sovereignty` bypasses ONLY R-033, NOT P-010 (AC gate) or P-011 (verification gate) — explains "Status does NOT transition" when Agent ACs unchecked
+- `lib/inception.sh:295-318` Decision block writer appends rather than replacing → multiple clicks compound
+- `agents/context/check-tier0.sh:167` hashes raw command string (no normalization) → whitespace/quote drift between retries
+- `.tasks/templates/inception.md` confirmed has all three required sections; older inception tasks may need backfill (B7)
+- `grep -r fabric-purpose-fill` finds zero non-task references → stale worker name, recoverable
+- T-006 case validates workaround: direct human terminal bypasses CLAUDECODE+Watchtower+R-033 entirely
+
+Critical interim warning (until B1-B2 ship):
+> Watchtower GO/NO-GO buttons are likely broken for any session where Watchtower was started inside a Claude Code shell. Use human's own terminal:
+> ```bash
+> cd /path/to/project && [bin/fw|.agentic-framework/bin/fw] inception decide T-XXX go --rationale "..."
+> ```
+
+Research artifact: `docs/reports/T-1260-human-inception-completion.md` (full 6-spike findings, build decomposition B1-B9 with P0/P1/P2/P3 priority tags).
+
+### 2026-04-18T22:43:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-18T22:44:19Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Five distinct failure surfaces identified across the inception-completion path. Most critical (P0) is a regression from my own T-1259 commit (`4589bc60`) — `lib/inception.sh:204` CLAUDECODE guard fires on Watchtower-driven decisions because Flask inherits `CLAUDECODE=1` from its parent Claude Code shell (`web/subprocess_utils.py:51` passes `{os.environ, ...}`). The fix is bounded (~30 LOC for B1-B3): pass `--from-watchtower` flag from `inception.py` to `fw inception decide`, exempt that flag from the guard. P1 fixes (B4-B5) prevent the T-002 stuck-state compounding (3+ duplicate Decision blocks from repeated clicks). Workaround validated: human's own terminal (no `CLAUDECODE` env) bypasses all five surfaces — T-006 transitioned cleanly via that path.
+
+Evidence:
+- `web/subprocess_utils.py:51` — `env={os.environ, ...}` inherits CLAUDECODE in subprocess
+- `echo $CLAUDECODE` in current session returns `1` — every fw subprocess inherits this
+- `lib/inception.sh:204` (T-1259) blocks on CLAUDECODE=1 unless `--i-am-human` passed; `web/blueprints/inception.py:411` does not pass any human-identity flag → regression confirmed
+- `lib/inception.sh:336` comment: `--skip-sovereignty` bypasses ONLY R-033, NOT P-010 (AC gate) or P-011 (verification gate) — explains "Status does NOT transition" when Agent ACs unchecked
+- `lib/inception.sh:295-318` Decision block writer appends rather than replacing → multiple clicks compound
+- `agents/context/check-tier0.sh:167` hashes raw command string (no normalization) → whitespace/quote drift between retries
+- `.tasks/templates/inception.md` confirmed has all three required sections; older inception tasks may need backfill (B7)
+- `grep -r fabric-purpose-fill` finds zero non-task references → stale worker name, recoverable
+- T-006 case validates workaround: direct human terminal bypasses CLAUDECODE+Watchtower+R-033 entirely
+
+Critical interim warning (until B1-B2 ship):
+> Watchtower GO/NO-GO buttons are likely broken for any session where Watchtower was started inside a Claude Code shell. Use human's own terminal:
+> ```bash
+> cd /path/to/project && [bin/fw|.agentic-framework/bin/fw] inception decide T-XXX go --rationale "..."
+> ```
+
+Research artifact: `docs/reports/T-1260-human-inception-completion.md` (full 6-spike findings, build decomposition B1-B9 with P0/P1/P2/P3 priority tags).
