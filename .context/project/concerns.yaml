@@ -1258,10 +1258,11 @@ concerns:
   what_works_now: "Renumbering does succeed (no crash, no lost envelope). Local task IDs are unique within the destination project."
   what_remains: "(1) No annotation on the inception task recording 'originally T-XXX in source project'; (2) no log of the rename in .context/pickup/processed/; (3) source project's references to T-XXX point at the wrong destination task; (4) no concerns-register entry until now. Mitigation candidates: (a) URL-namespace IDs (project:T-XXX), (b) pickup-side back-reference field in the auto-created task frontmatter (e.g. source_task_id_in_origin: T-1315), (c) rename log appended to processed envelope file."
   mitigation_candidate: "Add `source_task_id_in_origin` to inception task frontmatter when pipeline renumbers. Append the rename to the processed envelope as a `pipeline_actions:` block. Reference T-1107 if/when broader namespacing is decided."
-  status: watching
+  mitigation_applied: "2026-04-19 T-1340: pickup_create_inception now parses fw task create output, extracts new T-XXX ID, and injects `source_task_id_in_origin` + `source_project_in_origin` into the created task's frontmatter (Python embedded script, idempotent, regex-anchored)."
+  status: mitigated
   created: 2026-04-19
   last_reviewed: 2026-04-19
-  related_tasks: [T-1107]
+  related_tasks: [T-1107, T-1340]
 
 - id: G-048
   type: gap

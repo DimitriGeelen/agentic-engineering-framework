@@ -191,13 +191,38 @@ pickup_create_inception() {
 
     # Create inception task (not build — T-469 lesson)
     if command -v fw >/dev/null 2>&1; then
-        fw task create \
+        local create_out
+        create_out=$(fw task create \
             --name "$task_name" \
             --type inception \
             --owner agent \
             --description "Auto-created from pickup envelope. Source: ${source_project}${source_task:+, task ${source_task}}. Type: ${pickup_type}." \
             --horizon next \
-            --tags "pickup,${pickup_type}" 2>&1
+            --tags "pickup,${pickup_type}" 2>&1)
+        echo "$create_out"
+        # G-047: inject source_task_id_in_origin and source_project_in_origin into frontmatter
+        if [ -n "$source_task" ]; then
+            local new_id new_file
+            new_id=$(echo "$create_out" | grep -oE '^ID:[[:space:]]+T-[0-9]+' | awk '{print $2}' | head -1)
+            if [ -n "$new_id" ]; then
+                new_file=$(echo "$create_out" | grep -oE '^File:[[:space:]]+\S+' | awk '{print $2}' | head -1)
+                if [ -n "$new_file" ] && [ -f "$new_file" ]; then
+                    # Insert before the closing --- of frontmatter
+                    python3 - "$new_file" "$source_task" "$source_project" <<'PYEOF'
+import sys, re
+path, src_task, src_proj = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(path) as f: txt = f.read()
+m = re.match(r'(---\n.*?\n)(---\n)', txt, re.DOTALL)
+if not m: sys.exit(0)
+fm, closer = m.group(1), m.group(2)
+# idempotent: don't double-insert
+if 'source_task_id_in_origin:' not in fm:
+    fm += f'source_task_id_in_origin: {src_task}\nsource_project_in_origin: "{src_proj}"\n'
+with open(path, 'w') as f: f.write(fm + closer + txt[m.end():])
+PYEOF
+                fi
+            fi
+        fi
     else
         echo "WARN: fw not on PATH — cannot create task for: $task_name" >&2
         echo "$task_name"

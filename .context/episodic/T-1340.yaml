@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1340: G-047 mitigation: record source_task_id_in_origin on pickup-created inception tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-19T17:40:36Z
+# ============================================================================
+
+task_id: T-1340
+task_name: "G-047 mitigation: record source_task_id_in_origin on pickup-created inception tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-19T16:56:09Z
+completed: 2026-04-19T17:40:19Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`pickup_create_inception` in `lib/pickup.sh` captures `fw task create` output and extracts the new T-XXX ID"
+  - "After creation, appends structured fields to task frontmatter: `source_task_id_in_origin: T-XXX` and `source_project_in_origin: <name>` (only when source_task is non-empty)"
+  - "Unit test (bats) — feed a fake envelope with source_task, run pickup_create_inception, assert created task has both frontmatter fields"
+  - "`bash -n lib/pickup.sh` passes"
+  - "Regression: envelope without source_task still creates task successfully (no frontmatter injection)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 44
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1340-g-047-mitigation-record-sourcetaskidinor.md
+generated_by: context-agent-hybrid
