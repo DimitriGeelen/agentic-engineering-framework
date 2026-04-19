@@ -244,7 +244,7 @@ do_vendor() {
 
             if [ -d "$vendor_source/$item" ]; then
                 if command -v rsync &>/dev/null; then
-                    rsync -a --delete "${rsync_args[@]}" "$vendor_source/$item/" "$dest/$item/"
+                    rsync -a --delete --delete-excluded "${rsync_args[@]}" "$vendor_source/$item/" "$dest/$item/"
                 else
                     rm -rf "${dest:?}/${item:?}"
                     cp -r "$vendor_source/$item" "$dest/$item"

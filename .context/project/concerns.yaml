@@ -1308,10 +1308,11 @@ concerns:
   what_works_now: "Future pyc generation is .gitignore'd (T-1323). cp fallback path cleans correctly. Fresh vendored installs (target empty) have no pyc since they're never copied in."
   what_remains: "Existing vendored installs with pre-existing pyc retain them across upgrades — wasted disk + audit noise potential. Mitigation: add --delete-excluded to rsync_args in do_vendor."
   mitigation_candidate: "Single-line fix: `rsync -a --delete --delete-excluded ...` in bin/fw:247. Bats: vendor with pre-seeded pyc in target, run upgrade, assert pyc removed."
-  status: watching
+  mitigation_applied: "2026-04-19 T-1335: --delete-excluded flag added to do_vendor rsync call in bin/fw:247. Empirical test seeded stale .pyc + __pycache__/ in target, ran equivalent rsync, verified both removed. bash -n + --version smoke test pass."
+  status: mitigated
   created: 2026-04-19
   last_reviewed: 2026-04-19
-  related_tasks: [T-1323]
+  related_tasks: [T-1323, T-1335]
 
 - id: G-051
   type: gap
