@@ -1805,3 +1805,10 @@ learnings:
   date: 2026-04-19
   context: Added via context agent
   application: TBD
+- id: L-020
+  learning: "Bats tests that shell out to 'fw task create' (even with PROJECT_ROOT=tmpdir exported) can leak tasks into the real project — bin/fw path resolution may ignore env var in some contexts. Prefer testing pure helper functions in isolation; extract any logic that can be tested without touching fw task create."
+  source: P-039
+  task: T-1342
+  date: 2026-04-19
+  context: Added via context agent
+  application: TBD

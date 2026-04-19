@@ -202,25 +202,10 @@ pickup_create_inception() {
         echo "$create_out"
         # G-047: inject source_task_id_in_origin and source_project_in_origin into frontmatter
         if [ -n "$source_task" ]; then
-            local new_id new_file
-            new_id=$(echo "$create_out" | grep -oE '^ID:[[:space:]]+T-[0-9]+' | awk '{print $2}' | head -1)
-            if [ -n "$new_id" ]; then
-                new_file=$(echo "$create_out" | grep -oE '^File:[[:space:]]+\S+' | awk '{print $2}' | head -1)
-                if [ -n "$new_file" ] && [ -f "$new_file" ]; then
-                    # Insert before the closing --- of frontmatter
-                    python3 - "$new_file" "$source_task" "$source_project" <<'PYEOF'
-import sys, re
-path, src_task, src_proj = sys.argv[1], sys.argv[2], sys.argv[3]
-with open(path) as f: txt = f.read()
-m = re.match(r'(---\n.*?\n)(---\n)', txt, re.DOTALL)
-if not m: sys.exit(0)
-fm, closer = m.group(1), m.group(2)
-# idempotent: don't double-insert
-if 'source_task_id_in_origin:' not in fm:
-    fm += f'source_task_id_in_origin: {src_task}\nsource_project_in_origin: "{src_proj}"\n'
-with open(path, 'w') as f: f.write(fm + closer + txt[m.end():])
-PYEOF
-                fi
+            local new_file
+            new_file=$(echo "$create_out" | grep -oE '^File:[[:space:]]+\S+' | awk '{print $2}' | head -1)
+            if [ -n "$new_file" ] && [ -f "$new_file" ]; then
+                pickup_inject_origin_frontmatter "$new_file" "$source_task" "$source_project"
             fi
         fi
     else
@@ -228,6 +213,26 @@ PYEOF
         echo "$task_name"
         return 1
     fi
+}
+
+# G-047 / T-1342: Inject source_task_id_in_origin + source_project_in_origin into
+# a task file's YAML frontmatter. Idempotent. Pure function — no shell-out,
+# no environment assumptions. Testable in isolation without triggering
+# fw task create (which would leak tasks into the real project during tests).
+pickup_inject_origin_frontmatter() {
+    local file="$1" src_task="$2" src_proj="$3"
+    [ -f "$file" ] || return 1
+    python3 - "$file" "$src_task" "$src_proj" <<'PYEOF'
+import sys, re
+path, src_task, src_proj = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(path) as f: txt = f.read()
+m = re.match(r'(---\n.*?\n)(---\n)', txt, re.DOTALL)
+if not m: sys.exit(0)
+fm, closer = m.group(1), m.group(2)
+if 'source_task_id_in_origin:' not in fm:
+    fm += f'source_task_id_in_origin: {src_task}\nsource_project_in_origin: "{src_proj}"\n'
+with open(path, 'w') as f: f.write(fm + closer + txt[m.end():])
+PYEOF
 }
 
 # --- Process one envelope ---
