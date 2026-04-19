@@ -12,7 +12,7 @@ tags: [rca, infrastructure, onedev, push-hang]
 components: []
 related_tasks: [T-1277]
 created: 2026-04-19T12:01:00Z
-last_update: 2026-04-19T12:01:00Z
+last_update: 2026-04-19T12:01:48Z
 date_finished: null
 ---
 
@@ -58,10 +58,10 @@ Single-spike sequence (run one, decide next from evidence):
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Spike A executed; client-vs-server determined from trace
-- [ ] Spike B or C executed (chosen by Spike A's evidence)
-- [ ] Recommendation written: which fix path is bounded and reversible
-- [ ] Research artifact `docs/reports/T-1330-onedev-push-hang.md` created and updated incrementally during exploration (C-001)
+- [x] Spike A executed; client-vs-server determined from trace — **onedev negotiation was 182ms; hang is local to pre-push hook**
+- [x] Spike B or C executed (chosen by Spike A's evidence) — **skipped, Spike A definitive; follow-on ps/cron discovery revealed 139 orphan `fw audit` processes as real root cause**
+- [x] Recommendation written: which fix path is bounded and reversible — **GO, flock wrapper shipped under T-1331**
+- [x] Research artifact `docs/reports/T-1330-onedev-push-hang.md` created and updated incrementally during exploration (C-001)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -88,7 +88,26 @@ Single-spike sequence (run one, decide next from evidence):
 
 ## Recommendation
 
-<!-- Filled after spikes — REQUIRED before fw inception decide. Not yet written; spikes pending. -->
+**Recommendation:** GO
+
+**Rationale:** The "onedev push hang" is NOT onedev. Spike A trace shows onedev completes ref negotiation in 182ms; the hang is in the pre-push hook's `fw audit` call, contending with **139 orphaned `fw audit --cron` processes** (some running >24h in D-state, consuming 6+ CPU-hours each). Root cause: no `flock` wrapper on audit cron entries, so overlapping fires stacked instead of skipped.
+
+**Fix path (bounded, reversible):**
+1. Kill the 139 orphans (done inline under T-1330; count 139 → 1)
+2. Wrap audit cron entries with `flock -n /var/lock/fw-audit-999-<section>.lock` (done under T-1331; 9 entries flock-wrapped; empirically verified skip behaviour)
+
+**Evidence:**
+- Research artifact: `docs/reports/T-1330-onedev-push-hang.md` (full trace + findings)
+- T-1331 build task (now completed): `.tasks/completed/T-1331-add-flock-wrapper-to-audit-cron-entries-.md`
+- Updated cron source: `.context/cron/agentic-audit.crontab` (9 flock-wrapped entries)
+- Installed: `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` (9 flock-wrapped entries)
+- Empirical flock-skip test: `flock -n LOCK` exit 1 without payload when lock held (2026-04-19)
+- Post-fix audit process count: 3 (down from 139; 3 are current cron-cycle fires, flock prevents further stacking)
+
+**NOT addressed here (tracked separately):**
+- Why individual audits sometimes took 6+ CPU-hours (D-state NFS wait suspected) — separate RCA if it recurs
+- Other projects' audit cron files not yet flock-wrapped — generator-level sweep is separate
+- T-1277's `timeout 15 git push` bound retained as belt-and-suspenders
 
 ## Decisions
 
