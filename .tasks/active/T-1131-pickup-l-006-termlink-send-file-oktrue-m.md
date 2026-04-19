@@ -50,7 +50,7 @@ None. Triage decision, not implementation.
 - [x] Recommendation written with rationale (DEFER — duplicate of completed T-1125)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -98,7 +98,20 @@ None. Triage decision, not implementation.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (close as duplicate)
+
+Rationale: Self-pickup auto-created by the framework's pickup pipeline when an envelope arrived from T-1125 ("TermLink U-003: send-file reports ok on hub acceptance, not delivery — silent file loss"). T-1125 is already work-completed GO and addresses the L-006 send-file delivery learning. There is no new scope to explore. Keeping T-1131 open is structural noise — same anti-pattern as T-1130 / T-1271 (also DEFER as self-pickup duplicates).
+
+Evidence:
+- T-1125 status: work-completed, decision: GO (`bin/fw inception status | grep T-1125`)
+- Pickup envelope re-states the parent's problem; no new file paths, commands, or scope items
+- Established framework pattern: when a self-pickup arrives for an already-completed source task, the right action is DEFER
+
+Structural follow-up (separate task): the pickup pipeline should skip envelopes whose source-task is already work-completed. Tracked as part of the "pickup-pipeline-self-noise" class — to be filed if not already in concerns.yaml.
+
+**Date**: 2026-04-19T11:53:59Z
 
 ## Updates
 
@@ -107,3 +120,17 @@ None. Triage decision, not implementation.
 
 ### 2026-04-12T09:41:29Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-19T11:53:59Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (close as duplicate)
+
+Rationale: Self-pickup auto-created by the framework's pickup pipeline when an envelope arrived from T-1125 ("TermLink U-003: send-file reports ok on hub acceptance, not delivery — silent file loss"). T-1125 is already work-completed GO and addresses the L-006 send-file delivery learning. There is no new scope to explore. Keeping T-1131 open is structural noise — same anti-pattern as T-1130 / T-1271 (also DEFER as self-pickup duplicates).
+
+Evidence:
+- T-1125 status: work-completed, decision: GO (`bin/fw inception status | grep T-1125`)
+- Pickup envelope re-states the parent's problem; no new file paths, commands, or scope items
+- Established framework pattern: when a self-pickup arrives for an already-completed source task, the right action is DEFER
+
+Structural follow-up (separate task): the pickup pipeline should skip envelopes whose source-task is already work-completed. Tracked as part of the "pickup-pipeline-self-noise" class — to be filed if not already in concerns.yaml.

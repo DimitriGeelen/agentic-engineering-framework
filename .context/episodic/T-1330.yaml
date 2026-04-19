@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1330: Onedev push hang RCA — every git push onedev exceeds 15s timeout, cause unaddressed (T-1277 fixed damage only)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-19T13:28:42Z
+# ============================================================================
+
+task_id: T-1330
+task_name: "Onedev push hang RCA — every git push onedev exceeds 15s timeout, cause unaddressed (T-1277 fixed damage only)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-19T12:01:00Z
+completed: 2026-04-19T13:28:29Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-19T14:01:48+02:00
+last_commit: 2026-04-19T15:05:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception framing — onedev push hang RCA (T-1277 bounded damage, cause unaddressed). Spike A findings + GO recommendation — real root cause was pre-push audit contention
+
+# Key outcomes
+outcomes:
+  - "Spike A executed; client-vs-server determined from trace — **onedev negotiation was 182ms; hang is local to pre-push hook**"
+  - "Spike B or C executed (chosen by Spike A's evidence) — **skipped, Spike A definitive; follow-on ps/cron discovery revealed 139 orphan `fw audit` processes as real root cause**"
+  - "Recommendation written: which fix path is bounded and reversible — **GO, flock wrapper shipped under T-1331**"
+  - "Research artifact `docs/reports/T-1330-onedev-push-hang.md` created and updated incrementally during exploration (C-001)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1330-onedev-push-hang.md"
+  - ".tasks/active/T-1330-inception-onedev-push-hang-rca.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-19T14:01:48"
+    action: "T-1330: Inception framing — onedev push hang RCA (T-1277 bounded damage, cause unaddressed)"
+  - time: "2026-04-19T15:05:02"
+    action: "T-1330: Spike A findings + GO recommendation — real root cause was pre-push audit contention"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 87 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [rca, infrastructure, onedev, push-hang]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 87
+  commits: 2
+  files_changed: 2
+  lines_added: 227
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1330-inception-onedev-push-hang-rca.md
+generated_by: context-agent-hybrid

@@ -51,7 +51,7 @@ None. Triage only.
 - [x] Recommendation written with rationale (DEFER — shipped in T-1169)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -99,7 +99,20 @@ If 010-termlink is observing the symptom anew, root cause is likely a stale fram
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (close as duplicate of T-1169)
+
+Rationale: External pickup from 010-termlink proposing "completion gate should verify episodic output exists after generation". Verification this session shows the fix is already in tree, shipped by T-1169. Closing the pickup is the correct response — no new work to do.
+
+Evidence:
+- agents/task-create/update-task.sh:397-402 already verifies episodic file existence post-generation
+- T-1169 shipped 'Add episodic verification after auto-generation in update-task.sh' — work-completed
+- Inline comment cites T-1169: 'silent failure detection'
+
+If 010-termlink is observing the symptom anew, root cause is likely a stale framework copy on the consumer side — operator should run `fw upgrade` on 010-termlink to pick up T-1169.
+
+**Date**: 2026-04-19T11:54:02Z
 
 ## Updates
 
@@ -108,3 +121,17 @@ If 010-termlink is observing the symptom anew, root cause is likely a stale fram
 
 ### 2026-04-12T09:41:34Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-19T11:54:02Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (close as duplicate of T-1169)
+
+Rationale: External pickup from 010-termlink proposing "completion gate should verify episodic output exists after generation". Verification this session shows the fix is already in tree, shipped by T-1169. Closing the pickup is the correct response — no new work to do.
+
+Evidence:
+- agents/task-create/update-task.sh:397-402 already verifies episodic file existence post-generation
+- T-1169 shipped 'Add episodic verification after auto-generation in update-task.sh' — work-completed
+- Inline comment cites T-1169: 'silent failure detection'
+
+If 010-termlink is observing the symptom anew, root cause is likely a stale framework copy on the consumer side — operator should run `fw upgrade` on 010-termlink to pick up T-1169.

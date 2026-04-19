@@ -29,3 +29,309 @@ Press CTRL+C to quit
 192.168.10.107 - - [18/Apr/2026 23:08:27] "GET / HTTP/1.1" 200 -
 192.168.10.107 - - [18/Apr/2026 23:08:27] "GET / HTTP/1.1" 200 -
 192.168.10.107 - - [18/Apr/2026 23:08:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET /static/pico.min.css HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET /static/htmx.min.js HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET /static/highlight-github-dark.min.css HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET /static/highlight.min.js HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET /static/htmx-ext-sse.js HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET /static/marked.min.js HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET /static/purify.min.js HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET /static/logo.png HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:36:43] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.10.107 - - [19/Apr/2026 00:36:55] "GET /tasks/T-334 HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:37:01] "GET /tasks/T-448 HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:39:54] "GET /tasks HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:39:54] "GET /tasks HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:40:23] "GET /tasks/T-1309 HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:40:39] "GET /inception HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:40:50] "GET /fabric HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:41:03] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:41:14] "GET /approvals/content HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:41:22] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:41:46] "GET /api/_identity HTTP/1.1" 200 -
+fw inception decide T-1251 timed out after 30s
+inception decide T-1251 failed: stdout='' stderr='Command timed out'
+192.168.10.107 - - [19/Apr/2026 00:41:48] "POST /inception/T-1251/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:41:56] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:41:57] "POST /inception/T-1251/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:42:06] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:42:26] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:42:28] "POST /inception/T-1252/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:42:38] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:42:59] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:43:01] "POST /inception/T-1253/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:43:24] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:43:44] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:43:47] "POST /inception/T-1258/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:43:53] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1260 failed: stdout='=== Task Update ===\nTask:    T-1260 ("Human-owned inception tasks cannot complete — 5 layered root causes (sovereignty, dispatch, template drift, recommendation gate, tier0 hash)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1260-human-owned-inception-tasks-cannot-compl.md\nWARNING: Completing human-owned task (--skip-sovereignty bypass)\nAcceptance criteria: 8/8 checked ✓\nHuman: 0/1 checked (not blocking)\nStatus:  started-work → work-completed\n\ndate_finished set to 2026-04-18T' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:44:13] "POST /inception/T-1260/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:44:20] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:44:21] "POST /inception/T-1260/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:44:28] "GET /api/_identity HTTP/1.1" 200 -
+fw inception decide T-1261 timed out after 30s
+inception decide T-1261 failed: stdout='' stderr='Command timed out'
+192.168.10.107 - - [19/Apr/2026 00:44:55] "POST /inception/T-1261/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:45:01] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:45:04] "POST /inception/T-1261/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:45:22] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:45:24] "POST /inception/T-1271/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:45:34] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1302 failed: stdout='=== Task Update ===\nTask:    T-1302 ("Pickup: Watchtower Flask secret_key auto-regenerates on every restart — breaks CSRF for existing browser sessions (from termlink)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1302-pickup-watchtower-flask-secretkey-auto-r.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 0/1 checked (not blocking)\n\n=== Verification Gate (P-011) ===\nRunning 4 verification command(s)...\n\n  PASS: grep -q "_resolve_secret_key" web/app.py\n  PASS: grep -q "\\.fw-secr' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:45:51] "POST /inception/T-1302/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:45:58] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:46:00] "POST /inception/T-1302/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:46:06] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1303 failed: stdout='=== Task Update ===\nTask:    T-1303 ("Pickup: Watchtower shared.py PROJECT_ROOT fallback is wrong — falls to FRAMEWORK_ROOT, not discovered (from termlink)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1303-pickup-watchtower-sharedpy-projectroot-f.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 0/1 checked (not blocking)\n\n=== Verification Gate (P-011) ===\nRunning 3 verification command(s)...\n\n  PASS: grep -q "_discover_project_root" web/shared.py\n  PASS: grep -q "_resolve_projec' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:46:21] "POST /inception/T-1303/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:46:29] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:46:33] "POST /inception/T-1303/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:46:40] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1304 failed: stdout='=== Task Update ===\nTask:    T-1304 ("Pickup: Watchtower ambient strip shows wrong task as focus — ignores focus.yaml (from termlink)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1304-pickup-watchtower-ambient-strip-shows-wr.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 0/1 checked (not blocking)\n\n=== Verification Gate (P-011) ===\nRunning 2 verification command(s)...\n\n  PASS: grep -q "focus.yaml" web/shared.py\n  PASS: python3 -m pytest tests/web/test_build_ambient.py -q\n\nVeri' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:46:55] "POST /inception/T-1304/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:47:03] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:47:04] "POST /inception/T-1304/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:47:13] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1305 failed: stdout='=== Task Update ===\nTask:    T-1305 ("Pickup: Watchtower load_latest_audit picks upgrades.yaml instead of newest audit (from termlink)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1305-pickup-watchtower-loadlatestaudit-picks-.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 0/1 checked (not blocking)\n\n=== Verification Gate (P-011) ===\nRunning 2 verification command(s)...\n\n  PASS: grep -q \'glob("\\[0-9\\]\\[0-9\\]\\[0-9\\]\\[0-9\\]-\\*\\.yaml")\' web/shared.py\n  PASS: python3 -m pytest test' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:47:30] "POST /inception/T-1305/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:47:42] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1311 failed: stdout='=== Task Update ===\nTask:    T-1311 ("Pickup: Codify RPC resilience-tier taxonomy + version skew enforcement (Tier-A opaque vs Tier-B typed) (from termlink)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1311-pickup-codify-rpc-resilience-tier-taxono.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 0/1 checked (not blocking)\nStatus:  started-work → work-completed\n\ndate_finished set to 2026-04-18T22:47:41Z\nPartial-complete: 1 human AC(s) pending verification\nTask stays in active/ — ' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:48:02] "POST /inception/T-1311/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:48:09] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:48:12] "POST /inception/T-1311/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:48:18] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:48:19] "POST /inception/T-1305/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:48:24] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:48:25] "POST /inception/T-1312/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:48:31] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:48:32] "POST /inception/T-1313/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:48:39] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1314 failed: stdout='=== Task Update ===\nTask:    T-1314 ("Pickup: Watchtower /fabric crashes (KeyError: id) on subsystems.yaml without id key — loader should fall back to name (from termlink)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1314-pickup-watchtower-fabric-crashes-keyerro.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 0/1 checked (not blocking)\nStatus:  started-work → work-completed\n\ndate_finished set to 2026-04-18T22:48:38Z\nPartial-complete: 1 human AC(s) pending verification\nTask stay' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:48:53] "POST /inception/T-1314/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:48:59] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:48:59] "POST /inception/T-1314/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:49:20] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:49:22] "POST /inception/T-1315/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:49:36] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1316 failed: stdout='=== Task Update ===\nTask:    T-1316 ("Pickup from email-archive: Watchtower verification CWD bug (sourced T-1044)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1316-pickup-from-email-archive-watchtower-ver.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 0/1 checked (not blocking)\n\n=== Verification Gate (P-011) ===\nRunning 2 verification command(s)...\n\n  PASS: grep -q \'cd "$PROJECT_ROOT" && eval\' agents/task-create/update-task.sh\n  PASS: bats tests/unit/update_task_verification.b' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:49:57] "POST /inception/T-1316/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:50:07] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:50:09] "POST /inception/T-1316/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:50:21] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1319 failed: stdout='=== Task Update ===\nTask:    T-1319 ("Pickup: fw fabric drift and scan miss recursive glob matches — bash ** needs shopt -s globstar (from termlink)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1319-pickup-fw-fabric-drift-and-scan-miss-rec.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 0/1 checked (not blocking)\nStatus:  started-work → work-completed\n\ndate_finished set to 2026-04-18T22:50:21Z\nPartial-complete: 1 human AC(s) pending verification\nTask stays in active/ — owner se' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:50:39] "POST /inception/T-1319/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:50:48] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:50:49] "POST /inception/T-1319/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:50:59] "GET /api/_identity HTTP/1.1" 200 -
+inception decide T-1321 failed: stdout='=== Task Update ===\nTask:    T-1321 ("Pickup: Vendored .agentic-framework/ tracks Python __pycache__ files — Uncommitted changes present is the #1 audit trend (23×) for consumers (from termlink)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1321-pickup-vendored-agentic-framework-tracks.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 0/1 checked (not blocking)\nStatus:  started-work → work-completed\n\ndate_finished set to 2026-04-18T22:50:58Z\nPartial-complete: 1 human AC(s) pending' stderr=''
+192.168.10.107 - - [19/Apr/2026 00:51:22] "POST /inception/T-1321/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 00:51:30] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:51:31] "POST /inception/T-1321/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:51:43] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:51:58] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:51:59] "POST /inception/T-1322/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:52:21] "GET /sessions HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:52:28] "GET /terminal HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:52:37] "GET /fabric HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:52:39] "GET /fabric/graph HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:52:39] "GET /static/d3.v7.min.js HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /fabric/graph HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 00:52:41] "GET /static/d3.v7.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 00:53:09] "GET /cron HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 00:53:18] "GET /tasks HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 01:19:09] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 01:19:09] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 01:19:09] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 01:19:39] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 01:19:40] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 01:19:40] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:43] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:43] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:44] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:44] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:44] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:44] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:45] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:45] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:45] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:46] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:47] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [19/Apr/2026 01:19:47] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:48] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:48] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:49] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:49] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:49] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:50] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:50] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:53] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:53] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:53] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:53] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:53] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:53] "GET /risks HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:59] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:59] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:59] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [19/Apr/2026 01:19:59] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:59] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:59] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:59] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:19:59] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:20:02] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 01:20:05] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 01:32:58] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 01:33:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 01:37:52] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [19/Apr/2026 10:25:53] "GET /health HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:32:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:32:40] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:32:40] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:32:40] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:32:40] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:32:40] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:32:40] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:32:40] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:32:40] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:33:06] "GET /terminal HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:56:30] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:56:41] "GET /approvals/content HTTP/1.1" 200 -
+inception decide T-1258 failed: stdout='=== Task Update ===\nTask:    T-1258 ("RCA: fw context add-learning truncates learnings.yaml (recurrence 3+ in one week)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1258-rca-fw-context-add-learning-truncates-le.md\nRe-checking partial-complete status...\nAll ACs checked (including human) ✓\nMoved to completed/\n\n=== Auto-trigger: Episodic Generation ===\nEpisodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1258.yaml\n\n  Status: ✓ complete (Auto-generated)' stderr=''
+192.168.10.107 - - [19/Apr/2026 10:56:43] "POST /inception/T-1258/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 10:57:06] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:57:07] "POST /inception/T-1296/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:57:10] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:57:12] "POST /inception/T-1297/decide HTTP/1.1" 200 -
+inception decide T-1298 failed: stdout='' stderr="ERROR: Placeholder content detected in task file\n  File: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md\n  Unfilled placeholders:\n  Line 86: **Rationale:** The pickup's premise — that the framework catches generic Go/No-Go defaults at decide time — is inaccurate. No existing detector flags them (`audit_task_placeholders` looks for `[Criterion N]` / `[TODO]` / `[PLACEHOLDER]` / `[Your recommendation here]` / `[REQUIRED before` — all bracket-"
+192.168.10.107 - - [19/Apr/2026 10:57:17] "POST /inception/T-1298/decide HTTP/1.1" 500 -
+inception decide T-1298 failed: stdout='' stderr="ERROR: Placeholder content detected in task file\n  File: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md\n  Unfilled placeholders:\n  Line 86: **Rationale:** The pickup's premise — that the framework catches generic Go/No-Go defaults at decide time — is inaccurate. No existing detector flags them (`audit_task_placeholders` looks for `[Criterion N]` / `[TODO]` / `[PLACEHOLDER]` / `[Your recommendation here]` / `[REQUIRED before` — all bracket-"
+192.168.10.107 - - [19/Apr/2026 10:57:28] "POST /inception/T-1298/decide HTTP/1.1" 500 -
+inception decide T-1298 failed: stdout='' stderr="ERROR: Placeholder content detected in task file\n  File: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md\n  Unfilled placeholders:\n  Line 86: **Rationale:** The pickup's premise — that the framework catches generic Go/No-Go defaults at decide time — is inaccurate. No existing detector flags them (`audit_task_placeholders` looks for `[Criterion N]` / `[TODO]` / `[PLACEHOLDER]` / `[Your recommendation here]` / `[REQUIRED before` — all bracket-"
+192.168.10.107 - - [19/Apr/2026 10:57:34] "POST /inception/T-1298/decide HTTP/1.1" 500 -
+fw inception decide T-1299 timed out after 30s
+inception decide T-1299 failed: stdout='' stderr='Command timed out'
+192.168.10.107 - - [19/Apr/2026 10:57:49] "POST /inception/T-1299/decide HTTP/1.1" 500 -
+inception decide T-1299 failed: stdout='' stderr=''
+192.168.10.107 - - [19/Apr/2026 10:57:54] "POST /inception/T-1299/decide HTTP/1.1" 500 -
+inception decide T-1299 failed: stdout='' stderr=''
+192.168.10.107 - - [19/Apr/2026 10:57:56] "POST /inception/T-1299/decide HTTP/1.1" 500 -
+inception decide T-1299 failed: stdout='' stderr=''
+192.168.10.107 - - [19/Apr/2026 10:57:57] "POST /inception/T-1299/decide HTTP/1.1" 500 -
+inception decide T-1299 failed: stdout='' stderr=''
+192.168.10.107 - - [19/Apr/2026 10:57:57] "POST /inception/T-1299/decide HTTP/1.1" 500 -
+inception decide T-1299 failed: stdout='' stderr=''
+192.168.10.107 - - [19/Apr/2026 10:57:58] "POST /inception/T-1299/decide HTTP/1.1" 500 -
+inception decide T-1299 failed: stdout='' stderr=''
+192.168.10.107 - - [19/Apr/2026 10:57:58] "POST /inception/T-1299/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 10:58:01] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:58:01] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:01] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:01] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:01] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:01] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:01] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:01] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:01] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:12] "GET /approvals/content HTTP/1.1" 200 -
+inception decide T-1326 failed: stdout='=== Task Update ===\nTask:    T-1326 ("TermLink fleet cert instability — .121 and .122 hub certs rotating, secrets desynced")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1326-termlink-fleet-cert-instability--121-and.md\nAcceptance criteria: 3/3 checked ✓\nHuman: 1/1 checked ✓\nStatus:  started-work → work-completed\n\ndate_finished set to 2026-04-19T08:58:18Z\nMoved to completed/\nFocus cleared (task completed). Set new focus: bin/fw work-on T-XXX\n\n=== Auto-trigger: Episodic Generati' stderr=''
+192.168.10.107 - - [19/Apr/2026 10:58:44] "POST /inception/T-1326/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 10:58:53] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:58:53] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:53] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:53] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:53] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:53] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:53] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:53] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:58:53] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:03] "GET /approvals/content HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:59:04] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:59:04] "POST /inception/T-1300/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:59:07] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:59:07] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:07] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:07] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:07] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:07] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:07] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:07] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:07] "GET /static/logo.png HTTP/1.1" 304 -
+inception decide T-1298 failed: stdout='' stderr="ERROR: Placeholder content detected in task file\n  File: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md\n  Unfilled placeholders:\n  Line 86: **Rationale:** The pickup's premise — that the framework catches generic Go/No-Go defaults at decide time — is inaccurate. No existing detector flags them (`audit_task_placeholders` looks for `[Criterion N]` / `[TODO]` / `[PLACEHOLDER]` / `[Your recommendation here]` / `[REQUIRED before` — all bracket-"
+192.168.10.107 - - [19/Apr/2026 10:59:14] "POST /inception/T-1298/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 10:59:16] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 10:59:16] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:16] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:16] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:16] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:16] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:16] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:16] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 10:59:16] "GET /static/logo.png HTTP/1.1" 304 -
+inception decide T-1298 failed: stdout='' stderr="ERROR: Placeholder content detected in task file\n  File: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md\n  Unfilled placeholders:\n  Line 86: **Rationale:** The pickup's premise — that the framework catches generic Go/No-Go defaults at decide time — is inaccurate. No existing detector flags them (`audit_task_placeholders` looks for `[Criterion N]` / `[TODO]` / `[PLACEHOLDER]` / `[Your recommendation here]` / `[REQUIRED before` — all bracket-"
+192.168.10.107 - - [19/Apr/2026 10:59:19] "POST /inception/T-1298/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 10:59:26] "GET /approvals/content HTTP/1.1" 200 -
+inception decide T-1298 failed: stdout='' stderr="ERROR: Placeholder content detected in task file\n  File: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md\n  Unfilled placeholders:\n  Line 86: **Rationale:** The pickup's premise — that the framework catches generic Go/No-Go defaults at decide time — is inaccurate. No existing detector flags them (`audit_task_placeholders` looks for `[Criterion N]` / `[TODO]` / `[PLACEHOLDER]` / `[Your recommendation here]` / `[REQUIRED before` — all bracket-"
+192.168.10.107 - - [19/Apr/2026 10:59:38] "POST /inception/T-1298/decide HTTP/1.1" 500 -
+inception decide T-1298 failed: stdout='' stderr="ERROR: Placeholder content detected in task file\n  File: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md\n  Unfilled placeholders:\n  Line 86: **Rationale:** The pickup's premise — that the framework catches generic Go/No-Go defaults at decide time — is inaccurate. No existing detector flags them (`audit_task_placeholders` looks for `[Criterion N]` / `[TODO]` / `[PLACEHOLDER]` / `[Your recommendation here]` / `[REQUIRED before` — all bracket-"
+192.168.10.107 - - [19/Apr/2026 11:00:46] "POST /inception/T-1298/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 13:53:39] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:53:39] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 13:53:47] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:53:48] "POST /inception/T-1124/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:53:50] "GET /approvals/content HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:53:50] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:53:51] "POST /inception/T-1127/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:53:55] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:53:57] "POST /inception/T-1130/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:54:00] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:54:00] "POST /inception/T-1131/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:54:02] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 13:54:04] "POST /inception/T-1132/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 14:14:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 14:14:25] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 14:14:25] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 14:14:25] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 14:14:25] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 14:14:25] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 14:14:25] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 14:14:25] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 14:14:25] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 14:14:33] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 14:14:43] "GET /approvals/content HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 14:44:59] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 15:28:01] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 15:28:01] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:28:01] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:28:01] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:28:01] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:28:01] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:28:01] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:28:01] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:28:01] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:28:03] "POST /api/approvals/decide HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 15:28:12] "GET /approvals/content HTTP/1.1" 200 -
+inception decide T-1330 failed: stdout='=== Task Update ===\nTask:    T-1330 ("Onedev push hang RCA — every git push onedev exceeds 15s timeout, cause unaddressed (T-1277 fixed damage only)")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1330-inception-onedev-push-hang-rca.md\nAcceptance criteria: 4/4 checked ✓\nHuman: 1/1 checked ✓\nStatus:  started-work → work-completed\n\ndate_finished set to 2026-04-19T13:28:29Z\nMoved to completed/\n\n=== Auto-trigger: Episodic Generation ===\nEpisodic generated: /opt/999-Agentic-Engineer' stderr=''
+192.168.10.107 - - [19/Apr/2026 15:28:42] "POST /inception/T-1330/decide HTTP/1.1" 500 -
+192.168.10.107 - - [19/Apr/2026 15:51:51] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 15:52:02] "GET /approvals/content HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 15:52:16] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [19/Apr/2026 15:52:16] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:52:16] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:52:16] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:52:16] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:52:16] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:52:16] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:52:16] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:52:16] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [19/Apr/2026 15:52:27] "GET /approvals/content HTTP/1.1" 200 -

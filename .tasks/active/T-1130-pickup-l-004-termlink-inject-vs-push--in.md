@@ -51,7 +51,7 @@ None. This is a triage decision, not implementation.
 - [x] Recommendation written with rationale (DEFER — duplicate of completed T-1126)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -98,7 +98,19 @@ None. This is a triage decision, not implementation.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (close as duplicate)
+
+Rationale: This is a self-pickup auto-created by the framework's pickup pipeline when a learning envelope arrived. The parent task (T-1126) already codified the inject-vs-push rule into CLAUDE.md and is work-completed GO. There is no new scope to explore. Keeping T-1130 open is structural noise — the same anti-pattern as T-1271 (also DEFER as self-pickup duplicate).
+
+Evidence:
+- T-1126 status: work-completed, decision: GO (`bin/fw inception status | grep T-1126`)
+- CLAUDE.md "Cross-Agent Communication Protocol (T-1126)" section codifies the rule
+- T-1271 was DEFERred for the identical reason (self-pickup of own completed work)
+- No new file paths, commands, or scope items appear in the pickup envelope vs T-1126 episodic
+
+**Date**: 2026-04-19T11:53:55Z
 
 ## Updates
 
@@ -107,3 +119,16 @@ None. This is a triage decision, not implementation.
 
 ### 2026-04-12T09:41:29Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-19T11:53:55Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (close as duplicate)
+
+Rationale: This is a self-pickup auto-created by the framework's pickup pipeline when a learning envelope arrived. The parent task (T-1126) already codified the inject-vs-push rule into CLAUDE.md and is work-completed GO. There is no new scope to explore. Keeping T-1130 open is structural noise — the same anti-pattern as T-1271 (also DEFER as self-pickup duplicate).
+
+Evidence:
+- T-1126 status: work-completed, decision: GO (`bin/fw inception status | grep T-1126`)
+- CLAUDE.md "Cross-Agent Communication Protocol (T-1126)" section codifies the rule
+- T-1271 was DEFERred for the identical reason (self-pickup of own completed work)
+- No new file paths, commands, or scope items appear in the pickup envelope vs T-1126 episodic

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1258: RCA: fw context add-learning truncates learnings.yaml (recurrence 3+ in one week)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-19T08:56:41Z
+# ============================================================================
+
+task_id: T-1258
+task_name: "RCA: fw context add-learning truncates learnings.yaml (recurrence 3+ in one week)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-14T22:05:42Z
+completed: 2026-04-18T22:43:23Z
+duration_days: 4
+updates_count: 7
+first_commit: 2026-04-15T17:33:51+02:00
+last_commit: 2026-04-15T19:20:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA complete — learnings.yaml truncation = Write-tool bypass. Restore learnings.yaml + RCA CORRECTION — culprit is completion flow
+
+# Key outcomes
+outcomes:
+  - "Root cause identified: `tests/unit/context_learning.bats:60-73` destroys real learnings.yaml via PROJECT_ROOT=FRAMEWORK_ROOT redirect + `rm -f` + do_add_learning"
+  - "Live reproduction confirmed: bats test → 1709 lines → 10 lines (this session, 20:04Z)"
+  - "Same bug-class found in `tests/unit/context_decision.bats:60-73` (would destroy decisions.yaml)"
+  - "Evidence documented for 4 truncation commits (41264a3a, 5d90f655, 96cd1080, 4eb23e81) + restoration cycle"
+  - "Ruled-out mechanisms documented (add-learning itself, consolidate.py, init.sh heredoc, episodic.sh, completion flow, audit)"
+  - "Fix applied: both tests alias FRAMEWORK_ROOT=TEST_TEMP_DIR instead of setting PROJECT_ROOT=FRAMEWORK_ROOT"
+  - "Fix verified: 21/21 tests pass, learnings.yaml and decisions.yaml unchanged post-run"
+  - "Research artifact updated: `docs/reports/T-1258-add-learning-truncation-rca.md`"
+  - "Recommendation section updated (GO with confirmed root cause + structural fix)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-1258-add-learning-truncation-rca.md"
+  - ".tasks/active/T-1258-rca-fw-context-add-learning-truncates-le.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-15T17:33:51"
+    action: "T-1258: RCA complete — learnings.yaml truncation = Write-tool bypass"
+  - time: "2026-04-15T19:20:02"
+    action: "T-1258: Restore learnings.yaml + RCA CORRECTION — culprit is completion flow"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5797 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5797
+  commits: 2
+  files_changed: 4
+  lines_added: 315
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1258-rca-fw-context-add-learning-truncates-le.md
+generated_by: context-agent-hybrid

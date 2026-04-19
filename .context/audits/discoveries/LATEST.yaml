@@ -1,11 +1,11 @@
-timestamp: 2026-04-19T10:30:01Z
+timestamp: 2026-04-19T13:30:01Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1217)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1219)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 7 task(s) waiting >30d: T-436(21d) T-446(35d) T-448(21d) T-460(37d) T-470(37d) T-481(35d) T-505(32d) T-511(32d) T-518(32d) T-530(27d) T-594(26d) T-612(23d) T-613(22d) T-663(21d) T-678(21d) T-706(21d) T-707(20d) T-708(20d) T-710(20d) T-772(19d) T-782(19d) T-799(17d) T-800(17d) T-816(15d) T-817(15d) T-880(14d)"
+    check: "D2: Human review queue — 7 task(s) waiting >30d: T-436(21d) T-446(35d) T-448(21d) T-460(37d) T-470(37d) T-481(35d) T-505(33d) T-511(33d) T-518(32d) T-530(27d) T-594(26d) T-612(24d) T-613(22d) T-663(21d) T-678(21d) T-706(21d) T-707(21d) T-708(21d) T-710(20d) T-772(20d) T-782(19d) T-799(18d) T-800(18d) T-816(15d) T-817(15d) T-880(14d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - id: D8
     level: PASS

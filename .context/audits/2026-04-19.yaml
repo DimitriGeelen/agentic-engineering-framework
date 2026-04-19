@@ -1,5 +1,5 @@
-# Audit Results - 2026-04-19-1240
-timestamp: 2026-04-19T10:40:20Z
+# Audit Results - 2026-04-19-1553
+timestamp: 2026-04-19T13:53:25Z
 sections: "structure"
 summary:
   pass: 9
@@ -21,6 +21,6 @@ findings:
   - level: PASS
     check: "Fabric: 407 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 404/408 cards enriched (4 without edges)"
+    check: "Fabric edges: 406/408 cards enriched (2 without edges)"
   - level: PASS
     check: "Fabric drift: All watched source files registered (407 cards)"
