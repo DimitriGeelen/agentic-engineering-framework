@@ -60,10 +60,17 @@ audit_task_placeholders() {
         [ $in_updates -eq 1 ] && continue
         [ $in_dialogue -eq 1 ] && continue
 
+        # Strip inline backtick spans (`...`) so documentation that quotes the
+        # patterns (e.g. T-1298 explaining what audit_task_placeholders detects)
+        # is not flagged. Single-backtick spans only — fenced blocks already
+        # handled above.
+        local cleaned
+        cleaned=$(echo "$line" | sed 's/`[^`]*`//g')
+
         # Placeholder patterns — literal template stubs that should have been
         # replaced. Each pattern here is explicitly chosen because it NEVER
         # appears in legitimate authored content, only in unfilled templates.
-        if echo "$line" | grep -qE '\[Criterion [0-9]+\]|\[TODO\]|\[PLACEHOLDER\]|\[Your recommendation here\]|\[REQUIRED before'; then
+        if echo "$cleaned" | grep -qE '\[Criterion [0-9]+\]|\[TODO\]|\[PLACEHOLDER\]|\[Your recommendation here\]|\[REQUIRED before'; then
             issues="${issues}
   Line ${line_num}: $(echo "$line" | sed 's/^[[:space:]]*//')"
             found=1

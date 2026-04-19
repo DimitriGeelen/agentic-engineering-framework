@@ -166,3 +166,28 @@ GO")
     run audit_task_placeholders "$f"
     [ "$status" -eq 1 ]
 }
+
+@test "audit: inline backticked pattern is exempt (T-1327)" {
+    local f
+    f=$(_make_task "## Recommendation
+The audit looks for \`[TODO]\` and \`[Criterion N]\` patterns.")
+    run audit_task_placeholders "$f"
+    [ "$status" -eq 0 ]
+}
+
+@test "audit: bare pattern flagged even if same line has backticked siblings (T-1327)" {
+    local f
+    f=$(_make_task "## Recommendation
+The audit looks for \`[TODO]\` but here is a real [Criterion 1] still unfilled.")
+    run audit_task_placeholders "$f"
+    [ "$status" -eq 1 ]
+    [[ "$output" =~ "Criterion 1" ]]
+}
+
+@test "audit: T-1298-style rationale citing all five patterns is exempt (T-1327)" {
+    local f
+    f=$(_make_task "## Recommendation
+**Rationale:** \`audit_task_placeholders\` looks for \`[Criterion N]\` / \`[TODO]\` / \`[PLACEHOLDER]\` / \`[Your recommendation here]\` / \`[REQUIRED before\` — all bracket-style.")
+    run audit_task_placeholders "$f"
+    [ "$status" -eq 0 ]
+}
