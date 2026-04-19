@@ -20,34 +20,34 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Self-pickup auto-created from this project. Parent: T-1270 (active inception (peer-learning cron design — work-in-progress in this same project)). No new scope beyond the parent. Same G-046 pattern (pickup-pipeline self-noise).
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. Parent task (T-1270) carries the canonical work — TESTED TRUE
+2. Pickup adds no new scope vs the parent — TESTED TRUE
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+5-min time-box (done):
+- Locate parent task and assess its state — DONE
+- Diff pickup vs parent for new scope — DONE (none)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** decide whether T-1272 is a duplicate of T-1270.
+**OUT:** the substantive work tracked under T-1270.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (self-pickup, parent T-1270 carries the work)
+- [x] Assumptions tested (2/2 true)
+- [x] Recommendation written with rationale (DEFER — G-046 class)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +77,14 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (G-046 self-pickup duplicate)
+
+**Rationale:** Self-pickup auto-created by the framework's pipeline. active inception (peer-learning cron design — work-in-progress in this same project). No additional scope to explore.
+
+**Evidence:**
+- Parent: T-1270
+- T-1271 last week was the same self-pickup pattern of T-1270 — DEFERred
+- G-046 (registered this session) covers this pattern — pipeline should skip self-pickups when parent is internal
 
 ## Decisions
 
