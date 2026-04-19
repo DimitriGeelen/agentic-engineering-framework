@@ -1791,3 +1791,10 @@ learnings:
   date: 2026-04-18
   context: Added via context agent
   application: TBD
+- id: L-018
+  learning: "TermLink hub authentication is per-HUB (shared secret across all agents pointing at that hub), NOT per-user. A rotated hub secret distributes as one 64-hex value to every agent. Evidence (2026-04-19 G-045 rotation): ring20-management hub on 192.168.10.122 rotated at 08:09Z — same secret c3012a4b... used by framework-agent @ .201 AND 050-email-archive @ .107. Original retraction trigger: the '0eec929d...' value seen earlier was a PRE-rotation state, not a per-user divergence. File mode must be 0600, exactly 64 hex chars, no trailing newline. Correct confusion I introduced earlier: the hub IS single-tenant for secrets, per 050's original (correct) assertion."
+  source: G-045
+  task: T-012
+  date: 2026-04-19
+  context: Corrected 2026-04-19 after .122-side clarified same-value-both-places. Earlier version of L-018 wrongly asserted per-user secrets.
+  application: During fleet rotation, distribute ONE new 64-hex to every agent's <hub>.hex file; no per-user divergence needed.
