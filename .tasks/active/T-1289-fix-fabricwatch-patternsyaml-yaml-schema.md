@@ -4,15 +4,15 @@ name: "Fix .fabric/watch-patterns.yaml YAML schema — exclude key misplaced ins
 description: >
   Fix .fabric/watch-patterns.yaml YAML schema — exclude key misplaced inside patterns list
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T20:07:17Z
-last_update: 2026-04-17T20:07:17Z
+last_update: 2026-04-19T21:42:54Z
 date_finished: null
 ---
 
@@ -68,3 +68,8 @@ python3 -c "import yaml; d=yaml.safe_load(open('/opt/050-email-archive/.fabric/w
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1289-fix-fabricwatch-patternsyaml-yaml-schema.md
 - **Context:** Initial task creation
+
+### 2026-04-19T21:42:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: now → later
+- **Reason:** Duplicate of T-1288 (T-ID race traced to T-1279). Park; if T-1288 resolves, archive both.
