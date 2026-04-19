@@ -1278,3 +1278,37 @@ concerns:
   created: 2026-04-19
   last_reviewed: 2026-04-19
   related_tasks: []
+
+- id: G-049
+  type: gap
+  title: "_derive_version walks up to consumer git tags in vendored mode — fw version reports wrong tag (e.g. 0.12.1191 instead of 1.5.744)"
+  description: "bin/fw:16-38 _derive_version() runs `git -C \"$fw_dir\" describe --tags` where $fw_dir is `<consumer>/.agentic-framework/`. In vendored mode that directory has no .git of its own, so git walks UP to the consumer repo's .git and returns the consumer's most recent tag. fw version then reports the consumer's tag instead of the vendored framework's version. The VERSION file (correctly stamped by pre-push) is the canonical source for vendored installs — _derive_version should prefer it over git describe when $fw_dir/.git is absent. Surfaced by 050 e-agent post-upgrade to v1.5.744: VERSION says 1.5.744, fw version reports 0.12.1191 (the consumer's tag)."
+  spec_reference: "bin/fw:14-38 _derive_version, T-1253 VERSION stamping (pre-push hook)"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-19: 050 e-agent confirmed 'fw version' reports 0.12.1191 immediately after fw upgrade --source set VERSION to 1.5.744"
+  detection_lag_days: "0"
+  what_works_now: "Framework-repo (non-vendored) installs: _derive_version finds the framework's own .git and returns correct tag. VERSION file fallback works when there is no .git anywhere up the tree."
+  what_remains: "Vendored installs (.agentic-framework inside a git-tracked consumer): git -C walks up, finds consumer .git, returns wrong tag. Mitigation: add `[ -d $fw_dir/.git ] || [ -f $fw_dir/.git ]` guard around git describe; fall through to VERSION file when absent. ~3-line change."
+  mitigation_candidate: "Edit bin/fw _derive_version: only invoke git describe when $fw_dir has its own .git (file or dir); else read VERSION. Bats coverage: vendored test fixture confirms VERSION wins over containing repo's tag."
+  status: watching
+  created: 2026-04-19
+  last_reviewed: 2026-04-19
+  related_tasks: [T-1253]
+
+- id: G-050
+  type: gap
+  title: "do_vendor rsync excludes pycache from transfer but does not delete pre-existing pyc files in target — vendored trees retain stale .pyc after upgrade"
+  description: "bin/fw:247 do_vendor uses `rsync -a --delete --exclude=__pycache__ --exclude=*.pyc ...`. The semantics of rsync's `--exclude` is: do not transfer matching files. Combined with `--delete`, files in dest that match the exclude pattern are NOT removed (excluded files are 'protected' from deletion). Result: a vendored .agentic-framework that previously contained pyc/__pycache__ still contains them after `fw upgrade --source ...` because rsync excludes them from cleanup. The fallback cp path (bin/fw:251-253) does cleanup correctly via `find ... -delete`; the rsync path does not. T-1323 added a .gitignore to keep them out of git, but the files themselves linger. 050 e-agent observed 114 MB vendored install including pyc files post-upgrade. Fix: add `--delete-excluded` to rsync flags OR mirror the find-cleanup post-rsync."
+  spec_reference: "bin/fw:228-262 do_vendor rsync path, bin/fw:251-253 cp fallback cleanup, T-1323 .gitignore, P-038"
+  severity: low
+  trigger_fired: true
+  trigger_event: "2026-04-19: 050 e-agent observed 114 MB vendored install with __pycache__/.pyc files post-upgrade to v1.5.744"
+  detection_lag_days: "0"
+  what_works_now: "Future pyc generation is .gitignore'd (T-1323). cp fallback path cleans correctly. Fresh vendored installs (target empty) have no pyc since they're never copied in."
+  what_remains: "Existing vendored installs with pre-existing pyc retain them across upgrades — wasted disk + audit noise potential. Mitigation: add --delete-excluded to rsync_args in do_vendor."
+  mitigation_candidate: "Single-line fix: `rsync -a --delete --delete-excluded ...` in bin/fw:247. Bats: vendor with pre-seeded pyc in target, run upgrade, assert pyc removed."
+  status: watching
+  created: 2026-04-19
+  last_reviewed: 2026-04-19
+  related_tasks: [T-1323]
