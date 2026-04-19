@@ -20,34 +20,35 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+External pickup from 010-termlink proposing: GNU date -d in framework shell scripts fails silently on macOS. Verification this session: the proposed fix has already shipped in T-1134 + T-1158. Triage decision is whether to DEFER as duplicate.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1134 + T-1158 already implements the proposed fix — TESTED TRUE (see Evidence)
+2. No additional scope remains beyond what's shipped — TESTED TRUE
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+5-min time-box (done):
+- Locate the proposed fix in framework code — DONE
+- Verify T-1134 + T-1158 status — DONE (work-completed)
+- Diff pickup proposal vs shipped behavior — DONE (matches)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None. Triage only.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** decide whether T-1133 adds anything beyond the T-1134 + T-1158 fix.
+**OUT:** re-implementing what's already shipped.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (proposal matches what T-1134 + T-1158 already shipped)
+- [x] Assumptions tested (2/2 true)
+- [x] Recommendation written with rationale (DEFER — shipped in T-1134 + T-1158)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -61,12 +62,10 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- Root cause identified with bounded fix
-- Fix is scoped and testable
+- New scope exists beyond T-1134 + T-1158's fix
 
 **NO-GO if:**
-- Root cause identified with bounded fix
-- Fix is scoped and testable
+- The fix is already in tree (this is the case here — DEFER)
 
 ## Verification
 
@@ -76,15 +75,17 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (close as duplicate of T-1134 + T-1158)
+
+**Rationale:** External pickup from 010-termlink proposing "GNU date -d in framework shell scripts fails silently on macOS". Verification this session shows the fix is already in tree, shipped by T-1134 + T-1158. Closing the pickup is the correct response — no new work to do.
+
+**Evidence:**
+- lib/compat.sh exports _date_to_epoch and _date_relative with fallback chain: GNU date → BSD date → python3
+- All agents/ scripts already use the helpers (no raw 'date -d' in agents/)
+- Only bin/fw:1159 and bin/fw:1167 use raw 'date -d' with inline BSD fallback (still portable)
+- T-1134 (initial portability) and T-1158 (helpers) shipped the proposed fix
+
+If 010-termlink is observing the symptom anew, root cause is likely a stale framework copy on the consumer side — operator should run `fw upgrade` on 010-termlink to pick up T-1134 + T-1158.
 
 ## Decisions
 
