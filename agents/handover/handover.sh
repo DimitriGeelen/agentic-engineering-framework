@@ -752,12 +752,14 @@ if [ "$AUTO_COMMIT" = true ]; then
 
         # Push to all remotes (T-1144: prevent unpushed commit accumulation)
         # T-1277: bound the push so an unreachable remote (e.g. onedev behind a
-        # down VPN) cannot stall the auto-handover hook for hours. Default 15s,
-        # override via FW_HANDOVER_PUSH_TIMEOUT.
+        # down VPN) cannot stall the auto-handover hook for hours.
+        # T-1341 (L-019): default raised 15s → 60s because pre-push hook runs
+        # fw audit (~10s), leaving too little headroom for the actual push at 15s.
+        # Override via FW_HANDOVER_PUSH_TIMEOUT.
         echo ""
         echo -e "${CYAN}Pushing to remotes...${NC}"
         _push_failed=false
-        _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-15}"
+        _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-60}"
         while IFS= read -r remote_name; do
             [ -z "$remote_name" ] && continue
             if timeout "$_push_timeout" git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then

@@ -1,11 +1,11 @@
-timestamp: 2026-04-19T17:00:01Z
+timestamp: 2026-04-19T17:51:38Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1224)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1225)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 7 task(s) waiting >30d: T-436(21d) T-446(35d) T-448(22d) T-460(37d) T-470(37d) T-481(36d) T-505(33d) T-511(33d) T-518(32d) T-530(27d) T-594(26d) T-612(24d) T-613(22d) T-663(21d) T-678(21d) T-706(21d) T-707(21d) T-708(21d) T-710(21d) T-772(20d) T-782(20d) T-799(18d) T-800(18d) T-816(15d) T-817(15d) T-880(14d)"
+    check: "D2: Human review queue — 7 task(s) waiting >30d: T-436(22d) T-446(35d) T-448(22d) T-460(37d) T-470(37d) T-481(36d) T-505(33d) T-511(33d) T-518(32d) T-530(27d) T-594(26d) T-612(24d) T-613(22d) T-663(22d) T-678(21d) T-706(21d) T-707(21d) T-708(21d) T-710(21d) T-772(20d) T-782(20d) T-799(18d) T-800(18d) T-816(15d) T-817(15d) T-880(14d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - id: D8
     level: PASS
@@ -17,9 +17,31 @@ findings:
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
+  - id: D4
+    level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
+    level: WARN
+    check: "D5: Task lifecycle — 6 anomaly(s): T-875(2min,human) T-829(3min,human) T-651(1min,human) T-827(2min,human) T-676(3min,human) T-607(5min,human)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D3
+    level: PASS
+    check: "D3: Commit velocity — normal (PASS today=61 avg=58 ratio=1.0x)"
+  - id: D7
+    level: PASS
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 78_commits_24h)"
+  - id: D6
+    level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=10.7 earlier=27.0)"
+  - id: D12
+    level: PASS
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 3
-  warn: 1
+  pass: 9
+  warn: 2
   fail: 1
-  total: 5
+  total: 12

@@ -511,7 +511,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 | Status max age | `FW_BUDGET_STATUS_MAX_AGE` | `90` | Seconds before cached status is stale |
 | Token check | `FW_TOKEN_CHECK_INTERVAL` | `5` | Check tokens every N calls |
 | Handover cooldown | `FW_HANDOVER_COOLDOWN` | `600` | Seconds between auto-handover triggers |
-| Handover push timeout | `FW_HANDOVER_PUSH_TIMEOUT` | `15` | Per-remote `git push` timeout in handover.sh (T-1277) |
+| Handover push timeout | `FW_HANDOVER_PUSH_TIMEOUT` | `60` | Per-remote `git push` timeout in handover.sh (T-1277, T-1341 bumped 15→60 to accommodate pre-push audit) |
 | Handover total timeout | `FW_HANDOVER_TOTAL_TIMEOUT` | `60` | Wall bound for checkpoint.sh auto-handover invocation (T-1277) |
 | Stale task days | `FW_STALE_TASK_DAYS` | `7` | Days before task is flagged stale |
 | Max restarts | `FW_MAX_RESTARTS` | `5` | Max consecutive auto-restarts |
