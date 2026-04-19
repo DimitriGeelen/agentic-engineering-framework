@@ -4,15 +4,15 @@ name: "Pickup: Watchtower restart from Claude Code session requires setsid + Jin
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1117. Type: learning.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, learning]
 components: []
 related_tasks: []
 created: 2026-04-18T15:21:47Z
-last_update: 2026-04-18T15:21:47Z
+last_update: 2026-04-19T08:18:07Z
 date_finished: null
 ---
 
@@ -20,34 +20,40 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Termlink captured two restart-semantics learnings during T-1117..T-1121 UI work:
+(1) restarting Watchtower from a Claude Code `Bash` invocation requires `setsid` — plain `nohup ... &` or `& disown` don't survive, and the symptom is a silent death right after "started" is echoed. (2) Flask production-mode caches compiled Jinja2 templates in memory; `find __pycache__ -delete` is insufficient — only a full process kill picks up template edits.
+
+Proposed codification: `fw serve` (or a wrapper) detects `$CLAUDECODE=1` and prepends `setsid`; always kills any process bound to the target port before launching; documents the Jinja cache behavior. Full triage: `docs/reports/T-1299-watchtower-setsid-jinja.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. The setsid learning is already captured in framework memory — TESTED FALSE (grep of learnings.yaml + CLAUDE.md shows no mention)
+2. The Jinja cache learning is partially captured — TESTED TRUE (agent memory MEMORY.md has it, but not in `.context/project/learnings.yaml`)
+3. Codification is bounded to one file (`lib/serve.sh` or similar) + a bats test — TESTED TRUE
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+10-min time-box (completed):
+- Grep for setsid + Jinja in `.context/project/`, CLAUDE.md, agent memory — DONE
+- Confirm `fw serve` exists and is the natural integration point — DONE
+- Evaluate reversibility/testability — DONE (feature-flag-able via env, mock-able in bats)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- Claude Code's Bash tool runs commands in a session whose children inherit a controlling terminal; `setsid` decouples the child so it survives tool-call completion.
+- Flask's Jinja2 environment compiles templates lazily and caches by name; cache is in `Environment.cache` (dict), cleared only by new-process boot.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** codify setsid-on-CLAUDECODE + pre-port-kill in `fw serve`; capture both learnings explicitly; document Jinja cache in docs/watchtower.md.
+**OUT:** broader refactor of Watchtower startup; hot-reload template infra; setsid for non-Watchtower processes.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (termlink T-1117 pickup with concrete operator pain: 4 failed restart attempts)
+- [x] Assumptions tested (1 false, 1 partial, 1 true)
+- [x] Recommendation written with rationale (GO — build sibling deferred to next session)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +83,24 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Concrete operator pain (4 failed restart attempts on termlink, real diagnostic time lost). Both learnings are field-discovered and not yet codified at the framework level. The fix is bounded — extend `fw serve` with CLAUDECODE-aware setsid + pre-port-kill. Reversible, testable via bats. Build is well-scoped and suitable for a single session.
+
+**Evidence:**
+- Pickup payload names 4 failed restart attempts + symptom (silent death after "started" echo) — concrete evidence of cost
+- Grep confirms `setsid` is not in `.context/project/learnings.yaml` or CLAUDE.md — not codified
+- `fw serve` exists as the natural integration point; scope fits in <50 lines
+- Agent memory has partial Jinja learning; promoting to framework learnings + docs closes the gap
+- Full triage: `docs/reports/T-1299-watchtower-setsid-jinja.md`
+
+**Build plan (deferred to next session as T-1326 or similar):**
+1. Extend `fw serve` / `lib/serve.sh` — if `${CLAUDECODE:-0}` = 1, prepend setsid
+2. Pre-launch: kill process bound to target port (`fuser -k` or portable equivalent), confirm free
+3. Post-launch: poll `/health` up to 10s; exit non-zero if not ready
+4. L-??? + L-??? captured: setsid requirement + Jinja in-memory cache
+5. `tests/unit/watchtower_serve.bats` — fake CLAUDECODE, assert setsid in command; port-kill path
+6. `docs/watchtower.md`: "Restart from Claude Code sessions" section
 
 ## Decisions
 
@@ -106,3 +121,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-19T08:18:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
