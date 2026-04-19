@@ -1798,3 +1798,10 @@ learnings:
   date: 2026-04-19
   context: Corrected 2026-04-19 after .122-side clarified same-value-both-places. Earlier version of L-018 wrongly asserted per-user secrets.
   application: During fleet rotation, distribute ONE new 64-hex to every agent's <hub>.hex file; no per-user divergence needed.
+- id: L-019
+  learning: "FW_HANDOVER_PUSH_TIMEOUT default of 15s is too tight when pre-push hook runs fw audit. Audit can consume ~10s by itself (trend analysis, 50+ audit history entries), leaving <5s for the actual network push — both github (internet) and onedev (LAN+OneDev) time out at 15s. Empirical fix: manual 'timeout 120 git push ...' succeeds in both cases. Candidate remediations: (1) raise FW_HANDOVER_PUSH_TIMEOUT default to 60s, (2) skip audit in pre-push if one ran in the last N minutes, (3) decouple audit from pre-push. T-1331 flock fix addressed orphan ACCUMULATION but not per-invocation SLOWNESS."
+  source: T-1277
+  task: T-012
+  date: 2026-04-19
+  context: Added via context agent
+  application: TBD
