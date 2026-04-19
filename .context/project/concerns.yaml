@@ -1312,3 +1312,20 @@ concerns:
   created: 2026-04-19
   last_reviewed: 2026-04-19
   related_tasks: [T-1323]
+
+- id: G-051
+  type: gap
+  title: "fw pickup process cron lacks flock wrapping — orphan fw task create children accumulate (same class as T-1330 audit orphans)"
+  description: "The pickup-process cron line in .context/cron/agentic-audit.crontab (`* * * * * root ... fw pickup process`) runs every minute without flock. When individual pickup invocations are slow (each spawns `fw task create` with subcommand overhead), consecutive cron fires stack rather than skip. Observed 2026-04-19 during T-1329: multiple long-running `fw task create --name Pickup:... --type inception` children running since Apr 18 still consuming CPU. Same class of orphan-accumulation pattern as T-1330 (139 audit orphans); T-1331 fixed audit lines but not pickup-process line."
+  spec_reference: ".context/cron/agentic-audit.crontab pickup-process entry (line 39), T-1330 RCA, T-1331 audit flock fix"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-19: during T-1329 verification, `ps aux` incidentally showed 4+ orphan fw task create processes from pickup-process cron, running since Apr 18"
+  detection_lag_days: "1"
+  what_works_now: "T-1331 landed flock on audit cron lines (9 entries). Pickup-process pipeline itself functions — inbox gets drained, tasks get created."
+  what_remains: "Each slow pickup invocation stacks with the next 1-minute cron fire. Without flock, orphans accumulate indefinitely under any slowdown. Mitigation: add flock -n to pickup-process cron line, same pattern as audit lines."
+  mitigation_candidate: "Edit .context/cron/agentic-audit.crontab pickup-process entry: wrap `fw pickup process` in `flock -n /var/lock/fw-pickup-process.lock -c '...'`. Reinstall to /etc/cron.d/. Kill existing orphans. Est. 5 min."
+  status: watching
+  created: 2026-04-19
+  last_reviewed: 2026-04-19
+  related_tasks: [T-1330, T-1331]

@@ -1,20 +1,19 @@
 id: tests/unit/handover_push_timeout.bats
 name: handover_push_timeout
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/handover_push_timeout.bats
-tags: []
+tags: [tests, unit, handover, timeout, T-1277]
 
-purpose: "TODO: describe what this component does"
+purpose: "Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT."
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
+  - target: agents/handover/handover.sh
+    type: calls
+  - target: agents/context/checkpoint.sh
+    type: calls
 
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+depended_by: []
 
-last_verified: 2026-04-18
-created_by: unknown
+last_verified: 2026-04-19
+created_by: T-1277
