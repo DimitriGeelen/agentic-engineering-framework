@@ -1239,11 +1239,12 @@ concerns:
   detection_lag_days: "0"
   what_works_now: "Pipeline correctly creates inception tasks for external pickups (genuine cross-project signals). Operator can DEFER duplicates manually via Watchtower."
   what_remains: "Pipeline should skip envelopes whose source-task is already work-completed in the destination project, OR auto-DEFER them at pickup-process time with a duplicate-of pointer."
+  mitigation_applied: "2026-04-19 T-1339: pickup_is_self_completed helper in lib/pickup.sh + wired into pickup_process_one after dedup check. Envelopes where source_project==local_project AND source_task is in .tasks/completed/ now move to .context/pickup/auto-deferred/ without creating an inception task. 4 bats tests pass (self+completed, self+active, cross-project, missing-task-id)."
   mitigation_candidate: "Add pre-create check in agents/pickup/pickup-process.sh: if source_project == this_project AND source_task is work-completed, skip envelope and log to .context/pickup/auto-deferred/."
-  status: watching
+  status: mitigated
   created: 2026-04-19
   last_reviewed: 2026-04-19
-  related_tasks: [T-1130, T-1124, T-1127, T-1131, T-1140, T-1271]
+  related_tasks: [T-1130, T-1124, T-1127, T-1131, T-1140, T-1271, T-1339]
 
 - id: G-047
   type: gap

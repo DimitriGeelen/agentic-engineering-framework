@@ -23,12 +23,33 @@ PICKUP_DIR="${PROJECT_ROOT:-.}/.context/pickup"
 PICKUP_INBOX="$PICKUP_DIR/inbox"
 PICKUP_PROCESSED="$PICKUP_DIR/processed"
 PICKUP_REJECTED="$PICKUP_DIR/rejected"
+PICKUP_AUTO_DEFERRED="$PICKUP_DIR/auto-deferred"
 PICKUP_DEDUP_LOG="$PICKUP_DIR/dedup.log"
 
 # --- Directory setup ---
 
 pickup_ensure_dirs() {
     mkdir -p "$PICKUP_INBOX" "$PICKUP_PROCESSED" "$PICKUP_REJECTED"
+}
+
+# --- G-046: auto-defer self-pickup of already-completed source tasks ---
+
+pickup_is_self_completed() {
+    local file="$1"
+    local source_project source_task local_project
+    source_project=$(grep "^  project:" "$file" | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    source_task=$(grep "^  task_id:" "$file" 2>/dev/null | head -1 | sed 's/^  task_id:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    local_project=$(basename "${PROJECT_ROOT:-.}")
+
+    [ "$source_project" = "$local_project" ] || return 1
+    [ -n "$source_task" ] || return 1
+
+    # Check .tasks/completed/ for source_task
+    if compgen -G "${PROJECT_ROOT:-.}/.tasks/completed/${source_task}-"*.md >/dev/null 2>&1 \
+        || [ -f "${PROJECT_ROOT:-.}/.tasks/completed/${source_task}.md" ]; then
+        return 0
+    fi
+    return 1
 }
 
 # --- Envelope validation ---
@@ -209,6 +230,16 @@ pickup_process_one() {
         echo -e "${YELLOW}DEDUP${NC}   $basename_f — seen within cooldown window"
         if [ "$dry_run" != true ]; then
             mv "$file" "$PICKUP_REJECTED/" 2>/dev/null || true
+        fi
+        return 0
+    fi
+
+    # G-046: auto-defer self-pickup of already-completed source tasks
+    if pickup_is_self_completed "$file"; then
+        echo -e "${YELLOW}AUTO-DEFER${NC}  $basename_f — source task already completed in this project"
+        if [ "$dry_run" != true ]; then
+            mkdir -p "$PICKUP_AUTO_DEFERRED"
+            mv "$file" "$PICKUP_AUTO_DEFERRED/" 2>/dev/null || true
         fi
         return 0
     fi
