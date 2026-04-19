@@ -1261,3 +1261,20 @@ concerns:
   created: 2026-04-19
   last_reviewed: 2026-04-19
   related_tasks: [T-1107]
+
+- id: G-048
+  type: gap
+  title: "Watchtower CSRF blanket-skips /api/* paths — state-mutating POST endpoints (session/init, healing/*, sessions create/delete) accept unauthenticated requests"
+  description: "web/app.py:97 csrf_protect() skips CSRF validation for any request whose path starts with `/api/`. Several /api/ POST endpoints are state-mutating: POST /api/session/init shells to `fw context init` (writes .context/working/), POST /api/healing/<task_id> shells to `fw healing diagnose`, POST/DELETE /api/sessions create/destroy terminal sessions. Confirmed today: `curl -X POST http://localhost:3000/api/session/init` returns 200 with no token. Same-origin form POSTs from a malicious page would succeed. Surfaced by 050 e-agent during a wrong-class-B-CSRF investigation; their re-test correctly identified this as a separate finding (not the original Class B claim, but a real gap)."
+  spec_reference: "web/app.py:93-107 csrf_protect, web/blueprints/session.py:162 session_init, web/blueprints/session.py:183 healing_diagnose, web/blueprints/terminal.py:71 sessions_create, web/blueprints/terminal.py:127 sessions_delete"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-19: 050 e-agent test of POST /api/session/init returned 200 without CSRF token. Confirmed locally on .107 Watchtower :3000 same response."
+  detection_lag_days: "0"
+  what_works_now: "Form-based POSTs (e.g. /inception/<id>/decide, /tasks/<id>/status) correctly enforce CSRF and return 403 without token. Same-origin assumption protects most exploitation paths but is not a design guarantee."
+  what_remains: "Decide per /api/* POST endpoint: (a) read-like (no state change, can stay token-free), (b) state-mutating (must require token via X-CSRF-Token header). Update client-side fetch() callers to send the header. Add bats/playwright regression covering each endpoint. Likely candidates needing protection: /api/session/init, /api/healing/<id>, /api/sessions (POST+DELETE)."
+  mitigation_candidate: "Inventory /api/* POST/DELETE endpoints; classify read-like vs state-mutating; CSRF-protect the latter via header (so JSON callers can send X-CSRF-Token); update Watchtower JS to include the token; bats regression."
+  status: watching
+  created: 2026-04-19
+  last_reviewed: 2026-04-19
+  related_tasks: []
