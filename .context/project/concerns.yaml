@@ -1244,3 +1244,20 @@ concerns:
   created: 2026-04-19
   last_reviewed: 2026-04-19
   related_tasks: [T-1130, T-1124, T-1127, T-1131, T-1140, T-1271]
+
+- id: G-047
+  type: gap
+  title: "Pickup-pipeline T-ID collisions across projects — auto-created tasks get IDs that already exist locally, forced silent renumbering"
+  description: "When a pickup envelope arrives from another project (e.g. 050) referencing a task ID that already exists in the destination project's space, the pickup pipeline silently renumbers the auto-created inception. This breaks back-pointer integrity (the source project's reference to T-XXX no longer matches the destination's T-XXX) and leaves no audit trail of the rewrite. Surfaced by 050 (e-agent) when our pickup pipeline renumbered their incoming references to T-1315 → T-1316. The renumbering succeeded mechanically, but no GAP was filed and no envelope-level annotation captures what was renamed to what. T-1107 (inception-task-ID-collision-defense-in-depth) explored the namespacing question generally; G-047 is the structural gap — pickup-side, today, with concrete cross-project breakage."
+  spec_reference: "agents/pickup/pickup-process.sh, T-1107 inception, 050 e-agent observation 2026-04-19"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-19: 050 e-agent observed our pickup pipeline silently renumber T-1315 → T-1316 without back-reference annotation; explicitly raised in their session note as 'no explicit capture as a framework gap (G-PICKUP-TID-COLLISION)'"
+  detection_lag_days: "0"
+  what_works_now: "Renumbering does succeed (no crash, no lost envelope). Local task IDs are unique within the destination project."
+  what_remains: "(1) No annotation on the inception task recording 'originally T-XXX in source project'; (2) no log of the rename in .context/pickup/processed/; (3) source project's references to T-XXX point at the wrong destination task; (4) no concerns-register entry until now. Mitigation candidates: (a) URL-namespace IDs (project:T-XXX), (b) pickup-side back-reference field in the auto-created task frontmatter (e.g. source_task_id_in_origin: T-1315), (c) rename log appended to processed envelope file."
+  mitigation_candidate: "Add `source_task_id_in_origin` to inception task frontmatter when pipeline renumbers. Append the rename to the processed envelope as a `pipeline_actions:` block. Reference T-1107 if/when broader namespacing is decided."
+  status: watching
+  created: 2026-04-19
+  last_reviewed: 2026-04-19
+  related_tasks: [T-1107]
