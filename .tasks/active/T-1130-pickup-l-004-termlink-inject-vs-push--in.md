@@ -20,34 +20,35 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Self-pickup auto-created from this framework's own T-1126 ("Codify TermLink communication protocol: inject for interactive, push for async — structural enforcement"). T-1126 is already work-completed GO and the rule has been written into CLAUDE.md (§ Cross-Agent Communication Protocol, T-1126 section). This pickup contains no new information; it is duplicate-by-design from the pickup pipeline auto-creating an inception task whenever a learning envelope arrives.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1126 already shipped the codified protocol — TESTED TRUE (status: work-completed GO; CLAUDE.md contains the inject-vs-push rule)
+2. Nothing further is required from this pickup — TESTED TRUE (re-reading T-1126 episodic shows no follow-up tasks were spawned)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+5-min time-box (done):
+- Verify T-1126 status — DONE (work-completed GO)
+- Verify CLAUDE.md contains the rule — DONE (lines under §Cross-Agent Communication Protocol cite T-1126)
+- Check for any T-1130-specific scope not already covered by T-1126 — DONE (none)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None. This is a triage decision, not implementation.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** decide whether T-1130 should remain open or be closed as duplicate of T-1126.
+**OUT:** anything about TermLink inject/push (already settled in T-1126 + CLAUDE.md).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (self-pickup of completed T-1126; CLAUDE.md already codifies the rule)
+- [x] Assumptions tested (2/2 true)
+- [x] Recommendation written with rationale (DEFER — duplicate of completed T-1126)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -61,12 +62,10 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- Root cause identified with bounded fix
-- Fix is scoped and testable
+- New scope exists beyond what T-1126 already shipped
 
 **NO-GO if:**
-- Root cause identified with bounded fix
-- Fix is scoped and testable
+- The pickup re-states a rule already codified and shipped (this is the case here)
 
 ## Verification
 
@@ -76,15 +75,15 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (close as duplicate)
+
+**Rationale:** This is a self-pickup auto-created by the framework's pickup pipeline when a learning envelope arrived. The parent task (T-1126) already codified the inject-vs-push rule into CLAUDE.md and is work-completed GO. There is no new scope to explore. Keeping T-1130 open is structural noise — the same anti-pattern as T-1271 (also DEFER as self-pickup duplicate).
+
+**Evidence:**
+- T-1126 status: work-completed, decision: GO (`bin/fw inception status | grep T-1126`)
+- CLAUDE.md "Cross-Agent Communication Protocol (T-1126)" section codifies the rule
+- T-1271 was DEFERred for the identical reason (self-pickup of own completed work)
+- No new file paths, commands, or scope items appear in the pickup envelope vs T-1126 episodic
 
 ## Decisions
 
