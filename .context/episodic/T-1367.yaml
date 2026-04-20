@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1367: fw task reid T-XXXX --new T-YYYY — repair duplicate-ID pairs safely
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-20T20:22:42Z
+# ============================================================================
+
+task_id: T-1367
+task_name: "fw task reid T-XXXX --new T-YYYY — repair duplicate-ID pairs safely"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T19:38:27Z
+completed: 2026-04-20T20:11:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-20T22:11:37+02:00
+last_commit: 2026-04-20T22:12:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw task reid — safely rename duplicate-ID pairs (G-052 repair). Close — fabric card for task_reid.bats
+
+# Key outcomes
+outcomes:
+  - "`fw task reid <OLD-ID> <NEW-ID>` — renames file + frontmatter"
+  - "Finds the task in both `.tasks/active/` AND `.tasks/completed/`"
+  - "Refuses if NEW-ID already exists as a file"
+  - "Appends a rename entry to the task's `## Updates` section"
+  - "Errors clearly when inputs are invalid (missing old, missing new, wrong format)"
+  - "Bats test `tests/unit/task_reid.bats` — 6 cases (success active, success completed, missing OLD, NEW exists, invalid format, no args). All pass."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".fabric/components/tests-unit-task_reid.yaml"
+  - ".tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md"
+  - ".tasks/active/T-1367-fw-task-reid-t-xxxx---new-t-yyyy--repair.md"
+  - ".tasks/completed/T-1366-keylockacquire-add-optional-timeout-floc.md"
+  - ".tasks/completed/T-1367-fw-task-reid-t-xxxx---new-t-yyyy--repair.md"
+  - "tests/unit/task_reid.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-20T22:11:37"
+    action: "T-1367: fw task reid — safely rename duplicate-ID pairs (G-052 repair)"
+  - time: "2026-04-20T22:12:18"
+    action: "T-1367: Close — fabric card for task_reid.bats"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 33 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 33
+  commits: 2
+  files_changed: 6
+  lines_added: 243
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1367-fw-task-reid-t-xxxx---new-t-yyyy--repair.md
+generated_by: context-agent-hybrid

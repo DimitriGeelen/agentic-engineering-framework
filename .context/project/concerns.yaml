@@ -1369,3 +1369,20 @@ concerns:
   created: 2026-04-20
   last_reviewed: 2026-04-20
   related_tasks: [T-1356, T-1360, T-1361, T-1364]
+
+- id: G-054
+  type: gap
+  title: "Episodic auto-gen silent failure — detector evaded, 4/4 tasks in one session"
+  description: "Four tasks (T-1363, T-1364, T-1366, T-1367) transitioned to work-completed via `fw task update --status work-completed` in one session — evidenced by date_finished populated and [task-update-agent] Updates entries. None produced an auto-generated episodic. T-1169's silent-failure detector (update-task.sh:847-853) is designed to print a WARNING when the episodic file doesn't appear after generate-episodic runs; either the warning was printed and overlooked, or the detector itself is not firing. Sandbox reproduction with identical real task file inputs generates the episodic successfully — so the code path works, and the trigger is environmental. Unknown environmental factor."
+  spec_reference: "agents/task-create/update-task.sh:837-858, agents/context/lib/episodic.sh:60"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-20: handover agent flagged T-1366/T-1367 as missing episodics; checking T-1363/T-1364 revealed they were manually generated in commit 968c5034 (also missing from auto-gen). All 4 tasks in the session failed silently."
+  detection_lag_days: "0"
+  what_works_now: "Sandbox replays of exact task file content succeed. Manual `fw context generate-episodic T-XXX` succeeds. Auto-gen WARN string is present in source — either never-fired or overlooked in real session output."
+  what_remains: "Root cause unknown. Candidates: (1) WARN printed but drowned by long tail output of update-task.sh; (2) context.sh exit code != 0 but episodic file already existed before removal by later step; (3) episodic file created in a different PROJECT_ROOT (different consumer context during completion). Next reproduction attempt should instrument update-task.sh:847 to log context.sh stdout/stderr + exit code to a file regardless of success. Regression test landed at tests/unit/update_task_episodic_gen.bats guards the code-path only."
+  mitigation_candidate: "Either (a) make the WARN block completion (convert to hard-fail) or (b) add a tail-of-output summary with WARN counts so silent failures cannot hide in scrollback."
+  status: watching
+  created: 2026-04-20
+  last_reviewed: 2026-04-20
+  related_tasks: [T-1363, T-1364, T-1366, T-1367, T-1368, T-1169]

@@ -1854,3 +1854,10 @@ learnings:
   date: 2026-04-20
   context: Added via context agent
   application: TBD
+- id: L-027
+  learning: "Auto-gen silent failures can evade T-1169's silent-failure detector. 4/4 task completions in one session produced no episodic, despite `|| true` + warning detector in update-task.sh:847-853. Sandbox reproduction with identical inputs generates correctly — environmental trigger unknown. Before completing work-completed flow, verify episodic file exists on disk (never trust absence of warning to mean success)."
+  source: P-001
+  task: T-1368
+  date: 2026-04-20
+  context: Added via context agent
+  application: TBD

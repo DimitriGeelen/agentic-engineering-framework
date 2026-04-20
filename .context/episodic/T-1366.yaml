@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1366: keylock_acquire: add optional timeout (flock -w)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-20T20:22:41Z
+# ============================================================================
+
+task_id: T-1366
+task_name: "keylock_acquire: add optional timeout (flock -w)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T19:38:24Z
+completed: 2026-04-20T19:48:43Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-20T21:48:20+02:00
+last_commit: 2026-04-20T21:48:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  keylock_acquire optional timeout arg (flock -w). Guard $2 with default in keylock_acquire (set -u compat)
+
+# Key outcomes
+outcomes:
+  - "`keylock_acquire <key> [timeout_seconds]` — optional 2nd arg"
+  - "If timeout provided and exceeded, function returns non-zero (flock -w exit 1)"
+  - "Omitting timeout preserves block-forever behavior (backward compatible)"
+  - "Bats test `tests/unit/lib_keylock_timeout.bats` — 4 tests, all pass. Non-regression lib_keylock.bats (9 tests) still pass."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/keylock.sh"
+  - ".tasks/active/T-1366-keylockacquire-add-optional-timeout-floc.md"
+  - "tests/unit/lib_keylock_timeout.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-20T21:48:20"
+    action: "T-1366: keylock_acquire optional timeout arg (flock -w)"
+  - time: "2026-04-20T21:48:55"
+    action: "T-1366: Guard $2 with default in keylock_acquire (set -u compat)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 2
+  files_changed: 3
+  lines_added: 132
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1366-keylockacquire-add-optional-timeout-floc.md
+generated_by: context-agent-hybrid
