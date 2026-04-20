@@ -123,7 +123,7 @@
 <script>
 function killSession(sessionId) {
     if (!confirm('Kill session ' + sessionId + '?')) return;
-    fetch('/api/sessions/' + sessionId, { method: 'DELETE' })
+    fetchWithCsrf('/api/sessions/' + sessionId, { method: 'DELETE' })
         .then(r => r.json())
         .then(function() { location.reload(); })
         .catch(function(err) { alert('Failed: ' + err); });

@@ -434,6 +434,20 @@
             }
         });
 
+        // fetch() wrapper that auto-attaches X-CSRF-Token (T-1343 / G-048 Option A)
+        window.fetchWithCsrf = function(url, options) {
+            options = options || {};
+            var method = (options.method || 'GET').toUpperCase();
+            if (method !== 'GET' && method !== 'HEAD') {
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) {
+                    options.headers = options.headers || {};
+                    options.headers['X-CSRF-Token'] = meta.getAttribute('content');
+                }
+            }
+            return fetch(url, options);
+        };
+
         // Update active nav after htmx navigation
         document.body.addEventListener('htmx:afterSwap', function(event) {
             document.querySelectorAll('nav.site-nav [aria-current]').forEach(function(el) {

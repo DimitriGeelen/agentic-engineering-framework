@@ -93,12 +93,16 @@ def create_app() -> Flask:
     def csrf_protect():
         """Validate CSRF token on state-changing requests."""
         if request.method in ("POST", "PATCH", "PUT", "DELETE"):
-            # Skip CSRF for health, API, and search JSON endpoints
-            if request.endpoint == "health" or request.path.startswith("/api/"):
+            # Skip CSRF for health endpoint only
+            if request.endpoint == "health":
                 return
             # T-409: Search endpoints use JSON + fetch (same-origin only)
             if request.path.startswith("/search/") and request.is_json:
                 return
+            # T-1343 / G-048: /api/* blanket exemption removed. State-mutating
+            # /api/* endpoints now require X-CSRF-Token header or _csrf_token
+            # form field (read-only GET /api/* are untouched — CSRF only fires
+            # on POST/PATCH/PUT/DELETE).
             token = (
                 request.form.get("_csrf_token")
                 or request.headers.get("X-CSRF-Token")

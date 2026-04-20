@@ -145,7 +145,7 @@ function cronConfirmed() {
     const btn = event.target;
     btn.setAttribute('aria-busy', 'true');
 
-    fetch(`/api/v1/cron/jobs/${jobId}/${action}`, {method: 'POST'})
+    fetchWithCsrf(`/api/v1/cron/jobs/${jobId}/${action}`, {method: 'POST'})
         .then(r => r.json())
         .then(data => {
             btn.removeAttribute('aria-busy');
