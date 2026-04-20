@@ -1,0 +1,118 @@
+---
+id: T-1346
+name: "Global /root/.agentic-framework install — isolation leak risk, deprecation path"
+description: >
+  Inception: Global /root/.agentic-framework install — isolation leak risk, deprecation path
+
+status: started-work
+workflow_type: inception
+owner: human
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-20T07:50:36Z
+last_update: 2026-04-20T07:51:26Z
+date_finished: null
+---
+
+# T-1346: Global /root/.agentic-framework install — isolation leak risk, deprecation path
+
+## Problem Statement
+
+<!-- What problem are we exploring? For whom? Why now? -->
+
+## Assumptions
+
+<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+
+## Exploration Plan
+
+<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+
+## Technical Constraints
+
+<!-- What platform, browser, network, or hardware constraints apply?
+     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
+     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
+     For infrastructure: network topology, firewall rules, latency bounds.
+     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+
+## Scope Fence
+
+<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Problem statement validated
+- [ ] Assumptions tested
+- [ ] Recommendation written with rationale
+
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
+  2. Review the Agent Recommendation section and go/no-go criteria evaluation
+  3. Record decision via the Watchtower form or the command shown alongside the QR code
+  **Expected:** Decision recorded, task completed
+  **If not:** Ask agent for clarification on specific findings
+
+## Go/No-Go Criteria
+
+<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
+**GO if:**
+- Root cause identified with bounded fix path
+- Fix is scoped, testable, and reversible
+
+**NO-GO if:**
+- Problem requires fundamental redesign or unbounded scope
+- Fix cost exceeds benefit given current evidence
+
+## Verification
+
+# Shell commands that MUST pass before work-completed. One per line.
+# Lines starting with # are comments (skipped). Empty lines ignored.
+# For inception tasks, verification is often not needed (decisions, not code).
+
+## Recommendation
+
+**Recommendation:** GO — Option B++ (harden `resolve_framework` + visible mode signal).
+
+**Rationale:** A1 is confirmed as a silent code-isolation leak. `bin/fw:57` resolves `$0` via `readlink -f`, which follows symlinks. That makes `resolve_framework` rule 1 (fw-inside-framework-repo) match the global `/root/.agentic-framework/` **before** rule 2 (project-vendored) has a chance to run. Every bare `fw` in a consumer project runs the global framework code against consumer state. The user cannot tell — `fw version` does not disclose which copy is active.
+
+**Evidence:**
+- Code inspection: `bin/fw:57` (`readlink -f`) + `bin/fw:77-94` (rule 1 matches global after symlink resolution) + `bin/fw:96-100` (rule 2 vendored-check, unreachable in the leak case).
+- On this machine alone: 10+ consumer projects with vendored `.agentic-framework/` directories (e.g., `/opt/052-KCP`, `/opt/050-email-archive`, `/opt/termlink`, `/opt/053-ntfy`, `/opt/002-Claude-Partner-Network`, `/opt/051-Vinix24`, `/opt/150-skills-manager`, etc.) all subject to the leak when invoked via bare `fw`.
+- User observation: `/root/.agentic-framework` is the symlink target; the installer itself labels it "legacy" but links unconditionally.
+- No empirical mode disclosure: `fw version` and `fw doctor` do not print which framework copy resolved.
+
+**Decomposition (see docs/reports/T-1346-global-install-isolation.md):**
+- B1 — Flip rule order in `resolve_framework`: project-vendored before fw-inside-framework-repo. Add bats test that asserts vendored wins when invoked via symlink to global.
+- B2 — `fw doctor` and `fw version` disclose active mode: `vendored`, `global`, `framework-repo`, with path and version pin.
+- B3 — `install.sh` pre-install check: list vendored consumer projects and prompt before re-linking the legacy global shim.
+
+B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scripts that rely on the global path may see a vendored-pin mismatch — acceptable trade-off since pin-mismatch is the correct signal.
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
+
+### 2026-04-20T07:51:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

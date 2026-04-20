@@ -95,11 +95,29 @@ def browser_instance():
 
 @pytest.fixture
 def page(browser_instance, watchtower_server):
-    """Fresh browser page for each test."""
+    """Fresh browser page for each test.
+
+    Primes the session with a CSRF token (T-1343 / G-048): since `/api/*`
+    blanket CSRF exemption was removed, tests POSTing to /api need
+    `X-CSRF-Token`. The fixture navigates to `/` first (sets the session
+    cookie + reads the meta token) then sets it as a default header on
+    the browser context, so `page.request.post(...)` calls work without
+    per-test boilerplate.
+    """
     context = browser_instance.new_context()
     pg = context.new_page()
     pg.set_default_timeout(10_000)  # 10s instead of 30s default
     pg.set_default_navigation_timeout(15_000)  # 15s for page.goto
+    try:
+        pg.goto(TEST_URL + "/", wait_until="domcontentloaded")
+        token = pg.evaluate(
+            "() => document.querySelector('meta[name=\"csrf-token\"]')"
+            "?.getAttribute('content') || ''"
+        )
+        if token:
+            context.set_extra_http_headers({"X-CSRF-Token": token})
+    except Exception:
+        pass  # Best-effort; tests that need CSRF will fail loudly on 403
     yield pg
     context.close()
 
