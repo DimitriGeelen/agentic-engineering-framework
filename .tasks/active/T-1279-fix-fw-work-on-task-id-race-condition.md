@@ -80,13 +80,13 @@ Multiple concurrent trigger sources:
 
 ### Agent
 
-- [ ] `generate_id()` acquires a per-framework lock (via `lib/keylock.sh`) covering the entire read-max → write-file sequence, not just the ID computation
-- [ ] Lock key: `task-id-allocation` (or similar single-key), scope: project-wide
-- [ ] Lock timeout: 10s max wait before erroring out with a clear "task allocation contention, retry" message
-- [ ] Bats test `tests/unit/task_id_race.bats` — spawns 5 parallel `create-task.sh` invocations and asserts 5 distinct IDs
-- [ ] `fw audit` check: detect any two task files sharing the same `id:` frontmatter value; report as FAIL with both paths
-- [ ] Repair tool: `fw task reid T-XXXX --new T-YYYY` — safely renames one of a duplicate pair (update filename + frontmatter + refs)
-- [ ] Clean up the 3 stray T-1278 files from this session: pick real IDs, update frontmatter + filename, commit
+- [x] `generate_id()` acquires a per-framework lock (via `lib/keylock.sh`) covering the entire read-max → write-file sequence, not just the ID computation
+- [x] Lock key: `task-id-allocation` (or similar single-key), scope: project-wide
+- [x] Bats test `tests/unit/task_id_race.bats` — spawns 5 parallel `create-task.sh` invocations and asserts 5 distinct IDs (also 10-parallel stress case)
+- [x] `fw audit` check: detect any two task files sharing the same `id:` frontmatter value; report as FAIL with both paths
+- [ ] Lock timeout: 10s max wait before erroring out with a clear "task allocation contention, retry" message (DEFERRED — flock default is block-forever; needs separate timeout feature in keylock.sh)
+- [ ] Repair tool: `fw task reid T-XXXX --new T-YYYY` — safely renames one of a duplicate pair (DEFERRED — audit check surfaces duplicates; manual rename is sufficient for rare case)
+- [ ] Clean up the 3 stray T-1278 files from this session (DEFERRED — T-1279 prior session already rescued these via reassignment to T-1280/1281/1282; see T-1279 updates log)
 
 ### Human
 

@@ -12,6 +12,11 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 # Note: lib/errors.sh already sourced via lib/paths.sh (die, warn, error, info, success)
 source "$FRAMEWORK_ROOT/lib/enums.sh"
 
+# T-1279: serialize ID allocation to prevent concurrent invocations from
+# colliding on the same T-NNNN. Without this, 4+ parallel `fw work-on`
+# calls all read the same max_id and all write T-${max+1}. See G-052.
+source "$FRAMEWORK_ROOT/lib/keylock.sh" 2>/dev/null || true
+
 # Colors provided by lib/colors.sh (via paths.sh chain)
 
 # Parse arguments
@@ -132,6 +137,13 @@ generate_slug() {
 
 # Generate timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# T-1279: Acquire lock BEFORE reading max_id; release AFTER file write.
+# Without this, concurrent calls all observe the same max_id and collide.
+if type keylock_acquire &>/dev/null; then
+    keylock_acquire "task-id-allocation"
+    trap 'keylock_release "task-id-allocation" 2>/dev/null' EXIT
+fi
 
 # Generate ID and filename
 TASK_ID=$(generate_id)

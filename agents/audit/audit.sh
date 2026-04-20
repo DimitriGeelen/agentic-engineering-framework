@@ -482,6 +482,52 @@ else
          "Copy zzz-default.md to .tasks/templates/default.md"
 fi
 
+# T-1279 (G-052): Detect duplicate task IDs across active/ and completed/.
+# ID collisions are silent downstream failures (episodic confusion, fabric
+# ambiguity, commit traceability loss). Any two files sharing `id: T-NNNN`
+# in their frontmatter should fail the audit.
+dup_output=$(python3 -c "
+import os, re, sys
+from collections import defaultdict
+tasks_dir = os.environ.get('TASKS_DIR', '.tasks')
+id_to_files = defaultdict(list)
+for sub in ('active', 'completed'):
+    d = os.path.join(tasks_dir, sub)
+    if not os.path.isdir(d):
+        continue
+    for f in sorted(os.listdir(d)):
+        if not f.startswith('T-') or not f.endswith('.md'):
+            continue
+        path = os.path.join(d, f)
+        try:
+            with open(path) as fh:
+                for i, line in enumerate(fh):
+                    if i > 30:
+                        break
+                    m = re.match(r'^id:\s*(T-\d+)\s*$', line)
+                    if m:
+                        id_to_files[m.group(1)].append(path)
+                        break
+        except Exception:
+            pass
+dups = {k: v for k, v in id_to_files.items() if len(v) > 1}
+if dups:
+    print('DUPLICATE_IDS_FOUND')
+    for task_id, files in sorted(dups.items()):
+        print(f'  {task_id}:')
+        for f in files:
+            print(f'    - {f}')
+    sys.exit(1)
+print('OK')
+" 2>&1)
+if [ $? -eq 0 ]; then
+    pass "No duplicate task IDs across active/ and completed/"
+else
+    fail "Duplicate task IDs detected (G-052)" \
+         "$dup_output" \
+         "Rename one of each pair: edit filename AND 'id:' frontmatter to a fresh T-NNNN"
+fi
+
 # Validate all project YAML files parse correctly (T-207 regression test)
 yaml_fail_count=0
 yaml_pass_count=0
