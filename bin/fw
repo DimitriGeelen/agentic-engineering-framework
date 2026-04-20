@@ -595,7 +595,7 @@ show_version() {
     # Show .framework.yaml version if present
     if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
         local pinned
-        pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//')
+        pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
         if [ -n "$pinned" ]; then
             echo "Pinned:    $pinned"
             if [ "$pinned" != "$FW_VERSION" ]; then
@@ -627,7 +627,7 @@ do_doctor() {
         if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
             echo -e "  ${GREEN}OK${NC}  .framework.yaml found"
             local pinned
-            pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//')
+            pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
             if [ -n "$pinned" ] && [ "$pinned" != "$FW_VERSION" ]; then
                 echo -e "  ${YELLOW}WARN${NC}  Version mismatch: pinned=$pinned installed=$FW_VERSION"
                 warnings=$((warnings + 1))

@@ -51,13 +51,13 @@ make_consumer() {
     cp "$FRAMEWORK_ROOT/VERSION" "$repo/VERSION" 2>/dev/null || echo "0.0.0" > "$repo/VERSION"
     # Also give the repo its own nested .agentic-framework to prove self wins
     make_framework_fixture "$repo/.agentic-framework"
-    # .framework.yaml must contain a version: line or show_version's grep+pipefail aborts
-    echo "version: 0.0.0-test" > "$repo/.framework.yaml"
+    # Empty .framework.yaml — tests show_version tolerates no-version (T-1362)
+    touch "$repo/.framework.yaml"  # empty — tests show_version tolerates no-version (T-1362)
 
     cd "$repo"
     run "$repo/bin/fw" version
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "Framework: $repo$"
+    echo "$output" | grep -qE "Framework:[[:space:]]+$repo[[:space:]]*$"
 }
 
 @test "resolve_framework: direct vendored invocation resolves to vendored" {
@@ -67,7 +67,7 @@ make_consumer() {
     cd "$consumer"
     run "$consumer/.agentic-framework/bin/fw" version
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "Framework: $consumer/.agentic-framework$"
+    echo "$output" | grep -qE "Framework:[[:space:]]+$consumer/.agentic-framework[[:space:]]*$"
 }
 
 @test "resolve_framework: global-shim in vendored consumer resolves to vendored (T-1346 leak fix)" {
@@ -89,7 +89,7 @@ make_consumer() {
     # Pre-fix: FRAMEWORK resolves to $global. Post-fix: resolves to $consumer/.agentic-framework.
     run "$shim_dir/fw" version
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "Framework: $consumer/.agentic-framework$"
+    echo "$output" | grep -qE "Framework:[[:space:]]+$consumer/.agentic-framework[[:space:]]*$"
     # Negative assertion: must NOT be the global
-    ! echo "$output" | grep -q "Framework: $global$"
+    ! echo "$output" | grep -qE "Framework:[[:space:]]+$global[[:space:]]*$"
 }
