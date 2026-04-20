@@ -590,10 +590,12 @@ concerns:
   - 'Workaround: construct paths dynamically to avoid literal matches'
   - /dev/null false positive fixed (added /dev/ to allowed zones)
   trigger: 3+ distinct false positive reports from different tasks
-  status: watching
+  status: mitigated
+  mitigation_applied: "2026-04-20: T-1361 (G-053-C) — check-project-boundary.sh strips balanced quoted content before regex scan, eliminating the string-literal false-positive class that motivated this risk. The quote-stripping step directly addresses the `quoted strings, echo output, or test data` wording in the original description."
   created: 2026-03-24
-  last_reviewed: 2026-03-24
+  last_reviewed: 2026-04-21
   related_task: T-559
+  related_tasks: [T-559, T-1361]
 - id: G-023
   type: gap
   title: Consumer project governance decays silently — no detection, no propagation, no audit trail
@@ -1345,13 +1347,13 @@ concerns:
   trigger_fired: true
   trigger_event: "2026-04-20: 7 envelopes drained in one cron fire all got T-1345; manual rename to T-1345,T-1348-T-1353 performed. G-051 mitigation assumed cross-invocation isolation but not intra-invocation atomicity."
   detection_lag_days: "0"
-  what_works_now: "G-051 flock stops the between-run duplication vector. T-1279 is tracking the primary T-ID allocator race. Pickups themselves still land (slugs differentiate), human-visible error is 7-way same-ID collision requiring manual rename."
-  what_remains: "pickup_create_inception must either serialize sibling fw-task-create calls with per-call ID-counter commit, or allocate a batch of IDs up front. Root fix lives in the task-create allocator (T-1279) — applying it there closes both surfaces simultaneously."
-  mitigation_candidate: "Two paths: (a) fix in task-create ID allocator (T-1279) — allocator must flock + read-modify-write the counter atomically per call; (b) pickup-side batch allocation — pickup_create_inception pre-reserves N IDs before creating any tasks. (a) is correct-by-construction; (b) is a workaround."
-  status: watching
+  what_works_now: "T-1279 landed keylock-based serialization in create-task.sh: each `fw task create` call acquires a flock on 'task-id-allocation' before reading max_id and holds it until the task file is written. Sequential loop callers (pickup_create_inception) serialize naturally through the flock. tests/unit/task_id_race.bats verifies 5 and 10 parallel invocations produce distinct IDs. audit.sh detects duplicate T-IDs in active/ + completed/ as a regression guard. `fw task reid` (T-1367) provides atomic repair for any future slip-through."
+  what_remains: "None — root fix in the allocator closes both surfaces (pickup intra-invocation + general concurrent calls)."
+  mitigation_applied: "2026-04-20: T-1279 keylock serialization in create-task.sh:134-142. T-1367 fw task reid repair tool. audit.sh duplicate detector. Bats coverage: task_id_race.bats (3 tests), task_reid.bats (6 tests), lib_keylock_timeout.bats (4 tests)."
+  status: mitigated
   created: 2026-04-20
-  last_reviewed: 2026-04-20
-  related_tasks: [T-1279, T-1345, T-1348, T-1349, T-1350, T-1351, T-1352, T-1353]
+  last_reviewed: 2026-04-21
+  related_tasks: [T-1279, T-1366, T-1367, T-1345, T-1348, T-1349, T-1350, T-1351, T-1352, T-1353]
 
 - id: G-053
   type: gap
