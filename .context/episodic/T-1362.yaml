@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1362: show_version: add || true so grep no-match doesn't abort under set -e+pipefail
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-20T17:38:01Z
+# ============================================================================
+
+task_id: T-1362
+task_name: "show_version: add || true so grep no-match doesn't abort under set -e+pipefail"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T14:47:11Z
+completed: 2026-04-20T17:37:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-20T19:37:26+02:00
+last_commit: 2026-04-20T19:37:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  show_version tolerates .framework.yaml without version line. Close — move to completed/
+
+# Key outcomes
+outcomes:
+  - "`show_version` in bin/fw adds `|| true` to grep|sed pipeline so a .framework.yaml without a `version:` line doesn't abort the function under set -euo pipefail"
+  - "Same pipeline inside do_doctor gets the same treatment for consistency"
+  - "`bin/fw version` from a project with empty .framework.yaml prints full output instead of just \"fw vX.Y.Z\""
+  - "Existing bats tests still pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md"
+  - ".tasks/active/T-1133-pickup-gnu-date--d-in-framework-shell-sc.md"
+  - ".tasks/active/T-1138-pickup-response-to-dashboard-brain-q1-q5.md"
+  - ".tasks/active/T-1140-pickup-t-1135-persistent-termlink-agent-.md"
+  - ".tasks/active/T-1272-pickup-peer-learning-cron-exchange-15-mi.md"
+  - ".tasks/active/T-1276-pickup-pickup-inbox-cron-updated-to-1-mi.md"
+  - ".tasks/active/T-1298-pickup-inception-template-gono-go-placeh.md"
+  - ".tasks/active/T-1357-pickup-claudemd-template-instructs-use-b.md"
+  - ".tasks/active/T-1358-pickup-pre-push-hook-stamps-project-vers.md"
+  - ".tasks/active/T-1359-pickup-watchtower-placeholder-detector-m.md"
+  - ".tasks/active/T-1362-showversion-add--true-so-grep-no-match-d.md"
+  - ".tasks/active/T-332-submit-to-awesome-lists-awesome-ai-agent.md"
+  - ".tasks/completed/T-1356-t-1346-b1-flip-resolveframework-rule-ord.md"
+  - ".tasks/completed/T-1362-showversion-add--true-so-grep-no-match-d.md"
+  - "tests/unit/resolve_framework.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-20T19:37:26"
+    action: "T-1362: show_version tolerates .framework.yaml without version line"
+  - time: "2026-04-20T19:37:34"
+    action: "T-1362: Close — move to completed/"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 170 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 170
+  commits: 2
+  files_changed: 15
+  lines_added: 599
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1362-showversion-add--true-so-grep-no-match-d.md
+generated_by: context-agent-hybrid

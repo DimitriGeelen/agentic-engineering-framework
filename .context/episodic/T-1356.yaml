@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1356: T-1346-B1: flip resolve_framework rule order — vendored beats global
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-20T17:38:02Z
+# ============================================================================
+
+task_id: T-1356
+task_name: "T-1346-B1: flip resolve_framework rule order — vendored beats global"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T13:34:05Z
+completed: 2026-04-20T14:17:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-20T16:09:24+02:00
+last_commit: 2026-04-20T16:09:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Flip resolve_framework rule order — vendored beats global (T-1346-B1)
+
+# Key outcomes
+outcomes:
+  - "`resolve_framework` in `bin/fw` reorders rules: when `$PROJECT_ROOT/.agentic-framework/FRAMEWORK.md` exists AND `$FW_BIN_DIR/..` is NOT inside `$PROJECT_ROOT`, vendored wins (covers global-shim-in-consumer case)"
+  - "Framework-repo self-invocation still resolves to the repo (not the nested `.agentic-framework/`): `bin/fw version` from repo prints `Framework: /opt/999-Agentic-Engineering-Framework`"
+  - "Direct vendored invocation still works (bats test 2 covers this)"
+  - "Bats unit test added at `tests/unit/resolve_framework.bats` covering: (a) framework-repo self, (b) vendored-direct, (c) global-shim-in-vendored-consumer — all 3 pass"
+  - "`fw doctor` still passes (no regressions — verified manually)"
+  - "`bats tests/unit/resolve_framework.bats` passes (3/3)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1356-t-1346-b1-flip-resolveframework-rule-ord.md"
+  - "tests/unit/resolve_framework.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-20T16:09:24"
+    action: "T-1356: Flip resolve_framework rule order — vendored beats global (T-1346-B1)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 43
+  commits: 1
+  files_changed: 3
+  lines_added: 197
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1356-t-1346-b1-flip-resolveframework-rule-ord.md
+generated_by: context-agent-hybrid

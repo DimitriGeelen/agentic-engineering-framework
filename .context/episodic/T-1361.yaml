@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1361: G-053-C: check-project-boundary must not scan quoted string content
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-20T17:38:01Z
+# ============================================================================
+
+task_id: T-1361
+task_name: "G-053-C: check-project-boundary must not scan quoted string content"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T14:28:52Z
+completed: 2026-04-20T14:38:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-20T16:37:57+02:00
+last_commit: 2026-04-20T16:38:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Boundary hook strips quoted content before pattern scan (G-053-C). Close — move to completed/
+
+# Key outcomes
+outcomes:
+  - "`check-project-boundary.sh` strips `\"...\"` and `'...'` content before pattern scanning"
+  - "Commit with path in `-m` message is allowed (not blocked)"
+  - "Actual unquoted `cd /opt/other` is STILL blocked (unchanged)"
+  - "Bats test covers: (a) FP fix, (b) TP still blocks"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/context/check-project-boundary.sh"
+  - "agents/context/check-project-boundary.sh"
+  - ".tasks/active/T-1361-g-053-c-check-project-boundary-must-not-.md"
+  - ".tasks/completed/T-1361-g-053-c-check-project-boundary-must-not-.md"
+  - "tests/unit/check_project_boundary.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-20T16:37:57"
+    action: "T-1361: Boundary hook strips quoted content before pattern scan (G-053-C)"
+  - time: "2026-04-20T16:38:10"
+    action: "T-1361: Close — move to completed/"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 5
+  lines_added: 233
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1361-g-053-c-check-project-boundary-must-not-.md
+generated_by: context-agent-hybrid

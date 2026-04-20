@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1360: G-053-B: hook dispatcher degrades gracefully on missing script (unblocks stuck sessions)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-20T17:38:01Z
+# ============================================================================
+
+task_id: T-1360
+task_name: "G-053-B: hook dispatcher degrades gracefully on missing script (unblocks stuck sessions)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T14:18:59Z
+completed: 2026-04-20T14:26:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-20T16:25:03+02:00
+last_commit: 2026-04-20T16:26:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Hook dispatcher degrades gracefully on missing script (G-053-B). Close — move to completed/
+
+# Key outcomes
+outcomes:
+  - "`bin/fw hook <name>` exits 0 (not 2) when `$AGENTS_DIR/context/<name>.sh` doesn't exist"
+  - "Still prints \"WARNING: Hook script not found: <path>\" to stderr for visibility"
+  - "Logs the miss to `.context/working/hook-crashes.log` (append, one line per miss, rate-limit trivially via timestamp) so `fw doctor` can surface it"
+  - "`fw doctor` shows missing-hook count when > 0"
+  - "Bats test `tests/unit/hook_dispatcher.bats` covers: (a) known hook runs normally, (b) unknown hook exits 0 with stderr warning, (c) log entry is created"
+  - "No regression: `bats tests/unit/` passes for prior tests"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/project/concerns.yaml"
+  - ".tasks/active/T-1360-g-053-a-rewrite-hook-commands-to-absolut.md"
+  - ".tasks/completed/T-1360-g-053-a-rewrite-hook-commands-to-absolut.md"
+  - "tests/unit/hook_dispatcher.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-20T16:25:03"
+    action: "T-1360: Hook dispatcher degrades gracefully on missing script (G-053-B)"
+  - time: "2026-04-20T16:26:58"
+    action: "T-1360: Close — move to completed/"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 5
+  lines_added: 175
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1360-g-053-a-rewrite-hook-commands-to-absolut.md
+generated_by: context-agent-hybrid
