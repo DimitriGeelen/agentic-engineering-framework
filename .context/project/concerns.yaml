@@ -1335,3 +1335,20 @@ concerns:
   created: 2026-04-19
   last_reviewed: 2026-04-19
   related_tasks: [T-1330, T-1331, T-1334]
+
+- id: G-052
+  type: gap
+  title: "Task-ID race inside single pickup_process run — N envelopes in one cron fire all get the same T-ID"
+  description: "Observed 2026-04-20: a single pickup_process run drained 7 envelopes from .context/pickup/inbox/ and created 7 auto-inception tasks — all assigned T-1345. Files: T-1345-pickup-codify-rpc-resilience-..., T-1345-pickup-fw-fabric-drift-..., T-1345-pickup-vendored-agentic-framework-..., T-1345-pickup-watchtower-csrf-403-..., T-1345-pickup-watchtower-fabric-crashes-..., T-1345-pickup-watchtower-flask-secretkey-..., T-1345-pickup-watchtower-loadlatestaudit-.... G-051's flock protects against CONCURRENT pickup-process invocations, but within a SINGLE invocation that calls fw task create in a loop, the ID allocator reads the same next-ID value for each call (no increment committed to disk between sibling calls). Same structural class as T-1279 (race between fw work-on / task-create) but in a different caller surface."
+  spec_reference: "lib/pickup.sh pickup_create_inception loop, agents/task-create/create-task.sh ID allocator"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-20: 7 envelopes drained in one cron fire all got T-1345; manual rename to T-1345,T-1348-T-1353 performed. G-051 mitigation assumed cross-invocation isolation but not intra-invocation atomicity."
+  detection_lag_days: "0"
+  what_works_now: "G-051 flock stops the between-run duplication vector. T-1279 is tracking the primary T-ID allocator race. Pickups themselves still land (slugs differentiate), human-visible error is 7-way same-ID collision requiring manual rename."
+  what_remains: "pickup_create_inception must either serialize sibling fw-task-create calls with per-call ID-counter commit, or allocate a batch of IDs up front. Root fix lives in the task-create allocator (T-1279) — applying it there closes both surfaces simultaneously."
+  mitigation_candidate: "Two paths: (a) fix in task-create ID allocator (T-1279) — allocator must flock + read-modify-write the counter atomically per call; (b) pickup-side batch allocation — pickup_create_inception pre-reserves N IDs before creating any tasks. (a) is correct-by-construction; (b) is a workaround."
+  status: watching
+  created: 2026-04-20
+  last_reviewed: 2026-04-20
+  related_tasks: [T-1279, T-1345, T-1348, T-1349, T-1350, T-1351, T-1352, T-1353]
