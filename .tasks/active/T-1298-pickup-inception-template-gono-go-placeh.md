@@ -54,7 +54,7 @@ None — this is a governance/process question, not a technical one.
 - [x] Recommendation written with rationale (DEFER — see Recommendation section)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -105,7 +105,20 @@ None — this is a governance/process question, not a technical one.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER
+
+Rationale: The pickup's premise — that the framework catches generic Go/No-Go defaults at decide time — is inaccurate. No existing detector flags them (`audit_task_placeholders` looks for `[Criterion N]` / `[TODO]` / `[PLACEHOLDER]` / `[Your recommendation here]` / `[REQUIRED before` — all bracket-style, not the literal prose of the defaults). Adding a new gate to catch them would introduce friction on every triage without a concrete failure that motivates it. No current evidence shows that generic Go/No-Go has caused a regretted decision. Revisit if: (a) three or more inception decisions are later regretted and the post-mortem traces to generic Go/No-Go failing to discriminate, OR (b) human requests the gate explicitly.
+
+Evidence:
+- `.tasks/templates/inception.md:64-69` contains the literal defaults — only file in the repo that does (grep-verified)
+- `lib/task-audit.sh:audit_task_placeholders` pattern list explicitly does NOT include them
+- `lib/inception.sh:do_inception_decide` gates: placeholder audit, review marker, recommendation-content check — none hit the defaults
+- No incidents in `.context/project/learnings.yaml` or `concerns.yaml` reference generic Go/No-Go as causing a miss
+- Full triage: `docs/reports/T-1298-inception-go-no-go-defaults.md`
+
+**Date**: 2026-04-20T09:40:49Z
 
 ## Updates
 
@@ -115,3 +128,17 @@ None — this is a governance/process question, not a technical one.
 ### 2026-04-19T08:08:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-20T09:40:49Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER
+
+Rationale: The pickup's premise — that the framework catches generic Go/No-Go defaults at decide time — is inaccurate. No existing detector flags them (`audit_task_placeholders` looks for `[Criterion N]` / `[TODO]` / `[PLACEHOLDER]` / `[Your recommendation here]` / `[REQUIRED before` — all bracket-style, not the literal prose of the defaults). Adding a new gate to catch them would introduce friction on every triage without a concrete failure that motivates it. No current evidence shows that generic Go/No-Go has caused a regretted decision. Revisit if: (a) three or more inception decisions are later regretted and the post-mortem traces to generic Go/No-Go failing to discriminate, OR (b) human requests the gate explicitly.
+
+Evidence:
+- `.tasks/templates/inception.md:64-69` contains the literal defaults — only file in the repo that does (grep-verified)
+- `lib/task-audit.sh:audit_task_placeholders` pattern list explicitly does NOT include them
+- `lib/inception.sh:do_inception_decide` gates: placeholder audit, review marker, recommendation-content check — none hit the defaults
+- No incidents in `.context/project/learnings.yaml` or `concerns.yaml` reference generic Go/No-Go as causing a miss
+- Full triage: `docs/reports/T-1298-inception-go-no-go-defaults.md`

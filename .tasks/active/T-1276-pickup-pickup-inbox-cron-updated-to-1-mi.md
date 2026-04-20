@@ -50,7 +50,7 @@ None.
 - [x] Recommendation written with rationale (DEFER — G-046 class)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -99,7 +99,18 @@ None.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (G-046 self-pickup duplicate)
+
+Rationale: Self-pickup auto-created by the framework's pipeline. T-1261 is an active framework task; the pickup is a status-update memo referencing already-known issues (cron empty, hub unreachable) — no new scope. No additional scope to explore.
+
+Evidence:
+- Parent: T-1261 + multi
+- Pickup type: learning, source: this project (self-pickup). Subject is a state observation, not a proposal.
+- G-046 (registered this session) covers this pattern — pipeline should skip self-pickups when parent is internal
+
+**Date**: 2026-04-20T09:40:46Z
 
 ## Updates
 
@@ -108,3 +119,15 @@ None.
 
 ### 2026-04-16T05:44:45Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-20T09:40:46Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (G-046 self-pickup duplicate)
+
+Rationale: Self-pickup auto-created by the framework's pipeline. T-1261 is an active framework task; the pickup is a status-update memo referencing already-known issues (cron empty, hub unreachable) — no new scope. No additional scope to explore.
+
+Evidence:
+- Parent: T-1261 + multi
+- Pickup type: learning, source: this project (self-pickup). Subject is a state observation, not a proposal.
+- G-046 (registered this session) covers this pattern — pipeline should skip self-pickups when parent is internal

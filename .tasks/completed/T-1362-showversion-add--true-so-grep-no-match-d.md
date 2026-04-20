@@ -4,7 +4,7 @@ name: "show_version: add || true so grep no-match doesn't abort under set -e+pip
 description: >
   show_version: add || true so grep no-match doesn't abort under set -e+pipefail
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-20T14:47:11Z
-last_update: 2026-04-20T14:47:11Z
-date_finished: null
+last_update: 2026-04-20T17:37:32Z
+date_finished: 2026-04-20T17:37:32Z
 ---
 
 # T-1362: show_version: add || true so grep no-match doesn't abort under set -e+pipefail
@@ -69,3 +69,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1362-showversion-add--true-so-grep-no-match-d.md
 - **Context:** Initial task creation
+
+### 2026-04-20T17:37:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

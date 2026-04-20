@@ -50,7 +50,7 @@ None. Triage decision, not implementation.
 - [x] Recommendation written with rationale (DEFER — duplicate of completed T-1135)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -98,7 +98,20 @@ None. Triage decision, not implementation.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (close as duplicate)
+
+Rationale: Self-pickup auto-created by the framework's pickup pipeline when an envelope arrived from T-1135 ("Persistent TermLink agent sessions — always-listening receptionist per project, resume-flow health check, cleanup exemption, cross-agent specialist network"). T-1135 is already work-completed GO and addresses the T-1135 persistent agent sessions pattern. There is no new scope to explore. Keeping T-1140 open is structural noise — same anti-pattern as T-1130 / T-1271 (also DEFER as self-pickup duplicates).
+
+Evidence:
+- T-1135 status: work-completed, decision: GO (`bin/fw inception status | grep T-1135`)
+- Pickup envelope re-states the parent's problem; no new file paths, commands, or scope items
+- Established framework pattern: when a self-pickup arrives for an already-completed source task, the right action is DEFER
+
+Structural follow-up (separate task): the pickup pipeline should skip envelopes whose source-task is already work-completed. Tracked as part of the "pickup-pipeline-self-noise" class — to be filed if not already in concerns.yaml.
+
+**Date**: 2026-04-20T09:40:39Z
 
 ## Updates
 
@@ -107,3 +120,17 @@ None. Triage decision, not implementation.
 
 ### 2026-04-12T09:46:31Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-20T09:40:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (close as duplicate)
+
+Rationale: Self-pickup auto-created by the framework's pickup pipeline when an envelope arrived from T-1135 ("Persistent TermLink agent sessions — always-listening receptionist per project, resume-flow health check, cleanup exemption, cross-agent specialist network"). T-1135 is already work-completed GO and addresses the T-1135 persistent agent sessions pattern. There is no new scope to explore. Keeping T-1140 open is structural noise — same anti-pattern as T-1130 / T-1271 (also DEFER as self-pickup duplicates).
+
+Evidence:
+- T-1135 status: work-completed, decision: GO (`bin/fw inception status | grep T-1135`)
+- Pickup envelope re-states the parent's problem; no new file paths, commands, or scope items
+- Established framework pattern: when a self-pickup arrives for an already-completed source task, the right action is DEFER
+
+Structural follow-up (separate task): the pickup pipeline should skip envelopes whose source-task is already work-completed. Tracked as part of the "pickup-pipeline-self-noise" class — to be filed if not already in concerns.yaml.

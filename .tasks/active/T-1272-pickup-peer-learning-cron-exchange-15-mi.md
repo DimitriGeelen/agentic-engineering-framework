@@ -50,7 +50,7 @@ None.
 - [x] Recommendation written with rationale (DEFER — G-046 class)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -99,9 +99,32 @@ None.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (G-046 self-pickup duplicate)
+
+Rationale: Self-pickup auto-created by the framework's pipeline. active inception (peer-learning cron design — work-in-progress in this same project). No additional scope to explore.
+
+Evidence:
+- Parent: T-1270
+- T-1271 last week was the same self-pickup pattern of T-1270 — DEFERred
+- G-046 (registered this session) covers this pattern — pipeline should skip self-pickups when parent is internal
+
+**Date**: 2026-04-20T09:40:43Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-20T09:40:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (G-046 self-pickup duplicate)
+
+Rationale: Self-pickup auto-created by the framework's pipeline. active inception (peer-learning cron design — work-in-progress in this same project). No additional scope to explore.
+
+Evidence:
+- Parent: T-1270
+- T-1271 last week was the same self-pickup pattern of T-1270 — DEFERred
+- G-046 (registered this session) covers this pattern — pipeline should skip self-pickups when parent is internal

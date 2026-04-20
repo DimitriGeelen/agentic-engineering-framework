@@ -51,7 +51,7 @@ None. Triage only.
 - [x] Recommendation written with rationale (DEFER — shipped in T-1134 + T-1158)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -100,7 +100,21 @@ If 010-termlink is observing the symptom anew, root cause is likely a stale fram
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (close as duplicate of T-1134 + T-1158)
+
+Rationale: External pickup from 010-termlink proposing "GNU date -d in framework shell scripts fails silently on macOS". Verification this session shows the fix is already in tree, shipped by T-1134 + T-1158. Closing the pickup is the correct response — no new work to do.
+
+Evidence:
+- lib/compat.sh exports _date_to_epoch and _date_relative with fallback chain: GNU date → BSD date → python3
+- All agents/ scripts already use the helpers (no raw 'date -d' in agents/)
+- Only bin/fw:1159 and bin/fw:1167 use raw 'date -d' with inline BSD fallback (still portable)
+- T-1134 (initial portability) and T-1158 (helpers) shipped the proposed fix
+
+If 010-termlink is observing the symptom anew, root cause is likely a stale framework copy on the consumer side — operator should run `fw upgrade` on 010-termlink to pick up T-1134 + T-1158.
+
+**Date**: 2026-04-20T09:40:33Z
 
 ## Updates
 
@@ -109,3 +123,18 @@ If 010-termlink is observing the symptom anew, root cause is likely a stale fram
 
 ### 2026-04-12T09:41:34Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-20T09:40:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (close as duplicate of T-1134 + T-1158)
+
+Rationale: External pickup from 010-termlink proposing "GNU date -d in framework shell scripts fails silently on macOS". Verification this session shows the fix is already in tree, shipped by T-1134 + T-1158. Closing the pickup is the correct response — no new work to do.
+
+Evidence:
+- lib/compat.sh exports _date_to_epoch and _date_relative with fallback chain: GNU date → BSD date → python3
+- All agents/ scripts already use the helpers (no raw 'date -d' in agents/)
+- Only bin/fw:1159 and bin/fw:1167 use raw 'date -d' with inline BSD fallback (still portable)
+- T-1134 (initial portability) and T-1158 (helpers) shipped the proposed fix
+
+If 010-termlink is observing the symptom anew, root cause is likely a stale framework copy on the consumer side — operator should run `fw upgrade` on 010-termlink to pick up T-1134 + T-1158.

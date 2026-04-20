@@ -51,7 +51,7 @@ None.
 - [x] Recommendation written with rationale (DEFER — duplicate of T-1137 / G-046 class)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -98,7 +98,19 @@ None.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER (close as duplicate of T-1137 outgoing response)
+
+Rationale: The dashboard-brain Q1-Q5 consultation was answered in `docs/reports/T-1137-dashboard-brain-response.md` on 2026-04-12. This pickup is the framework's own pipeline auto-creating an inception when it observed the outgoing message. Same self-pickup-duplicate pattern as G-046 (just registered).
+
+Evidence:
+- `docs/reports/T-1137-dashboard-brain-response.md` exists, addresses Q1-Q5 with concrete answers (fw bus TTL cache, cross-project topology, init gaps)
+- Pickup envelope source: 999-Agentic-Engineering-Framework (this project)
+- T-1137 is in completed/ (work done)
+- G-046 (registered this session) covers this exact class — pickup pipeline self-noise
+
+**Date**: 2026-04-20T09:40:35Z
 
 ## Updates
 
@@ -107,3 +119,16 @@ None.
 
 ### 2026-04-12T09:41:30Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-20T09:40:35Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER (close as duplicate of T-1137 outgoing response)
+
+Rationale: The dashboard-brain Q1-Q5 consultation was answered in `docs/reports/T-1137-dashboard-brain-response.md` on 2026-04-12. This pickup is the framework's own pipeline auto-creating an inception when it observed the outgoing message. Same self-pickup-duplicate pattern as G-046 (just registered).
+
+Evidence:
+- `docs/reports/T-1137-dashboard-brain-response.md` exists, addresses Q1-Q5 with concrete answers (fw bus TTL cache, cross-project topology, init gaps)
+- Pickup envelope source: 999-Agentic-Engineering-Framework (this project)
+- T-1137 is in completed/ (work done)
+- G-046 (registered this session) covers this exact class — pickup pipeline self-noise

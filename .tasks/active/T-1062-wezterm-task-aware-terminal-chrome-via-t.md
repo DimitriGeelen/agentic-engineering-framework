@@ -4,7 +4,7 @@ name: "WezTerm task-aware terminal chrome via TermLink RPC"
 description: >
   Phase 1 from T-1061: WezTerm Lua plugin querying existing TermLink RPC APIs for task state in terminal chrome. Zero new TermLink code needed. 3-6 weeks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: [termlink, wezterm, usability]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:02Z
-last_update: 2026-04-13T18:44:57Z
+last_update: 2026-04-20T07:17:58Z
 date_finished: null
 ---
 
@@ -92,3 +92,6 @@ grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 
 ### 2026-04-13T18:44:57Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
+
+### 2026-04-20T07:17:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
