@@ -63,8 +63,8 @@ _keylock_clean_stale() {
 #   keylock_acquire <key>           — block forever (default)
 #   keylock_acquire <key> <seconds> — block up to N seconds, return 1 on timeout (T-1366)
 keylock_acquire() {
-    local key="$1"
-    local timeout="$2"
+    local key="${1:-}"
+    local timeout="${2:-}"
     [ -z "$key" ] && { echo "keylock_acquire: key required" >&2; return 1; }
 
     mkdir -p "$KEYLOCK_DIR" 2>/dev/null
