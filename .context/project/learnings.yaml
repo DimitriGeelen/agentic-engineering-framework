@@ -1833,3 +1833,10 @@ learnings:
   date: 2026-04-20
   context: Added via context agent
   application: TBD
+- id: L-024
+  learning: "Manual task-file moves to completed/ bypass update-task.sh and skip episodic generation. Always use 'fw task update T-XXX --status work-completed' to trigger the full finalization pipeline (AC gate, verification, date_finished, move, episodic). Audit trend report confirms recurring 'Completed task T-XXX has no episodic summary' warnings."
+  source: P-011
+  task: T-1363
+  date: 2026-04-20
+  context: Added via context agent
+  application: TBD
