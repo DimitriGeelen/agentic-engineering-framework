@@ -2086,6 +2086,97 @@ for t in stale_tasks:
     print(f'  {t["id"]:<8} {color}{age_str:>5}{NC} {t["last_update"]:<12} {t["status"]:<18} {t["horizon"]:<6} {t["name"][:50]}')
 PYTASK_STALE
             ;;
+        reid)
+            # T-1367: Safely rename a task's ID — updates filename + frontmatter atomically.
+            # Intended for repairing duplicate-ID pairs surfaced by `fw audit` (G-052).
+            old_id="${1:-}"; new_id="${2:-}"
+            if [ -z "$old_id" ] || [ -z "$new_id" ]; then
+                echo -e "${RED}Usage: fw task reid <OLD-ID> <NEW-ID>${NC}" >&2
+                echo "Example: fw task reid T-1278 T-1369" >&2
+                exit 1
+            fi
+            # Validate ID format
+            if ! [[ "$old_id" =~ ^T-[0-9]+$ ]]; then
+                echo -e "${RED}ERROR: OLD-ID must match T-NNNN (got: $old_id)${NC}" >&2
+                exit 1
+            fi
+            if ! [[ "$new_id" =~ ^T-[0-9]+$ ]]; then
+                echo -e "${RED}ERROR: NEW-ID must match T-NNNN (got: $new_id)${NC}" >&2
+                exit 1
+            fi
+            # Locate the old file
+            old_file=""
+            for d in active completed; do
+                for f in "$PROJECT_ROOT/.tasks/$d/$old_id"-*.md; do
+                    [ -f "$f" ] || continue
+                    if [ -n "$old_file" ]; then
+                        echo -e "${YELLOW}NOTE: Multiple files match $old_id:${NC}" >&2
+                        echo "  $old_file" >&2
+                        echo "  $f" >&2
+                        echo "Renaming the first match. Re-run reid for the second." >&2
+                        break 2
+                    fi
+                    old_file="$f"
+                done
+            done
+            if [ -z "$old_file" ]; then
+                echo -e "${RED}ERROR: No task file found for $old_id${NC}" >&2
+                exit 1
+            fi
+            # Check NEW-ID is free
+            for d in active completed; do
+                for f in "$PROJECT_ROOT/.tasks/$d/$new_id"-*.md; do
+                    [ -f "$f" ] || continue
+                    echo -e "${RED}ERROR: $new_id already exists: $f${NC}" >&2
+                    echo "Pick a different NEW-ID or remove the existing file first." >&2
+                    exit 1
+                done
+            done
+            # Compute new filename (preserve the slug portion)
+            old_basename="$(basename "$old_file")"
+            slug_plus_ext="${old_basename#$old_id-}"
+            new_file="$(dirname "$old_file")/$new_id-$slug_plus_ext"
+            # Perform the rename: git-mv if tracked, else plain mv; then update frontmatter
+            if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$old_file" >/dev/null 2>&1; then
+                git -C "$PROJECT_ROOT" mv "$old_file" "$new_file"
+            else
+                mv "$old_file" "$new_file"
+            fi
+            # Update `id:` in frontmatter (first occurrence only — it's in the YAML block)
+            python3 - "$new_file" "$old_id" "$new_id" <<'PYREID'
+import sys, datetime
+path, old_id, new_id = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(path) as f:
+    text = f.read()
+# Replace id: line (first match only, within frontmatter)
+lines = text.split('\n')
+in_fm = False
+replaced = False
+ts = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+for i, line in enumerate(lines):
+    if line.strip() == '---':
+        in_fm = not in_fm
+        continue
+    if in_fm and not replaced and line.startswith('id:'):
+        lines[i] = f'id: {new_id}'
+        replaced = True
+        break
+# Append update entry
+update_note = f'\n### {ts} — reid [fw-task]\n- **Change:** id {old_id} → {new_id} (via `fw task reid`)\n- **Context:** Duplicate-ID repair or manual rename\n'
+# Prefer to append inside ## Updates; otherwise at EOF
+joined = '\n'.join(lines)
+if '## Updates' in joined:
+    joined = joined.rstrip() + update_note
+else:
+    joined = joined.rstrip() + '\n\n## Updates\n' + update_note
+with open(path, 'w') as f:
+    f.write(joined)
+print(f'OK — renamed {old_id} → {new_id} in frontmatter')
+PYREID
+            echo -e "${GREEN}Task reid complete:${NC}"
+            echo "  OLD: $old_file"
+            echo "  NEW: $new_file"
+            ;;
         *)
             echo -e "${RED}Unknown task subcommand: $subcmd${NC}"
             echo "Run 'fw task help' for usage"
