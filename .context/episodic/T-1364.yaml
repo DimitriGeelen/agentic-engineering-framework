@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1364: G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook-cascade class)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-20T19:11:48Z
+# ============================================================================
+
+task_id: T-1364
+task_name: "G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook-cascade class)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T19:00:11Z
+completed: 2026-04-20T19:11:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-20T21:11:22+02:00
+last_commit: 2026-04-20T21:11:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-053-A — absolute hook paths at fw init/upgrade
+
+# Key outcomes
+outcomes:
+  - "`lib/init.sh generate_claude_code_config` emits absolute paths (prefixed with `$dir`)"
+  - "Framework's own `.claude/settings.json` regenerated to use absolute paths"
+  - "Bats test asserts: generated settings.json has no relative `fw` commands"
+  - "All bats tests pass (`fw test unit`)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".claude/settings.json"
+  - "lib/init.sh"
+  - ".tasks/active/T-1364-g-053-a-absolute-hook-paths-at-fw-initup.md"
+  - "tests/unit/hook_absolute_paths.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-20T21:11:22"
+    action: "T-1364: G-053-A — absolute hook paths at fw init/upgrade"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 4
+  lines_added: 194
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1364-g-053-a-absolute-hook-paths-at-fw-initup.md
+generated_by: context-agent-hybrid

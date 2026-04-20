@@ -1847,3 +1847,10 @@ learnings:
   date: 2026-04-20
   context: Added via context agent
   application: TBD
+- id: L-026
+  learning: "TOCTOU on filesystem-as-counter: when an allocator reads max-from-disk then writes the next value, concurrent invocations all observe the same max and collide on the same ID. Fix pattern: keylock around the ENTIRE read-compute-write critical section, not just the read. generate_id() in create-task.sh was an example — 4 parallel calls in 2s all wrote T-1278. Pattern applies to any counter-like pattern derived from filesystem state (ID allocators, sequence numbers, revision stamps)."
+  source: P-001
+  task: T-1279
+  date: 2026-04-20
+  context: Added via context agent
+  application: TBD

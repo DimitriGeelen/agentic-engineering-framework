@@ -1,33 +1,33 @@
 ---
-id: T-1363
-name: "Session wrap-up — T-1343 episodic, --skip-verification observation, G-053 residuals"
+id: T-1367
+name: "fw task reid T-XXXX --new T-YYYY — repair duplicate-ID pairs safely"
 description: >
-  Session wrap-up — T-1343 episodic, --skip-verification observation, G-053 residuals
+  Repair command for duplicate task IDs. Updates filename + frontmatter + commit references atomically. Deferred from T-1279 — the audit check now surfaces dups; manual rename is sufficient for rare case, but a command would be safer/faster.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-20T18:56:37Z
-last_update: 2026-04-20T18:56:37Z
+created: 2026-04-20T19:38:27Z
+last_update: 2026-04-20T19:38:27Z
 date_finished: null
 ---
 
-# T-1363: Session wrap-up — T-1343 episodic, --skip-verification observation, G-053 residuals
+# T-1367: fw task reid T-XXXX --new T-YYYY — repair duplicate-ID pairs safely
 
 ## Context
 
-Prior session (S-2026-0420-2049) flagged three open wrap-up items: T-1343 missing episodic, `--skip-verification` episodic-gen interaction unknown, G-053-A absolute hook paths (defense-in-depth, deferred).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] T-1343 episodic generated (`.context/episodic/T-1343.yaml` exists)
-- [x] `--skip-verification` episodic interaction traced — found not causal; captured L-024 on manual-move root cause
-- [x] Learning L-024 recorded via `fw context add-learning`
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -47,8 +47,8 @@ Prior session (S-2026-0420-2049) flagged three open wrap-up items: T-1343 missin
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
-test -f .context/episodic/T-1343.yaml
-grep -q "L-024" .context/project/learnings.yaml
+# Lines starting with # are comments (skipped). Empty lines ignored.
+# The completion gate runs each command — if any exits non-zero, completion is blocked.
 
 ## Decisions
 
@@ -63,7 +63,7 @@ grep -q "L-024" .context/project/learnings.yaml
 
 ## Updates
 
-### 2026-04-20T18:56:37Z — task-created [task-create-agent]
+### 2026-04-20T19:38:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1363-session-wrap-up--t-1343-episodic---skip-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1367-fw-task-reid-t-xxxx---new-t-yyyy--repair.md
 - **Context:** Initial task creation

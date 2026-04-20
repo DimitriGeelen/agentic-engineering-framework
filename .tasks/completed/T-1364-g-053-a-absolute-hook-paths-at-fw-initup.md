@@ -4,16 +4,16 @@ name: "G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook
 description: >
   G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook-cascade class)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-009, lib/init.sh, tests/unit/hook_absolute_paths.bats]
 related_tasks: []
 created: 2026-04-20T19:00:11Z
-last_update: 2026-04-20T19:00:11Z
-date_finished: null
+last_update: 2026-04-20T19:11:45Z
+date_finished: 2026-04-20T19:11:45Z
 ---
 
 # T-1364: G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook-cascade class)
@@ -25,10 +25,10 @@ G-053 item A: `.claude/settings.json` currently uses relative `fw` paths (`bin/f
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/init.sh generate_claude_code_config` emits absolute paths (prefixed with `$dir`)
-- [ ] Framework's own `.claude/settings.json` regenerated to use absolute paths
-- [ ] Bats test asserts: generated settings.json has no relative `fw` commands
-- [ ] All bats tests pass (`fw test unit`)
+- [x] `lib/init.sh generate_claude_code_config` emits absolute paths (prefixed with `$dir`)
+- [x] Framework's own `.claude/settings.json` regenerated to use absolute paths
+- [x] Bats test asserts: generated settings.json has no relative `fw` commands
+- [x] All bats tests pass (`fw test unit`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -71,3 +71,6 @@ bats tests/unit/hook_absolute_paths.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1364-g-053-a-absolute-hook-paths-at-fw-initup.md
 - **Context:** Initial task creation
+
+### 2026-04-20T19:11:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
