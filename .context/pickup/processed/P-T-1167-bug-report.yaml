@@ -1,0 +1,51 @@
+pickup_id: P-T-1167
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1167"
+  agent: "claude-code"
+  timestamp: "2026-04-20T14:15:00Z"
+payload:
+  summary: "Watchtower placeholder detector matches text inside HTML comments — false-positives on default Decisions-section template"
+  detail: |
+    ## Symptom
+    Watchtower approvals page renders error banners like:
+      ERROR: Placeholder content detected in task file
+      File: /opt/termlink/.tasks/active/T-243-sc
+    for tasks that never filled in the Decisions section beyond the default template.
+
+    ## Root cause
+    Default task template (zzz-default.md / create-task.sh output) emits this block:
+        ## Decisions
+        <!-- Record decisions ONLY when choosing between alternatives.
+             Skip for tasks with no meaningful choices.
+             Format:
+             ### [date] — [topic]
+             - **Chose:** [what was decided]
+             - **Why:** [rationale]
+             - **Rejected:** [alternatives and why not]
+        -->
+    The placeholder detector scans the raw markdown for patterns like `[date] — [topic]` or `[what was decided]` and fires even when the offending text is inside an HTML comment (`<!-- ... -->`). Markdown renderers hide these from users — the detector should too.
+
+    ## Proposed fix
+    Before scanning task content for placeholder patterns, strip HTML comment blocks:
+        content_without_comments = re.sub(r'<!--.*?-->', '', content, flags=re.DOTALL)
+        # scan content_without_comments for placeholders
+    Keep the positive case working — `[TODO]`, `[First criterion]`, `[your rationale]` OUTSIDE any comment are real unfilled placeholders and SHOULD trigger the detector.
+
+    ## Impact
+    - Live approvals page is noisy with false errors
+    - Masks genuine placeholder issues when a real one shows up mixed in
+    - Blocks Record-Decision flow on some tasks (T-243, T-235 observed) because human can't tell if the error is the template or their own content
+
+    ## Acceptance for upstream fix
+    1. Reproducer: task with only template Decisions comment → no placeholder warning.
+    2. Regression test: task body containing `## Real Section\n[TODO]\n` outside any comment → placeholder warning still fires.
+    3. Fix in whatever file/function currently does the placeholder regex (likely `.agentic-framework/lib/watchtower/*.py` or the audit script — grep `Placeholder content detected`).
+
+    ## Repro environment
+    Watchtower on :3000 (framework project) or :3100 (termlink). Any consumer project. Template comment is emitted by every fresh task.
+
+  priority: medium
+  tags: [watchtower, approvals, placeholder-detector, html-comment, false-positive, ux]

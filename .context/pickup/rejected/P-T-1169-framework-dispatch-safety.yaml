@@ -1,0 +1,108 @@
+pickup_id: P-T-1169
+version: 1
+type: inception-proposal
+source:
+  project: "termlink"
+  task_id: "T-1169"
+  agent: "claude-code"
+  timestamp: "2026-04-20T19:00:00Z"
+payload:
+  summary: "Multi-agent dispatch safety model — structural isolation and coordination primitives for parallel agent work on a shared repo"
+
+  detail: |
+    ## One-sentence framing
+    Today's framework dispatch primitive is safe for R/O investigation and independent-file scope-writing; it is **not** safe for concurrent code edits in a shared repo. Close that gap with a small set of structural primitives.
+
+    ## Triggering evidence (from termlink, 2026-04-20)
+    While planning the T-1155 channel-bus build (inception GO 2026-04-20), we looked at parallelizing T-1158 (bus crate scaffold) with T-1159 (ed25519 identity keyring) across two dispatched termlink agents. Both tasks edit workspace `Cargo.toml`. Without worktree isolation, that's a merge-conflict collision by construction. The observation generalizes: most build/refactor tasks in a Rust workspace or Python monorepo touch at least one shared file, so today's dispatch can't actually parallelize that class of work without human-side glue.
+
+    ## Current state of dispatch (works)
+    - `termlink_dispatch` MCP tool (T-879)
+    - `fw dispatch` SSH-based primitive
+    - `termlink dispatch` CLI
+    - Reliability fixes already landed: T-914 (wait-for-registrar hang on fast-fail), T-916 (event.collect masking hub failures), T-1025/T-1026 (hub-TCP detection)
+    - `fw bus` result ledger (part of T-1155 write-to-disk convention) already exists for returning work products
+
+    ## Gaps in dispatch (not-safe for code work)
+    1. **No worktree isolation.** T-789 (termlink-side, captured/later) would add a `fw worktree spawn T-XXX` primitive but has not been built. Without this, two workers = one repo state = conflicts.
+    2. **No task-level parallelism metadata.** Task frontmatter has no fields telling dispatch "this task edits `crates/*/Cargo.toml`" or "this task cannot run in parallel with any task touching `router.rs`."
+    3. **No dispatch gate.** `fw dispatch T-XXX` does not check whether T-XXX is parallel-safe given the active-worker table. An operator can run two `worktree-required` tasks in the same clone and only find out at merge time.
+    4. **No reconciliation primitive for parallel outputs.** `fw bus` captures per-agent results but has no "these two workers wrote to overlapping paths — human or orchestrator must reconcile" mode.
+    5. **No bootstrap-aware coordination.** Today's dispatch coordination rides `event.broadcast` + `event.collect` (fine). The T-1155 bus would replace those with durable subscribe — but until it lands, multi-agent plans must tolerate the circularity.
+
+    ## Proposed scope for the framework inception
+
+    Open an inception task in the framework to scope the following primitives. The framework should decide whether to build all, some, or none — termlink can't scope that decision from the consumer side.
+
+    **P1. Worktree isolation primitive.** A `fw worktree spawn T-XXX [--from HEAD]` command that:
+       - Creates `.worktrees/T-XXX/` from HEAD (or a specified ref)
+       - Records the path in the task frontmatter (`worktree_path: ...`)
+       - Registers the worktree as "in-use by worker session X"
+       - Auto-cleans on `fw task update T-XXX --status work-completed` (with opt-out for human inspection)
+       - Composes on T-789 (termlink-side, captured/later — would be consumed by this primitive, not duplicated)
+
+    **P2. Task parallelism metadata.** Two new frontmatter fields:
+       - `touches: [crates/termlink-hub/src/router.rs, Cargo.toml]` — declarative file/path list the task is expected to modify.
+       - `parallelism_class: scope-only | file-isolated | worktree-required | serial`
+         - `scope-only` — task writes nothing outside its own `.tasks/active/T-XXX.md`. Always safe to parallelize.
+         - `file-isolated` — task writes only to declared paths that don't overlap other tasks' `touches`. Safe without worktree.
+         - `worktree-required` — task may modify shared files; requires a dedicated worktree.
+         - `serial` — task must not run concurrently with any other task (e.g., workspace-level refactors).
+       - Class can be set manually or inferred by audit (next commit's actual diff compared to declared `touches`).
+
+    **P3. Dispatch gate.** `fw dispatch T-XXX` (and the MCP tool) should:
+       - Read T-XXX's `parallelism_class` and `touches`.
+       - Cross-check against `fw dispatch-status` (already exists, lists active workers).
+       - Refuse if `worktree-required` and no worktree has been spawned.
+       - Refuse if `touches` overlaps any running worker's declared `touches`.
+       - Emit clear guidance: "run `fw worktree spawn T-XXX` first" or "T-YYY is currently editing overlapping paths — wait or serialize."
+       - Tier-2 human override via `--force` with mandatory bypass log (matches existing enforcement patterns).
+
+    **P4. Reconciliation primitive.** Extend `fw bus` with:
+       - A `parallel-merge` subcommand that inspects declared/actual diffs from multiple workers.
+       - Flags overlapping file changes between workers' patches.
+       - Emits a merge plan (or refuses with clear diagnostic) for the orchestrator.
+
+    **P5. Bootstrap-aware coordination note.** Documentation-only: state that dispatch's coordination channel should be the T-1155 bus once it lands (`channel:dispatch.coordination`), but until then continues to ride `event.broadcast`/`event.collect`. This prevents a future agent from removing the event.broadcast fallback prematurely.
+
+    ## Why this is a framework concern (not a termlink concern)
+
+    Every consumer project that vendors the framework inherits `fw dispatch` and is exposed to the same class of safety gap. Solving this in termlink's `.agentic-framework/` copy would not help ring20-dashboard, ntb-atc-plugin, skills-manager, or any future consumer. The primitives belong upstream.
+
+    ## Composes on (already landed or in flight)
+
+    - T-097 (deep reflection: multi-agent optimization) — dispatch-protocol work, landed.
+    - T-879 (termlink_dispatch MCP tool) — landed.
+    - T-914 / T-916 (dispatch reliability fixes) — landed.
+    - T-1025 / T-1026 (hub TCP detection) — landed.
+    - T-1155 (channel bus inception, termlink) — GO decided, informs P5.
+    - T-789 (worktree isolation, termlink) — captured/later, would be consumed by P1.
+
+    ## Out of scope for this pickup
+
+    - Actually implementing any of P1–P5 in termlink. (If we had the structural view to do that, we'd do it upstream.)
+    - Designing a DAG scheduler for task dependencies. P3 is a pairwise safety check, not a full scheduler.
+    - Extending to cross-machine worktrees (separate concern — `fw dispatch` is currently SSH-based for cross-machine; worktree isolation is per-host).
+
+    ## Proposed acceptance for the framework inception
+
+    The framework inception should, at minimum, produce:
+    1. A go/no-go decision for each of P1–P5 individually (not all-or-nothing).
+    2. If GO on P1 (worktree) — a build task for the primitive + a migration note for T-789 (consumer-side) to consume rather than duplicate.
+    3. If GO on P2 (metadata) — a task to extend the task-create template + audit enforcement that `touches` matches actual diffs within a tolerance.
+    4. If GO on P3 (gate) — a task to wire the gate into `fw dispatch` + the MCP tool.
+    5. If GO on P4 (reconciliation) — a task to extend `fw bus`.
+    6. If DEFER on any — explicit reason and conditions under which it would be revisited.
+
+    ## Repro / consumer-side context
+
+    Live in /opt/termlink, 2026-04-20 session. The dialogue that surfaced the gap:
+
+      Human: "what if we use termlink agents?"
+      Agent: surfaced two constraints — (1) no worktree isolation, (2) bootstrap paradox.
+      Human: "ok fair:: can we formulate improvement which we can send as inception pickup taks using termlink to our framework agent?"
+
+    This envelope is the response. Task file on termlink side: T-1169.
+
+  priority: medium
+  tags: [dispatch, multi-agent, worktree, T-789, T-879, T-914, T-916, T-1155, parallelism, safety]

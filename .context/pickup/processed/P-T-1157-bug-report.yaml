@@ -1,0 +1,51 @@
+pickup_id: P-T-1157
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1157"
+  agent: "claude-code"
+  timestamp: "2026-04-20T14:00:00Z"
+payload:
+  summary: "Pre-push hook stamps project VERSION into .agentic-framework/VERSION — overwrites vendored framework version on every push"
+  detail: |
+    ## Symptom
+    On every `git push` from a consumer project (termlink), the pre-push hook writes the consumer's git-derived version into `.agentic-framework/VERSION`, clobbering the value set at vendor time by `fw vendor`/`fw upgrade`. The vendored VERSION file drifts from the actual vendored framework release. Observed repeatedly in /opt/termlink — `.agentic-framework/VERSION` shows up as Modified in `git status` after every push.
+
+    Example: at last vendor, `.agentic-framework/VERSION` was `1.5.587` (the framework release). After a push, the hook overwrites with `0.9.872` (the consumer project's git-derived version). Upstream framework is at `1.5.624`. The vendored copy now lies about what was vendored.
+
+    ## Root cause
+    `agents/git/lib/hooks.sh:395-403` contains:
+        echo "$_stamped" > "$PROJECT_ROOT/VERSION"
+        if [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
+            echo "$_stamped" > "$PROJECT_ROOT/.agentic-framework/VERSION"
+        fi
+        echo "VERSION stamped: $_stamped"
+    The first write is correct — stamps the project's VERSION. The if-block mirrors the same string into the vendored framework's VERSION file. That file belongs to a different release cycle (the framework's, not the consumer's) and should be touched only by `fw vendor`/`fw upgrade`.
+
+    This bug pre-dates T-909's symlink→vendor fix. When `.agentic-framework` was a symlink, those 3 lines wrote into the framework source repo itself — equally wrong, just invisible. Vendoring made the bad write visible in consumer `git status`.
+
+    ## Proposed fix
+    Delete the 3 lines writing to `.agentic-framework/VERSION`:
+
+        echo "$_stamped" > "$PROJECT_ROOT/VERSION"
+    -   if [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
+    -       echo "$_stamped" > "$PROJECT_ROOT/.agentic-framework/VERSION"
+    -   fi
+        echo "VERSION stamped: $_stamped"
+
+    ## Why not patch locally in the consumer
+    The file is vendored. Next `fw upgrade` reverts any consumer-side patch. Must be fixed upstream to persist.
+
+    ## Acceptance for upstream fix
+    - `agents/git/lib/hooks.sh` no longer writes to `.agentic-framework/VERSION`
+    - In a consumer project, `.agentic-framework/VERSION` is not modified by `git push`
+    - `fw vendor`/`fw upgrade` still writes the correct framework version to `.agentic-framework/VERSION` at vendor time
+
+    ## Reproduced
+    Live in /opt/termlink, sessions 2026-04-15 through 2026-04-20. Every push produces `VERSION stamped: <project-version>` in the pre-push output and leaves `.agentic-framework/VERSION` modified in working tree.
+
+    ## Source
+    Consumer gap G-006 (type: gap, severity: low, status: watching). See /opt/termlink/.context/project/concerns.yaml. Related tasks: T-606 (versioning design), T-909 (vendor symlink fix), T-1061 (housekeeping, reverted manually once).
+  priority: low
+  tags: [hooks.sh, pre-push, version-stamping, vendored-framework, G-006, T-606, T-909]

@@ -1,0 +1,55 @@
+pickup_id: P-T-1156
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-1156"
+  agent: "claude-code"
+  timestamp: "2026-04-20T13:50:00Z"
+payload:
+  summary: "CLAUDE.md template instructs 'Use bin/fw not fw' — correct in framework repo, broken for consumer projects"
+  detail: |
+    ## Symptom
+    In consumer projects (termlink, ring20-*), the agent keeps generating copy-pasteable commands of the form `cd /opt/termlink && bin/fw <cmd>`, which fail with `bash: bin/fw: No such file or directory`. User has had to correct this repeatedly across sessions.
+
+    ## Root cause
+    `lib/templates/claude-project.md:621` contains the rule:
+        3. **Use `bin/fw` not `fw`** — the global `fw` may resolve to a different install
+    This rule is CORRECT inside the framework repo itself (where `bin/fw` is the project-relative entry point). It is WRONG when templated into consumer CLAUDE.md files, because consumers vendor the framework into `.agentic-framework/` — `bin/fw` at the consumer repo root does not exist.
+
+    The framework already knows this distinction — `lib/init.sh:580-583` does:
+        # Framework repo uses bin/fw (project-relative), consumers use .agentic-framework/bin/fw (vendored)
+        if [ "$is_framework_repo" = "yes" ]; then
+            fw_prefix="bin/fw"
+        else
+            fw_prefix=".agentic-framework/bin/fw"
+        fi
+    — but that substitution is applied to *some* emissions, not to the CLAUDE.md template text itself.
+
+    The agent reads CLAUDE.md literally as an authoritative rule source and obeys "Use bin/fw not fw" without inspecting project context. Hence the recurring failure.
+
+    ## Closely related prior art
+    T-915 F2 [MEDIUM] — "Framework's task-review prompt prints the wrong runnable command path: it shows the in-repo bin/fw path, but consumer projects reach fw via `.agentic-framework/bin/fw`." Same failure class. Fix-once approach would address both.
+
+    ## Proposed fix
+    When `fw init` renders `claude-project.md` into a consumer CLAUDE.md, substitute the path. Two concrete options:
+
+    Option A (minimal) — templatize the string:
+      Change template line 621 to:
+        3. **Use `{{FW_PREFIX}}` not `fw`** — the global `fw` may resolve to a different install
+      Extend the `fw_prefix` selection in `lib/init.sh` to substitute `{{FW_PREFIX}}` throughout the templated CLAUDE.md (and task-review prompt output from F2).
+
+    Option B (bolder) — centralize all emissions:
+      A `get_fw_cmd()` helper that every agent/script imports. All output that shows the human a runnable command routes through it. Then there's one place to change and one place to test. Same fix resolves T-915 F2.
+
+    ## Reproduced
+    - Session 2026-04-20 in /opt/termlink. Three+ times agent output `bin/fw inception decide T-1155 go` and the user had to correct to `.agentic-framework/bin/fw`.
+    - Local remediation: patched /opt/termlink/CLAUDE.md line 715 with the correct consumer path and saved a feedback memory that overrides the template-drifted rule.
+
+    ## Acceptance for upstream fix
+    - `claude-project.md` template, when rendered in a consumer, produces `.agentic-framework/bin/fw` not `bin/fw`
+    - Same for the task-review prompt (T-915 F2)
+    - Regression test: render the template into a fake consumer dir, grep produced CLAUDE.md for `^3\. \*\*Use .bin/fw. not` — must NOT match; must match `^3\. \*\*Use ..agentic-framework/bin/fw.`
+
+  priority: medium
+  tags: [claude.md, template, consumer-vs-framework, copy-pasteable-commands, T-915-F2]
