@@ -59,9 +59,12 @@ _keylock_clean_stale() {
     return 1  # No stale lock
 }
 
-# Acquire a per-key lock (blocks until acquired)
+# Acquire a per-key lock.
+#   keylock_acquire <key>           — block forever (default)
+#   keylock_acquire <key> <seconds> — block up to N seconds, return 1 on timeout (T-1366)
 keylock_acquire() {
-    local key="$1"
+    local key="${1:-}"
+    local timeout="${2:-}"
     [ -z "$key" ] && { echo "keylock_acquire: key required" >&2; return 1; }
 
     mkdir -p "$KEYLOCK_DIR" 2>/dev/null
@@ -79,9 +82,18 @@ keylock_acquire() {
     local fd=$_KEYLOCK_FD_COUNTER
     _KEYLOCK_FD_COUNTER=$((_KEYLOCK_FD_COUNTER + 1))
 
-    # Open FD and acquire exclusive lock (blocks until available)
+    # Open FD and acquire exclusive lock
     eval "exec ${fd}>\"${lock_file}\""
-    flock -x "$fd"
+    if [ -n "$timeout" ]; then
+        # Non-blocking with timeout: flock -w exits 1 on timeout
+        if ! flock -w "$timeout" "$fd"; then
+            # Close FD on timeout so caller can retry / fall through
+            eval "exec ${fd}>&-"
+            return 1
+        fi
+    else
+        flock -x "$fd"
+    fi
 
     # Store FD for release
     _KEYLOCK_FDS["$key"]=$fd

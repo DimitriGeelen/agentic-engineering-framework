@@ -162,6 +162,54 @@ else:
 PYINCEPTION
 }
 
+# T-1324: Tick the Human AC that authorizes the inception decision.
+# After `fw inception decide` writes the Decision block, the templated
+# `[REVIEW] Review exploration findings and approve go/no-go decision`
+# (or `[RUBBER-STAMP] Record ... decision`) Human AC is structurally
+# satisfied by the same command — leaving it unchecked keeps the task
+# in partial-complete forever (G-008 contributor; T-1322 / P-039).
+#
+# Idempotent. Only ticks ACs whose text matches the templated predicate
+# under the `### Human` subsection — never touches custom ACs or `### Agent`.
+tick_inception_decide_acs() {
+    local task_file="$1"
+    [ -f "$task_file" ] || return 0
+    python3 - "$task_file" << 'PYTICK'
+import re
+import sys
+
+task_file = sys.argv[1]
+with open(task_file) as f:
+    content = f.read()
+
+PATTERNS = [
+    re.compile(r'\[REVIEW\].*go/?no-go decision', re.IGNORECASE),
+    re.compile(r'\[RUBBER-STAMP\].*[Rr]ecord.*decision'),
+]
+
+lines = content.split('\n')
+in_human = False
+out = []
+for line in lines:
+    stripped = line.strip()
+    if stripped == '### Human':
+        in_human = True
+        out.append(line)
+        continue
+    # Exit Human subsection at next ## or ### header.
+    if in_human and (line.startswith('## ') or line.startswith('### ')):
+        in_human = False
+    if in_human:
+        m = re.match(r'^(\s*)- \[ \](.*)$', line)
+        if m and any(p.search(m.group(2)) for p in PATTERNS):
+            line = f'{m.group(1)}- [x]{m.group(2)}'
+    out.append(line)
+
+with open(task_file, 'w') as f:
+    f.write('\n'.join(out))
+PYTICK
+}
+
 do_inception_decide() {
     local task_id="${1:-}"
     local decision="${2:-}"
@@ -328,6 +376,11 @@ for line in lines:
 with open(task_file, 'w') as f:
     f.write('\n'.join(new_lines))
 PYDECIDE
+
+    # T-1324: Tick the Human AC that authorizes go/no-go BEFORE update-task.sh's
+    # work-completed gate runs — otherwise the AC stays unchecked and the gate
+    # keeps the task in partial-complete forever (G-008 contributor; P-039).
+    tick_inception_decide_acs "$task_file"
 
     # Add update entry
     cat >> "$task_file" << EOF
