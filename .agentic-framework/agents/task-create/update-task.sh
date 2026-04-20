@@ -766,13 +766,18 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         TASK_COMMITS=$(git log --all --oneline --grep="$TASK_ID" 2>/dev/null | awk '{print $1}')
         RESOLVED_COMPONENTS=""
         if [ -n "$TASK_COMMITS" ]; then
-            ALL_PATHS=$(for c in $TASK_COMMITS; do git diff --name-only "${c}~1" "$c" 2>/dev/null; done | sort -u)
+            # T-1374: `|| true` — root commits have no parent; `git diff ${c}~1` exits 128,
+            # and under pipefail+set -e that kills the script before the Episodic block.
+            ALL_PATHS=$(for c in $TASK_COMMITS; do git diff --name-only "${c}~1" "$c" 2>/dev/null || true; done | sort -u)
             for path in $ALL_PATHS; do
                 # Skip metadata paths
                 case "$path" in
                     .context/*|.tasks/*|.fabric/*|docs/*) continue ;;
                 esac
-                comp_id=$(grep "^${path}=" "$LOC_TO_ID_FILE" 2>/dev/null | head -1 | cut -d= -f2-)
+                # T-1374 (G-054 root cause): `|| true` prevents the pipeline's grep-no-match
+                # exit 1 (under pipefail) from killing the script via set -e, which otherwise
+                # aborted before the Episodic Generation block ran.
+                comp_id=$(grep "^${path}=" "$LOC_TO_ID_FILE" 2>/dev/null | head -1 | cut -d= -f2- || true)
                 if [ -n "$comp_id" ]; then
                     RESOLVED_COMPONENTS="${RESOLVED_COMPONENTS:+$RESOLVED_COMPONENTS, }${comp_id}"
                 fi
