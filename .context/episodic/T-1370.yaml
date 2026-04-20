@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1370: Self-vendor sync — lib/init.sh G-053-A absolute-path propagation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-20T22:47:31Z
+# ============================================================================
+
+task_id: T-1370
+task_name: "Self-vendor sync — lib/init.sh G-053-A absolute-path propagation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T22:32:05Z
+completed: 2026-04-20T22:47:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-21T00:46:55+02:00
+last_commit: 2026-04-21T00:46:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Vendor sync — lib/init.sh (G-053-A), keylock.sh (T-1366), all libs to source
+
+# Key outcomes
+outcomes:
+  - "All lib/*.sh files match their .agentic-framework/lib/ counterparts (diff -q empty for every pair)"
+  - "Synced files pass `bash -n` syntax check"
+  - "Untracked .agentic-framework/lib/prompt.sh added to git"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/lib/inception.sh"
+  - ".agentic-framework/lib/init.sh"
+  - ".agentic-framework/lib/keylock.sh"
+  - ".agentic-framework/lib/pickup.sh"
+  - ".agentic-framework/lib/prompt.sh"
+  - ".agentic-framework/lib/task-audit.sh"
+  - ".agentic-framework/lib/upgrade.sh"
+  - ".agentic-framework/lib/watchtower.sh"
+  - ".agentic-framework/VERSION"
+  - ".tasks/active/T-1370-self-vendor-sync--libinitsh-g-053-a-abso.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-21T00:46:55"
+    action: "T-1370: Vendor sync — lib/init.sh (G-053-A), keylock.sh (T-1366), all libs to source"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15
+  commits: 1
+  files_changed: 10
+  lines_added: 933
+  lines_removed: 114
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1370-self-vendor-sync--libinitsh-g-053-a-abso.md
+generated_by: context-agent-hybrid
