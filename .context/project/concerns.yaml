@@ -1379,7 +1379,7 @@ concerns:
   spec_reference: "agents/task-create/update-task.sh:837-858, agents/context/lib/episodic.sh:60"
   severity: medium
   trigger_fired: true
-  trigger_event: "2026-04-20: handover agent flagged T-1366/T-1367 as missing episodics; checking T-1363/T-1364 revealed they were manually generated in commit 968c5034 (also missing from auto-gen). All 4 tasks in the session failed silently."
+  trigger_event: "2026-04-20: handover agent flagged T-1366/T-1367 as missing episodics; checking T-1363/T-1364 revealed they were manually generated in commit 968c5034 (also missing from auto-gen). All 4 tasks in the session failed silently. 2026-04-21: T-1370 close reproduced the failure (5th datapoint in 2 sessions). Manual `./agents/context/context.sh generate-episodic T-1370` succeeded where auto-gen failed — same session, same PROJECT_ROOT, same user. Confirms environmental factor is specific to update-task.sh's invocation context (subshell, trap, set options, stdin redirect, or similar), not PROJECT_ROOT or filesystem state."
   detection_lag_days: "0"
   what_works_now: "Sandbox replays of exact task file content succeed. Manual `fw context generate-episodic T-XXX` succeeds. Auto-gen WARN string is present in source — either never-fired or overlooked in real session output."
   what_remains: "Root cause unknown. Candidates: (1) WARN printed but drowned by long tail output of update-task.sh; (2) context.sh exit code != 0 but episodic file already existed before removal by later step; (3) episodic file created in a different PROJECT_ROOT (different consumer context during completion). Next reproduction attempt should instrument update-task.sh:847 to log context.sh stdout/stderr + exit code to a file regardless of success. Regression test landed at tests/unit/update_task_episodic_gen.bats guards the code-path only."
@@ -1387,7 +1387,7 @@ concerns:
   status: watching
   created: 2026-04-20
   last_reviewed: 2026-04-20
-  related_tasks: [T-1363, T-1364, T-1366, T-1367, T-1368, T-1169]
+  related_tasks: [T-1363, T-1364, T-1366, T-1367, T-1368, T-1370, T-1169]
 
 - id: G-055
   type: gap
