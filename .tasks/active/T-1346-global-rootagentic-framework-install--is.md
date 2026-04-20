@@ -45,12 +45,12 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (`docs/reports/T-1346-global-install-isolation.md` §Problem statement)
+- [x] Assumptions tested (A1 confirmed via code inspection of `bin/fw:57,77-100`; A2 confirmed via 10+ vendored consumers found)
+- [x] Recommendation written with rationale (## Recommendation section: GO Option B++ with B1/B2/B3 decomposition)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -107,7 +107,26 @@ B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scri
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — Option B++ (harden `resolve_framework` + visible mode signal).
+
+Rationale: A1 is confirmed as a silent code-isolation leak. `bin/fw:57` resolves `$0` via `readlink -f`, which follows symlinks. That makes `resolve_framework` rule 1 (fw-inside-framework-repo) match the global `/root/.agentic-framework/` before rule 2 (project-vendored) has a chance to run. Every bare `fw` in a consumer project runs the global framework code against consumer state. The user cannot tell — `fw version` does not disclose which copy is active.
+
+Evidence:
+- Code inspection: `bin/fw:57` (`readlink -f`) + `bin/fw:77-94` (rule 1 matches global after symlink resolution) + `bin/fw:96-100` (rule 2 vendored-check, unreachable in the leak case).
+- On this machine alone: 10+ consumer projects with vendored `.agentic-framework/` directories (e.g., `/opt/052-KCP`, `/opt/050-email-archive`, `/opt/termlink`, `/opt/053-ntfy`, `/opt/002-Claude-Partner-Network`, `/opt/051-Vinix24`, `/opt/150-skills-manager`, etc.) all subject to the leak when invoked via bare `fw`.
+- User observation: `/root/.agentic-framework` is the symlink target; the installer itself labels it "legacy" but links unconditionally.
+- No empirical mode disclosure: `fw version` and `fw doctor` do not print which framework copy resolved.
+
+Decomposition (see docs/reports/T-1346-global-install-isolation.md):
+- B1 — Flip rule order in `resolve_framework`: project-vendored before fw-inside-framework-repo. Add bats test that asserts vendored wins when invoked via symlink to global.
+- B2 — `fw doctor` and `fw version` disclose active mode: `vendored`, `global`, `framework-repo`, with path and version pin.
+- B3 — `install.sh` pre-install check: list vendored consumer projects and prompt before re-linking the legacy global shim.
+
+B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scripts that rely on the global path may see a vendored-pin mismatch — acceptable trade-off since pin-mismatch is the correct signal.
+
+**Date**: 2026-04-20T09:41:31Z
 
 ## Updates
 
@@ -116,3 +135,83 @@ B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scri
 
 ### 2026-04-20T07:51:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-20T09:40:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Option B++ (harden `resolve_framework` + visible mode signal).
+
+Rationale: A1 is confirmed as a silent code-isolation leak. `bin/fw:57` resolves `$0` via `readlink -f`, which follows symlinks. That makes `resolve_framework` rule 1 (fw-inside-framework-repo) match the global `/root/.agentic-framework/` before rule 2 (project-vendored) has a chance to run. Every bare `fw` in a consumer project runs the global framework code against consumer state. The user cannot tell — `fw version` does not disclose which copy is active.
+
+Evidence:
+- Code inspection: `bin/fw:57` (`readlink -f`) + `bin/fw:77-94` (rule 1 matches global after symlink resolution) + `bin/fw:96-100` (rule 2 vendored-check, unreachable in the leak case).
+- On this machine alone: 10+ consumer projects with vendored `.agentic-framework/` directories (e.g., `/opt/052-KCP`, `/opt/050-email-archive`, `/opt/termlink`, `/opt/053-ntfy`, `/opt/002-Claude-Partner-Network`, `/opt/051-Vinix24`, `/opt/150-skills-manager`, etc.) all subject to the leak when invoked via bare `fw`.
+- User observation: `/root/.agentic-framework` is the symlink target; the installer itself labels it "legacy" but links unconditionally.
+- No empirical mode disclosure: `fw version` and `fw doctor` do not print which framework copy resolved.
+
+Decomposition (see docs/reports/T-1346-global-install-isolation.md):
+- B1 — Flip rule order in `resolve_framework`: project-vendored before fw-inside-framework-repo. Add bats test that asserts vendored wins when invoked via symlink to global.
+- B2 — `fw doctor` and `fw version` disclose active mode: `vendored`, `global`, `framework-repo`, with path and version pin.
+- B3 — `install.sh` pre-install check: list vendored consumer projects and prompt before re-linking the legacy global shim.
+
+B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scripts that rely on the global path may see a vendored-pin mismatch — acceptable trade-off since pin-mismatch is the correct signal.
+
+### 2026-04-20T09:40:58Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Option B++ (harden `resolve_framework` + visible mode signal).
+
+Rationale: A1 is confirmed as a silent code-isolation leak. `bin/fw:57` resolves `$0` via `readlink -f`, which follows symlinks. That makes `resolve_framework` rule 1 (fw-inside-framework-repo) match the global `/root/.agentic-framework/` before rule 2 (project-vendored) has a chance to run. Every bare `fw` in a consumer project runs the global framework code against consumer state. The user cannot tell — `fw version` does not disclose which copy is active.
+
+Evidence:
+- Code inspection: `bin/fw:57` (`readlink -f`) + `bin/fw:77-94` (rule 1 matches global after symlink resolution) + `bin/fw:96-100` (rule 2 vendored-check, unreachable in the leak case).
+- On this machine alone: 10+ consumer projects with vendored `.agentic-framework/` directories (e.g., `/opt/052-KCP`, `/opt/050-email-archive`, `/opt/termlink`, `/opt/053-ntfy`, `/opt/002-Claude-Partner-Network`, `/opt/051-Vinix24`, `/opt/150-skills-manager`, etc.) all subject to the leak when invoked via bare `fw`.
+- User observation: `/root/.agentic-framework` is the symlink target; the installer itself labels it "legacy" but links unconditionally.
+- No empirical mode disclosure: `fw version` and `fw doctor` do not print which framework copy resolved.
+
+Decomposition (see docs/reports/T-1346-global-install-isolation.md):
+- B1 — Flip rule order in `resolve_framework`: project-vendored before fw-inside-framework-repo. Add bats test that asserts vendored wins when invoked via symlink to global.
+- B2 — `fw doctor` and `fw version` disclose active mode: `vendored`, `global`, `framework-repo`, with path and version pin.
+- B3 — `install.sh` pre-install check: list vendored consumer projects and prompt before re-linking the legacy global shim.
+
+B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scripts that rely on the global path may see a vendored-pin mismatch — acceptable trade-off since pin-mismatch is the correct signal.
+
+### 2026-04-20T09:41:16Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Option B++ (harden `resolve_framework` + visible mode signal).
+
+Rationale: A1 is confirmed as a silent code-isolation leak. `bin/fw:57` resolves `$0` via `readlink -f`, which follows symlinks. That makes `resolve_framework` rule 1 (fw-inside-framework-repo) match the global `/root/.agentic-framework/` before rule 2 (project-vendored) has a chance to run. Every bare `fw` in a consumer project runs the global framework code against consumer state. The user cannot tell — `fw version` does not disclose which copy is active.
+
+Evidence:
+- Code inspection: `bin/fw:57` (`readlink -f`) + `bin/fw:77-94` (rule 1 matches global after symlink resolution) + `bin/fw:96-100` (rule 2 vendored-check, unreachable in the leak case).
+- On this machine alone: 10+ consumer projects with vendored `.agentic-framework/` directories (e.g., `/opt/052-KCP`, `/opt/050-email-archive`, `/opt/termlink`, `/opt/053-ntfy`, `/opt/002-Claude-Partner-Network`, `/opt/051-Vinix24`, `/opt/150-skills-manager`, etc.) all subject to the leak when invoked via bare `fw`.
+- User observation: `/root/.agentic-framework` is the symlink target; the installer itself labels it "legacy" but links unconditionally.
+- No empirical mode disclosure: `fw version` and `fw doctor` do not print which framework copy resolved.
+
+Decomposition (see docs/reports/T-1346-global-install-isolation.md):
+- B1 — Flip rule order in `resolve_framework`: project-vendored before fw-inside-framework-repo. Add bats test that asserts vendored wins when invoked via symlink to global.
+- B2 — `fw doctor` and `fw version` disclose active mode: `vendored`, `global`, `framework-repo`, with path and version pin.
+- B3 — `install.sh` pre-install check: list vendored consumer projects and prompt before re-linking the legacy global shim.
+
+B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scripts that rely on the global path may see a vendored-pin mismatch — acceptable trade-off since pin-mismatch is the correct signal.
+
+### 2026-04-20T09:41:31Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Option B++ (harden `resolve_framework` + visible mode signal).
+
+Rationale: A1 is confirmed as a silent code-isolation leak. `bin/fw:57` resolves `$0` via `readlink -f`, which follows symlinks. That makes `resolve_framework` rule 1 (fw-inside-framework-repo) match the global `/root/.agentic-framework/` before rule 2 (project-vendored) has a chance to run. Every bare `fw` in a consumer project runs the global framework code against consumer state. The user cannot tell — `fw version` does not disclose which copy is active.
+
+Evidence:
+- Code inspection: `bin/fw:57` (`readlink -f`) + `bin/fw:77-94` (rule 1 matches global after symlink resolution) + `bin/fw:96-100` (rule 2 vendored-check, unreachable in the leak case).
+- On this machine alone: 10+ consumer projects with vendored `.agentic-framework/` directories (e.g., `/opt/052-KCP`, `/opt/050-email-archive`, `/opt/termlink`, `/opt/053-ntfy`, `/opt/002-Claude-Partner-Network`, `/opt/051-Vinix24`, `/opt/150-skills-manager`, etc.) all subject to the leak when invoked via bare `fw`.
+- User observation: `/root/.agentic-framework` is the symlink target; the installer itself labels it "legacy" but links unconditionally.
+- No empirical mode disclosure: `fw version` and `fw doctor` do not print which framework copy resolved.
+
+Decomposition (see docs/reports/T-1346-global-install-isolation.md):
+- B1 — Flip rule order in `resolve_framework`: project-vendored before fw-inside-framework-repo. Add bats test that asserts vendored wins when invoked via symlink to global.
+- B2 — `fw doctor` and `fw version` disclose active mode: `vendored`, `global`, `framework-repo`, with path and version pin.
+- B3 — `install.sh` pre-install check: list vendored consumer projects and prompt before re-linking the legacy global shim.
+
+B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scripts that rely on the global path may see a vendored-pin mismatch — acceptable trade-off since pin-mismatch is the correct signal.
