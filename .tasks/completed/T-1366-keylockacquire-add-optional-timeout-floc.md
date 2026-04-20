@@ -4,7 +4,7 @@ name: "keylock_acquire: add optional timeout (flock -w)"
 description: >
   lib/keylock.sh keylock_acquire blocks forever by default. Add optional timeout (flock -w N) so callers can fail fast on deadlock. Deferred from T-1279 AC.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-20T19:38:24Z
-last_update: 2026-04-20T19:44:11Z
-date_finished: null
+last_update: 2026-04-20T19:48:43Z
+date_finished: 2026-04-20T19:48:43Z
 ---
 
 # T-1366: keylock_acquire: add optional timeout (flock -w)
@@ -72,3 +72,6 @@ bats tests/unit/lib_keylock.bats
 
 ### 2026-04-20T19:44:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-20T19:48:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
