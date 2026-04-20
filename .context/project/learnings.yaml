@@ -1861,3 +1861,10 @@ learnings:
   date: 2026-04-20
   context: Added via context agent
   application: TBD
+- id: L-235
+  learning: "T-1369 test: allocator fixed, next ID emitted after grep-pattern fix should be L-235 (confirms fix is load-bearing in framework repo)"
+  source: P-001
+  task: T-1369
+  date: 2026-04-20
+  context: Added via context agent
+  application: TBD

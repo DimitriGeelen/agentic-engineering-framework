@@ -47,7 +47,10 @@ do_add_learning() {
     fi
     local next_id=1
     if [ -f "$learnings_file" ]; then
-        local max_id=$(grep "^- id: ${id_prefix}-" "$learnings_file" | sed "s/.*${id_prefix}-0*//" | sort -n | tail -1)
+        # T-1369: match BOTH `- id: L-XXX` (new dash-prefix format) and `  id: L-XXX`
+        # (legacy indented format where `- application:` opens the list item).
+        # Missing the legacy format caused every new L-XXX to collide with old IDs.
+        local max_id=$(grep -E "^[- ]+id: ${id_prefix}-" "$learnings_file" | sed "s/.*${id_prefix}-0*//" | sort -n | tail -1)
         [ -n "$max_id" ] && next_id=$((max_id + 1))
     fi
     local id=$(printf "${id_prefix}-%03d" $next_id)

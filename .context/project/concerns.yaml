@@ -1386,3 +1386,20 @@ concerns:
   created: 2026-04-20
   last_reviewed: 2026-04-20
   related_tasks: [T-1363, T-1364, T-1366, T-1367, T-1368, T-1169]
+
+- id: G-055
+  type: gap
+  title: "Learning ID allocator grep pattern missed legacy indented-format entries"
+  description: "`agents/context/lib/learning.sh:50` computed max_id via `grep '^- id: L-'` which only matches the new dash-prefix format. The first 234 legacy entries in learnings.yaml use indented format (`- application: TBD\\n  context: ...\\n  id: L-XXX\\n  learning: ...`) where `id:` is not the first key of the list item. grep missed all 234 legacy entries, so every `fw context add-learning` call issued IDs starting from wherever the dash-prefix section started — every ID in the dash-prefix section (L-001..L-027) collides with an unrelated historical entry of the same ID. Same class as G-052 (task-ID collisions) but the trigger is a grep-pattern bug, not a race."
+  spec_reference: "agents/context/lib/learning.sh:48-52"
+  severity: low
+  trigger_fired: true
+  trigger_event: "2026-04-20: noticed L-027 appeared twice in learnings.yaml while investigating T-1368 silent episodic-gen. Expanded grep revealed 234 collision-class duplicates across L-001..L-027."
+  detection_lag_days: "0"
+  what_works_now: "T-1369: grep pattern changed to `grep -E '^[- ]+id: ${id_prefix}-'` which matches both formats. Bats test tests/unit/add_learning_id_allocator.bats pins the regression (3 cases: legacy-only, dash-only, mixed). Sanity-inverse verified: reverting the fix fails 2 of 3 tests."
+  what_remains: "Historical duplicates in learnings.yaml (~234 entries) are not renumbered — cross-references to old L-IDs exist in 20+ artifacts (tasks, handovers, reports). Renumbering risks breaking those references. Decision: accept the duplicates, issue future L-IDs starting from max+1 = L-235 (via fixed allocator). The L-024..L-027 additions from this + prior session collide with old IDs but stand as-is per the same principle (references already landed)."
+  mitigation_applied: "2026-04-20: grep pattern expanded to `-E '^[- ]+id: PREFIX-'`. Regression test tests/unit/add_learning_id_allocator.bats. Next add-learning call on framework repo should emit L-235 (next true max+1)."
+  status: mitigated
+  created: 2026-04-20
+  last_reviewed: 2026-04-20
+  related_tasks: [T-1369, T-1368]
