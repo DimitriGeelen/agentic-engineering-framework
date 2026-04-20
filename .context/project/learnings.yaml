@@ -1840,3 +1840,10 @@ learnings:
   date: 2026-04-20
   context: Added via context agent
   application: TBD
+- id: L-025
+  learning: "Claude Code hooks run with CWD = wherever the session is. CWD drift (cd into a tempdir, a subdir) is a normal-but-hazardous state because every PreToolUse hook then fires with unexpected PATH resolution. Always emit ABSOLUTE paths in .claude/settings.json hook commands — the generation site has the project root, and  is already canonicalized via 'cd && pwd'. Relative paths in hook commands are a latent cascade bug."
+  source: D-004
+  task: T-1364
+  date: 2026-04-20
+  context: Added via context agent
+  application: TBD

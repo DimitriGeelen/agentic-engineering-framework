@@ -1363,9 +1363,9 @@ concerns:
   trigger_event: "2026-04-20 session: manual test-fixture repro via 'cd \"$(mktemp -d)\" && ...' stuck the session CWD in the fixture. Every subsequent tool call's hook fired from the fixture, resolved 'bin/fw' to the fixture's incomplete copy, failed to find hook scripts, and blocked the tool. Recovery required out-of-band repair via mcp__termlink__termlink_exec (which bypasses the PreToolUse matcher)."
   detection_lag_days: "0"
   what_works_now: "Normal operation: when CWD is inside a valid framework project, hooks resolve correctly via rule 1 of resolve_framework (T-1356-B1). Out-of-band MCP tools (TermLink, Read, Grep) remain usable because they're not matched in PreToolUse."
-  what_remains: "Three fixes, in priority order: (A) Rewrite hook commands to absolute paths at 'fw init' / 'fw upgrade' time — eliminates CWD dependency entirely. (B) Dispatcher change: 'bin/fw hook X' should emit warning-to-stderr and exit 0 when script not found — a missing hook script is an implementation bug, never a reason to lock the human out of their tools. (C) project-boundary hook should not scan quoted string content (commit-message bodies, heredocs) for path-like patterns."
-  mitigation_candidate: "(A) is the highest-leverage single change — removes the entire failure class. Implement by emitting absolute paths in .claude/settings.json during fw init/upgrade, and in the framework's own .claude/settings.json via a one-off sync. (B) and (C) are defense-in-depth. Related: bin/fw show_version has a set-e+pipefail+empty-file bug in grep|sed that surfaces in minimal test fixtures — same class of 'strictness meets absent data'."
-  status: watching
+  what_remains: "All three items mitigated: (A) T-1364 — lib/init.sh generate_claude_code_config now emits absolute fw paths; existing consumers get them on next `fw upgrade`. (B) T-1360 — bin/fw hook dispatcher exits 0 with stderr warning when script missing. (C) T-1361 — project-boundary hook strips balanced quoted content before regex scan."
+  mitigation_applied: "2026-04-20: T-1360 (G-053-B hook safety net), T-1361 (G-053-C quote-stripping), T-1364 (G-053-A absolute hook paths). Framework .claude/settings.json regenerated to use absolute paths. 4-test bats coverage in tests/unit/hook_absolute_paths.bats."
+  status: mitigated
   created: 2026-04-20
   last_reviewed: 2026-04-20
-  related_tasks: [T-1356, T-1360, T-1361]
+  related_tasks: [T-1356, T-1360, T-1361, T-1364]
