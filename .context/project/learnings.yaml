@@ -1812,3 +1812,24 @@ learnings:
   date: 2026-04-19
   context: Added via context agent
   application: TBD
+- id: L-021
+  learning: "Test learning from Playwright"
+  source: unknown
+  task: T-1030
+  date: 2026-04-20
+  context: Added via context agent
+  application: TBD
+- id: L-022
+  learning: "Under set -euo pipefail, 'grep PATTERN file | sed ...' aborts the enclosing function when grep has no match (grep exits 1, pipefail propagates, set -e catches). Always append '|| true' (or use 'grep -F -x' with explicit default) in value-extraction pipelines that may legitimately find nothing. Bug found in show_version + do_doctor (T-1362), surfaced when .framework.yaml existed but lacked a 'version:' line."
+  source: P-001
+  task: T-1362
+  date: 2026-04-20
+  context: Added via context agent
+  application: TBD
+- id: L-023
+  learning: "Claude Code session persistent CWD can get stuck in a deleted or broken directory (e.g., after 'cd $(mktemp -d) && ... && cd fw-repo'). Every subsequent tool's PreToolUse hook fires from that CWD. If the CWD doesn't have a valid bin/fw (or has an incomplete one), hooks fail-block ALL of Bash/Write/Edit/Agent simultaneously — recovery requires out-of-band tools (mcp__termlink__termlink_exec, Read, Grep have no PreToolUse matcher). Preventive fix: G-053-B makes missing hook scripts non-blocking (T-1360). Preventive habit: do fixture work with absolute paths (mktemp -d in a var, never 'cd' into the fixture)."
+  source: P-002
+  task: T-1360
+  date: 2026-04-20
+  context: Added via context agent
+  application: TBD
