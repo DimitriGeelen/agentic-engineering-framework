@@ -802,7 +802,7 @@ print(f'{total},{broken},{stale_paths}')
         echo -e "  ${GREEN}OK${NC}  No orphaned MCP processes"
     fi
 
-    # Check: .mcp.json configuration (T-646)
+    # Check: .mcp.json configuration (T-646, T-1354: servers under `mcpServers` key)
     local mcp_json="$PROJECT_ROOT/.mcp.json"
     if [ -f "$mcp_json" ]; then
         local mcp_check
@@ -810,9 +810,12 @@ print(f'{total},{broken},{stale_paths}')
 import json
 with open('$mcp_json') as f:
     data = json.load(f)
-total = len(data)
-has_context7 = 'context7' in data
-has_playwright = 'playwright' in data
+servers = data.get('mcpServers') if isinstance(data.get('mcpServers'), dict) else data
+if not isinstance(servers, dict):
+    servers = {}
+total = len(servers)
+has_context7 = 'context7' in servers
+has_playwright = 'playwright' in servers
 missing = []
 if not has_context7: missing.append('context7')
 if not has_playwright: missing.append('playwright')

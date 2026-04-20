@@ -769,17 +769,19 @@ SJSON
     if [ ! -f "$dir/.mcp.json" ] || [ "${force:-false}" = true ]; then
         cat > "$dir/.mcp.json" << 'MCPJSON'
 {
-  "context7": {
-    "command": "npx",
-    "args": ["-y", "@upstash/context7-mcp"]
-  },
-  "playwright": {
-    "command": "npx",
-    "args": ["@playwright/mcp@latest", "--no-sandbox"]
-  },
-  "termlink": {
-    "command": "termlink",
-    "args": ["mcp", "serve"]
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--no-sandbox"]
+    },
+    "termlink": {
+      "command": "termlink",
+      "args": ["mcp", "serve"]
+    }
   }
 }
 MCPJSON
