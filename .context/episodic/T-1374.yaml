@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1374: Fix G-054 root cause: set -e -o pipefail aborts update-task.sh on grep no-match in components lookup
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-20T23:23:27Z
+# ============================================================================
+
+task_id: T-1374
+task_name: "Fix G-054 root cause: set -e -o pipefail aborts update-task.sh on grep no-match in components lookup"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T23:14:34Z
+completed: 2026-04-20T23:23:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-21T01:23:17+02:00
+last_commit: 2026-04-21T01:23:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix G-054 root cause — add || true to grep+git pipelines in components lookup (set -e abort)
+
+# Key outcomes
+outcomes:
+  - "Line 775 of update-task.sh has `|| true` appended to the grep pipeline"
+  - "Line 769 (ALL_PATHS for loop) also gets `|| true` — guards against root-commit git-diff exit 128"
+  - "`bash -n agents/task-create/update-task.sh` passes"
+  - "Sandbox reproducer now runs episodic auto-gen successfully — `.last-episodic-gen.log` written AND episodic file created"
+  - "Vendored .agentic-framework/agents/task-create/update-task.sh synced"
+  - "Regression test at tests/unit/update_task_components_lookup.bats passes; sanity-inverse (revert fix) confirms test fails pre-fix"
+  - "Existing tests/unit/update_task_episodic_gen.bats still passes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix G-054 root cause — add || true to grep+git pipelines in components lookup (set -e abort)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/task-create/update-task.sh"
+  - "agents/task-create/update-task.sh"
+  - ".tasks/active/T-1374-fix-g-054-root-cause-set--e--o-pipefail-.md"
+  - "tests/unit/update_task_components_lookup.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-21T01:23:17"
+    action: "T-1374: Fix G-054 root cause — add || true to grep+git pipelines in components lookup (set -e abort)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 4
+  lines_added: 205
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1374-fix-g-054-root-cause-set--e--o-pipefail-.md
+generated_by: context-agent-hybrid

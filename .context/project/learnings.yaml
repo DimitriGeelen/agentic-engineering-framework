@@ -1868,3 +1868,10 @@ learnings:
   date: 2026-04-20
   context: Added via context agent
   application: TBD
+- id: L-236
+  learning: "set -euo pipefail silently aborts via command-substitution assignments — always append '|| true' to grep pipelines (and similar no-match-exits-1) inside $(...) assignments, else pipefail makes the assignment inherit exit 1 and set -e kills the script. Detection lag is extreme: the abort happens BEFORE any subsequent 'silent failure detector' can fire."
+  source: P-010
+  task: T-1374
+  date: 2026-04-20
+  context: Added via context agent
+  application: TBD

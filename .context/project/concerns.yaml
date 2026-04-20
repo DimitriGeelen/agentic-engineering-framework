@@ -1384,10 +1384,11 @@ concerns:
   what_works_now: "Sandbox replays of exact task file content succeed. Manual `fw context generate-episodic T-XXX` succeeds. Auto-gen WARN string is present in source — either never-fired or overlooked in real session output."
   what_remains: "Root cause unknown. Candidates: (1) WARN printed but drowned by long tail output of update-task.sh; (2) context.sh exit code != 0 but episodic file already existed before removal by later step; (3) episodic file created in a different PROJECT_ROOT (different consumer context during completion). Next reproduction attempt should instrument update-task.sh:847 to log context.sh stdout/stderr + exit code to a file regardless of success. Regression test landed at tests/unit/update_task_episodic_gen.bats guards the code-path only."
   mitigation_candidate: "Either (a) make the WARN block completion (convert to hard-fail) or (b) add a tail-of-output summary with WARN counts so silent failures cannot hide in scrollback."
-  status: watching
+  mitigation_applied: "2026-04-20 (T-1374): Root cause was NOT the detector — it was an earlier abort. Under `set -euo pipefail`, the line `comp_id=$(grep '^${path}=' ... | head -1 | cut -d= -f2-)` would trigger script exit when grep found no match (exit 1 + pipefail → assignment exit 1 → set -e abort → EXIT trap ran keylock_release and quit). The Episodic block at line 843 was never reached, so the T-1169 detector never fired. Fix: `|| true` appended to the grep pipeline (line 775) and to the git-diff-in-for-loop pipeline (line 769, for root-commit edge case). Regression test at tests/unit/update_task_components_lookup.bats; sanity-inverse verified."
+  status: mitigated
   created: 2026-04-20
   last_reviewed: 2026-04-20
-  related_tasks: [T-1363, T-1364, T-1366, T-1367, T-1368, T-1370, T-1169]
+  related_tasks: [T-1363, T-1364, T-1366, T-1367, T-1368, T-1370, T-1371, T-1372, T-1374, T-1169]
 
 - id: G-055
   type: gap
