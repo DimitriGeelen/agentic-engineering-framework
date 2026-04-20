@@ -3685,8 +3685,16 @@ PYSEARCH
         fi
         _hook_script="$AGENTS_DIR/context/${_hook_name}.sh"
         if [ ! -f "$_hook_script" ]; then
-            echo "ERROR: Hook script not found: $_hook_script" >&2
-            exit 2
+            # T-1360 / G-053-B: missing hook script = config drift, NOT a reason to
+            # block the agent's tool surface. Exit 2 would hard-block PreToolUse and
+            # cascade across every Bash/Write/Edit. Log once to hook-crashes.log so
+            # `fw doctor` can surface the drift, then exit 0 (allow).
+            echo "WARNING: Hook script not found: $_hook_script (degrading to allow — fix hook config)" >&2
+            if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.context/working" ]; then
+                _crash_log="$PROJECT_ROOT/.context/working/.hook-crashes.log"
+                echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) missing-hook $_hook_name script=$_hook_script" >> "$_crash_log" 2>/dev/null || true
+            fi
+            exit 0
         fi
         export FRAMEWORK_ROOT PROJECT_ROOT
         # T-863: Use bash explicitly — don't require -x (core.filemode=false drops execute bits)
