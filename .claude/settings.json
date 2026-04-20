@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook pre-compact"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook pre-compact"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook post-compact-resume"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook post-compact-resume"
           }
         ]
       },
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook post-compact-resume"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook post-compact-resume"
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook block-plan-mode"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook block-plan-mode"
           }
         ]
       },
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook check-active-task"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-active-task"
           }
         ]
       },
@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook check-tier0"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-tier0"
           }
         ]
       },
@@ -64,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook check-agent-dispatch"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-agent-dispatch"
           }
         ]
       },
@@ -73,7 +73,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook check-project-boundary"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-project-boundary"
           }
         ]
       },
@@ -82,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook budget-gate"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook budget-gate"
           }
         ]
       },
@@ -91,7 +91,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook block-task-tools"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook block-task-tools"
           }
         ]
       }
@@ -102,7 +102,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook checkpoint post-tool"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook checkpoint post-tool"
           }
         ]
       },
@@ -111,7 +111,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook error-watchdog"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook error-watchdog"
           }
         ]
       },
@@ -120,7 +120,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook check-dispatch"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-dispatch"
           }
         ]
       },
@@ -129,7 +129,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook loop-detect"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook loop-detect"
           }
         ]
       },
@@ -138,7 +138,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook check-fabric-new-file"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-fabric-new-file"
           }
         ]
       },
@@ -147,16 +147,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook commit-cadence"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook commit-cadence"
           }
         ]
       },
       {
-        "matcher": "TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet",
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "bin/fw hook audit-task-tools"
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook audit-task-tools"
           }
         ]
       }

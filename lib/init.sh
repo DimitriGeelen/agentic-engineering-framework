@@ -577,10 +577,13 @@ generate_claude_code_config() {
     mkdir -p "$dir/.claude/commands"
 
     # T-663/T-662: Detect framework-mode vs consumer-mode for fw path
-    # Framework repo uses bin/fw (project-relative), consumers use .agentic-framework/bin/fw (vendored)
-    local fw_prefix=".agentic-framework/bin/fw"
+    # T-1364 (G-053-A): Emit ABSOLUTE paths — Claude Code resolves hook commands
+    # against CWD, and CWD drift (test fixtures, subdir navigation) otherwise
+    # cascades into hook-cannot-find-fw tool-blocks. $dir is canonicalized by
+    # the caller (init.sh line 58, upgrade.sh line 58 via `cd && pwd`).
+    local fw_prefix="$dir/.agentic-framework/bin/fw"
     if [ -x "$dir/bin/fw" ] && [ -f "$dir/FRAMEWORK.md" ]; then
-        fw_prefix="bin/fw"
+        fw_prefix="$dir/bin/fw"
     fi
 
     if [ ! -f "$dir/.claude/settings.json" ] || [ "${force:-false}" = true ]; then
