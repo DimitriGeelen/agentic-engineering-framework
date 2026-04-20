@@ -844,11 +844,32 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
 
         CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
         if [ -x "$CONTEXT_AGENT" ]; then
-            PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
+            # T-1371 (G-054): Capture stdout/stderr/exit-code to diagnose silent failures.
+            # Log every invocation (not only on failure) so the forensic context (PROJECT_ROOT,
+            # CONTEXT_DIR, env) is captured when the next silent failure occurs.
+            EPISODIC_LOG="$CONTEXT_DIR/working/.last-episodic-gen.log"
+            mkdir -p "$(dirname "$EPISODIC_LOG")" 2>/dev/null || true
+            {
+                echo "=== episodic-gen invocation: $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+                echo "task_id: $TASK_ID"
+                echo "FRAMEWORK_ROOT: $FRAMEWORK_ROOT"
+                echo "PROJECT_ROOT: $PROJECT_ROOT"
+                echo "CONTEXT_DIR: $CONTEXT_DIR"
+                echo "CONTEXT_AGENT: $CONTEXT_AGENT"
+                echo "cwd: $(pwd)"
+                echo "--- context.sh output ---"
+            } > "$EPISODIC_LOG" 2>&1
+            set +e
+            PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" >> "$EPISODIC_LOG" 2>&1
+            EPISODIC_EXIT=$?
+            set -e
+            echo "--- exit code: $EPISODIC_EXIT ---" >> "$EPISODIC_LOG"
+            cat "$EPISODIC_LOG"
             # Verify episodic was created (T-1169: silent failure detection)
             EPISODIC_FILE="$CONTEXT_DIR/episodic/$TASK_ID.yaml"
             if [ ! -f "$EPISODIC_FILE" ]; then
                 echo -e "  ${YELLOW}WARNING: Episodic not created for $TASK_ID — generation may have failed silently${NC}" >&2
+                echo -e "  Log: $EPISODIC_LOG (exit=$EPISODIC_EXIT)" >&2
                 echo -e "  Run manually: $(_emit_user_command "context generate-episodic $TASK_ID")" >&2
             fi
         else

@@ -174,7 +174,7 @@ auto_emit_review_if_partial() {
             source "$FRAMEWORK_ROOT/lib/review.sh"
             emit_review "$TASK_ID" "$TASK_FILE"
         else
-            echo "  fw task review $TASK_ID"
+            echo "  $(_emit_user_command "task review $TASK_ID")"
         fi
     fi
 }
@@ -220,7 +220,10 @@ print(text)
         # Run in subshell with framework path derivatives unset so child
         # processes re-derive TASKS_DIR/CONTEXT_DIR from their own PROJECT_ROOT.
         # Prevents bats tests from inheriting the parent's stale TASKS_DIR (T-739).
-        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; eval "$cmd") > /tmp/verify-$$.out 2>&1; then
+        # T-1317: cd to PROJECT_ROOT first so relative paths in verification
+        # commands resolve consistently regardless of caller CWD (Watchtower
+        # launches from FRAMEWORK_ROOT, CLI from PROJECT_ROOT).
+        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; cd "$PROJECT_ROOT" && eval "$cmd") > /tmp/verify-$$.out 2>&1; then
             echo -e "  ${GREEN}PASS${NC}: $display_cmd"
             verify_pass=$((verify_pass + 1))
         else
@@ -395,7 +398,7 @@ if [ -n "$NEW_STATUS" ]; then
                         EPISODIC_FILE="$CONTEXT_DIR/episodic/$TASK_ID.yaml"
                         if [ ! -f "$EPISODIC_FILE" ]; then
                             echo -e "  ${YELLOW}WARNING: Episodic not created for $TASK_ID — generation may have failed silently${NC}" >&2
-                            echo -e "  Run manually: fw context generate-episodic $TASK_ID" >&2
+                            echo -e "  Run manually: $(_emit_user_command "context generate-episodic $TASK_ID")" >&2
                         fi
                     fi
                 fi
@@ -455,7 +458,7 @@ if [ -n "$NEW_STATUS" ]; then
                     echo "  ... and $((_other_count - 5)) more"
                 fi
                 echo "  Consider pausing tasks you're not actively working on:"
-                echo "    fw task update T-XXX --status captured"
+                echo "    $(_emit_user_command "task update T-XXX --status captured")"
                 echo ""
             fi
         fi
@@ -646,7 +649,7 @@ if [ -n "$NEW_STATUS" ] && [ "$OLD_STATUS" != "$NEW_STATUS" ]; then
             PROJECT_ROOT="$PROJECT_ROOT" "$HEALING_AGENT" diagnose "$TASK_ID" || true
         else
             echo -e "${YELLOW}Healing agent not found at $HEALING_AGENT${NC}"
-            echo "Run manually: fw healing diagnose $TASK_ID"
+            echo "Run manually: $(_emit_user_command "healing diagnose $TASK_ID")"
         fi
     fi
 fi
@@ -713,7 +716,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             FOCUSED_TASK=$(grep "^current_task:" "$FOCUS_FILE" | sed 's/current_task:[[:space:]]*//')
             if [ "$FOCUSED_TASK" = "$TASK_ID" ]; then
                 _sed_i "s/^current_task:.*/current_task: null/" "$FOCUS_FILE"
-                echo -e "${YELLOW}Focus cleared (task completed). Set new focus: fw work-on T-XXX${NC}"
+                echo -e "${YELLOW}Focus cleared (task completed). Set new focus: $(_fw_cmd) work-on T-XXX${NC}"
             fi
         fi
     fi
@@ -841,16 +844,37 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
 
         CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
         if [ -x "$CONTEXT_AGENT" ]; then
-            PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
+            # T-1371 (G-054): Capture stdout/stderr/exit-code to diagnose silent failures.
+            # Log every invocation (not only on failure) so the forensic context (PROJECT_ROOT,
+            # CONTEXT_DIR, env) is captured when the next silent failure occurs.
+            EPISODIC_LOG="$CONTEXT_DIR/working/.last-episodic-gen.log"
+            mkdir -p "$(dirname "$EPISODIC_LOG")" 2>/dev/null || true
+            {
+                echo "=== episodic-gen invocation: $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+                echo "task_id: $TASK_ID"
+                echo "FRAMEWORK_ROOT: $FRAMEWORK_ROOT"
+                echo "PROJECT_ROOT: $PROJECT_ROOT"
+                echo "CONTEXT_DIR: $CONTEXT_DIR"
+                echo "CONTEXT_AGENT: $CONTEXT_AGENT"
+                echo "cwd: $(pwd)"
+                echo "--- context.sh output ---"
+            } > "$EPISODIC_LOG" 2>&1
+            set +e
+            PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" >> "$EPISODIC_LOG" 2>&1
+            EPISODIC_EXIT=$?
+            set -e
+            echo "--- exit code: $EPISODIC_EXIT ---" >> "$EPISODIC_LOG"
+            cat "$EPISODIC_LOG"
             # Verify episodic was created (T-1169: silent failure detection)
             EPISODIC_FILE="$CONTEXT_DIR/episodic/$TASK_ID.yaml"
             if [ ! -f "$EPISODIC_FILE" ]; then
                 echo -e "  ${YELLOW}WARNING: Episodic not created for $TASK_ID — generation may have failed silently${NC}" >&2
-                echo -e "  Run manually: fw context generate-episodic $TASK_ID" >&2
+                echo -e "  Log: $EPISODIC_LOG (exit=$EPISODIC_EXIT)" >&2
+                echo -e "  Run manually: $(_emit_user_command "context generate-episodic $TASK_ID")" >&2
             fi
         else
             echo -e "${YELLOW}Context agent not found${NC}"
-            echo "Run manually: fw context generate-episodic $TASK_ID"
+            echo "Run manually: $(_emit_user_command "context generate-episodic $TASK_ID")"
         fi
     fi
 
@@ -881,7 +905,7 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
             echo -e "${YELLOW}────────────────────────────────────────────${NC}"
             echo -e "${YELLOW}  LEARNING PROMPT — This looks like a bugfix task${NC}"
             echo -e "${YELLOW}  No learning entry references $TASK_ID.${NC}"
-            echo -e "${YELLOW}  Consider: fw fix-learned $TASK_ID \"what was learned\"${NC}"
+            echo -e "${YELLOW}  Consider: $(_emit_user_command "fix-learned $TASK_ID \"what was learned\"")${NC}"
             echo -e "${YELLOW}  Ask: Would a future agent benefit from knowing about this fix?${NC}"
             echo -e "${YELLOW}────────────────────────────────────────────${NC}"
         fi
