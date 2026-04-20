@@ -4,7 +4,7 @@ name: "G-053-B: hook dispatcher degrades gracefully on missing script (unblocks 
 description: >
   G-053-B: hook dispatcher degrades gracefully on missing script (unblocks stuck sessions)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-20T14:18:59Z
-last_update: 2026-04-20T14:18:59Z
-date_finished: null
+last_update: 2026-04-20T14:26:48Z
+date_finished: 2026-04-20T14:26:48Z
 ---
 
 # T-1360: G-053-B: hook dispatcher degrades gracefully on missing script
@@ -31,12 +31,12 @@ Fix: missing hook script → log once to hook-crash.log + exit 0 (allow). A miss
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `bin/fw hook <name>` exits 0 (not 2) when `$AGENTS_DIR/context/<name>.sh` doesn't exist
-- [ ] Still prints "WARNING: Hook script not found: <path>" to stderr for visibility
-- [ ] Logs the miss to `.context/working/hook-crashes.log` (append, one line per miss, rate-limit trivially via timestamp) so `fw doctor` can surface it
-- [ ] `fw doctor` shows missing-hook count when > 0
-- [ ] Bats test `tests/unit/hook_dispatcher.bats` covers: (a) known hook runs normally, (b) unknown hook exits 0 with stderr warning, (c) log entry is created
-- [ ] No regression: `bats tests/unit/` passes for prior tests
+- [x] `bin/fw hook <name>` exits 0 (not 2) when `$AGENTS_DIR/context/<name>.sh` doesn't exist
+- [x] Still prints "WARNING: Hook script not found: <path>" to stderr for visibility
+- [x] Logs the miss to `.context/working/hook-crashes.log` (append, one line per miss, rate-limit trivially via timestamp) so `fw doctor` can surface it
+- [x] `fw doctor` shows missing-hook count when > 0
+- [x] Bats test `tests/unit/hook_dispatcher.bats` covers: (a) known hook runs normally, (b) unknown hook exits 0 with stderr warning, (c) log entry is created
+- [x] No regression: `bats tests/unit/` passes for prior tests
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -77,3 +77,6 @@ bin/fw hook __nonexistent_hook_for_test__ 2>/dev/null; [ $? -eq 0 ]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1360-g-053-a-rewrite-hook-commands-to-absolut.md
 - **Context:** Initial task creation
+
+### 2026-04-20T14:26:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
