@@ -72,13 +72,50 @@ find_project_root() {
 
 # Resolve FRAMEWORK_ROOT
 resolve_framework() {
-    # If fw is inside the framework repo (bin/fw), use that
     local candidate
     candidate="$(cd "$FW_BIN_DIR/.." && pwd)"
+    local candidate_is_framework_repo=0
     if [ -f "$candidate/FRAMEWORK.md" ] && [ -d "$candidate/agents" ]; then
-        # T-355/T-359: If inside Homebrew Cellar, use opt symlink (survives brew upgrade)
-        # Cellar paths are versioned (/usr/local/Cellar/agentic-fw/1.2.6/libexec) and break on upgrade.
-        # The opt symlink (/usr/local/opt/agentic-fw/libexec) always points to the active version.
+        candidate_is_framework_repo=1
+    fi
+
+    # T-1346-B1: If candidate is a framework repo AND lives INSIDE the consumer
+    # project (either = PROJECT_ROOT for self-invocation, or under PROJECT_ROOT
+    # for direct-vendored invocation like `.agentic-framework/bin/fw`), use it.
+    # This preserves framework-repo-self and direct-vendored paths.
+    if [ "$candidate_is_framework_repo" = 1 ] && [ -n "${PROJECT_ROOT:-}" ]; then
+        local canon_candidate canon_project
+        canon_candidate="$(cd "$candidate" && pwd -P)"
+        canon_project="$(cd "$PROJECT_ROOT" && pwd -P)"
+        if [ "$canon_candidate" = "$canon_project" ] || [[ "$canon_candidate" == "$canon_project"/* ]]; then
+            # T-355/T-359: Homebrew Cellar redirect (preserved from original rule 1)
+            if [[ "$candidate" == */Cellar/agentic-fw/*/libexec ]] || [[ "$candidate" == */Cellar/fw/*/libexec ]]; then
+                local formula_name="${candidate#*Cellar/}"
+                formula_name="${formula_name%%/*}"
+                local brew_prefix="${candidate%/Cellar/*/libexec}"
+                local opt_path="$brew_prefix/opt/$formula_name/libexec"
+                if [ -d "$opt_path" ] && [ -f "$opt_path/FRAMEWORK.md" ]; then
+                    echo "$opt_path"
+                    return 0
+                fi
+            fi
+            echo "$candidate"
+            return 0
+        fi
+    fi
+
+    # T-498: Prefer project-vendored framework when present (T-1346-B1: now
+    # checked before falling back to FW_BIN_DIR-origin, so global-shim
+    # invocation in a consumer project picks the vendored copy, not global).
+    if [ -n "${PROJECT_ROOT:-}" ] && [ -f "$PROJECT_ROOT/.agentic-framework/FRAMEWORK.md" ]; then
+        echo "$PROJECT_ROOT/.agentic-framework"
+        return 0
+    fi
+
+    # No PROJECT_ROOT or no vendored copy — use candidate if it's a framework repo.
+    # (Covers: `bin/fw version` from outside any project, brew-installed fw invoked
+    # from a non-framework dir, etc.)
+    if [ "$candidate_is_framework_repo" = 1 ]; then
         if [[ "$candidate" == */Cellar/agentic-fw/*/libexec ]] || [[ "$candidate" == */Cellar/fw/*/libexec ]]; then
             local formula_name="${candidate#*Cellar/}"
             formula_name="${formula_name%%/*}"
@@ -90,12 +127,6 @@ resolve_framework() {
             fi
         fi
         echo "$candidate"
-        return 0
-    fi
-
-    # T-498: Check for vendored framework in project
-    if [ -n "${PROJECT_ROOT:-}" ] && [ -f "$PROJECT_ROOT/.agentic-framework/FRAMEWORK.md" ]; then
-        echo "$PROJECT_ROOT/.agentic-framework"
         return 0
     fi
 
