@@ -4,7 +4,7 @@ name: "keylock_acquire: add optional timeout (flock -w)"
 description: >
   lib/keylock.sh keylock_acquire blocks forever by default. Add optional timeout (flock -w N) so callers can fail fast on deadlock. Deferred from T-1279 AC.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-20T19:38:24Z
-last_update: 2026-04-20T19:38:24Z
+last_update: 2026-04-20T19:44:11Z
 date_finished: null
 ---
 
@@ -20,14 +20,15 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Deferred from T-1279. `keylock_acquire` currently calls `flock -x` (block forever). For task-id-allocation this is acceptable because the critical section is short, but future callers may want fail-fast semantics to avoid hung processes on deadlock. Optional 2nd arg = timeout in seconds → `flock -w N`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `keylock_acquire <key> [timeout_seconds]` — optional 2nd arg
+- [x] If timeout provided and exceeded, function returns non-zero (flock -w exit 1)
+- [x] Omitting timeout preserves block-forever behavior (backward compatible)
+- [x] Bats test `tests/unit/lib_keylock_timeout.bats` — 4 tests, all pass. Non-regression lib_keylock.bats (9 tests) still pass.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -47,8 +48,9 @@ date_finished: null
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+bats tests/unit/lib_keylock_timeout.bats
+# Non-regression: existing keylock tests still pass
+bats tests/unit/lib_keylock.bats
 
 ## Decisions
 
@@ -67,3 +69,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1366-keylockacquire-add-optional-timeout-floc.md
 - **Context:** Initial task creation
+
+### 2026-04-20T19:44:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
