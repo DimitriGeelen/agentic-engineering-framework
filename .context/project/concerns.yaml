@@ -1356,7 +1356,7 @@ concerns:
 - id: G-053
   type: gap
   title: "Hook dispatch is CWD-relative, cascades when session CWD drifts to a non-framework directory"
-  description: ".claude/settings.json registers all hooks as 'bin/fw hook X' (relative). When a Claude Code session's persistent CWD drifts into a directory that isn't a framework project (e.g., a test fixture in /tmp), PreToolUse hooks fail to resolve their own scripts: 'bin/fw' either doesn't exist, or resolves to a copy whose FRAMEWORK_ROOT points at an incomplete directory. Since PreToolUse hook failures BLOCK the tool, every recovery tool (Bash, Write, Edit) becomes unusable simultaneously — the only escape is out-of-band (TermLink MCP, Grep/Read which have no PreToolUse matcher). Three fragilities were observed in one incident: (a) CWD-relative hook path, (b) missing-script exits non-zero instead of degrading, (c) project-boundary hook false-positives on command strings that mention paths in quoted content (e.g., commit messages with path examples)."
+  description: ".claude/settings.json registers all hooks as 'bin/fw hook X' (relative). When a Claude Code session's persistent CWD drifts into a directory that isn't a framework project (e.g., a test fixture in /tmp), PreToolUse hooks fail to resolve their own scripts: 'bin/fw' either doesn't exist, or resolves to a copy whose FRAMEWORK_ROOT points at an incomplete directory. Since PreToolUse hook failures BLOCK the tool, every recovery tool (Bash, Write, Edit) becomes unusable simultaneously — the only escape is out-of-band (TermLink MCP, Grep/Read which have no PreToolUse matcher). Three fragilities were observed in one incident: (a) CWD-relative hook path, (b) missing-script exits non-zero instead of degrading [MITIGATED T-1360/G-053-B], (c) project-boundary hook false-positives on command strings that mention paths in quoted content [MITIGATED T-1361/G-053-C]. Item (a) remains — now defense-in-depth only since (b) safety net is in place."
   spec_reference: ".claude/settings.json, bin/fw hook dispatcher, agents/context/check-project-boundary.sh"
   severity: medium
   trigger_fired: true
@@ -1368,4 +1368,4 @@ concerns:
   status: watching
   created: 2026-04-20
   last_reviewed: 2026-04-20
-  related_tasks: [T-1356]
+  related_tasks: [T-1356, T-1360, T-1361]
