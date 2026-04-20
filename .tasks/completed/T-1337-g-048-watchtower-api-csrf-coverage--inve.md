@@ -4,7 +4,7 @@ name: "G-048 Watchtower /api/* CSRF coverage — inventory, classify, decide enf
 description: >
   Inception: G-048 Watchtower /api/* CSRF coverage — inventory, classify, decide enforcement approach
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-19T16:01:59Z
-last_update: 2026-04-19T16:03:55Z
-date_finished: null
+last_update: 2026-04-19T23:46:17Z
+date_finished: 2026-04-19T23:46:17Z
 ---
 
 # T-1337: G-048 Watchtower /api/* CSRF coverage — inventory, classify, decide enforcement approach
@@ -58,7 +58,7 @@ Completed (see research artifact):
 - [x] Recommendation written with rationale (GO Option A with B1/B2/B3 staging)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -111,7 +111,22 @@ Completed (see research artifact):
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — Option A (remove blanket `/api/` exemption, require `X-CSRF-Token` on state-mutating endpoints)
+
+Rationale: CSRF exemption by path prefix is an anti-pattern inherited from the pre-JSON era of Watchtower. 25 state-mutating endpoints currently accept unauthenticated POSTs — including task creation, status changes, cron pause/resume/run, scan approve/apply, and session init. Same-origin + SameSite=Lax is incidental defense, not design. The middleware already accepts `X-CSRF-Token` header (app.py:104); the only blocker is the early-return at app.py:97. A positive-allowlist middleware is structurally self-defending — future state-mutating endpoints land under CSRF by default (addresses G-019: fix detection, not just symptom).
+
+Evidence:
+- 25 state-mutating POST/DELETE `/api/` endpoints inventoried and catalogued — see `docs/reports/T-1337-api-csrf-inventory.md`
+- Middleware already validates `X-CSRF-Token` header (web/app.py:104) — no new validation code needed
+- All fetch() updates are uniform (wrap in one helper) — grep`fetch\(` and apply
+- Options B (accept) and C (namespace split) both lose on detection and cost respectively
+- Proposed decomposition: B1 middleware flip + B2 JS helper update (same commit) + B3 playwright regression (separate commit)
+
+Go/No-Go criteria: both met — root cause identified (path-prefix exemption), fix bounded (25 endpoints, one middleware change, reversible).
+
+**Date**: 2026-04-19T23:46:17Z
 
 ## Updates
 
@@ -120,3 +135,23 @@ Completed (see research artifact):
 
 ### 2026-04-19T16:03:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-19T23:46:17Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Option A (remove blanket `/api/` exemption, require `X-CSRF-Token` on state-mutating endpoints)
+
+Rationale: CSRF exemption by path prefix is an anti-pattern inherited from the pre-JSON era of Watchtower. 25 state-mutating endpoints currently accept unauthenticated POSTs — including task creation, status changes, cron pause/resume/run, scan approve/apply, and session init. Same-origin + SameSite=Lax is incidental defense, not design. The middleware already accepts `X-CSRF-Token` header (app.py:104); the only blocker is the early-return at app.py:97. A positive-allowlist middleware is structurally self-defending — future state-mutating endpoints land under CSRF by default (addresses G-019: fix detection, not just symptom).
+
+Evidence:
+- 25 state-mutating POST/DELETE `/api/` endpoints inventoried and catalogued — see `docs/reports/T-1337-api-csrf-inventory.md`
+- Middleware already validates `X-CSRF-Token` header (web/app.py:104) — no new validation code needed
+- All fetch() updates are uniform (wrap in one helper) — grep`fetch\(` and apply
+- Options B (accept) and C (namespace split) both lose on detection and cost respectively
+- Proposed decomposition: B1 middleware flip + B2 JS helper update (same commit) + B3 playwright regression (separate commit)
+
+Go/No-Go criteria: both met — root cause identified (path-prefix exemption), fix bounded (25 endpoints, one middleware change, reversible).
+
+### 2026-04-19T23:46:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

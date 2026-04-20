@@ -1,22 +1,22 @@
 ---
-id: T-1343
-name: "T-1337 B1+B2 — flip CSRF middleware to allowlist + add fetch() X-CSRF-Token helper"
+id: T-1344
+name: "Retrofit playwright conftest with CSRF token fixture (T-1343 regression hotfix)"
 description: >
-  T-1337 B1+B2 — flip CSRF middleware to allowlist + add fetch() X-CSRF-Token helper
+  Retrofit playwright conftest with CSRF token fixture (T-1343 regression hotfix)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/conftest.py]
 related_tasks: []
-created: 2026-04-19T23:48:05Z
-last_update: 2026-04-19T23:48:05Z
-date_finished: null
+created: 2026-04-20T07:26:44Z
+last_update: 2026-04-20T07:54:09Z
+date_finished: 2026-04-20T07:54:09Z
 ---
 
-# T-1343: T-1337 B1+B2 — flip CSRF middleware to allowlist + add fetch() X-CSRF-Token helper
+# T-1344: Retrofit playwright conftest with CSRF token fixture (T-1343 regression hotfix)
 
 ## Context
 
@@ -25,11 +25,10 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] `web/app.py` `csrf_protect` no longer contains `request.path.startswith("/api/")` exemption
-- [x] `web/templates/base.html` exposes `window.fetchWithCsrf(url, options)` helper that auto-attaches `X-CSRF-Token` to non-GET/HEAD
-- [x] All state-mutating fetch() callers to `/api/*` (task_detail, tasks, sessions, cron) use `fetchWithCsrf` or set `X-CSRF-Token` explicitly
-- [x] Watchtower restarts cleanly; `curl -sf http://localhost:3000/` returns 200
-- [x] POST `/api/task/<id>/status` without token → 403; with token → 200 (smoke test)
+- [x] `tests/playwright/conftest.py` `page` fixture primes session with CSRF token via meta tag
+- [x] Token is injected as `X-CSRF-Token` default header on browser context so `page.request.post(...)` works
+- [x] `pytest tests/playwright/test_api_task_complete.py` passes against live Watchtower
+- [x] Regression spot-check: 2+ other `/api/*` POST test files pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -65,7 +64,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-19T23:48:05Z — task-created [task-create-agent]
+### 2026-04-20T07:26:44Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1343-t-1337-b1b2--flip-csrf-middleware-to-all.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1344-retrofit-playwright-conftest-with-csrf-t.md
 - **Context:** Initial task creation
+
+### 2026-04-20T07:54:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

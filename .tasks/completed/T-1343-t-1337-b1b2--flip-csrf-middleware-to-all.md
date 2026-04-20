@@ -1,22 +1,22 @@
 ---
-id: T-1354
-name: "fw init generates .mcp.json without mcpServers wrapper — fails MCP schema validation"
+id: T-1343
+name: "T-1337 B1+B2 — flip CSRF middleware to allowlist + add fetch() X-CSRF-Token helper"
 description: >
-  fw init generates .mcp.json without mcpServers wrapper — fails MCP schema validation
+  T-1337 B1+B2 — flip CSRF middleware to allowlist + add fetch() X-CSRF-Token helper
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-20T07:59:39Z
-last_update: 2026-04-20T09:22:47Z
-date_finished: null
+created: 2026-04-19T23:48:05Z
+last_update: 2026-04-20T07:18:58Z
+date_finished: 2026-04-20T07:18:58Z
 ---
 
-# T-1354: fw init generates .mcp.json without mcpServers wrapper — fails MCP schema validation
+# T-1343: T-1337 B1+B2 — flip CSRF middleware to allowlist + add fetch() X-CSRF-Token helper
 
 ## Context
 
@@ -25,12 +25,11 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] `lib/init.sh` .mcp.json template wraps server definitions under `"mcpServers": {...}`
-- [x] `lib/upgrade.sh` CREATE path uses same wrapped schema
-- [x] `lib/upgrade.sh` MERGE path reads and writes the `mcpServers` key (preserves existing user servers under the wrapper)
-- [x] `bin/fw` doctor check reads servers from `mcpServers` key
-- [x] `fw init /tmp/new-project` generates schema-valid file; `fw upgrade /tmp/new-project` is idempotent (no change) when already valid
-- [x] `fw doctor` shows OK for the generated file
+- [x] `web/app.py` `csrf_protect` no longer contains `request.path.startswith("/api/")` exemption
+- [x] `web/templates/base.html` exposes `window.fetchWithCsrf(url, options)` helper that auto-attaches `X-CSRF-Token` to non-GET/HEAD
+- [x] All state-mutating fetch() callers to `/api/*` (task_detail, tasks, sessions, cron) use `fetchWithCsrf` or set `X-CSRF-Token` explicitly
+- [x] Watchtower restarts cleanly; `curl -sf http://localhost:3000/` returns 200
+- [x] POST `/api/task/<id>/status` without token → 403; with token → 200 (smoke test)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -66,7 +65,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-20T07:59:39Z — task-created [task-create-agent]
+### 2026-04-19T23:48:05Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1354-fw-init-generates-mcpjson-without-mcpser.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1343-t-1337-b1b2--flip-csrf-middleware-to-all.md
 - **Context:** Initial task creation
+
+### 2026-04-20T07:18:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

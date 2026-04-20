@@ -1,22 +1,22 @@
 ---
-id: T-1344
-name: "Retrofit playwright conftest with CSRF token fixture (T-1343 regression hotfix)"
+id: T-1354
+name: "fw init generates .mcp.json without mcpServers wrapper — fails MCP schema validation"
 description: >
-  Retrofit playwright conftest with CSRF token fixture (T-1343 regression hotfix)
+  fw init generates .mcp.json without mcpServers wrapper — fails MCP schema validation
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/init.sh, lib/upgrade.sh]
 related_tasks: []
-created: 2026-04-20T07:26:44Z
-last_update: 2026-04-20T07:26:44Z
-date_finished: null
+created: 2026-04-20T07:59:39Z
+last_update: 2026-04-20T09:23:26Z
+date_finished: 2026-04-20T09:23:26Z
 ---
 
-# T-1344: Retrofit playwright conftest with CSRF token fixture (T-1343 regression hotfix)
+# T-1354: fw init generates .mcp.json without mcpServers wrapper — fails MCP schema validation
 
 ## Context
 
@@ -25,10 +25,12 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] `tests/playwright/conftest.py` `page` fixture primes session with CSRF token via meta tag
-- [x] Token is injected as `X-CSRF-Token` default header on browser context so `page.request.post(...)` works
-- [x] `pytest tests/playwright/test_api_task_complete.py` passes against live Watchtower
-- [x] Regression spot-check: 2+ other `/api/*` POST test files pass
+- [x] `lib/init.sh` .mcp.json template wraps server definitions under `"mcpServers": {...}`
+- [x] `lib/upgrade.sh` CREATE path uses same wrapped schema
+- [x] `lib/upgrade.sh` MERGE path reads and writes the `mcpServers` key (preserves existing user servers under the wrapper)
+- [x] `bin/fw` doctor check reads servers from `mcpServers` key
+- [x] `fw init /tmp/new-project` generates schema-valid file; `fw upgrade /tmp/new-project` is idempotent (no change) when already valid
+- [x] `fw doctor` shows OK for the generated file
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -64,7 +66,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-20T07:26:44Z — task-created [task-create-agent]
+### 2026-04-20T07:59:39Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1344-retrofit-playwright-conftest-with-csrf-t.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1354-fw-init-generates-mcpjson-without-mcpser.md
 - **Context:** Initial task creation
+
+### 2026-04-20T09:23:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

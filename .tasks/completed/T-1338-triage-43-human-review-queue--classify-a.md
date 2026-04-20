@@ -4,7 +4,7 @@ name: "Triage 43 human review queue — classify automatable (programmatic/TermL
 description: >
   Inception: Triage 43 human review queue — classify automatable (programmatic/TermLink E2E/Playwright) vs genuine-human, recommend build tasks
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-19T16:26:30Z
-last_update: 2026-04-19T16:27:13Z
-date_finished: null
+last_update: 2026-04-19T23:47:01Z
+date_finished: 2026-04-19T23:47:01Z
 ---
 
 # T-1338: Triage 43 human review queue — classify automatable (programmatic/TermLink E2E/Playwright) vs genuine-human, recommend build tasks
@@ -58,7 +58,7 @@ Completed (see research artifact):
 - [x] Recommendation written with rationale (GO, B1→B2→B3 staging; 13 of 43 automatable = 30%)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -114,7 +114,25 @@ Completed (see research artifact):
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — build B1 (Tier 1 extension), B2 (Playwright bundle), B3 (TermLink E2E harness) in that order.
+
+Rationale: Of the 43 unchecked Human ACs, 13 (30%) can move to automated verification without shifting decision authority. The remaining 30 are either strategic go/no-go decisions (21), subjective voice/tone/quality judgments (7), or physical-device verifications (2) — all genuinely human. Framework primitives for all three automation tiers already exist (`fw verify-acs --execute`, `fw test playwright`, `fw termlink dispatch`). The blocker is harness authorship, not capability.
+
+Evidence:
+- Full classification table: `docs/reports/T-1338-review-queue-automation-triage.md` (Tier 1: 1, Tier 2: 8, Tier 3: 4, Tier H: 30)
+- B1 is near-trivial (rewrite T-880 AC with verification command → auto-ticked by existing `fw verify-acs --execute`)
+- B2 covers 4 ACs in one Playwright file (T-1240 sort, T-1241 cron data, T-1214 approvals cards, T-448.1 cron controls) — highest coverage-per-effort
+- B3 groups by host: Linux TermLink set (T-594, T-612, T-663, T-1277) + macOS set via ring20-management (T-481, T-518, T-613) + PTY attach (T-530)
+- Authority model preserved: every `[REVIEW]` on a go/no-go decision stays Tier H — we are automating mechanical verifications, not strategic choices
+- T-971 playwright test generation rule already established the pattern; B2 is its canonical first bundle
+
+Structural upgrade option (separate from GO decision): propose an `[AUTO]` AC tag to replace today's informal `[RUBBER-STAMP]` when the Steps section contains only deterministic commands. Signals to the human that no action is required — framework verifies automatically. Keep `[RUBBER-STAMP]` for mechanical actions that still need a human (publishing, physical device testing). Keep `[REVIEW]` for subjective judgment.
+
+Go/No-Go criteria: both met — classification is defensible (each tier assignment cites concrete command or locator), build tasks are bounded (one file per tier), authority model preserved.
+
+**Date**: 2026-04-19T23:47:01Z
 
 ## Updates
 
@@ -123,3 +141,26 @@ Completed (see research artifact):
 
 ### 2026-04-19T16:27:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-19T23:47:01Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — build B1 (Tier 1 extension), B2 (Playwright bundle), B3 (TermLink E2E harness) in that order.
+
+Rationale: Of the 43 unchecked Human ACs, 13 (30%) can move to automated verification without shifting decision authority. The remaining 30 are either strategic go/no-go decisions (21), subjective voice/tone/quality judgments (7), or physical-device verifications (2) — all genuinely human. Framework primitives for all three automation tiers already exist (`fw verify-acs --execute`, `fw test playwright`, `fw termlink dispatch`). The blocker is harness authorship, not capability.
+
+Evidence:
+- Full classification table: `docs/reports/T-1338-review-queue-automation-triage.md` (Tier 1: 1, Tier 2: 8, Tier 3: 4, Tier H: 30)
+- B1 is near-trivial (rewrite T-880 AC with verification command → auto-ticked by existing `fw verify-acs --execute`)
+- B2 covers 4 ACs in one Playwright file (T-1240 sort, T-1241 cron data, T-1214 approvals cards, T-448.1 cron controls) — highest coverage-per-effort
+- B3 groups by host: Linux TermLink set (T-594, T-612, T-663, T-1277) + macOS set via ring20-management (T-481, T-518, T-613) + PTY attach (T-530)
+- Authority model preserved: every `[REVIEW]` on a go/no-go decision stays Tier H — we are automating mechanical verifications, not strategic choices
+- T-971 playwright test generation rule already established the pattern; B2 is its canonical first bundle
+
+Structural upgrade option (separate from GO decision): propose an `[AUTO]` AC tag to replace today's informal `[RUBBER-STAMP]` when the Steps section contains only deterministic commands. Signals to the human that no action is required — framework verifies automatically. Keep `[RUBBER-STAMP]` for mechanical actions that still need a human (publishing, physical device testing). Keep `[REVIEW]` for subjective judgment.
+
+Go/No-Go criteria: both met — classification is defensible (each tier assignment cites concrete command or locator), build tasks are bounded (one file per tier), authority model preserved.
+
+### 2026-04-19T23:47:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
