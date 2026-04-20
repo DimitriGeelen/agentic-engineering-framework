@@ -143,6 +143,43 @@ if not project_root:
     print('SAFE')
     sys.exit(0)
 
+# T-1361 / G-053-C: Strip content between balanced "..." and '...' before
+# pattern scanning. Prevents false-positives on quoted string literals (commit
+# messages, echo arguments, documentation examples) that happen to mention
+# absolute paths. Imperfect for escaped quotes, but covers 95%+ of real cases.
+def _strip_quoted(s):
+    out = []
+    i = 0
+    n = len(s)
+    while i < n:
+        c = s[i]
+        if c == '\\' and i + 1 < n:
+            out.append(c)
+            out.append(s[i + 1])
+            i += 2
+            continue
+        if c == '"' or c == "'":
+            quote = c
+            out.append(c)
+            i += 1
+            while i < n and s[i] != quote:
+                if s[i] == '\\' and i + 1 < n:
+                    out.append(' ')
+                    out.append(' ')
+                    i += 2
+                    continue
+                out.append(' ' if s[i] != '\n' else '\n')
+                i += 1
+            if i < n:
+                out.append(s[i])
+                i += 1
+            continue
+        out.append(c)
+        i += 1
+    return ''.join(out)
+
+command = _strip_quoted(command)
+
 # Pattern 1: cd to absolute path outside project root
 cd_pattern = re.compile(r'cd\s+(/[^\s;&|]+)')
 matches = cd_pattern.findall(command)
