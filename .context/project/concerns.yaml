@@ -1278,10 +1278,11 @@ concerns:
   what_works_now: "Form-based POSTs (e.g. /inception/<id>/decide, /tasks/<id>/status) correctly enforce CSRF and return 403 without token. Same-origin assumption protects most exploitation paths but is not a design guarantee."
   what_remains: "Decide per /api/* POST endpoint: (a) read-like (no state change, can stay token-free), (b) state-mutating (must require token via X-CSRF-Token header). Update client-side fetch() callers to send the header. Add bats/playwright regression covering each endpoint. Likely candidates needing protection: /api/session/init, /api/healing/<id>, /api/sessions (POST+DELETE)."
   mitigation_candidate: "Inventory /api/* POST/DELETE endpoints; classify read-like vs state-mutating; CSRF-protect the latter via header (so JSON callers can send X-CSRF-Token); update Watchtower JS to include the token; bats regression."
-  status: watching
+  mitigation_applied: "T-1343 (2026-04-20) flipped csrf_protect from /api/* blanket skip to allowlist. web/app.py:92-111 now validates X-CSRF-Token header OR _csrf_token form field on all POST/PATCH/PUT/DELETE except the /health endpoint and JSON search endpoints. Client-side fetchWithCsrf() helper in base.html auto-attaches the header for non-GET/HEAD. T-1344 retrofitted playwright conftest with CSRF token. Verified 2026-04-21: curl -X POST /api/session/init, /api/healing/T-1, /api/task/T-1/status, DELETE /api/sessions/foo all return 403 without token."
+  status: mitigated
   created: 2026-04-19
-  last_reviewed: 2026-04-19
-  related_tasks: []
+  last_reviewed: 2026-04-21
+  related_tasks: [T-1343, T-1344, T-1375]
 
 - id: G-049
   type: gap

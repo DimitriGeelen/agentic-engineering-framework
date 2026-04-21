@@ -1875,3 +1875,10 @@ learnings:
   date: 2026-04-20
   context: Added via context agent
   application: TBD
+- id: L-237
+  learning: "Before scoping a build task from concerns.yaml, grep completed tasks/episodics for the concern ID — mitigations often land without updating the concern status. T-1375 built a task for G-048 only to discover T-1343 had fixed it 1 day earlier."
+  source: P-001
+  task: T-1375
+  date: 2026-04-21
+  context: Added via context agent
+  application: TBD
