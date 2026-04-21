@@ -4,7 +4,7 @@ name: "Fix inception decide on consumer projects — Watchtower Go/No-Go broken"
 description: >
   Fix inception decide on consumer projects — Watchtower Go/No-Go broken
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,22 +12,23 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T10:16:31Z
-last_update: 2026-04-17T10:16:31Z
-date_finished: null
+last_update: 2026-04-21T20:37:59Z
+date_finished: 2026-04-21T20:37:59Z
 ---
 
 # T-1280: Fix inception decide on consumer projects — Watchtower Go/No-Go broken
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Superseded by T-1262** (2026-04-15). Same root cause: Watchtower Flask inherits `CLAUDECODE=1` from the Claude Code session, which triggers `lib/inception.sh` sovereignty guard meant for direct-in-session agent invocation. T-1262 added `--from-watchtower` bypass flag + subprocess env strip. This T-1280 was opened 2 days later without checking for the already-landed fix — L-237 (from T-1375 today) is the exact same pattern.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Verified T-1262 fix present in lib/inception.sh (--from-watchtower flag)
+- [x] Verified web/blueprints/inception.py passes the flag
+- [x] Verified web/subprocess_utils.py strips CLAUDECODE
+- [x] T-1262 closed 2026-04-15 with 16/16 bats tests passing
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -46,9 +47,10 @@ date_finished: null
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+grep -q "from-watchtower" lib/inception.sh
+grep -q "from-watchtower" web/blueprints/inception.py
+grep -q "CLAUDECODE" web/subprocess_utils.py
+test -f .tasks/completed/T-1262-fix-inception-decide-sovereignty-gate--w.md
 
 ## Decisions
 
@@ -67,3 +69,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1280-fix-inception-decide-on-consumer-project.md
 - **Context:** Initial task creation
+
+### 2026-04-21T20:37:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

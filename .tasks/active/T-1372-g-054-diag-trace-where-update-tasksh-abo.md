@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-20T22:59:32Z
-last_update: 2026-04-20T23:03:04Z
+last_update: 2026-04-21T20:37:23Z
 date_finished: 2026-04-20T23:03:04Z
 ---
 
@@ -87,3 +87,18 @@ bash -n agents/task-create/update-task.sh
 
 ### 2026-04-20T23:03:04Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-21T20:37:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — close as superseded. T-1374 used this task's instrumentation to find and fix the root cause.
+
+Rationale: The Human AC ("next real task close captures `.last-episodic-gen.log` — use for live diagnosis") was satisfied during T-1374's work. The instrumentation revealed the abort point via `bash -x` tracing; root cause was grep/git pipelines inside `$(...)` under `set -euo pipefail` aborting via command-substitution assignment before the Episodic block ran. Fix landed as `|| true` on update-task.sh:769,775. G-054 flipped to `mitigated`. L-236 captured the pattern. Regression test pins it.
+
+Evidence:
+- Root cause found: `set -euo pipefail` + grep-no-match in `$(...)` assignments aborts script via EXIT trap before reaching instrumented block
+- Fix: commit 65a8a76e (update-task.sh:769,771-772 + 775-779) — `|| true` on ALL_PATHS git loop and comp_id grep pipeline
+- Regression test: tests/unit/update_task_components_lookup.bats (sanity-inverse verified)
+- Concern G-054: flipped to `mitigated` in `.context/project/concerns.yaml`
+- Learning L-236: captured in `.context/project/learnings.yaml` — "set -euo pipefail silently aborts via command-substitution assignments"
+- T-1374's own close: log captured, exit 0, episodic generated — the AC step executed successfully on real task close
