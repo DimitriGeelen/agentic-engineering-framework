@@ -48,14 +48,17 @@ Diagnostic inception — triggered by repeated G-054 reproduction during T-1370/
 
 ## Recommendation
 
-**Recommendation:** DEFER (instrumentation now captures data; next failure reveals root cause)
+**Recommendation:** GO — close as superseded. T-1374 used this task's instrumentation to find and fix the root cause.
 
-**Rationale:** After 2 hours of bisection, sandbox cannot reproduce. The trigger is live-git-history dependent and only manifests on real tasks with matching commits. Further speculative work without a captured log is lower-value than the instrumentation already in place. Next real close that fails will produce actionable diagnosis data.
+**Rationale:** The Human AC ("next real task close captures `.last-episodic-gen.log` — use for live diagnosis") was satisfied during T-1374's work. The instrumentation revealed the abort point via `bash -x` tracing; root cause was grep/git pipelines inside `$(...)` under `set -euo pipefail` aborting via command-substitution assignment before the Episodic block ran. Fix landed as `|| true` on update-task.sh:769,775. G-054 flipped to `mitigated`. L-236 captured the pattern. Regression test pins it.
 
 **Evidence:**
-- Instrumentation at agents/task-create/update-task.sh:845-878 captures FRAMEWORK_ROOT, PROJECT_ROOT, CONTEXT_DIR, cwd, context.sh stdout/stderr, exit code
-- Sandbox tests with T-9999 (minimal + full profile, no commits): auto-gen runs
-- Real task T-1371 (with commit): failed silently — pattern now narrowed to `$TASK_COMMITS` or `$ALL_PATHS` being non-empty
+- Root cause found: `set -euo pipefail` + grep-no-match in `$(...)` assignments aborts script via EXIT trap before reaching instrumented block
+- Fix: commit 65a8a76e (update-task.sh:769,771-772 + 775-779) — `|| true` on ALL_PATHS git loop and comp_id grep pipeline
+- Regression test: tests/unit/update_task_components_lookup.bats (sanity-inverse verified)
+- Concern G-054: flipped to `mitigated` in `.context/project/concerns.yaml`
+- Learning L-236: captured in `.context/project/learnings.yaml` — "set -euo pipefail silently aborts via command-substitution assignments"
+- T-1374's own close: log captured, exit 0, episodic generated — the AC step executed successfully on real task close
 
 ## Verification
 

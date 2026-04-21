@@ -1,5 +1,5 @@
-# Audit Results - 2026-04-19-2023
-timestamp: 2026-04-19T18:23:51Z
+# Audit Results - 2026-04-21-0134
+timestamp: 2026-04-20T23:34:34Z
 sections: "structure"
 summary:
   pass: 9
@@ -19,8 +19,8 @@ findings:
   - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 407 registered, 0 unregistered"
+    check: "Fabric: 412 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 406/408 cards enriched (2 without edges)"
+    check: "Fabric edges: 406/413 cards enriched (7 without edges)"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (407 cards)"
+    check: "Fabric drift: All watched source files registered (412 cards)"
