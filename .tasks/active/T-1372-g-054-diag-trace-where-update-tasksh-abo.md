@@ -64,6 +64,14 @@ Diagnostic inception — triggered by repeated G-054 reproduction during T-1370/
 
 bash -n agents/task-create/update-task.sh
 
+## Decision
+
+**Decision**: GO (close as superseded)
+
+**Rationale**: T-1374 used the instrumentation landed by T-1371 (this task's sibling) to find and fix the root cause. Human AC "Next real task close captures .last-episodic-gen.log" was satisfied via T-1374's work — the log was written, exit 0, episodic generated. G-054 flipped to `mitigated`; L-236 captures the pattern.
+
+**Date**: 2026-04-21T20:37:23Z
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.

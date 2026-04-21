@@ -22,6 +22,8 @@ date_finished: null
 
 Termlink (sourced from T-1112) reports a recurring anti-pattern: "umbrella inceptions" that bundle N independent decisions into a single go/no-go gate. Symptom: T-1112 went NO-GO because two of its three sub-questions were undecidable; the one tractable sub-question was lost. The framework already has a written rule against this — CLAUDE.md "Task Sizing Rules" line: "One inception = one question. Umbrella inceptions that bundle independent explorations create all-or-nothing decisions and coarse progress tracking."
 
+**Research artifact:** `docs/reports/T-1313-umbrella-inception-anti-pattern.md`
+
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->

@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1263: Fix inception template validation: fail-fast on missing Recommendation/Decision sections
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-21T20:41:45Z
+# ============================================================================
+
+task_id: T-1263
+task_name: "Fix inception template validation: fail-fast on missing Recommendation/Decision sections"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-15T13:43:12Z
+completed: 2026-04-16T05:18:28Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-04-15T23:38:58+02:00
+last_commit: 2026-04-16T07:40:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix grep anchor — ^## Decision now matches only the singular Decision section (plural Decisions no longer satisfies check). Fix CLAUDE.md doc drift — add release subcommand to Quick Reference. Complete — inception template validation fix (all verification passed)
+
+# Key outcomes
+outcomes:
+  - "create-task.sh validates inception tasks have Recommendation and Decision sections after creation"
+  - "audit.sh flags active inception tasks missing either section (implemented as CTL-027 — id differs from AC spec \"CTL-011\" but check is correct)"
+  - "Unit tests cover creation-time validation (create_task.bats tests 18-20 — including regression for plural `## Decisions` false-positive)"
+  - "~~Audit detection unit tests~~ — DEFERRED: oe-daily section has too many sibling CTL checks that fail on a stub `PROJECT_ROOT`, causing the test to hang. Proper fixture requires a stub framework root with all expected files. Tracked as follow-up; audit behavior itself verified manually by running `fw audit --section oe-daily` against the live repo."
+  - "Existing fw test unit passes (no regressions) — 754 tests green"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Complete — inception template validation fix (all verification passed)"
+    source: git-mined
+  - description: "Fix CLAUDE.md doc drift — add release subcommand to Quick Reference"
+    source: git-mined
+  - description: "Fix grep anchor — ^## Decision now matches only the singular Decision section (plural Decisions no longer satisfies check)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "`grep -qE '^## Decision[[:space:]]*$'` (anchor to end of line, allow trailing whitespace)"
+    rationale: "Unanchored `grep '^## Decision'` matches `## Decisions` (plural) — a different section in the same template. Missing Decision section would be falsely reported as present because Decisions exists. Tolerating trailing whitespace avoids false negatives from editor artifacts."
+    alternatives_rejected: ["Strict `$` anchor (breaks on trailing spaces); word boundary `\\b` (non-portable across grep variants)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/task-create/create-task.sh"
+  - "CLAUDE.md"
+  - ".tasks/active/T-1263-fix-inception-template-validation-fail-f.md"
+  - ".tasks/completed/T-1263-fix-inception-template-validation-fail-f.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-15T23:38:58"
+    action: "T-1263: Fix grep anchor — ^## Decision now matches only the singular Decision section (plural Decisions no longer satisfies check)"
+  - time: "2026-04-16T06:55:36"
+    action: "T-1263: Fix CLAUDE.md doc drift — add release subcommand to Quick Reference"
+  - time: "2026-04-16T07:40:08"
+    action: "T-1263: Complete — inception template validation fix (all verification passed)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 935 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 935
+  commits: 3
+  files_changed: 5
+  lines_added: 111
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1263-fix-inception-template-validation-fail-f.md
+generated_by: context-agent-hybrid
