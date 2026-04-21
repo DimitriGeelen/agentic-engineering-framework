@@ -376,6 +376,17 @@ CRONREGEOF
                 if [ "$dry_run" = true ]; then
                     echo -e "  ${CYAN}WOULD MIGRATE${NC}  Replace symlink with project-detecting shim"
                 else
+                    # T-1278: defence-in-depth — if the resolved target sits
+                    # next to a FRAMEWORK.md, refuse. It's a framework repo's
+                    # bin/fw, not a PATH shim location.
+                    local target_dir
+                    target_dir=$(dirname "$link_target" 2>/dev/null || echo "")
+                    if [ -n "$target_dir" ] && [ -f "$target_dir/../FRAMEWORK.md" ]; then
+                        echo -e "  ${RED}REFUSED${NC}  $current_fw resolves into a framework repo ($target_dir/..)"
+                        echo -e "         Refusing to overwrite a framework repo's bin/fw with the shim."
+                        echo -e "         Inspect: ls -la $current_fw && readlink -f $current_fw"
+                        return 1
+                    fi
                     # T-1278: remove symlink before copy. Plain `cp` follows the
                     # destination symlink and writes the shim *through* it into
                     # the framework repo's bin/fw, corrupting the real CLI into

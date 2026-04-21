@@ -1430,6 +1430,22 @@ else:
         fi
     fi
 
+    # T-1278: Shim masquerade check — a framework repo's bin/fw must be the
+    # real CLI (4000+ lines), not the 50-line fw-shim. The shim contains
+    # find_fw() and lacks a case/esac routing block; the real CLI has 'do_doctor'
+    # and many other functions. Detect shim-over-real quickly.
+    if [ -f "$FRAMEWORK_ROOT/FRAMEWORK.md" ] && [ -f "$FRAMEWORK_ROOT/bin/fw" ]; then
+        local fw_lines
+        fw_lines=$(wc -l < "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo 0)
+        if [ "$fw_lines" -lt 200 ] && grep -q '^find_fw()' "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null; then
+            echo -e "  ${RED}FAIL${NC}  bin/fw in framework repo is the shim (${fw_lines} lines, has find_fw())"
+            echo -e "         Real CLI missing. Restore: git -C $FRAMEWORK_ROOT checkout HEAD -- bin/fw"
+            issues=$((issues + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  bin/fw is the real CLI (${fw_lines} lines, not the shim)"
+        fi
+    fi
+
     # Summary
     echo ""
     if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then
