@@ -68,6 +68,17 @@ date_finished: null
 - Root cause identified with bounded fix
 - Fix is scoped and testable
 
+## Recommendation
+
+**Recommendation:** DEFER — speculative pattern harvest, no current need.
+
+**Rationale:** Captured from T-697 pattern harvest (KCP pattern #9) as a "potentially relevant for TermLink multi-agent" note. No concrete cross-machine knowledge graph problem exists today — TermLink handles its own cross-machine coordination via hub/secret and the framework uses per-project isolation. Re-evaluate when: (a) cross-machine knowledge sharing becomes a friction point, or (b) a concrete multi-agent federation use case emerges.
+
+**Evidence:**
+- Source: T-697 pattern harvest (captured, not applied)
+- Horizon: later (correctly parked)
+- No active federation scenario — framework uses pickup envelopes + TermLink remote for cross-machine today
+
 ## Verification
 
 <!-- Shell commands that MUST pass before work-completed. One per line.

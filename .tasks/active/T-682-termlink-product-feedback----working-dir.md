@@ -68,6 +68,17 @@ date_finished: null
 - Root cause identified with bounded fix
 - Fix is scoped and testable
 
+## Recommendation
+
+**Recommendation:** DEFER — external-product feedback, parked pending upstream decision.
+
+**Rationale:** Both items (--working-dir flag, MCP-as-default) are feature requests for the TermLink product itself (separate repo, Vincent-owned), not framework code. Framework workaround for --working-dir: pre-spawn cd via `termlink pty inject` or use `--shell` flag. MCP-as-default is already being used (see `.mcp.json`). No framework-side action needed; hand to upstream when prioritised.
+
+**Evidence:**
+- TermLink repo: https://github.com/DimitriGeelen/termlink (external product)
+- Framework workaround documented in CLAUDE.md §TermLink Integration
+- `.mcp.json` already registers TermLink MCP server
+
 ## Verification
 
 <!-- Shell commands that MUST pass before work-completed. One per line.
