@@ -424,12 +424,14 @@ concerns:
   controls:
   - CTL-013
   residual_notes: No validation gate. Needs schema validation.
+  mitigation_applied: "T-403 (2026-03-10) centralized YAML loading in web/shared.py:190-210 load_yaml(). Parse errors now logged via logger.warning() and appended to a per-request _yaml_errors list — no longer silent. UI banner surfaces the errors (see get_yaml_errors()). Residual: no schema validation yet (malformed-but-parseable YAML still slips through), but silent-drop pattern is closed."
   evidence:
   - T-143
   - L-048
-  status: watching
+  - 'T-403: centralized load_yaml with logger.warning + _yaml_errors list'
+  status: mitigated
   created: 2026-02-19
-  last_reviewed: 2026-03-09
+  last_reviewed: 2026-04-21
   related_task: T-143
 - id: R-024
   type: risk
@@ -444,12 +446,14 @@ concerns:
   ranking: medium
   controls: []
   residual_notes: Same root cause as R-018. Needs schema validation.
+  mitigation_applied: "T-403 (2026-03-10) — same fix as R-018. Errors now surfaced in the Watchtower UI banner via get_yaml_errors() rather than silently dropped."
   evidence:
   - T-143
   - L-048
-  status: watching
+  - 'T-403: same fix as R-018'
+  status: mitigated
   created: 2026-02-19
-  last_reviewed: 2026-03-09
+  last_reviewed: 2026-04-21
   related_task: T-143
 - id: R-032
   type: risk
