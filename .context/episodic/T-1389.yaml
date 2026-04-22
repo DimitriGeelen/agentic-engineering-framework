@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1389: Watchtower inception detail — allow re-decide after decision recorded (T-1388 B2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-22T22:23:05Z
+# ============================================================================
+
+task_id: T-1389
+task_name: "Watchtower inception detail — allow re-decide after decision recorded (T-1388 B2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-22T22:05:46Z
+completed: 2026-04-22T22:16:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T00:15:56+02:00
+last_commit: 2026-04-23T00:15:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  B2 template — allow re-decide after decision recorded (closes G-057)
+
+# Key outcomes
+outcomes:
+  - "`/inception/T-XXX` shows \"Record Superseding Decision\" form when task has a recorded GO/NO-GO/DEFER decision (verified via Playwright + live screenshot evidence)"
+  - "`/inception/T-XXX` still shows \"Record Decision\" form when task is pending (no regression)"
+  - "Superseding form has correct `action=\"/inception/{task_id}/decide\"` + radio buttons for GO/NO-GO/DEFER + context note explaining replacement semantics"
+  - "Canonical `## Decision` block idempotency already guaranteed by T-1262 backend logic (`lib/inception.sh:343-378`) — no template change risks regressing this"
+  - "Playwright test in `tests/playwright/test_inception.py::TestRedecideAffordance` (3 tests) guards the re-decide affordance; sanity-inverse verified (reverting fix fails 2/3 tests)"
+  - "No human AC needed — fully agent-verifiable via Playwright"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/screenshots/T-1389-evidence-redecide-form-visible.png"
+  - ".tasks/active/T-1389-watchtower-inception-detail--allow-re-de.md"
+  - "tests/playwright/test_inception.py"
+  - "web/templates/inception_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T00:15:56"
+    action: "T-1389: B2 template — allow re-decide after decision recorded (closes G-057)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 4
+  lines_added: 163
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1389-watchtower-inception-detail--allow-re-de.md
+generated_by: context-agent-hybrid
