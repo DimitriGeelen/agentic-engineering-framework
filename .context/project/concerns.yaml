@@ -1424,9 +1424,12 @@ concerns:
   trigger_event: "2026-04-22: T-1382 audit of consumer projects after T-1378/T-1380 ship found resume.md stale in both audited consumers."
   detection_lag_days: "1"
   what_works_now: "Vendored `.agentic-framework/*` snapshots ARE refreshed by `fw upgrade` (confirmed for lib/init.sh, lib/templates/claude-project.md, agents/monitor/liveness-check.sh). The gap is specific to files that upgrade writes once at init then skips: resume.md, CLAUDE.md governance sections already have a drift-refresh mechanism (lib/upgrade.sh:130+), but command files do not."
-  mitigation_applied: "2026-04-22 (T-1383): Extracted resume.md heredoc from lib/init.sh into shared template at lib/templates/resume-md.md. lib/init.sh now prefers the template file (falls back to inline heredoc if missing). lib/upgrade.sh step 7 now diffs consumer's resume.md vs. the template; on drift, writes .bak and refreshes. Smoke-tested: stale resume.md with pre-T-1378 :3000 hardcode gets refreshed, .bak preserved. Round-trip verified — fresh init matches template exactly (no false-positive drift)."
+  mitigation_applied: "2026-04-22 (T-1383): Extracted resume.md heredoc from lib/init.sh into shared template at lib/templates/resume-md.md. lib/init.sh now prefers the template file (falls back to inline heredoc if missing). lib/upgrade.sh step 7 now diffs consumer's resume.md vs. the template; on drift, writes .bak and refreshes."
+  prevention: "2026-04-22 (T-1386): 3 bats regression tests in tests/unit/lib_upgrade.bats pin the invariant — drift triggers UPDATE + .bak, matching file reports OK with no .bak, missing file CREATE from template. Sanity-inverse verified: reverting T-1383 fails all 3 tests; restoring passes. Prevention (not just mitigation) exists per G-019."
+  resolution: "2026-04-22 (T-1385, T-1386): Fix deployed, tested on real consumers via dry-run (both /003-NTB-ATC-Plugin and /opt/002-Claude-Partner-Network show WOULD UPDATE), invariant protected by bats."
   what_remains: "Optional generalization: the same drift-refresh pattern could cover other `.claude/commands/*.md` files beyond resume.md (none exist today). Not urgent."
-  related_tasks: [T-1382, T-1378, T-1376, T-1383]
-  status: mitigated
+  related_tasks: [T-1382, T-1378, T-1376, T-1383, T-1385, T-1386]
+  status: closed
   created: 2026-04-22
   last_reviewed: 2026-04-22
+  closed_date: 2026-04-22

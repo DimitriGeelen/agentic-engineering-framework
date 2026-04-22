@@ -94,3 +94,48 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"current"* ]]
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# G-056 / T-1383: resume.md drift-refresh invariants
+# ─────────────────────────────────────────────────────────────────────────────
+
+@test "upgrade: detects resume.md drift vs lib/templates/resume-md.md and refreshes with .bak" {
+    local proj="$TEST_TEMP_DIR/drift-proj"
+    mkdir -p "$proj/.claude/commands"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$proj/.framework.yaml"
+    # Synthesize pre-T-1378 stale content
+    cat > "$proj/.claude/commands/resume.md" <<'STALE'
+# /resume - OLD STALE VERSION
+5. Check web server: curl -sf http://localhost:3000/
+STALE
+    run do_upgrade "$proj"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"resume.md refreshed from template"* ]]
+    # Refreshed file contains canonical triple-file read
+    grep -q 'watchtower.url' "$proj/.claude/commands/resume.md"
+    # Backup preserved
+    [ -f "$proj/.claude/commands/resume.md.bak" ]
+    grep -q 'OLD STALE VERSION' "$proj/.claude/commands/resume.md.bak"
+}
+
+@test "upgrade: resume.md matches template — reports OK, no .bak written" {
+    local proj="$TEST_TEMP_DIR/match-proj"
+    mkdir -p "$proj/.claude/commands"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$proj/.framework.yaml"
+    cp "$FRAMEWORK_ROOT/lib/templates/resume-md.md" "$proj/.claude/commands/resume.md"
+    run do_upgrade "$proj"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"resume.md matches template"* ]]
+    [ ! -f "$proj/.claude/commands/resume.md.bak" ]
+}
+
+@test "upgrade: missing resume.md — created from template" {
+    local proj="$TEST_TEMP_DIR/create-proj"
+    mkdir -p "$proj"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$proj/.framework.yaml"
+    run do_upgrade "$proj"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"resume.md from template"* ]]
+    [ -f "$proj/.claude/commands/resume.md" ]
+    grep -q 'watchtower.url' "$proj/.claude/commands/resume.md"
+}

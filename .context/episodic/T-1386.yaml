@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1386: Bats regression test for G-056 resume.md drift-refresh — invariant protection for T-1383
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-22T20:52:38Z
+# ============================================================================
+
+task_id: T-1386
+task_name: "Bats regression test for G-056 resume.md drift-refresh — invariant protection for T-1383"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-22T20:50:29Z
+completed: 2026-04-22T20:52:29Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "3 new bats tests in `tests/unit/lib_upgrade.bats` covering drift/match/missing"
+  - "Tests pass: `fw test unit --filter lib_upgrade` or `bats tests/unit/lib_upgrade.bats` green"
+  - "Sanity-inverse: temporarily revert T-1383 (use `git show 6ed3b503^:lib/upgrade.sh`), rerun tests — drift test MUST fail. Restore T-1383 version — tests pass again."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1386-bats-regression-test-for-g-056-resumemd-.md
+generated_by: context-agent-hybrid
