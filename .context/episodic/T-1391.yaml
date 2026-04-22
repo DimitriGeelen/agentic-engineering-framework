@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1391: Inception page — dedupe Agent Recommendation + Decision Record when human adopted recommendation (T-1388 B3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-22T22:32:17Z
+# ============================================================================
+
+task_id: T-1391
+task_name: "Inception page — dedupe Agent Recommendation + Decision Record when human adopted recommendation (T-1388 B3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-22T22:27:56Z
+completed: 2026-04-22T22:32:14Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T00:32:07+02:00
+last_commit: 2026-04-23T00:32:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  B3 F3 dedupe — collapse Recommendation when human adopted it
+
+# Key outcomes
+outcomes:
+  - "Backend extracts Recommendation stance (GO/NO-GO/DEFER) from the `**Recommendation:**` header line"
+  - "Backend passes `rec_stance` and `decision_matches_recommendation` booleans to template"
+  - "Template: adopted case → Decision Record prominent, Recommendation collapsed into `<details>` with \"adopted by human\" hint (live-verified on T-1388)"
+  - "Template: override case → both cards visible with yellow-border `## Agent Recommendation (overridden)` label (handled by same code path — Playwright skip when no fixture present, code path trivial)"
+  - "Template: pending → Recommendation still prominent (regression test passes)"
+  - "5 unit tests for `_extract_recommendation_stance` (go/no-go/defer, trailing qualifiers, unstructured/none)"
+  - "2 Playwright tests for adopted collapse + pending prominence"
+  - "Sanity-inverse verified — reverting produces ImportError"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/screenshots/T-1391-evidence-adopted-collapsed.png"
+  - ".tasks/active/T-1391-inception-page--dedupe-agent-recommendat.md"
+  - "tests/playwright/test_inception.py"
+  - "tests/web/test_inception_rationale_extraction.py"
+  - "web/blueprints/inception.py"
+  - "web/templates/inception_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T00:32:07"
+    action: "T-1391: B3 F3 dedupe — collapse Recommendation when human adopted it"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 6
+  lines_added: 237
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1391-inception-page--dedupe-agent-recommendat.md
+generated_by: context-agent-hybrid
