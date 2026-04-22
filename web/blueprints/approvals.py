@@ -402,9 +402,14 @@ def _execute_inception_decide(command_preview: str) -> dict:
 
     argv = [fw_bin, "inception", "decide", task_id, verdict, "--rationale", rationale]
     try:
+        # T-1193: strip CLAUDECODE so the inner gate (T-679/T-1259) treats this as a
+        # human action routed through Watchtower, not an agent invocation. TIER0_AUTOEXEC
+        # signals the outer hook that this subprocess was authorized via approvals.
+        subproc_env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+        subproc_env["TIER0_AUTOEXEC"] = "1"
         proc = subprocess.run(
             argv, cwd=str(PROJECT_ROOT),
-            env={**os.environ, "TIER0_AUTOEXEC": "1"},
+            env=subproc_env,
             capture_output=True, text=True, timeout=30,
         )
         stdout_tail = (proc.stdout or "")[-400:]
