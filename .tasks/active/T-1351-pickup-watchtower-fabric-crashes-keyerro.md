@@ -4,31 +4,32 @@ name: "Pickup: Watchtower /fabric crashes (KeyError: id) on subsystems.yaml with
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1129. Type: bug-report.
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-20T07:46:38Z
-last_update: 2026-04-20T07:46:38Z
-date_finished: null
+last_update: 2026-04-22T09:36:37Z
+date_finished: 2026-04-22T09:36:37Z
 ---
 
 # T-1351: Pickup: Watchtower /fabric crashes (KeyError: id) on subsystems.yaml without id key — loader should fall back to name (from termlink)
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Duplicate of T-1314 (canonical). Both cite termlink source T-1129 (bug report: Watchtower /fabric KeyError on subsystems). Pickup dedup missed the collision. No new information.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1314 exists with same termlink source — TRUE
+2. No new information here — TRUE
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+None — confirmed duplicate via source-task-ID cross-check.
 
 ## Technical Constraints
 
@@ -45,9 +46,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (T-1351 cites termlink T-1129; T-1314 cites termlink T-1129)
+- [x] Assumptions tested (duplicate confirmed by source-task ID)
+- [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1314)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +78,14 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (close as duplicate)
+
+**Rationale:** T-1351 and T-1314 both cite termlink source task T-1129. Working this task would be redundant.
+
+**Evidence:**
+- T-1351 source: termlink T-1129
+- T-1314 source: termlink T-1129 (canonical target)
+- Pickup dedup missed the collision (G-046 class)
 
 ## Decisions
 
@@ -100,9 +100,20 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER (duplicate of T-1314)
+
+**Rationale**: Same termlink source task (T-1129) as T-1314. No independent research value.
+
+**Date**: 2026-04-22T08:28:00Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-22T09:36:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-22T09:36:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
