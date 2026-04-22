@@ -4,16 +4,16 @@ name: "Inception rationale_hint extracts only Rationale body, not full Recommend
 description: >
   Inception rationale_hint extracts only Rationale body, not full Recommendation block (T-1388 B4)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/inception.py]
 related_tasks: []
 created: 2026-04-22T22:24:09Z
-last_update: 2026-04-22T22:24:09Z
-date_finished: null
+last_update: 2026-04-22T22:27:16Z
+date_finished: 2026-04-22T22:27:16Z
 ---
 
 # T-1390: Inception rationale_hint extracts only Rationale body, not full Recommendation block (T-1388 B4)
@@ -73,3 +73,6 @@ Fix: extract only the content under `**Rationale:**` marker (up to the next `**.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1390-inception-rationalehint-extracts-only-ra.md
 - **Context:** Initial task creation
+
+### 2026-04-22T22:27:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

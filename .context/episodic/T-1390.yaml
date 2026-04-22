@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1390: Inception rationale_hint extracts only Rationale body, not full Recommendation block (T-1388 B4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-22T22:27:19Z
+# ============================================================================
+
+task_id: T-1390
+task_name: "Inception rationale_hint extracts only Rationale body, not full Recommendation block (T-1388 B4)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-22T22:24:09Z
+completed: 2026-04-22T22:27:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T00:27:11+02:00
+last_commit: 2026-04-23T00:27:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  B4 bugfix — rationale_hint extracts Rationale body only (F4)
+
+# Key outcomes
+outcomes:
+  - "`rationale_hint` in `web/blueprints/inception.py` extracts only the `**Rationale:**` body when the `## Recommendation` section follows the structured format"
+  - "Falls back to full section body when no `**Rationale:**` marker is present (no regression for free-form recommendations)"
+  - "Evidence bullets are NOT included in the pre-populated rationale (live-verified on T-1388 — textarea contains only Rationale body, no \"Recommendation: GO\" prefix, no Evidence bullets)"
+  - "7 unit tests in `tests/web/test_inception_rationale_extraction.py` (structured, no-evidence, unstructured, empty, multi-paragraph, build-decomposition-stop)"
+  - "Sanity-inverse verified: reverting the fix → ImportError (function genuinely new, not no-op)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "B4 bugfix — rationale_hint extracts Rationale body only (F4)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/screenshots/T-1390-evidence-clean-rationale-textarea.png"
+  - ".tasks/active/T-1390-inception-rationalehint-extracts-only-ra.md"
+  - "tests/web/test_inception_rationale_extraction.py"
+  - "web/blueprints/inception.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T00:27:11"
+    action: "T-1390: B4 bugfix — rationale_hint extracts Rationale body only (F4)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 4
+  lines_added: 217
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1390-inception-rationalehint-extracts-only-ra.md
+generated_by: context-agent-hybrid
