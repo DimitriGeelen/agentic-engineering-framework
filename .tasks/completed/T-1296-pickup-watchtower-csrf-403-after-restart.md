@@ -4,7 +4,7 @@ name: "Pickup: Watchtower CSRF 403 after restart — auto-regenerated FW_SECRET_
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1125. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T15:21:28Z
-last_update: 2026-04-19T08:15:46Z
-date_finished: null
+last_update: 2026-04-22T05:19:19Z
+date_finished: 2026-04-22T05:19:19Z
 ---
 
 # T-1296: Pickup: Watchtower CSRF 403 after restart — auto-regenerated FW_SECRET_KEY + multi-process leak (from termlink)
@@ -133,3 +133,6 @@ Evidence:
 - T-1302 frontmatter: "Source: termlink, task T-1125. Type: bug-report."
 - Both titles reference the same CSRF / secret_key regeneration issue
 - Full note: `docs/reports/T-1296-duplicate-of-T-1302.md`
+
+### 2026-04-22T05:19:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,16 +4,16 @@ name: "Pickup: Pickup inbox cron updated to 1-minute frequency (was 30s x2 sleep
 description: >
   Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework. Type: learning.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [pickup, learning]
 components: []
 related_tasks: []
 created: 2026-04-16T05:40:01Z
-last_update: 2026-04-16T05:44:45Z
-date_finished: null
+last_update: 2026-04-22T05:06:50Z
+date_finished: 2026-04-22T05:06:50Z
 ---
 
 # T-1276: Pickup: Pickup inbox cron updated to 1-minute frequency (was 30s x2 sleep hack). Consumer cron registries are empty (T-1261 known issue). Remote TermLink hubs (ring20-dashboard, ring20-management) unreachable — cross-machine propagation deferred until auth secrets refreshed. (from 999-Agentic-Engineering-Framework)
@@ -131,3 +131,10 @@ Evidence:
 - Parent: T-1261 + multi
 - Pickup type: learning, source: this project (self-pickup). Subject is a state observation, not a proposal.
 - G-046 (registered this session) covers this pattern — pipeline should skip self-pickups when parent is internal
+
+### 2026-04-22T05:06:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-22T05:06:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

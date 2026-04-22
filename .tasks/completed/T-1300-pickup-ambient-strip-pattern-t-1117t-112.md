@@ -4,7 +4,7 @@ name: "Pickup: Ambient strip pattern (T-1117..T-1121) — single-source linked s
 description: >
   Auto-created from pickup envelope. Source: termlink. Type: feature-proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-18T15:21:53Z
-last_update: 2026-04-19T08:19:52Z
-date_finished: null
+last_update: 2026-04-22T05:19:28Z
+date_finished: 2026-04-22T05:19:28Z
 ---
 
 # T-1300: Pickup: Ambient strip pattern (T-1117..T-1121) — single-source linked status chrome worth codifying as framework default (from termlink)
@@ -140,3 +140,6 @@ Evidence:
 - Fleet dot piece needs a fleet endpoint the framework doesn't have
 - Small-scope fallback exists if reconsidered: wrap each span in `<a href="{{ url_for(...) }}">` (~5-line edit)
 - Full triage: `docs/reports/T-1300-ambient-strip-codification.md`
+
+### 2026-04-22T05:19:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

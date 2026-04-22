@@ -4,16 +4,16 @@ name: "Pickup: Peer-learning cron: exchange 15-min reflections between TermLink-
 description: >
   Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task T-1270. Type: feature-proposal.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-15T21:40:01Z
-last_update: 2026-04-19T10:12:08Z
-date_finished: null
+last_update: 2026-04-22T05:06:42Z
+date_finished: 2026-04-22T05:06:42Z
 ---
 
 # T-1272: Pickup: Peer-learning cron: exchange 15-min reflections between TermLink-connected agents (from 999-Agentic-Engineering-Framework)
@@ -128,3 +128,10 @@ Evidence:
 - Parent: T-1270
 - T-1271 last week was the same self-pickup pattern of T-1270 — DEFERred
 - G-046 (registered this session) covers this pattern — pipeline should skip self-pickups when parent is internal
+
+### 2026-04-22T05:06:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-22T05:06:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

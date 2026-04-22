@@ -4,7 +4,7 @@ name: "Pickup: Watchtower PROJECT_ROOT defaults to FRAMEWORK_ROOT — ambient st
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1123. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T15:21:34Z
-last_update: 2026-04-19T08:17:06Z
-date_finished: null
+last_update: 2026-04-22T05:19:22Z
+date_finished: 2026-04-22T05:19:22Z
 ---
 
 # T-1297: Pickup: Watchtower PROJECT_ROOT defaults to FRAMEWORK_ROOT — ambient strip silently reads frameworks own state (from termlink)
@@ -130,3 +130,6 @@ Evidence:
 - T-1297 frontmatter: "Source: termlink, task T-1123. Type: bug-report."
 - T-1303 frontmatter: "Source: termlink, task T-1123. Type: bug-report."
 - Full note: `docs/reports/T-1297-duplicate-of-T-1303.md`
+
+### 2026-04-22T05:19:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

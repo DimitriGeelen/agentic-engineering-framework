@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1300: Pickup: Ambient strip pattern (T-1117..T-1121) — single-source linked status chrome worth codifying as framework default (from termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-22T05:19:31Z
+# ============================================================================
+
+task_id: T-1300
+task_name: "Pickup: Ambient strip pattern (T-1117..T-1121) — single-source linked status chrome worth codifying as framework default (from termlink)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T15:21:53Z
+completed: 2026-04-22T05:19:28Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-04-19T10:21:39+02:00
+last_commit: 2026-04-19T10:21:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Triage termlink pickup — ambient strip linked chrome → DEFER
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (pickup has concrete prior art in termlink commits; framework has partial implementation)"
+  - "Assumptions tested (2 true, 1 false — fleet doesn't apply here)"
+  - "Recommendation written with rationale (DEFER — polish, not functional gap)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1300-ambient-strip-codification.md"
+  - ".tasks/active/T-1300-pickup-ambient-strip-pattern-t-1117t-112.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-19T10:21:39"
+    action: "T-1300: Triage termlink pickup — ambient strip linked chrome → DEFER"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5157 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, feature-proposal]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5157
+  commits: 1
+  files_changed: 2
+  lines_added: 96
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1300-pickup-ambient-strip-pattern-t-1117t-112.md
+generated_by: context-agent-hybrid

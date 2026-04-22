@@ -4,16 +4,16 @@ name: "Pickup: Inception template GO/NO-GO placeholders propagate to auto-create
 description: >
   Auto-created from pickup envelope. Source: termlink. Type: pattern.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: [pickup, pattern]
-components: []
+components: [lib/task-audit.sh, tests/unit/lib_task_audit.bats]
 related_tasks: []
 created: 2026-04-18T15:21:41Z
-last_update: 2026-04-19T08:08:18Z
-date_finished: null
+last_update: 2026-04-22T05:19:25Z
+date_finished: 2026-04-22T05:19:25Z
 ---
 
 # T-1298: Pickup: Inception template GO/NO-GO placeholders propagate to auto-created tasks — detected only at decide time (from termlink)
@@ -142,3 +142,6 @@ Evidence:
 - `lib/inception.sh:do_inception_decide` gates: placeholder audit, review marker, recommendation-content check — none hit the defaults
 - No incidents in `.context/project/learnings.yaml` or `concerns.yaml` reference generic Go/No-Go as causing a miss
 - Full triage: `docs/reports/T-1298-inception-go-no-go-defaults.md`
+
+### 2026-04-22T05:19:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
