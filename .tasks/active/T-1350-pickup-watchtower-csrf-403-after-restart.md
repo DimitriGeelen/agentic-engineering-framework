@@ -4,31 +4,33 @@ name: "Pickup: Watchtower CSRF 403 after restart — auto-regenerated FW_SECRET_
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1125. Type: bug-report.
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-20T07:46:38Z
-last_update: 2026-04-20T07:46:38Z
-date_finished: null
+last_update: 2026-04-22T08:22:43Z
+date_finished: 2026-04-22T08:22:43Z
 ---
 
 # T-1350: Pickup: Watchtower CSRF 403 after restart — auto-regenerated FW_SECRET_KEY + multi-process leak (from termlink)
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Duplicate of T-1302 (canonical) and T-1296 (already closed). All three cite termlink source T-1125. Pickup dedup missed the collision. No new information beyond what T-1302 already captures.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1302 exists with same termlink source — TRUE (cites termlink T-1125)
+2. T-1296 (same source) is already closed — TRUE (closed this session as duplicate of T-1302)
+3. No new information here — TRUE (Problem Statement is identical to T-1302)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+None — confirmed duplicate via source-task-ID cross-check.
 
 ## Technical Constraints
 
@@ -45,9 +47,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (T-1350 cites termlink T-1125; T-1302 cites termlink T-1125)
+- [x] Assumptions tested (duplicate confirmed by source-task ID)
+- [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1302)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +79,15 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (close as duplicate)
+
+**Rationale:** T-1350 and T-1302 both cite termlink source task T-1125 (same bug report about Watchtower Flask secret_key auto-regeneration breaking CSRF). T-1296 was already closed this session as a duplicate of T-1302. Working this task would be redundant.
+
+**Evidence:**
+- T-1350 source: termlink T-1125
+- T-1302 source: termlink T-1125 (canonical target)
+- T-1296 source: termlink T-1125 (closed as duplicate of T-1302)
+- Pickup dedup missed the collision (G-046 class)
 
 ## Decisions
 
@@ -100,9 +102,20 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER (duplicate of T-1302)
+
+**Rationale**: T-1350 cites termlink T-1125, same source as T-1302 (canonical) and T-1296 (already closed as duplicate of T-1302 this session). No independent research value.
+
+**Date**: 2026-04-22T08:25:00Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-22T08:21:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-22T08:22:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
