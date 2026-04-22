@@ -95,15 +95,25 @@ Once `fw inception decide` records a decision on a task, Watchtower's `/inceptio
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO (S-broad scope per user selection).
+
+**Rationale:** The observed friction is not a single missing button — it's a decision page that fights its own data model. 60 inceptions in this repo have multiple decision entries in `## Updates` (T-837 has 9; T-435/T-485/T-489 have 5 each) — proving re-decide is routine, not theoretical. The UI one-shot lock forces unsafe `sed`-editing of task markdown to work around something the backend cheerfully supports. Add F3 (duplicate Recommendation vs Decision Record), F4 (garbled "Rationale: Recommendation: GO" double-prefix), F5 (97 Human ACs burying 4 strategic decisions on /approvals), and the page fails three of four directives (antifragility, reliability, usability).
+
+**Evidence:**
+- **Spike A** — 60 inceptions have multi-decision entries in `## Updates`. Max: T-837 (9 decisions). See `docs/reports/T-1388-watchtower-inception-no-redecide.md` §Spike A.
+- **Spike B** — git archaeology (T-085 → T-089 → T-090 → T-1177) shows no "deliberate one-shot" commit — incidental oversight.
+- **Spike C** — Backend `do_inception_decide` is near-idempotent; replace-vs-append fix suffices.
+- **F1-F5 live-reproduced:** screenshots in `docs/screenshots/T-1388-evidence-{1,2,3}-*.png`, accessibility snapshot in `docs/reports/T-1388-approvals-snapshot.md`.
+- **Dead-end map** (5 paths tested; all fail except unsafe `sed`): UI form decided → DOM missing; direct POST → 403 CSRF; CLI from Claude → Tier 0 block; `sed` → bypasses audit.
+- **Backend-UI data-model mismatch:** `## Updates` log supports multi-decision natively; UI hides the form after first.
+
+**Build decomposition (after GO):** B1 backend idempotent-replace, B2 template "Record Superseding Decision" form, B3 dedupe Recommendation+Decision cards, B4 fix F4 rationale-extraction, B5 wire Assumptions counter to task body (F2), B6 split /approvals into Decisions vs Verifications (F5), B7 Playwright regression. Each <1 session. B1+B2 alone resolve F1 (reported bug); B3-B6 address "disjointed" feel.
+
+**Reversibility:** Every B-unit is small isolated template/handler edit. Can ship B1+B2 first and stop if B3-B6 prove controversial.
+
+**Alternative (NO-GO):** S-narrow (F1 only) still fixes the reported bug; S-medium is intermediate. User has selected S-broad but human is free to downscope at decision time.
+
+See: `docs/reports/T-1388-watchtower-inception-no-redecide.md` for full analysis, dialogue log, and all screenshots.
 
 ## Decisions
 

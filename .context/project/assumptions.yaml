@@ -178,3 +178,39 @@ assumptions:
   linked_task: T-1067
   created: '2026-04-08'
   resolved_date: '2026-04-08'
+- id: A-019
+  statement: Humans actually want to re-decide occasionally (vs. create follow-up
+    task)
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1388
+  created: '2026-04-22'
+  resolved_date: null
+- id: A-020
+  statement: The current one-shot form is oversight, not deliberate constraint (commit
+    archaeology confirms)
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1388
+  created: '2026-04-22'
+  resolved_date: null
+- id: A-021
+  statement: 'Revoke and re-decide are different UX: revoke → pending; re-decide →
+    supersede with new rationale'
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1388
+  created: '2026-04-22'
+  resolved_date: null
+- id: A-022
+  statement: Backend record_decision is near-idempotent; small replace-vs-append fix
+    enables re-decide safely
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1388
+  created: '2026-04-22'
+  resolved_date: null
