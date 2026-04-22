@@ -279,6 +279,27 @@ do_status() {
 }
 
 # ---------------------------------------------------------------------------
+# do_port / do_url — Public accessors for triple-file source-of-truth (T-1376 B5)
+# ---------------------------------------------------------------------------
+do_port() {
+    if [ -f "$PORT_FILE" ]; then
+        cat "$PORT_FILE"
+    else
+        fw_config "PORT" "$DEFAULT_PORT"
+    fi
+}
+
+do_url() {
+    if [ -f "$URL_FILE" ]; then
+        cat "$URL_FILE"
+    else
+        local p
+        p=$(fw_config "PORT" "$DEFAULT_PORT")
+        echo "http://localhost:$p"
+    fi
+}
+
+# ---------------------------------------------------------------------------
 # Main dispatch
 # ---------------------------------------------------------------------------
 cmd="${1:-}"
@@ -289,21 +310,25 @@ case "$cmd" in
     stop)    do_stop ;;
     restart) do_restart "$@" ;;
     status)  do_status ;;
+    port)    do_port ;;
+    url)     do_url ;;
     ""|help|-h|--help)
-        echo "Usage: $(basename "$0") {start|stop|restart|status} [options]"
+        echo "Usage: $(basename "$0") {start|stop|restart|status|port|url} [options]"
         echo ""
         echo "Commands:"
         echo "  start   [--port N] [--debug]  Start Watchtower"
         echo "  stop                           Stop Watchtower"
         echo "  restart [--port N] [--debug]  Stop then start"
         echo "  status                         Show current state"
+        echo "  port                           Print current port (triple-file source of truth; T-1376 B5)"
+        echo "  url                            Print current URL (triple-file source of truth; T-1376 B5)"
         echo ""
         echo "Environment:"
         echo "  FW_PORT  Default port (default: 3000)"
         ;;
     *)
         log_error "Unknown command: $cmd"
-        echo "Usage: $(basename "$0") {start|stop|restart|status}" >&2
+        echo "Usage: $(basename "$0") {start|stop|restart|status|port|url}" >&2
         exit 1
         ;;
 esac

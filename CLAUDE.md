@@ -59,8 +59,9 @@ Resolution order (T-885, T-1287, T-1376):
 3. **`3000`** — default ONLY when neither of the above is available (fresh project, no config, no running instance).
 
 **How to check:**
-- Current URL: `cat .context/working/watchtower.url`
-- Current port: `cat .context/working/watchtower.port`
+- Current port: `bin/fw watchtower port` (triple-file → fw_config → 3000 fallback)
+- Current URL: `bin/fw watchtower url` (triple-file → fw_config → `http://localhost:PORT` fallback)
+- Raw files: `cat .context/working/watchtower.port` / `cat .context/working/watchtower.url`
 - Diagnostics: `bin/fw doctor` (surfaces all three triple-file states)
 
 **How NOT to check:**

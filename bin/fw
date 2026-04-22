@@ -2717,6 +2717,14 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         fi
         exec "$FRAMEWORK_ROOT/bin/watchtower.sh" "$@"
         ;;
+    watchtower)
+        # Public accessor namespace for Watchtower (T-1376 B5)
+        # fw watchtower {port|url|status|start|stop|restart}
+        if [ $# -eq 0 ]; then
+            exec "$FRAMEWORK_ROOT/bin/watchtower.sh" --help
+        fi
+        exec "$FRAMEWORK_ROOT/bin/watchtower.sh" "$@"
+        ;;
     deploy)
         DEPLOYER="/opt/claude-shared-toolkit/skills/infrastructure/ring20-deployer/scripts/ring20_deployer.py"
         if [ ! -f "$DEPLOYER" ]; then
