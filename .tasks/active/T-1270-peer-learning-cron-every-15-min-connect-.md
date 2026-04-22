@@ -4,7 +4,7 @@ name: "Peer-learning cron: every 15 min, connect to all reachable TermLink agent
 description: >
   Inception: design a cron job that every 15 minutes enumerates reachable TermLink sessions/hubs and exchanges short prompts — what did you learn, what could we teach each other, what friction do you see — producing an inbox of cross-session learnings
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-15T21:36:12Z
-last_update: 2026-04-15T21:43:19Z
+last_update: 2026-04-22T11:36:44Z
 date_finished: null
 ---
 
@@ -132,3 +132,6 @@ Multiple TermLink-connected sessions run in parallel (different projects, differ
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-22T11:36:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
