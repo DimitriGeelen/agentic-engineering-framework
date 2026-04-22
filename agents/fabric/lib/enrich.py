@@ -288,6 +288,109 @@ def detect_generic_python_imports(content, source_location, project_root):
     return edges
 
 
+RUST_SKIP_CRATES = {
+    # Language built-ins and intra-crate aliases
+    "std", "core", "alloc", "crate", "self", "super",
+    # Async runtime + futures
+    "tokio", "tokio_util", "tokio_stream", "futures", "futures_util",
+    "async_trait",
+    # Serde + encoding
+    "serde", "serde_json", "serde_yaml", "serde_with", "bincode",
+    "base64", "hex", "byteorder",
+    # Errors + logging
+    "anyhow", "thiserror", "tracing", "tracing_subscriber", "log",
+    "env_logger",
+    # Crypto / hashing / rand
+    "sha2", "sha1", "md5", "blake3",
+    "ed25519", "ed25519_dalek", "x25519_dalek", "rsa", "ring",
+    "rand", "rand_core", "rand_chacha", "getrandom",
+    # Data structures + time
+    "chrono", "time", "uuid", "once_cell", "lazy_static",
+    "parking_lot", "dashmap", "smallvec", "indexmap", "ahash",
+    # CLI + HTTP + RPC
+    "clap", "structopt",
+    "reqwest", "hyper", "axum", "warp", "tower", "http", "url",
+    "jsonrpsee", "jsonrpc_core",
+    # Storage
+    "rusqlite", "r2d2", "sled",
+    # Testing / utilities
+    "tempfile", "assert_cmd", "predicates", "insta", "mockall",
+    "pretty_assertions",
+    # Misc third-party seen in this workspace
+    "libc", "nix", "bytes", "regex", "dirs", "home",
+    "toml", "toml_edit", "shellwords",
+}
+
+
+def detect_rust_deps(content, source_location, project_root):
+    """Detect Rust `mod` declarations and cross-crate `use` statements.
+
+    Two edge patterns, both mapped to edge type "calls" (same convention as
+    bash source and python imports):
+
+    1. `mod <name>;` — resolves to a sibling file `<dir>/<name>.rs` or a
+       subdir module `<dir>/<name>/mod.rs`. This captures intra-crate
+       structural composition (lib.rs → submodule files).
+
+    2. `use <crate>::...;` / `pub use <crate>::...;` — when `<crate>` maps
+       to a workspace crate via the `crate_name → kebab-case → crates/<kebab>/src/lib.rs`
+       convention, emit an edge to that crate's lib.rs. Third-party and std
+       crates in `RUST_SKIP_CRATES` are ignored.
+
+    Intra-crate `use crate::foo::Bar` is deliberately NOT detected here —
+    the owning `lib.rs` / `mod.rs` already has `mod foo;` which captures
+    the sibling edge, so adding a second edge would be noise.
+    """
+    edges = []
+    source_dir = os.path.dirname(source_location)
+
+    # Pattern: mod foo;  (optionally with pub or pub(crate)/pub(super))
+    # Skip `mod foo { ... }` inline modules — only resolve file/dir modules.
+    # Skip `#[cfg(test)] mod tests { ... }` via the `;` anchor; inline blocks
+    # end in `{` not `;`.
+    for m in re.finditer(
+        r'^\s*(?:pub(?:\([^)]+\))?\s+)?mod\s+([A-Za-z_][A-Za-z0-9_]*)\s*;',
+        content,
+        re.MULTILINE,
+    ):
+        mod_name = m.group(1)
+        # Try sibling file first: <source_dir>/<mod>.rs
+        sibling = os.path.normpath(os.path.join(source_dir, f"{mod_name}.rs"))
+        if os.path.exists(os.path.join(project_root, sibling)):
+            if sibling != source_location:
+                edges.append((sibling, "calls"))
+            continue
+        # Fall back to subdir module: <source_dir>/<mod>/mod.rs
+        subdir = os.path.normpath(os.path.join(source_dir, mod_name, "mod.rs"))
+        if os.path.exists(os.path.join(project_root, subdir)):
+            if subdir != source_location:
+                edges.append((subdir, "calls"))
+
+    # Pattern: use <crate>::...;  or  pub use <crate>::...;
+    # Grab the leading path segment; the resolver decides if it's a crate.
+    # Also handles `use <crate>;` (no `::`) and `use <crate> as Alias;`.
+    seen_crates = set()
+    for m in re.finditer(
+        r'^\s*(?:pub(?:\([^)]+\))?\s+)?use\s+([A-Za-z_][A-Za-z0-9_]*)\b',
+        content,
+        re.MULTILINE,
+    ):
+        crate_name = m.group(1)
+        if crate_name in RUST_SKIP_CRATES:
+            continue
+        if crate_name in seen_crates:
+            continue
+        seen_crates.add(crate_name)
+        # Rust `_` → Cargo `-` (underscore ↔ hyphen convention)
+        kebab = crate_name.replace("_", "-")
+        target = os.path.normpath(f"crates/{kebab}/src/lib.rs")
+        if os.path.exists(os.path.join(project_root, target)):
+            if target != source_location:
+                edges.append((target, "calls"))
+
+    return edges
+
+
 def detect_ts_js_imports(content, source_location, project_root):
     """Detect TypeScript/JavaScript import/require patterns.
 
@@ -401,7 +504,8 @@ def compute_forward_edges(cards, loc_to_id, framework_root):
         is_python = location.endswith(".py")
         is_html = location.endswith(".html")
         is_ts_js = any(location.endswith(ext) for ext in ('.ts', '.tsx', '.js', '.jsx'))
-        if not (is_bash or is_python or is_html or is_ts_js):
+        is_rust = location.endswith(".rs")
+        if not (is_bash or is_python or is_html or is_ts_js or is_rust):
             first_line = content.split("\n", 1)[0] if content else ""
             if "bash" in first_line or "sh" in first_line:
                 is_bash = True
@@ -418,6 +522,8 @@ def compute_forward_edges(cards, loc_to_id, framework_root):
             raw_edges.extend(detect_template_deps(content, location, framework_root))
         elif is_ts_js:
             raw_edges.extend(detect_ts_js_imports(content, location, framework_root))
+        elif is_rust:
+            raw_edges.extend(detect_rust_deps(content, location, framework_root))
 
         if not raw_edges:
             continue
