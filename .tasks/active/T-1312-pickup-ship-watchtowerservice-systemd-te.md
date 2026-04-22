@@ -4,16 +4,16 @@ name: "Pickup: Ship watchtower.service systemd template — fixes restart races 
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1122. Type: feature-proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-18T20:23:09Z
-last_update: 2026-04-18T21:04:55Z
-date_finished: null
+last_update: 2026-04-22T05:21:15Z
+date_finished: 2026-04-22T05:21:15Z
 ---
 
 # T-1312: Pickup: Ship watchtower.service systemd template — fixes restart races without WSGI-server swap (from termlink)
@@ -132,3 +132,6 @@ Evidence:
 - T-1309 exists in `.tasks/active/`
 - Proposal artifact `docs/reports/T-1309-watchtower-systemd-from-termlink-T-1122.md` already on disk
 - Same source task referenced (termlink T-1122)
+
+### 2026-04-22T05:21:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

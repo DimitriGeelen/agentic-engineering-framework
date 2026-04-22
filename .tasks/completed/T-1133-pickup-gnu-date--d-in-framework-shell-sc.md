@@ -4,16 +4,16 @@ name: "Pickup: GNU date -d in framework shell scripts fails silently on macOS �
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-962. Type: bug-report.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-12T09:00:04Z
-last_update: 2026-04-12T09:41:34Z
-date_finished: null
+last_update: 2026-04-22T05:25:52Z
+date_finished: 2026-04-22T05:25:52Z
 ---
 
 # T-1133: Pickup: GNU date -d in framework shell scripts fails silently on macOS — causes episodic generation failures (from 010-termlink)
@@ -138,3 +138,10 @@ Evidence:
 - T-1134 (initial portability) and T-1158 (helpers) shipped the proposed fix
 
 If 010-termlink is observing the symptom anew, root cause is likely a stale framework copy on the consumer side — operator should run `fw upgrade` on 010-termlink to pick up T-1134 + T-1158.
+
+### 2026-04-22T05:25:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-22T05:25:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

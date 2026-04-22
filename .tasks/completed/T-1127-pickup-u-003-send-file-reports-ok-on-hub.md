@@ -4,16 +4,16 @@ name: "Pickup: U-003: send-file reports ok on hub acceptance, not delivery — s
 description: >
   Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task T-1125. Type: bug-report.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [pickup, bug-report]
-components: []
+components: [web/shared.py]
 related_tasks: []
 created: 2026-04-12T08:30:01Z
-last_update: 2026-04-12T09:41:29Z
-date_finished: null
+last_update: 2026-04-22T05:25:38Z
+date_finished: 2026-04-22T05:25:38Z
 ---
 
 # T-1127: Pickup: U-003: send-file reports ok on hub acceptance, not delivery — silent file loss to event-only sessions (from 999-Agentic-Engineering-Framework)
@@ -134,3 +134,10 @@ Evidence:
 - Established framework pattern: when a self-pickup arrives for an already-completed source task, the right action is DEFER
 
 Structural follow-up (separate task): the pickup pipeline should skip envelopes whose source-task is already work-completed. Tracked as part of the "pickup-pipeline-self-noise" class — to be filed if not already in concerns.yaml.
+
+### 2026-04-22T05:25:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-22T05:25:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

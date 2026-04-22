@@ -4,16 +4,16 @@ name: "Pickup: U-002: Hub-level inbox — store files at hub for delivery when s
 description: >
   Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task T-1122. Type: feature-proposal.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [pickup, feature-proposal]
-components: []
+components: [lib/pickup.sh]
 related_tasks: []
 created: 2026-04-12T08:15:03Z
-last_update: 2026-04-19T09:50:02Z
-date_finished: null
+last_update: 2026-04-22T05:25:35Z
+date_finished: 2026-04-22T05:25:35Z
 ---
 
 # T-1124: Pickup: U-002: Hub-level inbox — store files at hub for delivery when sessions register (from 999-Agentic-Engineering-Framework)
@@ -134,3 +134,10 @@ Evidence:
 - Established framework pattern: when a self-pickup arrives for an already-completed source task, the right action is DEFER
 
 Structural follow-up (separate task): the pickup pipeline should skip envelopes whose source-task is already work-completed. Tracked as part of the "pickup-pipeline-self-noise" class — to be filed if not already in concerns.yaml.
+
+### 2026-04-22T05:25:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-22T05:25:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,16 +4,16 @@ name: "Pickup: Completion gate should verify episodic output exists after genera
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-961. Type: feature-proposal.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-12T09:00:01Z
-last_update: 2026-04-19T10:03:03Z
-date_finished: null
+last_update: 2026-04-22T05:25:48Z
+date_finished: 2026-04-22T05:25:48Z
 ---
 
 # T-1132: Pickup: Completion gate should verify episodic output exists after generation — silent failures cause audit decay (from 010-termlink)
@@ -135,3 +135,10 @@ Evidence:
 - Inline comment cites T-1169: 'silent failure detection'
 
 If 010-termlink is observing the symptom anew, root cause is likely a stale framework copy on the consumer side — operator should run `fw upgrade` on 010-termlink to pick up T-1169.
+
+### 2026-04-22T05:25:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-22T05:25:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,16 +4,16 @@ name: "Pickup: Response to dashboard-brain Q1-Q5 consultation — fw bus, cross-
 description: >
   Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework. Type: pattern.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [pickup, pattern]
 components: []
 related_tasks: []
 created: 2026-04-12T09:30:01Z
-last_update: 2026-04-19T10:06:06Z
-date_finished: null
+last_update: 2026-04-22T05:25:55Z
+date_finished: 2026-04-22T05:25:55Z
 ---
 
 # T-1138: Pickup: Response to dashboard-brain Q1-Q5 consultation — fw bus, cross-project topology, init gaps (from 999-Agentic-Engineering-Framework)
@@ -132,3 +132,10 @@ Evidence:
 - Pickup envelope source: 999-Agentic-Engineering-Framework (this project)
 - T-1137 is in completed/ (work done)
 - G-046 (registered this session) covers this exact class — pickup pipeline self-noise
+
+### 2026-04-22T05:25:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-22T05:25:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

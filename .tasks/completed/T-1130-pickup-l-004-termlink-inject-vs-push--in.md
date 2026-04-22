@@ -4,16 +4,16 @@ name: "Pickup: L-004: TermLink inject vs push — inject for interactive, push f
 description: >
   Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task T-1126. Type: learning.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [pickup, learning]
-components: []
+components: [agents/fabric/lib/drift.sh, agents/fabric/lib/register.sh, agents/git/lib/hooks.sh, bin/fw, lib/upgrade.sh]
 related_tasks: []
 created: 2026-04-12T08:45:04Z
-last_update: 2026-04-19T09:47:21Z
-date_finished: null
+last_update: 2026-04-22T05:25:41Z
+date_finished: 2026-04-22T05:25:41Z
 ---
 
 # T-1130: Pickup: L-004: TermLink inject vs push — inject for interactive, push for async only (from 999-Agentic-Engineering-Framework)
@@ -132,3 +132,10 @@ Evidence:
 - CLAUDE.md "Cross-Agent Communication Protocol (T-1126)" section codifies the rule
 - T-1271 was DEFERred for the identical reason (self-pickup of own completed work)
 - No new file paths, commands, or scope items appear in the pickup envelope vs T-1126 episodic
+
+### 2026-04-22T05:25:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-22T05:25:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
