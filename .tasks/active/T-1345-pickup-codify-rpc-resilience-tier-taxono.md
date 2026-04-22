@@ -4,31 +4,32 @@ name: "Pickup: Codify RPC resilience-tier taxonomy + version skew enforcement (T
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1071. Type: feature-proposal.
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: [pickup, feature-proposal]
-components: []
+components: [C-004, agents/task-create/create-task.sh, tests/unit/task_id_race.bats]
 related_tasks: []
 created: 2026-04-20T07:46:36Z
-last_update: 2026-04-20T07:46:36Z
-date_finished: null
+last_update: 2026-04-22T09:42:21Z
+date_finished: 2026-04-22T09:42:21Z
 ---
 
 # T-1345: Pickup: Codify RPC resilience-tier taxonomy + version skew enforcement (Tier-A opaque vs Tier-B typed) (from termlink)
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Duplicate of T-1311 (canonical). Both cite termlink source T-1071 (topic: Codify RPC resilience-tier taxonomy + version skew). Pickup dedup missed the collision.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1311 exists with same termlink source — TRUE
+2. No new information here — TRUE
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+None — confirmed duplicate via source-task-ID cross-check.
 
 ## Technical Constraints
 
@@ -45,9 +46,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (T-1345 cites termlink T-1071; T-1311 cites termlink T-1071)
+- [x] Assumptions tested (duplicate confirmed by source-task ID)
+- [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1311)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +78,14 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (close as duplicate)
+
+**Rationale:** T-1345 and T-1311 both cite termlink source task T-1071. Working this task would be redundant.
+
+**Evidence:**
+- T-1345 source: termlink T-1071
+- T-1311 source: termlink T-1071 (canonical target)
+- Pickup dedup missed the collision (G-046 class)
 
 ## Decisions
 
@@ -100,9 +100,20 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER (duplicate of T-1311)
+
+**Rationale**: Same termlink source task (T-1071) as T-1311. No independent research value.
+
+**Date**: 2026-04-22T08:32:00Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-22T09:42:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-22T09:42:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

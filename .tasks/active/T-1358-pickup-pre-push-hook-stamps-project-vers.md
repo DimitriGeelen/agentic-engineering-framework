@@ -4,16 +4,16 @@ name: "Pickup: Pre-push hook stamps project VERSION into .agentic-framework/VERS
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1157. Type: bug-report.
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-20T13:56:01Z
-last_update: 2026-04-20T13:56:01Z
-date_finished: null
+last_update: 2026-04-22T09:42:33Z
+date_finished: 2026-04-22T09:42:33Z
 source_task_id_in_origin: T-1157
 source_project_in_origin: "termlink"
 ---
@@ -22,15 +22,16 @@ source_project_in_origin: "termlink"
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Duplicate of T-1253 (canonical). Both cite termlink source T-1157 (topic: Pre-push hook stamps project VERSION). Pickup dedup missed the collision.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1253 exists with same termlink source — TRUE
+2. No new information here — TRUE
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+None — confirmed duplicate via source-task-ID cross-check.
 
 ## Technical Constraints
 
@@ -47,9 +48,9 @@ source_project_in_origin: "termlink"
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (T-1358 cites termlink T-1157; T-1253 cites termlink T-1157)
+- [x] Assumptions tested (duplicate confirmed by source-task ID)
+- [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1253)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -79,15 +80,14 @@ source_project_in_origin: "termlink"
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (close as duplicate)
+
+**Rationale:** T-1358 and T-1253 both cite termlink source task T-1157. Working this task would be redundant.
+
+**Evidence:**
+- T-1358 source: termlink T-1157
+- T-1253 source: termlink T-1157 (canonical target)
+- Pickup dedup missed the collision (G-046 class)
 
 ## Decisions
 
@@ -102,9 +102,20 @@ source_project_in_origin: "termlink"
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER (duplicate of T-1253)
+
+**Rationale**: Same termlink source task (T-1157) as T-1253. No independent research value.
+
+**Date**: 2026-04-22T08:32:00Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-22T09:42:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-22T09:42:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
