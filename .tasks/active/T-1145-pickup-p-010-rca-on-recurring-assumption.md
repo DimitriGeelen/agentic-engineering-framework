@@ -4,16 +4,16 @@ name: "Pickup: P-010: RCA on recurring assumption fabrication/retraction/correct
 description: >
   Auto-created from pickup envelope. Source: ring20-dashboard, task T-011. Type: feature-proposal.
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-12T10:11:59Z
-last_update: 2026-04-12T14:01:20Z
-date_finished: null
+last_update: 2026-04-22T08:10:42Z
+date_finished: 2026-04-22T08:10:42Z
 ---
 
 # T-1145: Pickup: P-010: RCA on recurring assumption fabrication/retraction/correction-of-retraction cycle — 4 proposed structural remediations (R1 provenance schema, R2 negative-claim TTL, R3 post-compact quarantine, R4 cross-section consistency) (from ring20-dashboard)
@@ -144,3 +144,9 @@ Evidence:
 - 4 remediations evaluated: R1 (provenance schema), R2 (negative-claim TTL), R3 (post-compact quarantine), R4 (cross-section consistency)
 - Cost estimate: 20-30 hours for all 4 remediations
 - 980+ completed tasks, first documented assumption contradiction cycle
+
+### 2026-04-22T08:10:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-04-22T08:10:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

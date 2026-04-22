@@ -1,8 +1,8 @@
-# Audit Results - 2026-04-22-0645
-timestamp: 2026-04-22T04:45:47Z
+# Audit Results - 2026-04-22-0958
+timestamp: 2026-04-22T07:58:56Z
 summary:
-  pass: 371
-  warn: 5
+  pass: 359
+  warn: 4
   fail: 1
 findings:
   - level: PASS
@@ -26,11 +26,11 @@ findings:
   - level: PASS
     check: "Fabric drift: All watched source files registered (412 cards)"
   - level: PASS
-    check: "All 127 active tasks are valid"
+    check: "All 113 active tasks are valid"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 98% (3208/3241 commits reference tasks)"
+    check: "Git traceability: 98% (3213/3246 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -53,22 +53,21 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 1251 episodic summaries have quality content"
+    check: "All 1265 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
     check: "Observation inbox clean (0 pending)"
   - level: PASS
-    check: "Gaps register: 7 watching, no triggers fired"
+    check: "Gaps register: 6 watching, no triggers fired"
   - level: PASS
     check: "Handover open questions: none (section empty or template placeholder)"
   - level: PASS
     check: "Graduation pipeline: 0 learnings (threshold: 20)"
   - level: PASS
-    check: "All 182 completed inceptions have research artifacts"
-  - level: WARN
-    check: "C-001: Inception T-1315 has no research artifact in docs/reports/"
-    mitigation: "Create docs/reports/T-1315-*.md — the thinking trail IS the artifact"
+    check: "All 196 completed inceptions have research artifacts"
+  - level: PASS
+    check: "C-001: All 5 active inceptions have research artifacts"
   - level: PASS
     check: "C-002: commit-msg hook has research artifact check"
   - level: PASS
@@ -76,11 +75,11 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-1278)"
+    check: "CTL-001: Focus file has active task (T-1315)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 5 (last commit: 2 minutes ago)"
+    check: "CTL-004: Tool counter at 30 (last commit: 2 hours ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
@@ -92,7 +91,7 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (630 handovers, 255 compactions)"
+    check: "CTL-006: Handover coverage for compactions (631 handovers, 257 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -112,15 +111,7 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-1123 has decision (4 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-1124 has decision (4 commits)"
-  - level: PASS
     check: "CTL-009: Inception T-1126 has decision (4 commits)"
-  - level: PASS
-    check: "CTL-009: Inception T-1127 has decision (3 commits)"
-  - level: PASS
-    check: "CTL-009: Inception T-1130 has decision (7 commits)"
-  - level: PASS
-    check: "CTL-009: Inception T-1140 has decision (4 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1200 has decision (3 commits)"
   - level: PASS
@@ -149,6 +140,8 @@ findings:
     check: "CTL-009: Inception T-1305 has decision (3 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1314 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1315 has decision (3 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1346 has decision (3 commits)"
   - level: PASS
@@ -214,15 +207,25 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-1122 has decision (3 commits)"
   - level: PASS
+    check: "CTL-009: Inception T-1124 has decision (5 commits)"
+  - level: PASS
     check: "CTL-009: Inception T-1125 has decision (8 commits)"
   - level: PASS
+    check: "CTL-009: Inception T-1127 has decision (4 commits)"
+  - level: PASS
     check: "CTL-009: Inception T-1129 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1130 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1131 has decision (3 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1134 has decision (3 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1135 has decision (5 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1136 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1140 has decision (5 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1141 has decision (3 commits)"
   - level: PASS
@@ -244,11 +247,13 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-1258 has decision (5 commits)"
   - level: PASS
+    check: "CTL-009: Inception T-1298 has decision (3 commits)"
+  - level: PASS
     check: "CTL-009: Inception T-1299 has decision (3 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-130 has decision (16 commits)"
+    check: "CTL-009: Inception T-130 has decision (17 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-131 has decision (15 commits)"
+    check: "CTL-009: Inception T-131 has decision (16 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1326 has decision (5 commits)"
   - level: PASS
@@ -448,23 +453,7 @@ findings:
   - level: PASS
     check: "CTL-027: Inception T-1123 has Recommendation + Decision sections"
   - level: PASS
-    check: "CTL-027: Inception T-1124 has Recommendation + Decision sections"
-  - level: PASS
     check: "CTL-027: Inception T-1126 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1127 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1130 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1131 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1132 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1133 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1138 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1140 has Recommendation + Decision sections"
   - level: PASS
     check: "CTL-027: Inception T-1145 has Recommendation + Decision sections"
   - level: PASS
@@ -492,21 +481,9 @@ findings:
   - level: PASS
     check: "CTL-027: Inception T-1271 has Recommendation + Decision sections"
   - level: PASS
-    check: "CTL-027: Inception T-1272 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1276 has Recommendation + Decision sections"
-  - level: PASS
     check: "CTL-027: Inception T-1283 has Recommendation + Decision sections"
   - level: PASS
     check: "CTL-027: Inception T-1284 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1296 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1297 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1298 has Recommendation + Decision sections"
-  - level: PASS
-    check: "CTL-027: Inception T-1300 has Recommendation + Decision sections"
   - level: PASS
     check: "CTL-027: Inception T-1302 has Recommendation + Decision sections"
   - level: PASS
@@ -602,13 +579,7 @@ findings:
   - level: PASS
     check: "CTL-011: pre-push hook installed and executable"
   - level: PASS
-    check: "CTL-012: All 1216 completed tasks have checked ACs"
-  - level: PASS
-    check: "CTL-013: T-1280 verification re-run: 4/4 pass"
-  - level: PASS
-    check: "CTL-013: T-1288 verification re-run: 2/2 pass"
-  - level: PASS
-    check: "CTL-013: T-1375 verification re-run: 3/3 pass"
+    check: "CTL-012: All 1230 completed tasks have checked ACs"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
@@ -665,6 +636,8 @@ findings:
     check: "CTL-025: T-1305 partial-complete with owner:human ✓"
   - level: PASS
     check: "CTL-025: T-1311 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-1312 partial-complete with owner:human ✓"
   - level: PASS
     check: "CTL-025: T-1314 partial-complete with owner:human ✓"
   - level: PASS
@@ -734,9 +707,9 @@ findings:
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1251)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1265)"
   - level: FAIL
-    check: "D2: Human review queue — 7 task(s) waiting >30d: T-436(24d) T-446(38d) T-448(24d) T-460(39d) T-470(40d) T-481(38d) T-505(35d) T-511(35d) T-518(35d) T-530(29d) T-594(28d) T-612(26d) T-613(25d) T-663(24d) T-678(24d) T-706(23d) T-707(23d) T-708(23d) T-710(23d) T-772(22d) T-782(22d) T-799(20d) T-800(20d) T-816(18d) T-817(18d) T-880(16d)"
+    check: "D2: Human review queue — 7 task(s) waiting >30d: T-436(24d) T-446(38d) T-448(24d) T-460(39d) T-470(40d) T-481(38d) T-505(35d) T-511(35d) T-518(35d) T-530(29d) T-594(29d) T-612(26d) T-613(25d) T-663(24d) T-678(24d) T-706(23d) T-707(23d) T-708(23d) T-710(23d) T-772(22d) T-782(22d) T-799(20d) T-800(20d) T-816(18d) T-817(18d) T-880(17d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
@@ -750,15 +723,15 @@ findings:
   - level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - level: WARN
-    check: "D5: Task lifecycle — 7 anomaly(s): T-875(2min,human) T-829(3min,human) T-651(1min,human) T-827(2min,human) T-676(3min,human) T-607(5min,human) T-1062(13d-active)"
+    check: "D5: Task lifecycle — 7 anomaly(s): T-875(2min,human) T-829(3min,human) T-651(1min,human) T-827(2min,human) T-676(3min,human) T-607(5min,human) T-1062(14d-active)"
     mitigation: "Review flagged tasks for process issues"
   - level: WARN
-    check: "D3: Commit velocity — WARN drop today=1 avg=29 ratio=0.0x"
+    check: "D3: Commit velocity — WARN drop today=6 avg=29 ratio=0.2x"
     mitigation: "Check if velocity reflects budget pressure or unusual activity"
   - level: PASS
-    check: "D7: Commit bunching — none (PASS 11_commits_24h_no_bunching)"
+    check: "D7: Commit bunching — none (PASS 13_commits_24h_no_bunching)"
   - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=6.7 earlier=16.4)"
+    check: "D6: Completion velocity — normal (PASS recent=11.3 earlier=16.4)"
   - level: PASS
     check: "D12: Bypass log — no log file"
   - level: PASS
