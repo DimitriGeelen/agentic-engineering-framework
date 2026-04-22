@@ -1903,3 +1903,24 @@ learnings:
   date: 2026-04-22
   context: Added via context agent
   application: TBD
+- id: L-241
+  learning: "Test learning from Playwright"
+  source: unknown
+  task: T-1030
+  date: 2026-04-22
+  context: Added via context agent
+  application: TBD
+- id: L-242
+  learning: "Test learning from Playwright"
+  source: unknown
+  task: T-1030
+  date: 2026-04-22
+  context: Added via context agent
+  application: TBD
+- id: L-243
+  learning: "Inception UX: when a decision-page design feels 'disjointed', walk the flow end-to-end with Playwright + backend probes before scoping. T-1388 simulation surfaced 5 frictions (F1 one-shot, F2 assumptions counter, F3 dup cards, F4 double-prefix, F5 approvals conflation) where the user's initial complaint was only F1. The scope options (narrow/medium/broad) were easy to propose once the full landscape was mapped. Spike A (60 inceptions in-repo have multi-decision entries) was the single piece of evidence that flipped A1 from theoretical to quantified — always look for repo-level quantitative evidence for 'do users actually want this' questions."
+  source: P-011
+  task: T-1388
+  date: 2026-04-22
+  context: Added via context agent
+  application: TBD
