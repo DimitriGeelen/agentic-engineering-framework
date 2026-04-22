@@ -57,6 +57,25 @@ def _extract_rationale_from_recommendation(rec_body):
     # Fallback — no structured markers
     return plain
 
+
+def _extract_recommendation_stance(rec_body):
+    """T-1391 (F3 fix): Extract the Recommendation stance (GO/NO-GO/DEFER) from
+    the `**Recommendation:**` header line of a structured ## Recommendation
+    section. Returns the stance lowercased ('go', 'no-go', 'defer') or None
+    when the section is unstructured/empty.
+
+    Enables the template to compare agent's recommendation vs human's decision
+    and collapse duplicate UI when the human adopted the recommendation as-is.
+    """
+    if not rec_body:
+        return None
+    plain = re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", rec_body)
+    m = re_mod.search(r"(?mi)^Recommendation:\s*(GO|NO-GO|NO_GO|DEFER)\b", plain)
+    if not m:
+        return None
+    stance = m.group(1).lower().replace("_", "-")
+    return stance
+
 bp = Blueprint("inception", __name__)
 
 
@@ -368,6 +387,17 @@ def inception_detail(task_id):
 
     decision_state = _extract_decision(task_body)
 
+    # T-1391 (F3 fix): compute rec_stance + decision_matches_recommendation so
+    # the template can collapse the duplicate Recommendation card when the
+    # human adopted the recommendation, or label both cards when overridden.
+    rec_stance = _extract_recommendation_stance(rec_raw)
+    _dec_norm = (decision_state or "").lower().replace("_", "-")
+    decision_matches_recommendation = (
+        rec_stance is not None
+        and _dec_norm not in ("", "pending")
+        and rec_stance == _dec_norm
+    )
+
     # Load linked assumptions
     assumptions = _load_assumptions()
     linked_assumptions = [a for a in assumptions if a.get("linked_task") == task_id]
@@ -393,6 +423,8 @@ def inception_detail(task_id):
         episodic=episodic,
         task_id=task_id,
         rationale_hint=rationale_hint,
+        rec_stance=rec_stance,
+        decision_matches_recommendation=decision_matches_recommendation,
     )
 
 

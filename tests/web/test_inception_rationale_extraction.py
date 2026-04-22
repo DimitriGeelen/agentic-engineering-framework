@@ -10,7 +10,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from web.blueprints.inception import _extract_rationale_from_recommendation
+from web.blueprints.inception import _extract_rationale_from_recommendation, _extract_recommendation_stance
 
 
 def test_structured_recommendation_extracts_rationale_body_only():
@@ -101,3 +101,31 @@ def test_rationale_with_build_decomposition_block_stops_at_build():
     assert "Three frictions compound" in out
     assert "B1 backend" not in out
     assert "Evidence" not in out
+
+
+# T-1391 (B3): recommendation stance extraction
+
+def test_stance_extracts_go_from_structured_recommendation():
+    rec = "**Recommendation:** GO\n\n**Rationale:** ..."
+    assert _extract_recommendation_stance(rec) == "go"
+
+
+def test_stance_extracts_no_go_including_hyphen_and_underscore():
+    assert _extract_recommendation_stance("**Recommendation:** NO-GO\n\n...") == "no-go"
+    assert _extract_recommendation_stance("**Recommendation:** NO_GO\n\n...") == "no-go"
+
+
+def test_stance_extracts_defer():
+    assert _extract_recommendation_stance("**Recommendation:** DEFER — need more data") == "defer"
+
+
+def test_stance_handles_trailing_qualifiers():
+    """Real-world T-1388 shape: 'GO (S-broad scope per user selection).' should still yield 'go'."""
+    rec = "**Recommendation:** GO (S-broad scope).\n\n**Rationale:** ..."
+    assert _extract_recommendation_stance(rec) == "go"
+
+
+def test_stance_returns_none_on_unstructured():
+    assert _extract_recommendation_stance("just free-form text") is None
+    assert _extract_recommendation_stance("") is None
+    assert _extract_recommendation_stance(None) is None

@@ -185,3 +185,67 @@ class TestRedecideAffordance:
                 )
                 return
         pytest.skip("No pending active inception available to test against")
+
+
+class TestRecommendationDecisionDedupe:
+    """T-1391 (B3 / F3): Dedupe Agent Recommendation + Decision Record cards.
+
+    When decision adopts the recommendation, Recommendation collapses into
+    <details>. When decision overrides, both visible with explicit labels.
+    """
+
+    def _find_decided_adopted_inception(self, page: Page) -> str | None:
+        """Find an active inception where decision matches recommendation stance."""
+        page.goto(_url("/inception?decision=go"))
+        page.wait_for_load_state("domcontentloaded")
+        links = page.locator("a[href*='/inception/T-']")
+        for i in range(min(links.count(), 10)):
+            href = links.nth(i).get_attribute("href")
+            if href and "/inception/T-" in href:
+                page.goto(_url(href))
+                page.wait_for_load_state("domcontentloaded")
+                content = page.content()
+                if "decision-banner go" in content and "adopted by human" in content:
+                    return href.replace("/inception/", "").strip("/")
+        return None
+
+    def test_adopted_decision_collapses_recommendation(self, page: Page):
+        """Adopted recommendation → Recommendation in <details>, Decision prominent."""
+        task_id = self._find_decided_adopted_inception(page)
+        if task_id is None:
+            pytest.skip("No adopted-decision inception available to test against")
+        page.goto(_url(f"/inception/{task_id}"))
+        page.wait_for_load_state("domcontentloaded")
+        content = page.content()
+        # Recommendation label indicates adoption
+        assert "adopted by human" in content, (
+            f"Adopted decision on {task_id} must show 'adopted by human' hint"
+        )
+        # Recommendation is inside <details> (collapsed by default)
+        # Approximation: look for the collapsed marker pattern near Recommendation
+        assert "<details" in content, "Adopted case must use <details> element for Recommendation"
+        # Decision Record is still a prominent card
+        assert "Decision Record" in content
+
+    def test_pending_inception_shows_recommendation_prominently(self, page: Page):
+        """No regression: pending inceptions still show Recommendation as article card."""
+        page.goto(_url("/inception?decision=pending"))
+        page.wait_for_load_state("domcontentloaded")
+        links = page.locator("a[href*='/inception/T-']")
+        for i in range(min(links.count(), 10)):
+            href = links.nth(i).get_attribute("href")
+            if not href:
+                continue
+            page.goto(_url(href))
+            page.wait_for_load_state("domcontentloaded")
+            content = page.content()
+            if "decision-banner pending" in content and "Agent Recommendation" in content:
+                # Recommendation must be in an <article>, not <details>, for pending
+                assert "adopted by human" not in content, (
+                    "Pending inception must NOT show 'adopted' label"
+                )
+                assert "overridden by human" not in content, (
+                    "Pending inception must NOT show 'overridden' label"
+                )
+                return
+        pytest.skip("No pending inception with Recommendation available")

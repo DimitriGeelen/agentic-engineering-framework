@@ -278,12 +278,37 @@
 </article>
 {% endif %}
 
-<!-- Agent Recommendation (T-679) -->
+<!-- Agent Recommendation (T-679, T-1391 F3 dedupe) -->
 {% if sections.recommendation %}
-<article class="section-card">
-    <header>Agent Recommendation</header>
-    <div class="section-content">{{ sections.recommendation }}</div>
-</article>
+    {% if dec == 'pending' %}
+        {# Pending: Recommendation is the human's primary input — show prominently. #}
+        <article class="section-card">
+            <header>Agent Recommendation</header>
+            <div class="section-content">{{ sections.recommendation }}</div>
+        </article>
+    {% elif decision_matches_recommendation %}
+        {# Adopted: Decision carries the signal — collapse Recommendation for inspection. #}
+        <details class="section-card" style="padding: 0.75rem 1rem;">
+            <summary style="font-weight: 600; cursor: pointer;">
+                Agent Recommendation: <strong>{{ rec_stance | upper }}</strong>
+                <span style="font-weight: 400; color: var(--pico-muted-color); font-size: 0.85rem;">
+                    — adopted by human, see Decision Record
+                </span>
+            </summary>
+            <div class="section-content" style="margin-top: 0.75rem;">{{ sections.recommendation }}</div>
+        </details>
+    {% else %}
+        {# Overridden: both must be visible with explicit labels so the override is unambiguous. #}
+        <article class="section-card" style="border-left: 4px solid #f9a825;">
+            <header>
+                Agent Recommendation: <strong>{{ rec_stance | upper if rec_stance else '?' }}</strong>
+                <span style="font-weight: 400; color: #c62828; font-size: 0.85rem;">
+                    — overridden by human decision ({{ dec | upper }})
+                </span>
+            </header>
+            <div class="section-content">{{ sections.recommendation }}</div>
+        </article>
+    {% endif %}
 {% endif %}
 
 <!-- Structural Upgrade (T-1108, added per T-1105 chokepoint+invariant-test discipline) -->
