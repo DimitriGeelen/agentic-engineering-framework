@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T20:33:25Z
-last_update: 2026-04-19T10:23:34Z
+last_update: 2026-04-22T05:31:16Z
 date_finished: null
 ---
 
@@ -24,7 +24,7 @@ Email-archive (vendored framework consumer at `/opt/050-email-archive`) reports 
 - **Incident A:** CLAUDE.md "use `bin/fw`" rule sent agent to a non-existent path in vendored layout (consumer has `.agentic-framework/bin/fw` only).
 - **Incident B:** Stale `PROJECT_ROOT` env var leaked across sessions, causing T-1288/T-1289 to be created in framework repo instead of email-archive.
 
-Full proposal: `docs/proposals/T-1315-from-email-archive-vendored-mode-blindspot.md`. Same class as T-1316 (T-1044 verification CWD bug) — vendored-vs-repo mode blind spot.
+Research artifact: `docs/reports/T-1315-closure.md`. Full proposal: `docs/proposals/T-1315-from-email-archive-vendored-mode-blindspot.md`. Same class as T-1316 (T-1044 verification CWD bug) — vendored-vs-repo mode blind spot.
 
 ## Assumptions
 
