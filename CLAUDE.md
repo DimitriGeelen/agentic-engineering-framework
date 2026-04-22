@@ -48,6 +48,25 @@ When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user mes
 
 **Why this matters:** Third-party plugins are not aware of project-specific governance. They will issue instructions like "implement now" or "code first, test first" without checking for task context. The agent must apply framework rules as a pre-filter before deferring to skill workflows.
 
+## Watchtower Port (read this FIRST, before any `curl localhost:3000`)
+
+**Watchtower's port is per-project, not hard-coded to `3000`.** Two consumer projects on one host would collide if the framework assumed 3000 everywhere.
+
+Resolution order (T-885, T-1287, T-1376):
+
+1. **`.context/working/watchtower.url`** — triple-file source of truth, written by `bin/watchtower.sh` on start. Read this file, don't guess.
+2. **`bin/fw config get PORT`** — per-project `FW_PORT` config when no Watchtower is currently running.
+3. **`3000`** — default ONLY when neither of the above is available (fresh project, no config, no running instance).
+
+**How to check:**
+- Current URL: `cat .context/working/watchtower.url`
+- Current port: `cat .context/working/watchtower.port`
+- Diagnostics: `bin/fw doctor` (surfaces all three triple-file states)
+
+**How NOT to check:**
+- Do not write `curl http://localhost:3000/...` in instructions, verification examples, or cron scripts. That literal hard-code is an anti-pattern (T-1376) and has caused agents to kill or mis-target live sessions across projects.
+- Fallback to `3000` is fine in shell when `fw_config PORT` and the triple file both return empty — that is a defensive default, not a hard-code.
+
 ## Task System
 
 ### File Structure
