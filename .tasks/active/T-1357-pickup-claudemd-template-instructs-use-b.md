@@ -4,16 +4,16 @@ name: "Pickup: CLAUDE.md template instructs Use bin/fw not fw — correct in fra
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1156. Type: bug-report.
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-20T13:47:01Z
-last_update: 2026-04-20T13:47:01Z
-date_finished: null
+last_update: 2026-04-22T09:37:38Z
+date_finished: 2026-04-22T09:37:38Z
 source_task_id_in_origin: T-1156
 source_project_in_origin: "termlink"
 ---
@@ -22,15 +22,17 @@ source_project_in_origin: "termlink"
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Pickup reports CLAUDE.md template instructs "use `bin/fw`" without distinguishing between framework repo (where `bin/fw` is correct) and consumer projects (where it's `.agentic-framework/bin/fw`). This is **already fixed** by T-1257 (completed 2026-04-18) which added the context-aware `fw` path rule to CLAUDE.md §Copy-Pasteable Commands.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-1257 addresses this specific issue — TRUE (CLAUDE.md §Copy-Pasteable Commands now distinguishes framework repo vs consumer)
+2. Pickup was created before T-1257 landed — TRUE (pickup created 2026-04-20; T-1257 completed 2026-04-18)
+3. Stale pickup with no remaining scope — TRUE
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+None — pre-fix confirmed by reading CLAUDE.md §Copy-Pasteable Commands and `.tasks/completed/T-1257*`.
 
 ## Technical Constraints
 
@@ -47,9 +49,9 @@ source_project_in_origin: "termlink"
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (CLAUDE.md §Copy-Pasteable Commands rule #3 + #4 distinguish framework-repo vs consumer)
+- [x] Assumptions tested (T-1257 pre-dates pickup creation)
+- [x] Recommendation written with rationale (DEFER — already fixed)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -79,15 +81,14 @@ source_project_in_origin: "termlink"
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (already fixed)
+
+**Rationale:** T-1257 completed 2026-04-18 added the context-aware `fw` path rule to CLAUDE.md §Copy-Pasteable Commands: "Framework repo: use `bin/fw`. Consumer project: use `.agentic-framework/bin/fw`." The pickup was created 2026-04-20, 2 days after the fix landed — stale pickup, no remaining scope.
+
+**Evidence:**
+- `.tasks/completed/T-1257-fix-context-blind-fw-path-rule-in-claude.md` — completed 2026-04-18
+- CLAUDE.md §Copy-Pasteable Commands rules #3-#4 (framework repo vs consumer path distinction)
+- L-237 pattern: grep completed tasks for the concern before scoping — this inception is itself an application of L-237
 
 ## Decisions
 
@@ -102,9 +103,20 @@ source_project_in_origin: "termlink"
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER (already fixed by T-1257)
+
+**Rationale**: Pickup stale — T-1257 landed the fix 2 days before pickup was created. CLAUDE.md §Copy-Pasteable Commands already distinguishes framework repo vs consumer path.
+
+**Date**: 2026-04-22T08:30:00Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-22T09:37:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-22T09:37:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
