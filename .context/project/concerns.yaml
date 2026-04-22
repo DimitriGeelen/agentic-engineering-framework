@@ -1433,3 +1433,20 @@ concerns:
   created: 2026-04-22
   last_reviewed: 2026-04-22
   closed_date: 2026-04-22
+
+- id: G-057
+  type: gap
+  title: "Watchtower /inception/T-XXX is one-shot — no revoke/re-decide affordance after decision recorded"
+  description: "web/templates/inception_detail.html:306-326 renders the decision form only when `dec == 'pending' and task._location == 'active'`. Once `fw inception decide` records a decision, the form element disappears and only the read-only Decision Record card remains. web/blueprints/inception.py:393 `record_decision` has no counterpart to revoke or overwrite. A human who realises the decision was wrong, based on stale evidence, or superseded by new scoping has no UI path to change it — the only recovery today is to hand-edit the task markdown and strip the `## Decisions` block so the form re-renders. This (a) bypasses the inception-decide pipeline (rationale capture, timestamp, Updates log entry), (b) breaks audit, (c) is the exact agent-workaround-worse-than-bug pattern flagged by G-019. The framework positions humans as sovereign ('can override anything'), but the UI removes the override path after first use."
+  spec_reference: "web/templates/inception_detail.html:306-326, web/blueprints/inception.py:393"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-22: hit during T-1270 work — wanted to record a corrected decision after fresh research, had to strip `## Decisions` by hand. User filed as high-priority bugfix inception (T-1388)."
+  detection_lag_days: "0"
+  what_works_now: "Normal happy-path (pending → decide once) works correctly. Agent-invocation guard (T-1259) blocks programmatic `fw inception decide` from CLAUDECODE=1 sessions — the Watchtower form is the only legitimate decide path. This guard is the reason the UI gap matters: when Watchtower's form is unavailable, there is no sanctioned path at all."
+  what_remains: "Active — no fix yet. T-1388 inception captures full root cause, assumptions (A1-A4), and exploration plan (spikes A-D including D1 'reopen' vs D2 'new-decision-with-confirm' UX sketches). Awaiting GO/NO-GO decision before build."
+  mitigation_candidate: "UI: add 'Re-open decision' or 'Record new decision' affordance on the Decision Record card. Backend: new POST route or extend record_decision to accept supersedes flag. Invariant: both decision entries must land in `## Updates` to preserve audit trail."
+  related_tasks: [T-1388, T-1270, T-1259]
+  status: watching
+  created: 2026-04-22
+  last_reviewed: 2026-04-22
