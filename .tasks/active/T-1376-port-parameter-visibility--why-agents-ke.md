@@ -4,7 +4,7 @@ name: "Port parameter visibility — why agents keep defaulting to :3000 after T
 description: >
   Despite 5 prior tasks on Watchtower port parameterization (T-885 config, T-903 verify, T-1154 eliminate hardcoded 3000, T-1287 triple-file source of truth, T-1284 discovery redesign), agents still default to `:3000` — killing existing sessions or picking wrong-port services. This inception identifies the surviving hardcoded sites and asks whether a minimum fix exists.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-885, T-903, T-1154, T-1284, T-1287, T-1292]
 created: 2026-04-22T08:07:28Z
-last_update: 2026-04-22T08:15:00Z
-date_finished: null
+last_update: 2026-04-22T18:31:02Z
+date_finished: 2026-04-22T18:29:45Z
 ---
 
 # T-1376: Port parameter visibility — why agents keep defaulting to :3000 after T-1154 + T-1287 + T-885 + T-1284 landed, and the minimum fix
@@ -128,7 +128,28 @@ grep -qn "localhost:3000" agents/monitor/liveness-check.sh
 
 ## Decision
 
-<!-- Filled via: fw inception decide T-1376 go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — minimum fix is tractable.
+
+Rationale: Infrastructure is done (T-885, T-903, T-1154, T-1287, T-1284). Recurrence is caused by 3 concrete agent-facing instruction sites that hardcode :3000: the /resume skill, the consumer CLAUDE.md template, and the liveness cron. Each is a 1-3 line surgical fix. Adding a top-of-CLAUDE.md "Which port is Watchtower on" block closes the documentation loop. Optional: `fw watchtower port` subcommand as a public single-source-of-truth.
+
+Evidence:
+- Audit of bin/ lib/ agents/ surfaced 6 hits for `:3000` — 3 anti-pattern (instruction/template), 3 fallback (correct pattern)
+- T-1287 triple file is authoritative
+- `bin/watchtower.sh` already announces port on start
+- User reported recurrence TODAY despite prior work — gap is in instructions/templates, not infrastructure
+
+Proposed build plan (if GO):
+- B1 (≤1 session): Patch `lib/init.sh` /resume skill to read `.context/working/watchtower.url` instead of hardcoding :3000.
+- B2 (≤1 session): Patch `lib/templates/claude-project.md` to reference the triple file + `fw doctor` instead of :3000 URL.
+- B3 (≤1 session): Patch `agents/monitor/liveness-check.sh` to source `lib/config.sh` and use `fw_config PORT`.
+- B4 (≤1 session): Add "Watchtower Port" block near top of CLAUDE.md (before Task System section), pointing at triple file + `fw doctor`.
+- B5 (optional, ≤1 session): `fw watchtower port` subcommand.
+
+Prioritisation: B1 highest leverage (every /resume triggers it). B3 highest frequency (cron). B2 highest blast-radius (propagates to new consumers).
+
+**Date**: 2026-04-22T18:29:44Z
 
 ## Updates
 
@@ -136,3 +157,33 @@ grep -qn "localhost:3000" agents/monitor/liveness-check.sh
 - **Action:** Filled Problem Statement, audit findings, Recommendation GO with B1-B5 build plan
 - **Evidence:** grep audit of bin/ lib/ agents/ for `:3000` — 3 anti-pattern sites identified (lib/init.sh, lib/templates/claude-project.md, agents/monitor/liveness-check.sh)
 - **Next:** Human review via `fw task review T-1376`
+
+### 2026-04-22T18:29:44Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — minimum fix is tractable.
+
+Rationale: Infrastructure is done (T-885, T-903, T-1154, T-1287, T-1284). Recurrence is caused by 3 concrete agent-facing instruction sites that hardcode :3000: the /resume skill, the consumer CLAUDE.md template, and the liveness cron. Each is a 1-3 line surgical fix. Adding a top-of-CLAUDE.md "Which port is Watchtower on" block closes the documentation loop. Optional: `fw watchtower port` subcommand as a public single-source-of-truth.
+
+Evidence:
+- Audit of bin/ lib/ agents/ surfaced 6 hits for `:3000` — 3 anti-pattern (instruction/template), 3 fallback (correct pattern)
+- T-1287 triple file is authoritative
+- `bin/watchtower.sh` already announces port on start
+- User reported recurrence TODAY despite prior work — gap is in instructions/templates, not infrastructure
+
+Proposed build plan (if GO):
+- B1 (≤1 session): Patch `lib/init.sh` /resume skill to read `.context/working/watchtower.url` instead of hardcoding :3000.
+- B2 (≤1 session): Patch `lib/templates/claude-project.md` to reference the triple file + `fw doctor` instead of :3000 URL.
+- B3 (≤1 session): Patch `agents/monitor/liveness-check.sh` to source `lib/config.sh` and use `fw_config PORT`.
+- B4 (≤1 session): Add "Watchtower Port" block near top of CLAUDE.md (before Task System section), pointing at triple file + `fw doctor`.
+- B5 (optional, ≤1 session): `fw watchtower port` subcommand.
+
+Prioritisation: B1 highest leverage (every /resume triggers it). B3 highest frequency (cron). B2 highest blast-radius (propagates to new consumers).
+
+### 2026-04-22T18:29:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+### 2026-04-22T18:29:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -49,7 +49,19 @@ if command -v termlink >/dev/null 2>&1; then
 fi
 
 watchtower_state="stopped"
-if curl -sf -m 2 http://localhost:3000/ >/dev/null 2>&1; then
+# Read Watchtower URL from triple-file source-of-truth (T-1287); fall back to fw_config PORT,
+# then default 3000. Never hard-code :3000 — consumer projects configure FW_PORT per-project (T-885).
+wt_url=$(cat "$PROJECT_ROOT/.context/working/watchtower.url" 2>/dev/null || true)
+if [ -z "$wt_url" ]; then
+    wt_port=""
+    if [ -f "$PROJECT_ROOT/lib/config.sh" ]; then
+        # shellcheck disable=SC1091
+        . "$PROJECT_ROOT/lib/config.sh" 2>/dev/null || true
+        wt_port=$(fw_config "PORT" "" 2>/dev/null || echo "")
+    fi
+    wt_url="http://localhost:${wt_port:-3000}"
+fi
+if curl -sf -m 2 "${wt_url%/}/" >/dev/null 2>&1; then
     watchtower_state="running"
 fi
 

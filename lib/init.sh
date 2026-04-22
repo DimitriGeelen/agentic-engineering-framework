@@ -808,7 +808,8 @@ Run these in parallel:
 2. Run `git status --short` and `git log --oneline -5`
 3. List `.tasks/active/` and extract task IDs, names, and statuses from frontmatter
 4. Check tool counter: `cat .context/working/.tool-counter`
-5. Check web server: `curl -sf http://localhost:3000/ > /dev/null && echo "running" || echo "stopped"`
+5. Check web server: `WURL=$(cat .context/working/watchtower.url 2>/dev/null || echo "http://localhost:$(bin/fw config get PORT 2>/dev/null || echo 3000)"); curl -sf "$WURL/" > /dev/null && echo "running at $WURL" || echo "stopped"`
+   (Never hard-code `:3000` — the triple file `.context/working/watchtower.{pid,port,url}` is the single source of truth for Watchtower's current port. See `bin/fw doctor` for diagnostics.)
 
 ## Step 2: Summarize
 
@@ -829,7 +830,7 @@ Present this format (fill from gathered data):
 
 ### Current State
 - Git: {clean/N uncommitted files}
-- Web UI: {running on :3000 / stopped}
+- Web UI: {running at {URL from .context/working/watchtower.url} / stopped}
 - Tool counter: {N} (P-009)
 
 ### Suggested Action
