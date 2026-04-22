@@ -4,15 +4,15 @@ name: "Watchdog script for framework services"
 description: >
   Watchdog script for framework services
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-16T05:38:36Z
-last_update: 2026-04-16T05:38:36Z
+last_update: 2026-04-22T04:48:20Z
 date_finished: null
 ---
 
@@ -67,3 +67,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1275-watchdog-script-for-framework-services.md
 - **Context:** Initial task creation
+
+### 2026-04-22T04:48:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: now → later
