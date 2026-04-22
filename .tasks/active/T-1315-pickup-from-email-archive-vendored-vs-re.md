@@ -4,16 +4,16 @@ name: "Pickup from email-archive: vendored-vs-repo mode blind spot RCA (sourced 
 description: >
   Inception request from /opt/050-email-archive (T-1043) about systemic vendored-mode blind spots. Two incidents reported: bin/fw path miss (resolved via CLAUDE.md T-1257 update we shipped) and PROJECT_ROOT env leak (resolved by T-1310 we shipped today). Three options proposed (symlink, path-aware CLAUDE.md rule, structural session preflight). Proposal artifact at docs/proposals/T-1315-from-email-archive-vendored-mode-blindspot.md.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-04-18T20:33:25Z
-last_update: 2026-04-22T05:31:16Z
-date_finished: null
+last_update: 2026-04-22T11:14:26Z
+date_finished: 2026-04-22T11:14:26Z
 ---
 
 # T-1315: Pickup from email-archive: vendored-vs-repo mode blind spot RCA (sourced T-1043)
@@ -157,3 +157,6 @@ Evidence:
 - `lib/paths.sh` already has walk-up discovery for shell — only the env-precedence guard is missing.
 
 Alternative if email-archive sees recurrence after retesting: Promote FS3b spike to a build task (~1 session), add `_validate_project_root` to `lib/paths.sh`, gated by `FW_STRICT_PROJECT_ROOT`.
+
+### 2026-04-22T11:14:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
