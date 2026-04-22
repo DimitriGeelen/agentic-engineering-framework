@@ -794,7 +794,14 @@ MCPJSON
     fi
 
     # --- .claude/commands/resume.md (project-specific /resume) ---
+    # T-1383 (closes G-056): prefer shared template at lib/templates/resume-md.md
+    # so upgrade.sh can detect drift and refresh existing consumers.
+    local resume_tmpl="$FRAMEWORK_ROOT/lib/templates/resume-md.md"
     if [ ! -f "$dir/.claude/commands/resume.md" ] || [ "${force:-false}" = true ]; then
+        if [ -f "$resume_tmpl" ]; then
+            cp "$resume_tmpl" "$dir/.claude/commands/resume.md"
+            echo -e "  ${GREEN}OK${NC}  .claude/commands/resume.md"
+        else
         cat > "$dir/.claude/commands/resume.md" << 'RESUME'
 # /resume - Context Recovery for Agentic Engineering Framework
 
@@ -854,6 +861,7 @@ Then ask: "What would you like to work on?"
 - If tool counter > 0 at session start, the PostToolUse hook is working
 RESUME
         echo -e "  ${GREEN}OK${NC}  .claude/commands/resume.md"
+        fi
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/commands/resume.md already exists"
     fi

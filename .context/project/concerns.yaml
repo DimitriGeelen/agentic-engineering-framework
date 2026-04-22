@@ -1424,8 +1424,9 @@ concerns:
   trigger_event: "2026-04-22: T-1382 audit of consumer projects after T-1378/T-1380 ship found resume.md stale in both audited consumers."
   detection_lag_days: "1"
   what_works_now: "Vendored `.agentic-framework/*` snapshots ARE refreshed by `fw upgrade` (confirmed for lib/init.sh, lib/templates/claude-project.md, agents/monitor/liveness-check.sh). The gap is specific to files that upgrade writes once at init then skips: resume.md, CLAUDE.md governance sections already have a drift-refresh mechanism (lib/upgrade.sh:130+), but command files do not."
-  what_remains: "Patch upgrade.sh to detect template drift on resume.md: compute the template hash, compare against consumer's file hash, write .bak + refresh if different. Pattern exists for CLAUDE.md governance-section refresh — generalize to command files. Follow-up task candidate: T-1383 (build, ~15 LoC + bats regression)."
-  related_tasks: [T-1382, T-1378, T-1376]
-  status: watching
+  mitigation_applied: "2026-04-22 (T-1383): Extracted resume.md heredoc from lib/init.sh into shared template at lib/templates/resume-md.md. lib/init.sh now prefers the template file (falls back to inline heredoc if missing). lib/upgrade.sh step 7 now diffs consumer's resume.md vs. the template; on drift, writes .bak and refreshes. Smoke-tested: stale resume.md with pre-T-1378 :3000 hardcode gets refreshed, .bak preserved. Round-trip verified — fresh init matches template exactly (no false-positive drift)."
+  what_remains: "Optional generalization: the same drift-refresh pattern could cover other `.claude/commands/*.md` files beyond resume.md (none exist today). Not urgent."
+  related_tasks: [T-1382, T-1378, T-1376, T-1383]
+  status: mitigated
   created: 2026-04-22
   last_reviewed: 2026-04-22

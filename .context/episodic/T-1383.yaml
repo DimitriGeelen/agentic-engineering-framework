@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1383: Patch lib/upgrade.sh to detect .claude/commands/resume.md template drift — close G-056
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-22T19:53:22Z
+# ============================================================================
+
+task_id: T-1383
+task_name: "Patch lib/upgrade.sh to detect .claude/commands/resume.md template drift — close G-056"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-22T19:48:45Z
+completed: 2026-04-22T19:53:20Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`lib/templates/resume-md.md` exists with current resume.md template content"
+  - "`lib/init.sh` reads from `lib/templates/resume-md.md` when present (falls back to inline heredoc)"
+  - "`lib/upgrade.sh` detects drift between consumer's `.claude/commands/resume.md` and `lib/templates/resume-md.md`"
+  - "On drift, upgrade writes `.bak` and refreshes"
+  - "Smoke test: synthesize a stale resume.md, run `do_upgrade`, confirm file is refreshed + .bak left behind (verified 2026-04-22T21:51Z)"
+  - "Round-trip: fresh init template then diff reports no drift for resume.md (verified 2026-04-22T21:51Z)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1383-patch-libupgradesh-to-detect-claudecomma.md
+generated_by: context-agent-hybrid

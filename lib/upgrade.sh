@@ -692,22 +692,37 @@ MCPJSON
     fi
 
     # ── 7. .claude/commands/resume.md ──
+    # T-1383 (closes G-056): compare consumer file against shared template and
+    # refresh on drift. Prior behavior preserved existing file regardless of
+    # template changes, so upstream fixes never propagated.
     echo -e "${YELLOW}[7/10] Claude Code commands${NC}"
 
     local resume_file="$target_dir/.claude/commands/resume.md"
+    local resume_tmpl="$FRAMEWORK_ROOT/lib/templates/resume-md.md"
 
-    # Use the version from init.sh if no separate template exists
-    if [ -f "$resume_file" ]; then
-        echo -e "  ${GREEN}OK${NC}  resume.md exists"
+    if [ ! -f "$resume_tmpl" ]; then
+        echo -e "  ${YELLOW}WARN${NC}  template missing at lib/templates/resume-md.md — skipping drift check"
+    elif [ -f "$resume_file" ]; then
+        if diff -q "$resume_tmpl" "$resume_file" >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  resume.md matches template"
+        else
+            changes=$((changes + 1))
+            if [ "$dry_run" = true ]; then
+                echo -e "  ${CYAN}WOULD UPDATE${NC}  resume.md (drift from template detected)"
+            else
+                cp "$resume_file" "$resume_file.bak"
+                cp "$resume_tmpl" "$resume_file"
+                echo -e "  ${GREEN}UPDATED${NC}  resume.md refreshed from template. Backup: resume.md.bak"
+            fi
+        fi
     else
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/commands/resume.md"
         else
             mkdir -p "$target_dir/.claude/commands"
-            # Copy from init function logic
-            echo -e "  ${YELLOW}SKIP${NC}  resume.md — run 'fw init --force' to regenerate"
-            skipped=$((skipped + 1))
+            cp "$resume_tmpl" "$resume_file"
+            echo -e "  ${GREEN}CREATED${NC}  .claude/commands/resume.md from template"
         fi
     fi
 

@@ -1889,3 +1889,10 @@ learnings:
   date: 2026-04-22
   context: Added via context agent
   application: TBD
+- id: L-239
+  learning: "When fw upgrade onboards a consumer file (e.g., .claude/commands/resume.md), store the canonical content as a standalone template at lib/templates/ and have BOTH init.sh and upgrade.sh read from it. init.sh creates the file at init time; upgrade.sh detects drift against the SAME template and refreshes with a .bak. Without the shared template, upgrade.sh cannot detect template changes without duplicating the content — which is where drift and anti-pattern regressions hide (G-056)."
+  source: P-001
+  task: T-1383
+  date: 2026-04-22
+  context: Added via context agent
+  application: TBD
