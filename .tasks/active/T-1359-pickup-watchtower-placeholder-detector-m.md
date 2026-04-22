@@ -12,7 +12,7 @@ tags: [pickup, bug-report]
 components: [lib/task-audit.sh, tests/unit/lib_task_audit.bats]
 related_tasks: [T-1113, T-1298, T-1327]
 created: 2026-04-20T14:15:01Z
-last_update: 2026-04-22T10:28:00Z
+last_update: 2026-04-22T11:08:49Z
 date_finished: null
 source_task_id_in_origin: T-1167
 source_project_in_origin: "termlink"
