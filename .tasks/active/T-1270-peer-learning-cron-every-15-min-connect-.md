@@ -88,14 +88,15 @@ Multiple TermLink-connected sessions run in parallel (different projects, differ
 
 ## Go/No-Go Criteria
 
-<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- Cross-session learning signal cannot be achieved with existing primitives (pickup, handover, bus)
+- Per-agent token cost (~168K/day on peer chatter) is justified by learning yield
+- A5 (self-dampening) and A6 (propagation) can be reconciled on a single channel
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- Existing primitives cover the concrete cases the cron would serve
+- Polling introduces Goodhart feedback loop (agents manufacture learnings to satisfy the prompt)
+- A caller-initiated alternative (`fw ask peers`) delivers the same benefit at fraction of the cost
 
 ## Verification
 
@@ -105,15 +106,18 @@ Multiple TermLink-connected sessions run in parallel (different projects, differ
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** NO-GO as scoped. GO-REDESIGN via `fw ask peers "question"` (caller-initiated alternative).
+
+**Rationale:** The 15-minute reflection cron fails all three GO criteria. Existing primitives (pickup envelopes, handovers, bus) already cover intentional cross-session flows. The gap is *ad-hoc peer query*, not polling. Polling introduces a Goodhart loop — agents prompted every 15 minutes to "share a learning" will manufacture low-signal reflections to satisfy the cron, polluting the learning register. The caller-initiated alternative pays only when the caller judges the question worth asking, is caller-accountable, and propagates organically.
+
+**Evidence:**
+- **Cost:** 96 cycles/day × 5 peers × 350 tokens ≈ 168K tokens/day per agent on peer chatter alone — ~56% of a single 300K context window (docs/reports/T-1270-peer-learning-cron.md:38-46)
+- **A5 contradicts A6:** Self-dampening ("no response is valid") dooms propagation via inline adoption — same channel, same ignore semantics (docs/reports/T-1270-peer-learning-cron.md:52)
+- **Existing primitives cover the cases:** pickup envelopes handle intentional handoffs; handovers propagate narrative; bus handles sub-agent results (docs/reports/T-1270-peer-learning-cron.md:54-57)
+- **Alternative costed:** `fw ask peers` — ~150-200 LoC shell + 2 bats tests, ~1 session, zero standing cost (docs/reports/T-1270-peer-learning-cron.md:69)
+- **Full dialogue log + assumption testing** in research artifact (docs/reports/T-1270-peer-learning-cron.md)
+
+**If human still wants the cron** (overriding NO-GO): decompose into T-1270a (reflection envelope + ingestion, manual only), T-1270b (cron scheduler, opt-in via `FW_PEER_LEARNING_CRON=1`), T-1270c (propagation). Build T-1270a first and measure signal-to-noise for 1 week before proceeding.
 
 ## Decisions
 
