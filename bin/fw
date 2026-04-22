@@ -528,6 +528,7 @@ show_help() {
     echo -e "  ${GREEN}update${NC}               Update framework (vendored or global) to latest version"
     echo -e "  ${GREEN}vendor${NC}               Copy framework into project .agentic-framework/ (full isolation)"
     echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
+    echo -e "  ${GREEN}hook-enable${NC} <args>   Register a hook in .claude/settings.json (idempotent)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
     echo -e "  ${GREEN}build${NC}                Compile TypeScript sources (lib/ts/src → lib/ts/dist)"
@@ -3814,6 +3815,16 @@ PYSEARCH
         export FRAMEWORK_ROOT PROJECT_ROOT
         # T-863: Use bash explicitly — don't require -x (core.filemode=false drops execute bits)
         exec bash "$_hook_script" "$@"
+        ;;
+    hook-enable)
+        # fw hook-enable — register a framework hook in .claude/settings.json (T-1189)
+        _he_script="$FRAMEWORK_ROOT/bin/hook-enable.sh"
+        if [ ! -f "$_he_script" ]; then
+            echo "ERROR: hook-enable.sh not found at $_he_script" >&2
+            exit 2
+        fi
+        export FRAMEWORK_ROOT PROJECT_ROOT
+        exec bash "$_he_script" "$@"
         ;;
     doctor)
         do_doctor "$@"
