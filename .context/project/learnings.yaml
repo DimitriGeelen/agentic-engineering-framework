@@ -1882,3 +1882,10 @@ learnings:
   date: 2026-04-21
   context: Added via context agent
   application: TBD
+- id: L-238
+  learning: "When adding a canonical accessor (e.g., fw watchtower port/url from T-1380), immediately grep the repo for the legacy literal (e.g., localhost:3000) across docs (CLAUDE.md, README, CONTRIBUTING) and verification-example blocks. New accessors only prevent recurrence if existing docs stop teaching the old pattern. T-1381 found CLAUDE.md line 130 gave the anti-pattern as the canonical verification example, directly contradicting the rule on line 68 of the same file."
+  source: P-001
+  task: T-1381
+  date: 2026-04-22
+  context: Added via context agent
+  application: TBD
