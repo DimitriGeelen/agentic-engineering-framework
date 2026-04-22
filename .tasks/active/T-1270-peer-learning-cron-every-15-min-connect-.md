@@ -18,6 +18,8 @@ date_finished: null
 
 # T-1270: Peer-learning cron: every 15 min, connect to all reachable TermLink agents, exchange reflections on what we can learn from each other
 
+**Research artifact:** [docs/reports/T-1270-peer-learning-cron.md](../../docs/reports/T-1270-peer-learning-cron.md) — full analysis, per-session token cost math, NO-GO rationale, and `fw ask peers` alternative (see Recommendation below).
+
 ## Problem Statement
 
 Multiple TermLink-connected sessions run in parallel (different projects, different tasks, different agents). Each accumulates learnings in isolation — the only cross-session knowledge flow today is manual: pickup envelopes, handovers, or humans relaying summaries. There is no ambient "hallway conversation" between agents. A 15-minute reflection cron would enumerate reachable peers, ask each a short prompt ("what did you learn in the last ~15 min; what friction; anything we should know"), collect responses into a shared inbox, and let each agent opportunistically ingest the digest on its next session-init. Goal: transform isolated silos into a loosely-coupled learning mesh without heavy orchestration.
