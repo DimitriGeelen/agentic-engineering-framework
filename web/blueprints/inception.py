@@ -24,6 +24,39 @@ def _md(text):
     html = markdown2.markdown(text, extras=["fenced-code-blocks", "tables"])
     return Markup(html)
 
+
+def _extract_rationale_from_recommendation(rec_body):
+    """T-1390 (F4 fix): Extract only the rationale body from a structured
+    ## Recommendation block, not the whole section.
+
+    The structured format is:
+        **Recommendation:** GO / NO-GO / DEFER
+        **Rationale:** <text that may span paragraphs>
+        **Evidence:**
+        - bullet 1
+        - bullet 2
+
+    Without this filter, pre-filling the decision textarea with the whole
+    block produced rationale values like "Recommendation: GO\\n\\nRationale:
+    ... Evidence: - ..." — the human's recorded decision then contained the
+    self-referential prefix plus full evidence bullets (observed on T-1284
+    and 60 other decided inceptions, see T-1388 F4).
+
+    Fallback: when no `**Rationale:**` marker exists, return the full body
+    stripped of ** formatting (preserves behavior for free-form recommendations).
+    """
+    if not rec_body:
+        return ""
+    # Strip **bold** markers first so we work with plain text
+    plain = re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", rec_body).strip()
+    # Look for "Rationale:" marker and slice to next top-level marker
+    m = re_mod.search(r"(?m)^Rationale:\s*(.*?)(?=^(?:Evidence|Recommendation|Build|Reversibility|Alternative|See):|\Z)",
+                      plain, re_mod.DOTALL)
+    if m:
+        return m.group(1).strip()
+    # Fallback — no structured markers
+    return plain
+
 bp = Blueprint("inception", __name__)
 
 
@@ -325,13 +358,13 @@ def inception_detail(task_id):
             extra_sections.append({"heading": heading, "content": _md(content)})
 
     # T-679: Pre-populate rationale from ## Recommendation section
+    # T-1390 (F4 fix): extract only the Rationale body from structured
+    # recommendations (Recommendation/Rationale/Evidence format). Without
+    # this, pre-fill contained the whole block including "Recommendation: GO"
+    # prefix and Evidence bullets — the stored decision then embedded the
+    # self-referential prefix + all evidence bullets (see T-1388 F4).
     rec_raw = _extract_section(task_body, "Recommendation") or ""
-    # Strip markdown formatting for the textarea hint.
-    # T-1091: No truncation — the human recording the decision needs the full
-    # Recommendation. Prior 500-char cap left the textarea with fragmented rationale
-    # ending in "...". T-1150: approvals.py cap also removed — truncating the pre-fill
-    # truncates the permanent decision rationale.
-    rationale_hint = re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", rec_raw).strip()
+    rationale_hint = _extract_rationale_from_recommendation(rec_raw)
 
     decision_state = _extract_decision(task_body)
 
