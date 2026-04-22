@@ -91,7 +91,7 @@ fw work-on "Add authentication" --type build
 
 # 5. Run an audit, open the dashboard
 fw audit                 # 150+ governance checks
-fw serve                 # http://localhost:3000 — task board, audit, metrics
+fw serve                 # dashboard — task board, audit, metrics (default port 3000; see `fw watchtower url`)
 ```
 
 Five commands. Your repo now has task-traced commits, enforcement gates, continuous audit, and a dashboard showing project state.
@@ -156,7 +156,7 @@ fw audit                     # See where you stand
 
 ### Dashboard
 ```bash
-fw serve                     # http://localhost:3000
+fw serve                     # default port 3000 — use `fw watchtower url` for the live URL
 ```
 
 ## What You Get

@@ -127,7 +127,7 @@ The `## Verification` section contains shell commands that **must pass** before 
 
 **What to verify:**
 - YAML/JSON files parse correctly: `python3 -c "import yaml; yaml.safe_load(open('file'))"`
-- Web pages load: `curl -sf http://localhost:3000/page`
+- Web pages load: `curl -sf "$(bin/fw watchtower url)/page"` (never hard-code `:3000` — see §Watchtower Port above)
 - Commands succeed: `fw doctor`
 - Output contains expected content: `grep -q "expected" output.txt`
 

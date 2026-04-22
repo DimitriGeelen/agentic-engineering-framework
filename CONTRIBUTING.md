@@ -33,7 +33,7 @@ cd agentic-engineering-framework
 cd web/
 pip install -r requirements.txt
 python app.py
-# Open http://localhost:3000
+# Open the URL printed on startup (default port 3000 — use `fw watchtower url` to query the live port)
 ```
 
 ## Architecture Overview
