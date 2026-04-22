@@ -53357,3 +53357,2848 @@ expected <block end>, but found '<block sequence start>'
       - agents/task-create/create-task.sh
       ^
 127.0.0.1 - - [22/Apr/2026 11:51:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 11:52:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 11:53:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 11:54:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 11:55:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 11:56:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 11:57:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 11:58:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 11:59:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:00:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:01:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:02:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:03:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:04:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:05:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:06:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:07:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:08:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:09:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:10:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:11:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:12:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:13:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:14:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Apr/2026 12:14:15] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:15] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:15] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:14:16] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:16] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:16] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:14:17] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:17] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:17] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:14:17] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:17] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:17] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:14:51] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:51] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:52] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:14:52] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:52] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:52] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:14:53] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:53] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:53] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:14:53] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:53] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:14:53] "GET /api/search HTTP/1.1" 404 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:15:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Apr/2026 12:15:07] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:15:07] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:15:07] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:15:08] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:15:08] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:15:08] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:15:08] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:15:08] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:15:08] "GET /api/search HTTP/1.1" 404 -
+127.0.0.1 - - [22/Apr/2026 12:15:09] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:15:09] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:15:09] "GET /api/search HTTP/1.1" 404 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:16:04] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Apr/2026 12:16:50] "POST /api/accounts HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:16:50] "POST /api/ingestion/trigger HTTP/1.1" 403 -
+127.0.0.1 - - [22/Apr/2026 12:16:50] "GET /api/search HTTP/1.1" 404 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:17:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:18:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:19:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:19:28] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:20:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:21:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:22:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:23:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:24:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:25:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:26:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:27:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:28:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:29:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:30:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:31:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:32:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:33:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:34:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:35:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:36:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:37:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:38:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:39:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:40:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:41:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:42:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:43:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:44:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:45:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:46:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:47:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:48:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:49:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:50:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:51:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:52:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:53:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:54:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:55:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:56:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:57:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:58:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 12:59:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:00:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:01:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:02:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:03:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:04:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:05:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:06:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:07:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:07:12] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:08:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:09:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:10:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:11:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:12:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:13:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [22/Apr/2026 13:13:46] "GET /api/_identity HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+127.0.0.1 - - [22/Apr/2026 13:14:03] "GET / HTTP/1.1" 200 -

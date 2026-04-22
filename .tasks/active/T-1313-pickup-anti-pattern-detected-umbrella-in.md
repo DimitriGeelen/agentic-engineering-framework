@@ -4,16 +4,16 @@ name: "Pickup: Anti-pattern detected: umbrella inceptions bundling N independent
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1112. Type: pattern.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, pattern]
 components: []
 related_tasks: []
 created: 2026-04-18T20:23:38Z
-last_update: 2026-04-18T21:04:56Z
-date_finished: null
+last_update: 2026-04-22T11:13:46Z
+date_finished: 2026-04-22T11:13:46Z
 ---
 
 # T-1313: Pickup: Anti-pattern detected: umbrella inceptions bundling N independent decisions (T-1112 NO-GO) (from termlink)
@@ -137,3 +137,6 @@ Evidence:
 - T-1112 NO-GO is itself the evidence the rule is being enforced via human judgment at decide time
 - Structural enforcement would require parsing problem statements for "and" / multiple questions — high false-positive risk
 - Codification cost > benefit; leave as advisory
+
+### 2026-04-22T11:13:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

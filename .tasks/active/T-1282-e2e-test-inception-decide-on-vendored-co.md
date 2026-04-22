@@ -4,15 +4,15 @@ name: "E2E test: inception decide on vendored consumer project via Watchtower"
 description: >
   E2E test: inception decide on vendored consumer project via Watchtower
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T10:16:32Z
-last_update: 2026-04-17T10:16:32Z
+last_update: 2026-04-22T11:14:06Z
 date_finished: null
 ---
 
@@ -67,3 +67,8 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1282-e2e-test-inception-decide-on-vendored-co.md
 - **Context:** Initial task creation
+
+### 2026-04-22T11:14:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: now → later
+- **Reason:** placeholder ACs (G-020) — needs real scoping before build; demoted pending proper inception
