@@ -508,12 +508,14 @@ concerns:
   score: 9
   ranking: medium
   controls: []
-  residual_notes: No mitigation until tested. See also G-004.
+  residual_notes: 'Duplicate of G-004 (same concern tracked under both a gap and risk entry). Closing R-036 to eliminate duplicate tracking; G-004 remains the canonical watching entry.'
   evidence:
   - G-004
-  status: watching
+  status: closed
   created: 2026-02-19
-  last_reviewed: 2026-03-09
+  last_reviewed: 2026-04-22
+  closed_date: 2026-04-22
+  closure_reason: duplicate-of-G-004
   related_task: G-004
 - id: G-021
   type: gap
