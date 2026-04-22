@@ -302,25 +302,34 @@
 </article>
 {% endfor %}
 
-<!-- Decision Details -->
+<!-- Decision Details + Re-decide form (T-1389 B2 — G-057) -->
 {% if sections.decision and dec != 'pending' %}
 <article class="section-card">
     <header>Decision Record</header>
     <div class="section-content">{{ sections.decision }}</div>
 </article>
-{% elif dec == 'pending' and task._location == 'active' %}
+{% endif %}
+
+{% if task._location == 'active' %}
 <article class="section-card">
-    <header>Record Decision</header>
+    <header>{% if dec == 'pending' %}Record Decision{% else %}Record Superseding Decision{% endif %}</header>
+    {% if dec != 'pending' %}
+    <p style="font-size: 0.85rem; color: var(--pico-muted-color); margin-bottom: 0.75rem;">
+        Current decision: <strong>{{ dec | upper }}</strong>. Recording a new decision replaces the
+        canonical <code>## Decision</code> block and appends a new entry to <code>## Updates</code>
+        preserving audit trail.
+    </p>
+    {% endif %}
     <form action="/inception/{{ task_id }}/decide" method="post" class="decision-form">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="decision-buttons">
-            <label><input type="radio" name="decision" value="go" required><span class="dec-go">GO</span></label>
+            <label><input type="radio" name="decision" value="go" {% if dec == 'pending' %}required{% endif %}><span class="dec-go">GO</span></label>
             <label><input type="radio" name="decision" value="no-go"><span class="dec-nogo">NO-GO</span></label>
             <label><input type="radio" name="decision" value="defer"><span class="dec-defer">DEFER</span></label>
         </div>
-        <textarea name="rationale" placeholder="Rationale for this decision..." required
+        <textarea name="rationale" placeholder="{% if dec == 'pending' %}Rationale for this decision...{% else %}Rationale for superseding the previous decision...{% endif %}" required
                   style="font-size: 0.85rem; min-height: 60px; margin-bottom: 0.5rem;">{{ rationale_hint or '' }}</textarea>
-        <button type="submit" class="text-sm">Record Decision</button>
+        <button type="submit" class="text-sm">{% if dec == 'pending' %}Record Decision{% else %}Record Superseding Decision{% endif %}</button>
     </form>
 </article>
 {% endif %}

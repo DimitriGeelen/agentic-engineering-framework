@@ -103,3 +103,85 @@ class TestInceptionEndpointHealth:
         """Assumptions page loads without error."""
         resp = page.goto(_url("/assumptions"))
         assert resp.status == 200
+
+
+class TestRedecideAffordance:
+    """T-1389 (B2 / G-057): Decided inceptions must expose a superseding-decision form.
+
+    The previous template hid the form once a decision was recorded, forcing
+    agents to `sed`-edit task markdown to re-render the form — which bypassed
+    the inception-decide pipeline (rationale capture, Updates log entry).
+    """
+
+    def _find_decided_inception(self, page: Page) -> str | None:
+        """Find an active inception task_id that already has a decision."""
+        page.goto(_url("/inception?decision=go"))
+        page.wait_for_load_state("domcontentloaded")
+        links = page.locator("a[href*='/inception/T-']")
+        for i in range(min(links.count(), 10)):
+            href = links.nth(i).get_attribute("href")
+            if href and "/inception/T-" in href:
+                # Visit and check it's active + has a decision banner
+                page.goto(_url(href))
+                page.wait_for_load_state("domcontentloaded")
+                content = page.content()
+                if "decision-banner go" in content or "decision-banner no-go" in content:
+                    return href.replace("/inception/", "").strip("/")
+        return None
+
+    def test_decided_inception_shows_superseding_form(self, page: Page):
+        """Core regression for G-057: decided inception exposes re-decide affordance."""
+        task_id = self._find_decided_inception(page)
+        if task_id is None:
+            pytest.skip("No decided active inception available to test against")
+        page.goto(_url(f"/inception/{task_id}"))
+        page.wait_for_load_state("domcontentloaded")
+        content = page.content()
+        # Affordance present
+        assert "Record Superseding Decision" in content, (
+            f"Decided inception {task_id} must expose 'Record Superseding Decision' form "
+            "(T-1389 / G-057 regression — form was hidden after first decision)"
+        )
+        # Form action points to /decide endpoint
+        assert f'action="/inception/{task_id}/decide"' in content, (
+            "Superseding form must POST to /decide endpoint"
+        )
+        # Radio buttons present
+        assert 'value="go"' in content
+        assert 'value="no-go"' in content
+        assert 'value="defer"' in content
+
+    def test_decided_inception_shows_context_note(self, page: Page):
+        """Superseding form should warn the user + cite audit trail behaviour."""
+        task_id = self._find_decided_inception(page)
+        if task_id is None:
+            pytest.skip("No decided active inception available to test against")
+        page.goto(_url(f"/inception/{task_id}"))
+        page.wait_for_load_state("domcontentloaded")
+        content = page.content()
+        # Context note explains replacement + audit preservation
+        assert "Current decision:" in content
+        assert "Updates" in content or "audit trail" in content.lower()
+
+    def test_pending_inception_keeps_record_decision_label(self, page: Page):
+        """No regression: pending inceptions still show 'Record Decision' (not 'Superseding')."""
+        # Find a pending active inception
+        page.goto(_url("/inception?decision=pending"))
+        page.wait_for_load_state("domcontentloaded")
+        links = page.locator("a[href*='/inception/T-']")
+        for i in range(min(links.count(), 10)):
+            href = links.nth(i).get_attribute("href")
+            if not href:
+                continue
+            page.goto(_url(href))
+            page.wait_for_load_state("domcontentloaded")
+            content = page.content()
+            if "decision-banner pending" in content:
+                assert "Record Decision" in content, (
+                    "Pending inception must still show 'Record Decision' form label"
+                )
+                assert "Record Superseding Decision" not in content, (
+                    "Pending inception must NOT show 'Superseding' label (wrong state)"
+                )
+                return
+        pytest.skip("No pending active inception available to test against")
