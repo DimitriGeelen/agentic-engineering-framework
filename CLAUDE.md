@@ -1130,6 +1130,9 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Self audit | `fw self-audit` | Internal audit consistency check |
 | Self test | `fw self-test` | Run framework self-tests |
 | Start Watchtower | `fw serve` | Start Watchtower web UI |
+| Watchtower port | `fw watchtower port` | Print current port (triple-file SSOT; T-1380) |
+| Watchtower url | `fw watchtower url` | Print current URL (triple-file SSOT; T-1380) |
+| Watchtower status | `fw watchtower status` | Show Watchtower state |
 | Test onboarding | `fw test-onboarding` | Verify onboarding flow |
 | View timeline | `fw timeline` | Show session timeline |
 | Traceability | `fw traceability baseline` | Git traceability management |
