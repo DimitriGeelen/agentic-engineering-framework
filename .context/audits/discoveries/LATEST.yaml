@@ -1,11 +1,11 @@
-timestamp: 2026-04-21T20:48:27Z
+timestamp: 2026-04-22T03:30:01Z
 findings:
   - id: D1
     level: PASS
     check: "D1: Episodic quality — 1% [TODO] (17/1251)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 7 task(s) waiting >30d: T-436(24d) T-446(37d) T-448(24d) T-460(39d) T-470(40d) T-481(38d) T-505(35d) T-511(35d) T-518(34d) T-530(29d) T-594(28d) T-612(26d) T-613(25d) T-663(24d) T-678(23d) T-706(23d) T-707(23d) T-708(23d) T-710(23d) T-772(22d) T-782(22d) T-799(20d) T-800(20d) T-816(17d) T-817(17d) T-880(16d)"
+    check: "D2: Human review queue — 7 task(s) waiting >30d: T-436(24d) T-446(38d) T-448(24d) T-460(39d) T-470(40d) T-481(38d) T-505(35d) T-511(35d) T-518(35d) T-530(29d) T-594(28d) T-612(26d) T-613(25d) T-663(24d) T-678(24d) T-706(23d) T-707(23d) T-708(23d) T-710(23d) T-772(22d) T-782(22d) T-799(20d) T-800(20d) T-816(18d) T-817(18d) T-880(16d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - id: D8
     level: PASS
@@ -17,31 +17,9 @@ findings:
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
-  - id: D4
-    level: PASS
-    check: "D4: Audit trend — insufficient history (<3 entries)"
-  - id: D5
-    level: WARN
-    check: "D5: Task lifecycle — 7 anomaly(s): T-875(2min,human) T-829(3min,human) T-651(1min,human) T-827(2min,human) T-676(3min,human) T-607(5min,human) T-1062(13d-active)"
-    mitigation: "Review flagged tasks for process issues"
-  - id: D3
-    level: PASS
-    check: "D3: Commit velocity — normal (PASS today=26 avg=27 ratio=0.9x)"
-  - id: D7
-    level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 26_commits_24h)"
-  - id: D6
-    level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=12.0 earlier=27.1)"
-  - id: D12
-    level: PASS
-    check: "D12: Bypass log — no log file"
-  - id: D9
-    level: PASS
-    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 9
-  warn: 2
+  pass: 3
+  warn: 1
   fail: 1
-  total: 12
+  total: 5

@@ -1,7 +1,7 @@
-# Audit Results - 2026-04-21-2248
-timestamp: 2026-04-21T20:48:27Z
+# Audit Results - 2026-04-21-2255
+timestamp: 2026-04-21T20:55:35Z
 summary:
-  pass: 371
+  pass: 372
   warn: 4
   fail: 1
 findings:
@@ -30,7 +30,7 @@ findings:
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 98% (3205/3238 commits reference tasks)"
+    check: "Git traceability: 98% (3207/3240 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -80,7 +80,7 @@ findings:
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 30 (last commit: 3 minutes ago)"
+    check: "CTL-004: Tool counter at 12 (last commit: 2 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
@@ -92,7 +92,7 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (629 handovers, 255 compactions)"
+    check: "CTL-006: Handover coverage for compactions (630 handovers, 255 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -153,6 +153,8 @@ findings:
     check: "CTL-009: Inception T-1346 has decision (3 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1372 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-550 has decision (3 commits)"
   - level: PASS
     check: "CTL-009: Inception T-558 has decision (3 commits)"
   - level: PASS
@@ -751,9 +753,9 @@ findings:
     check: "D5: Task lifecycle — 7 anomaly(s): T-875(2min,human) T-829(3min,human) T-651(1min,human) T-827(2min,human) T-676(3min,human) T-607(5min,human) T-1062(13d-active)"
     mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=26 avg=27 ratio=0.9x)"
+    check: "D3: Commit velocity — normal (PASS today=28 avg=27 ratio=1.0x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 26_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 28_commits_24h)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS recent=12.0 earlier=27.1)"
   - level: PASS
