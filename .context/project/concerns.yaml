@@ -1413,3 +1413,19 @@ concerns:
   created: 2026-04-20
   last_reviewed: 2026-04-20
   related_tasks: [T-1369, T-1368]
+
+- id: G-056
+  type: gap
+  title: "fw upgrade does not propagate lib/init.sh template changes to existing consumer .claude/commands/resume.md"
+  description: "`lib/upgrade.sh:694-709` detects existing `.claude/commands/resume.md` and prints `OK resume.md exists` without comparing the consumer's copy against the current template output. When the framework fixes the template (e.g., T-1378 B1 replaced the `:3000` hardcode), existing consumers stay on the old text indefinitely. The only refresh path is `fw init --force`, which is destructive to consumer customizations. Discovered during T-1382 audit: /003-NTB-ATC-Plugin and /opt/002-Claude-Partner-Network both still teach `curl -sf http://localhost:3000/` in their resume command 1 day after T-1378 shipped. T-1376's 'recurrence prevention' thesis only holds for new consumer inits until upgrade propagates template deltas."
+  spec_reference: "lib/upgrade.sh:694-709"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-22: T-1382 audit of consumer projects after T-1378/T-1380 ship found resume.md stale in both audited consumers."
+  detection_lag_days: "1"
+  what_works_now: "Vendored `.agentic-framework/*` snapshots ARE refreshed by `fw upgrade` (confirmed for lib/init.sh, lib/templates/claude-project.md, agents/monitor/liveness-check.sh). The gap is specific to files that upgrade writes once at init then skips: resume.md, CLAUDE.md governance sections already have a drift-refresh mechanism (lib/upgrade.sh:130+), but command files do not."
+  what_remains: "Patch upgrade.sh to detect template drift on resume.md: compute the template hash, compare against consumer's file hash, write .bak + refresh if different. Pattern exists for CLAUDE.md governance-section refresh — generalize to command files. Follow-up task candidate: T-1383 (build, ~15 LoC + bats regression)."
+  related_tasks: [T-1382, T-1378, T-1376]
+  status: watching
+  created: 2026-04-22
+  last_reviewed: 2026-04-22
