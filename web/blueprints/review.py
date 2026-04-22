@@ -72,6 +72,30 @@ def _load_pending_approvals():
     return results
 
 
+def _parse_recommendation(body_text):
+    """Extract the ## Recommendation section content (T-1195).
+
+    Returns stripped content between `## Recommendation` and the next `## ` header.
+    HTML comments (template boilerplate) are removed. Empty/whitespace-only returns "".
+    """
+    lines = body_text.split("\n")
+    in_section = False
+    collected = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped == "## Recommendation":
+            in_section = True
+            continue
+        if in_section and line.startswith("## "):
+            break
+        if in_section:
+            collected.append(line)
+    content = "\n".join(collected)
+    # Strip HTML comments (template placeholders)
+    content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
+    return content.strip()
+
+
 def _find_research_artifacts(task_id):
     """Find research artifact files for a task."""
     reports_dir = PROJECT_ROOT / "docs" / "reports"
@@ -130,6 +154,7 @@ def review(task_id):
     active_tier0 = [a for a in pending_tier0 if a.get("status") == "pending"]
 
     artifacts = _find_research_artifacts(task_id)
+    recommendation = _parse_recommendation(body)  # T-1195
 
     return render_template(
         "review.html",
@@ -143,6 +168,7 @@ def review(task_id):
         all_checked=all_checked,
         pending_tier0=active_tier0,
         artifacts=artifacts,
+        recommendation=recommendation,
     )
 
 

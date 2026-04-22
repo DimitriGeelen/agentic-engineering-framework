@@ -231,6 +231,42 @@
         }
         .badge-startedwork { background: #3b82f622; color: #1d4ed8; border: 1px solid #3b82f655; }
         .badge-workcompleted { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+
+        /* T-1195: Recommendation block */
+        .recommendation-block {
+            background: #fefce8;
+            border: 1px solid #eab308;
+            border-left: 4px solid #ca8a04;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .recommendation-block h3 {
+            margin: 0 0 0.5rem;
+            font-size: 0.9rem;
+            color: #854d0e;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .recommendation-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #1f2937;
+        }
+        .recommendation-empty {
+            background: #f3f4f6;
+            border: 1px dashed #9ca3af;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        .recommendation-empty a { color: #2563eb; text-decoration: underline; }
     </style>
 </head>
 <body class="review-page">
@@ -243,6 +279,21 @@
             <span>Owner: {{ task_owner }}</span>
         </div>
     </div>
+
+    <!-- T-1195: Recommendation block — shown above Tier 0 so reviewer sees what they're approving -->
+    {% if recommendation %}
+    <section class="recommendation-block">
+        <h3>Recommendation</h3>
+        <pre>{{ recommendation }}</pre>
+    </section>
+    {% elif artifacts %}
+    <section class="recommendation-empty">
+        No recommendation recorded yet. Open the research artifact:
+        {% for art in artifacts %}
+        <a href="/file/{{ art.path }}">{{ art.name }}</a>{% if not loop.last %},{% endif %}
+        {% endfor %}
+    </section>
+    {% endif %}
 
     <!-- Tier 0 approvals (if any pending) -->
     {% for item in pending_tier0 %}
