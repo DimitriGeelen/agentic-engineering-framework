@@ -1896,3 +1896,10 @@ learnings:
   date: 2026-04-22
   context: Added via context agent
   application: TBD
+- id: L-240
+  learning: "Verification gate (P-011) runs under set -o pipefail. Pipelines like 'cmd | grep -q pattern' exit with 141 (SIGPIPE) when grep finds the match and exits before the upstream command finishes writing. Write verification as 'cmd >/tmp/out 2>&1 && grep -q pattern /tmp/out' instead — two statements chained with && under pipefail don't trigger SIGPIPE because there's no live pipe."
+  source: P-011
+  task: T-1385
+  date: 2026-04-22
+  context: Added via context agent
+  application: TBD
