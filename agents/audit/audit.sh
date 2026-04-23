@@ -1901,6 +1901,9 @@ for task_file in $recent_completed; do
                 cmd_pass=$((cmd_pass + 1))
             else
                 cmd_fail=$((cmd_fail + 1))
+                # FW_AUDIT_VERIFY_DEBUG=1 surfaces the failing command for diagnosis
+                # (T-1395: surface which CTL-013 verification step is failing).
+                [ -n "${FW_AUDIT_VERIFY_DEBUG:-}" ] && echo "DEBUG ($task_id) FAIL: $cmd" >&2
             fi
         done
         if [ "$cmd_fail" -eq 0 ]; then

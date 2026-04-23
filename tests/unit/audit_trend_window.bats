@@ -51,7 +51,10 @@ _make_audit() {
         _make_audit "$date_iso" "Old resolved issue" 1
     done
 
-    PROJECT_ROOT="$TMPREPO" FW_AUDIT_TREND_WINDOW_DAYS=14 \
+    # Explicitly clear derived paths so they're re-resolved from PROJECT_ROOT
+    # (lib/paths.sh exports TASKS_DIR/CONTEXT_DIR — when CTL-013 re-runs this
+    # test under outer audit, stale exports leak through. T-1395.)
+    PROJECT_ROOT="$TMPREPO" TASKS_DIR= CONTEXT_DIR= FW_AUDIT_TREND_WINDOW_DAYS=14 \
         run bash "$AUDIT" --section structure
     [ "$status" -le 1 ]
     # The stale issue must NOT be reported as repeated
@@ -68,7 +71,10 @@ _make_audit() {
         _make_audit "$date_iso" "Recent recurring issue" 1
     done
 
-    PROJECT_ROOT="$TMPREPO" FW_AUDIT_TREND_WINDOW_DAYS=14 \
+    # Explicitly clear derived paths so they're re-resolved from PROJECT_ROOT
+    # (lib/paths.sh exports TASKS_DIR/CONTEXT_DIR — when CTL-013 re-runs this
+    # test under outer audit, stale exports leak through. T-1395.)
+    PROJECT_ROOT="$TMPREPO" TASKS_DIR= CONTEXT_DIR= FW_AUDIT_TREND_WINDOW_DAYS=14 \
         run bash "$AUDIT" --section structure
     [ "$status" -le 1 ]
     [[ "$output" == *"Recent recurring issue"* ]]
