@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1405: Add /cron handlers for liveness-1m, liveness-boot, release-weekly (T-1241 follow-up surfaced by T-1404 sweep)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T17:02:37Z
+# ============================================================================
+
+task_id: T-1405
+task_name: "Add /cron handlers for liveness-1m, liveness-boot, release-weekly (T-1241 follow-up surfaced by T-1404 sweep)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T16:58:51Z
+completed: 2026-04-23T17:02:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T19:02:06+02:00
+last_commit: 2026-04-23T19:02:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix /cron — scan-cap 200→800 + handlers for liveness-1m + release-weekly
+
+# Key outcomes
+outcomes:
+  - "`_last_run_info()` scans up to 800 files (~8 days, covers weekly jobs)"
+  - "`_match_job_to_output()` returns last-run for `liveness-1m` from `.context/monitors/liveness-latest.yaml`"
+  - "`_match_job_to_output()` returns last-run for `release-weekly` from latest annotated git tag creator-date"
+  - "T-1241 verification command (`curl /cron | python3 -c '...count <= 2'`) passes (≤2 no-data: pending-remind-daily paused + liveness-boot inherently overwritten)"
+  - "Existing cron tests still pass (`fw test integration tests/integration/fw_cron.bats`)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix /cron — scan-cap 200→800 + handlers for liveness-1m + release-weekly"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1405-add-cron-handlers-for-liveness-1m-livene.md"
+  - "web/blueprints/cron.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T19:02:06"
+    action: "T-1405: Fix /cron — scan-cap 200→800 + handlers for liveness-1m + release-weekly"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 93
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1405-add-cron-handlers-for-liveness-1m-livene.md
+generated_by: context-agent-hybrid

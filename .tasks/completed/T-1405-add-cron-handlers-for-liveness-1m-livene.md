@@ -4,16 +4,16 @@ name: "Add /cron handlers for liveness-1m, liveness-boot, release-weekly (T-1241
 description: >
   Add /cron handlers for liveness-1m, liveness-boot, release-weekly (T-1241 follow-up surfaced by T-1404 sweep)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/cron.py]
 related_tasks: []
 created: 2026-04-23T16:58:51Z
-last_update: 2026-04-23T16:58:51Z
-date_finished: null
+last_update: 2026-04-23T17:02:32Z
+date_finished: 2026-04-23T17:02:32Z
 ---
 
 # T-1405: Add /cron handlers for liveness-1m, liveness-boot, release-weekly (T-1241 follow-up surfaced by T-1404 sweep)
@@ -40,7 +40,7 @@ Surfaced regressions: T-1241 fix landed on Apr 13 with a 200-file cap that was s
 ## Verification
 
 curl -sf http://localhost:3000/cron | python3 -c "import sys,re; html=sys.stdin.read(); count=len(re.findall(r'no data', html)); print(f'no-data count: {count}'); exit(0 if count <= 2 else 1)"
-bash tests/integration/fw_cron.bats 2>&1 | tail -5 | grep -q "ok\|^[0-9]"
+bats tests/integration/fw_cron.bats
 
 ## Decisions
 
@@ -59,3 +59,6 @@ bash tests/integration/fw_cron.bats 2>&1 | tail -5 | grep -q "ok\|^[0-9]"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1405-add-cron-handlers-for-liveness-1m-livene.md
 - **Context:** Initial task creation
+
+### 2026-04-23T17:02:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
