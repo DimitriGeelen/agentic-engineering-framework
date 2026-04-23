@@ -41,8 +41,13 @@ Phase 1 of T-662 (GO). Framework's `.claude/settings.json` uses bare `fw` for al
 
 ## Verification
 
-python3 -c "import json; d=json.load(open('.claude/settings.json')); cmds=[h['command'] for g in d['hooks'].values() for e in g for h in e['hooks']]; assert all(c.startswith('bin/fw ') for c in cmds), f'Found non-bin/fw command: {[c for c in cmds if not c.startswith(\"bin/fw \")]}';"
-grep -q 'fw_prefix="bin/fw"' lib/init.sh
+# T-1411: relaxed startswith → contains. Hooks correctly use absolute
+# /opt/.../bin/fw paths (no bare fw). The intent of T-663 — "no bare fw" —
+# is preserved by checking that every hook routes through bin/fw, regardless
+# of whether the path is relative or absolute.
+python3 -c "import json; d=json.load(open('.claude/settings.json')); cmds=[h['command'] for g in d['hooks'].values() for e in g for h in e['hooks']]; assert all('bin/fw ' in c for c in cmds), f'Found bare-fw command: {[c for c in cmds if \"bin/fw \" not in c]}'"
+# T-1411: init.sh now uses framework-aware path (.agentic-framework/bin/fw or $dir/bin/fw); accept any bin/fw assignment
+grep -qE 'fw_prefix=.*bin/fw' lib/init.sh
 
 ## Decisions
 
