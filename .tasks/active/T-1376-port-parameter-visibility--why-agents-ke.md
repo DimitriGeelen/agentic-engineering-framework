@@ -97,9 +97,11 @@ Sites 1-3 are **instructions and templates shown to agents**. Every /resume, eve
 
 ## Verification
 
-grep -qn "localhost:3000" lib/init.sh
-grep -qn "localhost:3000" lib/templates/claude-project.md
-grep -qn "localhost:3000" agents/monitor/liveness-check.sh
+# T-1410: inverted previously — these MUST NOT contain localhost:3000
+# (the build phases of T-1376 removed the anti-pattern; verification asserts removal)
+! grep -qn "localhost:3000" lib/init.sh
+! grep -qn "localhost:3000" lib/templates/claude-project.md
+! grep -qn "localhost:3000" agents/monitor/liveness-check.sh
 
 ## Recommendation
 
