@@ -4,16 +4,16 @@ name: "Fix .fabric/watch-patterns.yaml YAML schema — exclude key misplaced ins
 description: >
   Fix .fabric/watch-patterns.yaml YAML schema — exclude key misplaced inside patterns list
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T20:07:17Z
-last_update: 2026-04-19T21:42:54Z
-date_finished: null
+last_update: 2026-04-23T15:25:20Z
+date_finished: 2026-04-23T15:25:20Z
 ---
 
 # T-1289: Fix .fabric/watch-patterns.yaml YAML schema — exclude key misplaced inside patterns list
@@ -25,10 +25,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `.fabric/watch-patterns.yaml` parses as valid YAML (no ParserError)
-- [ ] `exclude:` key is sibling of `patterns:` (top level), not inside patterns list
-- [ ] Audit output no longer shows YAML parse traceback in fabric section
+- [x] `.fabric/watch-patterns.yaml` parses as valid YAML (no ParserError) — verified 2026-04-23
+- [x] `exclude:` key is sibling of `patterns:` (top level), not inside patterns list — verified
+- [x] Audit output no longer shows YAML parse traceback in fabric section — T-1288 delivered this fix (completed 2026-04-21)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -73,3 +72,10 @@ python3 -c "import yaml; d=yaml.safe_load(open('/opt/050-email-archive/.fabric/w
 - **Change:** status: started-work → captured
 - **Change:** horizon: now → later
 - **Reason:** Duplicate of T-1288 (T-ID race traced to T-1279). Park; if T-1288 resolves, archive both.
+
+### 2026-04-23T15:25:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-23T15:25:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
