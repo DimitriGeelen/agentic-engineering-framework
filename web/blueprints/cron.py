@@ -139,7 +139,8 @@ def _last_run_info() -> dict:
 
     Scans files newest-first, collecting the most recent result for each unique
     section key.  Stops once all known section keys have been found or after
-    200 files (~3 days of data at current cadence).
+    800 files (~8 days at current cadence — covers weekly jobs like oe-weekly,
+    T-1405 follow-up to T-1241 which only scanned 200 ≈ 2 days).
     Cached with file-count invalidation (T-1247).
     """
     if not AUDIT_CRON_DIR.exists():
@@ -157,7 +158,7 @@ def _last_run_info() -> dict:
         return _run_info_cache["data"]
 
     info = {}
-    for f in files[:200]:
+    for f in files[:800]:
         try:
             data = yaml.safe_load(f.read_text())
             if not data:
@@ -247,6 +248,35 @@ def _match_job_to_output(job: dict, run_info: dict) -> Optional[dict]:
                 if oldest >= cutoff:
                     # Retention is working — use oldest file date as proxy
                     return {"timestamp": f"{oldest}T09:00:00+00:00", "pass": 1, "warn": 0, "fail": 0}
+
+    if job_id == "liveness-1m":
+        # liveness-check.sh writes liveness-latest.yaml every minute (T-1269)
+        liveness_file = PROJECT_ROOT / ".context" / "monitors" / "liveness-latest.yaml"
+        if liveness_file.exists():
+            try:
+                data = yaml.safe_load(liveness_file.read_text()) or {}
+                ts = data.get("timestamp", "")
+                if ts:
+                    return {"timestamp": ts, "pass": 1, "warn": 0, "fail": 0}
+            except Exception:
+                pass
+
+    if job_id == "release-weekly":
+        # release-weekly = `fw release tag-and-release` — last run = newest annotated tag.
+        # Subprocess kept tight: 5s timeout, no shell, fixed args.
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["git", "-C", str(PROJECT_ROOT), "for-each-ref",
+                 "--sort=-creatordate", "--count=1",
+                 "--format=%(creatordate:iso-strict)", "refs/tags"],
+                capture_output=True, text=True, timeout=5
+            )
+            ts = result.stdout.strip()
+            if ts:
+                return {"timestamp": ts, "pass": 1, "warn": 0, "fail": 0}
+        except Exception:
+            pass
 
     return None
 
