@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1392: Audit: ignore session-state files in uncommitted-changes check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T11:16:12Z
+# ============================================================================
+
+task_id: T-1392
+task_name: "Audit: ignore session-state files in uncommitted-changes check"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T11:01:51Z
+completed: 2026-04-23T11:16:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T13:06:09+02:00
+last_commit: 2026-04-23T13:06:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Audit filters session-state noise from uncommitted-changes check
+
+# Key outcomes
+outcomes:
+  - "`audit.sh` filters known session-state paths before counting uncommitted changes"
+  - "Filter set covers: `.context/working/{watchtower.*,session.yaml,focus.yaml,.session-metrics.yaml,.tool-counter,.edit-counter,.budget-status,.gate-bypass-log.yaml,.approval-notified}`, `.context/audits/`, `.context/monitors/`, `.context/approvals/{pending,resolved}-*.yaml`, `.context/project/metrics-history.yaml`"
+  - "Clean-with-only-noise → audit reports `PASS` with informational note (\"N session-state files modified\") not WARN"
+  - "Real source/code dirty → still WARN, evidence shows real-vs-ignored counts (no regression on the actual signal)"
+  - "Bats unit test asserts both branches (clean-with-noise = pass; dirty-with-real-changes = warn) — 3 tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-1392-audit-ignore-session-state-files-in-unco.md"
+  - "tests/unit/audit_session_state_filter.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T13:06:09"
+    action: "T-1392: Audit filters session-state noise from uncommitted-changes check"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 1
+  files_changed: 3
+  lines_added: 165
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1392-audit-ignore-session-state-files-in-unco.md
+generated_by: context-agent-hybrid

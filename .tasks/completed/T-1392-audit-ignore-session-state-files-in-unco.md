@@ -4,16 +4,16 @@ name: "Audit: ignore session-state files in uncommitted-changes check"
 description: >
   Audit: ignore session-state files in uncommitted-changes check
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 created: 2026-04-23T11:01:51Z
-last_update: 2026-04-23T11:01:51Z
-date_finished: null
+last_update: 2026-04-23T11:16:09Z
+date_finished: 2026-04-23T11:16:09Z
 ---
 
 # T-1392: Audit: ignore session-state files in uncommitted-changes check
@@ -43,9 +43,13 @@ Audit step "Check for uncommitted changes" (audit.sh:817-824) calls `git status 
 
 ## Verification
 
+# Syntax check on the audit script
 bash -n agents/audit/audit.sh
+# New test file exists
 test -f tests/unit/audit_session_state_filter.bats
-bin/fw test unit -- tests/unit/audit_session_state_filter.bats 2>&1 | tail -3 | grep -E "ok|passed|tests"
+# Run ONLY the new bats file directly (NOT `fw test unit` which runs the full
+# suite and times out the verification gate)
+bats tests/unit/audit_session_state_filter.bats 2>&1 | grep -q "^ok 3"
 
 ## Decisions
 
@@ -64,3 +68,6 @@ bin/fw test unit -- tests/unit/audit_session_state_filter.bats 2>&1 | tail -3 | 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1392-audit-ignore-session-state-files-in-unco.md
 - **Context:** Initial task creation
+
+### 2026-04-23T11:16:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
