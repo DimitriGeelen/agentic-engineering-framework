@@ -1924,3 +1924,10 @@ learnings:
   date: 2026-04-22
   context: Added via context agent
   application: TBD
+- id: L-244
+  learning: "When writing task ## Verification commands, never use 'fw test unit' — it runs the entire bats suite (~80 files) and the completion gate's keylock-protected timeout window has stuck for 7+ minutes in observation. Call 'bats tests/unit/<specific>.bats' directly. Discovered via T-1392 verification gate hang — flock-blocked queue of 14+ orphaned processes."
+  source: P-011
+  task: T-1392
+  date: 2026-04-23
+  context: Added via context agent
+  application: TBD
