@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: build
 owner: agent
-horizon: next
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-16T05:38:36Z
-last_update: 2026-04-23T16:46:49Z
+last_update: 2026-04-23T19:22:12Z
 date_finished: null
 ---
 
@@ -20,14 +20,24 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Superseded by T-1269** (Monitor termlink hub + Claude instance liveness via
+cron, 1-min + startup) — shipped 2026-04-22, in `.tasks/completed/`.
+
+T-1275 was created as a placeholder ("Watchdog script for framework services")
+with no scope. The intent it likely captured (liveness monitoring of framework
+services) is already covered by T-1269's cron-based liveness probe writing to
+`.context/monitors/liveness.jsonl`.
+
+If a future need emerges for *active* watchdog behaviour (auto-restart on
+failure, alerting, escalation), open a new task with that specific scope. This
+task should not be reopened — its title is too vague to scope.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Confirmed T-1269 ships liveness monitoring (`.context/monitors/liveness.jsonl` populated by 1-min cron)
+- [x] Recorded supersede rationale in task body
+- [x] Demote to `horizon: later` and `status: captured` to remove from started-work noise
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -74,3 +84,6 @@ date_finished: null
 
 ### 2026-04-23T16:46:49Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-04-23T19:22:12Z — status-update [task-update-agent]
+- **Change:** horizon: next → later
