@@ -1896,3 +1896,10 @@ learnings:
   date: 2026-04-23
   context: Added via context agent
   application: TBD
+- id: L-245
+  learning: "Playwright tests that POST to Watchtower API endpoints write to live PROJECT_ROOT files (decisions.yaml, learnings.yaml, etc.) — the test server inherits PROJECT_ROOT and shells out to fw context add-*. Always wrap with autouse pytest fixture that snapshots+restores affected files."
+  source: P-001
+  task: T-1393
+  date: 2026-04-23
+  context: Added via context agent
+  application: TBD
