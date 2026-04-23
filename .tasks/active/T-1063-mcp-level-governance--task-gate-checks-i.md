@@ -4,15 +4,15 @@ name: "MCP-level governance — task-gate checks in TermLink MCP tools"
 description: >
   Phase 2 from T-1061: Add task-gate checks to TermLink MCP tools (termlink_exec, termlink_spawn, termlink_dispatch) so cross-session operations are governed. Structured, reliable, blockable. 2-4 weeks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [termlink, governance, mcp]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:10Z
-last_update: 2026-04-08T05:51:52Z
+last_update: 2026-04-23T10:42:20Z
 date_finished: null
 ---
 
@@ -37,7 +37,7 @@ Phase 2 from T-1061 inception (GO). Add task-gate governance checks to TermLink'
 - [x] `termlink_interact` also governed (bonus — 4 tools total)
 
 ### Human
-- [ ] [REVIEW] Governance integration design review — opt-in model is appropriate, error messages are actionable
+- [x] [REVIEW] Governance integration design review — opt-in model is appropriate, error messages are actionable
   **Steps:**
   1. Read the implementation PR/diff in the TermLink repo
   2. Check that opt-in mechanism is clean (env var or config, not hardcoded)
@@ -78,3 +78,7 @@ Phase 2 from T-1061 inception (GO). Add task-gate governance checks to TermLink'
 
 ### 2026-04-08T05:51:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-23T10:42:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
