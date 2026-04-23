@@ -148,6 +148,34 @@ if [ -z "${PROJECT_ROOT:-}" ]; then
     PROJECT_ROOT=$(find_project_root) || true
 fi
 
+# T-1346-B2: Detect which framework copy resolved (vendored, framework-repo, global).
+# Must be called AFTER FRAMEWORK_ROOT and PROJECT_ROOT are populated.
+# Returns one of: vendored | framework-repo | global | unknown
+_detect_fw_mode() {
+    local fw="${FRAMEWORK_ROOT:-}"
+    local proj="${PROJECT_ROOT:-}"
+    [ -z "$fw" ] && { echo "unknown"; return; }
+
+    local canon_fw canon_proj canon_vendored
+    canon_fw=$(cd "$fw" 2>/dev/null && pwd -P) || canon_fw="$fw"
+
+    if [ -n "$proj" ]; then
+        canon_proj=$(cd "$proj" 2>/dev/null && pwd -P) || canon_proj="$proj"
+        if [ -d "$proj/.agentic-framework" ]; then
+            canon_vendored=$(cd "$proj/.agentic-framework" 2>/dev/null && pwd -P) \
+                || canon_vendored="$proj/.agentic-framework"
+            if [ "$canon_fw" = "$canon_vendored" ]; then
+                echo "vendored"; return
+            fi
+        fi
+        if [ "$canon_fw" = "$canon_proj" ]; then
+            echo "framework-repo"; return
+        fi
+    fi
+
+    echo "global"
+}
+
 # --- Vendor (T-482/T-497, moved before auto-init for T-519) ---
 # Copy complete framework into project/.agentic-framework/ for full isolation.
 # Must be defined before auto-init dialogue because do_init calls do_vendor.
@@ -591,6 +619,7 @@ show_help() {
 show_version() {
     echo "fw v$FW_VERSION"
     echo "Framework: $FRAMEWORK_ROOT"
+    echo "Mode:      $(_detect_fw_mode)"
     echo "Project:   $PROJECT_ROOT"
 
     # Show .framework.yaml version if present
@@ -622,6 +651,27 @@ do_doctor() {
         echo -e "  ${RED}FAIL${NC}  Framework installation - missing agents/ or FRAMEWORK.md"
         issues=$((issues + 1))
     fi
+
+    # Check 1b (T-1346-B2): Active framework mode disclosure
+    local _mode
+    _mode=$(_detect_fw_mode)
+    case "$_mode" in
+        vendored|framework-repo)
+            echo -e "  ${GREEN}OK${NC}  Active mode: $_mode ($FRAMEWORK_ROOT)"
+            ;;
+        global)
+            if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Active mode: global ($FRAMEWORK_ROOT) — vendored copy exists at $PROJECT_ROOT/.agentic-framework but was not selected"
+                warnings=$((warnings + 1))
+            else
+                echo -e "  ${CYAN}INFO${NC}  Active mode: global ($FRAMEWORK_ROOT)"
+            fi
+            ;;
+        *)
+            echo -e "  ${YELLOW}WARN${NC}  Active mode: $_mode ($FRAMEWORK_ROOT)"
+            warnings=$((warnings + 1))
+            ;;
+    esac
 
     # Check 2: .framework.yaml (only relevant if PROJECT_ROOT != FRAMEWORK_ROOT)
     if [ "$PROJECT_ROOT" != "$FRAMEWORK_ROOT" ]; then
