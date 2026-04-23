@@ -1,0 +1,14 @@
+id: agents/context/pl007-scanner.sh
+name: pl007-scanner
+type: script
+subsystem: context-fabric
+location: agents/context/pl007-scanner.sh
+tags: [hook, posttool, governance]
+purpose: PostToolUse hook scanning Bash output for bare-command leakage patterns
+  (PL-007); injects reminder when agent risks relaying raw commands to user instead
+  of using fw task review / termlink inject push-channels
+depends_on: []
+depended_by: []
+last_verified: 2026-04-23
+created_by: unknown
+last_enriched: '2026-04-23'
