@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: build
 owner: human
-horizon: later
+horizon: next
 tags: [termlink, data-plane, audit]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:32Z
-last_update: 2026-04-08T06:55:34Z
+last_update: 2026-04-23T16:46:48Z
 date_finished: null
 ---
 
@@ -81,3 +81,6 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
 
 ### 2026-04-08T06:55:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-23T16:46:48Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

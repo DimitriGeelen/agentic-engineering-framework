@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: later
+horizon: next
 tags: [watchtower, cron]
 components: [bin/fw, lib/upgrade.sh, web/blueprints/cron.py, web/templates/cron.html]
 related_tasks: []
 created: 2026-03-12T06:14:02Z
-last_update: 2026-03-28T15:22:13Z
+last_update: 2026-04-23T16:46:49Z
 date_finished: 2026-03-28T15:22:13Z
 ---
 
@@ -84,3 +84,6 @@ grep -q "cron/jobs" web/blueprints/cron.py
 
 ### 2026-03-28T15:22:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-23T16:46:49Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

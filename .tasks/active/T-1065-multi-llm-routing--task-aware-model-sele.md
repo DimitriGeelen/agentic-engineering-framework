@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: build
 owner: human
-horizon: later
+horizon: next
 tags: [termlink, multi-llm, routing]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:25Z
-last_update: 2026-04-08T06:54:54Z
+last_update: 2026-04-23T16:46:48Z
 date_finished: null
 ---
 
@@ -80,3 +80,6 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
 
 ### 2026-04-08T06:54:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-23T16:46:48Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

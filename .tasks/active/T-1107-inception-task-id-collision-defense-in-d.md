@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T14:34:33Z
-last_update: 2026-04-12T12:52:37Z
+last_update: 2026-04-23T16:46:48Z
 date_finished: null
 ---
 
@@ -197,3 +197,6 @@ Proposed next action (after T-1106 decided GO):
 5. If started, the research phase collects: cross-project task-ID collision audit, QR lifetime analysis, T-885 interaction, path recommendation
 
 Risk of deferring: Low. T-1106's fix prevents emission-time bleed. Residual post-emission bleed requires a specific (stale URL + topology change) precondition that is rare in practice. Monitoring for 1 week is cheap; deciding without data is wasted work.
+
+### 2026-04-23T16:46:48Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

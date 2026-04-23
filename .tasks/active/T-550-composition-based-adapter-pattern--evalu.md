@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: human
-horizon: later
+horizon: next
 tags: []
 components: []
 related_tasks: [T-549]
 created: 2026-03-23T15:49:01Z
-last_update: 2026-03-28T10:39:42Z
+last_update: 2026-04-23T16:46:49Z
 date_finished: null
 ---
 
@@ -143,3 +143,6 @@ No multi-adapter problem exists today. This is a "when/if" exploration.
 
 ### 2026-03-28T10:37:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-23T16:46:49Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

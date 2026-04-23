@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: build
 owner: agent
-horizon: later
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T10:16:32Z
-last_update: 2026-04-22T11:14:06Z
+last_update: 2026-04-23T16:46:49Z
 date_finished: null
 ---
 
@@ -72,3 +72,6 @@ date_finished: null
 - **Change:** status: started-work → captured
 - **Change:** horizon: now → later
 - **Reason:** placeholder ACs (G-020) — needs real scoping before build; demoted pending proper inception
+
+### 2026-04-23T16:46:49Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

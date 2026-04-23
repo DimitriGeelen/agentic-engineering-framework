@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: human
-horizon: later
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-20T09:24:02Z
-last_update: 2026-04-20T09:24:21Z
+last_update: 2026-04-23T16:46:49Z
 date_finished: null
 ---
 
@@ -109,3 +109,6 @@ date_finished: null
 
 ### 2026-04-20T09:24:21Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-04-23T16:46:49Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

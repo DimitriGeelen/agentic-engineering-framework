@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: human
-horizon: later
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-15T21:37:05Z
-last_update: 2026-04-16T05:29:09Z
+last_update: 2026-04-23T16:46:49Z
 date_finished: null
 ---
 
@@ -135,3 +135,6 @@ Evidence:
 - T-1270 has full inception content (`.tasks/active/T-1270-peer-learning-cron-every-15-min-connect-.md`)
 - P-022 envelope created in this project and processed in this project (`.context/pickup/processed/P-022-feature-proposal.yaml`)
 - Same pattern as T-1140 (previously shelved self-pickup from P-019)
+
+### 2026-04-23T16:46:49Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

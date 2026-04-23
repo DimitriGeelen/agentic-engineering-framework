@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: human
-horizon: later
+horizon: next
 tags: [federation, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:58:02Z
-last_update: 2026-03-29T08:58:02Z
+last_update: 2026-04-23T16:46:50Z
 date_finished: null
 ---
 
@@ -106,3 +106,6 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-23T16:46:50Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

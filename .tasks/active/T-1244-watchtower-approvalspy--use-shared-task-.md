@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: build
 owner: agent
-horizon: later
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T20:28:38Z
-last_update: 2026-04-13T20:29:53Z
+last_update: 2026-04-23T16:46:48Z
 date_finished: null
 ---
 
@@ -72,3 +72,6 @@ date_finished: null
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
 - **Reason:** Approvals page already at 170ms — no performance issue
+
+### 2026-04-23T16:46:48Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

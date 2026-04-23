@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: human
-horizon: later
+horizon: next
 tags: [kcp, integration, mcp]
 components: []
 related_tasks: []
 created: 2026-03-29T08:58:11Z
-last_update: 2026-04-06T22:23:16Z
+last_update: 2026-04-23T16:46:50Z
 date_finished: null
 ---
 
@@ -120,3 +120,6 @@ grep -q "Recommendation" docs/reports/T-705-kcp-integration.md
 
 ### 2026-04-06T22:23:16Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-23T16:46:50Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

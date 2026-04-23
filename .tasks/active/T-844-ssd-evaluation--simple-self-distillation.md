@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: human
-horizon: later
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T13:27:15Z
-last_update: 2026-04-06T22:23:16Z
+last_update: 2026-04-23T16:46:50Z
 date_finished: null
 ---
 
@@ -116,3 +116,6 @@ OUT: Reproducing the paper's experiments, fine-tuning models, building SSD pipel
 - **Rationale:** - Recommendation: DEFER
 - Rationale: SSD requires model fine-tuning — we consume Claude as a service. The precision-exploration conflict (locks vs forks) is a useful mental model for agentic behavior but has no immediate build target. Worth revisiting if inference-time analogs emerge.
 - Evidence: Full analysis in `docs/reports/T-844-ssd-self-distillation-evaluation.md`
+
+### 2026-04-23T16:46:50Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

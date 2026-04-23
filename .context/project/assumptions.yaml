@@ -214,3 +214,38 @@ assumptions:
   linked_task: T-1388
   created: '2026-04-22'
   resolved_date: null
+- id: A-023
+  statement: Most active-task Human ACs have shell/curl Steps the agent can run right
+    now
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1404
+  created: '2026-04-23'
+  resolved_date: null
+- id: A-024
+  statement: Some ACs are mislabeled [REVIEW] when their Steps are mechanical (e.g.
+    T-1278, T-1279)
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1404
+  created: '2026-04-23'
+  resolved_date: null
+- id: A-025
+  statement: Running verification surfaces both closures and silent regressions humans
+    would have rubber-stamped
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1404
+  created: '2026-04-23'
+  resolved_date: null
+- id: A-026
+  statement: T-1322 fix covers inceptions only — broader backlog needs separate back-fill
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1404
+  created: '2026-04-23'
+  resolved_date: null
