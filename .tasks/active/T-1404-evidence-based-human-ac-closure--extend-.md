@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-23T16:46:40Z
-last_update: 2026-04-23T16:46:40Z
+last_update: 2026-04-23T16:49:02Z
 date_finished: null
 ---
 
@@ -43,7 +43,17 @@ A4. The fix for T-1322 (auto-tick at `decide` time) covers inception tasks but n
 - T-1240: `/tasks?sort=id` last DOM IDs are T-1399..T-1403 (numeric order). **AC satisfied** — closeable with evidence.
 - T-1241: `/cron` shows 5 jobs with "no data" vs AC limit of 1. **AC not satisfied** — silent regression surfaced. **A3 confirmed.**
 
-**Spike 3 (proposed)** — Run the full 47-AC sweep, classify into:
+**Spike 3 (DONE)** — Full backlog sweep across 111 active task files (`docs/reports/T-1404-backlog-sweep.md`):
+- 100 unchecked Human ACs with Steps blocks classified
+- **TIER-1-CURL** (zero-risk web check): 11
+- **TIER-1-SHELL** (deterministic shell): 64
+- **TRUE-REVIEW** (subjective UI/voice judgment): 2 + ~15 in UNKNOWN bucket re-classified manually = ~17
+- **TRUE-HUMAN** (phone/mac/fresh-session): 5
+- UNKNOWN (manual triage needed): 18 (mostly REVIEW judgments my classifier missed)
+- **75/100 = 75% are agent-verifiable** with current Tier-1 toolset (curl + shell)
+- This means 3 out of every 4 "Awaiting Human Review" entries do not need a human — they need an agent that runs the verification command and ticks the box with cited evidence. **A4 confirmed in spirit:** back-fill is viable and high-value.
+
+**Spike 3-bis (planned, deferred to build phase B3) — re-run the full 47-AC sweep, classify into:
 - TIER-1 PASS (verifiable + currently passing → tick + cite evidence in task)
 - TIER-1 FAIL (verifiable + currently failing → re-open / register concern)
 - TIER-2 needs TermLink E2E (defer — design separately)
@@ -112,7 +122,9 @@ A4. The fix for T-1322 (auto-tick at `decide` time) covers inception tasks but n
 - Sample of 5/5 active-task Human ACs all had shell/curl Steps (A1 confirmed)
 - T-1278, T-1279 mislabeled `[REVIEW]` despite pure-shell Steps (A2 confirmed)
 - T-1240 live-verified PASS (DOM order T-1399..T-1403 last); T-1241 live-verified FAIL (5 no-data vs 1 limit) — both in <30 seconds (A3 confirmed)
-- `fw verify-acs --auto-check` returned 0 candidates because it only scans `work-completed/` — backlog of 47 active-task ACs is invisible to existing tooling
+- **Full sweep (`docs/reports/T-1404-backlog-sweep.md`):** 100 ACs scanned, **75% are TIER-1 agent-verifiable** with curl+shell. The "Awaiting Human Review" backlog is 75% mislabelled — three out of every four entries are an agent that didn't run its own verification.
+- **Surfaced regression (T-1241):** 5 no-data on /cron vs AC limit of 2. RCA + fix already shipped under T-1405 (commit d22431de) — scan cap was 200 (~2 days, missed weekly jobs) and 2 jobs lacked detection handlers.
+- `fw verify-acs --auto-check` returned 0 candidates because it only scans `work-completed/` — backlog of 92+ active-task ACs is invisible to existing tooling
 - T-1322 (decide-time auto-tick) is GO-decided but build-deferred — covers inceptions only, not the broader backlog
 
 **Build proposal (post-GO):**
