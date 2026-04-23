@@ -4,7 +4,7 @@ name: "Cross-machine update propagation friction — global install boundary + b
 description: >
   Inception: structural fix for agent-driven update propagation across boundaries we cannot cross (global install gate, TermLink binary toolchain)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,11 +12,13 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-15T21:03:24Z
-last_update: 2026-04-15T21:03:24Z
+last_update: 2026-04-23T10:56:47Z
 date_finished: null
 ---
 
 # T-1268: Cross-machine update propagation friction — global install boundary + binary cargo dep
+
+**Research artifact:** [docs/reports/T-1268-cross-machine-update-friction.md](../../docs/reports/T-1268-cross-machine-update-friction.md) — full spike findings, dialogue log, recommendation.
 
 ## Problem Statement
 
@@ -127,3 +129,6 @@ Both leave the environment in a known-stale state with no structural mechanism t
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-23T10:56:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
