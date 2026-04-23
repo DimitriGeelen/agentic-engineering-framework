@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1399: T-1268 B4: fw pending remind — ping human for pending entries older than 24h
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T14:09:51Z
+# ============================================================================
+
+task_id: T-1399
+task_name: "T-1268 B4: fw pending remind — ping human for pending entries older than 24h"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T14:06:44Z
+completed: 2026-04-23T14:09:47Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T16:09:38+02:00
+last_commit: 2026-04-23T16:09:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Ship T-1268 B4 — fw pending remind (proactive stale entry reminder)
+
+# Key outcomes
+outcomes:
+  - "`fw pending remind` prints a summary of entries with `status=pending` older than `FW_PENDING_REMIND_STALE_HOURS` (default 24)"
+  - "When 0 stale entries, `fw pending remind` prints a clean \"No stale pending entries\" message and exits 0 without firing a notification"
+  - "When 1+ stale entries and `NTFY_ENABLED=true`, the command invokes `fw_notify` with count + first entry id + task"
+  - "Cron registry entry `pending-remind-daily` exists in `.context/cron-registry.yaml` with `status: paused` (human opts in)"
+  - "Unit test (`tests/unit/fw_pending_remind.bats`) covers: no file → 0 stale; fresh entries → 0 stale; aged entry (simulated) → reported; resolved entry → never reported"
+  - "CLAUDE.md Quick Reference row for `fw pending remind`"
+  - "`bash -n lib/pending.sh` passes"
+  - "`bats tests/unit/fw_pending_remind.bats` passes (5/5)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".context/cron-registry.yaml"
+  - "lib/pending.sh"
+  - ".tasks/active/T-1399-t-1268-b4-fw-pending-remind--ping-human-.md"
+  - "tests/unit/fw_pending_remind.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T16:09:38"
+    action: "T-1399: Ship T-1268 B4 — fw pending remind (proactive stale entry reminder)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 5
+  lines_added: 258
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1399-t-1268-b4-fw-pending-remind--ping-human-.md
+generated_by: context-agent-hybrid
