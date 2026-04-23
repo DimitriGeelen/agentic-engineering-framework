@@ -4,16 +4,16 @@ name: "Cross-machine update propagation friction — global install boundary + b
 description: >
   Inception: structural fix for agent-driven update propagation across boundaries we cannot cross (global install gate, TermLink binary toolchain)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/pending.sh, web/blueprints/__init__.py, web/blueprints/pending.py, web/shared.py, web/templates/pending.html]
 related_tasks: []
 created: 2026-04-15T21:03:24Z
-last_update: 2026-04-23T10:56:47Z
-date_finished: null
+last_update: 2026-04-23T15:15:49Z
+date_finished: 2026-04-23T15:15:49Z
 ---
 
 # T-1268: Cross-machine update propagation friction — global install boundary + binary cargo dep
@@ -68,9 +68,12 @@ Both leave the environment in a known-stale state with no structural mechanism t
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
+- [x] B1-B4 (pending-updates registry) shipped: T-1397 (CLI), T-1398 (fw doctor), T-1399 (remind+ntfy), T-1400 (Watchtower `/pending`), T-1401 (nav link)
+- [x] B5 (TermLink prebuild matrix) verified shipped upstream: `/opt/termlink/.github/workflows/release.yml` — 5-target matrix, sha256 checksums, gh-release integration (tag v0.9.1)
+- [x] B6 (TermLink curl-bash installer) verified shipped upstream: `/opt/termlink/install.sh` — detects host target, downloads binary, verifies sha256
 
 ### Human
 - [x] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -94,9 +97,11 @@ Both leave the environment in a known-stale state with no structural mechanism t
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
+bin/fw pending --help >/dev/null
+test -f /opt/termlink/.github/workflows/release.yml
+test -f /opt/termlink/install.sh
+grep -q "tags:" /opt/termlink/.github/workflows/release.yml
+grep -q "softprops/action-gh-release" /opt/termlink/.github/workflows/release.yml
 
 ## Recommendation
 
@@ -211,3 +216,6 @@ Alternative (NO-GO): Status quo — agent hands copy-pasteable commands; human f
 
 See `docs/reports/T-1268-cross-machine-update-friction.md` for full spike findings (A-E), trade-off matrix, and design sketches.
 -->
+
+### 2026-04-23T15:15:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
