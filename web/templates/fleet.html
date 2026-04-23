@@ -1,0 +1,439 @@
+<style>
+    .fleet-summary {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+        align-items: center;
+    }
+    .fleet-summary .stat {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .fleet-summary .stat-value {
+        font-weight: 700;
+        font-size: 1.3rem;
+    }
+    .fleet-summary .stat-label {
+        font-size: 0.9rem;
+        color: var(--pico-muted-color);
+    }
+    .health-badge {
+        display: inline-block;
+        padding: 0.2rem 0.8rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+    .health-ok { background: #1b5e20; color: #a5d6a7; }
+    .health-degraded { background: #e65100; color: #ffcc80; }
+    .health-down { background: #b71c1c; color: #ef9a9a; }
+
+    .hub-card {
+        padding: 1rem 1.25rem;
+        border-radius: 6px;
+        border: 1px solid var(--pico-muted-border-color);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .hub-card .status-dot {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .dot-up { background: #4CAF50; }
+    .dot-down { background: #f44336; }
+    .dot-auth { background: #ff9800; }
+    .dot-timeout { background: #9e9e9e; }
+
+    .hub-card .hub-info {
+        flex: 1;
+    }
+    .hub-card .hub-name {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    .hub-card .hub-address {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+    }
+    .hub-card .hub-detail {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        margin-top: 0.2rem;
+    }
+    .hub-card .hub-status-badge {
+        font-size: 0.75rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .badge-up { background: #1b5e20; color: #a5d6a7; }
+    .badge-down { background: #b71c1c; color: #ef9a9a; }
+    .badge-auth-fail { background: #e65100; color: #ffcc80; }
+    .badge-timeout { background: #546e7a; color: #b0bec5; }
+
+    .actions-section {
+        margin-top: 1.5rem;
+        padding: 1rem 1.25rem;
+        border-radius: 6px;
+        background: #fff3e0;
+        border-left: 4px solid #e65100;
+    }
+    [data-theme="dark"] .actions-section {
+        background: #3e2723;
+        border-left-color: #ff6d00;
+    }
+    .actions-section h3 {
+        margin: 0 0 0.75rem;
+        font-size: 1rem;
+        color: #e65100;
+    }
+    [data-theme="dark"] .actions-section h3 {
+        color: #ff9800;
+    }
+    .actions-section ol {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+    .actions-section li {
+        margin-bottom: 0.4rem;
+        font-size: 0.9rem;
+    }
+    .actions-section code {
+        font-size: 0.8rem;
+        background: rgba(0,0,0,0.06);
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+    }
+    /* T-1109: click-to-copy action lines */
+    .actions-section li.copyable {
+        cursor: pointer;
+        transition: background 0.15s;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        margin-left: -0.4rem;
+    }
+    .actions-section li.copyable:hover {
+        background: rgba(230, 81, 0, 0.12);
+    }
+    .actions-section .copy-hint {
+        font-size: 0.7rem;
+        color: var(--pico-muted-color);
+        margin-left: 0.5rem;
+    }
+    .actions-section li.copied {
+        background: rgba(76, 175, 80, 0.18) !important;
+    }
+    .actions-section li.copied .copy-hint {
+        color: #2e7d32;
+        font-weight: 600;
+    }
+
+    .refresh-info {
+        font-size: 0.75rem;
+        color: var(--pico-muted-color);
+        text-align: right;
+        margin-top: 0.5rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--pico-muted-color);
+    }
+
+    /* T-1107: Diagnose button + layered results */
+    .hub-diagnose-btn {
+        background: transparent;
+        border: 1px solid var(--pico-muted-border-color);
+        color: var(--pico-muted-color);
+        padding: 0.25rem 0.7rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        margin-left: 0.5rem;
+    }
+    .hub-diagnose-btn:hover {
+        border-color: var(--pico-primary);
+        color: var(--pico-primary);
+    }
+    .hub-diagnose-results {
+        margin-top: 0.5rem;
+        padding: 0.6rem 0.8rem;
+        background: rgba(0,0,0,0.04);
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+    [data-theme="dark"] .hub-diagnose-results {
+        background: rgba(255,255,255,0.03);
+    }
+    .hub-diagnose-results .layer-row {
+        display: flex;
+        gap: 0.75rem;
+        padding: 0.15rem 0;
+        font-family: monospace;
+    }
+    .hub-diagnose-results .layer-name { width: 3.5rem; font-weight: 600; }
+    .hub-diagnose-results .layer-status { width: 4rem; }
+    .layer-pass { color: #4CAF50; }
+    .layer-fail { color: #f44336; }
+    .layer-timeout { color: #ff9800; }
+    .hub-diagnose-results .layer-latency { color: var(--pico-muted-color); }
+    .hub-diagnose-results .layer-error { color: var(--pico-muted-color); font-size: 0.8rem; margin-left: 4.5rem; }
+    .hub-diagnose-results .diagnosis { margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid var(--pico-muted-border-color); font-style: italic; }
+
+    /* T-1115: Session list per hub */
+    .session-toggle {
+        cursor: pointer;
+        text-decoration: underline;
+        text-decoration-style: dotted;
+        text-underline-offset: 2px;
+    }
+    .session-toggle:hover {
+        color: var(--pico-primary);
+    }
+    .session-list {
+        margin: 0.3rem 0 0 0;
+        padding: 0.4rem 0.6rem;
+        background: rgba(0,0,0,0.03);
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-family: monospace;
+        color: var(--pico-muted-color);
+        list-style: none;
+    }
+    [data-theme="dark"] .session-list {
+        background: rgba(255,255,255,0.03);
+    }
+    .session-list li {
+        padding: 0.1rem 0;
+    }
+    .session-list li::before {
+        content: "› ";
+        color: var(--pico-muted-color);
+    }
+</style>
+
+<div class="page-header">
+    <h1>Fleet Overview</h1>
+    <p>Operational health of all configured termlink hubs. Auto-refreshes every 30 seconds.</p>
+</div>
+
+<!-- Summary -->
+<div class="fleet-summary">
+    <span class="health-badge {% if is_healthy %}health-ok{% elif summary.get('up', 0) > 0 %}health-degraded{% else %}health-down{% endif %}">
+        {% if is_healthy %}All Healthy{% elif summary.get('up', 0) > 0 %}Degraded{% else %}Down{% endif %}
+    </span>
+    <div class="stat">
+        <span class="stat-value">{{ summary.get('total', 0) }}</span>
+        <span class="stat-label">hubs</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value" style="color: #4CAF50;">{{ summary.get('up', 0) }}</span>
+        <span class="stat-label">up</span>
+    </div>
+    {% if summary.get('down', 0) > 0 %}
+    <div class="stat">
+        <span class="stat-value" style="color: #f44336;">{{ summary.get('down', 0) }}</span>
+        <span class="stat-label">down</span>
+    </div>
+    {% endif %}
+    {% if summary.get('auth_fail', 0) > 0 %}
+    <div class="stat">
+        <span class="stat-value" style="color: #ff9800;">{{ summary.get('auth_fail', 0) }}</span>
+        <span class="stat-label">auth-fail</span>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Hub cards -->
+{% if fleet_entries %}
+<div id="fleet-list">
+    {% for hub in fleet_entries %}
+    <div class="hub-card-wrapper">
+    <div class="hub-card">
+        <span class="status-dot dot-{{ hub.status | replace('-', '') | replace('auth_fail', 'auth') | replace('authfail', 'auth') }}
+            {% if hub.status == 'up' %}dot-up{% elif hub.status == 'down' %}dot-down{% elif hub.status == 'timeout' %}dot-timeout{% else %}dot-auth{% endif %}"></span>
+        <div class="hub-info">
+            <div>
+                <span class="hub-name">{{ hub.hub }}</span>
+                <span class="hub-address">{{ hub.address }}</span>
+            </div>
+            <div class="hub-detail">
+                {% if hub.status == 'up' %}
+                    {% set names = hub.get('session_names', []) %}
+                    {% if names %}
+                    <span class="session-toggle" onclick="toggleSessions('sess-{{ hub.hub }}')">{{ hub.get('sessions', 0) }} sessions</span>
+                    {% else %}
+                    {{ hub.get('sessions', 0) }} sessions
+                    {% endif %}
+                    &middot; {{ hub.get('latency_ms', '?') }}ms
+                {% elif hub.status == 'auth-fail' %}
+                    Secret mismatch &mdash; hub was restarted with a new secret
+                {% elif hub.status == 'down' %}
+                    {{ hub.get('error', 'Connection failed') }}
+                {% elif hub.status == 'timeout' %}
+                    Connection timed out
+                {% endif %}
+            </div>
+        </div>
+        <button class="hub-diagnose-btn" type="button"
+            onclick="runDiagnose('{{ hub.hub }}')">net-test</button>
+        <span class="hub-status-badge
+            {% if hub.status == 'up' %}badge-up
+            {% elif hub.status == 'down' %}badge-down
+            {% elif hub.status == 'timeout' %}badge-timeout
+            {% else %}badge-auth-fail{% endif %}">
+            {{ hub.status | upper }}
+        </span>
+    </div>
+    {% if hub.status == 'up' and hub.get('session_names') %}
+    <ul class="session-list" id="sess-{{ hub.hub }}" style="display:none;">
+        {% for name in hub.get('session_names', []) %}<li>{{ name }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    <div class="hub-diagnose-results" id="diag-{{ hub.hub }}" style="display:none;"></div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No hubs configured.</p>
+    <p>Add hubs with: <code>termlink remote profile add &lt;name&gt; &lt;host:port&gt; --secret-file &lt;path&gt;</code></p>
+</div>
+{% endif %}
+
+<!-- Actions needed -->
+{% if actions %}
+<div class="actions-section">
+    <h3>Actions Needed</h3>
+    <ol>
+        {% for action in actions %}
+        <li class="copyable" onclick="copyAction(this)" data-text="{{ action }}">
+            {{ action|linkify_tasks }}
+            <span class="copy-hint">click to copy</span>
+        </li>
+        {% endfor %}
+    </ol>
+</div>
+{% endif %}
+
+<div class="refresh-info">
+    <span id="refresh-countdown">Refreshes in 30s</span>
+    &middot;
+    <a href="#" onclick="refreshFleet(); return false;">Refresh now</a>
+</div>
+
+<script>
+var countdown = 30;
+var timer = setInterval(function() {
+    countdown--;
+    var el = document.getElementById('refresh-countdown');
+    if (el) el.textContent = 'Refreshes in ' + countdown + 's';
+    if (countdown <= 0) {
+        refreshFleet();
+        countdown = 30;
+    }
+}, 1000);
+
+function refreshFleet() {
+    // Use htmx-style content swap if available, otherwise full reload
+    if (window.htmx) {
+        htmx.ajax('GET', '/fleet', {target: '#main-content', swap: 'innerHTML'});
+    } else {
+        location.reload();
+    }
+    countdown = 30;
+}
+
+function copyAction(el) {
+    // T-1109: click-to-copy for action commands.
+    // Copies the full action text to clipboard with graceful fallback for
+    // browsers without Clipboard API (older Safari, non-HTTPS contexts).
+    var text = el.getAttribute('data-text') || el.textContent.trim();
+    var onSuccess = function() {
+        el.classList.add('copied');
+        var hint = el.querySelector('.copy-hint');
+        if (hint) { var original = hint.textContent; hint.textContent = 'copied ✓'; }
+        setTimeout(function() {
+            el.classList.remove('copied');
+            if (hint) hint.textContent = 'click to copy';
+        }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(function() {
+            fallbackCopy(text, onSuccess);
+        });
+    } else {
+        fallbackCopy(text, onSuccess);
+    }
+}
+
+function fallbackCopy(text, onSuccess) {
+    // Textarea + execCommand fallback for non-HTTPS / older browsers
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); onSuccess(); }
+    catch(e) { /* silent */ }
+    document.body.removeChild(ta);
+}
+
+function toggleSessions(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function runDiagnose(profile) {
+    // T-1107: fetch per-layer diagnostic and render inline
+    var box = document.getElementById('diag-' + profile);
+    if (!box) return;
+    box.style.display = 'block';
+    box.innerHTML = '<em>running net test…</em>';
+
+    fetch('/api/fleet/net-test?profile=' + encodeURIComponent(profile) + '&timeout=5')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.hubs || data.hubs.length === 0) {
+                box.innerHTML = '<em>no result: ' + (data.error || 'unknown') + '</em>';
+                return;
+            }
+            var hub = data.hubs[0];
+            var html = '';
+            ['tcp','tls','auth','ping'].forEach(function(layer) {
+                var entry = hub.layers && hub.layers[layer];
+                if (!entry) return;
+                var cls = 'layer-' + entry.status;
+                var marker = entry.status === 'pass' ? 'PASS' :
+                             entry.status === 'fail' ? 'FAIL' :
+                             entry.status === 'timeout' ? 'TIME' : '----';
+                html += '<div class="layer-row">' +
+                        '<span class="layer-name">' + layer.toUpperCase() + '</span>' +
+                        '<span class="layer-status ' + cls + '">' + marker + '</span>' +
+                        '<span class="layer-latency">' + entry.latency_ms + 'ms</span>' +
+                        '</div>';
+                if (entry.error) {
+                    html += '<div class="layer-error">' +
+                            entry.error.replace(/</g,'&lt;').slice(0, 200) + '</div>';
+                }
+            });
+            if (hub.diagnosis) {
+                html += '<div class="diagnosis">→ ' +
+                        hub.diagnosis.replace(/</g,'&lt;') + '</div>';
+            }
+            box.innerHTML = html || '<em>no layer data returned</em>';
+        })
+        .catch(function(err) {
+            box.innerHTML = '<em>error: ' + String(err).replace(/</g,'&lt;') + '</em>';
+        });
+}
+</script>
