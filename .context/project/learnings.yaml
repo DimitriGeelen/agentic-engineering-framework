@@ -1931,3 +1931,10 @@ learnings:
   date: 2026-04-23
   context: Added via context agent
   application: TBD
+- id: PL-004
+  learning: "Fleet doctor observed auth-mismatch on hub 'ring20-dashboard' (192.168.10.121:9100). date_observed=2026-04-23T17:17:01Z hub_fingerprint=sha256:7f927cc0c6ee272caa06033c8964a952616da736b92b90f1fd7e1b5a4420d10e. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-23
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"

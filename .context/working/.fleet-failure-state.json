@@ -9,10 +9,10 @@
     },
     "ring20-dashboard": {
       "concern_registered": false,
-      "consecutive_failures": 0,
-      "first_failure_at": null,
-      "last_class": null,
-      "last_failure_at": null
+      "consecutive_failures": 1,
+      "first_failure_at": "2026-04-23T17:17:01Z",
+      "last_class": "auth-mismatch",
+      "last_failure_at": "2026-04-23T17:17:01Z"
     },
     "ring20-management": {
       "concern_registered": false,

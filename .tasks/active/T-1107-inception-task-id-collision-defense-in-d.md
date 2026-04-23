@@ -4,16 +4,16 @@ name: "Inception: task-ID collision defense-in-depth — globally unique IDs or 
 description: >
   Follow-up to T-1106 (Watchtower port bleed + cross-project task-ID collision). T-1106's Option D (identity-endpoint check before URL emission) closes the primary bleed-through, but leaks remain when a URL is shared with a second client (QR code scanned later; bookmark hit after Watchtower restart on a different project). This inception explores defense-in-depth: (1) make task IDs globally unique (prefix with project slug, e.g., '025/T-434' vs '999/T-434'); OR (2) namespace URL paths with project ('/proj/025/inception/T-434'); OR (3) embed project identifier in QR payload and have Watchtower /inception/T-XXX reject when the path project doesn't match the served project. Evaluate backwards-compat cost, consumer-project migration burden, QR lifetime, and interaction with T-885 port registry. Scope fence: NO build, NO schema lock. Deliverable: path recommendation with evidence from T-1106 RCA and audit of historical task-ID collisions across consumer projects. Related: T-1106, T-885, T-1105, T-1100.
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T14:34:33Z
-last_update: 2026-04-23T16:46:48Z
-date_finished: null
+last_update: 2026-04-23T18:42:29Z
+date_finished: 2026-04-23T18:42:29Z
 ---
 
 # T-1107: Inception: task-ID collision defense-in-depth — globally unique IDs or URL namespacing
@@ -200,3 +200,10 @@ Risk of deferring: Low. T-1106's fix prevents emission-time bleed. Residual post
 
 ### 2026-04-23T16:46:48Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-04-23T18:41:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-23T18:42:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

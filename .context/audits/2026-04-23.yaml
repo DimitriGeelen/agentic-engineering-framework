@@ -1,9 +1,9 @@
-# Audit Results - 2026-04-22-2355
-timestamp: 2026-04-22T21:55:09Z
+# Audit Results - 2026-04-23-1922
+timestamp: 2026-04-23T17:22:29Z
 sections: "structure"
 summary:
-  pass: 8
-  warn: 1
+  pass: 10
+  warn: 0
   fail: 0
 findings:
   - level: PASS
@@ -17,11 +17,12 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
+    check: "No duplicate task IDs across active/ and completed/"
+  - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 412 registered, 2 unregistered (coverage growing)"
+    check: "Fabric: 418 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 406/413 cards enriched (7 without edges)"
-  - level: WARN
-    check: "Fabric drift: 2 source file(s) have no fabric card"
-    mitigation: "Run: fw fabric scan"
+    check: "Fabric edges: 410/419 cards enriched (9 without edges)"
+  - level: PASS
+    check: "Fabric drift: All watched source files registered (418 cards)"
