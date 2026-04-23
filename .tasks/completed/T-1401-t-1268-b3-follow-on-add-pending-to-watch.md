@@ -4,16 +4,16 @@ name: "T-1268 B3 follow-on: add /pending to Watchtower Govern nav"
 description: >
   T-1268 B3 follow-on: add /pending to Watchtower Govern nav
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/shared.py]
 related_tasks: []
 created: 2026-04-23T14:16:42Z
-last_update: 2026-04-23T14:16:42Z
-date_finished: null
+last_update: 2026-04-23T14:18:09Z
+date_finished: 2026-04-23T14:18:09Z
 ---
 
 # T-1401: T-1268 B3 follow-on: add /pending to Watchtower Govern nav
@@ -56,3 +56,6 @@ _t=$(mktemp); curl -sf "$(bin/fw watchtower url)/pending" >"$_t" 2>&1; grep -q '
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1401-t-1268-b3-follow-on-add-pending-to-watch.md
 - **Context:** Initial task creation
+
+### 2026-04-23T14:18:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

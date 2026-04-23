@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1401: T-1268 B3 follow-on: add /pending to Watchtower Govern nav
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T14:18:11Z
+# ============================================================================
+
+task_id: T-1401
+task_name: "T-1268 B3 follow-on: add /pending to Watchtower Govern nav"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T14:16:42Z
+completed: 2026-04-23T14:18:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T16:18:08+02:00
+last_commit: 2026-04-23T16:18:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Ship T-1268 B3 follow-on — Pending link in Watchtower Govern nav
+
+# Key outcomes
+outcomes:
+  - "`web/shared.py` `NAV_GROUPS` Govern group contains `(\"Pending\", \"pending.pending_page\", None)`"
+  - "Watchtower restarts cleanly with the new nav entry"
+  - "`/pending` page still responds HTTP 200 with the nav link present in the rendered base template"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1401-t-1268-b3-follow-on-add-pending-to-watch.md"
+  - "web/shared.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T16:18:08"
+    action: "T-1401: Ship T-1268 B3 follow-on — Pending link in Watchtower Govern nav"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 59
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1401-t-1268-b3-follow-on-add-pending-to-watch.md
+generated_by: context-agent-hybrid
