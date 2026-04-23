@@ -307,15 +307,15 @@ class TestQualityGate:
         assert "Run Audit" in html
         assert "Run Tests" in html
 
-    def test_audit_api_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_audit_api_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/audit/run")
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
-    def test_tests_api_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_tests_api_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/tests/run")
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
 
 # =========================================================================
@@ -337,10 +337,10 @@ class TestSessionCockpit:
         html = resp.data.decode()
         assert "master" in html or "main" in html
 
-    def test_decision_api_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_decision_api_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/decision", data={"decision": "Test"})
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
     def test_decision_api_requires_text(self, csrf_client):
         client, token = csrf_client
@@ -350,10 +350,10 @@ class TestSessionCockpit:
         )
         assert resp.status_code == 400
 
-    def test_learning_api_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_learning_api_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/learning", data={"learning": "Test"})
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
     def test_learning_api_requires_text(self, csrf_client):
         client, token = csrf_client
@@ -363,15 +363,15 @@ class TestSessionCockpit:
         )
         assert resp.status_code == 400
 
-    def test_session_init_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_session_init_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/session/init")
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
-    def test_healing_api_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_healing_api_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/healing/T-001")
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
     def test_healing_api_validates_task_id(self, csrf_client):
         client, token = csrf_client
@@ -741,30 +741,30 @@ class TestCockpitUI:
 class TestCockpitControlActions:
     """Cockpit control action API endpoints."""
 
-    def test_scan_refresh_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_scan_refresh_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/scan/refresh")
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
-    def test_scan_approve_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_scan_approve_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/scan/approve/ND-001")
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
-    def test_scan_defer_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_scan_defer_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/scan/defer/ND-001")
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
-    def test_scan_apply_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_scan_apply_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/scan/apply/FR-001")
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
-    def test_scan_focus_csrf_exempt(self, client):
-        """API endpoints skip CSRF — same-origin fetch only."""
+    def test_scan_focus_csrf_required(self, client):
+        """T-1343 / G-048: /api/* state-mutating endpoints require CSRF."""
         resp = client.post("/api/scan/focus/T-001")
-        assert resp.status_code != 403
+        assert resp.status_code == 403
 
     def test_scan_focus_validates_task_id(self, csrf_client, monkeypatch):
         """Focus endpoint rejects invalid task IDs."""
