@@ -1072,6 +1072,9 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Pickup process | `fw pickup process` | Process inbox envelopes (validate, dedup, create inception) |
 | Pickup status | `fw pickup status` | Show inbox/processed/rejected counts |
 | Pickup list | `fw pickup list` | List inbox contents |
+| Pending register | `fw pending register --command CMD --reason WHY --task T-XXX [--host H]` | Register a blocked cross-project/cross-machine action (T-1268 B1) |
+| Pending list | `fw pending list [--status pending\|resolved\|all]` | List pending-updates registry entries |
+| Pending resolve | `fw pending resolve U-NNN [--note "..."]` | Mark a pending entry as resolved |
 | Notify status | `fw notify status` | Show notification configuration |
 | Notify enable | `fw notify enable` | Enable push notifications |
 | Notify disable | `fw notify disable` | Disable push notifications |

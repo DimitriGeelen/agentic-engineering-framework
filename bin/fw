@@ -2637,6 +2637,10 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         source "$FW_LIB_DIR/pickup.sh"
         do_pickup "$@"
         ;;
+    pending)
+        source "$FW_LIB_DIR/pending.sh"
+        do_pending "$@"
+        ;;
     upstream)
         source "$FW_LIB_DIR/upstream.sh"
         do_upstream "$@"
