@@ -1450,3 +1450,19 @@ concerns:
   status: watching
   created: 2026-04-22
   last_reviewed: 2026-04-22
+
+- id: G-058
+  type: gap
+  title: "Multiple ## Verification commands in active tasks are stale/inverted/brittle — false-block AC close and inflate Awaiting Human Review backlog"
+  description: "T-1404 read-only verification sweep (docs/reports/T-1404-verification-sweep.md) ran ## Verification blocks across 111 active task files. 6 tasks failed verification, but ALL 6 failures triaged to verification-script bugs, not code regressions: T-663 asserts startswith('bin/fw ') but hooks correctly use absolute /opt/.../bin/fw paths; T-1277 greps for default '15' that was bumped to '60' in T-1341 (test stale); T-1376 inverted grep semantics (positive grep when AC intent is negative); T-1279 audit timeout (>20s in 20s sweep); T-446 brittle README check (1 stray exclamation mark); T-613 references temp file from prior session. Net effect: tasks accumulate in active/started-work despite being functionally complete, contributing to the 92-task Awaiting Human Review backlog. Compounds with G-057 (no UI re-decide) and T-1322 (decide doesn't auto-tick AC)."
+  spec_reference: "docs/reports/T-1404-verification-sweep.md, .tasks/active/T-{663,1277,1279,1376,446,613}-*.md"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-23: T-1404 backlog sweep run on 111 active tasks; 6 false-positive 'regressions' surfaced, all verification-bugs not code bugs."
+  detection_lag_days: "30+"
+  what_works_now: "Verification commands in newly-written tasks (post-T-954 RUBBER-STAMP rule) are generally correct because they're authored against the live spec. fw verify-acs --auto-check exists but only scans .tasks/completed/, missing the active backlog entirely."
+  what_remains: "No automated detection of stale verification commands. No CI/cron job re-runs verification blocks across all active tasks to surface stale ones. T-1404 build B2 (per-tier classification + auto-execution) addresses this if GO recorded; build B4 codifies 'agent fixes its own verification when bugs are found'."
+  mitigation_candidate: "Short-term: cron-able 'verify-acs --active --report' that runs all ## Verification blocks weekly and posts FAIL list as a project memory entry. Medium-term: extend update-task.sh's verification gate to ALSO sanity-check the verification command itself (e.g., warn when grep used for negative-presence semantics, warn when timeouts not specified, warn when test names reference defaults likely to drift)."
+  related_tasks: [T-1404, T-1322, T-954]
+  created: 2026-04-23
+  last_reviewed: 2026-04-23
