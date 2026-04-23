@@ -2969,13 +2969,28 @@ shopt -s nullglob
 previous_audits=("$AUDITS_DIR"/*.yaml)
 shopt -u nullglob
 
-# Filter to only files before today
+# T-1394: rolling window — exclude audits older than FW_AUDIT_TREND_WINDOW_DAYS
+# (default 14). Without this, resolved issues stay flagged forever (e.g.
+# "Uncommitted changes present (39 times)" persists after T-1392 fixed it).
+TREND_WINDOW_DAYS="${FW_AUDIT_TREND_WINDOW_DAYS:-14}"
+TREND_WINDOW_CUTOFF=$(date -d "${TREND_WINDOW_DAYS} days ago" +%Y-%m-%d 2>/dev/null \
+    || date -v-${TREND_WINDOW_DAYS}d +%Y-%m-%d 2>/dev/null \
+    || echo "1970-01-01")
+
+# Filter to only files before today and within window
 past_audits=()
 for f in "${previous_audits[@]}"; do
     fname=$(basename "$f" .yaml)
-    if [ "$fname" != "$AUDIT_DATE" ] && [ -f "$f" ]; then
-        past_audits+=("$f")
-    fi
+    # Skip cron/, discoveries/ subdir entries — only date-named files
+    case "$fname" in
+        [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;;
+        [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-*) fname="${fname:0:10}" ;;
+        *) continue ;;
+    esac
+    if [ "$fname" = "$AUDIT_DATE" ]; then continue; fi
+    # Lexicographic compare works for YYYY-MM-DD
+    if [[ "$fname" < "$TREND_WINDOW_CUTOFF" ]]; then continue; fi
+    [ -f "$f" ] && past_audits+=("$f")
 done
 
 if [ ${#past_audits[@]} -eq 0 ]; then
@@ -3007,7 +3022,7 @@ else
     rm -f "$ISSUE_COUNTS_FILE"
 
     if [ ${#repeated_issues[@]} -gt 0 ]; then
-        echo -e "${YELLOW}Repeated issues detected (candidates for practice):${NC}"
+        echo -e "${YELLOW}Repeated issues detected in last ${TREND_WINDOW_DAYS} days (candidates for practice):${NC}"
         for issue in "${repeated_issues[@]}"; do
             echo "  - $issue"
         done
@@ -3015,12 +3030,12 @@ else
         echo -e "${CYAN}Consider creating a practice to address these recurring issues.${NC}"
         echo "Run: fw context add-learning \"description\" --task T-XXX"
     else
-        echo -e "${GREEN}No repeated issues detected across ${#past_audits[@]} previous audit(s).${NC}"
+        echo -e "${GREEN}No repeated issues in last ${TREND_WINDOW_DAYS} days (across ${#past_audits[@]} audits).${NC}"
     fi
 
     # Show trend summary
     echo ""
-    echo "Audit history: ${#past_audits[@]} previous audit(s) + today"
+    echo "Audit history: ${#past_audits[@]} audit(s) in last ${TREND_WINDOW_DAYS} days + today"
 fi
 
 echo ""
