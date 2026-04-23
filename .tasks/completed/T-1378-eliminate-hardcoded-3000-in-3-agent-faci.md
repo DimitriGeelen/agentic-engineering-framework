@@ -4,16 +4,16 @@ name: "Eliminate hardcoded :3000 in 3 agent-facing anti-pattern sites (T-1376 B1
 description: >
   Eliminate hardcoded :3000 in 3 agent-facing anti-pattern sites (T-1376 B1+B2+B3)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/monitor/liveness-check.sh, lib/init.sh]
 related_tasks: []
 created: 2026-04-22T18:31:14Z
-last_update: 2026-04-22T18:31:14Z
-date_finished: null
+last_update: 2026-04-22T18:33:39Z
+date_finished: 2026-04-22T18:33:39Z
 ---
 
 # T-1378: Eliminate hardcoded :3000 in 3 agent-facing anti-pattern sites (T-1376 B1+B2+B3)
@@ -80,3 +80,6 @@ test $(grep -cE 'localhost:3000' lib/init.sh lib/templates/claude-project.md age
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1378-eliminate-hardcoded-3000-in-3-agent-faci.md
 - **Context:** Initial task creation
+
+### 2026-04-22T18:33:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

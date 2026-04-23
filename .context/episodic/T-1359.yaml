@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1359: Pickup: Watchtower placeholder detector matches text inside HTML comments — false-positives on default Decisions-section template (from termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-22T18:29:23Z
+# ============================================================================
+
+task_id: T-1359
+task_name: "Pickup: Watchtower placeholder detector matches text inside HTML comments — false-positives on default Decisions-section template (from termlink)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-20T14:15:01Z
+completed: 2026-04-22T18:29:20Z
+duration_days: 2
+updates_count: 4
+first_commit: 2026-04-22T13:08:49+02:00
+last_commit: 2026-04-22T13:13:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception research — HTML comment FP in placeholder detector; GO recommendation with B1-B3 plan. Add research artifact (C-001) — detector source, FP survey, proposed fix, regression tests
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (source detector confirmed, pickup's class confirmed though exact termlink task unverified)"
+  - "Assumptions tested (A1-A6: A1/A2/A4/A5/A6 TRUE; A3 unverified but A3-prime sufficient)"
+  - "Recommendation written with rationale (GO — surgical fix, ~5 LoC + 4 tests; see Recommendation)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Add research artifact (C-001) — detector source, FP survey, proposed fix, regression tests"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - "docs/reports/T-1359-html-comment-strip.md"
+  - ".tasks/active/T-1359-pickup-watchtower-placeholder-detector-m.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-22T13:08:49"
+    action: "T-1359: Inception research — HTML comment FP in placeholder detector; GO recommendation with B1-B3 plan"
+  - time: "2026-04-22T13:13:25"
+    action: "T-1359: Add research artifact (C-001) — detector source, FP survey, proposed fix, regression tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3134 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3134
+  commits: 2
+  files_changed: 3
+  lines_added: 160
+  lines_removed: 49
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1359-pickup-watchtower-placeholder-detector-m.md
+generated_by: context-agent-hybrid

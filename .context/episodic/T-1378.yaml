@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1378: Eliminate hardcoded :3000 in 3 agent-facing anti-pattern sites (T-1376 B1+B2+B3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-22T18:33:42Z
+# ============================================================================
+
+task_id: T-1378
+task_name: "Eliminate hardcoded :3000 in 3 agent-facing anti-pattern sites (T-1376 B1+B2+B3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-22T18:31:14Z
+completed: 2026-04-22T18:33:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-22T20:33:34+02:00
+last_commit: 2026-04-22T20:33:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Build B1+B2+B3 from T-1376 GO — eliminate :3000 hardcodes in /resume skill, consumer template, liveness cron
+
+# Key outcomes
+outcomes:
+  - "`lib/init.sh` /resume skill no longer hardcodes `:3000` — reads from `.context/working/watchtower.url` triple-file when present, falls back to `fw_config PORT 3000` for fresh projects."
+  - "`lib/templates/claude-project.md` no longer hardcodes `http://localhost:3000/page` — uses a port-agnostic verification example pointing at `fw doctor` or the triple file."
+  - "`agents/monitor/liveness-check.sh` no longer hardcodes `localhost:3000` — sources `lib/config.sh` and reads `fw_config PORT 3000` (or the triple file) before curling."
+  - "`grep -nE 'localhost:3000' lib/init.sh lib/templates/claude-project.md agents/monitor/liveness-check.sh` returns zero literal matches (verified — only rule-documentation mentions remain, which are the intent, not anti-pattern)."
+  - "`bash -n` passes on all three files (verified)."
+  - "Liveness check runtime test passed — watchtower detected as `running` via triple-file resolution (tail of `.context/monitors/liveness.jsonl` confirms)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/monitor/liveness-check.sh"
+  - ".context/working/focus.yaml"
+  - "lib/init.sh"
+  - "lib/templates/claude-project.md"
+  - ".tasks/active/T-1376-port-parameter-visibility--why-agents-ke.md"
+  - ".tasks/active/T-1378-eliminate-hardcoded-3000-in-3-agent-faci.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-22T20:33:34"
+    action: "T-1378: Build B1+B2+B3 from T-1376 GO — eliminate :3000 hardcodes in /resume skill, consumer template, liveness cron"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 6
+  lines_added: 155
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1378-eliminate-hardcoded-3000-in-3-agent-faci.md
+generated_by: context-agent-hybrid

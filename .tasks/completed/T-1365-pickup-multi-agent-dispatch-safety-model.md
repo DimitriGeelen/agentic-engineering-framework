@@ -4,7 +4,7 @@ name: "Pickup: Multi-agent dispatch safety model — structural isolation and co
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1169. Type: feature-proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [pickup, feature-proposal]
 components: []
 related_tasks: [T-097, T-503, T-879, T-914, T-916, T-1025, T-1026]
 created: 2026-04-20T19:01:01Z
-last_update: 2026-04-22T11:12:49Z
-date_finished: null
+last_update: 2026-04-22T18:29:40Z
+date_finished: 2026-04-22T18:29:40Z
 source_task_id_in_origin: T-1169
 source_project_in_origin: "termlink"
 ---
@@ -75,7 +75,7 @@ Four time-boxed spikes (executed during this inception, ~25 min total):
 - [x] Recommendation written with rationale (DEFER primary, BUILD-LIGHT fallback for P5 doc-only change)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1365`
   2. Review Recommendation + Evidence, evaluate whether DEFER is correct vs. DECOMPOSE
@@ -134,7 +134,37 @@ Applying L-237 (mitigations shipped without a triggering incident drift toward s
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: DEFER (primary), BUILD-LIGHT fallback
+
+Rationale: The pickup identifies a real structural gap but frames it as an umbrella of 5 primitives. Per task-sizing rules (CLAUDE.md §Task Sizing: "One inception = one question"), bundling 5 independent explorations into one go/no-go creates all-or-nothing decisions and coarse progress tracking. More importantly, the motivating evidence is planned parallelism (termlink's T-1158/T-1159) not an observed merge conflict. No episodic memory entry in this framework records a multi-agent merge-conflict incident. Current safeguards (5-parallel Agent limit, write-to-disk convention, separate-process TermLink isolation, `check-dispatch.sh` guard) have held for 8+ months of production dispatch use (T-097 onwards).
+
+Applying L-237 (mitigations shipped without a triggering incident drift toward speculative fixes): DEFER until a concrete collision occurs, OR the human explicitly requests proactive infrastructure. On trigger, DECOMPOSE into per-primitive inceptions; do not build the umbrella.
+
+BUILD-LIGHT fallback (zero-code change): Tighten CLAUDE.md §Sub-Agent Dispatch Protocol with a single explicit rule: "Do not dispatch >1 worker touching the same file without worktree isolation. If two tasks' exploration plans or ACs both name the same file, serialise them — even if they are otherwise independent." This is ~5 lines of documentation, zero code, zero new primitive. It captures 80% of the safety value by leaning on agent compliance rather than structural enforcement.
+
+Evidence:
+- `.context/project/concerns.yaml` has no entry for multi-agent merge conflicts (grep: 0 matches for `merge conflict`, `parallel.collision`, `worktree` in open concerns)
+- Existing dispatch governance: `agents/dispatch/preamble.md`, `agents/monitor/check-dispatch.sh`, 5-parallel cap in CLAUDE.md, write-to-disk convention (T-818)
+- TermLink workers are independent processes — git state is shared only at the working-tree level, not at process memory
+- T-097 (deep reflection on multi-agent optimization) produced the dispatch protocol — it explicitly did NOT prescribe worktree isolation, suggesting the author judged shared-tree acceptable for the observed workload
+- Pickup's own framing admits the evidence is "planning" T-1158+T-1159, not a post-mortem of a collision
+- L-237 precedent: premature structural fixes for unobserved problems accumulate maintenance burden
+
+Trigger list for promoting DEFER → DECOMPOSE:
+- First observed multi-agent merge conflict in episodic memory → DECOMPOSE into per-primitive inceptions, prioritise P1 (worktree) + P2 (metadata)
+- Human requests worktree infrastructure independently of incident → BUILD-LIGHT + open P1 inception
+- Consumer project reports collision → upgrade priority to now
+
+Primitive-by-primitive scoping (for future DECOMPOSE):
+- P1 (worktree spawn): 1 inception, ~150 LoC build. Highest mechanical value. Depends on nothing.
+- P2 (metadata fields): 1 inception, ~30 LoC build (template + validator). Prerequisite for P3.
+- P3 (dispatch gate): 1 inception, ~100 LoC. Depends on P2 data corpus.
+- P4 (reconciliation): 1 inception, ~200 LoC. SPECULATIVE — defer until P1-P3 have shipped and are in use.
+- P5 (coordination note): Not a separate task — fold into CLAUDE.md dispatch-protocol section as part of BUILD-LIGHT.
+
+**Date**: 2026-04-22T18:29:40Z
 
 ## Updates
 
@@ -142,3 +172,38 @@ Applying L-237 (mitigations shipped without a triggering incident drift toward s
 - **Action:** Filled Problem Statement, Assumptions A1-A8, Exploration Plan FS1-FS4, Scope Fence, Recommendation DEFER with BUILD-LIGHT fallback and trigger-list
 - **Evidence:** Episodic memory grep (no merge-conflict incidents), concerns.yaml scan, existing dispatch safeguards audit, task-sizing rule precedent (one-inception-one-question)
 - **Next:** Human review via `fw task review T-1365`
+
+### 2026-04-22T18:29:40Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: DEFER (primary), BUILD-LIGHT fallback
+
+Rationale: The pickup identifies a real structural gap but frames it as an umbrella of 5 primitives. Per task-sizing rules (CLAUDE.md §Task Sizing: "One inception = one question"), bundling 5 independent explorations into one go/no-go creates all-or-nothing decisions and coarse progress tracking. More importantly, the motivating evidence is planned parallelism (termlink's T-1158/T-1159) not an observed merge conflict. No episodic memory entry in this framework records a multi-agent merge-conflict incident. Current safeguards (5-parallel Agent limit, write-to-disk convention, separate-process TermLink isolation, `check-dispatch.sh` guard) have held for 8+ months of production dispatch use (T-097 onwards).
+
+Applying L-237 (mitigations shipped without a triggering incident drift toward speculative fixes): DEFER until a concrete collision occurs, OR the human explicitly requests proactive infrastructure. On trigger, DECOMPOSE into per-primitive inceptions; do not build the umbrella.
+
+BUILD-LIGHT fallback (zero-code change): Tighten CLAUDE.md §Sub-Agent Dispatch Protocol with a single explicit rule: "Do not dispatch >1 worker touching the same file without worktree isolation. If two tasks' exploration plans or ACs both name the same file, serialise them — even if they are otherwise independent." This is ~5 lines of documentation, zero code, zero new primitive. It captures 80% of the safety value by leaning on agent compliance rather than structural enforcement.
+
+Evidence:
+- `.context/project/concerns.yaml` has no entry for multi-agent merge conflicts (grep: 0 matches for `merge conflict`, `parallel.collision`, `worktree` in open concerns)
+- Existing dispatch governance: `agents/dispatch/preamble.md`, `agents/monitor/check-dispatch.sh`, 5-parallel cap in CLAUDE.md, write-to-disk convention (T-818)
+- TermLink workers are independent processes — git state is shared only at the working-tree level, not at process memory
+- T-097 (deep reflection on multi-agent optimization) produced the dispatch protocol — it explicitly did NOT prescribe worktree isolation, suggesting the author judged shared-tree acceptable for the observed workload
+- Pickup's own framing admits the evidence is "planning" T-1158+T-1159, not a post-mortem of a collision
+- L-237 precedent: premature structural fixes for unobserved problems accumulate maintenance burden
+
+Trigger list for promoting DEFER → DECOMPOSE:
+- First observed multi-agent merge conflict in episodic memory → DECOMPOSE into per-primitive inceptions, prioritise P1 (worktree) + P2 (metadata)
+- Human requests worktree infrastructure independently of incident → BUILD-LIGHT + open P1 inception
+- Consumer project reports collision → upgrade priority to now
+
+Primitive-by-primitive scoping (for future DECOMPOSE):
+- P1 (worktree spawn): 1 inception, ~150 LoC build. Highest mechanical value. Depends on nothing.
+- P2 (metadata fields): 1 inception, ~30 LoC build (template + validator). Prerequisite for P3.
+- P3 (dispatch gate): 1 inception, ~100 LoC. Depends on P2 data corpus.
+- P4 (reconciliation): 1 inception, ~200 LoC. SPECULATIVE — defer until P1-P3 have shipped and are in use.
+- P5 (coordination note): Not a separate task — fold into CLAUDE.md dispatch-protocol section as part of BUILD-LIGHT.
+
+### 2026-04-22T18:29:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
