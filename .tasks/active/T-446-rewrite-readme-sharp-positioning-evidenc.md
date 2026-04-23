@@ -56,8 +56,9 @@ grep -q "watchtower-timeline.png" README.md
 python3 -c "import re; t=open('README.md').read(); imgs=re.findall(r'<img[^>]+>', t); assert all('width=' in i for i in imgs), 'Some imgs missing width'; print(f'OK: {len(imgs)} sized screenshots')"
 # No hype words
 python3 -c "t=open('README.md').read().lower(); bad=[w for w in ['revolutionary','game-changing','cutting-edge','ai-powered'] if w in t]; assert not bad, f'Hype words found: {bad}'; print('OK: no hype')"
-# No exclamation marks (outside code blocks)
-python3 -c "import re; t=open('README.md').read(); clean=re.sub(r'```.*?```','',t,flags=re.DOTALL); count=clean.count('!'); assert count==0, f'{count} exclamation marks'; print('OK: no exclamation marks')"
+# No exclamation marks in prose (outside code blocks AND markdown image refs)
+# T-1413: was missing the ![alt](url) strip — image syntax was false-flagging.
+python3 -c "import re; t=open('README.md').read(); clean=re.sub(r'```.*?```','',t,flags=re.DOTALL); clean=re.sub(r'!\[[^\]]*\]\([^)]*\)','',clean); count=clean.count('!'); assert count==0, f'{count} exclamation marks'; print('OK: no exclamation marks')"
 
 ## Decisions
 
