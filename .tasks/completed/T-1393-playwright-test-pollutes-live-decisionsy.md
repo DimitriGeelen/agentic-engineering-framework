@@ -4,16 +4,16 @@ name: "Playwright test pollutes live decisions.yaml — add fixture to snapshot/
 description: >
   Playwright test pollutes live decisions.yaml — add fixture to snapshot/restore
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_api_context_capture.py]
 related_tasks: []
 created: 2026-04-23T12:14:00Z
-last_update: 2026-04-23T12:14:00Z
-date_finished: null
+last_update: 2026-04-23T12:18:49Z
+date_finished: 2026-04-23T12:18:49Z
 ---
 
 # T-1393: Playwright test pollutes live decisions.yaml — add fixture to snapshot/restore
@@ -27,11 +27,11 @@ Root cause: Watchtower test server (port 3099) shares PROJECT_ROOT with the fram
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Add autouse pytest fixture in `tests/playwright/test_api_context_capture.py` that snapshots `decisions.yaml` and `learnings.yaml` before each test and restores them after
-- [ ] Remove the 4 polluted "Test decision from Playwright" entries from `.context/project/decisions.yaml`
-- [ ] Remove the 5 polluted "Test learning from Playwright" entries from `.context/project/learnings.yaml`
-- [ ] Both YAML files still parse after cleanup
-- [ ] Running `pytest tests/playwright/test_api_context_capture.py` does NOT add new pollution entries (verified by diff)
+- [x] Add autouse pytest fixture in `tests/playwright/test_api_context_capture.py` that snapshots `decisions.yaml` and `learnings.yaml` before each test and restores them after
+- [x] Remove the 4 polluted "Test decision from Playwright" entries from `.context/project/decisions.yaml`
+- [x] Remove the 5 polluted "Test learning from Playwright" entries from `.context/project/learnings.yaml`
+- [x] Both YAML files still parse after cleanup
+- [x] Running `pytest tests/playwright/test_api_context_capture.py` does NOT add new pollution entries (verified by diff)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -74,3 +74,6 @@ grep -q "autouse=True" tests/playwright/test_api_context_capture.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1393-playwright-test-pollutes-live-decisionsy.md
 - **Context:** Initial task creation
+
+### 2026-04-23T12:18:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
