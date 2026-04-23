@@ -3,6 +3,40 @@
 Tests POST /api/decision and POST /api/learning validation
 from web/blueprints/session.py.
 """
+import os
+import shutil
+
+import pytest
+
+PROJECT_ROOT = os.environ.get(
+    "PROJECT_ROOT",
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+)
+DECISIONS_YAML = os.path.join(PROJECT_ROOT, ".context/project/decisions.yaml")
+LEARNINGS_YAML = os.path.join(PROJECT_ROOT, ".context/project/learnings.yaml")
+
+
+@pytest.fixture(autouse=True)
+def _restore_project_state():
+    """Snapshot decisions.yaml + learnings.yaml; restore after each test.
+
+    The /api/decision and /api/learning endpoints shell out to `fw context
+    add-{decision,learning}` which write to live PROJECT_ROOT files. Without
+    this fixture, every test run accumulates "Test ... from Playwright"
+    entries in real project state. (T-1393.)
+    """
+    backups = {}
+    for path in (DECISIONS_YAML, LEARNINGS_YAML):
+        if os.path.exists(path):
+            bak = path + ".playwright-bak"
+            shutil.copy2(path, bak)
+            backups[path] = bak
+    try:
+        yield
+    finally:
+        for path, bak in backups.items():
+            if os.path.exists(bak):
+                shutil.move(bak, path)
 
 
 class TestRecordDecision:

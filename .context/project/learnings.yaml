@@ -1665,13 +1665,6 @@ learnings:
   date: 2026-04-13
   context: Added via context agent
   application: TBD
-- id: L-003
-  learning: "Test learning from Playwright"
-  source: unknown
-  task: T-1030
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
 - id: L-004
   learning: "At scale (1200+ tasks, 1166 episodics, 580 handovers, 71 JSONL sessions), Watchtower routes need TTL-based caches for all file-scanning operations. Shared caches in web/shared.py are reusable across blueprints. For cross-file searches (like _count_applications), build a reverse index once instead of N*M scans."
   source: P-001
@@ -1721,13 +1714,6 @@ learnings:
   date: 2026-04-16
   context: fleet-doctor auto-registered
   application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
-- id: L-010
-  learning: "Test learning from Playwright"
-  source: unknown
-  task: T-1030
-  date: 2026-04-16
-  context: Added via context agent
-  application: TBD
 - id: L-011
   learning: "When remote hub rotates BOTH secret and TLS cert: need TWO steps: (1) fleet reauth --bootstrap-from file:... for the secret, (2) termlink tofu clear addr:port to drop stale cert pin. TOFU clear alone is not enough — secret must match too. Observed 2026-04-16 for ring20-dashboard."
   source: cross-project via TermLink (termlink PL-021)
@@ -1812,13 +1798,6 @@ learnings:
   date: 2026-04-19
   context: Added via context agent
   application: TBD
-- id: L-021
-  learning: "Test learning from Playwright"
-  source: unknown
-  task: T-1030
-  date: 2026-04-20
-  context: Added via context agent
-  application: TBD
 - id: L-022
   learning: "Under set -euo pipefail, 'grep PATTERN file | sed ...' aborts the enclosing function when grep has no match (grep exits 1, pipefail propagates, set -e catches). Always append '|| true' (or use 'grep -F -x' with explicit default) in value-extraction pipelines that may legitimately find nothing. Bug found in show_version + do_doctor (T-1362), surfaced when .framework.yaml existed but lacked a 'version:' line."
   source: P-001
@@ -1900,20 +1879,6 @@ learnings:
   learning: "Verification gate (P-011) runs under set -o pipefail. Pipelines like 'cmd | grep -q pattern' exit with 141 (SIGPIPE) when grep finds the match and exits before the upstream command finishes writing. Write verification as 'cmd >/tmp/out 2>&1 && grep -q pattern /tmp/out' instead — two statements chained with && under pipefail don't trigger SIGPIPE because there's no live pipe."
   source: P-011
   task: T-1385
-  date: 2026-04-22
-  context: Added via context agent
-  application: TBD
-- id: L-241
-  learning: "Test learning from Playwright"
-  source: unknown
-  task: T-1030
-  date: 2026-04-22
-  context: Added via context agent
-  application: TBD
-- id: L-242
-  learning: "Test learning from Playwright"
-  source: unknown
-  task: T-1030
   date: 2026-04-22
   context: Added via context agent
   application: TBD

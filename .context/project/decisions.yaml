@@ -23,23 +23,10 @@ decisions:
     task: T-1266
     rationale: "Auto-captured from task file on completion"
 
-  - id: D-004
-    decision: "Test decision from Playwright"
-    scope: project
-    date: 2026-04-16
-    task: T-1030
-    rationale: "Not specified"
-
-  - id: D-005
-    decision: "Test decision from Playwright"
-    scope: project
-    date: 2026-04-20
-    task: T-1030
-    rationale: "Not specified"
-
   - id: D-006
     decision: "leave the 234 historical L-ID duplicates in learnings.yaml as-is; document in G-055; ensure future IDs start from max+1"
     scope: project
     date: 2026-04-20
     task: T-1369
     rationale: "Auto-captured from task file on completion"
+
