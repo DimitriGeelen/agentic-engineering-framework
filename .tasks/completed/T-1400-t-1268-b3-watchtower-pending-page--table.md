@@ -4,16 +4,16 @@ name: "T-1268 B3: Watchtower /pending page — table of pending-updates entries 
 description: >
   T-1268 B3: Watchtower /pending page — table of pending-updates entries with resolve action
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/__init__.py, web/blueprints/pending.py, web/templates/pending.html]
 related_tasks: []
 created: 2026-04-23T14:11:07Z
-last_update: 2026-04-23T14:11:07Z
-date_finished: null
+last_update: 2026-04-23T14:15:22Z
+date_finished: 2026-04-23T14:15:22Z
 ---
 
 # T-1400: T-1268 B3: Watchtower /pending page — table of pending-updates entries with resolve action
@@ -70,3 +70,6 @@ _t=$(mktemp); pytest tests/playwright/test_pending_page.py -q >"$_t" 2>&1; _r=$?
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1400-t-1268-b3-watchtower-pending-page--table.md
 - **Context:** Initial task creation
+
+### 2026-04-23T14:15:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

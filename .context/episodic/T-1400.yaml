@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1400: T-1268 B3: Watchtower /pending page — table of pending-updates entries with resolve action
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T14:15:32Z
+# ============================================================================
+
+task_id: T-1400
+task_name: "T-1268 B3: Watchtower /pending page — table of pending-updates entries with resolve action"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T14:11:07Z
+completed: 2026-04-23T14:15:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T16:15:15+02:00
+last_commit: 2026-04-23T16:15:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Ship T-1268 B3 — Watchtower /pending page with resolve action
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/pending.py` exists with `/pending` GET route and `/api/v1/pending/<id>/resolve` POST endpoint"
+  - "`web/templates/pending.html` renders the entries table (id, task, host, reason, command, created, resolve button)"
+  - "Blueprint registered in `web/blueprints/__init__.py`"
+  - "`/pending` returns HTTP 200 (via running Watchtower)"
+  - "Page content contains expected heading \"Pending Updates\""
+  - "When zero pending entries: page renders with \"no pending entries\" placeholder (no server error)"
+  - "When an entry exists: page content includes that entry's id"
+  - "Resolve API flips status to `resolved` in the YAML (end-to-end test)"
+  - "Playwright test `tests/playwright/test_pending_page.py` covers load + single-entry render + resolve-click + status flip (4/4 pass)"
+  - "`python3 -m py_compile web/blueprints/pending.py` succeeds"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/web-blueprints-pending.yaml"
+  - ".fabric/components/web-templates-pending.yaml"
+  - ".tasks/active/T-1400-t-1268-b3-watchtower-pending-page--table.md"
+  - "tests/playwright/test_pending_page.py"
+  - "web/blueprints/__init__.py"
+  - "web/blueprints/pending.py"
+  - "web/templates/pending.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T16:15:15"
+    action: "T-1400: Ship T-1268 B3 — Watchtower /pending page with resolve action"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 7
+  lines_added: 419
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1400-t-1268-b3-watchtower-pending-page--table.md
+generated_by: context-agent-hybrid
