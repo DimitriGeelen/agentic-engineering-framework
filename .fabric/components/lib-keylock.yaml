@@ -15,6 +15,8 @@ depended_by:
   type: called-by
 - target: tests/unit/lib_keylock.bats
   type: called_by
+- target: agents/task-create/create-task.sh
+  type: called_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-04-23'

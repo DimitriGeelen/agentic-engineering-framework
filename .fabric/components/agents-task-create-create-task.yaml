@@ -10,6 +10,8 @@ depends_on:
   type: calls
 - target: lib/enums.sh
   type: calls
+- target: lib/keylock.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -25,7 +27,7 @@ depended_by:
   type: tested_by
 - target: tests/unit/create_task.bats
   type: called_by
-last_enriched: '2026-04-09'
+last_enriched: '2026-04-23'
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'

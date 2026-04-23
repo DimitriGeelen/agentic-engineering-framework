@@ -100,4 +100,6 @@ depended_by:
   type: called_by
 - target: web/blueprints/prompts.py
   type: called_by
-last_enriched: '2026-04-19'
+- target: web/blueprints/pending.py
+  type: called_by
+last_enriched: '2026-04-23'

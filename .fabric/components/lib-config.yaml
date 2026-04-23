@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/config.sh
 tags: []
-purpose: Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default
+purpose: Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then
+  hardcoded default
 depends_on:
 - target: lib/config.sh
   type: calls
@@ -51,6 +52,8 @@ depended_by:
   type: read_by
 - target: agents/git/lib/hooks.sh
   type: called_by
+- target: agents/monitor/liveness-check.sh
+  type: called_by
 last_verified: 2026-04-03
 created_by: unknown
-last_enriched: '2026-04-13'
+last_enriched: '2026-04-23'

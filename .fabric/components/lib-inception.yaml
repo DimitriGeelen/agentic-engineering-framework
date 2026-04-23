@@ -30,4 +30,6 @@ depended_by:
   type: produced-by_by
 - target: docs/reports/T-607-correction-refinement-loop.md
   type: produced-by_by
-last_enriched: '2026-04-19'
+- target: tests/unit/inception_decide_ac_tick.bats
+  type: called_by
+last_enriched: '2026-04-23'
