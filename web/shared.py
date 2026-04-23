@@ -280,6 +280,7 @@ def get_all_task_metadata():
             fm, _ = parse_frontmatter(f.read_text())
             if fm:
                 fm["_location"] = location
+                fm["_path"] = str(f)  # T-1244: enable body re-read without re-glob
                 all_tasks.append(fm)
                 tid = fm.get("id", "")
                 name = fm.get("name", "")

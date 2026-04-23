@@ -15,7 +15,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata
 
 bp = Blueprint("approvals", __name__)
 
@@ -83,21 +83,26 @@ def _load_pending_go_decisions():
     """
     from web.blueprints.inception import _extract_decision, _extract_section, _load_assumptions
 
-    task_dir = PROJECT_ROOT / ".tasks" / "active"
-    if not task_dir.exists():
-        return []
-
     assumptions = _load_assumptions()
     results = []
 
-    for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
+    # T-1244: Use shared task metadata cache to filter to active+inception tasks
+    # before reading bodies. Avoids re-globbing 100+ active tasks per request.
+    candidates = [
+        fm for fm in get_all_task_metadata()
+        if fm.get("_location") == "active" and fm.get("workflow_type") == "inception"
+    ]
+    candidates.sort(key=lambda fm: task_id_sort_key(fm.get("_path", "")))
+
+    for fm in candidates:
+        path = fm.get("_path")
+        if not path:
+            continue
         try:
-            content = f.read_text()
+            content = Path(path).read_text()
         except OSError:
             continue
-        fm, body = parse_frontmatter(content)
-        if not fm or fm.get("workflow_type") != "inception":
-            continue
+        _, body = parse_frontmatter(content)
         if _extract_decision(body) != "pending":
             continue
 
@@ -195,21 +200,26 @@ def _load_pending_human_acs():
 
     from web.blueprints.tasks import _parse_acceptance_criteria
 
-    task_dir = PROJECT_ROOT / ".tasks" / "active"
-    if not task_dir.exists():
-        return []
-
     results = []
     now = time.time()
 
-    for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
+    # T-1244: Pull active-task frontmatter from shared cache instead of
+    # re-globbing per request. Body still required for AC parse.
+    candidates = [
+        fm for fm in get_all_task_metadata()
+        if fm.get("_location") == "active"
+    ]
+    candidates.sort(key=lambda fm: task_id_sort_key(fm.get("_path", "")))
+
+    for fm in candidates:
+        path = fm.get("_path")
+        if not path:
+            continue
         try:
-            content = f.read_text()
+            content = Path(path).read_text()
         except OSError:
             continue
-        fm, body = parse_frontmatter(content)
-        if not fm:
-            continue
+        _, body = parse_frontmatter(content)
 
         all_acs = _parse_acceptance_criteria(body)
         human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
