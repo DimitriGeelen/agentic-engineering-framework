@@ -4,16 +4,16 @@ name: "Audit trend analysis never decays — historical WARN/FAIL counted foreve
 description: >
   Audit trend analysis never decays — historical WARN/FAIL counted forever even when resolved
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 created: 2026-04-23T12:21:41Z
-last_update: 2026-04-23T12:21:41Z
-date_finished: null
+last_update: 2026-04-23T12:25:22Z
+date_finished: 2026-04-23T12:25:22Z
 ---
 
 # T-1394: Audit trend analysis never decays — historical WARN/FAIL counted forever even when resolved
@@ -27,11 +27,11 @@ Fix: rolling 14-day window. Only count WARN/FAIL from audits in the last 14 days
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/audit/audit.sh` trend analysis filters past_audits to last N days (configurable via `FW_AUDIT_TREND_WINDOW_DAYS`, default 14)
-- [ ] Audits older than the window are excluded from trend counting
-- [ ] Bats unit test: when audit files exist with stale issues only outside the window, trend reports no repeated issues
-- [ ] Bats unit test: when issues recur within the window (3+ times), trend reports them
-- [ ] Trend output includes the window size in the summary header
+- [x] `agents/audit/audit.sh` trend analysis filters past_audits to last N days (configurable via `FW_AUDIT_TREND_WINDOW_DAYS`, default 14)
+- [x] Audits older than the window are excluded from trend counting
+- [x] Bats unit test: when audit files exist with stale issues only outside the window, trend reports no repeated issues
+- [x] Bats unit test: when issues recur within the window (3+ times), trend reports them
+- [x] Trend output includes the window size in the summary header
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -72,3 +72,6 @@ grep -q "FW_AUDIT_TREND_WINDOW_DAYS" agents/audit/audit.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1394-audit-trend-analysis-never-decays--histo.md
 - **Context:** Initial task creation
+
+### 2026-04-23T12:25:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
