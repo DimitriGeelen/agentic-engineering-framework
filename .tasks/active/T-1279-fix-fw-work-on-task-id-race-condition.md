@@ -101,8 +101,8 @@ Multiple concurrent trigger sources:
 # Must pass before work-completed
 bats tests/unit/task_id_race.bats
 grep -q 'keylock_acquire.*task-id' agents/task-create/create-task.sh
-# Audit duplicate-ID check should PASS (no duplicates found):
-bash -c "bin/fw audit 2>&1 > /tmp/t-1279-audit.txt; grep -q 'No duplicate task IDs' /tmp/t-1279-audit.txt"
+# T-1412: was bin/fw audit (~25s, exceeds 20s sweep timeout). Direct check (~16ms):
+test "$(ls .tasks/active/T-*.md .tasks/completed/T-*.md 2>/dev/null | grep -oE '/T-[0-9]+-' | sort | uniq -d | wc -l)" -eq 0
 
 ## Decisions
 
