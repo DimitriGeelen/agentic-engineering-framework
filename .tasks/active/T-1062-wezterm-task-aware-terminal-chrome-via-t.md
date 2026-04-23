@@ -51,6 +51,16 @@ test -f plugins/wezterm/termlink-chrome.lua
 test -f plugins/wezterm/README.md
 grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 
+## Recommendation
+
+**Recommendation:** Agent ACs complete — ready for human design review and on-WezTerm validation
+**Rationale:** Plugin exists at plugins/wezterm/termlink-chrome.lua, README documents install, verification gate passes (`termlink list --json`, file presence, content grep). No TermLink-side changes needed — pure consumer of existing JSON RPC. Matches T-1061 Phase-1 plan.
+**Evidence:**
+- File: `plugins/wezterm/termlink-chrome.lua` (queries `termlink list --json`, parses session tags, renders status bar)
+- File: `plugins/wezterm/README.md` (install steps + troubleshooting)
+- Verification block in this task — all 4 commands pass
+- Component card registered in fabric (`.fabric/components/plugins-wezterm-termlink-chrome.yaml`)
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
