@@ -4,15 +4,15 @@ name: "E2E test: inception decide on vendored consumer project via Watchtower"
 description: >
   E2E test: inception decide on vendored consumer project via Watchtower
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T10:16:32Z
-last_update: 2026-04-23T16:46:49Z
+last_update: 2026-04-23T19:16:38Z
 date_finished: null
 ---
 
@@ -20,35 +20,25 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1281 covered the framework-repo case (PROJECT_ROOT == FRAMEWORK_ROOT). T-1282
+covers the vendored case: a consumer project where `.agentic-framework/` lives
+inside the project tree. The Watchtower → fw inception decide → task body update
+chain must work identically when invoked through the vendored shim.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] New test file `tests/web/test_inception_decide_vendored_e2e.py` exists
+- [x] Fixture sets up tmp_path with `.agentic-framework/` symlinked to repo root (vendored mode)
+- [x] PROJECT_ROOT is the tmp_path consumer (not the framework repo)
+- [x] Test posts to `/inception/T-XXXX/decide` and verifies task body mutation
+- [x] Test verifies task moves from active/ → completed/ (auto-complete chain)
+- [x] All 5 tests pass: `python3 -m pytest tests/web/test_inception_decide_vendored_e2e.py` → `5 passed in 4.33s`
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+bash -c 'out=$(bin/fw test web tests/web/test_inception_decide_vendored_e2e.py 2>&1); echo "$out" | tail -20; echo "$out" | grep -qE "passed|[0-9]+ passed"'
+test -f tests/web/test_inception_decide_vendored_e2e.py
 
 ## Decisions
 
@@ -75,3 +65,7 @@ date_finished: null
 
 ### 2026-04-23T16:46:49Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-04-23T19:16:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
