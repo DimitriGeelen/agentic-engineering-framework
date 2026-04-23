@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1396: pre-push audit shows pre-T-1394 lifetime trend despite fix on HEAD
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T13:54:09Z
+# ============================================================================
+
+task_id: T-1396
+task_name: "pre-push audit shows pre-T-1394 lifetime trend despite fix on HEAD"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T13:49:24Z
+completed: 2026-04-23T13:54:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T15:53:37+02:00
+last_commit: 2026-04-23T15:53:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Prefer source-of-truth agents/ over vendored .agentic-framework/ in pre-push hook
+
+# Key outcomes
+outcomes:
+  - "`agents/git/lib/hooks.sh` resolves root-level `agents/audit/audit.sh` before `.agentic-framework/agents/audit/audit.sh` in the pre-push template"
+  - "Installed `.git/hooks/pre-push` in this repo reflects the new order (via `fw git install-hooks --force`)"
+  - "Running pre-push audit against HEAD produces trend output in the 14-day window format (`Repeated issues detected in last 14 days` or `No repeated issues in last 14 days`), NOT the lifetime format (`N times`)"
+  - "Consumer path still works: when root-level `agents/` is absent but `.agentic-framework/` is present, the vendored copy is still selected (by fallthrough logic — order preserved)"
+  - "`bash -n agents/git/lib/hooks.sh` passes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/git/lib/hooks.sh"
+  - ".tasks/active/T-1396-pre-push-audit-shows-pre-t-1394-lifetime.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T15:53:37"
+    action: "T-1396: Prefer source-of-truth agents/ over vendored .agentic-framework/ in pre-push hook"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 2
+  lines_added: 88
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1396-pre-push-audit-shows-pre-t-1394-lifetime.md
+generated_by: context-agent-hybrid

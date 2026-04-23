@@ -4,16 +4,16 @@ name: "pre-push audit shows pre-T-1394 lifetime trend despite fix on HEAD"
 description: >
   pre-push audit shows pre-T-1394 lifetime trend despite fix on HEAD
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh]
 related_tasks: []
 created: 2026-04-23T13:49:24Z
-last_update: 2026-04-23T13:49:24Z
-date_finished: null
+last_update: 2026-04-23T13:54:02Z
+date_finished: 2026-04-23T13:54:02Z
 ---
 
 # T-1396: pre-push audit shows pre-T-1394 lifetime trend despite fix on HEAD
@@ -56,7 +56,8 @@ grep -q 'AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"' .git/hooks/pre-push
 test "$(grep -n 'AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"' agents/git/lib/hooks.sh | cut -d: -f1)" -lt "$(grep -n 'AUDIT_SCRIPT="$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"' agents/git/lib/hooks.sh | cut -d: -f1)"
 test "$(grep -n 'AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"' .git/hooks/pre-push | cut -d: -f1)" -lt "$(grep -n 'AUDIT_SCRIPT="$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"' .git/hooks/pre-push | cut -d: -f1)"
 # HEAD audit emits 14-day window format (not lifetime "N times")
-PROJECT_ROOT="$PWD" bash agents/audit/audit.sh --section structure 2>&1 | grep -qE "Repeated issues detected in last 14 days|No repeated issues in last 14 days"
+# Use tempfile to avoid SIGPIPE (exit 141) under pipefail
+_t=$(mktemp) && PROJECT_ROOT="$PWD" bash agents/audit/audit.sh --section structure >"$_t" 2>&1; grep -qE "Repeated issues detected in last 14 days|No repeated issues in last 14 days" "$_t"; _r=$?; rm -f "$_t"; exit $_r
 
 ## Decisions
 
@@ -75,3 +76,6 @@ PROJECT_ROOT="$PWD" bash agents/audit/audit.sh --section structure 2>&1 | grep -
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1396-pre-push-audit-shows-pre-t-1394-lifetime.md
 - **Context:** Initial task creation
+
+### 2026-04-23T13:54:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1910,3 +1910,10 @@ learnings:
   date: 2026-04-23
   context: Added via context agent
   application: TBD
+- id: L-247
+  learning: "In the framework repo, .agentic-framework/ contains a vendored bootstrap copy that can shadow root-level agents/ during hook/script path resolution. When adding a hook template or tool that searches for framework scripts, prefer root-level paths FIRST (source-of-truth), then fall back to .agentic-framework/ (consumer vendored). Root-level agents/ only exists in the framework repo itself — consumers never have it — so preferring it when present is strictly correct. Symptom when reversed: fixes to agents/audit/audit.sh, agents/git/lib/hooks.sh, etc. appear to ship on HEAD but the framework-repo's pre-push hook / self-invocations continue running stale vendored copies until the consumer-style resync overwrites them."
+  source: P-001
+  task: T-1396
+  date: 2026-04-23
+  context: Added via context agent
+  application: TBD
