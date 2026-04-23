@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1289: Fix .fabric/watch-patterns.yaml YAML schema — exclude key misplaced inside patterns list
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T15:25:23Z
+# ============================================================================
+
+task_id: T-1289
+task_name: "Fix .fabric/watch-patterns.yaml YAML schema — exclude key misplaced inside patterns list"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-17T20:07:17Z
+completed: 2026-04-23T15:25:20Z
+duration_days: 6
+updates_count: 4
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`.fabric/watch-patterns.yaml` parses as valid YAML (no ParserError) — verified 2026-04-23"
+  - "`exclude:` key is sibling of `patterns:` (top level), not inside patterns list — verified"
+  - "Audit output no longer shows YAML parse traceback in fabric section — T-1288 delivered this fix (completed 2026-04-21)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8358 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8358
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1289-fix-fabricwatch-patternsyaml-yaml-schema.md
+generated_by: context-agent-hybrid

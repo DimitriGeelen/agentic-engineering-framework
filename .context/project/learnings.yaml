@@ -1924,3 +1924,10 @@ learnings:
   date: 2026-04-23
   context: Added via context agent
   application: TBD
+- id: L-249
+  learning: "fw vendor is a cross-cutting sync (copies framework source into .agentic-framework/ vendored copy). Do NOT run it speculatively during autonomous work — it creates 100+ untracked files and a large commit that should be user-directed. If the vendored copy looks stale, flag it to the user rather than syncing autonomously. The v1.5.115 committed vendored copy is intentionally frozen (see T-1383 commit); don't bump it without a task."
+  source: P-001
+  task: T-1402
+  date: 2026-04-23
+  context: Added via context agent
+  application: TBD

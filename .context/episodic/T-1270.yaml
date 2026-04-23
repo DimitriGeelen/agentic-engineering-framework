@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1270: Peer-learning cron: every 15 min, connect to all reachable TermLink agents, exchange reflections on what we can learn from each other
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T14:57:52Z
+# ============================================================================
+
+task_id: T-1270
+task_name: "Peer-learning cron: every 15 min, connect to all reachable TermLink agents, exchange reflections on what we can learn from each other"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-15T21:36:12Z
+completed: 2026-04-23T14:57:49Z
+duration_days: 8
+updates_count: 3
+first_commit: 2026-04-15T23:39:40+02:00
+last_commit: 2026-04-15T23:43:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Peer-learning cron inception + pickup cron 30s→1min; T-1268 update propagation inception; T-1263 recommendation. Pickup envelope P-022 + research artifact; propagated to 3 local TermLink sessions (remote hubs deferred — all three down)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/cron-registry.yaml"
+  - ".context/pickup/dedup.log"
+  - ".context/pickup/processed/P-022-feature-proposal.yaml"
+  - "docs/reports/T-1270-peer-learning-cron.md"
+  - ".tasks/active/T-1263-fix-inception-template-validation-fail-f.md"
+  - ".tasks/active/T-1268-cross-machine-update-propagation-frictio.md"
+  - ".tasks/active/T-1270-peer-learning-cron-every-15-min-connect-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-15T23:39:40"
+    action: "T-1270: Peer-learning cron inception + pickup cron 30s→1min; T-1268 update propagation inception; T-1263 recommendation"
+  - time: "2026-04-15T23:43:19"
+    action: "T-1270: Pickup envelope P-022 + research artifact; propagated to 3 local TermLink sessions (remote hubs deferred — all three down)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11121 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11121
+  commits: 2
+  files_changed: 8
+  lines_added: 337
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1270-peer-learning-cron-every-15-min-connect-.md
+generated_by: context-agent-hybrid
