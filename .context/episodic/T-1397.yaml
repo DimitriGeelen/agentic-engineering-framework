@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1397: T-1268 B1: pending-updates registry (.context/working/pending-updates.yaml + fw pending register/list/resolve)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T14:01:27Z
+# ============================================================================
+
+task_id: T-1397
+task_name: "T-1268 B1: pending-updates registry (.context/working/pending-updates.yaml + fw pending register/list/resolve)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T13:56:41Z
+completed: 2026-04-23T14:01:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T16:01:17+02:00
+last_commit: 2026-04-23T16:01:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Ship T-1268 B1 — pending-updates registry (fw pending register/list/resolve)
+
+# Key outcomes
+outcomes:
+  - "`lib/pending.sh` exists with `do_pending` dispatcher for `register`, `list`, `resolve`, `help`"
+  - "`bin/fw pending` routes to `lib/pending.sh do_pending`"
+  - "`fw pending register --command 'CMD' --reason 'WHY' --task T-XXX [--host HOST]` appends an entry to `.context/working/pending-updates.yaml` with auto-generated `U-NNN` id, status `pending`"
+  - "`fw pending list` prints pending entries; `--status all` shows everything"
+  - "`fw pending resolve U-NNN [--note 'outcome']` flips status to `resolved`, stamps `resolved_date`"
+  - "File auto-creates on first write with a schema header"
+  - "Registry entries are append-only (resolved entries kept, only flagged)"
+  - "Unit test (`tests/unit/fw_pending.bats`) covers register → list → resolve happy path and list-filter"
+  - "`bash -n lib/pending.sh` passes; `bats tests/unit/fw_pending.bats` passes (7/7)"
+  - "CLAUDE.md Quick Reference gains `fw pending {register,list,resolve}` rows"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "CLAUDE.md"
+  - ".fabric/components/lib-pending.yaml"
+  - "lib/pending.sh"
+  - ".tasks/active/T-1397-t-1268-b1-pending-updates-registry-conte.md"
+  - "tests/unit/fw_pending.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T16:01:17"
+    action: "T-1397: Ship T-1268 B1 — pending-updates registry (fw pending register/list/resolve)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 6
+  lines_added: 486
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1397-t-1268-b1-pending-updates-registry-conte.md
+generated_by: context-agent-hybrid

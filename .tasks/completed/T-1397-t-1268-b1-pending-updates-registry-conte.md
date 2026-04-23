@@ -4,16 +4,16 @@ name: "T-1268 B1: pending-updates registry (.context/working/pending-updates.yam
 description: >
   T-1268 B1: pending-updates registry (.context/working/pending-updates.yaml + fw pending register/list/resolve)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/pending.sh]
 related_tasks: []
 created: 2026-04-23T13:56:41Z
-last_update: 2026-04-23T13:56:41Z
-date_finished: null
+last_update: 2026-04-23T14:01:22Z
+date_finished: 2026-04-23T14:01:22Z
 ---
 
 # T-1397: T-1268 B1: pending-updates registry (.context/working/pending-updates.yaml + fw pending register/list/resolve)
@@ -86,3 +86,6 @@ grep -q "fw pending resolve" CLAUDE.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1397-t-1268-b1-pending-updates-registry-conte.md
 - **Context:** Initial task creation
+
+### 2026-04-23T14:01:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
