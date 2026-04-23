@@ -18,6 +18,8 @@ REPO_URL="${REPO_URL:-https://github.com/DimitriGeelen/agentic-engineering-frame
 BRANCH="${BRANCH:-master}"
 MODIFY_PATH="${MODIFY_PATH:-false}"
 LOCAL_REPO=""
+NO_SCAN="${NO_SCAN:-false}"
+FW_CONSUMER_SCAN_DIRS="${FW_CONSUMER_SCAN_DIRS:-/opt}"
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -59,6 +61,10 @@ parse_args() {
                 INSTALL_DIR="$2"
                 shift 2
                 ;;
+            --no-scan)
+                NO_SCAN=true
+                shift
+                ;;
             -h|--help)
                 echo "Usage: install.sh [options]"
                 echo ""
@@ -66,6 +72,7 @@ parse_args() {
                 echo "  --local <path>       Install/update from a local git repo"
                 echo "  --branch <name>      Branch to use (default: master)"
                 echo "  --install-dir <path> Install location (default: ~/.agentic-framework)"
+                echo "  --no-scan            Skip vendored-consumer scan (CI/automation)"
                 echo "  -h, --help           Show this help"
                 exit 0
                 ;;
@@ -175,6 +182,51 @@ do_install() {
         git -C "$INSTALL_DIR" config core.fileMode false
         info "Cloned successfully"
     fi
+}
+
+# --- T-1346-B3: Vendored Consumer Scan ---
+# Enumerate vendored consumer projects so the user can see which existing
+# installs may interact with this install. T-1356 (B1) flipped resolve_framework
+# rule order so vendored beats global, but visibility still matters: a user
+# installing the global shim should know which projects already have their
+# own copy. Suppress with --no-scan for CI.
+scan_vendored_consumers() {
+    if [[ "$NO_SCAN" == "true" ]]; then
+        info "Vendored-consumer scan: skipped (--no-scan)"
+        return 0
+    fi
+
+    echo ""
+    echo -e "${BOLD}Vendored framework copies detected:${NC}"
+
+    local found=0
+    local IFS=':'
+    for dir in $FW_CONSUMER_SCAN_DIRS; do
+        unset IFS
+        [ -d "$dir" ] || continue
+        # Look one level deep for .agentic-framework/FRAMEWORK.md
+        for proj in "$dir"/*/; do
+            [ -d "$proj" ] || continue
+            if [ -f "$proj/.agentic-framework/FRAMEWORK.md" ]; then
+                local pin="?"
+                if [ -f "$proj/.agentic-framework/VERSION" ]; then
+                    pin="$(cat "$proj/.agentic-framework/VERSION" 2>/dev/null || echo "?")"
+                fi
+                echo "  - ${proj%/} (v$pin)"
+                found=$((found + 1))
+            fi
+        done
+        IFS=':'
+    done
+    unset IFS
+
+    if [ "$found" -eq 0 ]; then
+        echo "  (none)"
+    else
+        echo ""
+        info "$found vendored consumer project(s) found — they use their own framework copy (not affected by this install)"
+    fi
+    echo ""
 }
 
 # --- Install Shim (T-664: project-detecting fw, replaces global symlinks) ---
@@ -306,6 +358,8 @@ main() {
     info "Checking prerequisites..."
     check_prereqs
     echo ""
+
+    scan_vendored_consumers
 
     do_install
     echo ""
