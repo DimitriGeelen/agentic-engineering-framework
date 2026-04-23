@@ -1220,6 +1220,24 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         fi
     fi
 
+    # Check: Pending-updates registry (T-1268 B2)
+    local pending_file="$PROJECT_ROOT/.context/working/pending-updates.yaml"
+    if [ -f "$pending_file" ]; then
+        local pending_count
+        pending_count=$(FW_PENDING_FILE="$pending_file" python3 -c "
+import os, yaml
+with open(os.environ['FW_PENDING_FILE']) as f:
+    data = yaml.safe_load(f) or {}
+entries = data.get('pending_updates') or []
+print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
+" 2>/dev/null || echo 0)
+        if [ "$pending_count" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Pending-updates registry: $pending_count unresolved entry(ies)"
+            echo -e "         Run: fw pending list"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # Check: Consumer project fleet health (T-616, T-1195/G-044)
     # Only runs from framework repo — scans FW_CONSUMER_SCAN_DIRS for .framework.yaml
     if [ "$FRAMEWORK_ROOT" = "$PROJECT_ROOT" ]; then
