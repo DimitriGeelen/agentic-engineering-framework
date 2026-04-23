@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1395: Diagnose CTL-013 false-positive on T-1394 verification re-run
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T12:54:52Z
+# ============================================================================
+
+task_id: T-1395
+task_name: "Diagnose CTL-013 false-positive on T-1394 verification re-run"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T12:42:48Z
+completed: 2026-04-23T12:54:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T14:54:43+02:00
+last_commit: 2026-04-23T14:54:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix CTL-013 false-positive — bats inherits stale TASKS_DIR/CONTEXT_DIR
+
+# Key outcomes
+outcomes:
+  - "Add `FW_AUDIT_VERIFY_DEBUG` flag to audit CTL-013 block that prints the failing command"
+  - "Identify the actual failing command for T-1394 via debug output"
+  - "Fix root cause (either in audit.sh or in T-1394 verification)"
+  - "CTL-013 reports T-1394 verification re-run as fully passing"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix CTL-013 false-positive — bats inherits stale TASKS_DIR/CONTEXT_DIR"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-1395-diagnose-ctl-013-false-positive-on-t-139.md"
+  - "tests/unit/audit_trend_window.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T14:54:43"
+    action: "T-1395: Fix CTL-013 false-positive — bats inherits stale TASKS_DIR/CONTEXT_DIR"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 3
+  lines_added: 81
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1395-diagnose-ctl-013-false-positive-on-t-139.md
+generated_by: context-agent-hybrid
