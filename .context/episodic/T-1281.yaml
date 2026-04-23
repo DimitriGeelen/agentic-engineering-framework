@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1281: E2E: Test inception decide on consumer project via Watchtower
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T19:05:37Z
+# ============================================================================
+
+task_id: T-1281
+task_name: "E2E: Test inception decide on consumer project via Watchtower"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-17T10:16:32Z
+completed: 2026-04-23T19:05:30Z
+duration_days: 6
+updates_count: 5
+first_commit: 2026-04-23T21:05:29+02:00
+last_commit: 2026-04-23T21:05:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  E2E inception decide via Watchtower → fw → task mutation
+
+# Key outcomes
+outcomes:
+  - "Pytest fixture creates a temp consumer project (`.tasks/`, `.context/`, `.framework.yaml`) with a real inception task containing Recommendation + Go/No-Go Criteria + research artifact"
+  - "Test POSTs to `/inception/T-XXX/decide` via Flask test client (using PROJECT_ROOT pointing at temp consumer) for go, no-go, and defer outcomes"
+  - "After each POST, test asserts: HTTP 302/200, decision recorded in task body, task auto-moves to completed/"
+  - "Test covers Watchtower → fw inception decide → task body update full chain (no mocking of `run_fw_command`)"
+  - "`tests/web/test_inception_decide_e2e.py` runs and all 6 cases pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1281-e2e-test-inception-decide-on-consumer-pr.md"
+  - "tests/web/test_inception_decide_e2e.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T21:05:29"
+    action: "T-1281: E2E inception decide via Watchtower → fw → task mutation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9168 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9168
+  commits: 1
+  files_changed: 2
+  lines_added: 248
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1281-e2e-test-inception-decide-on-consumer-pr.md
+generated_by: context-agent-hybrid
