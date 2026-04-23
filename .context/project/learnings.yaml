@@ -1903,3 +1903,10 @@ learnings:
   date: 2026-04-23
   context: Added via context agent
   application: TBD
+- id: L-246
+  learning: "lib/paths.sh exports PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. When tests spawn audit/agent subprocesses with overridden PROJECT_ROOT, they MUST also clear TASKS_DIR= and CONTEXT_DIR= explicitly — otherwise the inner shell inherits the parent's exported values via env (the conditional ':-' default doesn't trigger when the var is set-but-empty-string, and definitely doesn't trigger when the var has a value). Hit by T-1395 in CTL-013 verification re-run."
+  source: P-001
+  task: T-1395
+  date: 2026-04-23
+  context: Added via context agent
+  application: TBD
