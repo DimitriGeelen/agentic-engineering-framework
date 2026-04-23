@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1408: Fix 11 stale csrf_exempt tests in web/test_app.py — T-1343 removed /api/* exemption, tests not updated
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T19:27:07Z
+# ============================================================================
+
+task_id: T-1408
+task_name: "Fix 11 stale csrf_exempt tests in web/test_app.py — T-1343 removed /api/* exemption, tests not updated"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T19:23:19Z
+completed: 2026-04-23T19:26:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T21:26:09+02:00
+last_commit: 2026-04-23T21:26:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix 11 stale csrf_exempt tests — match post-T-1343 policy
+
+# Key outcomes
+outcomes:
+  - "All 11 stale `*_csrf_exempt` tests rewritten to assert post-T-1343 CSRF policy"
+  - "Each rewritten test asserts: unauth POST → 403 (CSRF rejected)"
+  - "Renamed from `*_csrf_exempt` to `*_csrf_required` to reflect actual policy"
+  - "No change to web/app.py csrf_protect (test fix only)"
+  - "`python3 -m pytest web/test_app.py` — was 11 failures, now `142 passed in 56.63s`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix 11 stale csrf_exempt tests — match post-T-1343 policy"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1408-fix-11-stale-csrfexempt-tests-in-webtest.md"
+  - "web/test_app.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T21:26:09"
+    action: "T-1408: Fix 11 stale csrf_exempt tests — match post-T-1343 policy"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 95
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1408-fix-11-stale-csrfexempt-tests-in-webtest.md
+generated_by: context-agent-hybrid

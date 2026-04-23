@@ -4,7 +4,7 @@ name: "E2E test: inception decide on vendored consumer project via Watchtower"
 description: >
   E2E test: inception decide on vendored consumer project via Watchtower
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T10:16:32Z
-last_update: 2026-04-23T19:16:38Z
-date_finished: null
+last_update: 2026-04-23T19:19:56Z
+date_finished: 2026-04-23T19:19:56Z
 ---
 
 # T-1282: E2E test: inception decide on vendored consumer project via Watchtower
@@ -69,3 +69,6 @@ test -f tests/web/test_inception_decide_vendored_e2e.py
 ### 2026-04-23T19:16:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-23T19:19:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

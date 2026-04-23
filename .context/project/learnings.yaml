@@ -1938,3 +1938,10 @@ learnings:
   date: 2026-04-23
   context: fleet-doctor auto-registered
   application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-250
+  learning: "When removing a blanket security exemption (e.g., CSRF /api/* exemption removed in T-1343), grep the test suite for tests that asserted the OLD policy. Pattern: after a global policy flip, all tests with the original-policy name (here: *_csrf_exempt) become stale together. Find them up front, not via failing CI."
+  source: P-001
+  task: T-1408
+  date: 2026-04-23
+  context: Added via context agent
+  application: TBD

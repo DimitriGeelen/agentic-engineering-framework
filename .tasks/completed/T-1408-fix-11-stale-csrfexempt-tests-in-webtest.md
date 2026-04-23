@@ -4,7 +4,7 @@ name: "Fix 11 stale csrf_exempt tests in web/test_app.py — T-1343 removed /api
 description: >
   Fix 11 stale csrf_exempt tests in web/test_app.py — T-1343 removed /api/* exemption, tests not updated
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-23T19:23:19Z
-last_update: 2026-04-23T19:23:19Z
-date_finished: null
+last_update: 2026-04-23T19:26:10Z
+date_finished: 2026-04-23T19:26:10Z
 ---
 
 # T-1408: Fix 11 stale csrf_exempt tests in web/test_app.py — T-1343 removed /api/* exemption, tests not updated
@@ -60,3 +60,6 @@ bash -c 'out=$(python3 -m pytest web/test_app.py 2>&1); echo "$out" | tail -3; e
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1408-fix-11-stale-csrfexempt-tests-in-webtest.md
 - **Context:** Initial task creation
+
+### 2026-04-23T19:26:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

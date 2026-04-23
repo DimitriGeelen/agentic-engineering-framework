@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1282: E2E test: inception decide on vendored consumer project via Watchtower
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T19:20:54Z
+# ============================================================================
+
+task_id: T-1282
+task_name: "E2E test: inception decide on vendored consumer project via Watchtower"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-17T10:16:32Z
+completed: 2026-04-23T19:19:56Z
+duration_days: 6
+updates_count: 5
+first_commit: 2026-04-23T21:19:54+02:00
+last_commit: 2026-04-23T21:19:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  E2E test — inception decide on vendored consumer project
+
+# Key outcomes
+outcomes:
+  - "New test file `tests/web/test_inception_decide_vendored_e2e.py` exists"
+  - "Fixture sets up tmp_path with `.agentic-framework/` symlinked to repo root (vendored mode)"
+  - "PROJECT_ROOT is the tmp_path consumer (not the framework repo)"
+  - "Test posts to `/inception/T-XXXX/decide` and verifies task body mutation"
+  - "Test verifies task moves from active/ → completed/ (auto-complete chain)"
+  - "All 5 tests pass: `python3 -m pytest tests/web/test_inception_decide_vendored_e2e.py` → `5 passed in 4.33s`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1282-e2e-test-inception-decide-on-vendored-co.md"
+  - "tests/web/test_inception_decide_vendored_e2e.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T21:19:54"
+    action: "T-1282: E2E test — inception decide on vendored consumer project"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9183 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9183
+  commits: 2
+  files_changed: 9
+  lines_added: 3154
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1282-e2e-test-inception-decide-on-vendored-co.md
+generated_by: context-agent-hybrid
