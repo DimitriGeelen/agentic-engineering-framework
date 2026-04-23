@@ -1,0 +1,103 @@
+<h1>Pending Updates</h1>
+
+<p class="muted">
+    Registry of cross-project / cross-machine actions an agent was blocked from
+    completing in-session (T-1268). Append-only — resolved entries are flagged, not deleted.
+</p>
+
+<p>
+    <strong>{{ total_pending }}</strong> pending
+    {% if total_resolved %}&middot; <strong>{{ total_resolved }}</strong> resolved{% endif %}
+</p>
+
+<h2>Pending</h2>
+
+{% if pending %}
+<table role="grid">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Task</th>
+            <th>Host</th>
+            <th>Reason</th>
+            <th>Command</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in pending %}
+        <tr id="row-{{ e.id }}">
+            <td><code>{{ e.id }}</code></td>
+            <td>{{ e.task or '-' }}</td>
+            <td><small class="muted">{{ e.host or '-' }}</small></td>
+            <td>{{ e.reason or '' }}</td>
+            <td><code style="word-break: break-all;">{{ e.command or '' }}</code></td>
+            <td><small class="muted">{{ e.created or '-' }}</small></td>
+            <td>
+                <button class="pending-resolve" data-id="{{ e.id }}">Resolve</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="muted">No pending entries.</p>
+{% endif %}
+
+{% if resolved %}
+<h2>Resolved</h2>
+<table role="grid">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Task</th>
+            <th>Resolved</th>
+            <th>Note</th>
+            <th>Command</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in resolved %}
+        <tr>
+            <td><code>{{ e.id }}</code></td>
+            <td>{{ e.task or '-' }}</td>
+            <td><small class="muted">{{ e.resolved_date or '-' }}</small></td>
+            <td>{{ e.resolution_note or '' }}</td>
+            <td><code style="word-break: break-all;">{{ e.command or '' }}</code></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<script>
+document.querySelectorAll('.pending-resolve').forEach(function(btn) {
+    btn.addEventListener('click', async function() {
+        var id = btn.getAttribute('data-id');
+        var note = prompt('Optional resolution note for ' + id + ':', '');
+        if (note === null) return;
+        btn.disabled = true;
+        btn.textContent = 'Resolving...';
+        try {
+            var resp = await fetch('/api/v1/pending/' + encodeURIComponent(id) + '/resolve', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({note: note || ''})
+            });
+            if (resp.ok) {
+                window.location.reload();
+            } else {
+                var data = await resp.json().catch(function() { return {}; });
+                alert('Resolve failed: ' + (data.error || resp.status));
+                btn.disabled = false;
+                btn.textContent = 'Resolve';
+            }
+        } catch (err) {
+            alert('Resolve failed: ' + err.message);
+            btn.disabled = false;
+            btn.textContent = 'Resolve';
+        }
+    });
+});
+</script>
