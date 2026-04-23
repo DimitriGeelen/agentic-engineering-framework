@@ -104,6 +104,7 @@ NAV_GROUPS = [
         ("Costs",         "costs.costs_dashboard",                 None),
         ("Config",        "config.config_page",                    None),
         ("Cron",          "cron.cron_registry",                    None),
+        ("Pending",       "pending.pending_page",                  None),
     ]),
 ]
 
