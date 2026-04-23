@@ -1075,6 +1075,7 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Pending register | `fw pending register --command CMD --reason WHY --task T-XXX [--host H]` | Register a blocked cross-project/cross-machine action (T-1268 B1) |
 | Pending list | `fw pending list [--status pending\|resolved\|all]` | List pending-updates registry entries |
 | Pending resolve | `fw pending resolve U-NNN [--note "..."]` | Mark a pending entry as resolved |
+| Pending remind | `fw pending remind` | Ping for entries older than `FW_PENDING_REMIND_STALE_HOURS` (default 24h); fires `fw_notify` when `NTFY_ENABLED=true` |
 | Notify status | `fw notify status` | Show notification configuration |
 | Notify enable | `fw notify enable` | Enable push notifications |
 | Notify disable | `fw notify disable` | Disable push notifications |

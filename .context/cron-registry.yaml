@@ -132,3 +132,12 @@ jobs:
     origin_task: T-1269
     status: active
     description: "Runs liveness-check once at boot with boot_marker=1 so the log records a service-start datapoint."
+
+  - id: pending-remind-daily
+    name: "Pending-updates reminder (daily)"
+    schedule: "0 10 * * *"
+    command: "NTFY_ENABLED=true /opt/999-Agentic-Engineering-Framework/bin/fw pending remind"
+    source_file: agentic-audit.crontab
+    origin_task: T-1399
+    status: paused
+    description: "Pings human at 10:00 daily for pending-updates entries (blocked cross-project or cross-machine actions) older than 24h. Paused by default — activate via Watchtower /cron once a ntfy channel is configured."

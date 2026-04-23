@@ -19,6 +19,9 @@ do_pending() {
         resolve)
             do_pending_resolve "$@"
             ;;
+        remind)
+            do_pending_remind "$@"
+            ;;
         ""|-h|--help|help)
             show_pending_help
             ;;
@@ -38,6 +41,7 @@ Subcommands:
   register   Record an action the agent could not complete in-session
   list       Show pending (default) or all entries
   resolve    Mark an entry as resolved
+  remind     Ping for entries older than FW_PENDING_REMIND_STALE_HOURS (default 24)
 
 Examples:
   fw pending register --command "cd /path && .agentic-framework/bin/fw upgrade" \
@@ -253,4 +257,88 @@ with open(pending_file, 'w') as f:
 
 print(f"Resolved: {entry_id}")
 PYRESOLVE
+}
+
+do_pending_remind() {
+    local stale_hours="${FW_PENDING_REMIND_STALE_HOURS:-24}"
+
+    if [ ! -f "$PENDING_FILE" ]; then
+        echo "No pending-updates registry — nothing to remind about"
+        return 0
+    fi
+
+    # Returns: <count>|<first_id>|<first_task>|<summary_block>
+    local summary
+    summary=$(FW_PENDING_FILE="$PENDING_FILE" FW_STALE_HOURS="$stale_hours" python3 - <<'PYREMIND'
+import os
+import sys
+from datetime import datetime, timezone, timedelta
+import yaml
+
+pending_file = os.environ['FW_PENDING_FILE']
+stale_hours = int(os.environ['FW_STALE_HOURS'])
+
+with open(pending_file) as f:
+    data = yaml.safe_load(f) or {}
+
+entries = data.get('pending_updates') or []
+cutoff = datetime.now(timezone.utc) - timedelta(hours=stale_hours)
+
+stale = []
+for e in entries:
+    if (e.get('status') or 'pending') != 'pending':
+        continue
+    created = e.get('created')
+    if not created:
+        continue
+    try:
+        dt = datetime.fromisoformat(str(created).replace('Z', '+00:00'))
+    except ValueError:
+        continue
+    if dt < cutoff:
+        stale.append(e)
+
+if not stale:
+    print("0||")
+    sys.exit(0)
+
+lines = []
+for e in stale:
+    lines.append(f"  {e.get('id','?')} [{e.get('task','-')}] age>={stale_hours}h  {e.get('reason','')}")
+
+first = stale[0]
+print(f"{len(stale)}|{first.get('id','?')}|{first.get('task','-')}")
+for line in lines:
+    print(line)
+PYREMIND
+)
+
+    local count first_id first_task rest
+    count=$(echo "$summary" | head -1 | cut -d'|' -f1)
+    first_id=$(echo "$summary" | head -1 | cut -d'|' -f2)
+    first_task=$(echo "$summary" | head -1 | cut -d'|' -f3)
+    rest=$(echo "$summary" | tail -n +2)
+
+    if [ "${count:-0}" -eq 0 ]; then
+        echo "No stale pending entries (stale threshold: ${stale_hours}h)"
+        return 0
+    fi
+
+    echo "Stale pending entries (>= ${stale_hours}h, status=pending):"
+    echo "$rest"
+    echo ""
+    echo "Total: $count. Resolve with: fw pending resolve <U-NNN>"
+
+    # Fire notification if enabled
+    if [ "${NTFY_ENABLED:-}" = "true" ]; then
+        if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+            # shellcheck disable=SC1091
+            source "$FRAMEWORK_ROOT/lib/notify.sh"
+            fw_notify \
+                "Pending-updates: $count stale entr(y|ies)" \
+                "$count entries older than ${stale_hours}h. First: $first_id (task $first_task). Run: fw pending list" \
+                "pending-remind" \
+                "framework" || true
+        fi
+    fi
 }
