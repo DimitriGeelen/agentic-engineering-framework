@@ -16,6 +16,18 @@ bin/watchtower.sh stop
 bin/watchtower.sh restart [--port N] [--debug]
 bin/watchtower.sh status
 
+### Framework Reference
+
+**Watchtower's port is per-project, not hard-coded to `3000`.** Two consumer projects on one host would collide if the framework assumed 3000 everywhere.
+
+Resolution order (T-885, T-1287, T-1376):
+
+1. **`.context/working/watchtower.url`** — triple-file source of truth, written by `bin/watchtower.sh` on start. Read this file, don't guess.
+2. **`bin/fw config get PORT`** — per-project `FW_PORT` config when no Watchtower is currently running.
+3. **`3000`** — default ONLY when neither of the above is available (fresh project, no config, no running instance).
+
+*(truncated — see CLAUDE.md for full section)*
+
 ## Dependencies (4)
 
 | Target | Relationship |
