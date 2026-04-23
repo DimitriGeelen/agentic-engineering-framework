@@ -814,14 +814,27 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
         fi
     fi
 
-    # Check for uncommitted changes
-    if [ -n "$(git -C "$PROJECT_ROOT" status --porcelain)" ]; then
-        warn "Uncommitted changes present" \
-             "Working directory has modifications" \
-             "Commit changes with task reference or stash"
+    # Check for uncommitted changes (T-1392: filter session-state noise)
+    # Session-state files (watchtower logs/pid, audits, monitors, focus, metrics
+    # history, ephemeral approvals, counters) churn under normal operation and
+    # would otherwise drown out signal from real source/code changes.
+    _SESSION_STATE_FILTER='^\.context/(working/(watchtower\.|session\.yaml|focus\.yaml|\.session-metrics\.yaml|\.tool-counter|\.edit-counter|\.budget-status|\.gate-bypass-log\.yaml|\.approval-notified|\.restart-requested|\.dispatch-approval)|audits/|monitors/|approvals/(pending|resolved)-|project/metrics-history\.yaml)'
+    _ALL_DIRTY=$(git -C "$PROJECT_ROOT" status --porcelain | awk '{print $2}')
+    if [ -n "$_ALL_DIRTY" ]; then
+        _REAL_DIRTY=$(printf '%s\n' "$_ALL_DIRTY" | grep -Ev "$_SESSION_STATE_FILTER" || true)
+        _NOISE_COUNT=$(printf '%s\n' "$_ALL_DIRTY" | grep -Ec "$_SESSION_STATE_FILTER" || true)
+        if [ -n "$_REAL_DIRTY" ]; then
+            _REAL_COUNT=$(printf '%s\n' "$_REAL_DIRTY" | wc -l | tr -d ' ')
+            warn "Uncommitted changes present" \
+                 "$_REAL_COUNT real file(s) modified ($_NOISE_COUNT session-state file(s) ignored)" \
+                 "Commit changes with task reference or stash"
+        else
+            pass "Working directory clean ($_NOISE_COUNT session-state file(s) churning, ignored)"
+        fi
     else
         pass "Working directory clean"
     fi
+    unset _SESSION_STATE_FILTER _ALL_DIRTY _REAL_DIRTY _NOISE_COUNT _REAL_COUNT
 
     # Quality Check: Verify task refs in commits exist as actual tasks
     orphan_refs=0
