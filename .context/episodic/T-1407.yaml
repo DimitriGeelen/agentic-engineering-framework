@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1407: T-1346-B3 install.sh scans for vendored consumer projects before linking shim
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T18:52:48Z
+# ============================================================================
+
+task_id: T-1407
+task_name: "T-1346-B3 install.sh scans for vendored consumer projects before linking shim"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T18:50:05Z
+completed: 2026-04-23T18:52:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T20:52:42+02:00
+last_commit: 2026-04-23T20:52:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1346-B3 — install.sh scans vendored consumer projects
+
+# Key outcomes
+outcomes:
+  - "`install.sh` adds `scan_vendored_consumers()` function that scans `${FW_CONSUMER_SCAN_DIRS:-/opt}` for `.agentic-framework/FRAMEWORK.md`"
+  - "On install, prints `Vendored framework copies detected:` followed by the list (or `(none)` if zero), unless `--no-scan` is passed"
+  - "Bats `tests/unit/install_scan.bats` covers: zero consumers, some consumers, --no-scan suppression"
+  - "Existing install paths (legacy fallback + shim) continue to work; no regression in install flow exit code"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "install.sh"
+  - ".tasks/active/T-1407-t-1346-b3-installsh-scans-for-vendored-c.md"
+  - "tests/unit/install_scan.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T20:52:42"
+    action: "T-1407: T-1346-B3 — install.sh scans vendored consumer projects"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 3
+  lines_added: 199
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1407-t-1346-b3-installsh-scans-for-vendored-c.md
+generated_by: context-agent-hybrid

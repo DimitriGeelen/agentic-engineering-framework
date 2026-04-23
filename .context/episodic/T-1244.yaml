@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1244: Watchtower approvals.py — use shared task cache instead of inline file scanning
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T18:57:50Z
+# ============================================================================
+
+task_id: T-1244
+task_name: "Watchtower approvals.py — use shared task cache instead of inline file scanning"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T20:28:38Z
+completed: 2026-04-23T18:57:40Z
+duration_days: 10
+updates_count: 5
+first_commit: 2026-04-23T20:57:37+02:00
+last_commit: 2026-04-23T20:57:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower /approvals uses shared task cache
+
+# Key outcomes
+outcomes:
+  - "`_load_pending_go_decisions()` filters via `get_all_task_metadata()` cache before reading bodies (only inception tasks in active/ are read)"
+  - "`_load_pending_human_acs()` filters via cache before reading bodies (only active tasks are scanned, frontmatter from cache)"
+  - "No regression in /approvals output: pending_go and pending_acs lists equivalent before/after refactor"
+  - "Pytest `tests/web/test_approvals_cache.py` covers parity check (same task list before/after)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1244-watchtower-approvalspy--use-shared-task-.md"
+  - "tests/web/test_approvals_cache.py"
+  - "web/blueprints/approvals.py"
+  - "web/shared.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T20:57:37"
+    action: "T-1244: Watchtower /approvals uses shared task cache"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 14309 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14309
+  commits: 1
+  files_changed: 4
+  lines_added: 112
+  lines_removed: 43
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1244-watchtower-approvalspy--use-shared-task-.md
+generated_by: context-agent-hybrid
