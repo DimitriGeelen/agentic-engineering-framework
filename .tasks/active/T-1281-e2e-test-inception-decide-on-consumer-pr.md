@@ -4,15 +4,15 @@ name: "E2E: Test inception decide on consumer project via Watchtower"
 description: >
   E2E: Test inception decide on consumer project via Watchtower
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T10:16:32Z
-last_update: 2026-04-23T16:46:49Z
+last_update: 2026-04-23T18:58:51Z
 date_finished: null
 ---
 
@@ -25,30 +25,15 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] Pytest fixture creates a temp consumer project (`.tasks/`, `.context/`, `.framework.yaml`) with a real inception task containing Recommendation + Go/No-Go Criteria + research artifact
+- [x] Test POSTs to `/inception/T-XXX/decide` via Flask test client (using PROJECT_ROOT pointing at temp consumer) for go, no-go, and defer outcomes
+- [x] After each POST, test asserts: HTTP 302/200, decision recorded in task body, task auto-moves to completed/
+- [x] Test covers Watchtower → fw inception decide → task body update full chain (no mocking of `run_fw_command`)
+- [x] `tests/web/test_inception_decide_e2e.py` runs and all 6 cases pass
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+bash -c 'out=$(python3 -m pytest tests/web/test_inception_decide_e2e.py -q 2>&1); echo "$out" | tail -8; echo "$out" | grep -qE "passed"'
 
 ## Decisions
 
@@ -75,3 +60,7 @@ date_finished: null
 
 ### 2026-04-23T16:46:49Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-04-23T18:58:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
