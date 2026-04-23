@@ -362,7 +362,13 @@ HOOK_EOF
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 export PROJECT_ROOT
 
-# Resolve audit script: check .framework.yaml first, then local agents/
+# Resolve audit script. Priority (T-1396):
+#   1. .framework.yaml -> framework_path (explicit consumer config)
+#   2. $PROJECT_ROOT/agents/audit/audit.sh (framework repo: source-of-truth)
+#   3. $PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh (vendored bootstrap fallback)
+# Root-level agents/ only exists in the framework repo itself; preferring it when
+# present ensures the framework-repo pre-push hook runs HEAD's audit, not the
+# stale vendored bootstrap copy.
 AUDIT_SCRIPT=""
 if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
     FW_PATH=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
@@ -370,19 +376,19 @@ if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
         AUDIT_SCRIPT="$FW_PATH/agents/audit/audit.sh"
     fi
 fi
-if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh" ]; then
-    AUDIT_SCRIPT="$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
-fi
 if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/agents/audit/audit.sh" ]; then
     AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"
+fi
+if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh" ]; then
+    AUDIT_SCRIPT="$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
 fi
 
 # Skip if audit script not found anywhere
 if [ -z "$AUDIT_SCRIPT" ]; then
     echo "ERROR: Audit script not found"
     echo "  Checked: .framework.yaml -> framework_path"
-    echo "  Checked: $PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
     echo "  Checked: $PROJECT_ROOT/agents/audit/audit.sh"
+    echo "  Checked: $PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
     echo "  Push blocked — fix framework path or install audit agent"
     exit 1
 fi
