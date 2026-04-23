@@ -4,16 +4,16 @@ name: "T-1268 B2: fw doctor surfaces unresolved pending-updates entries"
 description: >
   T-1268 B2: fw doctor surfaces unresolved pending-updates entries
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-04-23T14:02:50Z
-last_update: 2026-04-23T14:02:50Z
-date_finished: null
+last_update: 2026-04-23T14:05:15Z
+date_finished: 2026-04-23T14:05:15Z
 ---
 
 # T-1398: T-1268 B2: fw doctor surfaces unresolved pending-updates entries
@@ -61,3 +61,6 @@ _t=$(mktemp); bats tests/unit/fw_doctor_pending.bats >"$_t" 2>&1; _r=$?; tail -5
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1398-t-1268-b2-fw-doctor-surfaces-unresolved-.md
 - **Context:** Initial task creation
+
+### 2026-04-23T14:05:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
