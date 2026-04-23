@@ -1917,3 +1917,10 @@ learnings:
   date: 2026-04-23
   context: Added via context agent
   application: TBD
+- id: L-248
+  learning: "audit.sh .get('key', '') returns None when YAML has explicit null value — must use .get('key') or '' to coalesce. Same class as L-149 (from __future__ defensive) but for YAML null coercion. Apply wherever YAML-loaded values may be chained with .replace() or .strip()."
+  source: P-001
+  task: --task
+  date: 2026-04-23
+  context: Added via context agent
+  application: TBD

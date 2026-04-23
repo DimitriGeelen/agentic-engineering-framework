@@ -3164,12 +3164,13 @@ entries.append(entry)
 cutoff_30d = datetime.now(timezone.utc) - timedelta(days=30)
 pruned = []
 for e in entries:
-    ts_str = e.get("timestamp", "")
+    # .get("timestamp", "") returns None when YAML has an explicit null value (T-1402)
+    ts_str = e.get("timestamp") or ""
     try:
         ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
         if ts >= cutoff_30d:
             pruned.append(e)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, AttributeError):
         pruned.append(e)  # keep unparseable entries
 
 # Downsample: for entries older than 7 days, keep only 1 per calendar day (T-431/A3)
@@ -3177,7 +3178,7 @@ cutoff_7d = datetime.now(timezone.utc) - timedelta(days=7)
 recent = []
 old_by_day = {}
 for e in pruned:
-    ts_str = e.get("timestamp", "")
+    ts_str = e.get("timestamp") or ""
     try:
         ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
         if ts >= cutoff_7d:
@@ -3186,10 +3187,10 @@ for e in pruned:
             day_key = ts.strftime("%Y-%m-%d")
             if day_key not in old_by_day:
                 old_by_day[day_key] = e  # keep first (oldest) per day
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, AttributeError):
         recent.append(e)
 
-pruned = sorted(old_by_day.values(), key=lambda x: x.get("timestamp", "")) + recent
+pruned = sorted(old_by_day.values(), key=lambda x: x.get("timestamp") or "") + recent
 
 data["entries"] = pruned
 
