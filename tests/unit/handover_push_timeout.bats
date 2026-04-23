@@ -65,8 +65,9 @@ teardown() {
 
 # ---- Default value sanity ----
 
-@test "default push timeout is 15s when env var unset" {
-    grep -q '${FW_HANDOVER_PUSH_TIMEOUT:-15}' "$FRAMEWORK_ROOT/agents/handover/handover.sh"
+@test "default push timeout is 60s when env var unset" {
+    # T-1341 bumped 15→60 to accommodate pre-push audit; T-1409 fixed this test to match.
+    grep -q '${FW_HANDOVER_PUSH_TIMEOUT:-60}' "$FRAMEWORK_ROOT/agents/handover/handover.sh"
 }
 
 @test "default total timeout is 60s when env var unset" {
