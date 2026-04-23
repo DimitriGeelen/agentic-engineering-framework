@@ -1461,8 +1461,11 @@ concerns:
   trigger_event: "2026-04-23: T-1404 backlog sweep run on 111 active tasks; 6 false-positive 'regressions' surfaced, all verification-bugs not code bugs."
   detection_lag_days: "30+"
   what_works_now: "Verification commands in newly-written tasks (post-T-954 RUBBER-STAMP rule) are generally correct because they're authored against the live spec. fw verify-acs --auto-check exists but only scans .tasks/completed/, missing the active backlog entirely."
-  what_remains: "No automated detection of stale verification commands. No CI/cron job re-runs verification blocks across all active tasks to surface stale ones. T-1404 build B2 (per-tier classification + auto-execution) addresses this if GO recorded; build B4 codifies 'agent fixes its own verification when bugs are found'."
+  what_remains: "Symptomatic mitigation complete (T-1409..T-1414, 2026-04-23 — all 6 stale verification blocks rewritten to encode SUCCESS state, run quickly, reference durable paths). Underlying gap remains: no automated detection of stale verification commands. T-1404 build B2 (per-tier classification + auto-execution) and B4 (agent fixes its own verification when bugs found) would address this structurally if GO recorded. L-252 captured the 6-pattern anti-taxonomy."
   mitigation_candidate: "Short-term: cron-able 'verify-acs --active --report' that runs all ## Verification blocks weekly and posts FAIL list as a project memory entry. Medium-term: extend update-task.sh's verification gate to ALSO sanity-check the verification command itself (e.g., warn when grep used for negative-presence semantics, warn when timeouts not specified, warn when test names reference defaults likely to drift)."
-  related_tasks: [T-1404, T-1322, T-954]
+  status: mitigated
+  mitigated_date: 2026-04-23
+  mitigated_by: [T-1409, T-1410, T-1411, T-1412, T-1413, T-1414]
+  related_tasks: [T-1404, T-1322, T-954, T-1409, T-1410, T-1411, T-1412, T-1413, T-1414]
   created: 2026-04-23
   last_reviewed: 2026-04-23
