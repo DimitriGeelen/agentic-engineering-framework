@@ -73,7 +73,7 @@ Both leave the environment in a known-stale state with no structural mechanism t
 - [ ] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -141,7 +141,37 @@ See `docs/reports/T-1268-cross-machine-update-friction.md` for full spike findin
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO (partial scope) — build C1+C4 (TermLink prebuild matrix + curl installer) and D (pending-updates registry). Defer E (cross-machine dispatch) to a follow-up inception once residual friction is measured.
+
+Rationale: The two T-1268 recurrences are symptomatic of the broader class A5 ("agent can diagnose drift but cannot fix in place"), but the right structural answer differs by class. For boundary-blocked updates, the answer is not to weaken the gate (A1 holds) — it's to give the agent a write-able registry that surfaces the intent to the human / target session. For toolchain-missing binary updates, the answer is to remove the toolchain dependency, not to ship cargo to every host. C1+C4 and D are scoped, testable, reversible, and address measurable friction.
+
+Evidence:
+- Boundary gate is centralized (one file, one allowlist) — a single registry primitive serves all 4 observed blocked-action classes (Spike B in research artifact).
+- Pending-updates registry is the missing telemetry: Spike A could not measure copy-paste completion rate because there's no instrumentation today (0 explicit "copy-pasteable" markers in 30 handovers + bypass log).
+- TermLink binary supports `cargo install --git`; adding GitHub Releases prebuilds is mechanical (Spike C: C1+C4 chosen over Homebrew/OCI on cost+reach).
+- Half-session cost for D; ~1-day for C1+C4 release matrix.
+- Reversible: pending-updates entries are append-only; release matrix doesn't remove cargo install.
+
+Build decomposition (after GO):
+- B1: `.context/working/pending-updates.yaml` schema + `fw pending {register,list,resolve}` CLI
+- B2: `fw doctor` integration (surface unresolved entries)
+- B3: Watchtower `/pending` page with one-click copy
+- B4: Optional `fw pending remind` cron (24h ping for stale entries)
+- B5: TermLink GitHub Releases matrix (`/opt/termlink/.github/workflows/release.yml`)
+- B6: TermLink `install.sh` curl-bash installer
+
+Each <1 session. B1+B2 close case 1 (boundary-blocked). B5+B6 close case 2 (toolchain-missing). B3+B4 are QoL.
+
+Reversibility: Every B-unit is additive. No existing surface is removed. Can ship B1+B2+B5 first and stop if B3/B4/B6 prove unnecessary.
+
+Alternative (NO-GO): Status quo — agent hands copy-pasteable commands; human follows through ad-hoc. Costs nothing to build but 24+ months of accumulated drift across consumer projects suggests the loop doesn't reliably close.
+
+See `docs/reports/T-1268-cross-machine-update-friction.md` for full spike findings (A-E), trade-off matrix, and design sketches.
+-->
+
+**Date**: 2026-04-23T12:09:55Z
 
 ## Updates
 
@@ -150,3 +180,34 @@ See `docs/reports/T-1268-cross-machine-update-friction.md` for full spike findin
 
 ### 2026-04-23T10:56:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-23T12:09:55Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO (partial scope) — build C1+C4 (TermLink prebuild matrix + curl installer) and D (pending-updates registry). Defer E (cross-machine dispatch) to a follow-up inception once residual friction is measured.
+
+Rationale: The two T-1268 recurrences are symptomatic of the broader class A5 ("agent can diagnose drift but cannot fix in place"), but the right structural answer differs by class. For boundary-blocked updates, the answer is not to weaken the gate (A1 holds) — it's to give the agent a write-able registry that surfaces the intent to the human / target session. For toolchain-missing binary updates, the answer is to remove the toolchain dependency, not to ship cargo to every host. C1+C4 and D are scoped, testable, reversible, and address measurable friction.
+
+Evidence:
+- Boundary gate is centralized (one file, one allowlist) — a single registry primitive serves all 4 observed blocked-action classes (Spike B in research artifact).
+- Pending-updates registry is the missing telemetry: Spike A could not measure copy-paste completion rate because there's no instrumentation today (0 explicit "copy-pasteable" markers in 30 handovers + bypass log).
+- TermLink binary supports `cargo install --git`; adding GitHub Releases prebuilds is mechanical (Spike C: C1+C4 chosen over Homebrew/OCI on cost+reach).
+- Half-session cost for D; ~1-day for C1+C4 release matrix.
+- Reversible: pending-updates entries are append-only; release matrix doesn't remove cargo install.
+
+Build decomposition (after GO):
+- B1: `.context/working/pending-updates.yaml` schema + `fw pending {register,list,resolve}` CLI
+- B2: `fw doctor` integration (surface unresolved entries)
+- B3: Watchtower `/pending` page with one-click copy
+- B4: Optional `fw pending remind` cron (24h ping for stale entries)
+- B5: TermLink GitHub Releases matrix (`/opt/termlink/.github/workflows/release.yml`)
+- B6: TermLink `install.sh` curl-bash installer
+
+Each <1 session. B1+B2 close case 1 (boundary-blocked). B5+B6 close case 2 (toolchain-missing). B3+B4 are QoL.
+
+Reversibility: Every B-unit is additive. No existing surface is removed. Can ship B1+B2+B5 first and stop if B3/B4/B6 prove unnecessary.
+
+Alternative (NO-GO): Status quo — agent hands copy-pasteable commands; human follows through ad-hoc. Costs nothing to build but 24+ months of accumulated drift across consumer projects suggests the loop doesn't reliably close.
+
+See `docs/reports/T-1268-cross-machine-update-friction.md` for full spike findings (A-E), trade-off matrix, and design sketches.
+-->

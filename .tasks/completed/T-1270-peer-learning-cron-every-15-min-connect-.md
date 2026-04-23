@@ -4,7 +4,7 @@ name: "Peer-learning cron: every 15 min, connect to all reachable TermLink agent
 description: >
   Inception: design a cron job that every 15 minutes enumerates reachable TermLink sessions/hubs and exchanges short prompts — what did you learn, what could we teach each other, what friction do you see — producing an inbox of cross-session learnings
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-15T21:36:12Z
-last_update: 2026-04-22T11:36:44Z
-date_finished: null
+last_update: 2026-04-23T14:57:49Z
+date_finished: 2026-04-23T14:57:49Z
 ---
 
 # T-1270: Peer-learning cron: every 15 min, connect to all reachable TermLink agents, exchange reflections on what we can learn from each other
@@ -73,12 +73,12 @@ Multiple TermLink-connected sessions run in parallel (different projects, differ
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -132,7 +132,22 @@ Multiple TermLink-connected sessions run in parallel (different projects, differ
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Recommendation: NO-GO as scoped. GO-REDESIGN via `fw ask peers "question"` (caller-initiated alternative).
+
+Rationale: The 15-minute reflection cron fails all three GO criteria. Existing primitives (pickup envelopes, handovers, bus) already cover intentional cross-session flows. The gap is ad-hoc peer query, not polling. Polling introduces a Goodhart loop — agents prompted every 15 minutes to "share a learning" will manufacture low-signal reflections to satisfy the cron, polluting the learning register. The caller-initiated alternative pays only when the caller judges the question worth asking, is caller-accountable, and propagates organically.
+
+Evidence:
+- Cost: 96 cycles/day × 5 peers × 350 tokens ≈ 168K tokens/day per agent on peer chatter alone — ~56% of a single 300K context window (docs/reports/T-1270-peer-learning-cron.md:38-46)
+- A5 contradicts A6: Self-dampening ("no response is valid") dooms propagation via inline adoption — same channel, same ignore semantics (docs/reports/T-1270-peer-learning-cron.md:52)
+- Existing primitives cover the cases: pickup envelopes handle intentional handoffs; handovers propagate narrative; bus handles sub-agent results (docs/reports/T-1270-peer-learning-cron.md:54-57)
+- Alternative costed: `fw ask peers` — ~150-200 LoC shell + 2 bats tests, ~1 session, zero standing cost (docs/reports/T-1270-peer-learning-cron.md:69)
+- Full dialogue log + assumption testing in research artifact (docs/reports/T-1270-peer-learning-cron.md)
+
+If human still wants the cron (overriding NO-GO): decompose into T-1270a (reflection envelope + ingestion, manual only), T-1270b (cron scheduler, opt-in via `FW_PEER_LEARNING_CRON=1`), T-1270c (propagation). Build T-1270a first and measure signal-to-noise for 1 week before proceeding.
+
+**Date**: 2026-04-23T12:10:38Z
 
 ## Updates
 
@@ -141,3 +156,22 @@ Multiple TermLink-connected sessions run in parallel (different projects, differ
 
 ### 2026-04-22T11:36:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-23T12:10:38Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO as scoped. GO-REDESIGN via `fw ask peers "question"` (caller-initiated alternative).
+
+Rationale: The 15-minute reflection cron fails all three GO criteria. Existing primitives (pickup envelopes, handovers, bus) already cover intentional cross-session flows. The gap is ad-hoc peer query, not polling. Polling introduces a Goodhart loop — agents prompted every 15 minutes to "share a learning" will manufacture low-signal reflections to satisfy the cron, polluting the learning register. The caller-initiated alternative pays only when the caller judges the question worth asking, is caller-accountable, and propagates organically.
+
+Evidence:
+- Cost: 96 cycles/day × 5 peers × 350 tokens ≈ 168K tokens/day per agent on peer chatter alone — ~56% of a single 300K context window (docs/reports/T-1270-peer-learning-cron.md:38-46)
+- A5 contradicts A6: Self-dampening ("no response is valid") dooms propagation via inline adoption — same channel, same ignore semantics (docs/reports/T-1270-peer-learning-cron.md:52)
+- Existing primitives cover the cases: pickup envelopes handle intentional handoffs; handovers propagate narrative; bus handles sub-agent results (docs/reports/T-1270-peer-learning-cron.md:54-57)
+- Alternative costed: `fw ask peers` — ~150-200 LoC shell + 2 bats tests, ~1 session, zero standing cost (docs/reports/T-1270-peer-learning-cron.md:69)
+- Full dialogue log + assumption testing in research artifact (docs/reports/T-1270-peer-learning-cron.md)
+
+If human still wants the cron (overriding NO-GO): decompose into T-1270a (reflection envelope + ingestion, manual only), T-1270b (cron scheduler, opt-in via `FW_PEER_LEARNING_CRON=1`), T-1270c (propagation). Build T-1270a first and measure signal-to-noise for 1 week before proceeding.
+
+### 2026-04-23T14:57:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
