@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1438: Add hook/hook-enable/patterns/preflight/setup to CLAUDE.md Quick Reference (close fw doctor doc drift warning)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T16:49:19Z
+# ============================================================================
+
+task_id: T-1438
+task_name: "Add hook/hook-enable/patterns/preflight/setup to CLAUDE.md Quick Reference (close fw doctor doc drift warning)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T16:46:06Z
+completed: 2026-04-24T16:48:30Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md \"rarely-used commands\" paragraph includes all 5 verbs"
+  - "`fw doctor` no longer emits \"Doc drift: 5 fw subcommand(s) missing\""
+  - "`fw doctor` emits \"Quick Reference coverage\" PASS line"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1438-add-hookhook-enablepatternspreflightsetu.md
+generated_by: context-agent-hybrid
