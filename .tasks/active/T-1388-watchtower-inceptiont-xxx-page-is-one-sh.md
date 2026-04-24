@@ -63,9 +63,17 @@ Once `fw inception decide` records a decision on a task, Watchtower's `/inceptio
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (see `docs/reports/T-1388-watchtower-inception-no-redecide.md` §Problem statement + live reproduction screenshots)
+- [x] Assumptions tested (Spikes A/B/C/D executed — see research artifact §Spike A..D)
+- [x] Recommendation written with rationale (§Recommendation below, adopted by GO decision on 2026-04-22)
+
+**Build decomposition shipped (B1-B6 closed):**
+- T-1389 — B1 (backend idempotent replace) + B2 (template re-decide form) → G-057 closed
+- T-1390 — B4 (rationale-hint F4 fix)
+- T-1391 — B3 (dedupe Recommendation + Decision cards, F3 fix)
+- T-1415 — B5 (F2 assumption counter body-fallback)
+- T-1416 — B6 (F5 /approvals Decisions vs Verifications split)
+- B7 — Playwright regression (TestRedecideAffordance + TestRecommendationDecisionDedupe + TestBodyAssumptionFallback + TestDecisionsVsVerificationsSplit — 16/16 pass)
 
 ### Human
 - [x] [REVIEW] Review exploration findings and approve go/no-go decision
