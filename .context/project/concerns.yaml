@@ -1229,12 +1229,12 @@ concerns:
   trigger_event: "2026-04-17: 3 consecutive fleet-doctor failures on .121 with class auth-mismatch. 2026-04-19: .121 widening + .122 third rotation observed, both confirmed via direct test from .107"
   detection_lag_days: "1"
   what_works_now: "Fleet doctor correctly classifies the error and emits a hint. T-1052 has already recorded an isolated learning. T-1326 inception filed this session with GO recommendation for T-1054 + fw doctor rotation-detection check."
-  what_remains: "ring20-dashboard (.121) still auth-mismatch (5 consecutive failures since 2026-04-23T17:17Z per .fleet-failure-state.json — class auth-mismatch). ring20-management (.122) now healthy (0 consecutive failures, last_failure_at=null). Long-term fix: T-1054 (termlink fleet reauth) lands one-command heal; T-1326 build sibling adds doctor rotation-detection."
-  mitigation_candidate: "Ship T-1054 (fleet reauth Tier-1), T-1055 (fleet reauth --bootstrap-from, Tier-2), and T-1326 doctor rotation-detection."
+  what_remains: "ring20-dashboard (.121) still auth-mismatch (5 consecutive failures since 2026-04-23T17:17Z per .fleet-failure-state.json — class auth-mismatch). ring20-management (.122) now healthy (0 consecutive failures, last_failure_at=null). Long-term fix: T-1054 (termlink fleet reauth) lands one-command heal; T-1326 build sibling adds doctor rotation-detection. Upstream escalation via T-1332 → P-040 feature-proposal delivered to termlink inbox 2026-04-24 — envelope-level delivery succeeded but task auto-create is stuck on their side (OSError: Read-only file system on /opt/termlink/.tasks/active/ observed twice: once in prior session, once in a fresh fw pickup process run 2026-04-24T10:xx). The proposal has been received and is not actionable until a writable termlink session re-processes it. Worth flagging to termlink operators."
+  mitigation_candidate: "Ship T-1054 (fleet reauth Tier-1), T-1055 (fleet reauth --bootstrap-from, Tier-2), and T-1326 doctor rotation-detection. P-040 upstream delivery is confirmed and awaits a writable termlink session."
   status: watching
   created: 2026-04-17
   last_reviewed: 2026-04-24
-  related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055, T-1326]
+  related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055, T-1326, T-1332]
 
 - id: G-046
   type: gap
