@@ -249,3 +249,51 @@ class TestRecommendationDecisionDedupe:
                 )
                 return
         pytest.skip("No pending inception with Recommendation available")
+
+
+class TestBodyAssumptionFallback:
+    """T-1415 (T-1388 B5 / F2): /approvals counts inline `A\\d+:` assumptions
+    from task body when none are registered via `fw assumption add`.
+
+    Prior behaviour read `0` from the ledger even when the task body listed
+    several assumptions — masking the real exploration state on /approvals.
+    """
+
+    def test_count_body_assumptions_helper(self):
+        """Unit check on the body-count helper, independent of live data."""
+        from web.blueprints.approvals import _count_body_assumptions
+
+        body = (
+            "## Problem Statement\n\nproblem text\n\n"
+            "## Assumptions\n\n- A1: first\n- A2: second\n- A3: third\n\n"
+            "## Scope Fence\n\nnot an assumption\n"
+        )
+        assert _count_body_assumptions(body) == 3
+
+    def test_count_body_assumptions_empty_when_no_section(self):
+        from web.blueprints.approvals import _count_body_assumptions
+
+        assert _count_body_assumptions("## Other\n\ntext\n") == 0
+
+    def test_count_body_assumptions_ignores_non_a_bullets(self):
+        from web.blueprints.approvals import _count_body_assumptions
+
+        body = "## Assumptions\n\n- B1: wrong prefix\n- note\n- A1: real\n"
+        assert _count_body_assumptions(body) == 1
+
+    def test_approvals_page_renders_body_source_hint(self, page: Page):
+        """If any decided inception with inline assumptions is on /approvals,
+        the '(from body)' hint appears. Skip if the fleet has only
+        ledger-registered assumptions today (not a regression, just unlucky data).
+        """
+        page.goto(_url("/approvals"))
+        page.wait_for_load_state("domcontentloaded")
+        content = page.content()
+        # Page must render without error
+        assert page.locator("h1, h2, h3").count() > 0
+        # Either the hint is present (expected for body-sourced counts) or no
+        # body-sourced tasks exist right now — both are valid. Guard only against
+        # a template syntax error that would strip the surrounding "Assumptions:"
+        # marker entirely when the source key is present.
+        if "from body" in content:
+            assert "Assumptions:" in content

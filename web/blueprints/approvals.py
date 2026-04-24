@@ -75,6 +75,24 @@ def _load_resolved_approvals():
     return resolved[:20]  # Last 20
 
 
+# T-1415 (T-1388 B5 / F2): Count inline `- A\d+:` assumption bullets in task body.
+# Most inception tasks list assumptions inline under ## Assumptions rather than
+# registering via `fw assumption add`, so the /approvals badge read "0" even
+# when the body clearly showed several. Fall back to the body count and mark
+# source=body so the template can render the provenance.
+_INLINE_ASSUMPTION_RE = re.compile(r"^- A\d+:", re.MULTILINE)
+
+
+def _count_body_assumptions(body: str) -> int:
+    """Count inline `- A\\d+:` assumption bullets under the ## Assumptions section."""
+    from web.blueprints.inception import _extract_section
+
+    section = _extract_section(body, "Assumptions")
+    if not section:
+        return 0
+    return len(_INLINE_ASSUMPTION_RE.findall(section))
+
+
 def _load_pending_go_decisions():
     """Scan active inception tasks where decision is still pending.
 
@@ -169,16 +187,28 @@ def _load_pending_go_decisions():
         # T-1214: Extract Go/No-Go Criteria for fallback display when recommendation missing
         go_nogo_raw = _extract_section(body, "Go/No-Go Criteria")
 
+        # T-1415 (T-1388 B5 / F2): Fall back to body-inline assumptions when none registered.
+        if linked:
+            assumption_counts = {
+                "total": len(linked),
+                "validated": sum(1 for a in linked if a.get("status") == "validated"),
+                "source": "ledger",
+            }
+        else:
+            body_count = _count_body_assumptions(body)
+            assumption_counts = {
+                "total": body_count,
+                "validated": 0,
+                "source": "body" if body_count else "ledger",
+            }
+
         results.append({
             "task_id": task_id,
             "name": fm.get("name", ""),
             "status": fm.get("status", ""),
             "problem_excerpt": problem_excerpt,
             "problem_full": problem,
-            "assumption_counts": {
-                "total": len(linked),
-                "validated": sum(1 for a in linked if a.get("status") == "validated"),
-            },
+            "assumption_counts": assumption_counts,
             "artifacts": artifacts,
             "rationale_hint": rationale_hint,
             "recommendation": rec_display,
