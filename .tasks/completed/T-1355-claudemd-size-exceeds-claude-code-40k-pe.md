@@ -4,16 +4,16 @@ name: "CLAUDE.md size exceeds Claude Code 40K perf threshold — decompose vs. t
 description: >
   Inception: CLAUDE.md size exceeds Claude Code 40K perf threshold — decompose vs. trim
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-20T09:24:02Z
-last_update: 2026-04-23T16:46:49Z
-date_finished: null
+last_update: 2026-04-24T09:33:52Z
+date_finished: 2026-04-24T09:33:52Z
 ---
 
 # T-1355: CLAUDE.md size exceeds Claude Code 40K perf threshold — decompose vs. trim
@@ -60,12 +60,12 @@ CLAUDE.md currently measures 74,177 bytes (1,262 lines, ~18.5K tokens at a 4 cha
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -117,7 +117,21 @@ CLAUDE.md currently measures 74,177 bytes (1,262 lines, ~18.5K tokens at a 4 cha
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — trim-first, decompose-only if trim tops out
+
+Rationale: The problem is real and quantified — 74,177 bytes / ~18.5K tokens burned per session on governance prose before the user types. At 300K context budget, that is ~6% of the budget spent on a file that almost never changes session-to-session. A1 (linear cost) is a measurable mechanism, A3 (consumer projects pay the same cost) is architectural, and the trajectory is monotonically upward — every fix-RCA-learning arc this year has added to CLAUDE.md; nothing has been removed. Recommend a GO at the narrowest viable scope: a trim-first pass targeting 45K bytes (≈40% reduction) by factoring the Quick Reference table into `fw help` output (which already exists and is authoritative), collapsing the duplicated CLI catalogue, and consolidating the repeated "[REVIEW]/[RUBBER-STAMP]" examples into a single worked example with a reference. Only if trim-first stalls above 55K bytes do we commit to decomposition (Claude Code `@include` semantics — A4 — will need verification first). Decomposition-first is over-engineered for a file that is mostly prose, not config.
+
+Evidence:
+- Measurement this session: 74,177 bytes, 1,262 lines, ~18.5K tokens (see Problem Statement).
+- Growth trajectory: T-1115, T-1117, T-1257, T-1259, T-1260, T-1284, T-1287, T-1376, T-1388 all added prose in the last ~90 days. No recorded trim pass in git log.
+- `fw help` authoritative for Quick Reference (the table is a copy of the CLI's own `help` output — pure duplication).
+- Consumer projects vendor CLAUDE.md verbatim via `fw upgrade` — every byte we save here saves bytes in every consumer session too (A3 linear amplifier).
+- Scope-fence is tight: inception decides trim-vs-decompose + names targets; separate build task does the actual cut. GO commits us only to the scoping commit.
+- Risk mitigation: keep Core Principle, Four Directives, Authority Model, Instruction Precedence, Task Gate, Escalation Ladder, §Autonomous Mode Boundaries, §Human Task Completion, §Copy-Pasteable Commands, §Plan Mode Prohibition, §Built-in Task Tool Ban all in-root — these are the high-blast-radius anchors; trim acts on redundant catalogues and worked examples only.
+
+**Date**: 2026-04-24T09:33:51Z
 
 ## Updates
 
@@ -129,3 +143,27 @@ CLAUDE.md currently measures 74,177 bytes (1,262 lines, ~18.5K tokens at a 4 cha
 
 ### 2026-04-23T16:46:49Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-04-24T09:33:51Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — trim-first, decompose-only if trim tops out
+
+Rationale: The problem is real and quantified — 74,177 bytes / ~18.5K tokens burned per session on governance prose before the user types. At 300K context budget, that is ~6% of the budget spent on a file that almost never changes session-to-session. A1 (linear cost) is a measurable mechanism, A3 (consumer projects pay the same cost) is architectural, and the trajectory is monotonically upward — every fix-RCA-learning arc this year has added to CLAUDE.md; nothing has been removed. Recommend a GO at the narrowest viable scope: a trim-first pass targeting 45K bytes (≈40% reduction) by factoring the Quick Reference table into `fw help` output (which already exists and is authoritative), collapsing the duplicated CLI catalogue, and consolidating the repeated "[REVIEW]/[RUBBER-STAMP]" examples into a single worked example with a reference. Only if trim-first stalls above 55K bytes do we commit to decomposition (Claude Code `@include` semantics — A4 — will need verification first). Decomposition-first is over-engineered for a file that is mostly prose, not config.
+
+Evidence:
+- Measurement this session: 74,177 bytes, 1,262 lines, ~18.5K tokens (see Problem Statement).
+- Growth trajectory: T-1115, T-1117, T-1257, T-1259, T-1260, T-1284, T-1287, T-1376, T-1388 all added prose in the last ~90 days. No recorded trim pass in git log.
+- `fw help` authoritative for Quick Reference (the table is a copy of the CLI's own `help` output — pure duplication).
+- Consumer projects vendor CLAUDE.md verbatim via `fw upgrade` — every byte we save here saves bytes in every consumer session too (A3 linear amplifier).
+- Scope-fence is tight: inception decides trim-vs-decompose + names targets; separate build task does the actual cut. GO commits us only to the scoping commit.
+- Risk mitigation: keep Core Principle, Four Directives, Authority Model, Instruction Precedence, Task Gate, Escalation Ladder, §Autonomous Mode Boundaries, §Human Task Completion, §Copy-Pasteable Commands, §Plan Mode Prohibition, §Built-in Task Tool Ban all in-root — these are the high-blast-radius anchors; trim acts on redundant catalogues and worked examples only.
+
+### 2026-04-24T09:33:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+### 2026-04-24T09:33:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
