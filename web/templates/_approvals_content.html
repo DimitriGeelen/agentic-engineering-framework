@@ -1,24 +1,27 @@
 <!-- Approvals content fragment — served by /approvals/content for htmx polling (T-669) -->
 
-<!-- Summary counts bar -->
+<!-- Summary counts bar — T-1416 (T-1388 B6 / F5): split into Decisions vs Verifications -->
 <div class="approvals-summary">
-    <div class="approval-stat {{ 'tier0-active' if tier0_count else '' }}">
-        <span class="stat-value">{{ tier0_count }}</span>
-        <span class="stat-label">Tier 0</span>
-    </div>
-    <div class="approval-stat {{ 'go-active' if go_count else '' }}">
-        <span class="stat-value">{{ go_count }}</span>
-        <span class="stat-label">GO Decisions</span>
-    </div>
-    <div class="approval-stat {{ 'ac-active' if ac_count else '' }}">
+    <a href="#section-decisions" class="approval-stat approval-stat-group {{ 'decisions-active' if (tier0_count + go_count) else '' }}" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ tier0_count + go_count }}</span>
+        <span class="stat-label">Decisions</span>
+        <span class="stat-breakdown">{{ tier0_count }} Tier 0 · {{ go_count }} GO/NO-GO</span>
+    </a>
+    <a href="#section-verifications" class="approval-stat approval-stat-group {{ 'ac-active' if ac_count else '' }}" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ ac_count }}</span>
-        <span class="stat-label">Human ACs</span>
-    </div>
+        <span class="stat-label">Verifications</span>
+        <span class="stat-breakdown">Human ACs</span>
+    </a>
     <div class="approval-stat total">
         <span class="stat-value">{{ total_count }}</span>
         <span class="stat-label">Total</span>
     </div>
 </div>
+
+<!-- T-1416 (T-1388 B6 / F5): Decisions group (Section A + B) -->
+{% if pending_tier0 or pending_go %}
+<h2 id="section-decisions" class="approvals-group-heading">Decisions</h2>
+{% endif %}
 
 <!-- Section A: Tier 0 Approvals -->
 {% if pending_tier0 %}
@@ -145,11 +148,14 @@
 {% endfor %}
 {% endif %}
 
-<!-- Section C: Human Acceptance Criteria -->
+<!-- T-1416 (T-1388 B6 / F5): Verifications group (Section C) -->
 {% if pending_acs %}
+<h2 id="section-verifications" class="approvals-group-heading">Verifications</h2>
+
+<!-- Section C: Human ACs (renamed to "Verifications" under new group heading) -->
 <div class="section-header">
     <h3>Human Acceptance Criteria</h3>
-    <small>{{ ac_count }} across {{ ac_task_count }} task{{ 's' if ac_task_count != 1 }}</small>
+    <small>{{ ac_count }} across {{ ac_task_count }} task{{ 's' if ac_task_count != 1 }} — rubber-stamp + review checks</small>
 </div>
 
 <!-- Batch completion button (T-846) — only for tasks with ALL ACs checked -->

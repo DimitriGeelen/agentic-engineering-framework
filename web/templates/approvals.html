@@ -124,6 +124,26 @@
 .approval-stat.tier0-active .stat-value { color: #f59e0b; }
 .approval-stat.go-active .stat-value { color: #1565c0; }
 .approval-stat.ac-active .stat-value { color: #7c3aed; }
+/* T-1416 (T-1388 B6 / F5): Decisions vs Verifications group visual */
+.approval-stat.decisions-active .stat-value { color: #1565c0; }
+.approval-stat-group { cursor: pointer; transition: border-color 0.15s; }
+.approval-stat-group:hover { border-color: var(--pico-primary); }
+.approval-stat .stat-breakdown {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--pico-muted-color);
+    margin-top: 0.2rem;
+}
+.approvals-group-heading {
+    margin: 2rem 0 0.75rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 2px solid var(--pico-muted-border-color);
+    font-size: 1.2rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--pico-muted-color);
+}
+.approvals-group-heading:first-of-type { margin-top: 0; }
 
 /* GO decision card */
 .approval-card.go-decision {

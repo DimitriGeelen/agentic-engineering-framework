@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1416: T-1388 B6: split /approvals into Decisions vs Verifications
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T08:09:37Z
+# ============================================================================
+
+task_id: T-1416
+task_name: "T-1388 B6: split /approvals into Decisions vs Verifications"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T08:04:15Z
+completed: 2026-04-24T08:09:28Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Summary bar groups counts into \"Decisions\" (Tier 0 + GO) vs \"Verifications\" (Human ACs) with both totals and breakdown"
+  - "Group heading `<h2 id=\"section-verifications\">Verifications</h2>` introduced above Section C (clarifies category intent; retains detailed H3 \"Human Acceptance Criteria\" with rubber-stamp/review sub-text)"
+  - "Summary-bar cells are anchor links to their respective sections (jump past long ACs list)"
+  - "Existing Playwright tests for /approvals + inception still pass (16/16)"
+  - "New regression class `TestDecisionsVsVerificationsSplit` asserts labels + anchor IDs + anchor-href links (3 tests)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1416-t-1388-b6-split-approvals-into-decisions.md
+generated_by: context-agent-hybrid

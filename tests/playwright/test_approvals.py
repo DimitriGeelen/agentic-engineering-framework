@@ -73,3 +73,43 @@ class TestApprovalsPage:
         assert resp.status == 200
         content = page.content()
         assert "approvals-summary" in content or "stat-value" in content
+
+
+class TestDecisionsVsVerificationsSplit:
+    """T-1416 (T-1388 B6 / F5): /approvals groups strategic decisions
+    separately from verification rubber-stamps so the former aren't
+    buried under a long list of Human ACs."""
+
+    def test_summary_bar_labels_decisions_and_verifications(self, page: Page):
+        page.goto(_url("/approvals/content"))
+        page.wait_for_load_state("domcontentloaded")
+        content = page.content()
+        assert 'class="stat-label">Decisions<' in content, (
+            "Summary bar must group Tier 0 + GO counts under 'Decisions' (T-1416 B6)"
+        )
+        assert 'class="stat-label">Verifications<' in content, (
+            "Summary bar must group Human ACs under 'Verifications' (T-1416 B6)"
+        )
+
+    def test_section_headings_present_when_items_exist(self, page: Page):
+        """Group headings render anchor IDs (so summary bar cells can link)."""
+        page.goto(_url("/approvals/content"))
+        page.wait_for_load_state("domcontentloaded")
+        content = page.content()
+        # Each group heading is conditional on items existing. Assert only the
+        # anchor-ID structural invariant — if the group has items, the heading
+        # has the expected id.
+        if "<h2" in content and "Decisions" in content:
+            # Decisions group present → must have the anchor
+            assert 'id="section-decisions"' in content
+        if "<h2" in content and "Verifications" in content:
+            assert 'id="section-verifications"' in content
+
+    def test_summary_cells_are_anchor_links(self, page: Page):
+        """Clicking a summary-bar cell jumps past the preceding section."""
+        page.goto(_url("/approvals/content"))
+        page.wait_for_load_state("domcontentloaded")
+        content = page.content()
+        # Anchors into page fragments exist
+        assert 'href="#section-decisions"' in content
+        assert 'href="#section-verifications"' in content
