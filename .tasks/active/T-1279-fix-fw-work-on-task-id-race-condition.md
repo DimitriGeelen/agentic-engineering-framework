@@ -116,3 +116,11 @@ test "$(ls .tasks/active/T-*.md .tasks/completed/T-*.md 2>/dev/null | grep -oE '
 
 ### 2026-04-20T19:41:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-24T12:17:00Z — note [agent verification]
+- **Evidence collected for Human AC (REVIEW: spawn 10 parallel distinct IDs)**
+- Test v1 (10 × `bin/fw task create ... &`, no subshell wrap): produced 3-way collision on T-1424 — probe-3, probe-6, probe-7 each got T-1424 with different slugs → 3 separate files at same ID. **Fix is not watertight under tight concurrency.**
+- Test v2 (10 × `( ... ) &` with subshell wrap): 10/10 distinct IDs — fix works when spawning has slight timing spread.
+- Isolated keylock_acquire test (5 processes, cross-PID): serializes correctly — the keylock mechanism itself is fine.
+- Hypothesis: `source "$FRAMEWORK_ROOT/lib/keylock.sh" 2>/dev/null || true` — when sources races or FRAMEWORK_ROOT propagation is ambiguous in forked children, some invocations skip the lock silently (type test at line 143 fails). Tight `&` bursts make this more likely.
+- Recommendation: re-open — fix is not complete. Suggested hardening (a) remove `|| true` on keylock source so missing lock is a hard error, (b) assert `type keylock_acquire` after source or exit non-zero, (c) consider flock-on-allocation-file as defense-in-depth.
