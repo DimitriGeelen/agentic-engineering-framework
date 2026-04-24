@@ -4,3 +4,7 @@
 session.yaml
 focus.yaml
 tier0-approval
+
+# Runtime activity logs and per-machine state (T-1435)
+.publish-learning-bus.log
+pending-updates.yaml
