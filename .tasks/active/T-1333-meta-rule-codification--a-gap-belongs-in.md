@@ -82,15 +82,16 @@ Question: **should this rule be codified in CLAUDE.md (and possibly enforced via
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — codify as Tier-1 CLAUDE.md prose, not schema enforcement
+
+**Rationale:** Spike A (light version, executed inline this session) scanned the framework's own `concerns.yaml` (64 entries) for cross-project / upstream-fix signals. Result: 5 entries (G-031, G-045, G-048, G-049, G-050) textually signal "fix locus elsewhere". That's ~8% of the register — low enough that a required-field schema change (Assumption 3 / Tier 2) would be over-engineering for current volume, but high enough that a codified rule (Tier 1 CLAUDE.md prose + worked example) has genuine and recurring application. 050 e-agent's proposed rule ("a gap belongs in the register where the FIX lives") is sound as a directional heuristic. Recommend GO at the lightest tier: add a 2–3 sentence rule to CLAUDE.md §Error Escalation Ladder (or a new §Gap Homing subsection) referencing G-048/G-049/G-050 as canonical example; skip schema + audit (Tier 2/3) until evidence shows the prose is ignored. Scope-fence in this task is IN=codify-the-rule, OUT=re-home existing entries — honour that boundary.
+
+**Evidence:**
+- Concerns register audit (this session): 5/64 entries (~8%) show hit-locus-elsewhere signals — recurring, not rare.
+- Examples with fix-locus elsewhere: G-031, G-045 (fleet cert co-rotation — fix is TermLink T-1054), G-048, G-049, G-050 (050 e-agent's flagged cross-project cases).
+- Assumption 2 (agents consult CLAUDE.md before filing) is evidenced by §Autonomous Mode Boundaries and §Human Task Completion Rule codifications being observed in session behaviour.
+- Assumption 3 (schema field would be tractable) is un-tested and NOT required by this recommendation — Tier-1 prose ships today; schema migration stays a future escalation if prose is ignored.
+- Aligns with G-019 (agent self-escalation) philosophy: codify the minimum that changes behaviour, escalate to structure only if prose fails.
 
 ## Decisions
 

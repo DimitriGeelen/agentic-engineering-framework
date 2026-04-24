@@ -77,15 +77,15 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER — superseded by T-1312
+
+**Rationale:** The same topic was re-ingested from termlink as T-1312 ("Pickup: Ship watchtower.service systemd template — fixes restart races without WSGI-server swap") and has already been triaged to `work-completed`. T-1309 was the originating framework-side inception (captured 2026-04-18); T-1312 is the pickup wrapper that carried the actual exploration through to completion. Running two parallel inceptions on the same question is duplicate governance overhead. Close T-1309 as DEFER with T-1312 as canonical; revisit if the pickup-side work is later revoked.
+
+**Evidence:**
+- T-1312 (`.tasks/active/T-1312-pickup-ship-watchtowerservice-systemd-te.md`): `status: work-completed`, same topic, created 2026-04-18T18:43:05Z (2 minutes after T-1309 at 20:02).
+- T-1309's own body is mostly placeholder (empty Problem Statement, empty Assumptions, empty Exploration Plan) — the substantive work migrated to T-1312.
+- Research artifact referenced in T-1309 frontmatter lives in the termlink repo (`/opt/termlink/docs/reports/T-1122-watchtower-wsgi-migration-recommendation.md`), which is T-1312's upstream source.
+- Follows the G-046 anti-pattern (duplicate inceptions for the same underlying source_task) — T-1309 + T-1312 are the framework-side analogue of the G-059 cross-project-dedup gap filed this session.
 
 ## Decisions
 

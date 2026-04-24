@@ -83,15 +83,17 @@ Question: **is it worth proposing (via cross-project TermLink pickup) a structur
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — send the cross-project pickup, but narrow it
+
+**Rationale:** Assumption 3 (recurring-enough-to-justify) is now STRONGLY EVIDENCED: G-045 has triggered five times this week on `.121` (5 consecutive auth-mismatch failures since 2026-04-23T17:17Z per `.fleet-failure-state.json`, class `auth-mismatch`), and the session narrative shows two recent episodes with 3 agents involved each. Assumption 1 (auto-distribution possible) doesn't need pre-validation — TermLink already has `termlink remote push` and a hub-signed inbox channel, which ARE auto-distribution mechanisms; the open question is policy (who pushes what secret where), not capability. The scope-fence is tight (send the pickup; don't implement), so blast radius on our side is a single envelope + documentation effort. TermLink owns the accept/reject call. Recommendation qualifier: scope the pickup to "hub-assisted secret re-bootstrap after rotation" (not a full identity redesign) — they already plan T-1054 fleet reauth, so we're asking them to prioritise / publicise it, not invent something new.
+
+**Evidence:**
+- `.context/working/.fleet-failure-state.json`: `ring20-dashboard` has 5 consecutive auth-mismatch failures since 2026-04-23T17:17:01Z. `.122` recovered this week but `.121` is still degraded.
+- G-045 concern (`.context/project/concerns.yaml` line 1222) widened to fleet-wide on 2026-04-19 after `.121` joined `.122` in the rotation class; `last_reviewed: 2026-04-24` (updated this session).
+- TermLink already ships `termlink remote push` + hub inbox (see CLAUDE.md §Cross-Agent Communication Protocol), so A1 (mechanism exists) is a checkbox, not a spike.
+- T-1054 and T-1055 are already tracked on the TermLink side as the tier-1/tier-2 heal commands; the pickup asks for prioritisation + UX for the secret-refresh step, not new infra.
+- Previous session burned ≥3 cross-agent round-trips recovering from a single .122 reboot (per concerns.yaml trigger_event + session narrative) — this is the 3rd/4th occurrence in April.
+- Scope-fence in this task is crisp: IN = decide whether to send the pickup; OUT = implementing the remediation. GO commits us only to a drafting + sending step.
 
 ## Decisions
 
