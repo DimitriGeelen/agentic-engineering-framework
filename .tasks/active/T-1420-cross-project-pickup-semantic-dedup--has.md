@@ -4,7 +4,7 @@ name: "Cross-project pickup semantic dedup — hash-only misses 'same bug, diffe
 description: >
   Inception: Cross-project pickup semantic dedup — hash-only misses 'same bug, different envelope bytes' (G-059)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-24T10:04:58Z
-last_update: 2026-04-24T10:04:58Z
+last_update: 2026-04-24T10:16:27Z
 date_finished: null
 ---
 
@@ -64,9 +64,9 @@ Pickup pipeline dedup keys on envelope SHA256 (raw file bytes). That catches *id
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (Spike A: 50 envelopes, 5 triple collisions in current processed/rejected state — see Spike Findings)
+- [x] Assumptions tested (A1 confirmed by Spikes A + C; A3/A4 grounded by Spike C; A5 grounded by Spike C)
+- [x] Recommendation written with rationale (§Recommendation below: GO — triple dedup second-pass in `lib/pickup.sh`)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -93,6 +93,22 @@ Pickup pipeline dedup keys on envelope SHA256 (raw file bytes). That catches *id
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # For inception tasks, verification is often not needed (decisions, not code).
+
+## Spike Findings
+
+**Spike A — Quantify triple collisions (executed 2026-04-24):**
+- Scanned 50 envelopes across `.context/pickup/{processed,rejected}/` (no `auto-deferred/` contents yet)
+- Found 5 triple collisions. Two clean cross-project examples that prove A1: `(termlink, T-1125, bug-report) × 2` (P-024 + P-029) and `(termlink, T-1123, bug-report) × 2` (P-025 + P-030). Same upstream project, same upstream task_id, same type — processed twice under different envelope bytes. Hash dedup let both through.
+- Secondary finding: some envelopes have empty `source.task_id` (e.g. 051-vinix24 series). Triple dedup on empty-task cases would over-collapse — triple key must require non-empty `task_id` to engage, else fall through to hash-only.
+
+**Spike C/D — Current dedup implementation (executed 2026-04-24):**
+- `lib/pickup.sh pickup_dedup_hash` (line 114) normalizes to `pickup_type | summary | source_project` — partial triple that misses `source_task_id` and includes `summary` (drift-sensitive). A retry with refined summary breaks the hash. This explains the six framework-side dup pairs observed in the broader inception record.
+- `pickup_dedup_check` (line 119) applies a 7-day cooldown window on the hash — good for hash retries, not helpful for triple retries.
+- Self-project dedup (G-046 / T-1339) already exists at lines 39-49: checks `source_project == local_project AND source_task in .tasks/completed/` → auto-defer. This proves the auto-deferred routing pattern is already wired, just need a second-pass triple check for cross-project inputs.
+
+**Spike B — False-positive survey:** Deferred to build phase; no observed legitimate retry with same triple in the 50-envelope sample. The `supersedes:` escape hatch is the intended false-positive recovery lane regardless.
+
+**Spike E — Cross-project scope:** Deferred; termlink likely inherits `lib/pickup.sh` via shim when they use `fw pickup process`, but confirming their vendoring state is a build-phase concern. If independent, B5 (backport check) catches it.
 
 ## Recommendation
 
@@ -135,3 +151,6 @@ Pickup pipeline dedup keys on envelope SHA256 (raw file bytes). That catches *id
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-24T10:16:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
