@@ -165,3 +165,108 @@ EOF
     # Must be the not-found path instead — i.e., guard was bypassed
     [[ "$output" == *"not found"* ]]
 }
+
+# === T-1423: do_inception_sweep ===
+
+@test "sweep: --dry-run reports eligible without modification (T-1423)" {
+    local f="$TEST_TEMP_DIR/.tasks/active/T-900-sample.md"
+    cat > "$f" << 'TASK'
+---
+id: T-900
+status: work-completed
+workflow_type: inception
+owner: human
+---
+## Acceptance Criteria
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+
+## Decision
+**Decision**: GO
+TASK
+
+    run do_inception_sweep --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"T-900"* ]]
+    [[ "$output" == *"eligible=1"* ]]
+    # Dry run: AC must remain unchecked
+    grep -q '^- \[ \] \[REVIEW\]' "$f"
+}
+
+@test "sweep: ticks Human AC and moves to completed/ (T-1423)" {
+    local f="$TEST_TEMP_DIR/.tasks/active/T-901-sample.md"
+    cat > "$f" << 'TASK'
+---
+id: T-901
+status: work-completed
+workflow_type: inception
+owner: human
+---
+## Acceptance Criteria
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+
+## Decision
+**Decision**: GO
+TASK
+
+    run do_inception_sweep
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"moved=1"* ]]
+    # File should be in completed/, not active/
+    [ ! -f "$TEST_TEMP_DIR/.tasks/active/T-901-sample.md" ]
+    [ -f "$TEST_TEMP_DIR/.tasks/completed/T-901-sample.md" ]
+    # AC should now be ticked
+    grep -q '^- \[x\] \[REVIEW\]' "$TEST_TEMP_DIR/.tasks/completed/T-901-sample.md"
+}
+
+@test "sweep: skips tasks without recorded Decision (T-1423)" {
+    local f="$TEST_TEMP_DIR/.tasks/active/T-902-sample.md"
+    cat > "$f" << 'TASK'
+---
+id: T-902
+status: work-completed
+workflow_type: inception
+owner: human
+---
+## Acceptance Criteria
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+TASK
+
+    run do_inception_sweep
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"eligible=0"* ]]
+    # File stays in active/
+    [ -f "$f" ]
+    # AC stays unchecked
+    grep -q '^- \[ \] \[REVIEW\]' "$f"
+}
+
+@test "sweep: leaves task in active/ when custom Human AC remains unchecked (T-1423)" {
+    local f="$TEST_TEMP_DIR/.tasks/active/T-903-sample.md"
+    cat > "$f" << 'TASK'
+---
+id: T-903
+status: work-completed
+workflow_type: inception
+owner: human
+---
+## Acceptance Criteria
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Custom AC requiring specific human action
+
+## Decision
+**Decision**: GO
+TASK
+
+    run do_inception_sweep
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"stays-pending=1"* ]]
+    # File stays in active/
+    [ -f "$f" ]
+    # First AC ticked, second unchecked
+    grep -q '^- \[x\] \[REVIEW\] Review exploration' "$f"
+    grep -q '^- \[ \] \[REVIEW\] Custom AC' "$f"
+}
