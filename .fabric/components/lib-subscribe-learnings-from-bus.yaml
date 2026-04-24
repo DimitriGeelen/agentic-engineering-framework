@@ -1,0 +1,21 @@
+id: lib/subscribe-learnings-from-bus.sh
+name: subscribe-learnings-from-bus
+type: script
+subsystem: learnings-bus
+location: lib/subscribe-learnings-from-bus.sh
+tags: [cron, learnings, termlink, peer-learning, T-1168, T-1217, T-1219]
+
+purpose: "Consumer-side poller for channel:learnings — drains new learning envelopes from a TermLink hub session's event bus via 'event poll' and appends de-duplicated entries to .context/project/received-learnings.yaml. Runs every 5 minutes via cron. Cron-safe: silent no-op when termlink missing, hub down, or no sessions."
+
+depends_on:
+  - target: lib/publish-learning-to-bus.sh
+    type: calls
+  - target: .context/project/received-learnings.yaml
+    type: writes
+  - target: .context/working/.subscribe-learnings-bus.cursor
+    type: writes
+
+depended_by: []
+
+last_verified: 2026-04-24
+created_by: T-1429
