@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1419: CLAUDE.md trim — Quick Reference → fw help (T-1355 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T09:50:07Z
+# ============================================================================
+
+task_id: T-1419
+task_name: "CLAUDE.md trim — Quick Reference → fw help (T-1355 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T09:42:06Z
+completed: 2026-04-24T09:50:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-24T11:49:59+02:00
+last_commit: 2026-04-24T11:49:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CLAUDE.md trim — 74.7K→59.8K (-19.9%) via Quick Reference collapse + Agents/Fabric/Config compression
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md size <= 60,000 bytes (start: 74,708; final: 59,832 — saved 14,876 bytes / 19.9%)"
+  - "Quick Reference section retained but compressed — grouped by workflow (starting work / inceptions / context / commits / handovers / fabric / dispatch / tier0 / scheduling / knowledge / setup)"
+  - "`fw help` mentioned in trimmed Quick Reference as the canonical full catalogue"
+  - "All H2 governance anchors preserved: Four Constitutional Directives, Authority Model, Instruction Precedence, Task System, Task Sizing Rules, Enforcement Tiers, Working with Tasks, Error Escalation Ladder, Agent Behavioral Rules, Plan Mode Prohibition, Built-in Task Tool Ban, Session Start Protocol, Session End Protocol (all 12 present, 1017 lines → 927)"
+  - "Markdown parses cleanly (24 fences balanced, no orphan table separators)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".tasks/active/T-1419-claudemd-trim--quick-reference--fw-help-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-24T11:49:59"
+    action: "T-1419: CLAUDE.md trim — 74.7K→59.8K (-19.9%) via Quick Reference collapse + Agents/Fabric/Config compression"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 2
+  lines_added: 182
+  lines_removed: 438
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1419-claudemd-trim--quick-reference--fw-help-.md
+generated_by: context-agent-hybrid
