@@ -15,8 +15,13 @@ set -euo pipefail
 # Falls back to VERSION file for consumer installs without git history
 _derive_version() {
     local fw_dir="${BASH_SOURCE[0]%/*}/.."
-    local desc
-    desc=$(git -C "$fw_dir" describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+    local desc=""
+    # G-049: only call `git describe` when $fw_dir has its own .git.
+    # In vendored mode, $fw_dir/.git is absent and walking up would
+    # find the consumer's repo and return the consumer's tag.
+    if [ -d "$fw_dir/.git" ] || [ -f "$fw_dir/.git" ]; then
+        desc=$(git -C "$fw_dir" describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+    fi
     if [ -n "$desc" ]; then
         # v1.4.0 → 1.4.0 | v1.4.0-5-gabc123 → 1.4.5
         desc="${desc#v}"  # strip leading v
@@ -67,13 +72,50 @@ find_project_root() {
 
 # Resolve FRAMEWORK_ROOT
 resolve_framework() {
-    # If fw is inside the framework repo (bin/fw), use that
     local candidate
     candidate="$(cd "$FW_BIN_DIR/.." && pwd)"
+    local candidate_is_framework_repo=0
     if [ -f "$candidate/FRAMEWORK.md" ] && [ -d "$candidate/agents" ]; then
-        # T-355/T-359: If inside Homebrew Cellar, use opt symlink (survives brew upgrade)
-        # Cellar paths are versioned (/usr/local/Cellar/agentic-fw/1.2.6/libexec) and break on upgrade.
-        # The opt symlink (/usr/local/opt/agentic-fw/libexec) always points to the active version.
+        candidate_is_framework_repo=1
+    fi
+
+    # T-1346-B1: If candidate is a framework repo AND lives INSIDE the consumer
+    # project (either = PROJECT_ROOT for self-invocation, or under PROJECT_ROOT
+    # for direct-vendored invocation like `.agentic-framework/bin/fw`), use it.
+    # This preserves framework-repo-self and direct-vendored paths.
+    if [ "$candidate_is_framework_repo" = 1 ] && [ -n "${PROJECT_ROOT:-}" ]; then
+        local canon_candidate canon_project
+        canon_candidate="$(cd "$candidate" && pwd -P)"
+        canon_project="$(cd "$PROJECT_ROOT" && pwd -P)"
+        if [ "$canon_candidate" = "$canon_project" ] || [[ "$canon_candidate" == "$canon_project"/* ]]; then
+            # T-355/T-359: Homebrew Cellar redirect (preserved from original rule 1)
+            if [[ "$candidate" == */Cellar/agentic-fw/*/libexec ]] || [[ "$candidate" == */Cellar/fw/*/libexec ]]; then
+                local formula_name="${candidate#*Cellar/}"
+                formula_name="${formula_name%%/*}"
+                local brew_prefix="${candidate%/Cellar/*/libexec}"
+                local opt_path="$brew_prefix/opt/$formula_name/libexec"
+                if [ -d "$opt_path" ] && [ -f "$opt_path/FRAMEWORK.md" ]; then
+                    echo "$opt_path"
+                    return 0
+                fi
+            fi
+            echo "$candidate"
+            return 0
+        fi
+    fi
+
+    # T-498: Prefer project-vendored framework when present (T-1346-B1: now
+    # checked before falling back to FW_BIN_DIR-origin, so global-shim
+    # invocation in a consumer project picks the vendored copy, not global).
+    if [ -n "${PROJECT_ROOT:-}" ] && [ -f "$PROJECT_ROOT/.agentic-framework/FRAMEWORK.md" ]; then
+        echo "$PROJECT_ROOT/.agentic-framework"
+        return 0
+    fi
+
+    # No PROJECT_ROOT or no vendored copy — use candidate if it's a framework repo.
+    # (Covers: `bin/fw version` from outside any project, brew-installed fw invoked
+    # from a non-framework dir, etc.)
+    if [ "$candidate_is_framework_repo" = 1 ]; then
         if [[ "$candidate" == */Cellar/agentic-fw/*/libexec ]] || [[ "$candidate" == */Cellar/fw/*/libexec ]]; then
             local formula_name="${candidate#*Cellar/}"
             formula_name="${formula_name%%/*}"
@@ -85,12 +127,6 @@ resolve_framework() {
             fi
         fi
         echo "$candidate"
-        return 0
-    fi
-
-    # T-498: Check for vendored framework in project
-    if [ -n "${PROJECT_ROOT:-}" ] && [ -f "$PROJECT_ROOT/.agentic-framework/FRAMEWORK.md" ]; then
-        echo "$PROJECT_ROOT/.agentic-framework"
         return 0
     fi
 
@@ -111,6 +147,34 @@ resolve_framework() {
 if [ -z "${PROJECT_ROOT:-}" ]; then
     PROJECT_ROOT=$(find_project_root) || true
 fi
+
+# T-1346-B2: Detect which framework copy resolved (vendored, framework-repo, global).
+# Must be called AFTER FRAMEWORK_ROOT and PROJECT_ROOT are populated.
+# Returns one of: vendored | framework-repo | global | unknown
+_detect_fw_mode() {
+    local fw="${FRAMEWORK_ROOT:-}"
+    local proj="${PROJECT_ROOT:-}"
+    [ -z "$fw" ] && { echo "unknown"; return; }
+
+    local canon_fw canon_proj canon_vendored
+    canon_fw=$(cd "$fw" 2>/dev/null && pwd -P) || canon_fw="$fw"
+
+    if [ -n "$proj" ]; then
+        canon_proj=$(cd "$proj" 2>/dev/null && pwd -P) || canon_proj="$proj"
+        if [ -d "$proj/.agentic-framework" ]; then
+            canon_vendored=$(cd "$proj/.agentic-framework" 2>/dev/null && pwd -P) \
+                || canon_vendored="$proj/.agentic-framework"
+            if [ "$canon_fw" = "$canon_vendored" ]; then
+                echo "vendored"; return
+            fi
+        fi
+        if [ "$canon_fw" = "$canon_proj" ]; then
+            echo "framework-repo"; return
+        fi
+    fi
+
+    echo "global"
+}
 
 # --- Vendor (T-482/T-497, moved before auto-init for T-519) ---
 # Copy complete framework into project/.agentic-framework/ for full isolation.
@@ -244,7 +308,7 @@ do_vendor() {
 
             if [ -d "$vendor_source/$item" ]; then
                 if command -v rsync &>/dev/null; then
-                    rsync -a --delete "${rsync_args[@]}" "$vendor_source/$item/" "$dest/$item/"
+                    rsync -a --delete --delete-excluded "${rsync_args[@]}" "$vendor_source/$item/" "$dest/$item/"
                 else
                     rm -rf "${dest:?}/${item:?}"
                     cp -r "$vendor_source/$item" "$dest/$item"
@@ -264,6 +328,20 @@ do_vendor() {
     # Create VERSION file
     echo "$FW_VERSION" > "$dest/VERSION"
     echo -e "  ${GREEN}✓${NC} VERSION ($FW_VERSION)"
+
+    # T-1323: Write .gitignore so runtime-generated __pycache__/ files inside
+    # the vendored framework do not leak into the consumer's git index.
+    # (do_vendor already excludes these from the COPY step; this prevents
+    # them from being added by the consumer's git after Watchtower runs.)
+    cat > "$dest/.gitignore" <<'GITIGNORE'
+# Vendored Agentic Engineering Framework — runtime artifacts.
+# Generated by `fw vendor` / `fw upgrade`. Do not edit by hand.
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+GITIGNORE
+    echo -e "  ${GREEN}✓${NC} .gitignore"
 
     # Ensure bin/fw is executable
     chmod +x "$dest/bin/fw" 2>/dev/null || true
@@ -441,6 +519,7 @@ show_help() {
     echo -e "  ${GREEN}test-onboarding${NC}     End-to-end onboarding flow test (8 checkpoints)"
     echo -e "  ${GREEN}context${NC} <cmd>        Manage Context Fabric (init, status, focus, ...)"
     echo -e "  ${GREEN}git${NC} <cmd>            Task-traced git operations (commit, status, log, ...)"
+    echo -e "  ${GREEN}push${NC}                Push to all remotes"
     echo -e "  ${GREEN}handover${NC}             Generate session handover document"
     echo -e "  ${GREEN}handover --checkpoint${NC} Mid-session checkpoint (P-009)"
     echo -e "  ${GREEN}healing${NC} <cmd>        Error recovery (diagnose, resolve, patterns, suggest)"
@@ -458,6 +537,7 @@ show_help() {
     echo -e "  ${GREEN}consolidate${NC} <cmd>   Memory consolidation (scan, apply, report)"
     echo -e "  ${GREEN}mcp${NC} <cmd>            MCP server process management (reap orphans)"
     echo -e "  ${GREEN}fix-learned${NC} T-XXX \"text\"  Capture bugfix learning (G-016 shortcut)"
+    echo -e "  ${GREEN}prompt${NC} <cmd>           Reusable agent prompts (create, list, show, copy)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}notify${NC} <cmd>          Push notifications (setup, test, enable, disable, status)"
     echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
@@ -466,12 +546,17 @@ show_help() {
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
     echo -e "  ${GREEN}upstream${NC} <cmd>        Report issues to framework upstream (report, config, status)"
     echo -e "  ${GREEN}deploy${NC} <cmd>          Ring20 deployment (scaffold, status, routes, ports)"
+    echo -e "  ${GREEN}ask${NC} <query>           Query project knowledge (RAG search)"
+    echo -e "  ${GREEN}docs${NC} <cmd>            Documentation lookup (article, show)"
+    echo -e "  ${GREEN}enforcement${NC} <cmd>     Enforcement baseline (status, baseline)"
+    echo -e "  ${GREEN}fabric${NC} <cmd>          Component Fabric (overview, deps, impact, search, drift, register)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
     echo -e "  ${GREEN}update${NC}               Update framework (vendored or global) to latest version"
     echo -e "  ${GREEN}vendor${NC}               Copy framework into project .agentic-framework/ (full isolation)"
     echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
+    echo -e "  ${GREEN}hook-enable${NC} <args>   Register a hook in .claude/settings.json (idempotent)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
     echo -e "  ${GREEN}build${NC}                Compile TypeScript sources (lib/ts/src → lib/ts/dist)"
@@ -534,12 +619,13 @@ show_help() {
 show_version() {
     echo "fw v$FW_VERSION"
     echo "Framework: $FRAMEWORK_ROOT"
+    echo "Mode:      $(_detect_fw_mode)"
     echo "Project:   $PROJECT_ROOT"
 
     # Show .framework.yaml version if present
     if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
         local pinned
-        pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//')
+        pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
         if [ -n "$pinned" ]; then
             echo "Pinned:    $pinned"
             if [ "$pinned" != "$FW_VERSION" ]; then
@@ -566,12 +652,33 @@ do_doctor() {
         issues=$((issues + 1))
     fi
 
+    # Check 1b (T-1346-B2): Active framework mode disclosure
+    local _mode
+    _mode=$(_detect_fw_mode)
+    case "$_mode" in
+        vendored|framework-repo)
+            echo -e "  ${GREEN}OK${NC}  Active mode: $_mode ($FRAMEWORK_ROOT)"
+            ;;
+        global)
+            if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Active mode: global ($FRAMEWORK_ROOT) — vendored copy exists at $PROJECT_ROOT/.agentic-framework but was not selected"
+                warnings=$((warnings + 1))
+            else
+                echo -e "  ${CYAN}INFO${NC}  Active mode: global ($FRAMEWORK_ROOT)"
+            fi
+            ;;
+        *)
+            echo -e "  ${YELLOW}WARN${NC}  Active mode: $_mode ($FRAMEWORK_ROOT)"
+            warnings=$((warnings + 1))
+            ;;
+    esac
+
     # Check 2: .framework.yaml (only relevant if PROJECT_ROOT != FRAMEWORK_ROOT)
     if [ "$PROJECT_ROOT" != "$FRAMEWORK_ROOT" ]; then
         if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
             echo -e "  ${GREEN}OK${NC}  .framework.yaml found"
             local pinned
-            pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//')
+            pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
             if [ -n "$pinned" ] && [ "$pinned" != "$FW_VERSION" ]; then
                 echo -e "  ${YELLOW}WARN${NC}  Version mismatch: pinned=$pinned installed=$FW_VERSION"
                 warnings=$((warnings + 1))
@@ -657,10 +764,18 @@ for event, entries in data.get('hooks', {}).items():
             cmd = hook.get('command', '')
             total += 1
             parts = cmd.split()
-            # Check for portable 'fw hook' format
+            # Check for portable 'fw hook' format (bare fw in PATH)
             if len(parts) >= 2 and parts[0] == 'fw':
                 if shutil.which('fw'):
                     continue  # fw hook — portable, OK
+                else:
+                    broken += 1
+                    continue
+            # T-1222: vendored hook format (.agentic-framework/bin/fw hook or bin/fw hook)
+            if len(parts) >= 2 and parts[0].endswith('/bin/fw'):
+                fw_path = os.path.join('$PROJECT_ROOT', parts[0])
+                if os.path.isfile(fw_path) and os.access(fw_path, os.X_OK):
+                    continue  # vendored fw hook — OK
                 else:
                     broken += 1
                     continue
@@ -769,7 +884,7 @@ print(f'{total},{broken},{stale_paths}')
         echo -e "  ${GREEN}OK${NC}  No orphaned MCP processes"
     fi
 
-    # Check: .mcp.json configuration (T-646)
+    # Check: .mcp.json configuration (T-646, T-1354: servers under `mcpServers` key)
     local mcp_json="$PROJECT_ROOT/.mcp.json"
     if [ -f "$mcp_json" ]; then
         local mcp_check
@@ -777,9 +892,12 @@ print(f'{total},{broken},{stale_paths}')
 import json
 with open('$mcp_json') as f:
     data = json.load(f)
-total = len(data)
-has_context7 = 'context7' in data
-has_playwright = 'playwright' in data
+servers = data.get('mcpServers') if isinstance(data.get('mcpServers'), dict) else data
+if not isinstance(servers, dict):
+    servers = {}
+total = len(servers)
+has_context7 = 'context7' in servers
+has_playwright = 'playwright' in servers
 missing = []
 if not has_context7: missing.append('context7')
 if not has_playwright: missing.append('playwright')
@@ -864,6 +982,33 @@ else:
             echo -e "  ${YELLOW}WARN${NC}  status-transitions.yaml integrity: $trans_check"
             warnings=$((warnings + 1))
         fi
+    fi
+
+    # Check: Watchtower discovery triple (T-1292 / T-1284 B4)
+    local _wt_pid_f="$PROJECT_ROOT/.context/working/watchtower.pid"
+    local _wt_url_f="$PROJECT_ROOT/.context/working/watchtower.url"
+    if [ -f "$_wt_pid_f" ] || [ -f "$_wt_url_f" ]; then
+        local _wt_pid _wt_url
+        _wt_pid=$(cat "$_wt_pid_f" 2>/dev/null | tr -d '[:space:]')
+        _wt_url=$(cat "$_wt_url_f" 2>/dev/null | tr -d '[:space:]')
+        if [ -n "$_wt_pid" ] && kill -0 "$_wt_pid" 2>/dev/null && [ -n "$_wt_url" ]; then
+            local _wt_ident
+            _wt_ident=$(curl -sf --max-time 2 "$_wt_url/api/_identity" 2>/dev/null || echo "")
+            if [ -n "$_wt_ident" ] && echo "$_wt_ident" | grep -q "\"service\"[[:space:]]*:[[:space:]]*\"watchtower\"" \
+                && echo "$_wt_ident" | grep -q "\"project_root\"[[:space:]]*:[[:space:]]*\"$PROJECT_ROOT\""; then
+                echo -e "  ${GREEN}OK${NC}  Watchtower running ($_wt_url, pid $_wt_pid)"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  Watchtower triple present but identity mismatch or endpoint down"
+                echo -e "         Run: bin/watchtower.sh restart"
+                warnings=$((warnings + 1))
+            fi
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Stale Watchtower triple (pid $_wt_pid not running)"
+            echo -e "         Run: bin/watchtower.sh stop && bin/watchtower.sh start"
+            warnings=$((warnings + 1))
+        fi
+    else
+        echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
     fi
 
     # Check: Claude Code hook configuration (CTL-R023 — T-199)
@@ -988,9 +1133,14 @@ else:
     fi
 
     # Check: Watchtower smoke test (T-486) — run if server is reachable
-    if curl -sf "http://localhost:${FW_PORT:-3000}/health" >/dev/null 2>&1; then
+    # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)
+    source "$FRAMEWORK_ROOT/lib/watchtower.sh" 2>/dev/null || true
+    local _doctor_wt_url _doctor_wt_port
+    _doctor_wt_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:${FW_PORT:-3000}")
+    _doctor_wt_port=$(echo "$_doctor_wt_url" | grep -oP ':\K\d+$' || echo "${FW_PORT:-3000}")
+    if curl -sf "${_doctor_wt_url}/health" >/dev/null 2>&1; then
         local smoke_result
-        smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "${FW_PORT:-3000}" --json 2>/dev/null || echo '{"failed":0,"passed":0,"total":0,"error":"script failed"}')
+        smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "$_doctor_wt_port" --json 2>/dev/null || echo '{"failed":0,"passed":0,"total":0,"error":"script failed"}')
         local smoke_passed smoke_failed smoke_total
         smoke_passed=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('passed',0))" 2>/dev/null || echo 0)
         smoke_failed=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('failed',0))" 2>/dev/null || echo 0)
@@ -1120,15 +1270,33 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         fi
     fi
 
-    # Check: Consumer project fleet health (T-616)
-    # Only runs from framework repo — scans /opt for .framework.yaml
+    # Check: Pending-updates registry (T-1268 B2)
+    local pending_file="$PROJECT_ROOT/.context/working/pending-updates.yaml"
+    if [ -f "$pending_file" ]; then
+        local pending_count
+        pending_count=$(FW_PENDING_FILE="$pending_file" python3 -c "
+import os, yaml
+with open(os.environ['FW_PENDING_FILE']) as f:
+    data = yaml.safe_load(f) or {}
+entries = data.get('pending_updates') or []
+print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
+" 2>/dev/null || echo 0)
+        if [ "$pending_count" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Pending-updates registry: $pending_count unresolved entry(ies)"
+            echo -e "         Run: fw pending list"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
+    # Check: Consumer project fleet health (T-616, T-1195/G-044)
+    # Only runs from framework repo — scans FW_CONSUMER_SCAN_DIRS for .framework.yaml
     if [ "$FRAMEWORK_ROOT" = "$PROJECT_ROOT" ]; then
         local consumer_count=0
         local consumer_issues=0
         local fw_settings_file="$FRAMEWORK_ROOT/.claude/settings.json"
         echo ""
         echo -e "  ${BOLD}Consumer Projects${NC}"
-        for fw_yaml in /opt/*/.framework.yaml; do
+        for fw_yaml in $(fw_consumer_yamls); do
             [ -f "$fw_yaml" ] || continue
             local consumer_dir
             consumer_dir=$(dirname "$fw_yaml")
@@ -1199,6 +1367,31 @@ else:
             echo -e "  ${CYAN}SKIP${NC}  No consumer projects found in /opt"
         elif [ "$consumer_issues" -eq 0 ]; then
             echo -e "  ${GREEN}OK${NC}  All $consumer_count consumer(s) current"
+        fi
+    fi
+
+    # Check: Isolation model health (T-1189/G-031, T-1195/G-044)
+    # Detect nested .agentic-framework inside vendored dir (Pattern 6 bug)
+    for fw_yaml in $(fw_consumer_yamls); do
+        [ -f "$fw_yaml" ] || continue
+        local _iso_dir
+        _iso_dir=$(dirname "$fw_yaml")
+        [ "$_iso_dir" = "$FRAMEWORK_ROOT" ] && continue
+        local _nested="$_iso_dir/.agentic-framework/.agentic-framework"
+        if [ -d "$_nested" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Nested .agentic-framework in $(basename "$_iso_dir") — remove: rm -rf $_nested"
+            warnings=$((warnings + 1))
+        fi
+    done
+    # Detect oversized global install (Pattern 4 legacy bloat)
+    local _global_dir="$HOME/.agentic-framework"
+    if [ -d "$_global_dir" ]; then
+        local _global_mb
+        _global_mb=$(du -sm "$_global_dir" 2>/dev/null | cut -f1 || echo "0")
+        if [ "${_global_mb:-0}" -gt 100 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Global install at $_global_dir is ${_global_mb}MB (expected <60MB)"
+            echo -e "         Consider: rm -rf $_global_dir (shim-based dispatch obsoletes it)"
+            warnings=$((warnings + 1))
         fi
     fi
 
@@ -1279,12 +1472,21 @@ else:
         fi
     fi
 
-    # Doc-drift check: fw subcommands vs CLAUDE.md Quick Reference (T-1147/T-1104)
+    # Doc-drift check: fw subcommands vs CLAUDE.md Quick Reference (T-1147/T-1104/T-1421)
     if [ -f "$FRAMEWORK_ROOT/CLAUDE.md" ]; then
-        local _qr_cmds _fw_cmds _missing _miss_count
-        # Extract commands from Quick Reference table: | `fw cmd` | or | **`fw cmd`** |
-        _qr_cmds=$(grep -oE '`fw [a-z][-a-z]*( [a-z][-a-z]*)?`' "$FRAMEWORK_ROOT/CLAUDE.md" 2>/dev/null \
-            | sed 's/`//g; s/^fw //' | sort -u || true)
+        local _qr_cmds _fw_cmds _missing _miss_count _prose_list
+        # T-1421: extract the verb from any `fw VERB...` backtick context. Old
+        # regex only matched `` `fw x` `` / `` `fw x y` `` with closing backtick,
+        # which missed pipe-joined forms (`fw cron generate|status|list`) and
+        # flag-bearing forms (`fw work-on "name" --type build`). We only need
+        # the verb, so match through opening backtick + `fw ` + verb.
+        _qr_cmds=$(grep -oE '`fw [a-z][-a-z]*' "$FRAMEWORK_ROOT/CLAUDE.md" 2>/dev/null \
+            | sed 's/^`fw //' | sort -u || true)
+        # T-1421: secondary catch — the trimmed Quick Reference ends with a
+        # prose "rarely-used commands (harvest, promote, …)" paragraph listing
+        # verbs without backticks. Parse those too.
+        _prose_list=$(grep -oE 'rarely-used commands \([^)]*\)' "$FRAMEWORK_ROOT/CLAUDE.md" 2>/dev/null \
+            | sed 's/^.*(//; s/).*$//' | tr ',' '\n' | sed 's/^ *//; s/ *$//' | grep -E '^[a-z][-a-z]*$' || true)
         # Extract top-level routed subcommands from main routing case
         _fw_cmds=$(sed -n '/^case "\$cmd" in/,/^esac/p' "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null \
             | grep -E '^    [a-z][-a-z]*\)' | sed 's/[[:space:]]*//; s/).*//' | sort -u || true)
@@ -1292,7 +1494,7 @@ else:
         _miss_count=0
         while IFS= read -r cmd; do
             [ -z "$cmd" ] && continue
-            if ! echo "$_qr_cmds" | grep -qw "$cmd"; then
+            if ! echo "$_qr_cmds" | grep -qw "$cmd" && ! echo "$_prose_list" | grep -qw "$cmd"; then
                 _missing="${_missing} ${cmd}"
                 _miss_count=$((_miss_count + 1))
             fi
@@ -1303,6 +1505,22 @@ else:
             warnings=$((warnings + 1))
         else
             echo -e "  ${GREEN}OK${NC}  Quick Reference coverage"
+        fi
+    fi
+
+    # T-1278: Shim masquerade check — a framework repo's bin/fw must be the
+    # real CLI (4000+ lines), not the 50-line fw-shim. The shim contains
+    # find_fw() and lacks a case/esac routing block; the real CLI has 'do_doctor'
+    # and many other functions. Detect shim-over-real quickly.
+    if [ -f "$FRAMEWORK_ROOT/FRAMEWORK.md" ] && [ -f "$FRAMEWORK_ROOT/bin/fw" ]; then
+        local fw_lines
+        fw_lines=$(wc -l < "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo 0)
+        if [ "$fw_lines" -lt 200 ] && grep -q '^find_fw()' "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null; then
+            echo -e "  ${RED}FAIL${NC}  bin/fw in framework repo is the shim (${fw_lines} lines, has find_fw())"
+            echo -e "         Real CLI missing. Restore: git -C $FRAMEWORK_ROOT checkout HEAD -- bin/fw"
+            issues=$((issues + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  bin/fw is the real CLI (${fw_lines} lines, not the shim)"
         fi
     fi
 
@@ -1962,6 +2180,97 @@ for t in stale_tasks:
     print(f'  {t["id"]:<8} {color}{age_str:>5}{NC} {t["last_update"]:<12} {t["status"]:<18} {t["horizon"]:<6} {t["name"][:50]}')
 PYTASK_STALE
             ;;
+        reid)
+            # T-1367: Safely rename a task's ID — updates filename + frontmatter atomically.
+            # Intended for repairing duplicate-ID pairs surfaced by `fw audit` (G-052).
+            old_id="${1:-}"; new_id="${2:-}"
+            if [ -z "$old_id" ] || [ -z "$new_id" ]; then
+                echo -e "${RED}Usage: fw task reid <OLD-ID> <NEW-ID>${NC}" >&2
+                echo "Example: fw task reid T-1278 T-1369" >&2
+                exit 1
+            fi
+            # Validate ID format
+            if ! [[ "$old_id" =~ ^T-[0-9]+$ ]]; then
+                echo -e "${RED}ERROR: OLD-ID must match T-NNNN (got: $old_id)${NC}" >&2
+                exit 1
+            fi
+            if ! [[ "$new_id" =~ ^T-[0-9]+$ ]]; then
+                echo -e "${RED}ERROR: NEW-ID must match T-NNNN (got: $new_id)${NC}" >&2
+                exit 1
+            fi
+            # Locate the old file
+            old_file=""
+            for d in active completed; do
+                for f in "$PROJECT_ROOT/.tasks/$d/$old_id"-*.md; do
+                    [ -f "$f" ] || continue
+                    if [ -n "$old_file" ]; then
+                        echo -e "${YELLOW}NOTE: Multiple files match $old_id:${NC}" >&2
+                        echo "  $old_file" >&2
+                        echo "  $f" >&2
+                        echo "Renaming the first match. Re-run reid for the second." >&2
+                        break 2
+                    fi
+                    old_file="$f"
+                done
+            done
+            if [ -z "$old_file" ]; then
+                echo -e "${RED}ERROR: No task file found for $old_id${NC}" >&2
+                exit 1
+            fi
+            # Check NEW-ID is free
+            for d in active completed; do
+                for f in "$PROJECT_ROOT/.tasks/$d/$new_id"-*.md; do
+                    [ -f "$f" ] || continue
+                    echo -e "${RED}ERROR: $new_id already exists: $f${NC}" >&2
+                    echo "Pick a different NEW-ID or remove the existing file first." >&2
+                    exit 1
+                done
+            done
+            # Compute new filename (preserve the slug portion)
+            old_basename="$(basename "$old_file")"
+            slug_plus_ext="${old_basename#$old_id-}"
+            new_file="$(dirname "$old_file")/$new_id-$slug_plus_ext"
+            # Perform the rename: git-mv if tracked, else plain mv; then update frontmatter
+            if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$old_file" >/dev/null 2>&1; then
+                git -C "$PROJECT_ROOT" mv "$old_file" "$new_file"
+            else
+                mv "$old_file" "$new_file"
+            fi
+            # Update `id:` in frontmatter (first occurrence only — it's in the YAML block)
+            python3 - "$new_file" "$old_id" "$new_id" <<'PYREID'
+import sys, datetime
+path, old_id, new_id = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(path) as f:
+    text = f.read()
+# Replace id: line (first match only, within frontmatter)
+lines = text.split('\n')
+in_fm = False
+replaced = False
+ts = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+for i, line in enumerate(lines):
+    if line.strip() == '---':
+        in_fm = not in_fm
+        continue
+    if in_fm and not replaced and line.startswith('id:'):
+        lines[i] = f'id: {new_id}'
+        replaced = True
+        break
+# Append update entry
+update_note = f'\n### {ts} — reid [fw-task]\n- **Change:** id {old_id} → {new_id} (via `fw task reid`)\n- **Context:** Duplicate-ID repair or manual rename\n'
+# Prefer to append inside ## Updates; otherwise at EOF
+joined = '\n'.join(lines)
+if '## Updates' in joined:
+    joined = joined.rstrip() + update_note
+else:
+    joined = joined.rstrip() + '\n\n## Updates\n' + update_note
+with open(path, 'w') as f:
+    f.write(joined)
+print(f'OK — renamed {old_id} → {new_id} in frontmatter')
+PYREID
+            echo -e "${GREEN}Task reid complete:${NC}"
+            echo "  OLD: $old_file"
+            echo "  NEW: $new_file"
+            ;;
         *)
             echo -e "${RED}Unknown task subcommand: $subcmd${NC}"
             echo "Run 'fw task help' for usage"
@@ -2038,8 +2347,10 @@ for job in jobs:
     name = job.get('name', '')
     status = job.get('status', 'active')
 
-    if command.startswith('fw '):
-        resolved = f'PROJECT_ROOT=\"{project_root}\" \"{fw_path}\" {command[3:]}'
+    # T-1249: Resolve ALL occurrences of bare 'fw' (not just leading)
+    if 'fw ' in command:
+        resolved = re.sub(r'\bfw\b', f'\"{fw_path}\"', command)
+        resolved = f'PROJECT_ROOT=\"{project_root}\" {resolved}'
     else:
         # All non-fw commands run from project root (relative paths need it)
         resolved = f'cd \"{project_root}\" && {command}'
@@ -2320,7 +2631,7 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                 echo "  resume <id>       Resume a paused job"
                 echo ""
                 echo "Registry: .context/cron-registry.yaml"
-                echo "Web UI:   http://localhost:3000/cron"
+                echo "Web UI:   Watchtower /cron page (fw serve to start)"
                 echo ""
                 echo "Env overrides:"
                 echo "  FW_CRON_INSTALL_DIR  Target directory (default /etc/cron.d)"
@@ -2344,6 +2655,30 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         ;;
     git)
         exec "$AGENTS_DIR/git/git.sh" "$@"
+        ;;
+    push)
+        # T-1153: Push to all remotes with per-remote status
+        echo -e "${BOLD}fw push${NC} — Push to all remotes"
+        echo ""
+        _push_ok=0
+        _push_fail=0
+        while IFS= read -r _remote; do
+            [ -z "$_remote" ] && continue
+            echo -n "  $_remote: "
+            if git -C "$PROJECT_ROOT" push "$_remote" HEAD "$@" 2>&1 | tail -1; then
+                _push_ok=$((_push_ok + 1))
+            else
+                echo -e "${RED}FAILED${NC}"
+                _push_fail=$((_push_fail + 1))
+            fi
+        done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
+        echo ""
+        if [ "$_push_fail" -gt 0 ]; then
+            echo -e "${YELLOW}$_push_ok pushed, $_push_fail failed${NC}"
+            exit 1
+        else
+            echo -e "${GREEN}All $_push_ok remote(s) pushed ✓${NC}"
+        fi
         ;;
     handover)
         exec "$AGENTS_DIR/handover/handover.sh" "$@"
@@ -2378,6 +2713,10 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
     pickup)
         source "$FW_LIB_DIR/pickup.sh"
         do_pickup "$@"
+        ;;
+    pending)
+        source "$FW_LIB_DIR/pending.sh"
+        do_pending "$@"
         ;;
     upstream)
         source "$FW_LIB_DIR/upstream.sh"
@@ -2457,6 +2796,14 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         # Default to 'start' if no args
         if [ $# -eq 0 ]; then
             exec "$FRAMEWORK_ROOT/bin/watchtower.sh" start
+        fi
+        exec "$FRAMEWORK_ROOT/bin/watchtower.sh" "$@"
+        ;;
+    watchtower)
+        # Public accessor namespace for Watchtower (T-1376 B5)
+        # fw watchtower {port|url|status|start|stop|restart}
+        if [ $# -eq 0 ]; then
+            exec "$FRAMEWORK_ROOT/bin/watchtower.sh" --help
         fi
         exec "$FRAMEWORK_ROOT/bin/watchtower.sh" "$@"
         ;;
@@ -2869,6 +3216,10 @@ print('0')
     harvest)
         source "$FW_LIB_DIR/harvest.sh"
         do_harvest "$@"
+        ;;
+    prompt)
+        source "$FW_LIB_DIR/prompt.sh"
+        do_prompt "$@"
         ;;
     termlink)
         exec "$AGENTS_DIR/termlink/termlink.sh" "$@"
@@ -3524,19 +3875,37 @@ PYSEARCH
         shift 2>/dev/null || true
         if [ -z "$_hook_name" ]; then
             echo "Usage: fw hook <name> [args...]" >&2
-            echo "Available hooks: check-active-task, check-tier0, check-project-boundary, budget-gate," >&2
-            echo "  block-plan-mode, block-task-tools, audit-task-tools, checkpoint, error-watchdog, check-dispatch, check-dispatch-pre," >&2
-            echo "  check-fabric-new-file, check-agent-dispatch, commit-cadence, loop-detect, pre-compact, post-compact-resume" >&2
+            # T-1186/G-042: Generate hook list from filesystem (single source of truth)
+            _hooks=$(ls "$AGENTS_DIR/context/"*.sh 2>/dev/null | xargs -I{} basename {} .sh | sort | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g')
+            echo "Available hooks: $_hooks" >&2
             exit 1
         fi
         _hook_script="$AGENTS_DIR/context/${_hook_name}.sh"
         if [ ! -f "$_hook_script" ]; then
-            echo "ERROR: Hook script not found: $_hook_script" >&2
-            exit 2
+            # T-1360 / G-053-B: missing hook script = config drift, NOT a reason to
+            # block the agent's tool surface. Exit 2 would hard-block PreToolUse and
+            # cascade across every Bash/Write/Edit. Log once to hook-crashes.log so
+            # `fw doctor` can surface the drift, then exit 0 (allow).
+            echo "WARNING: Hook script not found: $_hook_script (degrading to allow — fix hook config)" >&2
+            if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.context/working" ]; then
+                _crash_log="$PROJECT_ROOT/.context/working/.hook-crashes.log"
+                echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) missing-hook $_hook_name script=$_hook_script" >> "$_crash_log" 2>/dev/null || true
+            fi
+            exit 0
         fi
         export FRAMEWORK_ROOT PROJECT_ROOT
         # T-863: Use bash explicitly — don't require -x (core.filemode=false drops execute bits)
         exec bash "$_hook_script" "$@"
+        ;;
+    hook-enable)
+        # fw hook-enable — register a framework hook in .claude/settings.json (T-1189)
+        _he_script="$FRAMEWORK_ROOT/bin/hook-enable.sh"
+        if [ ! -f "$_he_script" ]; then
+            echo "ERROR: hook-enable.sh not found at $_he_script" >&2
+            exit 2
+        fi
+        export FRAMEWORK_ROOT PROJECT_ROOT
+        exec bash "$_he_script" "$@"
         ;;
     doctor)
         do_doctor "$@"
@@ -3825,6 +4194,11 @@ PYPREDICT
         # T-801: Token usage tracking from JSONL transcripts
         source "$FW_LIB_DIR/costs.sh"
         costs_main "$@"
+        ;;
+    release)
+        # T-1256: Release tagging + push + GitHub Release
+        source "$FW_LIB_DIR/release.sh"
+        release_main "$@"
         ;;
     test)
         _test_exit=0
