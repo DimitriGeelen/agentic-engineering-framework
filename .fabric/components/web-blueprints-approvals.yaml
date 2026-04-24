@@ -4,8 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/approvals.py
 tags: []
-purpose: 'Watchtower approvals blueprint: human review queue — lists tasks with unchecked
-  Human ACs, supports checkbox toggling.'
+purpose: 'Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling.'
 depends_on:
 - target: web/shared.py
   type: calls
@@ -29,6 +28,10 @@ depended_by:
 - target: web/blueprints/core.py
   type: registered_by
 - tests/playwright/test_approvals.py
+- target: tests/playwright/test_inception.py
+  type: called_by
+- target: tests/playwright/test_inception.py
+  type: registered_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-24'
