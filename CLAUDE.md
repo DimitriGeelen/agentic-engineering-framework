@@ -241,237 +241,32 @@ Not all improvement comes from failures. When you notice a practice repeating ad
 
 ## fw CLI (Primary Interface)
 
-The `fw` command is the single entry point for all framework operations. It resolves paths, sets environment variables, and routes to agents.
-
-```bash
-fw help              # Show all commands
-fw version           # Show version and paths
-fw doctor            # Check framework health
-fw audit             # Run compliance audit
-fw context init      # Initialize session
-fw git commit -m "T-XXX: description"
-fw handover --commit # Generate and commit handover
-fw task create --name "Fix bug" --type build --owner human
-fw upgrade /opt/my-project  # Sync framework to consumer project
-```
+`fw` is the single entry point for all framework operations — it resolves paths, sets env vars, and routes to agents. Discover commands via `fw help`, `fw <cmd> --help`, or the Quick Reference section below.
 
 **Path resolution:** `fw` finds the framework via `bin/fw`'s location (inside framework repo) or via `.framework.yaml` in the project root (shared tooling mode).
 
-**`fw upgrade` (canonical onboarding):** Syncs framework governance to a consumer project. It refreshes shims (bin/fw, .claude/settings.json hooks), updates the version pin in .framework.yaml, and syncs vendored scripts. It does NOT copy framework source code into the consumer — agents and libraries remain in the framework repo, accessed via the shim. Run `fw upgrade /path/to/project` from the framework repo, or `fw upgrade` from inside the consumer project.
+**`fw upgrade` (canonical onboarding):** Syncs governance to a consumer project — refreshes shims (bin/fw, .claude/settings.json hooks), updates the version pin in `.framework.yaml`, syncs vendored scripts. It does NOT copy framework source into the consumer — agents and libraries stay in the framework repo, accessed via the shim. Run from the framework repo (`fw upgrade /path/to/project`) or from inside the consumer (`fw upgrade`).
 
 ## Agents
 
-The framework includes agents for common operations. Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance). All agents can be invoked directly or via `fw`.
+Agents are mechanical scripts in `agents/<name>/` paired with an `AGENT.md` intelligence file. Invoke via `fw` (see Quick Reference) or directly via `./agents/<name>/<name>.sh`. Most agents have a one-liner already catalogued in Quick Reference — this section only describes behavior and when to invoke.
 
-### Task Creation Agent
-
-**Location:** `agents/task-create/`
-
-**When to use:** Before starting any new work, create a task.
-
-```bash
-# Interactive mode
-./agents/task-create/create-task.sh
-
-# With arguments
-./agents/task-create/create-task.sh --name "Fix bug" --type build --owner human --start
-```
-
-### Task Update (with auto-triggers)
-
-**Location:** `agents/task-create/update-task.sh`
-
-**When to use:** To change task status. Auto-triggers healing diagnosis on `issues`, and finalizes tasks on `work-completed`.
-
-```bash
-# Change status (auto-triggers healing if issues)
-fw task update T-015 --status issues --reason "API timeout"
-
-# Complete a task (auto: date_finished, move to completed/, generate episodic)
-fw task update T-015 --status work-completed
-
-# Change owner
-fw task update T-015 --owner human
-```
-
-### Audit Agent
-
-**Location:** `agents/audit/`
-
-**When to use:** Periodically check framework compliance. Run after completing work or when suspecting drift.
-
-```bash
-./agents/audit/audit.sh
-```
-
-**Exit codes:** 0=pass, 1=warnings, 2=failures
-
-### Session Capture Agent
-
-**Location:** `agents/session-capture/`
-
-**When to use:** MANDATORY before ending any session or switching context.
-
-Review the checklist in `agents/session-capture/AGENT.md` and ensure:
-- All discussed work has tasks
-- All decisions are recorded
-- All learnings are captured as practices
-- All open questions are tracked
-
-### Git Agent
-
-**Location:** `agents/git/`
-
-**When to use:** For all git operations that involve code changes. Enforces task traceability (P-002).
-
-```bash
-# Commit with task reference (required)
-./agents/git/git.sh commit -m "T-003: Add bypass log"
-
-# Task-aware status
-./agents/git/git.sh status
-
-# Install enforcement hooks (run once per repo)
-./agents/git/git.sh install-hooks
-
-# Log a bypass (when --no-verify was used)
-./agents/git/git.sh log-bypass --commit abc123 --reason "Emergency hotfix"
-
-# View task-filtered history
-./agents/git/git.sh log --task T-003
-./agents/git/git.sh log --traceability
-```
-
-### Handover Agent
-
-**Location:** `agents/handover/`
-
-**When to use:** MANDATORY at end of every session.
-
-```bash
-# Create handover (manual commit)
-./agents/handover/handover.sh
-
-# Create handover and auto-commit via git agent
-./agents/handover/handover.sh --commit
-```
-
-Creates a forward-looking context document in `.context/handovers/` to enable the next session to continue seamlessly.
-
-### Context Agent
-
-**Location:** `agents/context/`
-
-**When to use:** To manage the Context Fabric (persistent memory system).
-
-```bash
-# Initialize session (start of session)
-./agents/context/context.sh init
-
-# Show context state
-./agents/context/context.sh status
-
-# Set/show current focus
-./agents/context/context.sh focus T-005
-./agents/context/context.sh focus
-
-# Record a learning
-./agents/context/context.sh add-learning "Always validate inputs" --task T-014 --source P-001
-
-# Record a pattern (failure/success/workflow)
-./agents/context/context.sh add-pattern failure "API timeout" --task T-015 --mitigation "Add retry"
-
-# Record a decision
-./agents/context/context.sh add-decision "Use YAML" --task T-005 --rationale "Human readable"
-
-# Generate episodic summary for completed task
-./agents/context/context.sh generate-episodic T-014
-```
-
-Manages three memory types:
-- **Working Memory** — Session state, current focus, priorities
-- **Project Memory** — Patterns, decisions, learnings
-- **Episodic Memory** — Condensed task histories
-
-### Healing Agent
-
-**Location:** `agents/healing/`
-
-**When to use:** When a task encounters issues (status = `issues`). Implements the antifragile healing loop.
-
-```bash
-# Diagnose task issues and get recovery suggestions
-./agents/healing/healing.sh diagnose T-015
-
-# After fixing, record the resolution (adds pattern + learning)
-./agents/healing/healing.sh resolve T-015 --mitigation "Added retry logic"
-
-# Show all known failure patterns
-./agents/healing/healing.sh patterns
-
-# Check all tasks with issues
-./agents/healing/healing.sh suggest
-```
-
-The healing loop:
-1. **Classify** — Identifies failure type (code, dependency, environment, design, external)
-2. **Lookup** — Searches for similar patterns in patterns.yaml
-3. **Suggest** — Recommends recovery using Error Escalation Ladder
-4. **Log** — Records resolution as pattern for future learning
-
-### Resume Agent
-
-**Location:** `agents/resume/`
-
-**When to use:** After context compaction, returning from breaks, or when feeling lost about current state.
-
-```bash
-# Full state synthesis (use after compaction)
-./agents/resume/resume.sh status
-
-# Fix stale working memory
-./agents/resume/resume.sh sync
-
-# One-line summary
-./agents/resume/resume.sh quick
-```
-
-Synthesizes current state from:
-- **Handover** — "Where We Are" and suggested action
-- **Working Memory** — Session, focus, may be stale
-- **Git State** — Uncommitted changes, recent commits
-- **Tasks** — Active tasks with status
+- **task-create** — Before ANY new work. `fw work-on "name" --type build` is the one-step entry. `fw task update --status issues` auto-triggers healing diagnosis; `--status work-completed` auto-finalizes (date_finished, move to completed/, generate episodic).
+- **audit** — Periodic compliance check. Exit codes: 0=pass, 1=warnings, 2=failures. Run after completing work or on suspected drift.
+- **session-capture** — MANDATORY before ending any session or switching context. Review `agents/session-capture/AGENT.md`: all work captured as tasks, all decisions recorded, all learnings stored, all open questions tracked.
+- **git** — Enforces task traceability (P-002). Every commit must reference `T-XXX`. `fw git install-hooks` installs commit-msg, post-commit, pre-push. Use `--no-verify` only for emergencies and log via Tier 2.
+- **handover** — MANDATORY at end of every session. `fw handover --commit` generates, commits, and pushes. Never end a session with unpushed commits.
+- **context** — Context Fabric management (working/project/episodic memory). Session init via `fw context init`; focus via `fw context focus T-XXX`; capture via `fw context add-learning|add-pattern|add-decision|generate-episodic`.
+- **healing** — Triggered on `status: issues`. Antifragile loop: classify failure → lookup matching patterns → suggest recovery via Error Escalation Ladder → log resolution for future learning.
+- **resume** — Post-compaction recovery. `fw resume status` for full synthesis (handover + working memory + git + tasks); `sync` to fix stale working memory; `quick` for one-line summary.
 
 ## Component Fabric
 
-The Component Fabric (`.fabric/`) is a structural topology map of every significant file in the framework. It enables impact analysis, dependency tracking, and onboarding.
+The Component Fabric (`.fabric/`) is a structural topology map of every significant file — each component has a YAML card in `.fabric/components/` with id, name, type, subsystem, location, purpose, interfaces, depends_on, depended_by.
 
-### When to Use
+**When to use:** before modifying a file → `fw fabric deps <path>`; before committing → `fw fabric blast-radius [ref]`; after creating a new file → `fw fabric register <path>`; periodic health → `fw fabric drift` (detects unregistered/orphaned/stale). Also: `fw fabric overview` for the subsystem summary, `fw fabric impact <path>` for the full downstream chain, `fw fabric search <keyword>` to find by tag/name/purpose.
 
-- **Before modifying a file:** `fw fabric deps <path>` — see what depends on it and what it depends on
-- **Before committing:** `fw fabric blast-radius` — see downstream impact of your changes
-- **After creating new files:** `fw fabric register <path>` — create a component card
-- **Periodic health check:** `fw fabric drift` — detect unregistered, orphaned, or stale components
-
-### Key Commands
-
-| Command | Purpose |
-|---------|---------|
-| `fw fabric overview` | Compact subsystem summary (12 subsystems, ~99 components) |
-| `fw fabric deps <path>` | Show dependencies for a file |
-| `fw fabric impact <path>` | Full transitive downstream chain |
-| `fw fabric blast-radius [ref]` | Downstream impact of a commit |
-| `fw fabric search <keyword>` | Search by tags, name, purpose |
-| `fw fabric drift` | Detect unregistered/orphaned/stale |
-| `fw fabric register <path>` | Create component card for a file |
-
-### Component Cards
-
-Each component has a YAML card in `.fabric/components/` with: id, name, type, subsystem, location, purpose, interfaces, depends_on, depended_by. Cards are the source of truth for structural relationships.
-
-### Web UI
-
-The Watchtower web UI at `/fabric` provides: subsystem overview, component table with filtering, dependency graph visualization, and component detail pages.
+Watchtower `/fabric` surfaces the subsystem overview, filterable component table, dependency graph, and per-component detail pages.
 
 ## Context Budget Management (P-009)
 
@@ -503,55 +298,25 @@ The Watchtower web UI at `/fabric` provides: subsystem overview, component table
 - Above 95% (285K+): handover immediately, no new work
 - **This applies especially in autonomous mode** — without a human to catch the mistake, proposing work that can't complete in remaining context risks losing all uncommitted work
 
-### Automated Monitoring (Claude Code)
-- **Primary enforcement:** A PreToolUse hook runs `budget-gate.sh` which reads **actual token usage** from the session JSONL transcript and **blocks** Write/Edit/Bash at critical level (exit code 2)
-- **Fallback:** A PostToolUse hook runs `checkpoint.sh` for warnings and auto-handover (T-136)
-- Escalation ladder: **225K** ok→warn (note), **255K** warn→urgent (warning), **285K** urgent→critical (**BLOCK**)
-- Context window: **300K** default (override via `FW_CONTEXT_WINDOW`; Opus 4.6 supports up to 1M)
-- At critical, allowed: git commit/add, fw handover/task, reading files, Write/Edit to `.context/` `.tasks/` `.claude/` (wrap-up paths). Blocked: Write/Edit to source files, general Bash
-- Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp)
-- Check current usage: `./agents/context/checkpoint.sh status`
-- If no transcript is available, fails open (PostToolUse fallback handles it)
+### Automated Monitoring and Critical Protocol
 
-### Critical Protocol
-- If you see a SESSION WRAPPING UP block: the session is wrapping up. Only wrap-up work is allowed.
-- **Allowed:** git commit/add, fw handover, fw task update, Write/Edit to .context/.tasks/.claude/, reading files
-- **Blocked:** Write/Edit to source files, general Bash commands
-- Wrap up calmly — task files already have all essential state from continuous capture
+- **Primary enforcement:** PreToolUse `budget-gate.sh` reads actual token usage from the session JSONL and blocks Write/Edit/Bash at critical (exit code 2). Fallback: PostToolUse `checkpoint.sh` (warnings + auto-handover, T-136).
+- **Escalation ladder:** 225K ok→warn, 255K warn→urgent, 285K urgent→critical (BLOCK). Context window 300K default (`FW_CONTEXT_WINDOW`).
+- **At critical (or if you see a SESSION WRAPPING UP block):** only wrap-up is allowed. Allowed: git commit/add, `fw handover`, `fw task update`, reading files, Write/Edit to `.context/` `.tasks/` `.claude/`. Blocked: Write/Edit to source files, general Bash.
+- Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp). Check via `./agents/context/checkpoint.sh status`. If no transcript available, fails open (PostToolUse fallback handles it).
+- Wrap up calmly — task files already carry all essential state from continuous capture.
 
 ## Configuration (T-819, T-891)
 
-Framework settings follow a 4-tier resolution: explicit CLI flag > `FW_*` env var > `.framework.yaml` > hardcoded default.
+4-tier resolution: explicit CLI flag > `FW_*` env var > `.framework.yaml` > hardcoded default. Persistent per-project config: `fw config set KEY VALUE` writes to `.framework.yaml`.
 
-Persistent per-project configuration: `fw config set KEY VALUE` writes to `.framework.yaml`.
+Agent-relevant settings:
+- `FW_CONTEXT_WINDOW` (300000) — budget enforcement ceiling
+- `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
+- `FW_SAFE_MODE` (0) — bypass task gate (escape hatch)
+- `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
 
-| Setting | Env Var | Default | Purpose |
-|---------|---------|---------|---------|
-| Context window | `FW_CONTEXT_WINDOW` | `300000` | Token budget enforcement |
-| Dispatch limit | `FW_DISPATCH_LIMIT` | `2` | Agent tool cap before TermLink gate |
-| Watchtower port | `FW_PORT` | `3000` | Web UI listen port |
-| Safe mode | `FW_SAFE_MODE` | `0` | Bypass task gate (escape hatch) |
-| Budget recheck | `FW_BUDGET_RECHECK_INTERVAL` | `5` | Re-read transcript every N calls |
-| Status max age | `FW_BUDGET_STATUS_MAX_AGE` | `90` | Seconds before cached status is stale |
-| Token check | `FW_TOKEN_CHECK_INTERVAL` | `5` | Check tokens every N calls |
-| Handover cooldown | `FW_HANDOVER_COOLDOWN` | `600` | Seconds between auto-handover triggers |
-| Handover push timeout | `FW_HANDOVER_PUSH_TIMEOUT` | `60` | Per-remote `git push` timeout in handover.sh (T-1277, T-1341 bumped 15→60 to accommodate pre-push audit) |
-| Handover total timeout | `FW_HANDOVER_TOTAL_TIMEOUT` | `60` | Wall bound for checkpoint.sh auto-handover invocation (T-1277) |
-| Stale task days | `FW_STALE_TASK_DAYS` | `7` | Days before task is flagged stale |
-| Max restarts | `FW_MAX_RESTARTS` | `5` | Max consecutive auto-restarts |
-| Call warn | `FW_CALL_WARN` | `40` | Tool-call count threshold for warn level (fallback) |
-| Call urgent | `FW_CALL_URGENT` | `60` | Tool-call count threshold for urgent level (fallback) |
-| Call critical | `FW_CALL_CRITICAL` | `80` | Tool-call count threshold for critical level (fallback) |
-| Bash timeout | `FW_BASH_TIMEOUT` | `300000` | Default Bash tool timeout in milliseconds |
-| Keylock timeout | `FW_KEYLOCK_TIMEOUT` | `300` | Per-key lock stale cleanup (seconds) |
-| TermLink worker timeout | `FW_TERMLINK_WORKER_TIMEOUT` | `600` | TermLink worker execution timeout (seconds) |
-| Handover dedup cooldown | `FW_HANDOVER_DEDUP_COOLDOWN` | `300` | Seconds between duplicate handover detection |
-| Inception commit limit | `FW_INCEPTION_COMMIT_LIMIT` | `2` | Max exploration commits before inception decision gate |
-| Consumer scan dirs | `FW_CONSUMER_SCAN_DIRS` | `/opt` | Colon-separated dirs to scan for consumer projects |
-
-Check overrides: `fw config list` (file) or `env | grep FW_` (env).
-Validate: `fw doctor` shows warnings for out-of-range values.
-Watchtower: `/config` page shows all settings with current values and sources (default/env/file).
+Full reference (handover timeouts, bash timeout, stale-task days, call-level fallbacks, inception commit limit, etc.): `fw config list`, `env | grep FW_`, or Watchtower `/config`. `fw doctor` warns on out-of-range values.
 
 ## Sub-Agent Dispatch Protocol
 
@@ -666,17 +431,11 @@ fw dispatch hosts
 
 **How it works:** The local machine serializes the bus envelope as JSON and pipes it via SSH to `fw bus receive` on the remote machine, which stores it in the remote bus channel.
 
-### Dispatch Patterns (from project history)
+### Dispatch Patterns
 
-**Parallel Investigation** (T-059, T-061, T-086): 3-5 Explore agents scan different aspects. Each returns structured findings. Orchestrator synthesizes.
-
-**Parallel Audit** (T-072): 3 agents review different artifact categories. Each returns pass/warn/fail summary. Combined into report.
-
-**Parallel Enrichment** (T-073): N agents each produce one file. MUST write to disk, return only path+summary. Cap at 5 parallel. Use `fw bus post` for formal tracking.
-
-**Sequential TDD** (T-058): Fresh agent per implementation task with review between.
-
-**TermLink Parallel Workers** (T-522): Spawn TermLink sessions for isolated work. Use `termlink interact` for synchronous commands with JSON output, `termlink pty inject/output` for interactive terminal control. Clean up with `termlink signal SIGTERM` + `termlink clean`. Preferred over Task agents for heavy parallel work.
+- **Parallel investigation / audit / enrichment:** 3-5 Task agents scan independent aspects; each writes findings to disk, returns path + summary. Cap at 5 parallel. Use `fw bus post` for formal tracking.
+- **Sequential TDD:** Fresh agent per implementation task with review between.
+- **TermLink parallel workers:** Spawn TermLink sessions for isolated heavy work. `termlink interact --json` for sync commands, `termlink pty inject/output` for interactive control. Cleanup with `termlink signal SIGTERM` + `termlink clean`. Preferred over Task agents when context isolation matters.
 
 ## Agent Behavioral Rules
 
@@ -864,16 +623,7 @@ Optionally prefix the criterion with a confidence marker:
 - `[RUBBER-STAMP]` — mechanical action, no judgment needed (publish, deploy, click)
 - `[REVIEW]` — genuine human judgment required (tone, UX, architecture decisions)
 
-**Example:**
-```
-- [ ] [REVIEW] Voice/tone matches writing style
-  **Steps:**
-  1. Read first 3 paragraphs of the article
-  2. Compare to published posts at blog.dimitrigeelen.com
-  3. Check for anti-patterns: emojis, exclamation marks, "we", hedging
-  **Expected:** Reads like a peer-to-peer governance discussion, not a product pitch
-  **If not:** Note specific paragraphs for agent revision
-```
+**Example:** `- [ ] [REVIEW] Voice/tone matches writing style` with **Steps:** (read N paragraphs, compare to reference, check anti-patterns), **Expected:** (reads like peer discussion, not product pitch), **If not:** (note paragraphs for revision).
 
 **Prerequisite awareness (T-358):** Steps must start from the human's actual environment, not the agent's dev context. If the feature requires deployment, upgrade, or setup before testing (e.g., `brew upgrade fw`, restart a service, push config), include those steps first. Ask: "What must the human do before step 1 is possible?" If the answer isn't "nothing," add prerequisite steps.
 
@@ -907,7 +657,7 @@ When agent ACs are complete and human ACs remain:
 
 **Why this rule exists:** The agent defaults to (a) pasting CLI commands instead of using Watchtower, and (b) leaving the rationale blank for the human to figure out. Both were corrected 3 times in the same session (T-679). The agent has all the evidence — the human needs a recommendation to confirm or override, not a blank form.
 
-**Structural enforcement (T-1259):** `lib/inception.sh do_inception_decide` checks `$CLAUDECODE` and refuses if set to `1` (the agent is running inside Claude Code). The error message points to `fw task review T-XXX` as the correct path. Override flag `--i-am-human` exists for legitimate script/test contexts. Invariant test: `tests/unit/lib_inception.bats` covers blocked + bypass + no-env cases. **Caveat (T-1260, Spike A):** Watchtower's Flask backend inherits `CLAUDECODE=1` when started inside a Claude Code session, so Watchtower-driven `decide` POST also gets blocked. Fix tracked under T-1260 build B1-B3 (`--from-watchtower` flag).
+**Structural enforcement (T-1259, T-1260):** `lib/inception.sh do_inception_decide` refuses when `$CLAUDECODE=1` and points agents at `fw task review T-XXX`. Override flag `--i-am-human` exists for script/test contexts; `--from-watchtower` is the Flask-backend exemption.
 
 ### Hypothesis-Driven Debugging
 When encountering errors or unexpected behavior:
@@ -1009,148 +759,69 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 
 ## Quick Reference
 
-| Action | fw command | Direct |
-|--------|-----------|--------|
-| **Start work** | **`fw work-on "name" --type build`** | Creates task + sets focus + starts work |
-| Resume task | `fw work-on T-XXX` | Sets focus + status to started-work |
-| Create task | `fw task create` | `./agents/task-create/create-task.sh` |
-| Create with tags | `fw task create --tags "ui,api"` | `create-task.sh --tags "..."` |
-| Update task | `fw task update T-XXX --status ...` | `./agents/task-create/update-task.sh T-XXX ...` |
-| Add tags | `fw task update T-XXX --add-tag "ui"` | `update-task.sh T-XXX --add-tag "..."` |
-| Set horizon | `fw task update T-XXX --horizon later` | `update-task.sh T-XXX --horizon later` |
-| Stale tasks | `fw task stale` | _(fw only)_ |
-| Verify Human ACs | `fw verify-acs` | _(fw only)_ |
-| Verify specific | `fw verify-acs T-XXX` | _(fw only)_ |
-| Auto-check (dry run) | `fw verify-acs --auto-check` | _(fw only)_ |
-| Auto-check (execute) | `fw verify-acs --execute` | _(fw only)_ |
-| Stale (custom) | `fw task stale --days 14` | _(fw only)_ |
-| Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
-| Task-aware status | `fw git status` | `./agents/git/git.sh status` |
-| Install git hooks | `fw git install-hooks` | `./agents/git/git.sh install-hooks` |
-| Run all tests | `fw test all` | _(fw only)_ |
-| Unit tests | `fw test unit` | _(bats)_ |
-| Integration tests | `fw test integration` | _(bats)_ |
-| Web tests | `fw test web` | _(pytest)_ |
-| Playwright UI tests | `fw test playwright` | _(pytest + playwright)_ |
-| Lint | `fw test lint` | _(shellcheck)_ |
-| Review for human | `fw task review T-XXX` | _(Watchtower URL + QR)_ |
-| Run audit | `fw audit` | `./agents/audit/audit.sh` |
-| Show gaps | `fw gaps` | _(fw only)_ |
-| Health check | `fw doctor` | _(fw only)_ |
-| View metrics | `fw metrics` | `./metrics.sh` |
-| Predict effort | `fw metrics predict --type build` | _(fw only)_ |
-| Token usage | `fw costs` | _(fw only)_ |
-| Session tokens | `fw costs session` | _(fw only)_ |
-| Current session | `fw costs current` | _(fw only)_ |
-| Config set | `fw config set KEY VALUE` | _(fw only)_ |
-| Config get | `fw config get KEY` | _(fw only)_ |
-| Config list | `fw config list` | _(fw only)_ |
-| Config overrides | `fw config overrides` | _(fw only)_ |
-| Promotion candidates | `fw promote suggest` | _(fw only)_ |
-| Promote learning | `fw promote L-XXX --name "..." --directive D1` | _(fw only)_ |
-| Graduation status | `fw promote status` | _(fw only)_ |
-| Initialize session | `fw context init` | `./agents/context/context.sh init` |
-| Set focus | `fw context focus T-XXX` | `./agents/context/context.sh focus T-XXX` |
-| Context status | `fw context status` | `./agents/context/context.sh status` |
-| Add learning | `fw context add-learning "..."` | `./agents/context/context.sh add-learning "..."` |
-| Diagnose issue | `fw healing diagnose T-XXX` | `./agents/healing/healing.sh diagnose T-XXX` |
-| Resolve issue | `fw healing resolve T-XXX` | `./agents/healing/healing.sh resolve T-XXX` |
-| Show patterns | `fw healing patterns` | `./agents/healing/healing.sh patterns` |
-| Resume state | `fw resume status` | `./agents/resume/resume.sh status` |
-| Sync working memory | `fw resume sync` | `./agents/resume/resume.sh sync` |
-| Session capture | Review `agents/session-capture/AGENT.md` checklist | |
-| Fabric overview | `fw fabric overview` | `./agents/fabric/fabric.sh overview` |
-| Fabric deps | `fw fabric deps <path>` | `./agents/fabric/fabric.sh deps <path>` |
-| Fabric impact | `fw fabric impact <path>` | `./agents/fabric/fabric.sh impact <path>` |
-| Blast radius | `fw fabric blast-radius [ref]` | `./agents/fabric/fabric.sh blast-radius [ref]` |
-| Fabric drift | `fw fabric drift` | `./agents/fabric/fabric.sh drift` |
-| Register component | `fw fabric register <path>` | `./agents/fabric/fabric.sh register <path>` |
-| Post bus result | `fw bus post --task T-XXX --agent TYPE --summary "..."` | |
-| Read bus results | `fw bus read T-XXX [R-NNN]` | |
-| Bus manifest | `fw bus manifest [T-XXX]` | |
-| Clear bus channel | `fw bus clear T-XXX` | |
-| Dispatch to remote | `fw dispatch send --host HOST --task T-XXX --agent TYPE --summary "..."` | |
-| Bus post remote | `fw bus post --remote HOST --task T-XXX --agent TYPE --summary "..."` | |
-| List SSH hosts | `fw dispatch hosts` | |
-| Pickup send | `fw pickup send --type TYPE --summary "..."` | Create pickup envelope |
-| Pickup process | `fw pickup process` | Process inbox envelopes (validate, dedup, create inception) |
-| Pickup status | `fw pickup status` | Show inbox/processed/rejected counts |
-| Pickup list | `fw pickup list` | List inbox contents |
-| Pending register | `fw pending register --command CMD --reason WHY --task T-XXX [--host H]` | Register a blocked cross-project/cross-machine action (T-1268 B1) |
-| Pending list | `fw pending list [--status pending\|resolved\|all]` | List pending-updates registry entries |
-| Pending resolve | `fw pending resolve U-NNN [--note "..."]` | Mark a pending entry as resolved |
-| Pending remind | `fw pending remind` | Ping for entries older than `FW_PENDING_REMIND_STALE_HOURS` (default 24h); fires `fw_notify` when `NTFY_ENABLED=true` |
-| Notify status | `fw notify status` | Show notification configuration |
-| Notify enable | `fw notify enable` | Enable push notifications |
-| Notify disable | `fw notify disable` | Disable push notifications |
-| Notify test | `fw notify test` | Send a test notification |
-| Notify setup | `fw notify setup` | Setup guide and prerequisite check |
-| Cron generate | `fw cron generate` | Regenerate crontab from registry YAML |
-| Cron status | `fw cron status` | Show registry status (jobs, active/paused) |
-| Cron list | `fw cron list` | Alias for status |
-| Cron run | `fw cron run <job-id>` | Run a job immediately |
-| Cron pause | `fw cron pause <job-id>` | Pause a job (comment out in crontab) |
-| Cron resume | `fw cron resume <job-id>` | Resume a paused job |
-| Upgrade consumer | `fw upgrade [dir]` | Sync shims, hooks, version pin to consumer project (does NOT copy framework code) |
-| Generate handover | `fw handover` | `./agents/handover/handover.sh` |
-| Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
-| Read last handover | `cat .context/handovers/LATEST.md` | |
-| **Start inception** | **`fw inception start "name"`** | Creates inception task + sets focus |
-| Inception status | `fw inception status` | Lists active inception tasks |
-| Inception decide | `fw inception decide T-XXX go` | Records go/no-go with rationale |
-| Add assumption | `fw assumption add "..." --task T-XXX` | Register assumption |
-| Validate assumption | `fw assumption validate A-XXX --evidence "..."` | Mark validated |
-| List assumptions | `fw assumption list` | Show all by status |
-| Tier 0 approve | `fw tier0 approve` | Approve a blocked destructive command |
-| Tier 0 status | `fw tier0 status` | Show Tier 0 enforcement status |
-| TermLink check | `fw termlink check` | Verify TermLink installation |
-| TermLink spawn | `fw termlink spawn --task T-XXX` | Open tagged terminal session |
-| TermLink exec | `fw termlink exec <session> <cmd>` | Run command in session (JSON output) |
-| TermLink dispatch | `fw termlink dispatch --name N --prompt P [--project DIR] [--model M]` | Spawn claude -p worker in terminal |
-| TermLink wait | `fw termlink wait --name N` | Wait for worker completion |
-| TermLink status | `fw termlink status` | List active TermLink sessions |
-| TermLink cleanup | `fw termlink cleanup` | Deregister sessions, close windows |
-| TermLink result | `fw termlink result <name>` | Read worker result file |
-| Approvals queue | `fw approvals` | Approval queue management |
-| Ask knowledge | `fw ask` | Query project knowledge (RAG) |
-| Build from task | `fw build` | Generate build plan from task ACs |
-| Consolidate | `fw consolidate scan` | Scan for consolidation opportunities |
-| View decisions | `fw decisions` | Show all recorded decisions |
-| Deploy | `fw deploy scaffold` | Ring20 deployment management |
-| Docs lookup | `fw docs` | Show component documentation |
-| Enforcement | `fw enforcement baseline` | Enforcement baseline management |
-| Fix-learned | `fw fix-learned` | Record bugfix learning |
-| Harvest learnings | `fw harvest` | Cross-project learning harvest |
-| Hook management | `fw hook` | Run hook script directly |
-| View learnings | `fw learnings` | Show all captured learnings |
-| MCP management | `fw mcp` | MCP server process management |
-| Quick note | `fw note` | Lightweight observation capture |
-| Onboarding | `fw onboarding status` | Onboarding state management |
-| Plugin audit | `fw plugin-audit` | Check plugin task-awareness |
-| View practices | `fw practices` | Show active practices |
-| Preflight check | `fw preflight` | Dependency check before operations |
-| Push all remotes | `fw push` | Push to all configured remotes |
-| Recall knowledge | `fw recall` | Semantic search in project memory |
-| Release tag | `fw release` | Cut tag, push, create GitHub Release |
-| Release status | `fw release status` | Show current tag and remote state |
-| Scan artifacts | `fw scan` | Scan project artifacts |
-| Search | `fw search` | Full-text search across project |
-| Self audit | `fw self-audit` | Internal audit consistency check |
-| Self test | `fw self-test` | Run framework self-tests |
-| Start Watchtower | `fw serve` | Start Watchtower web UI |
-| Watchtower port | `fw watchtower port` | Print current port (triple-file SSOT; T-1380) |
-| Watchtower url | `fw watchtower url` | Print current URL (triple-file SSOT; T-1380) |
-| Watchtower status | `fw watchtower status` | Show Watchtower state |
-| Test onboarding | `fw test-onboarding` | Verify onboarding flow |
-| View timeline | `fw timeline` | Show session timeline |
-| Traceability | `fw traceability baseline` | Git traceability management |
-| Update framework | `fw update` | Update framework to latest version |
-| Upstream report | `fw upstream` | Report issues to upstream repo |
-| Validate init | `fw validate-init` | Verify fw init output correctness |
-| Vendor framework | `fw vendor` | Copy framework for full isolation |
-| Prompt register | `fw prompt list` | Reusable agent-prompt register (create/list/show/copy/edit/delete/backfill-qid) |
-| **Auto-restart** | **`claude-fw [args...]`** | Wrapper: runs claude, auto-restarts on handover signal |
-| No auto-restart | `claude-fw --no-restart [args...]` | Wrapper with auto-restart disabled |
+Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the governance-critical verbs the agent uses reflexively — not every subcommand.
+
+**Starting and managing work:**
+- `fw work-on "name" --type build` — create task + set focus + start (the one-step task gate)
+- `fw work-on T-XXX` — resume existing task
+- `fw task create` / `fw task update T-XXX --status ...` / `fw task show T-XXX` / `fw task list`
+- `fw task update T-XXX --add-tag "ui"` / `--horizon later`
+- `fw task stale [--days N]` — list stale tasks
+- `fw task review T-XXX` — hand a task to the human via Watchtower (T-679, MANDATORY for human approvals)
+- `fw verify-acs [T-XXX] [--auto-check|--execute]` — check Human ACs
+
+**Inceptions and decisions:**
+- `fw inception start "name"` / `fw inception status` / `fw inception decide T-XXX go|no-go|defer --rationale "..."`
+- `fw assumption add "..." --task T-XXX` / `fw assumption validate A-XXX --evidence "..."` / `fw assumption list`
+
+**Context and memory:**
+- `fw context init` (session start) / `fw context focus T-XXX` / `fw context status`
+- `fw context add-learning "..." --task T-XXX --source P-001`
+- `fw resume status|sync|quick` — post-compaction recovery
+- `fw healing diagnose|resolve T-XXX` / `fw healing patterns`
+
+**Commits, audits, health:**
+- `fw git commit -m "T-XXX: ..."` / `fw git status` / `fw git install-hooks`
+- `fw audit` / `fw doctor` / `fw gaps` / `fw metrics [predict --type build]`
+- `fw test all|unit|integration|web|playwright|lint`
+
+**Handovers and session end:**
+- `fw handover [--commit]` / `fw handover --checkpoint` (mid-session)
+- `fw push` — push to all remotes
+- `fw costs [session|current]` — token usage
+
+**Fabric (before modifying source):**
+- `fw fabric deps <path>` / `fw fabric impact <path>` / `fw fabric blast-radius [ref]`
+- `fw fabric overview` / `fw fabric drift` / `fw fabric register <path>`
+
+**Dispatch and cross-project:**
+- `fw termlink check|spawn|exec|dispatch|status|cleanup|wait|result` (see TermLink section)
+- `fw bus post|read|manifest|clear --task T-XXX [--remote HOST]`
+- `fw dispatch send --host HOST ...` / `fw dispatch hosts`
+- `fw pickup send|process|status|list`
+- `fw pending register|list|resolve|remind` — blocked cross-project actions
+
+**Tier 0, approvals, notifications:**
+- `fw tier0 approve` / `fw tier0 status`
+- `fw approvals` — approval queue
+- `fw notify setup|status|enable|disable|test`
+
+**Scheduling and config:**
+- `fw cron generate|status|list|run|pause|resume <job-id>`
+- `fw config set|get|list|overrides` — persistent `.framework.yaml` settings
+
+**Knowledge and navigation:**
+- `fw decisions` / `fw learnings` / `fw practices` / `fw timeline`
+- `fw ask "query"` / `fw recall "query"` / `fw search "term"` / `fw docs`
+
+**Setup and upgrade:**
+- `fw init [dir]` / `fw upgrade [dir]` / `fw update` / `fw vendor`
+- `fw serve [--port N]` — start Watchtower
+- `fw watchtower port|url|status`
+
+**Auto-restart wrapper:** `claude-fw [args...]` (auto-restarts on handover signal) / `claude-fw --no-restart` to opt out.
+
+For rarely-used commands (harvest, promote, consolidate, release, self-test, validate-init, plugin-audit, upstream, enforcement, deploy, prompt, note, scan, mcp, build, fix-learned, onboarding, self-audit, test-onboarding, traceability), run `fw help` or `fw <cmd>`.
 
 ## TermLink Integration (T-503)
 
@@ -1214,16 +885,6 @@ When communicating with agents on other machines via TermLink remote, choose the
 - **Always cleanup before session end** — `fw termlink cleanup`
 - **Max 5 parallel workers** — same limit as sub-agent dispatch protocol
 - **Leave 40K tokens headroom** before dispatching workers
-
-### Phase Roadmap
-
-| Phase | Scope | Status |
-|-------|-------|--------|
-| 0 | fw doctor + agent wrapper + fw route + CLAUDE.md | Done (T-503) |
-| 1 | Self-test via termlink interact | Future |
-| 2 | Parallel dispatch (replace Agent tool mesh) | Future |
-| 3 | Remote control + observation | Future |
-| 4 | Cross-machine coordination | Future |
 
 ## Auto-Restart (T-179)
 
