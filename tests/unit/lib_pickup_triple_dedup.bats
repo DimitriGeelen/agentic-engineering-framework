@@ -162,3 +162,39 @@ EOF
     # Output should NOT mention AUTO-DEFER
     [[ "$output" != *"AUTO-DEFER"* ]]
 }
+
+# T-1426 / B3: operator list surface for auto-deferred envelopes
+
+@test "do_pickup auto-deferred: empty directory shows explicit empty message" {
+    run do_pickup auto-deferred
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Empty — no envelopes auto-deferred"* ]]
+}
+
+@test "do_pickup auto-deferred: lists envelope with blocking task, reason, timestamp" {
+    _seed_active_task "T-900" "bug-report" "termlink" "T-1125"
+    local env="$PICKUP_INBOX/P-070-dup.yaml"
+    _envelope "$env" "bug-report" "termlink" "T-1125"
+
+    # Drive the real process path (not dry-run) to land breadcrumb + file
+    pickup_process_one "$env" false
+
+    run do_pickup auto-deferred
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"P-070-dup.yaml"* ]]
+    [[ "$output" == *"blocked-by=T-900"* ]]
+    [[ "$output" == *"reason=triple-dedup"* ]]
+    # Breadcrumb sidecar must NOT appear as a separate list entry
+    [[ "$output" != *"P-070-dup.yaml.breadcrumb.yaml"* ]]
+}
+
+@test "do_pickup status: counts auto-deferred envelopes separately" {
+    _seed_active_task "T-900" "bug-report" "termlink" "T-1125"
+    local env="$PICKUP_INBOX/P-080-dup.yaml"
+    _envelope "$env" "bug-report" "termlink" "T-1125"
+    pickup_process_one "$env" false
+
+    run do_pickup status
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Auto-deferred: 1"* ]]
+}

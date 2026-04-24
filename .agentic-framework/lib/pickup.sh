@@ -508,10 +508,11 @@ do_pickup() {
             echo -e "${BOLD}fw pickup${NC} — Cross-project pickup pipeline"
             echo ""
             echo "Commands:"
-            echo "  send        Create and deliver a pickup envelope"
-            echo "  process     Process all envelopes in the inbox"
-            echo "  status      Show inbox/processed/rejected counts"
-            echo "  list        List inbox contents"
+            echo "  send            Create and deliver a pickup envelope"
+            echo "  process         Process all envelopes in the inbox"
+            echo "  status          Show inbox/processed/rejected/auto-deferred counts"
+            echo "  list            List inbox contents"
+            echo "  auto-deferred   List auto-deferred envelopes with their blocking tasks (G-059)"
             echo ""
             echo "Options:"
             echo "  --dry-run   Show what would be processed without acting"
@@ -553,15 +554,20 @@ do_pickup() {
             ;;
         status)
             pickup_ensure_dirs
-            local inbox_count processed_count rejected_count
-            inbox_count=$(find "$PICKUP_INBOX" -name "*.yaml" -o -name "*.yml" 2>/dev/null | wc -l)
-            processed_count=$(find "$PICKUP_PROCESSED" -name "*.yaml" -o -name "*.yml" 2>/dev/null | wc -l)
-            rejected_count=$(find "$PICKUP_REJECTED" -name "*.yaml" -o -name "*.yml" 2>/dev/null | wc -l)
+            mkdir -p "$PICKUP_AUTO_DEFERRED" 2>/dev/null
+            local inbox_count processed_count rejected_count deferred_count
+            inbox_count=$(find "$PICKUP_INBOX" -maxdepth 1 \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null | wc -l)
+            processed_count=$(find "$PICKUP_PROCESSED" -maxdepth 1 \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null | wc -l)
+            rejected_count=$(find "$PICKUP_REJECTED" -maxdepth 1 \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null | wc -l)
+            # Auto-deferred envelopes are .yaml but NOT .breadcrumb.yaml
+            deferred_count=$(find "$PICKUP_AUTO_DEFERRED" -maxdepth 1 \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null \
+                | grep -v '\.breadcrumb\.yaml$' | grep -c . || true)
 
             echo -e "${BOLD}Pickup pipeline status${NC}"
-            echo "  Inbox:     $inbox_count"
-            echo "  Processed: $processed_count"
-            echo "  Rejected:  $rejected_count"
+            echo "  Inbox:         $inbox_count"
+            echo "  Processed:     $processed_count"
+            echo "  Rejected:      $rejected_count"
+            echo "  Auto-deferred: $deferred_count"
             ;;
         list)
             pickup_ensure_dirs
@@ -579,6 +585,51 @@ do_pickup() {
             if [ "$found" = false ]; then
                 echo "  Inbox is empty"
             fi
+            ;;
+        auto-deferred)
+            # Optional sub-subcommand: default is 'list'
+            local action="${1:-list}"
+            case "$action" in
+                list|"")
+                    mkdir -p "$PICKUP_AUTO_DEFERRED" 2>/dev/null
+                    local f found=false
+                    for f in "$PICKUP_AUTO_DEFERRED"/*.yaml "$PICKUP_AUTO_DEFERRED"/*.yml; do
+                        [ -f "$f" ] || continue
+                        # Skip breadcrumb sidecars — we'll print them alongside their envelope
+                        case "$(basename "$f")" in *.breadcrumb.yaml) continue ;; esac
+                        found=true
+                        local crumb="${f}.breadcrumb.yaml"
+                        local blocking reason deferred_at
+                        if [ -f "$crumb" ]; then
+                            blocking=$(grep "^blocking_task:" "$crumb" | head -1 | sed 's/^blocking_task:[[:space:]]*//')
+                            reason=$(grep "^reason:" "$crumb" | head -1 | sed 's/^reason:[[:space:]]*//')
+                            deferred_at=$(grep "^deferred_at:" "$crumb" | head -1 | sed 's/^deferred_at:[[:space:]]*//')
+                        fi
+                        printf "  %-40s  blocked-by=%-8s  reason=%-14s  at=%s\n" \
+                            "$(basename "$f")" \
+                            "${blocking:-?}" \
+                            "${reason:-?}" \
+                            "${deferred_at:-?}"
+                    done
+                    if [ "$found" = false ]; then
+                        echo "  Empty — no envelopes auto-deferred"
+                    fi
+                    ;;
+                -h|--help)
+                    echo -e "${BOLD}fw pickup auto-deferred${NC} — List envelopes routed to auto-deferred/"
+                    echo ""
+                    echo "Usage: fw pickup auto-deferred [list]"
+                    echo ""
+                    echo "Shows each envelope with the local T-XXX that blocked it (triple-dedup),"
+                    echo "the defer reason, and the timestamp. Breadcrumbs live next to the envelope"
+                    echo "as <envelope>.breadcrumb.yaml."
+                    ;;
+                *)
+                    echo -e "${RED}Unknown auto-deferred action: $action${NC}" >&2
+                    echo "Use: fw pickup auto-deferred [list]" >&2
+                    return 1
+                    ;;
+            esac
             ;;
         *)
             echo -e "${RED}Unknown pickup command: $subcmd${NC}" >&2
