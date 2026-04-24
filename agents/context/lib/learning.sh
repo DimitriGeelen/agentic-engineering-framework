@@ -96,6 +96,15 @@ EOF
 
     mv "$temp_file" "$learnings_file"
 
+    # T-1168: publish learning to bus (one-way, non-fatal).
+    # Shell flow stays safe — publisher silently no-ops on any failure.
+    local publisher="${FRAMEWORK_ROOT:-}/lib/publish-learning-to-bus.sh"
+    if [ -x "$publisher" ]; then
+        L_ID="$id" L_LEARNING="$learning" L_TASK="$task" \
+            L_SOURCE="$source" L_DATE="$date" \
+            "$publisher" 2>/dev/null || true
+    fi
+
     echo -e "${GREEN}Learning added: $id${NC}"
     echo "  $learning"
     [ -n "$task" ] && echo "  Task: $task"
