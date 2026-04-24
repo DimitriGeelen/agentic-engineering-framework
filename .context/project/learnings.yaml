@@ -1980,3 +1980,10 @@ learnings:
   date: 2026-04-24
   context: Added via context agent
   application: TBD
+- id: L-256
+  learning: "bats tests that invoke hooks writing to .context/ (check-tier0.sh, observe, handover) MUST export PROJECT_ROOT=TEST_TEMP_DIR in setup() — otherwise they pollute the real project state. Same class as L-227 (observe.bats) and L-009 (handover.bats). Discovered when T-1427's test leaked 3 real pending Tier 0 approvals into .context/approvals/."
+  source: P-001
+  task: T-1428
+  date: 2026-04-24
+  context: Added via context agent
+  application: TBD

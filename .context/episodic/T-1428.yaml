@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1428: fix check-tier0 bats test leaks approval files into real .context/approvals/
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:05:26Z
+# ============================================================================
+
+task_id: T-1428
+task_name: "fix check-tier0 bats test leaks approval files into real .context/approvals/"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T15:04:25Z
+completed: 2026-04-24T15:05:21Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Test exports `PROJECT_ROOT=\"$TEST_TEMP_DIR\"` in `setup()` so the hook writes to the sandbox"
+  - "`tests/unit/check_tier0_comment_stripping.bats` still passes (all 8 tests)"
+  - "Running the bats file does NOT create new `pending-*.yaml` in real `.context/approvals/`"
+  - "3 leaked approval files from the previous run are deleted"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1428-fix-check-tier0-bats-test-leaks-approval.md
+generated_by: context-agent-hybrid

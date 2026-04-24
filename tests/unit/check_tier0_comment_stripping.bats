@@ -11,6 +11,11 @@ load ../test_helper
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
+    # T-1428: redirect PROJECT_ROOT so the hook writes pending-*.yaml into the
+    # sandbox instead of the real .context/approvals/ directory. Without this,
+    # every "blocked" test case leaks a phantom pending Tier 0 approval.
+    export PROJECT_ROOT="$TEST_TEMP_DIR"
+    mkdir -p "$TEST_TEMP_DIR/.context/approvals" "$TEST_TEMP_DIR/.context/working"
     HOOK="$FRAMEWORK_ROOT/agents/context/check-tier0.sh"
     [ -x "$HOOK" ] || skip "check-tier0.sh not executable"
 }
