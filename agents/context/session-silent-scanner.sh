@@ -23,6 +23,13 @@ THRESHOLD_MIN=${SESSION_SILENT_THRESHOLD_MIN:-30}
 # DRY_RUN defaults to 1 (safe). Cron stanza opts in with DRY_RUN=0.
 # A non-dry run triggers fw handover (which commits + pushes) — destructive.
 DRY_RUN=${DRY_RUN:-1}
+# T-1222 / G-016: cap per-invocation to prevent runaway handover storm.
+# A large backlog of ancient agent-acompact-* sessions would otherwise spawn
+# N git commits + pushes serially. Cap at 10/run; re-run to continue.
+MAX_RECOVERIES=${SESSION_SILENT_MAX_RECOVERIES:-10}
+# T-1222 / G-016: age ceiling. Sessions older than this carry zero useful
+# context — a banner handover is worthless. Default 7 days.
+MAX_AGE_DAYS=${SESSION_SILENT_MAX_AGE_DAYS:-7}
 
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 WORKING_DIR="${PROJECT_ROOT}/.context/working"
@@ -33,12 +40,14 @@ mkdir -p "$WORKING_DIR" 2>/dev/null || true
 
 CLAUDE_PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
 
-python3 - "$THRESHOLD_MIN" "$PROJECT_ROOT" "$HANDOVERS_DIR" "$LOG_FILE" "$CLAUDE_PROJECTS_DIR" "$DRY_RUN" <<'PYEOF'
+python3 - "$THRESHOLD_MIN" "$PROJECT_ROOT" "$HANDOVERS_DIR" "$LOG_FILE" "$CLAUDE_PROJECTS_DIR" "$DRY_RUN" "$MAX_RECOVERIES" "$MAX_AGE_DAYS" <<'PYEOF'
 import sys, os, time, pathlib, subprocess, json, re
 
-threshold_s, project_root, handovers_dir_s, log_p, claude_projects_s, dry_run_s = sys.argv[1:]
+threshold_s, project_root, handovers_dir_s, log_p, claude_projects_s, dry_run_s, max_recoveries_s, max_age_days_s = sys.argv[1:]
 dry_run = dry_run_s != "0"
 threshold_secs = int(threshold_s) * 60
+max_recoveries = int(max_recoveries_s)
+max_age_secs = int(max_age_days_s) * 86400
 project_root_p = pathlib.Path(project_root)
 handovers_dir = pathlib.Path(handovers_dir_s)
 claude_projects = pathlib.Path(claude_projects_s)
@@ -73,6 +82,7 @@ log(f"scan-start known-handovers={len(known_sessions)} threshold-min={threshold_
 
 now = time.time()
 candidates = []
+skipped_too_old = 0
 for jsonl in claude_projects.rglob("*.jsonl"):
     try:
         mtime = jsonl.stat().st_mtime
@@ -84,15 +94,25 @@ for jsonl in claude_projects.rglob("*.jsonl"):
     session_id = jsonl.stem
     if session_id in known_sessions:
         continue
+    # T-1222 / G-016: age ceiling — ancient sessions' banner handovers are noise.
+    if age > max_age_secs:
+        skipped_too_old += 1
+        log(f"skip-too-old session={session_id} age-min={int(age/60)} transcript={jsonl}")
+        continue
     candidates.append((jsonl, session_id, age))
+
+if skipped_too_old:
+    log(f"skip-too-old-total count={skipped_too_old} max-age-days={max_age_days_s}")
 
 if not candidates:
     log(f"scan-end no-recoveries dry_run={dry_run}")
     sys.exit(0)
 
 if dry_run:
-    for jsonl, session_id, age in candidates:
+    for jsonl, session_id, age in candidates[:max_recoveries]:
         log(f"DRY-RUN would-recover session={session_id} age-min={int(age/60)} transcript={jsonl}")
+    if len(candidates) > max_recoveries:
+        log(f"DRY-RUN cap-would-hit candidates={len(candidates)} max={max_recoveries} remaining={len(candidates)-max_recoveries}")
     log(f"scan-end candidates={len(candidates)} dry_run=1 (set DRY_RUN=0 to trigger fw handover)")
     sys.exit(0)
 
@@ -103,6 +123,11 @@ if not os.path.exists(fw_bin):
     sys.exit(0)
 
 for jsonl, session_id, age in candidates:
+    # T-1222 / G-016: per-invocation cap. Re-run to drain remaining backlog.
+    if recovered >= max_recoveries:
+        remaining = len(candidates) - recovered
+        log(f"cap-reached N={recovered} remaining={remaining} max={max_recoveries}")
+        break
     age_min = int(age / 60)
     env = os.environ.copy()
     env["RECOVERED"] = "1"
