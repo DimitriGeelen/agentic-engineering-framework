@@ -1229,11 +1229,11 @@ concerns:
   trigger_event: "2026-04-17: 3 consecutive fleet-doctor failures on .121 with class auth-mismatch. 2026-04-19: .121 widening + .122 third rotation observed, both confirmed via direct test from .107"
   detection_lag_days: "1"
   what_works_now: "Fleet doctor correctly classifies the error and emits a hint. T-1052 has already recorded an isolated learning. T-1326 inception filed this session with GO recommendation for T-1054 + fw doctor rotation-detection check."
-  what_remains: "Operator must refresh client secrets for BOTH .121 and .122. Long-term fix: T-1054 (termlink fleet reauth) lands one-command heal; T-1326 build sibling adds doctor rotation-detection."
+  what_remains: "ring20-dashboard (.121) still auth-mismatch (5 consecutive failures since 2026-04-23T17:17Z per .fleet-failure-state.json — class auth-mismatch). ring20-management (.122) now healthy (0 consecutive failures, last_failure_at=null). Long-term fix: T-1054 (termlink fleet reauth) lands one-command heal; T-1326 build sibling adds doctor rotation-detection."
   mitigation_candidate: "Ship T-1054 (fleet reauth Tier-1), T-1055 (fleet reauth --bootstrap-from, Tier-2), and T-1326 doctor rotation-detection."
   status: watching
   created: 2026-04-17
-  last_reviewed: 2026-04-19
+  last_reviewed: 2026-04-24
   related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055, T-1326]
 
 - id: G-046
@@ -1469,3 +1469,20 @@ concerns:
   related_tasks: [T-1404, T-1322, T-954, T-1409, T-1410, T-1411, T-1412, T-1413, T-1414]
   created: 2026-04-23
   last_reviewed: 2026-04-23
+
+- id: G-059
+  type: gap
+  title: "Pickup pipeline semantic dedup blind to cross-project re-sends — envelope-hash dedup misses 'same bug, different envelope bytes' from external sources"
+  description: "Pickup dedup (.context/pickup/dedup.log) hashes envelope bytes. When a remote project (e.g. termlink) re-sends the same bug/feature/learning envelope with a different timestamp/session_id, the hash differs and pickup-process creates a second inception task with identical semantic content. Evidence from this session: 6 duplicate pairs observed (T-1311 ↔ T-1345, T-1319 ↔ T-1348, T-1321 ↔ T-1349, T-1302 ↔ T-1352, T-1305 ↔ T-1353, T-1314 ↔ T-1351) — all source 'termlink', created 2026-04-18 and 2026-04-20, both pointing to identical source_task (e.g. both → termlink T-1071). Net effect: 6 extra inception reviews in the human queue for zero new signal. Distinct from G-046 (self-pickup re-ingest) which gates on source_project==local; G-059 triggers when source_project is external but content is semantically identical to an already-ingested envelope."
+  spec_reference: "agents/pickup/pickup-process.sh, lib/pickup.sh, .context/pickup/dedup.log, .tasks/active/T-{1311,1345,1319,1348,1321,1349,1302,1352,1305,1353,1314,1351}-*.md"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-04-24: Pickup review queue inspection surfaced 6 duplicate pairs from termlink, all same source_task re-ingested 2 days apart."
+  detection_lag_days: "4"
+  what_works_now: "Envelope-hash dedup correctly catches byte-identical replays. Self-pickup gate (G-046 / T-1339) correctly skips re-ingest of own completed work. Human can DEFER duplicates manually via Watchtower once queue is triaged."
+  what_remains: "Dedup should additionally key on (source_project, source_task_id, type) — if that triple already has an active/completed inception locally, route the new envelope to auto-deferred/ or merge-into-existing rather than creating T-XXX+N."
+  mitigation_candidate: "Extend pickup_process_one in lib/pickup.sh: after envelope-hash lookup, also scan .tasks/{active,completed}/ for an existing task referencing the same (source_project, source_task) tuple (already recorded in task body as 'source: <project> <T-XXX>'). If present, skip + log to .context/pickup/auto-deferred/cross-project-duplicate/ with a pointer to the canonical target."
+  status: watching
+  created: 2026-04-24
+  last_reviewed: 2026-04-24
+  related_tasks: [T-1311, T-1345, T-1319, T-1348, T-1302, T-1352, T-1305, T-1353, T-1314, T-1351, T-1321, T-1349, T-1339]
