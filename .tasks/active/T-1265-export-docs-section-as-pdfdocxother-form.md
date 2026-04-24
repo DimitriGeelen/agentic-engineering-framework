@@ -61,12 +61,12 @@ Users want to export the Watchtower `/docs` section content (generated component
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -117,9 +117,36 @@ Users want to export the Watchtower `/docs` section content (generated component
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER — demand has not materialised
+
+Rationale: The exploration plan is well-scoped (5 spikes A–E for content survey, tooling eval, styling fidelity, distribution model, scope audit) but none of the spikes have been executed. More importantly, in the 45+ days since capture (2026-03-05), no user has requested a specific document export, and no downstream integration (compliance handoff, external collaborator share) has cited `/docs` export as a blocker. Watchtower already serves raw `.md` files via `/file/…`, which covers the archival/offline case for technical users. Implementing the full pipeline (pandoc toolchain, per-page export button, CLI bulk mode, styling fidelity for diagrams/code blocks) is multi-session work that would be speculative today. DEFER until a concrete use case files a sibling task with named user + artefact.
+
+Evidence:
+- Task captured 2026-03-05 (49 days at time of review); no follow-up activity, no related_tasks linking in.
+- Watchtower `/docs` pages already render component cards, articles, and reports as HTML — no user complaint recorded that HTML is insufficient.
+- Raw markdown download exists via `/file/docs/…` endpoints (served through `web/shared.py`) — archival use case is already served.
+- No spike executed: A (content-shape survey), B (tooling eval), C (styling fidelity), D (distribution model), E (scope audit) all in "planned" state.
+- Scope fence is crisp (IN: 3 doc types × PDF+DOCX; OUT: epub/bulk/task-files) so the work IS well-shaped — this is not a "needs more scoping" DEFER, it is a "needs demand" DEFER. Re-open when the first real request arrives.
+
+**Date**: 2026-04-24T09:24:40Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-24T09:24:40Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER — demand has not materialised
+
+Rationale: The exploration plan is well-scoped (5 spikes A–E for content survey, tooling eval, styling fidelity, distribution model, scope audit) but none of the spikes have been executed. More importantly, in the 45+ days since capture (2026-03-05), no user has requested a specific document export, and no downstream integration (compliance handoff, external collaborator share) has cited `/docs` export as a blocker. Watchtower already serves raw `.md` files via `/file/…`, which covers the archival/offline case for technical users. Implementing the full pipeline (pandoc toolchain, per-page export button, CLI bulk mode, styling fidelity for diagrams/code blocks) is multi-session work that would be speculative today. DEFER until a concrete use case files a sibling task with named user + artefact.
+
+Evidence:
+- Task captured 2026-03-05 (49 days at time of review); no follow-up activity, no related_tasks linking in.
+- Watchtower `/docs` pages already render component cards, articles, and reports as HTML — no user complaint recorded that HTML is insufficient.
+- Raw markdown download exists via `/file/docs/…` endpoints (served through `web/shared.py`) — archival use case is already served.
+- No spike executed: A (content-shape survey), B (tooling eval), C (styling fidelity), D (distribution model), E (scope audit) all in "planned" state.
+- Scope fence is crisp (IN: 3 doc types × PDF+DOCX; OUT: epub/bulk/task-files) so the work IS well-shaped — this is not a "needs more scoping" DEFER, it is a "needs demand" DEFER. Re-open when the first real request arrives.

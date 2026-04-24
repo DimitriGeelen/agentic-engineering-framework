@@ -1,0 +1,128 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1063: MCP-level governance — task-gate checks in TermLink MCP tools
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T09:15:11Z
+# ============================================================================
+
+task_id: T-1063
+task_name: "MCP-level governance — task-gate checks in TermLink MCP tools"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-08T05:32:10Z
+completed: 2026-04-24T09:15:08Z
+duration_days: 16
+updates_count: 4
+first_commit: 2026-04-08T07:32:49+02:00
+last_commit: 2026-04-08T10:26:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1061: Create follow-up build tasks from inception GO — phases 1-5. T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies. Update with TermLink dispatch results — MCP governance implemented. Framework-side integration — enable MCP task governance. Version bump to 1.5.90 — MCP governance + orchestrator routing. Document --project flag in fw termlink dispatch help. Add --project flag to dispatch quick reference in CLAUDE.md. T-1061: Version bump to 1.5.91 — all 5 inception phases executed. Write .termlink-task on focus change for MCP governance. Real-world verification — MCP governance blocks without task_id
+
+# Key outcomes
+outcomes:
+  - "MCP tools `termlink_exec`, `termlink_spawn`, `termlink_dispatch` accept optional `task_id` parameter"
+  - "When task governance is enabled (env var or config), tools without `task_id` return structured error"
+  - "Governance mode is opt-in (default: no enforcement) to avoid breaking existing usage"
+  - "Task context passed through to session tags for observability"
+  - "Existing tests still pass (`cargo test`)"
+  - "New tests for governance gate: with task_id passes, without task_id in strict mode fails"
+  - "`termlink_interact` also governed (bonus — 4 tools total)"
+  - "[REVIEW] Governance integration design review — opt-in model is appropriate, error messages are actionable"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Environment variable `TERMLINK_TASK_GOVERNANCE=1`"
+    rationale: "Env vars are standard, no config file dependency, easy to set per-session or globally"
+    alternatives_rejected: ["Config file (adds TermLink config schema dependency), always-on (breaks existing usage)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/focus.sh"
+  - "agents/termlink/termlink.sh"
+  - "CLAUDE.md"
+  - ".context/audits/2026-04-07.yaml"
+  - ".context/audits/2026-04-08.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-1061.yaml"
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.dispatch-approval"
+  - ".context/working/focus.yaml"
+  - ".context/working/.reviewed-T-1061"
+  - ".context/working/.reviewed-T-1062"
+  - ".context/working/.reviewed-T-1063"
+  - ".context/working/.reviewed-T-1064"
+  - ".context/working/.reviewed-T-1065"
+  - ".context/working/.reviewed-T-1066"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval"
+  - ".context/working/.tier0-approval.pending"
+  - ".gitignore"
+  - ".mcp.json"
+  - ".tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md"
+  - ".tasks/active/T-1063-mcp-level-governance--task-gate-checks-i.md"
+  - ".tasks/active/T-1064-extend-orchestratorroute-with-task-type-.md"
+  - ".tasks/active/T-1065-multi-llm-routing--task-aware-model-sele.md"
+  - ".tasks/active/T-1066-data-plane-governance-subscriber--post-h.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-08T07:32:49"
+    action: "T-1061: Create follow-up build tasks from inception GO — phases 1-5"
+  - time: "2026-04-08T07:45:55"
+    action: "T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies"
+  - time: "2026-04-08T07:56:25"
+    action: "T-1063: Update with TermLink dispatch results — MCP governance implemented"
+  - time: "2026-04-08T08:53:45"
+    action: "T-1063: Framework-side integration — enable MCP task governance"
+  - time: "2026-04-08T08:56:25"
+    action: "T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing"
+  - time: "2026-04-08T08:57:05"
+    action: "T-1063: Document --project flag in fw termlink dispatch help"
+  - time: "2026-04-08T08:57:56"
+    action: "T-1063: Add --project flag to dispatch quick reference in CLAUDE.md"
+  - time: "2026-04-08T09:13:44"
+    action: "T-1061: Version bump to 1.5.91 — all 5 inception phases executed"
+  - time: "2026-04-08T09:15:29"
+    action: "T-1063: Write .termlink-task on focus change for MCP governance"
+  - time: "2026-04-08T10:26:51"
+    action: "T-1063: Real-world verification — MCP governance blocks without task_id"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 10 commit(s), 23262 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, governance, mcp]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 23262
+  commits: 10
+  files_changed: 32
+  lines_added: 9060
+  lines_removed: 7690
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1063-mcp-level-governance--task-gate-checks-i.md
+generated_by: context-agent-hybrid

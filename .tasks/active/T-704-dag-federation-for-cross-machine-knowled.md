@@ -45,12 +45,12 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read the research artifact and recommendation in this task
   2. Evaluate go/no-go criteria against findings
@@ -100,7 +100,18 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER — speculative pattern harvest, no current need.
+
+Rationale: Captured from T-697 pattern harvest (KCP pattern #9) as a "potentially relevant for TermLink multi-agent" note. No concrete cross-machine knowledge graph problem exists today — TermLink handles its own cross-machine coordination via hub/secret and the framework uses per-project isolation. Re-evaluate when: (a) cross-machine knowledge sharing becomes a friction point, or (b) a concrete multi-agent federation use case emerges.
+
+Evidence:
+- Source: T-697 pattern harvest (captured, not applied)
+- Horizon: later (correctly parked)
+- No active federation scenario — framework uses pickup envelopes + TermLink remote for cross-machine today
+
+**Date**: 2026-04-24T09:24:43Z
 
 ## Updates
 
@@ -109,3 +120,15 @@ date_finished: null
 
 ### 2026-04-23T16:46:50Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-04-24T09:24:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER — speculative pattern harvest, no current need.
+
+Rationale: Captured from T-697 pattern harvest (KCP pattern #9) as a "potentially relevant for TermLink multi-agent" note. No concrete cross-machine knowledge graph problem exists today — TermLink handles its own cross-machine coordination via hub/secret and the framework uses per-project isolation. Re-evaluate when: (a) cross-machine knowledge sharing becomes a friction point, or (b) a concrete multi-agent federation use case emerges.
+
+Evidence:
+- Source: T-697 pattern harvest (captured, not applied)
+- Horizon: later (correctly parked)
+- No active federation scenario — framework uses pickup envelopes + TermLink remote for cross-machine today

@@ -4,7 +4,7 @@ name: "Meta-rule codification — a gap belongs in the register where the fix li
 description: >
   Inception: Meta-rule codification — a gap belongs in the register where the fix lives, not where it was hit
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-19T13:03:02Z
-last_update: 2026-04-19T13:03:02Z
-date_finished: null
+last_update: 2026-04-24T09:23:59Z
+date_finished: 2026-04-24T09:23:59Z
 ---
 
 # T-1333: Meta-rule codification — a gap belongs in the register where the fix lives, not where it was hit
@@ -50,12 +50,12 @@ Question: **should this rule be codified in CLAUDE.md (and possibly enforced via
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -106,9 +106,44 @@ Question: **should this rule be codified in CLAUDE.md (and possibly enforced via
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — codify as Tier-1 CLAUDE.md prose, not schema enforcement
+
+Rationale: Spike A (light version, executed inline this session) scanned the framework's own `concerns.yaml` (64 entries) for cross-project / upstream-fix signals. Result: 5 entries (G-031, G-045, G-048, G-049, G-050) textually signal "fix locus elsewhere". That's ~8% of the register — low enough that a required-field schema change (Assumption 3 / Tier 2) would be over-engineering for current volume, but high enough that a codified rule (Tier 1 CLAUDE.md prose + worked example) has genuine and recurring application. 050 e-agent's proposed rule ("a gap belongs in the register where the FIX lives") is sound as a directional heuristic. Recommend GO at the lightest tier: add a 2–3 sentence rule to CLAUDE.md §Error Escalation Ladder (or a new §Gap Homing subsection) referencing G-048/G-049/G-050 as canonical example; skip schema + audit (Tier 2/3) until evidence shows the prose is ignored. Scope-fence in this task is IN=codify-the-rule, OUT=re-home existing entries — honour that boundary.
+
+Evidence:
+- Concerns register audit (this session): 5/64 entries (~8%) show hit-locus-elsewhere signals — recurring, not rare.
+- Examples with fix-locus elsewhere: G-031, G-045 (fleet cert co-rotation — fix is TermLink T-1054), G-048, G-049, G-050 (050 e-agent's flagged cross-project cases).
+- Assumption 2 (agents consult CLAUDE.md before filing) is evidenced by §Autonomous Mode Boundaries and §Human Task Completion Rule codifications being observed in session behaviour.
+- Assumption 3 (schema field would be tractable) is un-tested and NOT required by this recommendation — Tier-1 prose ships today; schema migration stays a future escalation if prose is ignored.
+- Aligns with G-019 (agent self-escalation) philosophy: codify the minimum that changes behaviour, escalate to structure only if prose fails.
+
+**Date**: 2026-04-24T09:23:59Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-24T09:23:59Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — codify as Tier-1 CLAUDE.md prose, not schema enforcement
+
+Rationale: Spike A (light version, executed inline this session) scanned the framework's own `concerns.yaml` (64 entries) for cross-project / upstream-fix signals. Result: 5 entries (G-031, G-045, G-048, G-049, G-050) textually signal "fix locus elsewhere". That's ~8% of the register — low enough that a required-field schema change (Assumption 3 / Tier 2) would be over-engineering for current volume, but high enough that a codified rule (Tier 1 CLAUDE.md prose + worked example) has genuine and recurring application. 050 e-agent's proposed rule ("a gap belongs in the register where the FIX lives") is sound as a directional heuristic. Recommend GO at the lightest tier: add a 2–3 sentence rule to CLAUDE.md §Error Escalation Ladder (or a new §Gap Homing subsection) referencing G-048/G-049/G-050 as canonical example; skip schema + audit (Tier 2/3) until evidence shows the prose is ignored. Scope-fence in this task is IN=codify-the-rule, OUT=re-home existing entries — honour that boundary.
+
+Evidence:
+- Concerns register audit (this session): 5/64 entries (~8%) show hit-locus-elsewhere signals — recurring, not rare.
+- Examples with fix-locus elsewhere: G-031, G-045 (fleet cert co-rotation — fix is TermLink T-1054), G-048, G-049, G-050 (050 e-agent's flagged cross-project cases).
+- Assumption 2 (agents consult CLAUDE.md before filing) is evidenced by §Autonomous Mode Boundaries and §Human Task Completion Rule codifications being observed in session behaviour.
+- Assumption 3 (schema field would be tractable) is un-tested and NOT required by this recommendation — Tier-1 prose ships today; schema migration stays a future escalation if prose is ignored.
+- Aligns with G-019 (agent self-escalation) philosophy: codify the minimum that changes behaviour, escalate to structure only if prose fails.
+
+### 2026-04-24T09:23:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+### 2026-04-24T09:23:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

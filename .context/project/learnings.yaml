@@ -1945,3 +1945,17 @@ learnings:
   date: 2026-04-23
   context: Added via context agent
   application: TBD
+- id: L-251
+  learning: "Verification commands must encode the SUCCESS state, not the failure state. T-1376 had 'grep -q localhost:3000' which exits 0 only when the bug IS present — gate fires green for failed fix. When the work is to REMOVE something, the verification must be 'NOT grep' or '! grep -q'. Test: 'If the work is fully done, does this command exit 0?' If unsure, write the inverse first then negate."
+  source: P-001
+  task: T-1410
+  date: 2026-04-23
+  context: Added via context agent
+  application: TBD
+- id: L-252
+  learning: "G-058 verification-script anti-patterns: (1) stale defaults — code bumped 15→60 but test still expects 15; (2) inverted greps — 'grep -q X' passes when bug X present, blocks when fixed; (3) startswith() too strict — fails on absolute paths; (4) full-suite invocations — call full audit (~25s) when a focused 16ms check suffices; (5) markdown-naive prose checks — count '!' without stripping ![alt](url); (6) ephemeral /tmp references — verification rots on next reboot. Pattern: write verification commands that encode the SUCCESS state, run quickly, and reference only durable paths in the repo."
+  source: P-001
+  task: T-1414
+  date: 2026-04-23
+  context: Added via context agent
+  application: TBD

@@ -133,7 +133,19 @@ No multi-adapter problem exists today. This is a "when/if" exploration.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER — parked until multi-adapter need materialises.
+
+Rationale: This is a "when/if" exploration. Today the framework has exactly ONE agent provider (Claude Code) and TermLink handles its own backend abstraction internally. Introducing a composition-based adapter pattern speculatively would add architectural overhead for a problem that doesn't yet exist. Re-evaluate when a second agent provider (Cursor, Windsurf, Copilot) actually needs to be integrated.
+
+Evidence:
+- Research artifact: `docs/reports/T-550-composition-adapter-pattern.md`
+- No current multi-adapter problem (single provider = no abstraction pressure)
+- TermLink owns its backend diversity (framework just calls `termlink`)
+- Building abstraction for one consumer is premature (true)
+
+**Date**: 2026-04-24T09:24:52Z
 
 ## Updates
 
@@ -146,3 +158,16 @@ No multi-adapter problem exists today. This is a "when/if" exploration.
 
 ### 2026-04-23T16:46:49Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-04-24T09:24:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER — parked until multi-adapter need materialises.
+
+Rationale: This is a "when/if" exploration. Today the framework has exactly ONE agent provider (Claude Code) and TermLink handles its own backend abstraction internally. Introducing a composition-based adapter pattern speculatively would add architectural overhead for a problem that doesn't yet exist. Re-evaluate when a second agent provider (Cursor, Windsurf, Copilot) actually needs to be integrated.
+
+Evidence:
+- Research artifact: `docs/reports/T-550-composition-adapter-pattern.md`
+- No current multi-adapter problem (single provider = no abstraction pressure)
+- TermLink owns its backend diversity (framework just calls `termlink`)
+- Building abstraction for one consumer is premature (true)

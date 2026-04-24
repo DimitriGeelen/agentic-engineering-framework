@@ -30,3 +30,10 @@ decisions:
     task: T-1369
     rationale: "Auto-captured from task file on completion"
 
+
+  - id: D-007
+    decision: "Environment variable `TERMLINK_TASK_GOVERNANCE=1`"
+    scope: project
+    date: 2026-04-24
+    task: T-1063
+    rationale: "Auto-captured from task file on completion"

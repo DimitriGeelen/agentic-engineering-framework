@@ -45,12 +45,12 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read the research artifact and recommendation in this task
   2. Evaluate go/no-go criteria against findings
@@ -100,9 +100,32 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER — external-product feedback, parked pending upstream decision.
+
+Rationale: Both items (--working-dir flag, MCP-as-default) are feature requests for the TermLink product itself (separate repo, Vincent-owned), not framework code. Framework workaround for --working-dir: pre-spawn cd via `termlink pty inject` or use `--shell` flag. MCP-as-default is already being used (see `.mcp.json`). No framework-side action needed; hand to upstream when prioritised.
+
+Evidence:
+- TermLink repo: https://github.com/DimitriGeelen/termlink (external product)
+- Framework workaround documented in CLAUDE.md §TermLink Integration
+- `.mcp.json` already registers TermLink MCP server
+
+**Date**: 2026-04-24T09:24:48Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-24T09:24:48Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER — external-product feedback, parked pending upstream decision.
+
+Rationale: Both items (--working-dir flag, MCP-as-default) are feature requests for the TermLink product itself (separate repo, Vincent-owned), not framework code. Framework workaround for --working-dir: pre-spawn cd via `termlink pty inject` or use `--shell` flag. MCP-as-default is already being used (see `.mcp.json`). No framework-side action needed; hand to upstream when prioritised.
+
+Evidence:
+- TermLink repo: https://github.com/DimitriGeelen/termlink (external product)
+- Framework workaround documented in CLAUDE.md §TermLink Integration
+- `.mcp.json` already registers TermLink MCP server

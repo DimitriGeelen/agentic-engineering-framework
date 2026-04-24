@@ -743,3 +743,12 @@ bypasses:
   command_hash: aad00d55308ac5a236ee0e5345480ef6382908f61dc1d36f5c74b0d0982812d8
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-04-24T09:15:08Z'
+  tier: 0
+  risk: 'FW FORCE: Bypasses sovereignty gate (R-033), AC verification (P-010), or
+    verification gate (P-011)'
+  command_preview: bin/fw task update T-1063 --status work-completed --force 2>&1
+    | tail -15
+  command_hash: 18f084d0216c818b5d5bf8dc431f8f938bdcf836550099d83510984c10fd1317
+  authorized_by: human
+  mechanism: fw tier0 approve
