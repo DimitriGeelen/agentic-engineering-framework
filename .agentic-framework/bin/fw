@@ -3905,12 +3905,16 @@ PYSEARCH
         # Replaces hardcoded absolute paths in .claude/settings.json (G-021/T-496).
         _hook_name="${1:-}"
         shift 2>/dev/null || true
-        if [ -z "$_hook_name" ]; then
+        # T-1437: --help / -h print usage, not treated as a hook name
+        # (would miss agents/context/--help.sh and log a spurious crash).
+        if [ -z "$_hook_name" ] || [ "$_hook_name" = "--help" ] || [ "$_hook_name" = "-h" ]; then
+            _hook_exit=1
+            [ "${_hook_name:-}" = "--help" ] || [ "${_hook_name:-}" = "-h" ] && _hook_exit=0
             echo "Usage: fw hook <name> [args...]" >&2
             # T-1186/G-042: Generate hook list from filesystem (single source of truth)
             _hooks=$(ls "$AGENTS_DIR/context/"*.sh 2>/dev/null | xargs -I{} basename {} .sh | sort | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g')
             echo "Available hooks: $_hooks" >&2
-            exit 1
+            exit $_hook_exit
         fi
         _hook_script="$AGENTS_DIR/context/${_hook_name}.sh"
         if [ ! -f "$_hook_script" ]; then
