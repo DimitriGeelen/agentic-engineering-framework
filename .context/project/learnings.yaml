@@ -1959,3 +1959,10 @@ learnings:
   date: 2026-04-23
   context: Added via context agent
   application: TBD
+- id: L-253
+  learning: "Verification scripts that regex-match documentation form (e.g. backtick-enclosed single-subcommand pattern) break when the doc is reformatted. Prefer loose extraction: grep for entry tokens (``fw VERB``) and extract the verb, don't demand a specific closing syntax. Parse prose escape hatches (e.g. 'rarely-used commands (x, y, z)') as secondary evidence. This keeps the check resilient to doc style changes like T-1419's Quick Reference collapse (35 false-positive missing → 5 real missing after regex relaxation)."
+  source: P-001
+  task: T-1421
+  date: 2026-04-24
+  context: Added via context agent
+  application: TBD

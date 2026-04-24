@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1421: Fix fw doctor doc-drift regex to recognise pipe-joined command forms
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T10:41:00Z
+# ============================================================================
+
+task_id: T-1421
+task_name: "Fix fw doctor doc-drift regex to recognise pipe-joined command forms"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T10:22:02Z
+completed: 2026-04-24T10:40:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-24T12:33:46+02:00
+last_commit: 2026-04-24T12:33:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix fw doctor doc-drift regex — catch verb from any backtick-fw context + parse rarely-used prose list (35→5 missing, -86%)
+
+# Key outcomes
+outcomes:
+  - "`fw doctor` doc-drift count drops from 35 to <=5 against the current trimmed CLAUDE.md (actual: 5 — hook, hook-enable, patterns, preflight, setup — all internal or deprecated)"
+  - "Specifically, these commands no longer flagged: cron, notify, pickup, pending, watchtower, verify-acs, costs, config, ask, recall, search, serve (all 12 verified recognised)"
+  - "Rarely-used verbs named inline (harvest, promote, consolidate, release, self-audit, self-test, plugin-audit, etc.) no longer flagged because the prose-list parser catches them (7/7 verified)"
+  - "No new warnings introduced; `fw doctor` run parses successfully and exits with same status class as before (15 warnings, no failures — matches prior state class)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix fw doctor doc-drift regex — catch verb from any backtick-fw context + parse rarely-used prose list (35→5 missing, -86%)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1421-fix-fw-doctor-doc-drift-regex-to-recogni.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-24T12:33:46"
+    action: "T-1421: fix fw doctor doc-drift regex — catch verb from any backtick-fw context + parse rarely-used prose list (35→5 missing, -86%)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 1
+  files_changed: 2
+  lines_added: 86
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1421-fix-fw-doctor-doc-drift-regex-to-recogni.md
+generated_by: context-agent-hybrid
