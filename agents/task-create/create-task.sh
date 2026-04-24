@@ -12,10 +12,18 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 # Note: lib/errors.sh already sourced via lib/paths.sh (die, warn, error, info, success)
 source "$FRAMEWORK_ROOT/lib/enums.sh"
 
-# T-1279: serialize ID allocation to prevent concurrent invocations from
+# T-1279/T-1424: serialize ID allocation to prevent concurrent invocations from
 # colliding on the same T-NNNN. Without this, 4+ parallel `fw work-on`
 # calls all read the same max_id and all write T-${max+1}. See G-052.
-source "$FRAMEWORK_ROOT/lib/keylock.sh" 2>/dev/null || true
+# T-1424: fail loudly if the lock primitive can't be loaded — silent skip means silent race.
+source "$FRAMEWORK_ROOT/lib/keylock.sh" || {
+    echo "create-task.sh: failed to source lib/keylock.sh — cannot serialize ID allocation" >&2
+    exit 1
+}
+type keylock_acquire >/dev/null 2>&1 || {
+    echo "create-task.sh: keylock_acquire not defined after sourcing keylock.sh" >&2
+    exit 1
+}
 
 # Colors provided by lib/colors.sh (via paths.sh chain)
 
@@ -138,12 +146,11 @@ generate_slug() {
 # Generate timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# T-1279: Acquire lock BEFORE reading max_id; release AFTER file write.
+# T-1279/T-1424: Acquire lock BEFORE reading max_id; release AFTER file write.
 # Without this, concurrent calls all observe the same max_id and collide.
-if type keylock_acquire &>/dev/null; then
-    keylock_acquire "task-id-allocation"
-    trap 'keylock_release "task-id-allocation" 2>/dev/null' EXIT
-fi
+# T-1424: unconditional — the source above already guaranteed the primitive is loaded.
+keylock_acquire "task-id-allocation"
+trap 'keylock_release "task-id-allocation" 2>/dev/null' EXIT
 
 # Generate ID and filename
 TASK_ID=$(generate_id)

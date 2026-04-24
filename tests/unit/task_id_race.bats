@@ -88,3 +88,28 @@ teardown() {
     grep -q 'keylock.sh' "$FRAMEWORK_ROOT/agents/task-create/create-task.sh"
     grep -q 'keylock_acquire "task-id-allocation"' "$FRAMEWORK_ROOT/agents/task-create/create-task.sh"
 }
+
+@test "task-id race (T-1424): create-task.sh fails loudly when keylock.sh is missing" {
+    # Build a minimal fake framework root without lib/keylock.sh
+    FAKE_ROOT="$TEST_TEMP_DIR/fake-fw"
+    mkdir -p "$FAKE_ROOT/agents/task-create" "$FAKE_ROOT/lib"
+    # Copy create-task.sh + the libs paths.sh pulls in, but omit keylock.sh
+    cp "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" "$FAKE_ROOT/agents/task-create/"
+    for f in paths.sh enums.sh config.sh colors.sh errors.sh; do
+        [ -f "$FRAMEWORK_ROOT/lib/$f" ] && cp "$FRAMEWORK_ROOT/lib/$f" "$FAKE_ROOT/lib/"
+    done
+
+    # Run create-task.sh against the fake root — must exit non-zero with a real error
+    run bash "$FAKE_ROOT/agents/task-create/create-task.sh" \
+        --name "should-fail" --description "x" --type build --owner agent
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"keylock.sh"* ]] || [[ "$output" == *"keylock_acquire"* ]]
+}
+
+@test "task-id race (T-1424): no silent-skip guard remains in create-task.sh" {
+    # Regression guard — the || true and the `if type keylock_acquire` guard
+    # are the exact anti-patterns T-1424 removed. Reintroducing either
+    # reopens the silent-race window.
+    ! grep -q 'keylock.sh" 2>/dev/null || true' "$FRAMEWORK_ROOT/agents/task-create/create-task.sh"
+    ! grep -q 'if type keylock_acquire' "$FRAMEWORK_ROOT/agents/task-create/create-task.sh"
+}

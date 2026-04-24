@@ -12,6 +12,19 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 # Note: lib/errors.sh already sourced via lib/paths.sh (die, warn, error, info, success)
 source "$FRAMEWORK_ROOT/lib/enums.sh"
 
+# T-1279/T-1424: serialize ID allocation to prevent concurrent invocations from
+# colliding on the same T-NNNN. Without this, 4+ parallel `fw work-on`
+# calls all read the same max_id and all write T-${max+1}. See G-052.
+# T-1424: fail loudly if the lock primitive can't be loaded — silent skip means silent race.
+source "$FRAMEWORK_ROOT/lib/keylock.sh" || {
+    echo "create-task.sh: failed to source lib/keylock.sh — cannot serialize ID allocation" >&2
+    exit 1
+}
+type keylock_acquire >/dev/null 2>&1 || {
+    echo "create-task.sh: keylock_acquire not defined after sourcing keylock.sh" >&2
+    exit 1
+}
+
 # Colors provided by lib/colors.sh (via paths.sh chain)
 
 # Parse arguments
@@ -132,6 +145,12 @@ generate_slug() {
 
 # Generate timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# T-1279/T-1424: Acquire lock BEFORE reading max_id; release AFTER file write.
+# Without this, concurrent calls all observe the same max_id and collide.
+# T-1424: unconditional — the source above already guaranteed the primitive is loaded.
+keylock_acquire "task-id-allocation"
+trap 'keylock_release "task-id-allocation" 2>/dev/null' EXIT
 
 # Generate ID and filename
 TASK_ID=$(generate_id)
@@ -269,6 +288,21 @@ fi
 if ! grep -q "^id: $TASK_ID" "$FILEPATH"; then
     echo -e "${RED}ERROR: Task file validation failed${NC}"
     exit 1
+fi
+
+# T-1263: Inception tasks must have ## Recommendation and ## Decision sections
+# Fail-fast at creation time rather than blocking late at fw inception decide
+if [ "$WORKFLOW_TYPE" = "inception" ]; then
+    _missing=""
+    grep -qE '^## Recommendation[[:space:]]*$' "$FILEPATH" || _missing="## Recommendation"
+    grep -qE '^## Decision[[:space:]]*$' "$FILEPATH" || _missing="${_missing:+$_missing, }## Decision"
+    if [ -n "$_missing" ]; then
+        echo -e "${RED}ERROR: Inception template missing required sections: $_missing${NC}" >&2
+        echo "The inception decide pipeline requires both ## Recommendation and ## Decision." >&2
+        echo "Fix the template at: $TASKS_DIR/templates/inception.md" >&2
+        rm -f "$FILEPATH"
+        exit 1
+    fi
 fi
 
 # Success output
