@@ -1,30 +1,30 @@
 ---
-id: T-1345
-name: "Pickup: Codify RPC resilience-tier taxonomy + version skew enforcement (Tier-A opaque vs Tier-B typed) (from termlink)"
+id: T-1348
+name: "Pickup: fw fabric drift and scan miss recursive glob matches — bash ** needs shopt -s globstar (from termlink)"
 description: >
-  Auto-created from pickup envelope. Source: termlink, task T-1071. Type: feature-proposal.
+  Auto-created from pickup envelope. Source: termlink, task T-1130. Type: bug-report.
 
 status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
-tags: [pickup, feature-proposal]
+tags: [pickup, bug-report]
 components: [C-004, agents/task-create/create-task.sh, tests/unit/task_id_race.bats]
 related_tasks: []
-created: 2026-04-20T07:46:36Z
-last_update: 2026-04-22T09:42:21Z
-date_finished: 2026-04-22T09:42:21Z
+created: 2026-04-20T07:46:37Z
+last_update: 2026-04-22T09:36:13Z
+date_finished: 2026-04-22T09:36:13Z
 ---
 
-# T-1345: Pickup: Codify RPC resilience-tier taxonomy + version skew enforcement (Tier-A opaque vs Tier-B typed) (from termlink)
+# T-1348: Pickup: fw fabric drift and scan miss recursive glob matches — bash ** needs shopt -s globstar (from termlink)
 
 ## Problem Statement
 
-Duplicate of T-1311 (canonical). Both cite termlink source T-1071 (topic: Codify RPC resilience-tier taxonomy + version skew). Pickup dedup missed the collision.
+Duplicate of T-1319 (canonical). Both cite termlink source T-1130 (bug report: fw fabric drift globstar). Pickup dedup missed the collision. No new information.
 
 ## Assumptions
 
-1. T-1311 exists with same termlink source — TRUE
+1. T-1319 exists with same termlink source — TRUE
 2. No new information here — TRUE
 
 ## Exploration Plan
@@ -46,12 +46,12 @@ None — confirmed duplicate via source-task-ID cross-check.
 ## Acceptance Criteria
 
 ### Agent
-- [x] Problem statement validated (T-1345 cites termlink T-1071; T-1311 cites termlink T-1071)
+- [x] Problem statement validated (T-1348 cites termlink T-1130; T-1319 cites termlink T-1130)
 - [x] Assumptions tested (duplicate confirmed by source-task ID)
-- [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1311)
+- [x] Recommendation written with rationale (DEFER — close as duplicate; keep T-1319)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -80,11 +80,11 @@ None — confirmed duplicate via source-task-ID cross-check.
 
 **Recommendation:** DEFER (close as duplicate)
 
-**Rationale:** T-1345 and T-1311 both cite termlink source task T-1071. Working this task would be redundant.
+**Rationale:** T-1348 and T-1319 both cite termlink source task T-1130. Working this task would be redundant.
 
 **Evidence:**
-- T-1345 source: termlink T-1071
-- T-1311 source: termlink T-1071 (canonical target)
+- T-1348 source: termlink T-1130
+- T-1319 source: termlink T-1130 (canonical target)
 - Pickup dedup missed the collision (G-046 class)
 
 ## Decisions
@@ -100,20 +100,20 @@ None — confirmed duplicate via source-task-ID cross-check.
 
 ## Decision
 
-**Decision**: DEFER (duplicate of T-1311)
+**Decision**: DEFER (duplicate of T-1319)
 
-**Rationale**: Same termlink source task (T-1071) as T-1311. No independent research value.
+**Rationale**: Same termlink source task (T-1130) as T-1319. No independent research value.
 
-**Date**: 2026-04-22T08:32:00Z
+**Date**: 2026-04-22T08:28:00Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
 
-### 2026-04-22T09:42:09Z — status-update [task-update-agent]
+### 2026-04-22T09:35:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-### 2026-04-22T09:42:21Z — status-update [task-update-agent]
+### 2026-04-22T09:36:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
