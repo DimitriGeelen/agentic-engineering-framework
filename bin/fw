@@ -1472,12 +1472,21 @@ else:
         fi
     fi
 
-    # Doc-drift check: fw subcommands vs CLAUDE.md Quick Reference (T-1147/T-1104)
+    # Doc-drift check: fw subcommands vs CLAUDE.md Quick Reference (T-1147/T-1104/T-1421)
     if [ -f "$FRAMEWORK_ROOT/CLAUDE.md" ]; then
-        local _qr_cmds _fw_cmds _missing _miss_count
-        # Extract commands from Quick Reference table: | `fw cmd` | or | **`fw cmd`** |
-        _qr_cmds=$(grep -oE '`fw [a-z][-a-z]*( [a-z][-a-z]*)?`' "$FRAMEWORK_ROOT/CLAUDE.md" 2>/dev/null \
-            | sed 's/`//g; s/^fw //' | sort -u || true)
+        local _qr_cmds _fw_cmds _missing _miss_count _prose_list
+        # T-1421: extract the verb from any `fw VERB...` backtick context. Old
+        # regex only matched `` `fw x` `` / `` `fw x y` `` with closing backtick,
+        # which missed pipe-joined forms (`fw cron generate|status|list`) and
+        # flag-bearing forms (`fw work-on "name" --type build`). We only need
+        # the verb, so match through opening backtick + `fw ` + verb.
+        _qr_cmds=$(grep -oE '`fw [a-z][-a-z]*' "$FRAMEWORK_ROOT/CLAUDE.md" 2>/dev/null \
+            | sed 's/^`fw //' | sort -u || true)
+        # T-1421: secondary catch — the trimmed Quick Reference ends with a
+        # prose "rarely-used commands (harvest, promote, …)" paragraph listing
+        # verbs without backticks. Parse those too.
+        _prose_list=$(grep -oE 'rarely-used commands \([^)]*\)' "$FRAMEWORK_ROOT/CLAUDE.md" 2>/dev/null \
+            | sed 's/^.*(//; s/).*$//' | tr ',' '\n' | sed 's/^ *//; s/ *$//' | grep -E '^[a-z][-a-z]*$' || true)
         # Extract top-level routed subcommands from main routing case
         _fw_cmds=$(sed -n '/^case "\$cmd" in/,/^esac/p' "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null \
             | grep -E '^    [a-z][-a-z]*\)' | sed 's/[[:space:]]*//; s/).*//' | sort -u || true)
@@ -1485,7 +1494,7 @@ else:
         _miss_count=0
         while IFS= read -r cmd; do
             [ -z "$cmd" ] && continue
-            if ! echo "$_qr_cmds" | grep -qw "$cmd"; then
+            if ! echo "$_qr_cmds" | grep -qw "$cmd" && ! echo "$_prose_list" | grep -qw "$cmd"; then
                 _missing="${_missing} ${cmd}"
                 _miss_count=$((_miss_count + 1))
             fi
