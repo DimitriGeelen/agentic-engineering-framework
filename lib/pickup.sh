@@ -152,6 +152,71 @@ pickup_record_dedup() {
     echo "${ts}|${hash}|$(basename "$file")" >> "$PICKUP_DEDUP_LOG"
 }
 
+# T-1425 / G-059: Second-pass triple dedup.
+# Catches cross-project retries of the same logical concern when the byte-level
+# hash misses (refined summary, new timestamp, added evidence line).
+# Key: (source.project, source.task_id, type). Matches an existing active
+# inception task created from a prior envelope with the same triple.
+#
+# Returns 0 ("is triple-collision") and echoes the blocking T-XXX to stdout
+# when a match is found. Returns 1 ("not a triple-collision") otherwise.
+# Falls through (returns 1) when source.task_id is empty — unreliable key.
+# Bypassed (returns 1) when the envelope carries `supersedes: T-XXX` at
+# top-level — explicit operator intent to replace a prior pickup.
+pickup_dedup_triple_check() {
+    local file="$1"
+
+    local source_project source_task pickup_type supersedes
+    source_project=$(grep "^  project:" "$file" | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    source_task=$(grep "^  task_id:" "$file" 2>/dev/null | head -1 | sed 's/^  task_id:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    pickup_type=$(grep "^type:" "$file" | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    supersedes=$(grep "^supersedes:" "$file" 2>/dev/null | head -1 | sed 's/^supersedes:[[:space:]]*//' | tr -d '"' | tr -d "'")
+
+    # Empty source_task → triple key is unreliable → fall through to hash-only
+    [ -z "$source_task" ] && return 1
+
+    # Explicit supersedes: T-XXX → operator intent to replace a prior pickup → bypass
+    [ -n "$supersedes" ] && return 1
+
+    # Scan active tasks for a prior inception with matching triple
+    local active_dir="${PROJECT_ROOT:-.}/.tasks/active"
+    [ -d "$active_dir" ] || return 1
+
+    local task_file
+    for task_file in "$active_dir"/*.md; do
+        [ -f "$task_file" ] || continue
+        # Fast reject: envelope's source_task must appear in frontmatter at all
+        grep -q "^source_task_id_in_origin: ${source_task}$" "$task_file" 2>/dev/null || continue
+        grep -q "^source_project_in_origin: \"${source_project}\"$" "$task_file" 2>/dev/null || continue
+        # Type check via tags line: `tags: [pickup, <type>]`
+        grep -qE "^tags: \[.*\b${pickup_type}\b.*\]" "$task_file" 2>/dev/null || continue
+        # Match — emit the T-XXX id and return collision
+        local blocking_id
+        blocking_id=$(grep "^id:" "$task_file" | head -1 | sed 's/^id:[[:space:]]*//' | tr -d '"' | tr -d "'")
+        echo "$blocking_id"
+        return 0
+    done
+
+    return 1
+}
+
+# T-1425: Write a breadcrumb next to an auto-deferred envelope pointing at
+# the blocking local inception task. Lets operators (and `fw pickup auto-deferred list`)
+# trace why the envelope was deferred instead of processed.
+pickup_write_breadcrumb() {
+    local deferred_file="$1"
+    local blocking_task="$2"
+    local reason="${3:-triple-dedup}"
+
+    local breadcrumb="${deferred_file}.breadcrumb.yaml"
+    {
+        echo "reason: ${reason}"
+        echo "blocking_task: ${blocking_task}"
+        echo "deferred_at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "envelope: $(basename "$deferred_file")"
+    } > "$breadcrumb"
+}
+
 # --- ID generation ---
 
 pickup_next_id() {
@@ -270,6 +335,19 @@ pickup_process_one() {
         if [ "$dry_run" != true ]; then
             mkdir -p "$PICKUP_AUTO_DEFERRED"
             mv "$file" "$PICKUP_AUTO_DEFERRED/" 2>/dev/null || true
+        fi
+        return 0
+    fi
+
+    # T-1425 / G-059: second-pass triple dedup — cross-project retry of same logical concern
+    local blocking_task
+    if blocking_task=$(pickup_dedup_triple_check "$file"); then
+        echo -e "${YELLOW}AUTO-DEFER${NC}  $basename_f — triple collision with active $blocking_task"
+        if [ "$dry_run" != true ]; then
+            mkdir -p "$PICKUP_AUTO_DEFERRED"
+            if mv "$file" "$PICKUP_AUTO_DEFERRED/" 2>/dev/null; then
+                pickup_write_breadcrumb "$PICKUP_AUTO_DEFERRED/$basename_f" "$blocking_task" "triple-dedup"
+            fi
         fi
         return 0
     fi

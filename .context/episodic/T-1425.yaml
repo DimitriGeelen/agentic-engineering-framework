@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1425: pickup triple-dedup + supersedes escape hatch (T-1420 B1+B2+B4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T13:12:09Z
+# ============================================================================
+
+task_id: T-1425
+task_name: "pickup triple-dedup + supersedes escape hatch (T-1420 B1+B2+B4)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T13:08:37Z
+completed: 2026-04-24T13:12:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`pickup_dedup_triple_check` helper finds an existing active inception task with matching `source_task_id_in_origin` + `source_project_in_origin` (requires non-empty source_task_id — empty task_id falls through to hash-only per Spike A finding)"
+  - "`pickup_process_one` calls triple check AFTER hash dedup AND after the G-046 self-completed check; on match, route to `auto-deferred/` with a `.breadcrumb` sibling pointing at the blocking local T-XXX"
+  - "`supersedes: T-XXX` field in an envelope's top-level YAML bypasses the triple check (explicit override)"
+  - "Regression test in `tests/unit/lib_pickup_triple_dedup.bats` covers: triple-collision auto-defer, supersedes bypass, empty-task_id fall-through, no-collision happy path — 7/7 pass; type-mismatch no-collision also covered"
+  - "Vendored copy in `.agentic-framework/lib/pickup.sh` stays in sync with the framework copy"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1425-pickup-triple-dedup--supersedes-escape-h.md
+generated_by: context-agent-hybrid
