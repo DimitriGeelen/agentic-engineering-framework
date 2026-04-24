@@ -235,6 +235,10 @@ Not all improvement comes from failures. When you notice a practice repeating ad
 
 **Canonical example:** T-097 analyzed sub-agent dispatching across 96 tasks → discovered the real problem (result management, not agent specialization) → produced dispatch protocol (T-098) and prompt templates (T-099). The framework used its own episodic memory as the evidence base for an architectural decision.
 
+### Gap Homing (T-1333)
+
+**A gap belongs in the register where the FIX lives, not where it was HIT.** When a concern's root cause is in another repo or project, file it there — filing it locally creates a zombie entry nobody who could fix it will ever read. If cross-cutting, cross-link, but home the entry where the fix lands. Worked example: G-045 (fleet cert co-rotation) — framework hit the symptom, TermLink owns the fix, so the register entry here points at TermLink's `T-1054` rather than describing the fix ourselves.
+
 ## fw CLI (Primary Interface)
 
 The `fw` command is the single entry point for all framework operations. It resolves paths, sets environment variables, and routes to agents.

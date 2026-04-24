@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1417: Codify T-1333 GO: gap-homing meta-rule in CLAUDE.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T09:29:05Z
+# ============================================================================
+
+task_id: T-1417
+task_name: "Codify T-1333 GO: gap-homing meta-rule in CLAUDE.md"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T09:27:05Z
+completed: 2026-04-24T09:29:01Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "New `### Gap Homing` subsection exists under CLAUDE.md `## Error Escalation Ladder` section"
+  - "Subsection states the rule in one sentence and includes one worked example (G-045 → TermLink T-1054)"
+  - "Addition is <600 bytes net (measured: `git diff CLAUDE.md | grep '^+' | wc -c` = 551)"
+  - "CLAUDE.md still parses as markdown (no broken headings/lists): `python3 -c \"import markdown; markdown.markdown(open('CLAUDE.md').read())\"` → OK"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1417-codify-t-1333-go-gap-homing-meta-rule-in.md
+generated_by: context-agent-hybrid
