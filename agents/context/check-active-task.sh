@@ -119,6 +119,18 @@ case "$FILE_PATH" in
         ;;
 esac
 
+# T-1431 / T-1274: Claude Code auto-memory writes to
+# <home>/.claude/projects/<project>/memory/*.md — outside PROJECT_ROOT.
+# Blocking these defeats the mechanism meant to prevent recurrence of
+# problems, and does so exactly when it's most needed (mid-onboarding,
+# before T-001-T-005 complete). Exempt the auto-memory directory
+# globally, regardless of user prefix or task state.
+case "$FILE_PATH" in
+    */.claude/projects/*/memory/*)
+        exit 0
+        ;;
+esac
+
 # If no .context/ directory exists yet (fresh project), allow — bootstrap case
 if [ ! -d "$PROJECT_ROOT/.context/working" ]; then
     exit 0

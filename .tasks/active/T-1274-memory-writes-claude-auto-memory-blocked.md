@@ -20,7 +20,19 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Observation: on a consumer project mid-onboarding (T-001–T-005 not complete, no focus set), Claude auto-memory writes to `/root/.claude/projects/<project>/memory/*.md` were blocked by `check-active-task.sh` because memory paths live outside PROJECT_ROOT and the exempt list is PROJECT_ROOT-anchored.
+
+### Proposed fix (T-1431, 2026-04-24)
+
+T-1431 added a global exempt case for `*/.claude/projects/*/memory/*` in `agents/context/check-active-task.sh` — the pattern matches any user prefix (`/root/`, `/home/alice/`, etc.) and only the auto-memory directory, nothing else under `.claude/`. Six bats regression tests in `tests/unit/check_active_task_memory_exempt.bats` cover:
+
+- memory writes allowed without task (root + non-root user)
+- MEMORY.md at root of memory/ allowed
+- non-memory writes under /root/.claude/ still blocked
+- arbitrary outside-project writes still blocked
+- project-root .context/ still allowed
+
+T-1431 is a proposal — this task (T-1274) remains human-owned. Review the fix and decide whether it resolves the observation.
 
 ## Acceptance Criteria
 
