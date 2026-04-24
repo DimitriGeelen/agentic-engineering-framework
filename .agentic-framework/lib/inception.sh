@@ -171,6 +171,10 @@ PYINCEPTION
 #
 # Idempotent. Only ticks ACs whose text matches the templated predicate
 # under the `### Human` subsection — never touches custom ACs or `### Agent`.
+#
+# T-1194: also ticks the 3 ceremonial Agent ACs when a `## Recommendation`
+# section exists (same structural-satisfaction pattern). Never touches
+# user-customized Agent ACs.
 tick_inception_decide_acs() {
     local task_file="$1"
     [ -f "$task_file" ] || return 0
@@ -187,22 +191,43 @@ PATTERNS = [
     re.compile(r'\[RUBBER-STAMP\].*[Rr]ecord.*decision'),
 ]
 
+# T-1194: when Recommendation section exists, also tick the 3 ceremonial
+# Agent ACs from the default inception template. Never touches custom ACs.
+AGENT_PATTERNS = [
+    re.compile(r'^Problem statement validated', re.IGNORECASE),
+    re.compile(r'^Assumptions tested', re.IGNORECASE),
+    re.compile(r'^Recommendation written with rationale', re.IGNORECASE),
+]
+has_recommendation = bool(re.search(r'^## Recommendation\s*$', content, re.MULTILINE))
+
 lines = content.split('\n')
 in_human = False
+in_agent = False
 out = []
 for line in lines:
     stripped = line.strip()
     if stripped == '### Human':
         in_human = True
+        in_agent = False
         out.append(line)
         continue
-    # Exit Human subsection at next ## or ### header.
-    if in_human and (line.startswith('## ') or line.startswith('### ')):
+    if stripped == '### Agent':
+        in_agent = True
         in_human = False
+        out.append(line)
+        continue
+    # Exit subsection at next ## or ### header.
+    if (in_human or in_agent) and (line.startswith('## ') or line.startswith('### ')):
+        in_human = False
+        in_agent = False
     if in_human:
         m = re.match(r'^(\s*)- \[ \](.*)$', line)
         if m and any(p.search(m.group(2)) for p in PATTERNS):
             line = f'{m.group(1)}- [x]{m.group(2)}'
+    elif in_agent and has_recommendation:
+        m = re.match(r'^(\s*)- \[ \]\s*(.*)$', line)
+        if m and any(p.search(m.group(2)) for p in AGENT_PATTERNS):
+            line = f'{m.group(1)}- [x] {m.group(2)}'
     out.append(line)
 
 with open(task_file, 'w') as f:

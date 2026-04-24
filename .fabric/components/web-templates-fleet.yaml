@@ -1,0 +1,14 @@
+id: web/templates/fleet.html
+name: fleet
+type: template
+subsystem: watchtower
+location: web/templates/fleet.html
+tags: []
+purpose: Watchtower /fleet dashboard template — renders fleet health summary, per-host status badges, last-seen timestamps, and TermLink reachability, consuming data assembled by web/blueprints/fleet.py
+depends_on: []
+depended_by:
+- target: web/blueprints/fleet.py
+  type: rendered_by
+last_verified: 2026-04-24
+created_by: unknown
+last_enriched: '2026-04-24'
