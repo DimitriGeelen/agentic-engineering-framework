@@ -705,6 +705,38 @@ do_doctor() {
         echo -e "  ${CYAN}SKIP${NC}  .framework.yaml (running from framework repo)"
     fi
 
+    # Check 2b (T-1434): Vendored-source drift — framework repo only.
+    # Consumer projects don't have both copies; their .agentic-framework IS the framework.
+    # Drift = consumers pulling via `fw upgrade` get stale hooks/libs (T-1432, T-1433).
+    if [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ] && [ -d "$FRAMEWORK_ROOT/.agentic-framework" ]; then
+        local _vdrift=0
+        local _vdrift_list=""
+        local _f
+        for _f in "$FRAMEWORK_ROOT"/bin/fw \
+                  "$FRAMEWORK_ROOT"/lib/*.sh \
+                  "$FRAMEWORK_ROOT"/agents/context/*.sh \
+                  "$FRAMEWORK_ROOT"/agents/task-create/*.sh; do
+            [ -f "$_f" ] || continue
+            local _rel="${_f#$FRAMEWORK_ROOT/}"
+            local _v="$FRAMEWORK_ROOT/.agentic-framework/$_rel"
+            [ -f "$_v" ] || continue
+            if ! diff -q "$_f" "$_v" >/dev/null 2>&1; then
+                _vdrift=$((_vdrift + 1))
+                if [ "$_vdrift" -le 5 ]; then
+                    _vdrift_list="$_vdrift_list\n           - $_rel"
+                fi
+            fi
+        done
+        if [ "$_vdrift" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  No vendored-source drift"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Vendored-source drift: $_vdrift file(s) out of sync"
+            echo -e "         Run: fw vendor  (sync .agentic-framework/ with source)"
+            [ -n "$_vdrift_list" ] && echo -e "         First $([ $_vdrift -gt 5 ] && echo 5 || echo $_vdrift):$_vdrift_list"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # Check 3: Task directories
     if [ -d "$PROJECT_ROOT/.tasks/active" ] && [ -d "$PROJECT_ROOT/.tasks/completed" ]; then
         echo -e "  ${GREEN}OK${NC}  Task directories"

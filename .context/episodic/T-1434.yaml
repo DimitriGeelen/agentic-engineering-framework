@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1434: add vendored-drift check to fw doctor (prevent T-1432/T-1433 class)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T16:00:54Z
+# ============================================================================
+
+task_id: T-1434
+task_name: "add vendored-drift check to fw doctor (prevent T-1432/T-1433 class)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T15:51:33Z
+completed: 2026-04-24T15:59:06Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`fw doctor` output includes a \"Vendored-source drift\" line after framework-installation checks"
+  - "Check is skipped outside the framework repo (PROJECT_ROOT != FRAMEWORK_ROOT)"
+  - "Drift detection uses the sweep pattern from T-1433: iterate `bin/fw`, `lib/*.sh`, `agents/context/*.sh`, `agents/task-create/*.sh`; diff each with its `.agentic-framework/` counterpart"
+  - "When no drift: OK message, zero warnings added"
+  - "When drift exists: WARN message names first 5 drifted files, increments warnings counter"
+  - "A bats test creates synthetic drift and asserts the doctor output contains \"Vendored-source drift\" WARN line (3 tests in `tests/unit/fw_doctor_vendored_drift.bats`)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1434-add-vendored-drift-check-to-fw-doctor-pr.md
+generated_by: context-agent-hybrid
