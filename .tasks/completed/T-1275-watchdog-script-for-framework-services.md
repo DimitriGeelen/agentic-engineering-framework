@@ -4,16 +4,16 @@ name: "Watchdog script for framework services"
 description: >
   Watchdog script for framework services
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-16T05:38:36Z
-last_update: 2026-04-23T19:22:12Z
-date_finished: null
+last_update: 2026-04-24T09:52:59Z
+date_finished: 2026-04-24T09:52:59Z
 ---
 
 # T-1275: Watchdog script for framework services
@@ -87,3 +87,10 @@ task should not be reopened — its title is too vague to scope.
 
 ### 2026-04-23T19:22:12Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-24T09:52:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-24T09:52:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
