@@ -1479,10 +1479,12 @@ concerns:
   trigger_fired: true
   trigger_event: "2026-04-24: Pickup review queue inspection surfaced 6 duplicate pairs from termlink, all same source_task re-ingested 2 days apart."
   detection_lag_days: "4"
-  what_works_now: "Envelope-hash dedup correctly catches byte-identical replays. Self-pickup gate (G-046 / T-1339) correctly skips re-ingest of own completed work. Human can DEFER duplicates manually via Watchtower once queue is triaged."
-  what_remains: "Dedup should additionally key on (source_project, source_task_id, type) — if that triple already has an active/completed inception locally, route the new envelope to auto-deferred/ or merge-into-existing rather than creating T-XXX+N."
-  mitigation_candidate: "Extend pickup_process_one in lib/pickup.sh: after envelope-hash lookup, also scan .tasks/{active,completed}/ for an existing task referencing the same (source_project, source_task) tuple (already recorded in task body as 'source: <project> <T-XXX>'). If present, skip + log to .context/pickup/auto-deferred/cross-project-duplicate/ with a pointer to the canonical target."
-  status: watching
+  what_works_now: "Envelope-hash dedup catches byte-identical replays. Self-pickup gate (G-046 / T-1339) skips re-ingest of own completed work. T-1425 (2026-04-24): second-pass triple dedup (source.project, source.task_id, type) in lib/pickup.sh routes cross-project retries to .context/pickup/auto-deferred/ with a .breadcrumb.yaml pointing at the blocking active T-XXX. supersedes: T-XXX in the envelope bypasses the check (explicit operator override). Empty source.task_id falls through to hash-only (avoids over-collapse on 051-vinix24-style envelopes). 7 regression tests in tests/unit/lib_pickup_triple_dedup.bats pin the behavior."
+  what_remains: "Optional follow-ups from the T-1420 build decomposition: B3 — fw pickup auto-deferred list surface so operators can review what got deferred; B5 — backport/confirm termlink's pickup uses the same lib (shared via shim)."
+  mitigation_candidate: "Core fix landed in T-1425 (commit 81f0ae60). G-059 is materially mitigated; B3/B5 are operator-ergonomic polish, not correctness."
+  status: mitigated
   created: 2026-04-24
   last_reviewed: 2026-04-24
+  mitigated_at: 2026-04-24
+  mitigated_by: T-1425
   related_tasks: [T-1311, T-1345, T-1319, T-1348, T-1302, T-1352, T-1305, T-1353, T-1314, T-1351, T-1321, T-1349, T-1339]
