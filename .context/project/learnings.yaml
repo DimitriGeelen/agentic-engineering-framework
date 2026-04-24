@@ -1994,3 +1994,10 @@ learnings:
   date: 2026-04-24
   context: Added via context agent
   application: TBD
+- id: L-258
+  learning: "Dispatcher pass-through hazard: agent dispatchers like 'fw hook <name>' that exec child scripts do NOT sandbox by default. When the child script is destructive (runs commits, pushes, deletions), the dispatcher entry-point has no safety guard. Three defenses are independently valuable: (1) child script must have a safe DRY_RUN default, (2) child must have a per-invocation cap, (3) dispatcher should require explicit opt-in for destructive modes. Defense (3) remains the structural weak point — as long as (1) and (2) hold, a runaway is bounded. Observed 2026-04-24 via G-016 runaway silent-session scanner (termlink T-1223)."
+  source: P-011
+  task: unknown
+  date: 2026-04-24
+  context: Added via context agent
+  application: TBD
