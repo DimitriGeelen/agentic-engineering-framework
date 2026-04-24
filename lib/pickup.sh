@@ -301,6 +301,14 @@ pickup_process_one() {
     # Move to processed
     mv "$file" "$PICKUP_PROCESSED/" 2>/dev/null || true
 
+    # T-1165: mirror envelope to channel bus (one-way, non-fatal).
+    # Shell pickup stays portable — bridge silently no-ops on any failure.
+    local processed_path="$PICKUP_PROCESSED/$basename_f"
+    local bridge="${FRAMEWORK_ROOT:-}/lib/pickup-channel-bridge.sh"
+    if [ -f "$processed_path" ] && [ -x "$bridge" ]; then
+        "$bridge" "$processed_path" 2>/dev/null || true
+    fi
+
     return 0
 }
 
