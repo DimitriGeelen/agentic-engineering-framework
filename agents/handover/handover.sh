@@ -355,6 +355,24 @@ fi
 # Step 2: Create handover template
 echo -e "${YELLOW}Creating handover document...${NC}"
 
+# T-1216 / T-1212 follow-up: detect silent-session recovery invocations
+# from session-silent-scanner.sh and prepend a banner so the next agent
+# immediately knows this handover lacks live agent context.
+if [ "${RECOVERED:-0}" = "1" ]; then
+    RECOVERED_BANNER="> **[recovered, no agent context]** — this handover was auto-generated
+> by the silent-session scanner, not by the originating agent. The original
+> Claude Code session skipped SessionEnd (bug #17885 /exit, #20197 API 500,
+> SIGKILL, or laptop sleep). Treat below as last-observed state only.
+>
+> - Recovered session ID: \`${RECOVERED_SESSION_ID:-unknown}\`
+> - Idle age at recovery: \`${RECOVERED_AGE_MIN:-unknown} min\`
+> - Transcript: \`${RECOVERED_TRANSCRIPT:-unknown}\`
+
+"
+else
+    RECOVERED_BANNER=""
+fi
+
 cat > "$HANDOVER_FILE" << EOF
 ---
 session_id: $SESSION_ID
@@ -388,7 +406,7 @@ session_narrative: ""
 
 # Session Handover: $SESSION_ID
 
-## Where We Are
+${RECOVERED_BANNER}## Where We Are
 
 $(python3 -c "
 import subprocess, re, collections
