@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1107: Inception: task-ID collision defense-in-depth — globally unique IDs or URL namespacing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:27:42Z
+# ============================================================================
+
+task_id: T-1107
+task_name: "Inception: task-ID collision defense-in-depth — globally unique IDs or URL namespacing"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-11T14:34:33Z
+completed: 2026-04-23T18:42:29Z
+duration_days: 12
+updates_count: 6
+first_commit: 2026-04-11T16:36:46+02:00
+last_commit: 2026-04-11T16:36:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Capture defense-in-depth inception + backfill episodics T-1087..T-1091
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1087.yaml"
+  - ".context/episodic/T-1088.yaml"
+  - ".context/episodic/T-1089.yaml"
+  - ".context/episodic/T-1090.yaml"
+  - ".context/episodic/T-1091.yaml"
+  - "docs/reports/T-1107-task-id-collision-defense.md"
+  - ".tasks/active/T-1107-inception-task-id-collision-defense-in-d.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-11T16:36:46"
+    action: "T-1107: Capture defense-in-depth inception + backfill episodics T-1087..T-1091"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 17527 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17527
+  commits: 2
+  files_changed: 10
+  lines_added: 621
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1107-inception-task-id-collision-defense-in-d.md
+generated_by: context-agent-hybrid

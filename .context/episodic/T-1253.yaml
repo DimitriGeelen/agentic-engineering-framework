@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1253: Pre-push hook VERSION-stamping breaks version.json-based consumer projects (T-106 blocker, T-648 regression)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:27:45Z
+# ============================================================================
+
+task_id: T-1253
+task_name: "Pre-push hook VERSION-stamping breaks version.json-based consumer projects (T-106 blocker, T-648 regression)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-14T07:02:41Z
+completed: 2026-04-18T22:42:38Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-04-14T09:11:29+02:00
+last_commit: 2026-04-14T09:11:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception complete — GO recommendation for auto-detect version scheme
+
+# Key outcomes
+outcomes:
+  - "Spike A complete: stamping block located in pre-push template, block documented"
+  - "Spike B complete: detection method for version.json-based projects identified"
+  - "Spike C complete: 3 fix paths evaluated against directives (Antifragility/Reliability/Usability/Portability)"
+  - "Research artifact written to docs/reports/T-1253-pre-push-version-stamping.md"
+  - "Recommendation written with rationale and GO/NO-GO/DEFER"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1253-pre-push-version-stamping.md"
+  - ".tasks/active/T-1253-pre-push-hook-version-stamping-breaks-ve.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-14T09:11:29"
+    action: "T-1253: Inception complete — GO recommendation for auto-detect version scheme"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6699 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6699
+  commits: 2
+  files_changed: 16
+  lines_added: 705
+  lines_removed: 345
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1253-pre-push-hook-version-stamping-breaks-ve.md
+generated_by: context-agent-hybrid

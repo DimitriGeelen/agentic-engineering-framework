@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-837: Auto-detect context window from model — eliminate hardcoded CONTEXT_WINDOW default
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:27:41Z
+# ============================================================================
+
+task_id: T-837
+task_name: "Auto-detect context window from model — eliminate hardcoded CONTEXT_WINDOW default"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-04T12:58:31Z
+completed: 2026-04-17T21:26:29Z
+duration_days: 13
+updates_count: 13
+first_commit: 2026-04-04T15:02:28+02:00
+last_commit: 2026-04-06T20:33:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception research — auto-detect context window (NO-GO recommended). T-963: Add Recommendation sections to T-837 (NO-GO) and T-548 (NO-GO)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (T-834 false critical from 200K default)"
+  - "Research: model name available in JSONL transcript (`claude-opus-4-6`)"
+  - "Recommendation: NO-GO — 300K default + FW_CONTEXT_WINDOW env var is sufficient"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-837-auto-detect-context-window.md"
+  - ".tasks/active/T-548-npm-install-pathway--evaluate-whether-to.md"
+  - ".tasks/active/T-837-auto-detect-context-window-from-model--e.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T15:02:28"
+    action: "T-837: Inception research — auto-detect context window (NO-GO recommended)"
+  - time: "2026-04-06T20:33:02"
+    action: "T-963: Add Recommendation sections to T-837 (NO-GO) and T-548 (NO-GO)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 19227 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19227
+  commits: 2
+  files_changed: 3
+  lines_added: 175
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-837-auto-detect-context-window-from-model--e.md
+generated_by: context-agent-hybrid

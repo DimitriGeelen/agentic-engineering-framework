@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1200: RCA: Watchtower inception-decide writes duplicate decision blocks — double ## Decision sections
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:27:43Z
+# ============================================================================
+
+task_id: T-1200
+task_name: "RCA: Watchtower inception-decide writes duplicate decision blocks — double ## Decision sections"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T07:35:55Z
+completed: 2026-04-13T07:44:26Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-04-13T09:38:10+02:00
+last_commit: 2026-04-13T09:38:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA inception — duplicate decision block from startsWith prefix
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "RCA inception — duplicate decision block from startsWith prefix"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".context/audits/2026-04-13.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/episodic/T-1129.yaml"
+  - ".context/episodic/T-1146.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "docs/generated/components/tests-unit-lib_config.md"
+  - "docs/generated/components/web-blueprints-__init__.md"
+  - "docs/generated/components/web-shared.md"
+  - "docs/generated/components/web-templates-config.md"
+  - "docs/reports/T-1200-duplicate-decision-rca.md"
+  - ".tasks/active/T-1129-pickup-4-learnings-from-termlink-session.md"
+  - ".tasks/active/T-1200-rca-watchtower-inception-decide-writes-d.md"
+  - ".tasks/completed/T-1129-pickup-4-learnings-from-termlink-session.md"
+  - ".tasks/completed/T-1146-pickup-critical-rca-agent-command-amnesi.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T09:38:10"
+    action: "T-1200: RCA inception — duplicate decision block from startsWith prefix"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 21
+  lines_added: 807
+  lines_removed: 147
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1200-rca-watchtower-inception-decide-writes-d.md
+generated_by: context-agent-hybrid

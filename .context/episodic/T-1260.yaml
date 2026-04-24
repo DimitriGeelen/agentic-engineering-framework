@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1260: Human-owned inception tasks cannot complete — 5 layered root causes (sovereignty, dispatch, template drift, recommendation gate, tier0 hash)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:27:45Z
+# ============================================================================
+
+task_id: T-1260
+task_name: "Human-owned inception tasks cannot complete — 5 layered root causes (sovereignty, dispatch, template drift, recommendation gate, tier0 hash)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-14T23:01:08Z
+completed: 2026-04-18T22:44:20Z
+duration_days: 4
+updates_count: 4
+first_commit: 2026-04-15T01:03:56+02:00
+last_commit: 2026-04-15T15:41:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create high-priority inception — human inceptions cannot complete (5 root causes). Spike findings + GO recommendation — human inception completion (5+ surfaces)
+
+# Key outcomes
+outcomes:
+  - "Spike A complete: sovereignty gate asymmetry traced — CLAUDECODE inheritance regression confirmed (T-1259 blocks Watchtower decide)"
+  - "Spike B complete: dispatch script origin identified — `fabric-purpose-fill` is stale worker reference, no in-codebase definition; class L-006 again"
+  - "Spike C complete: template completeness audit done — current template OK, older tasks need backfill"
+  - "Spike D complete: recommendation gate ordering diagnosed — order is correct, but Decision block writer is non-idempotent (root of T-002's duplicates)"
+  - "Spike E complete: Tier 0 hash drift root cause — raw command hashed without whitespace/quote normalization"
+  - "Spike F complete: human-terminal workaround verified — T-006 case confirms the path works; documented"
+  - "Research artifact written to `docs/reports/T-1260-human-inception-completion.md`"
+  - "Recommendation with GO/NO-GO/DEFER + concrete bugfix task list for build follow-up (B1-B9 with P0/P1/P2/P3 tags)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1260-human-inception-completion.md"
+  - ".tasks/active/T-1259-block-agent-invocation-of-fw-inception-d.md"
+  - ".tasks/active/T-1260-human-owned-inception-tasks-cannot-compl.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-15T01:03:56"
+    action: "T-1260: Create high-priority inception — human inceptions cannot complete (5 root causes)"
+  - time: "2026-04-15T15:41:13"
+    action: "T-1260: Spike findings + GO recommendation — human inception completion (5+ surfaces)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5743 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5743
+  commits: 2
+  files_changed: 3
+  lines_added: 378
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1260-human-owned-inception-tasks-cannot-compl.md
+generated_by: context-agent-hybrid

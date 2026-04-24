@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1319: Pickup: fw fabric drift and scan miss recursive glob matches — bash ** needs shopt -s globstar (from termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:27:50Z
+# ============================================================================
+
+task_id: T-1319
+task_name: "Pickup: fw fabric drift and scan miss recursive glob matches — bash ** needs shopt -s globstar (from termlink)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T22:01:09Z
+completed: 2026-04-18T22:50:48Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-04-19T00:03:48+02:00
+last_commit: 2026-04-19T00:03:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Triage termlink P-037 — fabric drift/scan globstar bug → GO (build T-1320)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (line numbers verified: drift.sh:26, register.sh:292)"
+  - "Assumptions tested (no other glob loops in agents/fabric/lib/ found via grep)"
+  - "Recommendation written with rationale (GO — build sibling T-1320)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Triage termlink P-037 — fabric drift/scan globstar bug → GO (build T-1320)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1319-fabric-globstar-divergence.md"
+  - ".tasks/active/T-1319-pickup-fw-fabric-drift-and-scan-miss-rec.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-19T00:03:48"
+    action: "T-1319: Triage termlink P-037 — fabric drift/scan globstar bug → GO (build T-1320)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 49 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 49
+  commits: 1
+  files_changed: 2
+  lines_added: 183
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1319-pickup-fw-fabric-drift-and-scan-miss-rec.md
+generated_by: context-agent-hybrid

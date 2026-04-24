@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1115: Pre-hook Anthropic built-in Task tool (TaskCreate/TaskUpdate) into framework T-XXX governance
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:27:42Z
+# ============================================================================
+
+task_id: T-1115
+task_name: "Pre-hook Anthropic built-in Task tool (TaskCreate/TaskUpdate) into framework T-XXX governance"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-11T22:18:48Z
+completed: 2026-04-12T09:27:16Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-04-12T00:32:12+02:00
+last_commit: 2026-04-12T00:32:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — pre-hook Anthropic built-in Task tool into framework governance
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1115-anthropic-task-tool-prehook.md"
+  - ".tasks/active/T-1115-pre-hook-anthropic-built-in-task-tool-ta.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T00:32:12"
+    action: "T-1115: Inception — pre-hook Anthropic built-in Task tool into framework governance"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 668 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 668
+  commits: 1
+  files_changed: 2
+  lines_added: 571
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1115-pre-hook-anthropic-built-in-task-tool-ta.md
+generated_by: context-agent-hybrid

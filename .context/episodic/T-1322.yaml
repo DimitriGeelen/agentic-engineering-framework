@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1322: Pickup: fw inception decide doesnt tick the RUBBER-STAMP Record go/no-go decision Human AC — tasks stay in active/ forever (from termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:27:51Z
+# ============================================================================
+
+task_id: T-1322
+task_name: "Pickup: fw inception decide doesnt tick the RUBBER-STAMP Record go/no-go decision Human AC — tasks stay in active/ forever (from termlink)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T22:23:27Z
+completed: 2026-04-18T22:51:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-19T00:32:24+02:00
+last_commit: 2026-04-19T00:32:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Triage termlink P-039 — inception decide misses RUBBER-STAMP AC → GO (build T-1324 next session)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (lib/inception.sh do_inception_decide writes Decision block but doesn't tick the [RUBBER-STAMP] human AC)"
+  - "Assumptions tested (template default human AC for inception tasks is \"[ ] [REVIEW] Review exploration findings and approve go/no-go decision\")"
+  - "Recommendation written with rationale (GO — surgical edit; build deferred to next session due to edge cases + budget pressure)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1322-inception-decide-rubber-stamp.md"
+  - ".tasks/active/T-1322-pickup-fw-inception-decide-doesnt-tick-t.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-19T00:32:24"
+    action: "T-1322: Triage termlink P-039 — inception decide misses RUBBER-STAMP AC → GO (build T-1324 next session)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28
+  commits: 1
+  files_changed: 2
+  lines_added: 96
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1322-pickup-fw-inception-decide-doesnt-tick-t.md
+generated_by: context-agent-hybrid

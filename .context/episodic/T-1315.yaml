@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1315: Pickup from email-archive: vendored-vs-repo mode blind spot RCA (sourced T-1043)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:27:49Z
+# ============================================================================
+
+task_id: T-1315
+task_name: "Pickup from email-archive: vendored-vs-repo mode blind spot RCA (sourced T-1043)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-18T20:33:25Z
+completed: 2026-04-22T11:14:38Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-04-22T07:35:54+02:00
+last_commit: 2026-04-22T13:14:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add closure note + 13 pickup closure stubs — satisfies C-001 audit (completed inceptions need research artifact). Partial-complete (DEFER agent-complete) — email-archive vendored-mode inception decision already recorded 2026-04-18; transition from started-work
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested (T-1257 + T-1310 already shipped, mapped to email-archive's Options 2 + 3)"
+  - "Recommendation written with rationale (DEFER pending email-archive retest)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".context/audits/2026-04-22.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/watchtower.log"
+  - "docs/reports/T-1124-closure.md"
+  - "docs/reports/T-1127-closure.md"
+  - "docs/reports/T-1130-closure.md"
+  - "docs/reports/T-1131-closure.md"
+  - "docs/reports/T-1132-closure.md"
+  - "docs/reports/T-1133-closure.md"
+  - "docs/reports/T-1138-closure.md"
+  - "docs/reports/T-1140-closure.md"
+  - "docs/reports/T-1272-closure.md"
+  - "docs/reports/T-1276-closure.md"
+  - "docs/reports/T-1296-closure.md"
+  - "docs/reports/T-1297-closure.md"
+  - "docs/reports/T-1298-closure.md"
+  - "docs/reports/T-1300-closure.md"
+  - "docs/reports/T-1315-closure.md"
+  - ".tasks/active/T-1313-pickup-anti-pattern-detected-umbrella-in.md"
+  - ".tasks/active/T-1315-pickup-from-email-archive-vendored-vs-re.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-22T07:35:54"
+    action: "T-1315: Add closure note + 13 pickup closure stubs — satisfies C-001 audit (completed inceptions need research artifact)"
+  - time: "2026-04-22T13:14:37"
+    action: "T-1315: Partial-complete (DEFER agent-complete) — email-archive vendored-mode inception decision already recorded 2026-04-18; transition from started-work"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5201 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5201
+  commits: 2
+  files_changed: 26
+  lines_added: 294
+  lines_removed: 843
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1315-pickup-from-email-archive-vendored-vs-re.md
+generated_by: context-agent-hybrid
