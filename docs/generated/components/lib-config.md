@@ -36,7 +36,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 |--------|-------------|
 | `lib/config.sh` | calls |
 
-## Used By (21)
+## Used By (22)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -61,6 +61,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 | `tests/unit/lib_config.bats` | called_by |
 | `web/templates/config.html` | read_by |
 | `agents/git/lib/hooks.sh` | called_by |
+| `agents/monitor/liveness-check.sh` | called_by |
 
 ## Related
 

@@ -4,16 +4,16 @@ name: "G-058 fix 1/N — handover_push_timeout.bats expects stale default 15s, T
 description: >
   G-058 fix 1/N — handover_push_timeout.bats expects stale default 15s, T-1341 bumped to 60s
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/unit/handover_push_timeout.bats]
 related_tasks: []
 created: 2026-04-23T19:45:11Z
-last_update: 2026-04-23T19:45:11Z
-date_finished: null
+last_update: 2026-04-23T19:46:48Z
+date_finished: 2026-04-23T19:46:48Z
 ---
 
 # T-1409: G-058 fix 1/N — handover_push_timeout.bats expects stale default 15s, T-1341 bumped to 60s
@@ -57,3 +57,6 @@ bats tests/unit/handover_push_timeout.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1409-g-058-fix-1n--handoverpushtimeoutbats-ex.md
 - **Context:** Initial task creation
+
+### 2026-04-23T19:46:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

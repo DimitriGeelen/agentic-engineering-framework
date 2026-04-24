@@ -23,13 +23,14 @@ Stale lock cleanup: locks older than KEYLOCK_TIMEOUT (default 300s) are auto-rel
 |--------|-------------|
 | `lib/config.sh` | calls |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/task-create/update-task.sh` | called_by |
 | `tests/unit/lib_keylock.bats` | called-by |
 | `tests/unit/lib_keylock.bats` | called_by |
+| `agents/task-create/create-task.sh` | called_by |
 
 ## Related
 

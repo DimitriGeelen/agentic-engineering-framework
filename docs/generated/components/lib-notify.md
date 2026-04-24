@@ -19,7 +19,7 @@ Configuration:
 NTFY_ENABLED — set to "true" to enable (default: disabled)
 Design: Fire-and-forget, backgrounded, never blocks the calling script.
 
-## Used By (7)
+## Used By (8)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -30,6 +30,7 @@ Design: Fire-and-forget, backgrounded, never blocks the calling script.
 | `tests/unit/lib_notify.bats` | called-by |
 | `agents/handover/handover.sh` | called_by |
 | `tests/unit/lib_notify.bats` | called_by |
+| `lib/pending.sh` | called_by |
 
 ## Related
 

@@ -4,7 +4,7 @@ name: "G-058 fix 4/N — T-1279 verification calls full audit (slow + 20s sweep 
 description: >
   G-058 fix 4/N — T-1279 verification calls full audit (slow + 20s sweep timeout); replace with direct dup-ID check
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-23T19:52:45Z
-last_update: 2026-04-23T19:52:45Z
-date_finished: null
+last_update: 2026-04-23T19:54:30Z
+date_finished: 2026-04-23T19:54:30Z
 ---
 
 # T-1412: G-058 fix 4/N — T-1279 verification calls full audit (slow + 20s sweep timeout); replace with direct dup-ID check
@@ -65,3 +65,6 @@ test "$(ls .tasks/active/T-*.md .tasks/completed/T-*.md 2>/dev/null | grep -oE '
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1412-g-058-fix-4n--t-1279-verification-calls-.md
 - **Context:** Initial task creation
+
+### 2026-04-23T19:54:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

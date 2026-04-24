@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1411: G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks use absolute paths
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-23T19:52:07Z
+# ============================================================================
+
+task_id: T-1411
+task_name: "G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks use absolute paths"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-23T19:50:06Z
+completed: 2026-04-23T19:52:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-23T21:52:04+02:00
+last_commit: 2026-04-23T21:52:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-058 fix 3/N — relax T-663 verification (absolute fw paths + framework-aware init)
+
+# Key outcomes
+outcomes:
+  - "T-663's python verification rewritten to accept absolute /bin/fw paths"
+  - "Assertion: `all('bin/fw ' in c for c in cmds)` (preserves no-bare-fw intent)"
+  - "Stale `fw_prefix=\"bin/fw\"` literal grep relaxed to `grep -qE 'fw_prefix=.*bin/fw'` (init.sh now uses framework-aware path)"
+  - "All verification commands pass against current source"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "G-058 fix 3/N — relax T-663 verification (absolute fw paths + framework-aware init)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1411-g-058-fix-3n--t-663-verification-asserts.md"
+  - ".tasks/active/T-663-fix-framework-hooks--replace-bare-fw-wit.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-23T21:52:04"
+    action: "T-1411: G-058 fix 3/N — relax T-663 verification (absolute fw paths + framework-aware init)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 72
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1411-g-058-fix-3n--t-663-verification-asserts.md
+generated_by: context-agent-hybrid

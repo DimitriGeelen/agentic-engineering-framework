@@ -4,7 +4,7 @@ name: "G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks u
 description: >
   G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks use absolute paths
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-23T19:50:06Z
-last_update: 2026-04-23T19:50:06Z
-date_finished: null
+last_update: 2026-04-23T19:52:04Z
+date_finished: 2026-04-23T19:52:04Z
 ---
 
 # T-1411: G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks use absolute paths
@@ -63,3 +63,6 @@ grep -qE 'fw_prefix=.*bin/fw' lib/init.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1411-g-058-fix-3n--t-663-verification-asserts.md
 - **Context:** Initial task creation
+
+### 2026-04-23T19:52:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

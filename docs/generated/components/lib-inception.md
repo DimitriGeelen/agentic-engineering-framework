@@ -28,7 +28,7 @@ When the active task has `workflow_type: inception`:
 | `lib/review.sh` | calls |
 | `lib/task-audit.sh` | calls |
 
-## Used By (9)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -40,6 +40,7 @@ When the active task has `workflow_type: inception`:
 | `docs/reports/T-1136-session-init-concerns-check.md` | produced-by_by |
 | `docs/reports/T-1212-consumer-watchtower-rca.md` | produced-by_by |
 | `docs/reports/T-607-correction-refinement-loop.md` | produced-by_by |
+| `tests/unit/inception_decide_ac_tick.bats` | called_by |
 
 ## Related
 
