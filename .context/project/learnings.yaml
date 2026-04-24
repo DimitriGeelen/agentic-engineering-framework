@@ -1966,3 +1966,10 @@ learnings:
   date: 2026-04-24
   context: Added via context agent
   application: TBD
+- id: L-254
+  learning: "Structural code fixes (like T-1324's auto-tick in fw inception decide) often need a retroactive sweep command to clear pre-fix backlog. Ship the fix AND the sweep together, otherwise zombie state accumulates: 51 work-completed tasks stuck in active/ because decide-paths predating the fix never ran it, and hand-edit bulk-triage commits bypass the decide path entirely. Pattern: when adding auto-ticking/auto-state-transition logic, also add 'fw X sweep [--dry-run]' that re-applies the logic to historical matches."
+  source: P-001
+  task: T-1423
+  date: 2026-04-24
+  context: Added via context agent
+  application: TBD

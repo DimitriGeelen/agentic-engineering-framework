@@ -19,6 +19,9 @@ do_inception() {
         decide)
             do_inception_decide "$@"
             ;;
+        sweep)
+            do_inception_sweep "$@"
+            ;;
         ""|-h|--help)
             show_inception_help
             ;;
@@ -37,6 +40,8 @@ show_inception_help() {
     echo "  start <name>                      Create inception task + set focus"
     echo "  status                            Show all inception tasks"
     echo "  decide <T-XXX> go|no-go|defer     Record go/no-go decision"
+    echo "  sweep [--dry-run]                 Retroactively finalize inceptions with"
+    echo "                                    recorded decisions but unchecked Human ACs"
     echo ""
     echo -e "${BOLD}Options:${NC}"
     echo "  start --owner <owner>             Set task owner (default: human)"
@@ -452,5 +457,92 @@ EOF
         echo -e "${YELLOW}Next: Capture learnings from exploration (fw context add-learning)${NC}"
     else
         echo -e "${YELLOW}Next: Continue exploration and decide when ready${NC}"
+    fi
+}
+
+# T-1423: Retroactive sweep — tick Human AC + finalize inceptions stuck in active/
+# with recorded decisions. Covers the pre-T-1324 backlog and hand-edited decisions
+# that bypassed do_inception_decide.
+do_inception_sweep() {
+    local dry_run=false
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --dry-run) dry_run=true ;;
+            -h|--help)
+                echo "fw inception sweep [--dry-run]"
+                echo ""
+                echo "Finds tasks in .tasks/active/ with status: work-completed AND a"
+                echo "recorded ## Decision block. Ticks Human AC, then finalizes."
+                return 0
+                ;;
+        esac
+        shift
+    done
+
+    local tasks_dir="$PROJECT_ROOT/.tasks"
+    local active_dir="$tasks_dir/active"
+    local completed_dir="$tasks_dir/completed"
+
+    [ -d "$active_dir" ] || { echo "No active tasks directory"; return 1; }
+    mkdir -p "$completed_dir"
+
+    local scanned=0
+    local eligible=0
+    local ticked=0
+    local moved=0
+    local still_pending=0
+    local skipped=""
+
+    for f in "$active_dir"/T-*.md; do
+        [ -f "$f" ] || continue
+        scanned=$((scanned+1))
+
+        # Must be work-completed
+        grep -q "^status: work-completed$" "$f" || continue
+        # Must have a recorded decision
+        grep -qE "^\*\*Decision\*\*: (GO|NO-GO|DEFER)" "$f" || continue
+
+        eligible=$((eligible+1))
+        local tid
+        tid=$(basename "$f" | grep -oE "^T-[0-9]+")
+
+        if [ "$dry_run" = true ]; then
+            local dec
+            dec=$(grep -E "^\*\*Decision\*\*:" "$f" | head -1 | sed 's/^\*\*Decision\*\*: //; s/ .*//')
+            echo "  $tid: decision=$dec"
+            continue
+        fi
+
+        # Tick the Human AC
+        tick_inception_decide_acs "$f"
+        ticked=$((ticked+1))
+
+        # Recount Human ACs after ticking (grep -c returns exit 1 on zero matches under pipefail)
+        local human_unchecked
+        human_unchecked=$(awk '/^### Human/,/^## [A-Z]/' "$f" | grep -cE '^\s*- \[ \]' || true)
+
+        if [ "${human_unchecked:-0}" -eq 0 ]; then
+            local dest="$completed_dir/$(basename "$f")"
+            mv "$f" "$dest"
+            moved=$((moved+1))
+            echo "  $tid: ticked + moved to completed/"
+        else
+            still_pending=$((still_pending+1))
+            skipped+="$tid ($human_unchecked Human AC still unchecked)"$'\n'
+            echo "  $tid: ticked but $human_unchecked Human AC still unchecked — stays in active/"
+        fi
+    done
+
+    echo ""
+    if [ "$dry_run" = true ]; then
+        echo -e "${BOLD}Dry run:${NC} scanned=$scanned  eligible=$eligible"
+        echo "Re-run without --dry-run to apply."
+    else
+        echo -e "${BOLD}Sweep complete:${NC} scanned=$scanned  eligible=$eligible  ticked=$ticked  moved=$moved  stays-pending=$still_pending"
+        if [ "$still_pending" -gt 0 ]; then
+            echo ""
+            echo -e "${YELLOW}Tasks with other Human ACs still pending (tick patterns didn't cover them):${NC}"
+            echo "$skipped" | sed 's/^/  /'
+        fi
     fi
 }
