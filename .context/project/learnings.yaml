@@ -1987,3 +1987,10 @@ learnings:
   date: 2026-04-24
   context: Added via context agent
   application: TBD
+- id: L-257
+  learning: "When modifying framework source (lib/*.sh, agents/**/*.sh), always sync the vendored copy in .agentic-framework/. Prior session updated lib/subscribe-learnings-from-bus.sh T-1217→T-1219 but the vendored copy stayed on v1 (untracked). Consumers pulling via fw upgrade would have received the bugged version. Sync-and-stage should be part of the same commit as the source change."
+  source: P-001
+  task: T-1432
+  date: 2026-04-24
+  context: Added via context agent
+  application: TBD

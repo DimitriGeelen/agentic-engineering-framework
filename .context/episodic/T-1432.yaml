@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1432: sync vendored .agentic-framework/lib/ bus scripts (publish-learning-to-bus, subscribe-learnings-from-bus) — subscribe is v1 stale after T-1219 fix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T15:45:46Z
+# ============================================================================
+
+task_id: T-1432
+task_name: "sync vendored .agentic-framework/lib/ bus scripts (publish-learning-to-bus, subscribe-learnings-from-bus) — subscribe is v1 stale after T-1219 fix"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T15:44:43Z
+completed: 2026-04-24T15:45:43Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`.agentic-framework/lib/publish-learning-to-bus.sh` == `lib/publish-learning-to-bus.sh`"
+  - "`.agentic-framework/lib/subscribe-learnings-from-bus.sh` == `lib/subscribe-learnings-from-bus.sh`"
+  - "Both vendored files are tracked (no `??` status)"
+  - "Vendored subscribe uses `event poll` not `event collect` (T-1219 v2)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1432-sync-vendored-agentic-frameworklib-bus-s.md
+generated_by: context-agent-hybrid
