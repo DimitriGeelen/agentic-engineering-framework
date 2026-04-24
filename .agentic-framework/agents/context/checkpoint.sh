@@ -159,7 +159,12 @@ warn_by_tokens() {
             echo "AUTO-HANDOVER: Triggering handover..." >&2
             echo "1" > "$handover_lock"
             date +%s > "$handover_cooldown"
-            if "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>&1 | tail -5 >&2; then
+            # T-1277: belt-and-braces — even with handover.sh's per-push timeout,
+            # bound the total auto-handover wall time so the PostToolUse hook
+            # cannot stall the Claude Code session for hours on slow networks.
+            # Default 60s (push×N + commit + audit + handover write).
+            _ah_total_timeout="${FW_HANDOVER_TOTAL_TIMEOUT:-60}"
+            if timeout "$_ah_total_timeout" "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>&1 | tail -5 >&2; then
                 echo "AUTO-HANDOVER: Handover committed. Fill [TODO] sections, then re-commit." >&2
                 # T-186: Write restart signal for wrapper script (T-179 auto-restart)
                 local restart_signal="$CONTEXT_DIR/working/.restart-requested"
@@ -172,7 +177,7 @@ warn_by_tokens() {
 SIGNAL_EOF
                 echo "AUTO-RESTART: Signal written — wrapper will auto-restart on exit." >&2
             else
-                echo "AUTO-HANDOVER: Failed — run 'fw handover' manually." >&2
+                echo "AUTO-HANDOVER: Failed — run '$(_fw_cmd) handover' manually." >&2
             fi
             rm -f "$handover_lock"
         fi
@@ -180,7 +185,7 @@ SIGNAL_EOF
         echo "" >&2
         echo "WARNING: Context at ${tokens} tokens (~${pct}% of context window)." >&2
         echo "BUDGET: Do not start new implementation work. Commit and handover." >&2
-        echo "ACTION: Commit work, then 'fw handover --checkpoint'" >&2
+        echo "ACTION: Commit work, then '$(_fw_cmd) handover --checkpoint'" >&2
         echo "" >&2
     elif [ "$tokens" -ge "$TOKEN_WARN" ]; then
         echo "" >&2
@@ -205,7 +210,7 @@ detect_compaction() {
             echo "===========================================" >&2
             echo "COMPACTION DETECTED: Tokens dropped ${prev} -> ${tokens}." >&2
             echo "Context was summarized — working memory is lost." >&2
-            echo "ACTION: Run 'fw resume status' then 'fw resume sync'." >&2
+            echo "ACTION: Run '$(_fw_cmd) resume status' then '$(_fw_cmd) resume sync'." >&2
             echo "===========================================" >&2
             echo "" >&2
         fi
@@ -219,13 +224,13 @@ warn_by_calls() {
         echo "" >&2
         echo "===========================================" >&2
         echo "CRITICAL: $count tool calls since last commit (no token data)." >&2
-        echo "ACTION: Commit now, then 'fw handover'." >&2
+        echo "ACTION: Commit now, then '$(_fw_cmd) handover'." >&2
         echo "===========================================" >&2
         echo "" >&2
     elif [ "$count" -ge "$CALL_URGENT" ]; then
         echo "" >&2
         echo "WARNING: $count tool calls since last commit (no token data)." >&2
-        echo "Consider: fw handover --checkpoint" >&2
+        echo "Consider: $(_fw_cmd) handover --checkpoint" >&2
         echo "" >&2
     elif [ "$count" -ge "$CALL_WARN" ]; then
         echo "" >&2
@@ -285,7 +290,9 @@ case "${1:-}" in
                     # Check age — only notify for approvals < 1 hour old
                     responded_at=$(grep 'responded_at:' "$resolved" 2>/dev/null | head -1 | sed "s/.*responded_at: *'\\{0,1\\}//;s/'.*//")
                     if [ -n "$responded_at" ]; then
-                        resp_epoch=$(date -d "$responded_at" +%s 2>/dev/null) || resp_epoch=0
+                        # T-1158: Portable date conversion
+                        source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/lib/compat.sh" 2>/dev/null || true
+                        resp_epoch=$(_date_to_epoch "$responded_at" 2>/dev/null) || resp_epoch=0
                         now_epoch=$(date +%s)
                         age=$(( now_epoch - resp_epoch ))
                         [ "$age" -gt 3600 ] && continue

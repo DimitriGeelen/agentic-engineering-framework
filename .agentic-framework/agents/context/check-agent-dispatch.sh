@@ -93,16 +93,16 @@ echo "" >&2
 echo "BLOCKED: Agent dispatch #${NEW_COUNT} exceeds limit (${DISPATCH_LIMIT})." >&2
 echo "" >&2
 echo "TermLink is installed — use it for heavy parallel work:" >&2
-echo "  fw termlink dispatch --name worker-1 --prompt 'your prompt here'" >&2
+echo "  $(_fw_cmd) termlink dispatch --name worker-1 --prompt 'your prompt here'" >&2
 echo "" >&2
 echo "TermLink dispatch costs ZERO parent context tokens." >&2
 echo "Agent dispatches share the parent context window." >&2
 echo "" >&2
 echo "To approve Agent dispatch (5-min window):" >&2
-echo "  fw dispatch approve" >&2
+echo "  $(_fw_cmd) dispatch approve" >&2
 echo "" >&2
 echo "To reset counter (e.g., after compaction):" >&2
-echo "  fw dispatch reset" >&2
+echo "  $(_fw_cmd) dispatch reset" >&2
 echo "" >&2
 echo "Policy: T-533 (TermLink-first dispatch enforcement)" >&2
 exit 2

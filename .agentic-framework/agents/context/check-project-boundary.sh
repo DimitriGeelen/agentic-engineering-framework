@@ -90,7 +90,7 @@ except:
     echo "" >&2
     echo "  For cross-project reads, use TermLink dispatch:" >&2
     echo "" >&2
-    echo "    fw termlink dispatch --name read --project /opt/other \\" >&2
+    echo "    $(_fw_cmd) termlink dispatch --name read --project /opt/other \\" >&2
     echo "      --prompt 'cat README.md and return its contents'" >&2
     echo "" >&2
     echo "  Policy: T-559 (Project Boundary Enforcement)" >&2
@@ -146,14 +146,17 @@ if not project_root:
 # T-1361 / G-053-C: Strip content between balanced "..." and '...' before
 # pattern scanning. Prevents false-positives on quoted string literals (commit
 # messages, echo arguments, documentation examples) that happen to mention
-# absolute paths. Imperfect for escaped quotes, but covers 95%+ of real cases.
+# absolute paths. Imperfect for escaped quotes inside strings, but covers 95%+
+# of real cases. Lengths preserved so position-dependent patterns still work.
 def _strip_quoted(s):
+    # Walk char-by-char, tracking quote state.
     out = []
     i = 0
     n = len(s)
     while i < n:
         c = s[i]
         if c == '\\' and i + 1 < n:
+            # Preserve escaped pair as-is (two chars)
             out.append(c)
             out.append(s[i + 1])
             i += 2
@@ -162,6 +165,7 @@ def _strip_quoted(s):
             quote = c
             out.append(c)
             i += 1
+            # Consume until matching quote, replacing content with spaces.
             while i < n and s[i] != quote:
                 if s[i] == '\\' and i + 1 < n:
                     out.append(' ')
@@ -171,7 +175,7 @@ def _strip_quoted(s):
                 out.append(' ' if s[i] != '\n' else '\n')
                 i += 1
             if i < n:
-                out.append(s[i])
+                out.append(s[i])  # closing quote
                 i += 1
             continue
         out.append(c)
@@ -233,7 +237,7 @@ PYEOF
     echo "  For legitimate cross-project work, use TermLink dispatch which" >&2
     echo "  runs the command in the target project's own session context:" >&2
     echo "" >&2
-    echo "    fw termlink dispatch --name work --project /opt/other \\" >&2
+    echo "    $(_fw_cmd) termlink dispatch --name work --project /opt/other \\" >&2
     echo "      --prompt 'describe the work for the target project'" >&2
     echo "" >&2
     echo "  Or spawn an interactive TermLink session rooted in the target:" >&2
