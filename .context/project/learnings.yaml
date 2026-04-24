@@ -1973,3 +1973,10 @@ learnings:
   date: 2026-04-24
   context: Added via context agent
   application: TBD
+- id: L-255
+  learning: "Cross-project retry dedup: fast-path (hash) + second-pass (semantic triple) + escape hatch (supersedes:). Receiver-side dedup beats upstream coordination. Empty identity key must fall through to fast-path or the semantic pass over-collapses distinct signals."
+  source: G-059
+  task: T-1425
+  date: 2026-04-24
+  context: Added via context agent
+  application: TBD
