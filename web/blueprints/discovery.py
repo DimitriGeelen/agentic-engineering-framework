@@ -10,7 +10,7 @@ from pathlib import Path
 
 from flask import Blueprint, Response, request
 
-from web.context_loader import load_concerns, load_decisions, load_learnings, load_patterns, load_practices
+from web.context_loader import load_concerns, load_decisions, load_learnings, load_patterns, load_practices, load_received_learnings
 from web.shared import PROJECT_ROOT, render_page, sse_event
 
 log = logging.getLogger(__name__)
@@ -98,12 +98,15 @@ def learnings():
 
     practices_list = load_practices()
 
+    received = load_received_learnings()
+
     return render_page(
         "learnings.html",
         page_title="Learnings",
         learnings=learnings_list,
         patterns=patterns_grouped,
         practices=practices_list,
+        received_learnings=received,
     )
 
 
