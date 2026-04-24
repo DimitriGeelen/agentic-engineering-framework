@@ -25,6 +25,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
+source "$FRAMEWORK_ROOT/lib/watchtower.sh"
 fw_hook_crash_trap "check-tier0"
 APPROVAL_FILE="$PROJECT_ROOT/.context/working/.tier0-approval"
 
@@ -79,8 +80,18 @@ def strip_quotes(cmd):
     cmd = re.sub(r'\"[^\"]*\"', '\"\"', cmd)
     return cmd
 
+# T-1427: Strip bash comments (# through end-of-line) so that commented-out
+# references to Tier 0 phrases in diagnostic/exploratory commands don't
+# trigger false-positive blocks. Bash treats # as a comment only at the
+# start of a token — i.e. at line start or preceded by whitespace. An
+# unescaped # after non-whitespace (like URL fragments) is NOT a comment.
+# Apply AFTER strip_quotes so # inside quoted strings is already neutralized.
+def strip_comments(cmd):
+    return re.sub(r'(^|\s)#[^\n]*', r'\1', cmd)
+
 command_stripped = strip_heredocs(command)
 command_stripped = strip_quotes(command_stripped)
+command_stripped = strip_comments(command_stripped)
 
 # Tier 0 destructive patterns — high confidence, low false positive
 # Each tuple: (regex_pattern, risk_description)
@@ -338,21 +349,8 @@ if feedback:
 fi
 
 # ── Block with explanation ──
-# Detect Watchtower URL for approval link (T-638)
-WT_URL="${WATCHTOWER_URL:-}"
-if [ -z "$WT_URL" ]; then
-    WT_PORT="" WT_HOST="" WT_PID=""
-    if [ -f "$PROJECT_ROOT/.context/working/watchtower.pid" ]; then
-        WT_PID=$(cat "$PROJECT_ROOT/.context/working/watchtower.pid" 2>/dev/null)
-        if [ -n "$WT_PID" ] && kill -0 "$WT_PID" 2>/dev/null; then
-            WT_PORT=$(ss -tlnp 2>/dev/null | grep "pid=$WT_PID" | grep -oP ':(\d+)\s' | tr -d ': ' | head -1)
-        fi
-    fi
-    WT_HOST=$(hostname -I 2>/dev/null | awk '{print $1}')
-    WT_HOST="${WT_HOST:-$(hostname 2>/dev/null)}"
-    WT_HOST="${WT_HOST:-localhost}"
-    WT_URL="http://${WT_HOST}:${WT_PORT:-3000}"
-fi
+# Detect Watchtower URL via shared helper (T-1154, T-1156)
+WT_URL=$(_watchtower_url 2>/dev/null || echo "http://localhost:3000")
 
 echo "" >&2
 echo "══════════════════════════════════════════════════════════" >&2

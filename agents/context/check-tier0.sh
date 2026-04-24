@@ -80,8 +80,18 @@ def strip_quotes(cmd):
     cmd = re.sub(r'\"[^\"]*\"', '\"\"', cmd)
     return cmd
 
+# T-1427: Strip bash comments (# through end-of-line) so that commented-out
+# references to Tier 0 phrases in diagnostic/exploratory commands don't
+# trigger false-positive blocks. Bash treats # as a comment only at the
+# start of a token — i.e. at line start or preceded by whitespace. An
+# unescaped # after non-whitespace (like URL fragments) is NOT a comment.
+# Apply AFTER strip_quotes so # inside quoted strings is already neutralized.
+def strip_comments(cmd):
+    return re.sub(r'(^|\s)#[^\n]*', r'\1', cmd)
+
 command_stripped = strip_heredocs(command)
 command_stripped = strip_quotes(command_stripped)
+command_stripped = strip_comments(command_stripped)
 
 # Tier 0 destructive patterns — high confidence, low false positive
 # Each tuple: (regex_pattern, risk_description)
