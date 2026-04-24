@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1420: Cross-project pickup semantic dedup — hash-only misses 'same bug, different envelope bytes' (G-059)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-24T12:56:56Z
+# ============================================================================
+
+task_id: T-1420
+task_name: "Cross-project pickup semantic dedup — hash-only misses 'same bug, different envelope bytes' (G-059)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-24T10:04:58Z
+completed: 2026-04-24T12:56:53Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-24T12:06:40+02:00
+last_commit: 2026-04-24T12:17:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-059 inception — Problem/Assumptions/Plan/Constraints/Scope/Recommendation filled (GO: triple dedup in lib/pickup.sh). Spike A+C+D + research artifact — A1 confirmed (2 termlink retry pairs in 50 envelopes), dedup surface mapped (lib/pickup.sh:114 partial triple + includes drift-sensitive summary)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (Spike A: 50 envelopes, 5 triple collisions in current processed/rejected state — see Spike Findings)"
+  - "Assumptions tested (A1 confirmed by Spikes A + C; A3/A4 grounded by Spike C; A5 grounded by Spike C)"
+  - "Recommendation written with rationale (§Recommendation below: GO — triple dedup second-pass in `lib/pickup.sh`)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1420-pickup-semantic-dedup.md"
+  - ".tasks/active/T-1420-cross-project-pickup-semantic-dedup--has.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-24T12:06:40"
+    action: "T-1420: G-059 inception — Problem/Assumptions/Plan/Constraints/Scope/Recommendation filled (GO: triple dedup in lib/pickup.sh)"
+  - time: "2026-04-24T12:17:31"
+    action: "T-1420: Spike A+C+D + research artifact — A1 confirmed (2 termlink retry pairs in 50 envelopes), dedup surface mapped (lib/pickup.sh:114 partial triple + includes drift-sensitive summary)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 171 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 171
+  commits: 2
+  files_changed: 2
+  lines_added: 243
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1420-cross-project-pickup-semantic-dedup--has.md
+generated_by: context-agent-hybrid

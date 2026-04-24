@@ -4,7 +4,7 @@ name: "Cross-project pickup semantic dedup — hash-only misses 'same bug, diffe
 description: >
   Inception: Cross-project pickup semantic dedup — hash-only misses 'same bug, different envelope bytes' (G-059)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-24T10:04:58Z
-last_update: 2026-04-24T10:17:31Z
-date_finished: null
+last_update: 2026-04-24T12:56:53Z
+date_finished: 2026-04-24T12:56:53Z
 ---
 
 # T-1420: Cross-project pickup semantic dedup — hash-only misses 'same bug, different envelope bytes' (G-059)
@@ -69,7 +69,7 @@ Pickup pipeline dedup keys on envelope SHA256 (raw file bytes). That catches *id
 - [x] Recommendation written with rationale (§Recommendation below: GO — triple dedup second-pass in `lib/pickup.sh`)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -145,7 +145,29 @@ Pickup pipeline dedup keys on envelope SHA256 (raw file bytes). That catches *id
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — add triple dedup as second-pass filter in `lib/pickup.sh`
+
+Rationale: G-059 is concrete and already firing. Six duplicate pairs observed in a single week, all from external-source retries of the same logical concern. The fix is bounded: one extra dedup check after the hash check, keyed on `(source_project, source_task_id, type)`, routing matches to `auto-deferred/` with a breadcrumb. Envelope schema gets a `supersedes:` field as the explicit escape hatch for legitimate follow-ups. No architectural change, no new dependency, no cross-project coordination required — the receiver is the authority. Each duplicate pair is ~1 inception of wasted review bandwidth; compounding weekly, the intervention pays for itself almost immediately. Also reversible: if the policy is too aggressive, tune the triple (add `priority` or `tags`) or toggle off.
+
+Evidence:
+- Six observed duplicate pairs this week (framework side): T-1311↔T-1345, T-1319↔T-1348, T-1321↔T-1349, T-1302↔T-1352, T-1305↔T-1353, T-1314↔T-1351.
+- G-059 in `.context/project/concerns.yaml` — `what_remains` already sketches the fix (triple key + auto-deferred route).
+- Self-pickup precedent: G-046 (self-project dedup) already added auto-defer-on-self-completion via T-1339, so the auto-deferred routing pattern + breadcrumb convention are established — extend, don't invent.
+- Scope is crisp (framework-side, `lib/pickup.sh`, second pass only) — low risk of scope creep.
+- Explicit OUT (fuzzy semantic dedup, upstream coordination, pipeline rewrite) keeps this a single-session build.
+
+Alternative (NO-GO): Status quo — accept the duplicate cost. Viable if the 6 pairs this week are an outlier, but two external sources (termlink, ring20-manager) are now routine producers, so the trend is upward. DEFER would burn another week of duplicate triage without new information.
+
+Build decomposition (after GO):
+- B1 — add `supersedes:` field to envelope schema + validator
+- B2 — add second-pass triple dedup in `lib/pickup.sh` (route to auto-deferred/, write breadcrumb)
+- B3 — add `fw pickup auto-deferred list` surface so operators can review matches
+- B4 — regression test: reprocessing a triple-collision envelope must land in auto-deferred/, not active/
+- B5 — backport check: does termlink's pickup use the same lib? If yes, fix is already shared via shim.
+
+**Date**: 2026-04-24T12:56:53Z
 
 ## Updates
 
@@ -154,3 +176,30 @@ Pickup pipeline dedup keys on envelope SHA256 (raw file bytes). That catches *id
 
 ### 2026-04-24T10:16:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-24T12:56:53Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — add triple dedup as second-pass filter in `lib/pickup.sh`
+
+Rationale: G-059 is concrete and already firing. Six duplicate pairs observed in a single week, all from external-source retries of the same logical concern. The fix is bounded: one extra dedup check after the hash check, keyed on `(source_project, source_task_id, type)`, routing matches to `auto-deferred/` with a breadcrumb. Envelope schema gets a `supersedes:` field as the explicit escape hatch for legitimate follow-ups. No architectural change, no new dependency, no cross-project coordination required — the receiver is the authority. Each duplicate pair is ~1 inception of wasted review bandwidth; compounding weekly, the intervention pays for itself almost immediately. Also reversible: if the policy is too aggressive, tune the triple (add `priority` or `tags`) or toggle off.
+
+Evidence:
+- Six observed duplicate pairs this week (framework side): T-1311↔T-1345, T-1319↔T-1348, T-1321↔T-1349, T-1302↔T-1352, T-1305↔T-1353, T-1314↔T-1351.
+- G-059 in `.context/project/concerns.yaml` — `what_remains` already sketches the fix (triple key + auto-deferred route).
+- Self-pickup precedent: G-046 (self-project dedup) already added auto-defer-on-self-completion via T-1339, so the auto-deferred routing pattern + breadcrumb convention are established — extend, don't invent.
+- Scope is crisp (framework-side, `lib/pickup.sh`, second pass only) — low risk of scope creep.
+- Explicit OUT (fuzzy semantic dedup, upstream coordination, pipeline rewrite) keeps this a single-session build.
+
+Alternative (NO-GO): Status quo — accept the duplicate cost. Viable if the 6 pairs this week are an outlier, but two external sources (termlink, ring20-manager) are now routine producers, so the trend is upward. DEFER would burn another week of duplicate triage without new information.
+
+Build decomposition (after GO):
+- B1 — add `supersedes:` field to envelope schema + validator
+- B2 — add second-pass triple dedup in `lib/pickup.sh` (route to auto-deferred/, write breadcrumb)
+- B3 — add `fw pickup auto-deferred list` surface so operators can review matches
+- B4 — regression test: reprocessing a triple-collision envelope must land in auto-deferred/, not active/
+- B5 — backport check: does termlink's pickup use the same lib? If yes, fix is already shared via shim.
+
+### 2026-04-24T12:56:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
