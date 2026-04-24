@@ -1,20 +1,18 @@
 id: tests/unit/audit_null_timestamp.bats
 name: audit_null_timestamp
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_null_timestamp.bats
-tags: []
-
-purpose: "TODO: describe what this component does"
-
+tags: [test, regression, audit, T-1402]
+purpose: "Regression test — audit.sh METRICS_EOF heredoc must not crash when
+  .context/project/metrics-history.yaml contains a null timestamp. Origin:
+  handover S-2026-0423-1623 AttributeError: 'NoneType' at <stdin>:108."
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
-last_verified: 2026-04-23
-created_by: unknown
+  - target: agents/audit/audit.sh
+    type: calls
+  - target: .context/project/metrics-history.yaml
+    type: reads
+depended_by: []
+last_verified: 2026-04-24
+last_enriched: '2026-04-24'
+created_by: T-1402

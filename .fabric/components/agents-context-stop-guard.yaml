@@ -3,18 +3,23 @@ name: stop-guard
 type: script
 subsystem: context-fabric
 location: agents/context/stop-guard.sh
-tags: []
-
-purpose: "TODO: describe what this component does"
-
+tags: [hook, stop, conversation-capture, C-002, T-1211]
+purpose: "Stop hook — conversation-capture nudge. Fires after every assistant
+  response, never blocks (exits 0). Emits agent-visible stderr nudge when a
+  pure-conversation session accumulates N exchanges without tools, commits,
+  or focus. Nudge becomes additional context on the next turn; agent then
+  proactively asks the user if a task should be created (C-002 Exploratory
+  Conversation Guard)."
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+  - target: .context/working/stop-guard.log
+    type: writes
+  - target: .context/working/focus.yaml
+    type: reads
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+  - target: bin/fw
+    type: invoked_via_fw_hook
+  - target: agents/context/tests/stop-guard-stub-test.sh
+    type: called_by
 last_verified: 2026-04-24
-created_by: unknown
+last_enriched: '2026-04-24'
+created_by: T-1211

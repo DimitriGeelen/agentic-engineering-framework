@@ -1,20 +1,17 @@
 id: tests/unit/task_id_race.bats
 name: task_id_race
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/task_id_race.bats
-tags: []
-
-purpose: "TODO: describe what this component does"
-
+tags: [test, task-create, race-condition, T-1279]
+purpose: "Regression test — concurrent fw work-on invocations must allocate
+  distinct task IDs. Prior bug: generate_id() read max_id then (later) wrote
+  the file; N parallel invocations all observed the same max_id and wrote
+  T-${max+1}. Fix: keylock around read-compute-write sequence."
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
-last_verified: 2026-04-20
-created_by: unknown
+  - target: agents/task-create/create-task.sh
+    type: calls
+depended_by: []
+last_verified: 2026-04-24
+last_enriched: '2026-04-24'
+created_by: T-1279

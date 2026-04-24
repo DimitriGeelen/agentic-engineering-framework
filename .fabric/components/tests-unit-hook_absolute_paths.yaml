@@ -1,20 +1,21 @@
 id: tests/unit/hook_absolute_paths.bats
 name: hook_absolute_paths
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/hook_absolute_paths.bats
-tags: []
-
-purpose: "TODO: describe what this component does"
-
+tags: [test, hooks, settings, G-053, T-1364]
+purpose: "Regression test — .claude/settings.json hook commands must emit
+  absolute paths (canonicalized via cd && pwd at init/upgrade time), because
+  Claude Code resolves hook commands against the session CWD. Relative paths
+  cascade into tool-blocks when CWD drifts."
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
-last_verified: 2026-04-20
-created_by: unknown
+  - target: lib/init.sh
+    type: calls
+  - target: lib/upgrade.sh
+    type: calls
+  - target: .claude/settings.json
+    type: reads
+depended_by: []
+last_verified: 2026-04-24
+last_enriched: '2026-04-24'
+created_by: T-1364

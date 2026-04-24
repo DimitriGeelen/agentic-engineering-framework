@@ -3,18 +3,25 @@ name: session-silent-scanner
 type: script
 subsystem: context-fabric
 location: agents/context/session-silent-scanner.sh
-tags: []
-
-purpose: "TODO: describe what this component does"
-
+tags: [cron, handover, recovery, T-1212, G-016]
+purpose: "Silent-session scanner — S3 antifragility fallback for SessionEnd.
+  Cron-invoked every 15 min. Walks $HOME/.claude/projects/*/<session>.jsonl,
+  finds sessions older than SESSION_SILENT_THRESHOLD_MIN (default 30) whose
+  session_id does NOT appear under .context/handovers/. For matches runs
+  `fw handover` with RECOVERED=1. Closes SessionEnd gap (/exit skips hook,
+  API 500 kills before hook fires). T-1222 cap prevents commit storms."
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+  - target: agents/handover/handover.sh
+    type: calls
+  - target: .context/handovers/
+    type: reads
+  - target: .context/working/.session-silent-scanner.log
+    type: writes
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+  - target: /etc/cron.d/agentic-framework
+    type: scheduled_by
+  - target: agents/context/tests/session-silent-scanner-stub-test.sh
+    type: called_by
 last_verified: 2026-04-24
-created_by: unknown
+last_enriched: '2026-04-24'
+created_by: T-1212

@@ -7,8 +7,12 @@ tags: [hook, posttool, governance]
 purpose: PostToolUse hook scanning Bash output for bare-command leakage patterns
   (PL-007); injects reminder when agent risks relaying raw commands to user instead
   of using fw task review / termlink inject push-channels
-depends_on: []
-depended_by: []
-last_verified: 2026-04-23
-created_by: unknown
-last_enriched: '2026-04-23'
+depends_on:
+  - target: bin/fw
+    type: calls
+depended_by:
+  - target: .claude/settings.json
+    type: registered_in
+last_verified: 2026-04-24
+created_by: T-1187
+last_enriched: '2026-04-24'

@@ -1,20 +1,18 @@
 id: tests/unit/task_reid.bats
 name: task_reid
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/task_reid.bats
-tags: []
-
-purpose: "TODO: describe what this component does"
-
+tags: [test, task-create, reid, G-052, T-1367]
+purpose: "Regression test — fw task reid safely renames a task's ID (handles
+  G-052 duplicate-ID repair). Verifies atomic rename of file + id: frontmatter
+  update, and refusal when NEW-ID already exists."
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
-last_verified: 2026-04-20
-created_by: unknown
+  - target: bin/fw
+    type: calls
+  - target: .tasks/active/
+    type: writes
+depended_by: []
+last_verified: 2026-04-24
+last_enriched: '2026-04-24'
+created_by: T-1367

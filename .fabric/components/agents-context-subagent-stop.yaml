@@ -3,18 +3,22 @@ name: subagent-stop
 type: script
 subsystem: context-fabric
 location: agents/context/subagent-stop.sh
-tags: []
-
-purpose: "TODO: describe what this component does"
-
+tags: [hook, subagent-stop, bus, telemetry, T-1213, T-1209]
+purpose: "SubagentStop hook — captures sub-agent returns. Reads sub-agent
+  transcript from payload.transcript_path, appends telemetry line to
+  .context/working/subagent-returns.jsonl, and if bytes > THRESHOLD posts
+  the full message to fw bus as a blob so later turns can read via R-NNN
+  without re-ingesting. Exits 0 always (capture-and-log, not interceptor)."
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+  - target: bin/fw
+    type: calls
+  - target: .context/working/subagent-returns.jsonl
+    type: writes
+  - target: .context/bus/blobs/
+    type: writes
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+  - target: agents/context/tests/subagent-stop-stub-test.sh
+    type: called_by
 last_verified: 2026-04-24
-created_by: unknown
+last_enriched: '2026-04-24'
+created_by: T-1213

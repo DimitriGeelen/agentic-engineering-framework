@@ -1,20 +1,19 @@
 id: tests/unit/add_learning_id_allocator.bats
 name: add_learning_id_allocator
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/add_learning_id_allocator.bats
-tags: []
-
-purpose: "TODO: describe what this component does"
-
+tags: [test, learning, id-allocator, T-1369]
+purpose: "Regression test — add-learning ID allocator handles BOTH legacy
+  indented format ('  id: L-XXX') and new dash-prefix format ('- id: L-XXX').
+  Pre-fix grep for '^- id: L-' missed 234 legacy entries, causing new IDs
+  to collide with historical ones."
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
-last_verified: 2026-04-20
-created_by: unknown
+  - target: agents/context/lib/learning.sh
+    type: calls
+  - target: .context/project/learnings.yaml
+    type: reads
+depended_by: []
+last_verified: 2026-04-24
+last_enriched: '2026-04-24'
+created_by: T-1369

@@ -7,8 +7,12 @@ tags: [hook, registration, settings]
 purpose: Register framework hooks in .claude/settings.json idempotently — adds
   { type "command", command ".agentic-framework/bin/fw hook <name>" } entries
   under specified event/matcher pair. Built under T-1189 to repair T-977 false-complete (G-015).
-depends_on: []
-depended_by: []
-last_verified: 2026-04-23
-created_by: unknown
-last_enriched: '2026-04-23'
+depends_on:
+  - target: .claude/settings.json
+    type: writes
+depended_by:
+  - target: bin/fw
+    type: called_by
+last_verified: 2026-04-24
+created_by: T-1189
+last_enriched: '2026-04-24'

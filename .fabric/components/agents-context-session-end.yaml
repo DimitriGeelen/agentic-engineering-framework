@@ -3,18 +3,25 @@ name: session-end
 type: script
 subsystem: context-fabric
 location: agents/context/session-end.sh
-tags: []
-
-purpose: "TODO: describe what this component does"
-
+tags: [hook, session-end, handover, T-1212]
+purpose: "SessionEnd hook — S1 reason logger + S2 handover trigger. Always
+  exits 0. S1: appends {ts, session_id, reason} JSON line to
+  .context/working/.session-end-log. S2: if no handover exists for current
+  session_id, runs `fw handover` in the background (fast return, some
+  end-reasons like API 500 give little grace). Fallback: session-silent-scanner
+  via cron every 15 min catches sessions where this hook never fired."
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+  - target: agents/handover/handover.sh
+    type: calls
+  - target: .context/handovers/LATEST.md
+    type: reads
+  - target: .context/working/.session-end-log
+    type: writes
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+  - target: bin/fw
+    type: invoked_via_fw_hook
+  - target: agents/context/tests/session-end-stub-test.sh
+    type: called_by
 last_verified: 2026-04-24
-created_by: unknown
+last_enriched: '2026-04-24'
+created_by: T-1212
