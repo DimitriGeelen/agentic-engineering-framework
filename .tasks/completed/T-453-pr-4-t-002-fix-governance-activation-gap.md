@@ -1,10 +1,10 @@
 ---
 id: T-453
 name: "PR #4: T-002: Fix governance activation gap in fw init"
-description: >
+description: |
   OneDev PR #4 (branch: fix/T-002-governance-activation-gap)
 
-Calls fw context init at end of do_init() so governance is active immediately after fw init. Hardens check-active-task.sh to block when .framework.yaml exists but focus.yaml missing. Adds integration test.
+  Calls fw context init at end of do_init() so governance is active immediately after fw init. Hardens check-active-task.sh to block when .framework.yaml exists but focus.yaml missing. Adds integration test.
 
 status: work-completed
 workflow_type: build

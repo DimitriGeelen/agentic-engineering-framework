@@ -13,9 +13,7 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [bug, tooling, race-condition, task-system]
-components: [C-004, agents/task-create/create-task.sh, tests/unit/task_id_race.bats]
-  - agents/task-create/create-task.sh
-  - lib/keylock.sh
+components: [C-004, agents/task-create/create-task.sh, tests/unit/task_id_race.bats, lib/keylock.sh]
 related_tasks: [T-1277, T-1278]
 created: 2026-04-17T10:35:00Z
 last_update: 2026-04-20T19:43:31Z

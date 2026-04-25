@@ -1,8 +1,7 @@
 ---
 id: T-675
-name: "Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower"
-description: >
-  Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower
+name: 'Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower'
+description: 'Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower'
 
 status: work-completed
 workflow_type: build

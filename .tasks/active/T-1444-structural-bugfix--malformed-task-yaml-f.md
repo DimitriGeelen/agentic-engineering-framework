@@ -1,16 +1,16 @@
 ---
 id: T-1444
 name: "Structural bugfix — malformed task YAML frontmatter + Watchtower 500-on-auto-trigger-failure (affects vendored installs)"
-description: >
+description: |
   Two coupled symptoms surfaced during T-1442 GO decision (2026-04-25T07:22Z):
 
-Symptom A (UX): Watchtower POST /inception/T-XXX/decide returns HTTP 500 even when primary fw inception decide succeeded (status moved, ACs ticked, file moved to completed/). Cause: downstream Auto-trigger: Episodic Generation choked on Symptom B and the endpoint failed-loud instead of returning 200 with a degraded-state warning. User sees red error toast despite decision having landed.
+  Symptom A (UX): Watchtower POST /inception/T-XXX/decide returns HTTP 500 even when primary fw inception decide succeeded (status moved, ACs ticked, file moved to completed/). Cause - downstream Auto-trigger Episodic Generation choked on Symptom B and the endpoint failed-loud instead of returning 200 with a degraded-state warning. User sees red error toast despite decision having landed.
 
-Symptom B (data): T-1278 + T-1279 in .tasks/active/ have malformed YAML frontmatter — flow-style components: [C-004, ...] followed by block-style continuation lines (- bin/fw). Both already have status: work-completed but are stuck in active/ — likely update-task.sh mv path also choked on the parse error. Affects vendored installations because agents/task-create/create-task.sh and update-task.sh propagate to consumer projects.
+  Symptom B (data): T-1278 + T-1279 in .tasks/active/ have malformed YAML frontmatter — flow-style components followed by block-style continuation lines. Both already have status work-completed but are stuck in active/ — likely update-task.sh mv path also choked on the parse error. Affects vendored installations because agents/task-create/create-task.sh and update-task.sh propagate to consumer projects.
 
-Root-cause hypothesis: somewhere in create-task.sh or update-task.sh, components + a related list field are appended in incompatible YAML styles (flow start, block continuation). Need to find the call site, fix the formatter, and clean up the two stuck tasks. Also need to harden the Watchtower decide endpoint to not 500 on side-effect failures.
+  Root-cause hypothesis: somewhere in create-task.sh or update-task.sh, components + a related list field are appended in incompatible YAML styles (flow start, block continuation). Need to find the call site, fix the formatter, and clean up the two stuck tasks. Also need to harden the Watchtower decide endpoint to not 500 on side-effect failures.
 
-Inception scope: investigate root cause across both symptoms; decide whether one fix or two; estimate vendored-install blast radius; produce GO/NO-GO/DEFER with recommendation.
+  Inception scope: investigate root cause across both symptoms; decide whether one fix or two; estimate vendored-install blast radius; produce GO/NO-GO/DEFER with recommendation.
 
 status: captured
 workflow_type: inception

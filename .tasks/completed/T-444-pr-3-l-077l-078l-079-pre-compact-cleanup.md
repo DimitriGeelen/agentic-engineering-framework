@@ -1,20 +1,15 @@
 ---
 id: T-444
 name: "PR #3: L-077/L-078/L-079: Pre-compact cleanup learnings + complete hook set in fw init"
-description: >
+description: |
   OneDev PR #3 (branch: learning/precompact-cleanup)
 
-## Summary
+  Summary:
+  - L-077: PROJECT_ROOT must resolve from git toplevel (budget-gate.sh fix included)
+  - L-078: Delete redundant project artifacts when framework catches up (pre-compact-workflow cleanup)
+  - L-079: Token monitoring needs both structural enforcement (hook) AND behavioral guidance (skill)
 
-- **L-077**: PROJECT_ROOT must resolve from git toplevel (budget-gate.sh fix included)
-- **L-078**: Delete redundant project artifacts when framework catches up (pre-compact-workflow cleanup)
-- **L-079**: Token monitoring needs both structural enforcement (hook) AND behavioral guidance (skill)
-
-## Changes to fw init / fw setup
-
-The generated `.claude/settings.json` now includes the complete hook set:
-- PreCompact hook (auto-runs fw handover before /compact)
-- SessionStart hooks (cont
+  Changes to fw init / fw setup: the generated .claude/settings.json now includes the complete hook set — PreCompact hook (auto-runs fw handover before /compact), SessionStart hooks.
 
 status: work-completed
 workflow_type: build

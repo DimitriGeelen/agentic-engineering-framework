@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1468: Repair 6 task files with broken YAML frontmatter — Watchtower scanner crashes (T-1444 symptom B data-cleanup)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T18:56:14Z
+# ============================================================================
+
+task_id: T-1468
+task_name: "Repair 6 task files with broken YAML frontmatter — Watchtower scanner crashes (T-1444 symptom B data-cleanup)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T18:53:50Z
+completed: 2026-04-25T18:56:09Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "T-1278 frontmatter parses (collapsed components flow + dangling block list)"
+  - "T-1279 frontmatter parses (same fix)"
+  - "T-1444 frontmatter parses (description body indented + colons demoted)"
+  - "T-444 frontmatter parses (markdown headers removed from folded scalar)"
+  - "T-453 frontmatter parses (description body indented)"
+  - "T-675 frontmatter parses (regex backslash quoted)"
+  - "All 6 task files validated with python yaml.safe_load — 0 broken"
+  - "T-1278 and T-1279 (work-completed but stuck in active/) moved to completed/"
+  - "Watchtower restarted; /inception, /approvals render full task lists; log shows no parse errors"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1468-repair-6-task-files-with-broken-yaml-fro.md
+generated_by: context-agent-hybrid
