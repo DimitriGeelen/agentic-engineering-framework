@@ -116,3 +116,10 @@ observations:
     tags: [bug]
     status: pending
     promoted_to: null
+  - id: OBS-017
+    text: "add"
+    captured: 2026-04-25T11:51:18Z
+    context_task: T-1452
+    tags: []
+    status: pending
+    promoted_to: null

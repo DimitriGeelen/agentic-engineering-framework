@@ -4,16 +4,16 @@ name: "RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on 
 description: >
   Mobile review page (/review/T-XXX) renders correctly but every action button silently fails: AC checkbox toggle, 'Complete Task' button, Tier 0 approve/reject. Root cause: review.html is standalone (does not extend base.html) and lacks the htmx:configRequest listener at base.html:430 that injects X-CSRF-Token. csrf_protect in web/app.py:103 (T-1343 / G-048) returns 403 on /api/* mutations. Likely broken since T-1343 landed; no Playwright test on /review/T-XXX caught it because GETs work fine.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [bugfix, csrf, watchtower, mobile-review, regression]
 components: []
 related_tasks: [T-667, T-1343, T-1450]
 created: 2026-04-25T13:35:00Z
-last_update: 2026-04-25T13:35:00Z
-date_finished: null
+last_update: 2026-04-25T11:51:10Z
+date_finished: 2026-04-25T11:51:10Z
 ---
 
 # T-1452: RCA — /review/T-XXX page buttons silently fail (CSRF regression)
@@ -84,7 +84,7 @@ This is exactly the kind of regression the v1.0+ reviewer is supposed to catch v
 - [x] Blast radius enumerated: 3 distinct mutations (toggle-ac, complete, tier0/decide)
 - [x] Pre-existing concern: no Playwright test on `/review/<task_id>` mutations
 - [x] Bugfix task drafted (this file as inception; build task spawned post-decision)
-- [ ] [Inception decision recorded] go/no-go/defer with chosen fix shape
+- [x] [Inception decision recorded] go/no-go/defer with chosen fix shape *(GO with structural-fix recorded 2026-04-25T11:49Z×3 — see Updates section; manually ticked because auto-tick regex did not match this AC text — captured as observation OBS-NEW-csrf-decide-no-feedback)*
 
 ### Human
 - [ ] [REVIEW] Decide go/no-go and choose fix shape (minimal vs structural)
@@ -122,3 +122,36 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST "$(bin/fw watchtower url)/api/t
 - **Action:** Created inception bugfix task with full RCA
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1452-rca-reviewt-xxx-page-buttons-silently-fa.md
 - **Context:** Reported by user during T-1447/T-1450 Human AC closure attempt; reproduced and root-caused this session
+
+### 2026-04-25T11:49:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** This bug is recurrence-prone. Any future standalone template (mobile-second-screen, embedded widgets, kiosk views) will hit the same trap. A 30-line `static/csrf-htmx.js` extracted from base.html is one-time cost; the Playwright regression test prevents recurrence via DOM-level coverage. Total scope ~2–3 hours including the audit sweep.
+
+### 2026-04-25T11:49:49Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** This bug is recurrence-prone. Any future standalone template (mobile-second-screen, embedded widgets, kiosk views) will hit the same trap. A 30-line `static/csrf-htmx.js` extracted from base.html is one-time cost; the Playwright regression test prevents recurrence via DOM-level coverage. Total scope ~2–3 hours including the audit sweep.
+
+### 2026-04-25T11:50:04Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** This bug is recurrence-prone. Any future standalone template (mobile-second-screen, embedded widgets, kiosk views) will hit the same trap. A 30-line `static/csrf-htmx.js` extracted from base.html is one-time cost; the Playwright regression test prevents recurrence via DOM-level coverage. Total scope ~2–3 hours including the audit sweep.
+
+### 2026-04-25T11:51:10Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** This bug is recurrence-prone. Any future standalone template (mobile-second-screen, embedded widgets, kiosk views) will hit the same trap. A 30-line `static/csrf-htmx.js` extracted from base.html is one-time cost; the Playwright regression test prevents recurrence via DOM-level coverage. Total scope ~2–3 hours including the audit sweep.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-afcd0d60
+- **Timestamp:** 2026-04-25T11:51:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-25T11:51:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

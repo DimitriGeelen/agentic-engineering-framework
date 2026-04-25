@@ -1144,3 +1144,223 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
 192.168.10.107 - - [25/Apr/2026 13:47:32] "GET /review/T-1447/acs HTTP/1.1" 200 -
 192.168.10.107 - - [25/Apr/2026 13:47:37] "GET /review/T-1447/acs HTTP/1.1" 200 -
 192.168.10.107 - - [25/Apr/2026 13:47:40] "GET /review/T-1450/acs HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 13:48:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 13:49:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 13:49:28] "GET /inception/T-1452 HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 13:49:28] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /favicon.ico HTTP/1.1" 404 -
+inception decide T-1452 failed: stdout='=== Task Update ===\nTask:    T-1452 ("RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx POSTs")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1452-rca-reviewt-xxx-page-buttons-silently-fa.md\nERROR: Cannot complete — 1/7 agent AC unchecked:\n  - [ ] [Inception decision recorded] go/no-go/defer with chosen fix shape\n\nOptions:\n  1. Check the criteria in the task file, then retry\n  2. Use --skip-acceptance-criteria to bypass (logged)' stderr=''
+192.168.10.107 - - [25/Apr/2026 13:49:36] "POST /inception/T-1452/decide HTTP/1.1" 500 -
+192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /inception/T-1452 HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /inception/T-1452 HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/logo.png HTTP/1.1" 304 -
+inception decide T-1452 failed: stdout='=== Task Update ===\nTask:    T-1452 ("RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx POSTs")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1452-rca-reviewt-xxx-page-buttons-silently-fa.md\nERROR: Cannot complete — 1/7 agent AC unchecked:\n  - [ ] [Inception decision recorded] go/no-go/defer with chosen fix shape\n\nOptions:\n  1. Check the criteria in the task file, then retry\n  2. Use --skip-acceptance-criteria to bypass (logged)' stderr=''
+192.168.10.107 - - [25/Apr/2026 13:49:50] "POST /inception/T-1452/decide HTTP/1.1" 500 -
+192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /inception/T-1452 HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/logo.png HTTP/1.1" 304 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 13:50:03] "GET / HTTP/1.1" 200 -
+inception decide T-1452 failed: stdout='=== Task Update ===\nTask:    T-1452 ("RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx POSTs")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1452-rca-reviewt-xxx-page-buttons-silently-fa.md\nERROR: Cannot complete — 1/7 agent AC unchecked:\n  - [ ] [Inception decision recorded] go/no-go/defer with chosen fix shape\n\nOptions:\n  1. Check the criteria in the task file, then retry\n  2. Use --skip-acceptance-criteria to bypass (logged)' stderr=''
+192.168.10.107 - - [25/Apr/2026 13:50:05] "POST /inception/T-1452/decide HTTP/1.1" 500 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 13:51:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /inception/T-1452 HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 13:51:11] "POST /api/task/T-1447/toggle-ac HTTP/1.1" 403 -
+192.168.10.107 - - [25/Apr/2026 13:51:11] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 13:51:14] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 13:51:14] "POST /inception/T-1452/decide HTTP/1.1" 200 -
