@@ -5,27 +5,140 @@
 # framework, then updates governance sections, templates, hooks, and seeds.
 # Project-specific content is preserved.
 
+# T-1481: Opt-in remediation for OBS-023's structural cause. Removes
+# framework hooks from $HOME/.claude/settings.json that duplicate
+# project-level. Always creates a timestamped backup. Honors dry-run.
+# Args: 1=user-level path, 2=project-level path, 3=dry-run bool
+_do_dedupe_user_hooks() {
+    local user_settings="$1"
+    local proj_settings="$2"
+    local dry_run="$3"
+
+    local result rc
+    result=$(USER_FILE="$user_settings" PROJ_FILE="$proj_settings" python3 -c "
+import json, os, sys
+
+def fw_hook_set(path):
+    s = set()
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError, OSError):
+        return s
+    for event, entries in data.get('hooks', {}).items():
+        for entry in entries:
+            for hook in entry.get('hooks', []):
+                cmd = hook.get('command', '')
+                if 'fw hook' in cmd:
+                    name = cmd.split('fw hook ')[-1].strip().split()[0]
+                elif '.agentic-framework' in cmd:
+                    name = cmd.strip().split('/')[-1]
+                else:
+                    continue
+                s.add((event, name))
+    return s
+
+proj = fw_hook_set(os.environ['PROJ_FILE'])
+try:
+    with open(os.environ['USER_FILE']) as f:
+        data = json.load(f)
+except (json.JSONDecodeError, FileNotFoundError, OSError) as e:
+    print(f'ERROR|{e}')
+    sys.exit(0)
+
+removed = []
+new_hooks = {}
+for event, entries in data.get('hooks', {}).items():
+    new_entries = []
+    for entry in entries:
+        kept = []
+        for hook in entry.get('hooks', []):
+            cmd = hook.get('command', '')
+            tup = None
+            if 'fw hook' in cmd:
+                name = cmd.split('fw hook ')[-1].strip().split()[0]
+                tup = (event, name)
+            elif '.agentic-framework' in cmd:
+                name = cmd.strip().split('/')[-1]
+                tup = (event, name)
+            if tup is not None and tup in proj:
+                removed.append(f'{tup[0]}:{tup[1]}')
+            else:
+                kept.append(hook)
+        if kept:
+            ne = dict(entry)
+            ne['hooks'] = kept
+            new_entries.append(ne)
+    if new_entries:
+        new_hooks[event] = new_entries
+
+data['hooks'] = new_hooks
+print('REMOVED|' + ','.join(removed))
+print('JSON_START')
+print(json.dumps(data, indent=2))
+print('JSON_END')
+" 2>/dev/null) || true
+    rc=0
+
+    # Detect ERROR
+    if echo "$result" | grep -q '^ERROR|'; then
+        echo -e "  ${YELLOW}WARN${NC}  $user_settings: $(echo "$result" | grep '^ERROR|' | head -1 | sed 's/^ERROR|//')"
+        return 1
+    fi
+
+    local removed_list
+    removed_list=$(echo "$result" | grep '^REMOVED|' | head -1 | sed 's/^REMOVED|//')
+
+    if [ -z "$removed_list" ]; then
+        echo -e "  ${GREEN}OK${NC}  --dedupe-user-hooks: no duplicates in $user_settings"
+        return 0
+    fi
+
+    local removed_count
+    removed_count=$(echo "$removed_list" | tr ',' '\n' | wc -l)
+
+    if [ "$dry_run" = true ]; then
+        echo -e "  ${CYAN}WOULD REMOVE${NC}  $removed_count duplicate hook(s) from $user_settings"
+        echo -e "    Pairs: $(echo "$removed_list" | tr ',' ' ')"
+        return 0
+    fi
+
+    local backup="${user_settings}.bak-$(date +%s)"
+    cp "$user_settings" "$backup"
+    # Extract the JSON block between markers
+    echo "$result" | sed -n '/^JSON_START$/,/^JSON_END$/p' | sed '1d;$d' > "$user_settings"
+    echo -e "  ${GREEN}REMOVED${NC}  $removed_count duplicate hook(s) from $user_settings"
+    echo -e "    Pairs: $(echo "$removed_list" | tr ',' ' ')"
+    echo -e "    Backup: $backup"
+    return 0
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
     local force=false
+    local dedupe_user_hooks=false
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run) dry_run=true; shift ;;
             --force) force=true; shift ;;
+            --dedupe-user-hooks) dedupe_user_hooks=true; shift ;;
             -h|--help)
                 echo -e "${BOLD}fw upgrade${NC} - Sync framework improvements to consumer project"
                 echo ""
                 echo "Usage: fw upgrade [target-dir] [options]"
                 echo ""
                 echo "Arguments:"
-                echo "  target-dir        Project to upgrade (default: current directory)"
+                echo "  target-dir              Project to upgrade (default: current directory)"
                 echo ""
                 echo "Options:"
-                echo "  --dry-run         Show what would change without modifying files"
-                echo "  --force           Overwrite even if project files are newer"
-                echo "  -h, --help        Show this help"
+                echo "  --dry-run               Show what would change without modifying files"
+                echo "  --force                 Overwrite even if project files are newer"
+                echo "  --dedupe-user-hooks     Remove framework hooks from \$HOME/.claude/settings.json"
+                echo "                          that duplicate project-level (T-1481, addresses OBS-023)."
+                echo "                          A timestamped backup is created before modification."
+                echo "  -h, --help              Show this help"
                 echo ""
                 echo "What gets upgraded:"
                 echo "  - CLAUDE.md governance sections (project-specific sections preserved)"
@@ -624,6 +737,13 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
                 echo -e "  ${YELLOW}WARN${NC}  Duplicate framework hooks in $user_settings: $dup_count overlap"
                 echo -e "    ${YELLOW}↳${NC}  Pairs: $(echo "$dup_analysis" | tr '|' ' ')"
                 echo -e "    ${YELLOW}↳${NC}  Both fire on every Claude Code event (cause of OBS-023). Recommend removing duplicates from $user_settings."
+                echo -e "    ${YELLOW}↳${NC}  To auto-remove (with backup): fw upgrade --dedupe-user-hooks"
+            fi
+
+            # T-1481: Opt-in remediation. Removes the duplicate framework hooks
+            # from the user-level settings. Always backs up first; honors --dry-run.
+            if [ "$dedupe_user_hooks" = true ]; then
+                _do_dedupe_user_hooks "$user_settings" "$settings_file" "$dry_run"
             fi
         fi
     else
