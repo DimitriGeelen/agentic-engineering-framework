@@ -1,0 +1,106 @@
+# Anti-pattern catalogue for the reviewer agent (T-1443 v1.0)
+#
+# Severity is split into two axes per L-261 (severity-axis conflation):
+#   detection_confidence  — how reliably we can detect the pattern
+#                           values: deterministic | heuristic | semantic
+#   lie_severity          — if the pattern fires, how badly does the evidence lie
+#                           values: complete | severe | partial | narrow | staleness
+#
+# Action urgency / risk / blast-radius are extrinsic (task-level) and
+# combined via policy/action-matrix.yaml in later versions (v1.2+).
+#
+# v1.0 scope: 4 seed patterns. v3+ expands to 12 categories via mining
+# external test-smell literature, internal corpus, and peer-agent dispatch.
+#
+# Schema version: 1
+# Source: T-1443 inception + spikes A/D/F/G/I
+
+schema_version: 1
+catalogue_version: "v1.0-seed"
+policy_origin: T-1443
+
+patterns:
+  - id: tautology
+    name: "Tautological verification"
+    detection_confidence: deterministic
+    lie_severity: severe
+    detector_ref: "lib.reviewer.static_scan:detect_tautology"
+    description: >
+      Verification command that proves nothing because it asserts what it just did.
+      Examples: `echo "tests pass" && true`, `[ 1 -eq 1 ]`, `true`, `: # ok`.
+      The command exits 0 unconditionally; no real check happens.
+    examples_positive:
+      - "true"
+      - "echo 'all good' && true"
+      - "[ 1 = 1 ]"
+      - ": # placeholder"
+    examples_negative:
+      - "bin/fw test unit"
+      - "test -f required-file.txt"
+      - "grep -q 'expected' output.txt"
+
+  - id: empty-body
+    name: "Empty acceptance-criterion body"
+    detection_confidence: deterministic
+    lie_severity: severe
+    detector_ref: "lib.reviewer.static_scan:detect_empty_body"
+    description: >
+      Acceptance criterion with no real content — placeholder text like
+      "[First criterion]", "TODO", "...", or empty after stripping markers.
+      A checked AC with empty body is a checkbox-only completion.
+    examples_positive:
+      - "[ ] [First criterion]"
+      - "[x] TODO"
+      - "[x] ..."
+      - "[x] tbd"
+    examples_negative:
+      - "[x] lib/reviewer/static_scan.py exists with 4 anti-pattern detectors"
+
+  - id: swallowed-errors
+    name: "Errors swallowed or hooks bypassed"
+    detection_confidence: deterministic
+    lie_severity: severe
+    detector_ref: "lib.reviewer.static_scan:detect_swallowed_errors"
+    description: >
+      Verification or commit chain that suppresses error signals. Includes
+      `--no-verify` on commit/push, `2>/dev/null || true` on critical commands,
+      `set +e` without re-arming, and `|| true` after the only assertion.
+      Indicates real failures may have been hidden.
+    examples_positive:
+      - "git commit --no-verify -m '...'"
+      - "bin/fw test unit 2>/dev/null || true"
+      - "make test || true"
+    examples_negative:
+      - "bin/fw test unit"
+      - "git commit -m 'T-1445: ...'"
+      - "command || (echo 'failed' && exit 1)"
+
+  - id: output-spoofing
+    name: "Output-spoofing success markers"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_output_spoofing"
+    description: >
+      Evidence relies on echoed strings like "TESTS PASS" without an
+      assertion that those strings actually came from a real test runner.
+      Pattern: a line that prints success text followed by no exit-status check.
+      Heuristic — the false-positive rate is non-trivial; v1.0 raises CONCERN
+      not FAIL on this pattern alone.
+    examples_positive:
+      - "echo 'TESTS PASS' >> evidence.txt"
+      - "printf 'BUILD OK\\n' && exit 0"
+    examples_negative:
+      - "bin/fw test unit | tee /tmp/test.log; grep -q 'PASS' /tmp/test.log"
+      - "test \"$(./run-tests.sh)\" = 'OK'"
+
+# Verdict thresholds (v1.0):
+#   any pattern with lie_severity in {complete, severe} fires → FAIL
+#   any pattern with lie_severity in {partial, narrow}        → CONCERN
+#   any pattern with lie_severity = staleness                 → CONCERN
+#   no patterns fire                                          → PASS
+#
+# v1.1+ adds task-level risk/blast-radius modulation via action-matrix.yaml.
+verdict_thresholds:
+  fail_on_severities: [complete, severe]
+  concern_on_severities: [partial, narrow, staleness]
+  pass_when_no_findings: true

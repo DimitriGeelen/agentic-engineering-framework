@@ -479,6 +479,22 @@ if [ -n "$NEW_STATUS" ]; then
             run_verification_commands
         fi
 
+        # === Reviewer Static-Scan (T-1443 v1.0) ===
+        # Non-blocking measurement pass: catalogues anti-patterns and writes
+        # verdict to task body. Skipped if FW_REVIEWER_DISABLED=1 or python3
+        # missing. v1.1+ adds escalation; v1.2+ adds blocking on configured tasks.
+        if [ "$NEW_STATUS" = "work-completed" ] && [ "${FW_REVIEWER_DISABLED:-0}" != "1" ]; then
+            if command -v python3 >/dev/null 2>&1 && [ -f "$FRAMEWORK_ROOT/lib/reviewer/static_scan.py" ]; then
+                echo ""
+                echo "Reviewer static-scan (T-1443 v1.0, non-blocking)..."
+                # Capture exit but never propagate — v1.0 is measurement only
+                _task_id_short=$(basename "$TASK_FILE" | grep -oE '^T-[0-9]+')
+                ( cd "$FRAMEWORK_ROOT" && \
+                    PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                    python3 -m lib.reviewer.static_scan "$_task_id_short" 2>&1 | sed 's/^/  /' ) || true
+            fi
+        fi
+
         _sed_i "s/^status:.*/status: $NEW_STATUS/" "$TASK_FILE"
         echo "Status:  $OLD_STATUS → $NEW_STATUS"
         CHANGES+=("status: $OLD_STATUS → $NEW_STATUS")

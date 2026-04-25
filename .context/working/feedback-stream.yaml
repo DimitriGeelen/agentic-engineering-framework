@@ -1,0 +1,19 @@
+# Reviewer feedback stream (T-1443 v1.0, Spike I)
+# Append-only. Events separated by ---.
+# Schema: kind, timestamp, scan_id, task_id, payload
+---
+kind: scan_emitted
+timestamp: '2026-04-25T10:23:05Z'
+scan_id: R-28e7d652
+task_id: T-1445
+payload:
+  overall: PASS
+  finding_count: 0
+  catalogue_version: v1.0-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T10:23:05Z'
+scan_id: R-28e7d652
+task_id: T-1445
+payload:
+  task_file: .tasks/active/T-1445-t-1443-v10-static-scan-validator-anti-pa.md
