@@ -2145,3 +2145,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-278
+  learning: "fw push handover skip logic was guarded only on remote_count, not on origin presence — when no origin exists in a multi-remote repo (T-1474), all remotes were silently skipped, breaking T-1144 push-everywhere invariant. Lesson: any guard that special-cases a name must also verify that name actually exists, otherwise it falls through into a different bug. Symptom recurred S-2026-0425-2145 and S-2026-0425-2155 before fix landed."
+  source: P-001
+  task: T-1474
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
