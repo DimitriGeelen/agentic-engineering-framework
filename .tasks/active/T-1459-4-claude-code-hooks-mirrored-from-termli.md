@@ -20,15 +20,38 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+**For whom:** the framework operator (humans + agents who rely on Claude Code hooks for governance enforcement). **What problem:** five hook handler scripts mirrored from TermLink (`agents/context/{session-end,stop-guard,subagent-stop,pl007-scanner,session-silent-scanner}.sh` — ~633 lines combined) sit in the repo with no caller. Neither `.claude/settings.json` nor `/etc/cron.d/` references them. **Why now:** OBS-014 raised it after a doctor sweep — the discrepancy between handler intent (each script's docstring claims a hook role) and runtime reality (no hook event will ever invoke them) is a classic dead-code rot pattern. They cost lines, audit churn, and operator trust ("are these running?").
 
-## Assumptions
+## Audit findings (this session)
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+| Script | Intended role | Origin commit | Registration status |
+|--------|---------------|---------------|---------------------|
+| `session-end.sh` | SessionEnd handler — reason logger + handover trigger (T-1212) | 562c2fc7 | NOT in settings.json |
+| `stop-guard.sh` | Stop hook — conversation-capture nudge (T-1211) | b5383596 | NOT in settings.json |
+| `subagent-stop.sh` | SubagentStop — sub-agent transcript capture / fw bus migration (T-1213) | a5c4fe85 | NOT in settings.json |
+| `pl007-scanner.sh` | PostToolUse — flag bare commands the agent might relay verbatim (T-1188) | 25718851 | NOT in settings.json |
+| `session-silent-scanner.sh` | Cron — recover lost SessionEnd via silent-session detection (T-1212) | 562c2fc7 (cap added 2199ccba) | NOT in /etc/cron.d/ |
+
+**Common origin:** all five were ports from TermLink. The most recent touch (T-1222 / 2199ccba) capped the silent-scanner specifically to prevent the **G-016 handover commit storm** — i.e. the registration was paused because turning these on caused a real incident, but the scripts were never decommissioned or documented as reference-only. They've been adrift for ~14 days at the time of this inception.
+
+## Hypotheses to test
+
+1. **Decommission hypothesis:** The G-016 incident was severe enough that re-enabling carries unbounded risk. Test: review G-016 RCA — is the storm root cause structural (handler logic) or configurational (loop guard absent at the time)?
+2. **Re-enable-with-safeguards hypothesis:** The handlers each solve real problems (session-end loss, sub-agent context bloat, conversation drift). Test: do the safeguards that landed since G-016 (loop caps, edit-counter dedup) defang the original failure mode?
+3. **Reference-only hypothesis:** Some of these were experimental, others production-shaped. Test: which hooks have clear, narrow contracts that don't risk repeat storms?
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Read G-016 / T-1222 RCA — identify the exact failure mechanism that paused registration.
+2. For each of the 5 scripts, classify safety category:
+   - SAFE: bounded, idempotent, no commit / no notification side effects
+   - GUARDED: side effects exist but safeguards are now in place
+   - UNSAFE: still carries G-016-class risk
+3. Map the design space:
+   - Option A: **Re-enable all 5** — register in settings.json + crontab. Low scope, but inherits any latent risk.
+   - Option B: **Decommission all 5** — delete scripts, prune fabric cards, remove tests. Removes ~633 lines + audit churn but loses TermLink-port coverage.
+   - Option C: **Hybrid: re-enable SAFE/GUARDED, decommission UNSAFE** — per-handler decision; keeps the win, drops the hazard.
+   - Option D: **Document as reference-only** — add `# REFERENCE ONLY — not registered (see T-1459)` banner to each script header; leave in tree as future recipes. Lowest cost, no commitment.
 
 ## Technical Constraints
 
@@ -45,9 +68,11 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (5 scripts confirmed unregistered)
+- [x] Origin commits traced for each script
+- [x] Recommendation written with rationale (DEFER / Option D, with C as Phase 2)
+- [x] Audit findings table captured
+- [x] Hypotheses + 4 design options enumerated
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -77,15 +102,20 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (Option D — document as reference-only) as the safest near-term move; Option C (hybrid) once Phase 2 RCA is read.
+
+**Rationale:** The G-016 incident is recent enough (within 2 weeks) and the cost-of-being-wrong (commit storm, lost session integrity) is high enough that re-enabling without first reading the G-016 RCA is reckless. Decommissioning loses ~633 lines of intentional design that was crafted as TermLink ports — costs us the optional path without us having investigated. Reference-only mode locks in the current safe state, makes the dead-code status legible to operators, and doesn't preclude any future option.
+
+**Evidence:**
+- 5 scripts confirmed unregistered in `.claude/settings.json` and `/etc/cron.d/` (this session, 2026-04-25).
+- Most recent touch on the cluster is `2199ccba — T-1222 / G-016: Cap silent-session scanner to prevent handover commit storm` — i.e. last action was *defensive capping*, not decommissioning. Suggests the original team intended to revisit, never did.
+- Each script's header docstring describes a real, narrow problem. None look like throwaway experiments.
+- Audit cost: 5 unregistered hooks rate-limit nothing; the only concrete cost today is line count + reader confusion.
+
+**Out-of-scope follow-up candidates:**
+- Reading G-016 RCA + classifying each script SAFE/GUARDED/UNSAFE → enables Option C.
+- TermLink upstream check — are the equivalent scripts still active there? If they were removed there too, decommission is the cleaner answer.
+
 
 ## Decisions
 
