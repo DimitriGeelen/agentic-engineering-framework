@@ -801,14 +801,28 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         fi
 
         # Update components field if we found any
+        # T-1469: python multi-line replace — sed-based replace left orphan
+        # `  - item` continuation lines from block-style components, producing
+        # invalid YAML (caused Watchtower scanner crash, T-1468 cleanup).
         if [ -n "$RESOLVED_COMPONENTS" ]; then
-            if grep -q "^components:" "$TASK_FILE" 2>/dev/null; then
-                _sed_i "s|^components:.*|components: [$RESOLVED_COMPONENTS]|" "$TASK_FILE"
-            else
-                # Add field after tags line
-                _sed_i "/^tags:.*/a\\
-components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
-            fi
+            python3 -c "
+import re, sys
+resolved = sys.argv[1]
+path = sys.argv[2]
+with open(path) as f:
+    content = f.read()
+# Match 'components:' line plus any block-style continuation lines that follow
+# (lines starting with whitespace + '-'). Stops at first non-list line.
+pattern = re.compile(r'^components:[^\n]*\n(?:[ \t]+-[^\n]*\n)*', re.MULTILINE)
+new_block = 'components: [' + resolved + ']\n'
+if pattern.search(content):
+    content = pattern.sub(new_block, content, count=1)
+else:
+    # No components line — add after tags
+    content = re.sub(r'^(tags:[^\n]*\n)', r'\1' + new_block, content, count=1, flags=re.MULTILINE)
+with open(path, 'w') as f:
+    f.write(content)
+" "$RESOLVED_COMPONENTS" "$TASK_FILE"
             COMP_COUNT=$(echo "$RESOLVED_COMPONENTS" | tr ',' '\n' | wc -l)
             echo -e "${GREEN}Components: $COMP_COUNT resolved from git history${NC}"
         fi
