@@ -42,6 +42,29 @@ Design source: `docs/reports/T-1443-independent-reviewer-agent.md` (Recommendati
 - Unit tests for each pattern detector
 - `bin/fw reviewer` CLI entry point (manual invocation also supported)
 
+## v1.0 Dogfood Results (initial measurement)
+
+Scanned all 1358 completed tasks (entire corpus to date) with the v1.0 catalogue:
+
+| Verdict | Count | Pct |
+|---------|-------|------|
+| PASS    | 1343  | 98.9% |
+| CONCERN | 0     | 0.0%  |
+| FAIL    | 15    | 1.1%  |
+
+Pattern fire counts: `swallowed-errors` × 15 (in 15 distinct tasks; `tautology` co-fired in 3 of those).
+
+Inspection of the 15 FAIL findings:
+- 14/15 are real signal: `|| true` after a verification command suppresses the only assertion. Examples: `bin/fw doctor >/dev/null 2>&1 || true` (T-1360, T-1356), `bash -n template.md || true` (T-1378).
+- 1/15 is a false positive: T-1086 grep-of-literal-string `grep -c 'git commit --no-verify' agents/git/lib/hooks.sh` — the `--no-verify` is a search pattern, not actual usage. Detector should exclude grep/awk/sed contexts.
+
+**v1.1 candidate tunings** (recorded as L-264):
+1. Suppress swallowed-errors finding when `--no-verify` appears inside grep/awk/sed/jq pattern arguments.
+2. Widen output-spoofing heuristic — zero fires across 1358 tasks suggests pattern is too narrow.
+3. Add 4 candidate patterns for v1.1: empty-output-success, skip-as-pass, mock-only-integration, AC-verify-mismatch.
+
+This is exactly the unmeasured assumption v1.0 was scoped to measure — the rate of mechanically-evidenceable false success in the historical corpus. ~1% baseline on 4 seed patterns is the foundation for v1.1 action-matrix tuning.
+
 ## Acceptance Criteria
 
 ### Agent
@@ -52,8 +75,8 @@ Design source: `docs/reports/T-1443-independent-reviewer-agent.md` (Recommendati
 - [x] Verdict section format: `## Reviewer Verdict (v1.0)` with timestamp, scan_id, findings list (per-pattern), overall verdict (PASS/CONCERN/FAIL)
 - [x] `.context/working/feedback-stream.yaml` is created on first run, structured as append-only (events: scan_emitted, verdict_recorded)
 - [x] Unit tests in `tests/unit/test_reviewer_static_scan.py` — 31 test cases (>=2 positive + 2 negative per pattern + sovereignty + idempotency + stream tests)
-- [ ] All unit tests pass: `bin/fw test unit`
-- [ ] `bin/fw audit` passes (warn allowed, no fail)
+- [x] All unit tests pass: `bin/fw test unit` (939 bats tests OK + 31 pytest tests OK; bats run 2026-04-25T10:35Z)
+- [ ] `bin/fw audit` passes (warn allowed, no fail) — **BLOCKED by OBS-016** (audit self-spawn pathology). Verification deferred until OBS-016 fix lands.
 - [x] Reviewer never modifies `### Human` AC checkboxes — enforced by code path (no AC-mutation in static_scan.py); test asserts task body checkboxes unchanged
 
 ### Human

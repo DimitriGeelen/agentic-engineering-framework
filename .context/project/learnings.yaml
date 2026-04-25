@@ -2036,3 +2036,17 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: PL-005
+  learning: "Fleet doctor observed auth-mismatch on hub 'ring20-management' (192.168.10.122:9100). date_observed=2026-04-25T10:35:46Z hub_fingerprint=sha256:883055063bd299d4c9b597a24e32dbbab7c15ecc97e27b4cce2a044c1e8526f6. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-25
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-264
+  learning: "T-1443 v1.0 reviewer dogfood: scanned 1358 completed tasks → 98.9% PASS, 1.1% FAIL (15 tasks), all FAILs were swallowed-errors pattern (|| true after verification commands). 1 false-positive: T-1086 grep for literal '--no-verify' string flagged as actual --no-verify usage. Zero CONCERNs (heuristic detector firing pattern unsupported in this corpus). v1.1 tuning: (a) exclude grep-of-literal-string contexts in swallowed-errors detector; (b) widen output-spoofing heuristic — current pattern too narrow, misses real cases. Catalogue version v1.0-seed performs near-target false-positive rate (~7%) but coverage looks low; next 4 patterns (empty-output-success, skip-as-pass, mock-only-integration, AC-verify-mismatch) likely needed for v1.1 baseline."
+  source: P-001
+  task: T-1445
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
