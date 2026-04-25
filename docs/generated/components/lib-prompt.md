@@ -1,8 +1,10 @@
 # prompt
 
-> TODO: describe what this component does
+> fw prompt — reusable agent-prompt register. Subcommands: create, list, show, copy (with {{var}} substitutions). Prompt files are markdown with YAML frontmatter stored under prompts/. Single source of truth for cross-machine / cross-agent reusable prompts (fleet upgrade+test+fix, audit dispatch, onboarding, etc.).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/prompt.sh`
+
+**Tags:** `cli`, `prompt-register`, `T-1283`
 
 ## What It Does
 
@@ -27,6 +29,18 @@ When dispatching sub-agents, include in the prompt:
 4. **Constraints**: Don't modify files outside scope, don't return raw data
 5. **Token hint**: "Keep your response concise — the orchestrator has limited context budget"
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `prompts/` | reads |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | sourced_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-prompt.yaml`*
-*Last verified: 2026-04-18*
+*Last verified: 2026-04-24*

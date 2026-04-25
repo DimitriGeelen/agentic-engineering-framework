@@ -4,7 +4,7 @@ name: "Independent reviewer agent — TermLink-dispatched, evidence-gated, can a
 description: >
   Inception I-B (linked to T-1442 I-A). Design an independent reviewer agent dispatched via TermLink (own profile in agents/reviewer/) that reads recorded evidence (per I-A) and auto-ticks Agent ACs when evidence is sufficient, escalating to human only for genuine judgment ACs. Authority is mechanical-tick only; sovereignty preserved. Open: scope (generic vs per-tier), trigger (work-completed gate vs button), profile location/shape, output protocol (bus? task body? Watchtower?).
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [governance, reviewer-agent, termlink-dispatch, friction-reduction, slash-
 components: []
 related_tasks: [T-1442, T-1064, T-1065]
 created: 2026-04-25T06:35:13Z
-last_update: 2026-04-25T09:26:24Z
-date_finished: null
+last_update: 2026-04-25T09:59:48Z
+date_finished: 2026-04-25T09:59:48Z
 ---
 
 # T-1443: Independent reviewer agent — TermLink-dispatched, evidence-gated, can auto-tick Agent ACs
@@ -91,12 +91,12 @@ Three-cadence data review: continuous capture (auto) + weekly summary (~2 min) +
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -192,7 +192,23 @@ Linked sister inception (prerequisite): **T-1442** (AC validation default-flip).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: A 17-turn dialogue with user (full trail in `docs/reports/T-1443-independent-reviewer-agent.md` § Dialogue Log) converged on a design that resolves the central question: how do we judge evidence *quality* (not just exit codes) without forcing every Human AC through human review? Answer: structured-envelope reviewer, dispatched independently via TermLink (`/review` slash-command surface, orchestrator-routed when T-1064 ships), produces per-AC granular verdicts driven by 5 additive signals (original classification + Layer 1 patterns + Layer 2 frontmatter + anti-pattern detection + AC semantic class), with reviewer-can-NEVER-tick-Human-AC structurally enforced at 3 layers (envelope schema + update-task.sh + Watchtower UI). User's antifragility principle ("false success worse than acknowledged failure") drove design depth (multi-layer enforcement, fail-closed defaults via three-tier policy, no caching). User's pushback on scope-creep drove staged rollout (micro-versions, not big-bang) with continuous + weekly + threshold + per-version-bump data review cadences keeping human-review of the meta-process itself frictionless. Spike A's deferred uncertainty (% of mechanically-evidenceable Human ACs) is measured *in production* via v1.0 feedback stream, not assumed.
+
+Design summary:
+1. Reviewer interface — structured envelope; per-AC granular verdicts; reviewer signature + digest for tamper-detection (Spike A)
+2. 5-driver "needs-human" model — additive: original classification + Layer 1 + Layer 2 + anti-patterns + AC semantic class
+3. Sovereignty preservation — reviewer NEVER ticks `### Human` ACs; structurally enforced at 3 layers (Spike C addressed via staging)
+4. Anti-pattern catalogue — `policy/anti-patterns.yaml`; 12-category seed; severity refactored into separate axes (`detection_confidence`, `lie_severity` — distinct from task `risk`/`blast_radius`); multi-source expansion (B-Anti-Patterns-Expansion at v3+) (Spike F)
+5. Action policy separated — `policy/action-matrix.yaml` combines anti-pattern attrs + task attrs → action (block / escalate / note)
+6. Override mechanism — `policy/escalation-overrides.yaml` with TTL + auto-revoke triggers; Watchtower UX with 7 frictionless-feedback principles; append-only `.context/working/feedback-stream.yaml` (Spike I)
+7. Pattern-consultation algorithm — cheap-first DAG (no short-circuit; Model V mandates all phases); three-tier failure policy (T1 hard / T2 retry / T3 fail-soft) declared per anti-pattern entry (Spike G)
+8. Implementation shape — Python library (`lib/reviewer/`) + thin bash CLI (`/review` + `fw skill invoke review`); version-pinned via `.framework.yaml`; vendored to consumers; 4–5 core modules in v1
+9. 5 correctness invariants — atomicity (write-temp + fsync + rename); idempotency reframed (deterministic bit-exact; semantic signed-for-reproducibility tracking, model+temperature in signature); signature integrity combined with append-only evidence storage; sovereignty 3-layer enforcement; retention lifecycle (90d full / 1y summary / archive)
+10. Staged rollout — v1.0 → v3.0+ micro-versions; three-cadence data review keeping meta-process frictionless; Spike I feedback stream pulled forward to v1.0 for day-1 data capture
+
+**Date**: 2026-04-25T09:59:47Z
 
 ## Updates
 
@@ -202,3 +218,24 @@ Linked sister inception (prerequisite): **T-1442** (AC validation default-flip).
 ### 2026-04-25T07:29:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-25T09:59:47Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** A 17-turn dialogue with user (full trail in `docs/reports/T-1443-independent-reviewer-agent.md` § Dialogue Log) converged on a design that resolves the central question: how do we judge evidence *quality* (not just exit codes) without forcing every Human AC through human review? Answer: structured-envelope reviewer, dispatched independently via TermLink (`/review` slash-command surface, orchestrator-routed when T-1064 ships), produces per-AC granular verdicts driven by 5 additive signals (original classification + Layer 1 patterns + Layer 2 frontmatter + anti-pattern detection + AC semantic class), with reviewer-can-NEVER-tick-Human-AC structurally enforced at 3 layers (envelope schema + update-task.sh + Watchtower UI). User's antifragility principle ("false success worse than acknowledged failure") drove design depth (multi-layer enforcement, fail-closed defaults via three-tier policy, no caching). User's pushback on scope-creep drove staged rollout (micro-versions, not big-bang) with continuous + weekly + threshold + per-version-bump data review cadences keeping human-review of the meta-process itself frictionless. Spike A's deferred uncertainty (% of mechanically-evidenceable Human ACs) is measured *in production* via v1.0 feedback stream, not assumed.
+
+Design summary:
+1. Reviewer interface — structured envelope; per-AC granular verdicts; reviewer signature + digest for tamper-detection (Spike A)
+2. 5-driver "needs-human" model — additive: original classification + Layer 1 + Layer 2 + anti-patterns + AC semantic class
+3. Sovereignty preservation — reviewer NEVER ticks `### Human` ACs; structurally enforced at 3 layers (Spike C addressed via staging)
+4. Anti-pattern catalogue — `policy/anti-patterns.yaml`; 12-category seed; severity refactored into separate axes (`detection_confidence`, `lie_severity` — distinct from task `risk`/`blast_radius`); multi-source expansion (B-Anti-Patterns-Expansion at v3+) (Spike F)
+5. Action policy separated — `policy/action-matrix.yaml` combines anti-pattern attrs + task attrs → action (block / escalate / note)
+6. Override mechanism — `policy/escalation-overrides.yaml` with TTL + auto-revoke triggers; Watchtower UX with 7 frictionless-feedback principles; append-only `.context/working/feedback-stream.yaml` (Spike I)
+7. Pattern-consultation algorithm — cheap-first DAG (no short-circuit; Model V mandates all phases); three-tier failure policy (T1 hard / T2 retry / T3 fail-soft) declared per anti-pattern entry (Spike G)
+8. Implementation shape — Python library (`lib/reviewer/`) + thin bash CLI (`/review` + `fw skill invoke review`); version-pinned via `.framework.yaml`; vendored to consumers; 4–5 core modules in v1
+9. 5 correctness invariants — atomicity (write-temp + fsync + rename); idempotency reframed (deterministic bit-exact; semantic signed-for-reproducibility tracking, model+temperature in signature); signature integrity combined with append-only evidence storage; sovereignty 3-layer enforcement; retention lifecycle (90d full / 1y summary / archive)
+10. Staged rollout — v1.0 → v3.0+ micro-versions; three-cadence data review keeping meta-process frictionless; Spike I feedback stream pulled forward to v1.0 for day-1 data capture
+
+### 2026-04-25T09:59:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

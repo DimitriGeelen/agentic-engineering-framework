@@ -16,19 +16,9 @@ When run from inside the framework repo itself, it auto-detects.
 
 ### Framework Reference
 
-The `fw` command is the single entry point for all framework operations. It resolves paths, sets environment variables, and routes to agents.
+`fw` is the single entry point for all framework operations — it resolves paths, sets env vars, and routes to agents. Discover commands via `fw help`, `fw <cmd> --help`, or the Quick Reference section below.
 
-```bash
-fw help              # Show all commands
-fw version           # Show version and paths
-fw doctor            # Check framework health
-fw audit             # Run compliance audit
-fw context init      # Initialize session
-fw git commit -m "T-XXX: description"
-fw handover --commit # Generate and commit handover
-fw task create --name "Fix bug" --type build --owner human
-fw upgrade /opt/my-project  # Sync framework to consumer project
-```
+**Path resolution:** `fw` finds the framework via `bin/fw`'s location (inside framework repo) or via `.framework.yaml` in the project root (shared tooling mode).
 
 *(truncated — see CLAUDE.md for full section)*
 

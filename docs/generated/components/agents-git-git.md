@@ -9,12 +9,6 @@
 Git Agent - Structural Enforcement for Git Operations
 Ensures every commit connects to a task (T-XXX pattern)
 
-### Framework Reference
-
-**Location:** `agents/git/`
-
-**When to use:** For all git operations that involve code changes. Enforces task traceability (P-002).
-
 ## Dependencies (7)
 
 | Target | Relationship |

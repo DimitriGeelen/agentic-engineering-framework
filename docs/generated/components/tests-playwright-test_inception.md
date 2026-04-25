@@ -8,10 +8,12 @@
 
 Should have inception task cards or table rows
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
+| `web/blueprints/approvals.py` | calls |
+| `web/blueprints/approvals.py` | registers |
 
 ## Related
 

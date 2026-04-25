@@ -10,15 +10,20 @@ Helpers
 
 ### Framework Reference
 
-**Location:** `agents/session-capture/`
+**Before beginning any work:**
+1. Initialize context: `fw context init`
+2. Read `.context/handovers/LATEST.md` to understand current state
+3. Review the "Suggested First Action" section
+4. Set focus: `fw context focus T-XXX`
+5. Run `fw metrics` to see project status
+6. If handover feedback section exists, fill it in
 
-**When to use:** MANDATORY before ending any session or switching context.
+**Before ANY implementation (even if a skill says "start now"):**
+1. Verify a task exists for the work: `fw work-on "name" --type build` or `fw work-on T-XXX`
+2. Confirm focus is set in `.context/working/focus.yaml`
+3. THEN proceed with implementation
 
-Review the checklist in `agents/session-capture/AGENT.md` and ensure:
-- All discussed work has tasks
-- All decisions are recorded
-- All learnings are captured as practices
-- All open questions are tracked
+*(truncated — see CLAUDE.md for full section)*
 
 ## Dependencies (2)
 

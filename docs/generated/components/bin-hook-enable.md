@@ -15,6 +15,18 @@ under the specified event/matcher in .claude/settings.json. Idempotent — if th
 (event, matcher, command) tuple already exists, exits 0 with "already registered".
 Written 2026-04-22 under T-1189 to repair T-977 false-complete (G-015 Hit #2).
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `.claude/settings.json` | writes |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | called_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `bin-hook-enable.yaml`*
-*Last verified: 2026-04-23*
+*Last verified: 2026-04-24*

@@ -11,9 +11,10 @@ Creates handover documents for session continuity
 
 ### Framework Reference
 
-**Location:** `agents/handover/`
-
-**When to use:** MANDATORY at end of every session.
+- **Generate handover AFTER work is done, not before**
+- Never generate a skeleton handover "to fill in later" — the session may not survive to fill it
+- When generating handover: fill in ALL [TODO] sections immediately in the same operation
+- For mid-session checkpoints: `fw handover --checkpoint`
 
 ## Dependencies (8)
 

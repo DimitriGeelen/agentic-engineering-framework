@@ -19,6 +19,18 @@ Detection strategy:
 (i.e. the agent ran `fw inception decide ...` — not relaying, executing).
 3. Skips when the command being run is `fw task review` (legitimate precursor
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | calls |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `.claude/settings.json` | registered_in |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-pl007-scanner.yaml`*
-*Last verified: 2026-04-23*
+*Last verified: 2026-04-24*

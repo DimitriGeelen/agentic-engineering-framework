@@ -11,15 +11,9 @@ Show known failure patterns and mitigations
 
 ### Framework Reference
 
-**Parallel Investigation** (T-059, T-061, T-086): 3-5 Explore agents scan different aspects. Each returns structured findings. Orchestrator synthesizes.
-
-**Parallel Audit** (T-072): 3 agents review different artifact categories. Each returns pass/warn/fail summary. Combined into report.
-
-**Parallel Enrichment** (T-073): N agents each produce one file. MUST write to disk, return only path+summary. Cap at 5 parallel. Use `fw bus post` for formal tracking.
-
-**Sequential TDD** (T-058): Fresh agent per implementation task with review between.
-
-*(truncated — see CLAUDE.md for full section)*
+- **Parallel investigation / audit / enrichment:** 3-5 Task agents scan independent aspects; each writes findings to disk, returns path + summary. Cap at 5 parallel. Use `fw bus post` for formal tracking.
+- **Sequential TDD:** Fresh agent per implementation task with review between.
+- **TermLink parallel workers:** Spawn TermLink sessions for isolated heavy work. `termlink interact --json` for sync commands, `termlink pty inject/output` for interactive control. Cleanup with `termlink signal SIGTERM` + `termlink clean`. Preferred over Task agents when context isolation matters.
 
 ## Used By (1)
 

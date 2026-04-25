@@ -19,7 +19,7 @@ Approvals older than this are considered expired (seconds)
 | `web/blueprints/inception.py` | registers |
 | `web/blueprints/tasks.py` | registers |
 
-## Used By (5)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -27,6 +27,8 @@ Approvals older than this are considered expired (seconds)
 | `web/blueprints/__init__.py` | registered_by |
 | `web/blueprints/core.py` | called_by |
 | `web/blueprints/core.py` | registered_by |
+| `tests/playwright/test_inception.py` | called_by |
+| `tests/playwright/test_inception.py` | registered_by |
 
 ## Related
 

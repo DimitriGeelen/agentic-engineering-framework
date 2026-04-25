@@ -1,11 +1,11 @@
-timestamp: 2026-04-24T09:04:24Z
+timestamp: 2026-04-25T09:30:01Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1312)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1378)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 9 task(s) waiting >30d: T-436(26d) T-446(40d) T-448(26d) T-460(41d) T-470(42d) T-481(40d) T-505(37d) T-511(37d) T-518(37d) T-530(31d) T-594(31d) T-612(28d) T-613(27d) T-663(26d) T-678(26d) T-706(25d) T-707(25d) T-708(25d) T-710(25d) T-772(24d) T-782(24d) T-799(22d) T-800(22d) T-816(20d) T-817(20d) T-880(19d)"
+    check: "D2: Human review queue — 9 task(s) waiting >30d: T-446(41d) T-448(27d) T-460(42d) T-470(43d) T-481(41d) T-505(38d) T-511(38d) T-518(38d) T-530(32d) T-594(32d) T-612(29d) T-613(28d) T-663(27d) T-706(26d) T-708(26d) T-710(26d) T-782(25d) T-880(20d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - id: D8
     level: PASS
@@ -17,32 +17,9 @@ findings:
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
-  - id: D4
-    level: PASS
-    check: "D4: Audit trend — insufficient history (<3 entries)"
-  - id: D5
-    level: WARN
-    check: "D5: Task lifecycle — 8 anomaly(s): T-875(2min,human) T-829(3min,human) T-651(1min,human) T-827(2min,human) T-676(3min,human) T-607(5min,human) T-1062(16d-active) T-1063(16d-active)"
-    mitigation: "Review flagged tasks for process issues"
-  - id: D3
-    level: WARN
-    check: "D3: Commit velocity — WARN drop today=7 avg=42 ratio=0.2x"
-    mitigation: "Check if velocity reflects budget pressure or unusual activity"
-  - id: D7
-    level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 77_commits_24h)"
-  - id: D6
-    level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=20.3 earlier=9.3)"
-  - id: D12
-    level: PASS
-    check: "D12: Bypass log — no log file"
-  - id: D9
-    level: PASS
-    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 8
-  warn: 3
+  pass: 3
+  warn: 1
   fail: 1
-  total: 12
+  total: 5

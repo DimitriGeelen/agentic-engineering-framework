@@ -4,7 +4,7 @@ name: "AC validation default-flip — mechanical verification with persisted evi
 description: >
   AC validation default-flip — mechanical verification with persisted evidence
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [governance, ac-validation, friction-reduction, orchestrator-routing]
 components: []
 related_tasks: [T-1443, T-954, T-1064]
 created: 2026-04-25T06:34:35Z
-last_update: 2026-04-25T06:37:59Z
-date_finished: null
+last_update: 2026-04-25T07:22:38Z
+date_finished: 2026-04-25T07:22:38Z
 ---
 
 # T-1442: AC validation default-flip — mechanical verification with persisted evidence
@@ -66,12 +66,12 @@ Full framing + dialogue genesis: `docs/reports/T-1442-ac-validation-default-flip
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -161,9 +161,38 @@ T-1443 (parallel inception) designs the validation/reviewer agent itself.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: A 6-turn dialogue with user (full trail in `docs/reports/T-1442-ac-validation-default-flip.md` § Dialogue Log) converged on a design that resolves the friction-vs-rigor tradeoff by reframing it: human-time friction is expensive and scarce, computational friction is cheap and tireless. The user's principle — *"work is only valuable when quality working product is delivered. False 'successfully tested' undermines this and can have severe downstream effects when subsequent development builds on it"* — rules out caching, lazy hybrids, and first-time exceptions. Every verification is fresh, every time. Antifragility is built in: Pass B of the daily cron tunes the escalation-pattern catalogue from its own near-misses. Design extends existing infrastructure — no greenfield subsystems. Scope-fence honored: re-classifying existing Human ACs in bulk is OUT (incremental on next-touch only).
+
+Design summary:
+1. Model V (always-fresh) — validation agent invoked on every `fw task update --status work-completed` request via `/review T-XXX` slash command (or programmatic equivalent `fw skill invoke review --task T-XXX`). Behind `/review`, the orchestrator routes to an appropriate model class (T-1064 dependency: Haiku for routine, Sonnet for standard, Opus for high-risk/governance, external for specialised). Hard prerequisite gate: status change rejected if validation fails. No cache.
+2. Evidence persistence (Q1) — task body gets new `## Verification Output` section (reviewer verdict + summary + anti-pattern flags, ~10 lines); full stdout/stderr/exit-codes/env-fingerprint to `docs/reports/T-XXX-evidence.md`; `fw bus post` envelope optional for cross-agent review.
+3. Two-layer human escalation — Layer 1 mechanical pattern triggers (`policy/escalation-patterns.yaml`: governance surfaces, security components, public APIs, destructive ops, fabric-flagged sensitive components, evidence anti-patterns); Layer 2 declared escalation (new frontmatter `risk: high|medium|low` + `human_signoff: required|optional`). Reviewer (T-1443) consults both before mechanical-ticking.
+4. Layer 3 audit safety-net (daily cron) — Pass A: drift detection re-runs verification commands fresh against current HEAD on rolling 30-day window + always-on core fabric components, surfaces failures as `issues`. Pass B: escalation audit cross-references commits-since-completion + frontmatter against Layer 1 patterns, flags missed escalations. Output → Watchtower `/cron/validation-audit` antifragility dashboard.
+5. Reviewer responsibilities (T-1443 inherits) — assesses evidence *quality*, not exit code: detects tautology, empty output, mock-only coverage, scope-narrowing, skip-as-pass; consults Layer 1 patterns; escalates to human on match or insufficient-evidence.
+6. Slash-command surface + orchestrator routing — `/review` is the uniform entry point; orchestrator picks the model class per task profile (risk + Layer 1 pattern match + evidence size + fabric blast-radius). Same routing primitive as T-1064/T-1065. Daily cron Pass A and Pass B also route through `/review` with profile hints (cheap models for bulk re-validation, escalating only on detected drift).
+
+**Date**: 2026-04-25T07:22:38Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-25T07:22:38Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** A 6-turn dialogue with user (full trail in `docs/reports/T-1442-ac-validation-default-flip.md` § Dialogue Log) converged on a design that resolves the friction-vs-rigor tradeoff by reframing it: human-time friction is expensive and scarce, computational friction is cheap and tireless. The user's principle — *"work is only valuable when quality working product is delivered. False 'successfully tested' undermines this and can have severe downstream effects when subsequent development builds on it"* — rules out caching, lazy hybrids, and first-time exceptions. Every verification is fresh, every time. Antifragility is built in: Pass B of the daily cron tunes the escalation-pattern catalogue from its own near-misses. Design extends existing infrastructure — no greenfield subsystems. Scope-fence honored: re-classifying existing Human ACs in bulk is OUT (incremental on next-touch only).
+
+Design summary:
+1. Model V (always-fresh) — validation agent invoked on every `fw task update --status work-completed` request via `/review T-XXX` slash command (or programmatic equivalent `fw skill invoke review --task T-XXX`). Behind `/review`, the orchestrator routes to an appropriate model class (T-1064 dependency: Haiku for routine, Sonnet for standard, Opus for high-risk/governance, external for specialised). Hard prerequisite gate: status change rejected if validation fails. No cache.
+2. Evidence persistence (Q1) — task body gets new `## Verification Output` section (reviewer verdict + summary + anti-pattern flags, ~10 lines); full stdout/stderr/exit-codes/env-fingerprint to `docs/reports/T-XXX-evidence.md`; `fw bus post` envelope optional for cross-agent review.
+3. Two-layer human escalation — Layer 1 mechanical pattern triggers (`policy/escalation-patterns.yaml`: governance surfaces, security components, public APIs, destructive ops, fabric-flagged sensitive components, evidence anti-patterns); Layer 2 declared escalation (new frontmatter `risk: high|medium|low` + `human_signoff: required|optional`). Reviewer (T-1443) consults both before mechanical-ticking.
+4. Layer 3 audit safety-net (daily cron) — Pass A: drift detection re-runs verification commands fresh against current HEAD on rolling 30-day window + always-on core fabric components, surfaces failures as `issues`. Pass B: escalation audit cross-references commits-since-completion + frontmatter against Layer 1 patterns, flags missed escalations. Output → Watchtower `/cron/validation-audit` antifragility dashboard.
+5. Reviewer responsibilities (T-1443 inherits) — assesses evidence *quality*, not exit code: detects tautology, empty output, mock-only coverage, scope-narrowing, skip-as-pass; consults Layer 1 patterns; escalates to human on match or insufficient-evidence.
+6. Slash-command surface + orchestrator routing — `/review` is the uniform entry point; orchestrator picks the model class per task profile (risk + Layer 1 pattern match + evidence size + fabric blast-radius). Same routing primitive as T-1064/T-1065. Daily cron Pass A and Pass B also route through `/review` with profile hints (cheap models for bulk re-validation, escalating only on detected drift).
+
+### 2026-04-25T07:22:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

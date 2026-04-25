@@ -11,18 +11,6 @@
 Unit tests for agents/audit/audit.sh
 Origin: T-924
 
-### Framework Reference
-
-**Location:** `agents/audit/`
-
-**When to use:** Periodically check framework compliance. Run after completing work or when suspecting drift.
-
-```bash
-./agents/audit/audit.sh
-```
-
-**Exit codes:** 0=pass, 1=warnings, 2=failures
-
 ## Dependencies (1)
 
 | Target | Relationship |
