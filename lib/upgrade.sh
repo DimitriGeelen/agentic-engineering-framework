@@ -580,6 +580,52 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
         else
             echo -e "  ${GREEN}OK${NC}  $consumer_total/$fw_total hooks present (all types matched)"
         fi
+
+        # T-1479: Duplicate framework hook detection.
+        # If $HOME/.claude/settings.json registers framework hooks for the same
+        # (event, hook_name) tuples as the project-level config, every Claude
+        # Code event fires both. Symptom: dual handover commits (OBS-023, fixed
+        # in-script by T-1478's time-window dedup). Surface the overlap so the
+        # consumer can choose which to keep — we don't auto-remove user state.
+        local user_settings="$HOME/.claude/settings.json"
+        if [ -f "$user_settings" ]; then
+            local dup_analysis
+            dup_analysis=$(USER_FILE="$user_settings" PROJ_FILE="$settings_file" python3 -c "
+import json, os
+
+def fw_hooks(path):
+    out = set()
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError, OSError):
+        return out
+    for event, entries in data.get('hooks', {}).items():
+        for entry in entries:
+            for hook in entry.get('hooks', []):
+                cmd = hook.get('command', '')
+                if 'fw hook' in cmd:
+                    name = cmd.split('fw hook ')[-1].strip().split()[0]
+                elif '.agentic-framework' in cmd:
+                    name = cmd.strip().split('/')[-1]
+                else:
+                    continue
+                out.add((event, name))
+    return out
+
+user = fw_hooks(os.environ['USER_FILE'])
+proj = fw_hooks(os.environ['PROJ_FILE'])
+overlap = sorted(user & proj)
+print('|'.join(f'{e}:{n}' for e, n in overlap))
+" 2>/dev/null || echo "")
+            if [ -n "$dup_analysis" ]; then
+                local dup_count
+                dup_count=$(echo "$dup_analysis" | tr '|' '\n' | wc -l)
+                echo -e "  ${YELLOW}WARN${NC}  Duplicate framework hooks in $user_settings: $dup_count overlap"
+                echo -e "    ${YELLOW}↳${NC}  Pairs: $(echo "$dup_analysis" | tr '|' ' ')"
+                echo -e "    ${YELLOW}↳${NC}  Both fire on every Claude Code event (cause of OBS-023). Recommend removing duplicates from $user_settings."
+            fi
+        fi
     else
         local fw_hook_count=0
         if [ -f "$fw_settings" ]; then

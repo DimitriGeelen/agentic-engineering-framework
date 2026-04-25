@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1479: T-1479: fw upgrade detects duplicate framework hooks across user-level and project-level settings
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T21:31:56Z
+# ============================================================================
+
+task_id: T-1479
+task_name: "T-1479: fw upgrade detects duplicate framework hooks across user-level and project-level settings"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T21:29:10Z
+completed: 2026-04-25T21:31:52Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`lib/upgrade.sh` step [5/10] adds a duplicate-hook scan after the project-level hook step"
+  - "Scan reads `$HOME/.claude/settings.json` and extracts `(event, hook_name)` tuples for hooks whose command contains `fw hook` or `.agentic-framework`"
+  - "If overlap with project-level hooks is non-empty, emits a yellow `WARN` line listing the duplicate pairs"
+  - "When `~/.claude/settings.json` doesn't exist or is malformed, the scan degrades gracefully (no upgrade abort)"
+  - "`bash -n lib/upgrade.sh` passes"
+  - "bats test `tests/unit/upgrade_duplicate_hook_detection.bats` passes (11/11)"
+  - "Real-world verification: detection finds 16 duplicate hooks on this project (the PostToolUse + PreToolUse + PreCompact set)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1479-t-1479-fw-upgrade-detects-duplicate-fram.md
+generated_by: context-agent-hybrid
