@@ -407,9 +407,9 @@ if [ -n "$_version" ]; then
         _stamped="$_version"
     fi
     echo "$_stamped" > "$PROJECT_ROOT/VERSION"
-    if [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
-        echo "$_stamped" > "$PROJECT_ROOT/.agentic-framework/VERSION"
-    fi
+    # T-1252 (G-006): do NOT stamp .agentic-framework/VERSION — the vendored
+    # framework's VERSION must reflect the framework release that was vendored,
+    # not the consumer project's version.
     echo "VERSION stamped: $_stamped"
 fi
 
