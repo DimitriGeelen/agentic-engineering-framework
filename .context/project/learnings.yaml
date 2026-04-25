@@ -2078,3 +2078,24 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-269
+  learning: "Standalone Watchtower templates (own <html> root, no base.html extension) silently break htmx mutations because the htmx:configRequest CSRF listener lives only in base.html. Audit web/templates/*.html with grep '<html|DOCTYPE' — every match must either extend base.html or load /static/csrf-htmx.js. T-1452 victim was review.html; T-1453 fix extracted listener into shared static asset and added Playwright regression on toggle-ac."
+  source: P-001
+  task: T-1453
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
+- id: L-270
+  learning: "Watchtower forms that POST to a route returning htmx-aware vs plain-redirect must show the same error info to the user on BOTH paths. The /inception/T-XXX decide form (T-1454) silently redirected on plain failure because only the htmx branch surfaced errors. Pattern: when route handles HX-Request differently, audit the non-htmx path for error visibility — return redirect-with-?error= and render a banner. Same fix family as T-1452/L-269 (silent server errors)."
+  source: P-001
+  task: T-1454
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
+- id: L-271
+  learning: "Bats tests calling 'bin/fw hook ...' must export PROJECT_ROOT=$TEST_PROJECT in setup(). Without this, the parent shell's PROJECT_ROOT (often the framework repo) leaks via bats run, and the dispatcher's missing-hook log writes pollute the framework's .hook-crashes.log, surfacing as phantom 'Hook crashes' warnings in fw doctor for weeks. Pattern: any bats test that invokes fw and triggers project-relative writes (logs, audits, working dir) MUST pin PROJECT_ROOT in setup()."
+  source: P-001
+  task: T-1457
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD

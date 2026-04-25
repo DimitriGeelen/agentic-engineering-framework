@@ -15,6 +15,11 @@ setup() {
     export TEST_PROJECT="$TEST_TEMP_DIR/proj"
     mkdir -p "$TEST_PROJECT/.context/working" "$TEST_PROJECT/.tasks/active"
     touch "$TEST_PROJECT/.framework.yaml"
+    # T-1457: pin PROJECT_ROOT to TEST_PROJECT so the dispatcher's missing-hook
+    # write lands in TEST_PROJECT/.context/working/.hook-crashes.log, not the
+    # framework's. Without this, parent-shell PROJECT_ROOT leaks in via bats `run`
+    # and pollutes the framework crash log (surfaced as phantom warnings in fw doctor).
+    export PROJECT_ROOT="$TEST_PROJECT"
 }
 
 teardown() {
