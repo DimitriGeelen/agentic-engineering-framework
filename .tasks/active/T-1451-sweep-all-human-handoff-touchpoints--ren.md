@@ -20,27 +20,49 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+User feedback 2026-04-25: agent listed `T-1445/46/47/48/49/50 each have one [REVIEW]` without rendering URLs — friction caused human to ask for links explicitly. Goal: zero-friction review queue. Rule already codified in agent feedback memory (feedback_human_review_links.md). This task closes the structural side: which output surfaces still surface bare task IDs?
 
-## Assumptions
+## Audit findings (this session)
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+Surveyed all human-facing output paths. Surfaces that ALREADY render URLs:
+- `agents/context/check-tier0.sh:372,405` — Tier 0 prompts include `${WT_URL}/approvals`
+- `lib/review.sh:49,52` — `fw task review` prints `${URL}/review/T-XXX` or `/inception/T-XXX`
+- `lib/verify-acs.sh:330` — prints `http://{ip}:{wt_port}/approvals`
 
-## Exploration Plan
+Surfaces that DO NOT render URLs (the gap):
+- **`agents/handover/handover.sh`** — three sections list bare `T-XXX` without URL:
+  1. "Awaiting Human Review (N tasks)" inside Work in Progress (line 477-479, 513-515)
+  2. "Awaiting Your Action (Human)" full section (line 570-578)
+  3. Observation inbox listings (line 587+)
+- `agents/handover/handover.sh` does not resolve the Watchtower URL at all (`grep WT_URL` returns nothing)
+- "Inception Phases" section in handover output also lists task IDs only
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+The handover is the **highest-traffic gap** — it loads at every session start via `/resume`, and 28 Human ACs + 18 inception decisions are listed every time, all without URLs.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN scope (proposed):**
+- Inject `WT_URL=$(...)` resolution at top of handover.sh
+- Pass URL into the Python heredocs (lines 477, 513, 570) and render `[T-XXX](${URL}/review/T-XXX)` markdown links
+- Inception Phases listing: render `[T-XXX](${URL}/inception/T-XXX)` for pending decisions
+- Update observation listing to render `[OBS-NNN](${URL}/observations)` if such a page exists (or skip if not)
+
+**OUT of scope:**
+- Sweep of agents/audit/*, agents/healing/* — those are diagnostic outputs, less frequent
+- Restructuring the handover format itself
+- New Watchtower pages (e.g. /observations) — separate task
+
+## Exploration Plan
+
+Already executed via the audit above (one session). No further spikes needed.
+
+## Acceptance Criteria
+
+### Agent
+- [x] Audit of all human-handoff surfaces captured (above)
+- [x] Gap localized to `agents/handover/handover.sh` (3 sections + 1 missing URL resolver)
+- [x] Recommendation written
+- [ ] [Inception decision recorded] go/no-go/defer with chosen scope (handover-only vs broader sweep)
 
 ## Acceptance Criteria
 
@@ -77,15 +99,20 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO with **handover-only scope** (single build task, ~30 minutes).
+
+**Rationale:** The audit revealed that the handover output IS the gap — every other human-facing surface (Tier 0, fw task review, verify-acs) already renders URLs. The handover is also the highest-traffic surface (loaded via `/resume` at every session start, 28+46 task references per render). Other surfaces (audit, healing, fw note list) are lower-traffic and can be addressed if/when they cause friction. Doing the handover scope alone removes ~80% of the visible friction at low risk.
+
+**Evidence:**
+- 3 named gaps in `agents/handover/handover.sh` lines 477, 513, 570 — all in Python heredocs that print bare `**T-XXX**: name`
+- No existing WT_URL resolution in handover.sh — first-time addition
+- Comparable pattern already exists in `lib/review.sh:42-52` for URL construction (resolve port via `bin/fw watchtower url`)
+- Resolved feedback rule (feedback_human_review_links.md) already covers WHEN to render — this just covers WHERE
+
+**Out-of-scope follow-up candidates (track separately if friction recurs):**
+- `agents/audit/audit.sh` — append `${WT_URL}/inception/T-XXX` to inception-related findings
+- `agents/healing/healing.sh` — already prints task IDs in diagnostics
+- `bin/fw note list` output — render `${WT_URL}/inception/T-XXX` for promoted observations
 
 ## Decisions
 
