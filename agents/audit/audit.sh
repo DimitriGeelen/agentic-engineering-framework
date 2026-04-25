@@ -826,7 +826,7 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
     # Session-state files (watchtower logs/pid, audits, monitors, focus, metrics
     # history, ephemeral approvals, counters) churn under normal operation and
     # would otherwise drown out signal from real source/code changes.
-    _SESSION_STATE_FILTER='^\.context/(working/(watchtower\.|session\.yaml|focus\.yaml|\.session-metrics\.yaml|\.tool-counter|\.edit-counter|\.budget-status|\.gate-bypass-log\.yaml|\.approval-notified|\.restart-requested|\.dispatch-approval)|audits/|monitors/|approvals/(pending|resolved)-|project/metrics-history\.yaml)'
+    _SESSION_STATE_FILTER='^\.context/(working/(watchtower\.|session\.yaml|focus\.yaml|\.session-metrics\.yaml|\.tool-counter|\.edit-counter|\.budget-status|\.gate-bypass-log\.yaml|\.approval-notified|\.restart-requested|\.dispatch-approval)|audits/|monitors/|approvals/(pending|resolved)-|project/metrics-history\.yaml|locks/)'
     _ALL_DIRTY=$(git -C "$PROJECT_ROOT" status --porcelain | awk '{print $2}')
     if [ -n "$_ALL_DIRTY" ]; then
         _REAL_DIRTY=$(printf '%s\n' "$_ALL_DIRTY" | grep -Ev "$_SESSION_STATE_FILTER" || true)
