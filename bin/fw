@@ -2372,6 +2372,8 @@ case "$cmd" in
             echo "Usage:"
             echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task"
             echo "  fw reviewer audit                                            Layer 3 daily Pass-B re-scan"
+            echo "  fw reviewer drift T-XXX                                      v1.5 Pass A — file-hash drift"
+            echo "  fw reviewer reverify T-XXX                                   v1.5 Pass B — worktree re-execution"
             echo "  fw reviewer override add T-XXX --pattern X [--ac N] --reason '...' [--ttl 90]"
             echo "  fw reviewer override list                                    Active overrides + days remaining"
             echo "  fw reviewer override prune                                   Drop expired entries"
@@ -2379,6 +2381,9 @@ case "$cmd" in
             echo ""
             echo "Scan: writes verdict to task body under '## Reviewer Verdict (vX.Y)'."
             echo "Audit: re-scans every completed task; writes .context/audits/reviewer/YYYY-MM-DD.yaml"
+            echo "Drift (v1.5 Pass A): hashes files referenced in ## Verification, compares vs baseline."
+            echo "Reverify (v1.5 Pass B): re-executes verification commands inside a worktree at the"
+            echo "  task's completion SHA. Network-dependent lines are skipped."
             echo "Overrides: per-(task,pattern,ac?) TTL'd waivers stored in"
             echo "  .context/working/reviewer-overrides.yaml. Suppress known false positives"
             echo "  for a bounded window; suppressions are logged to feedback-stream.yaml."
@@ -2393,6 +2398,16 @@ case "$cmd" in
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.override_cli "$@"
+        fi
+        if [ "${1:-}" = "drift" ]; then
+            shift
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                python3 -m lib.reviewer.drift_cli "$@"
+        fi
+        if [ "${1:-}" = "reverify" ]; then
+            shift
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                python3 -m lib.reviewer.reverify_cli "$@"
         fi
         exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
             python3 -m lib.reviewer.static_scan "$@"
