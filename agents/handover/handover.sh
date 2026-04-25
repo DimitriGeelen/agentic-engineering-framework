@@ -21,8 +21,12 @@ fi
 _resolve_commit_task() {
     # If task already set by --task flag, keep it
     if [ -n "$COMMIT_TASK" ]; then return; fi
-    # Check if T-012 exists (framework's own handover task)
-    if [ -n "$(ls "$TASKS_DIR/active/T-012-"*.md "$TASKS_DIR/completed/T-012-"*.md 2>/dev/null)" ]; then
+    # T-1477: Check T-012 in active/ ONLY. The original code matched completed/
+    # too, so every handover commit carried "T-012" even after that task was
+    # closed long ago — producing a recurring "Task T-012 is closed" warning
+    # from pre-commit. The auto-create branch below handles "no active handover
+    # task" correctly.
+    if [ -n "$(ls "$TASKS_DIR/active/T-012-"*.md 2>/dev/null)" ]; then
         COMMIT_TASK="T-012"
         return
     fi
