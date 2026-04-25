@@ -70,9 +70,112 @@ User directive: "playback this to verify we have a common understanding" before 
 4. ❓ "incept that" → reviewer scope (generic vs per-tier) → folded into I-B
 5. ❓ "incept that, think about goals + risks + frictionless development" → framing absorbed, relationship-to-existing-controls explored in both
 
-### Next dialogue turn
+### 2026-04-25 — Dialogue Turn 2 (Q3 trigger model — first attempt)
 
-Awaiting alignment on the four Open Questions above. Recommend tackling Q3 (trigger model) first — it shapes Q1 (where evidence lands) and Q5a (extension vs replacement).
+Agent presented 4 trigger models (X post-trigger / Y hard pre-req gate / Z async-anytime / W lazy hybrid) with friction/risk tradeoff matrix. Recommended W: auto-fire on work-completed, cache evidence by source-touch invariant, surface "Verify now" button in Watchtower. Justification was "frictionless invisible pass-through."
+
+### 2026-04-25 — Dialogue Turn 3 (User's antifragility pushback — design pivot)
+
+User pushed back: *"work is only valuable when quality working product is delivered. False 'successfully tested' undermines this and can have severe downstream effects when subsequent development build on this. please reflect on this."*
+
+This was the principle that re-framed the entire design.
+
+**Agent reflection:** Model W is insufficient. Caching contradicts the antifragility principle. Re-framed: "friction is not the enemy — *wasted* friction is. Human-time friction is expensive; computational friction is cheap and tireless." Pivoted to **Model V (defense-in-depth)**:
+- Always re-run at work-completed (no cache)
+- Reviewer assesses evidence quality (not just pass/fail)
+- Blast-radius invalidation on commit
+- Periodic background re-validation cron
+- On detected drift → re-open task to `issues`
+
+Implication for T-1443 (reviewer agent): reviewer's job becomes harder and more valuable — must detect false-positive anti-patterns (tautology, empty output, mock-only coverage, scope-narrowing, skip-as-pass). Recorded as scope expansion for T-1443.
+
+### 2026-04-25 — Dialogue Turn 4 (V locked + V+W struck + escalation reframe)
+
+User confirmed:
+1. ✅ Model V with validation as **hard prereq** for `--status work-completed`
+2. Asked: elaborate on V+W hybrid I had floated
+3. ❌ "first-time human signoff for ALL tasks" — instead: human signoff for **high risk / destructive / high-impact UX patterns**. Asked: how/if can we codify this at all?
+
+**Agent response:**
+- Q1: Confirmed V pure, hard prereq gate. Auto-fire on `work-completed` (frictionless) with `fw task verify` standalone available for early/iterative checks.
+- Q2: **V+W struck**. The "+W" was a momentary lapse back into compute-optimization caching. Caching contradicts V's principle. The cron has no useful cache to consult — verification IS the cache invalidator. Strike V+W; pure V; rolling cron schedule for compute spread (not caching).
+- Q3 (codification): proposed two-layer escalation model —
+  - **Layer 1** mechanical pattern triggers (`policy/escalation-patterns.yaml`)
+  - **Layer 2** declared frontmatter (`risk`, `human_signoff` fields)
+  - **Layer 3** audit safety-net cron catches false-negatives
+- Acknowledged honest limits: false-negatives WILL happen; antifragile loop tunes Layer 1 over time.
+
+### 2026-04-25 — Dialogue Turn 5 (cron specification)
+
+User confirmed:
+1. ✅ Always invoke validation agent on `work-completed`
+2. ✅ Two-layer + audit confirmed
+3. ✅ Cron runs daily
+4. Asked: what does the cronjob look at?
+
+**Agent specified two passes (one daily schedule, shared task scan):**
+
+| Pass | Scope | Per-task action | Catches |
+|---|---|---|---|
+| A — Drift Detection | Rolling 30-day completed + always-on core fabric components | Re-runs verification fresh; reviewer re-assesses; on fail → task back to `issues` with diff | Env drift, dep upgrades, transitive code changes invisible to source-touch |
+| B — Escalation Audit | Completed tasks since last audit | Cross-references commits + frontmatter against Layer 1; flags pattern-match + mechanical-tick (no human signoff) | False-negatives in Layer 1 catalogue; each catch tunes pattern set |
+
+Combined output → Watchtower `/cron/validation-audit` page (antifragility dashboard). Cost envelope ~13 min/day.
+
+### 2026-04-25 — Dialogue Turn 6 (Q1 final — evidence persistence shape)
+
+Agent proposed:
+- Task body new `## Verification Output` section: reviewer verdict + summary + anti-pattern flags + link to full evidence (~10 lines max)
+- `docs/reports/T-XXX-evidence.md`: full stdout/stderr/exit-codes/timing/env-fingerprint per verification command
+- `fw bus post` envelope: optional, only for cross-agent review (not always-on)
+
+User confirmed.
+
+## Decisions captured (final design)
+
+1. **Model V** (defense-in-depth) — always-fresh verification, no cache, no first-time exception, hard prereq gate on `--status work-completed`.
+2. **Validation agent always invoked** on `work-completed` — auto-fire is the trigger.
+3. **Reviewer (T-1443) assesses evidence quality** including anti-pattern detection — scope expanded.
+4. **Two-layer human-escalation** — mechanical patterns + frontmatter declarations.
+5. **Layer 3 audit safety-net cron, daily** — Pass A drift detection + Pass B escalation audit.
+6. **Evidence persistence (Q1)** — task body summary + `docs/reports/T-XXX-evidence.md` + optional bus envelope.
+7. **Extension of existing controls** — T-954, P-011, `fw verify-acs`, `fw fabric`, `fw cron`, `docs/reports/` reusable; no replacement.
+8. **Migration incremental** — bulk re-classification of existing Human ACs is OUT; happens on next-touch only.
+9. **Honest false-negative limit accepted** — antifragile loop (Layer 3 → Layer 1 catalogue tuning) is the mitigation.
+10. **8 follow-up build tasks** decomposed in Recommendation block of T-1442 task body (B1–B8).
+
+### 2026-04-25 — Dialogue Turn 7 (slash-command + orchestrator routing)
+
+User: *"consider should we route agent review via /command, so we can use this also to route to different kind of models?? eg more in thought of our orchestarting routing dialoge we had before"*
+
+This connects T-1443 to the orchestrator routing thread (T-1064/T-1065).
+
+**Agent reflection:**
+- For T-1442 (policy/data/cron): tiny implication — invocation contract changes from "framework calls `fw termlink dispatch agents/reviewer/`" to "framework calls `/review T-XXX` slash command (programmatic equivalent: `fw skill invoke review --task T-XXX`)." Policy unchanged.
+- For T-1443 (reviewer agent design): significant — Spike B reframed from "profile scope" to "routing strategy." The question becomes "what routing rules govern which model handles which review."
+
+**Routing matrix proposed:**
+
+| Profile | Model | Why |
+|---|---|---|
+| Routine mechanical-tick | Haiku 4.5 | Fast, cheap, sufficient for pattern-matching with anti-pattern checks |
+| Standard review | Sonnet 4.6 | Balanced; handles evidence-quality assessment |
+| High-risk / governance / security | Opus 4.7 | Careful judgment, expensive but warranted |
+| Domain specialist | External / specialised | Pluggable via routing rules |
+| Cron Pass A (rerun verification) | Haiku | Bulk, cheap, exit-code + diff |
+| Cron Pass B (escalation audit) | Sonnet | Moderate reasoning over commit history |
+
+Routing inputs: task `risk` field + Layer 1 pattern match + evidence size + AC count + fabric blast-radius.
+
+**Architectural fit:** Same routing primitive as T-1064/T-1065 — one routing engine, multiple use-cases. T-1443 becomes T-1064's first concrete consumer. Develop in parallel.
+
+Recorded in T-1442 Recommendation step 1 + new step 6 (slash-command surface + orchestrator routing). Recorded in T-1443 as Spike H + reframe of Spike B.
+
+## Recommendation
+
+**GO** (full text in `.tasks/active/T-1442-ac-validation-default-flip--mechanical-v.md` § Recommendation).
+
+Hand to user via `fw task review T-1442` for GO/NO-GO/DEFER.
 
 ## Anchor files
 

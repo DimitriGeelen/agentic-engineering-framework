@@ -8,9 +8,9 @@ status: captured
 workflow_type: inception
 owner: agent
 horizon: next
-tags: [governance, reviewer-agent, termlink-dispatch, friction-reduction]
+tags: [governance, reviewer-agent, termlink-dispatch, friction-reduction, slash-command, orchestrator-routing]
 components: []
-related_tasks: [T-1442]
+related_tasks: [T-1442, T-1064, T-1065]
 created: 2026-04-25T06:35:13Z
 last_update: 2026-04-25T06:35:13Z
 date_finished: null
@@ -32,16 +32,21 @@ Full framing + dialogue genesis: `docs/reports/T-1442-ac-validation-default-flip
 2. TermLink dispatch (vs Task tool sub-agent) materially preserves parent context — KNOWN TRUE (per CLAUDE.md §Task Tool vs TermLink Dispatch)
 3. Reviewer can reliably distinguish "evidence sufficient" from "evidence insufficient" without human escalation in ≥80% of cases — UNTESTED (this is the value test)
 4. Auto-ticking Agent ACs by an agent (not a human) is acceptable governance — CONFIRMED YES by user 2026-04-25, scope limited to Agent ACs only
+5. (Inherited from T-1442) Reviewer must assess **evidence quality**, not just exit codes — VALIDATED (anti-pattern detection scope: tautology, empty output, mock-only, scope-narrowing, skip-as-pass)
+6. (Inherited from T-1442) Reviewer must consult **Layer 1 escalation patterns** (`policy/escalation-patterns.yaml`) and **Layer 2 frontmatter** (`risk`, `human_signoff`) before mechanical-ticking — VALIDATED
 
 ## Exploration Plan
 
-(NOT YET EXECUTED — waiting on T-1442 GO)
+(NOT YET EXECUTED — waiting on T-1442 GO. Several spikes already shaped by T-1442 dialogue.)
 
-- **Spike A** (15m): Sketch reviewer interface — input contract (depends on T-1442 Q1), output protocol (envelope shape).
-- **Spike B** (15m): Decide profile scope (Q4) — generic vs per-tier vs hybrid. Cost/value comparison.
-- **Spike C** (10m): Define authority bounds — explicit list of what reviewer cannot do.
-- **Spike D** (10m): Failure-mode design — what happens when reviewer says "evidence insufficient" (block / warn / human-queue)?
-- **Spike E** (5m): Reviewer auditability — who reviews the reviewer? Periodic sampling?
+- **Spike A** (15m, INPUT KNOWN per T-1442 Q1): Sketch reviewer interface — input = task `## Verification Output` summary + `docs/reports/T-XXX-evidence.md` full evidence + optional bus envelope. Output = verdict (mechanical-tick / needs-human / insufficient-evidence) + reasoning + anti-pattern flags. Output protocol still open.
+- **Spike B** (15m, REFRAMED): Routing strategy (was: profile scope) — now scoped as "what routing rules govern which model class handles which review." Inputs: task `risk` field, Layer 1 pattern match, evidence size, AC count, fabric blast-radius. Outputs: model class (Haiku / Sonnet / Opus / external) + dispatch path (TermLink vs direct API). Cost/value comparison across profiles.
+- **Spike C** (10m): Define authority bounds — explicit cannot-list (cannot tick Human ACs, cannot decide inceptions, cannot mark `work-completed` itself, cannot bypass Layer 1 pattern match).
+- **Spike D** (10m): Failure-mode design — when reviewer says "evidence insufficient": block status change (hard prereq), warn, or surface to human queue? Default lean: block (per Model V principle).
+- **Spike E** (5m): Reviewer auditability — sampling? periodic re-review of reviewer's tick decisions? Random-shadow human review of N% of ticks?
+- **Spike F** (10m, NEW from T-1442 dialogue): Anti-pattern catalogue — enumerate the false-positive shapes the reviewer must specifically defend against (tautology assertions, empty outputs reported as success, mock-only coverage masquerading as integration, narrow happy-path-only tests, skipped tests counted as passes, --no-verify-style bypasses).
+- **Spike G** (10m, NEW from T-1442 dialogue): Pattern-consultation interface — how does reviewer load `policy/escalation-patterns.yaml` and apply rules over commit list + fabric components + frontmatter + AC content?
+- **Spike H** (15m, NEW from T-1442 dialogue): Slash-command interface + orchestrator routing integration. Design `/review T-XXX` (and `fw skill invoke review --task T-XXX` programmatic equivalent) as the single uniform entry point. Behind it: orchestrator (T-1064) routes to model class per task profile. Same routing primitive as T-1064/T-1065. Soft dependency: T-1064 must be operational, OR T-1443 ships with hard-coded model default and swaps when T-1064 lands.
 
 ## Technical Constraints
 
