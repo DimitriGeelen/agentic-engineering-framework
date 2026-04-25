@@ -1,4 +1,5 @@
 #!/bin/bash
+# REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 # Silent-session scanner — S3 antifragility fallback for SessionEnd (T-1212)
 #
 # Invoked via cron every 15 min. Walks $HOME/.claude/projects/*/<session>.jsonl,

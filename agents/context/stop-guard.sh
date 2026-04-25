@@ -1,4 +1,5 @@
 #!/bin/bash
+# REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 # Stop hook — conversation-capture nudge (T-1211)
 #
 # Fires after every assistant response. Never blocks (exits 0). Emits an

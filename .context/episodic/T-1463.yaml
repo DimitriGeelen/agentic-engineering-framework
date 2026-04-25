@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1463: T-1459 follow-on: brand 5 dead Claude Code hooks as REFERENCE ONLY in script headers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T15:27:42Z
+# ============================================================================
+
+task_id: T-1463
+task_name: "T-1459 follow-on: brand 5 dead Claude Code hooks as REFERENCE ONLY in script headers"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T15:26:25Z
+completed: 2026-04-25T15:27:40Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "All 5 scripts contain a `# REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)` banner directly under the shebang"
+  - "grep confirms 5 matches across the 5 files (one banner per file, no duplicates)"
+  - "No script has its banner inside a sub-block (banner must be on a top-level comment line, not inside a function)"
+  - "`bash -n` syntax-check passes for all 5 scripts after edit"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1463-t-1459-follow-on-brand-5-dead-claude-cod.md
+generated_by: context-agent-hybrid

@@ -1,4 +1,5 @@
 #!/bin/bash
+# REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 # PL-007 Scanner — PostToolUse hook that flags bare command patterns in Bash output
 #
 # When a Bash tool result contains text that looks like a command the agent might

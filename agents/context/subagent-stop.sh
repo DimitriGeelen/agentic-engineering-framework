@@ -1,4 +1,5 @@
 #!/bin/bash
+# REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 # SubagentStop hook — capture sub-agent returns, auto-migrate to fw bus (T-1213)
 #
 # Fires when a Task-tool sub-agent finishes. Reads the sub-agent transcript from

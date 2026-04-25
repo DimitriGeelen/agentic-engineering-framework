@@ -1,4 +1,5 @@
 #!/bin/bash
+# REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 # SessionEnd hook — S1 reason logger + S2 handover trigger (T-1212)
 #
 # Fires on session termination. Always exits 0.
