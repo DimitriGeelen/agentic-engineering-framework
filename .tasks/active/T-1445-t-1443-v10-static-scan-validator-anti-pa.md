@@ -76,7 +76,7 @@ This is exactly the unmeasured assumption v1.0 was scoped to measure — the rat
 - [x] `.context/working/feedback-stream.yaml` is created on first run, structured as append-only (events: scan_emitted, verdict_recorded)
 - [x] Unit tests in `tests/unit/test_reviewer_static_scan.py` — 31 test cases (>=2 positive + 2 negative per pattern + sovereignty + idempotency + stream tests)
 - [x] All unit tests pass: `bin/fw test unit` (939 bats tests OK + 31 pytest tests OK; bats run 2026-04-25T10:35Z)
-- [ ] `bin/fw audit` passes (warn allowed, no fail) — **BLOCKED by OBS-016** (audit self-spawn pathology). Verification deferred until OBS-016 fix lands.
+- [x] `bin/fw audit` passes (warn allowed, no fail) — Verified 2026-04-25T18:13Z (`bin/fw audit --quiet` rc=0). OBS-016 fix landed in T-1460 (flock guard, T-1464 lifted QUIET-only wrap); 14 audits in 14 days, no recursive-spawn.
 - [x] Reviewer never modifies `### Human` AC checkboxes — enforced by code path (no AC-mutation in static_scan.py); test asserts task body checkboxes unchanged
 
 ### Human
