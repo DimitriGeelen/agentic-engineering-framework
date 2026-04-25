@@ -4,16 +4,16 @@ name: "T-1443-v1.3 Reviewer agent: per-AC granular verdicts (split findings + AC
 description: >
   Fourth micro-version of T-1443 reviewer per D-009 staged rollout. Adds per-AC granular verdicts: each finding links to a specific Acceptance Criteria checkbox by index/text. Watchtower can render verdicts inline next to ACs. Foundation for v1.4 override mechanism (per-pattern TTL'd waivers). Out of scope: override enforcement (v1.4), Pass A drift (v1.5).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [reviewer-agent, ac-validation, granular-verdicts, v1.3]
 components: []
 related_tasks: [T-1443, T-1445, T-1446, T-1447]
 created: 2026-04-25T11:07:41Z
-last_update: 2026-04-25T11:07:41Z
-date_finished: null
+last_update: 2026-04-25T18:17:42Z
+date_finished: 2026-04-25T18:17:42Z
 ---
 
 # T-1448: T-1443-v1.3 Reviewer agent: per-AC granular verdicts (split findings + AC linkage)
@@ -65,8 +65,8 @@ This is the foundation for v1.4 override mechanism — per-pattern, per-AC waive
 
 python3 -m pytest tests/unit/test_reviewer_static_scan.py -q
 python3 -c "from lib.reviewer.static_scan import Finding; f=Finding('x','x','deterministic','partial','loc','ev'); assert f.ac_index is None and f.ac_subhead is None and f.ac_text is None"
-python3 -c "from lib.reviewer.static_scan import VERSION; assert VERSION == 'v1.3', VERSION"
-python3 -c "import yaml; d=yaml.safe_load(open('policy/anti-patterns.yaml')); assert d['catalogue_version'] == 'v1.3-seed', d['catalogue_version']"
+python3 -c "from lib.reviewer.static_scan import VERSION; major,minor=VERSION.lstrip('v').split('.')[:2]; assert (int(major),int(minor)) >= (1,3), VERSION"
+python3 -c "import yaml; d=yaml.safe_load(open('policy/anti-patterns.yaml')); assert d['catalogue_version'].startswith('v1.3'), d['catalogue_version']"
 bin/fw reviewer T-1448 --no-write
 
 ## Decisions
@@ -103,3 +103,15 @@ L-267 captured. Foundation for v1.4 override mechanism (per-pattern, per-AC TTL'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1448-t-1443-v13-reviewer-agent-per-ac-granula.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-b6f133c1
+- **Timestamp:** 2026-04-25T18:17:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-25T18:17:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

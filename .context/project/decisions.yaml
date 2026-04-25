@@ -86,3 +86,38 @@ decisions:
     date: 2026-04-25
     task: T-1450
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-015
+    decision: "Add three optional fields directly to `Finding` (ac_index, ac_subhead, ac_text)"
+    scope: project
+    date: 2026-04-25
+    task: T-1448
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-016
+    decision: "Bump header to `## Reviewer Verdict (v1.3)`, widen `_VERDICT_SECTION_RE` to match any v*"
+    scope: project
+    date: 2026-04-25
+    task: T-1448
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-017
+    decision: "`.context/working/reviewer-overrides.yaml` (per-project, working memory)"
+    scope: project
+    date: 2026-04-25
+    task: T-1449
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-018
+    decision: "90 days default; per-entry --ttl override"
+    scope: project
+    date: 2026-04-25
+    task: T-1449
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-019
+    decision: "Override without `ac_index` matches ALL findings of (task, pattern); with ac_index matches only that AC"
+    scope: project
+    date: 2026-04-25
+    task: T-1449
+    rationale: "Auto-captured from task file on completion"
