@@ -2324,25 +2324,32 @@ case "$cmd" in
         exec "$AGENTS_DIR/audit/audit.sh" "$@"
         ;;
     reviewer)
-        # T-1443 v1.0–v1.2: machine-reviewer (anti-pattern static-scan + Layer 3 audit)
+        # T-1443 v1.0–v1.4: machine-reviewer (anti-pattern static-scan + audit + overrides)
         if [ "${1:-}" = "" ] || [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
             echo "Usage:"
-            echo "  fw reviewer T-XXX [--json] [--no-write]   Scan one task"
-            echo "  fw reviewer audit                         Layer 3 daily Pass-B re-scan"
+            echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task"
+            echo "  fw reviewer audit                                            Layer 3 daily Pass-B re-scan"
+            echo "  fw reviewer override add T-XXX --pattern X [--ac N] --reason '...' [--ttl 90]"
+            echo "  fw reviewer override list                                    Active overrides + days remaining"
+            echo "  fw reviewer override prune                                   Drop expired entries"
+            echo "  fw reviewer override remove OV-XXXX                          Remove specific override"
             echo ""
-            echo "Scan: writes verdict to task body under '## Reviewer Verdict (v1.0)'."
-            echo "  Non-blocking — verdict is recorded, not enforced."
-            echo "  --json      emit machine-readable verdict on stdout"
-            echo "  --no-write  do not modify the task file or feedback stream"
-            echo ""
-            echo "Audit: re-scans every completed task with the current catalogue,"
-            echo "  writes daily summary to .context/audits/reviewer/YYYY-MM-DD.yaml."
+            echo "Scan: writes verdict to task body under '## Reviewer Verdict (vX.Y)'."
+            echo "Audit: re-scans every completed task; writes .context/audits/reviewer/YYYY-MM-DD.yaml"
+            echo "Overrides: per-(task,pattern,ac?) TTL'd waivers stored in"
+            echo "  .context/working/reviewer-overrides.yaml. Suppress known false positives"
+            echo "  for a bounded window; suppressions are logged to feedback-stream.yaml."
             exit 0
         fi
         if [ "${1:-}" = "audit" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.audit "$@"
+        fi
+        if [ "${1:-}" = "override" ]; then
+            shift
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                python3 -m lib.reviewer.override_cli "$@"
         fi
         exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
             python3 -m lib.reviewer.static_scan "$@"

@@ -1,22 +1,26 @@
 scan_date: '2026-04-25'
-scan_timestamp: '2026-04-25T11:11:26Z'
+scan_timestamp: '2026-04-25T11:19:05Z'
 pass: B
 catalogue_version: v1.3-seed
 escalation_version: v1.1-seed
 tasks_scanned: 1358
 errors: []
 totals:
-  PASS: 1177
-  CONCERN: 158
+  PASS: 1178
+  CONCERN: 157
   FAIL: 23
   needs_human: 46
 pattern_fire_counts:
-  AC-verify-mismatch: 192
+  AC-verify-mismatch: 190
   skip-as-pass: 11
   empty-output-success: 46
   tautology: 3
   mock-only-integration: 4
   swallowed-errors: 14
+suppressed_fire_counts:
+  AC-verify-mismatch: 2
+suppressed_total: 2
+active_overrides: 1
 escalation_fire_counts:
   cross-project-blast: 31
   destructive-action: 13
@@ -24,13 +28,13 @@ escalation_fire_counts:
   secret-handling: 1
 top_findings:
 - pattern_id: AC-verify-mismatch
-  count: 192
+  count: 190
   examples:
-  - T-1020
-  - T-1020
   - T-1028
   - T-1080
   - T-1083
+  - T-1108
+  - T-1108
 - pattern_id: empty-output-success
   count: 46
   examples:

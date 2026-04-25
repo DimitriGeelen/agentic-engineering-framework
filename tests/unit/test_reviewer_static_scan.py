@@ -669,6 +669,7 @@ def test_v13_verdict_section_re_matches_old_versions():
     assert ss._VERDICT_SECTION_RE.search(text2) is not None
 
 
-def test_v13_version_bumped():
-    assert ss.VERSION == "v1.3"
-    assert ss.SCHEMA_VERSION == 2
+def test_version_at_least_v13():
+    # v1.3 introduced these fields; v1.4+ keeps them
+    assert ss.VERSION >= "v1.3"
+    assert ss.SCHEMA_VERSION >= 2

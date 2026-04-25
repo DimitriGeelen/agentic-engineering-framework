@@ -41,16 +41,22 @@ def run_pass_b(project_root: Path, catalogue: dict, escalation: dict | None) -> 
     completed_dir = project_root / ".tasks" / "completed"
     completed = sorted(completed_dir.glob("T-*.md"))
 
+    # v1.4: load active overrides; suppressed findings are reported separately
+    from lib.reviewer.overrides import load_overrides
+    overrides = load_overrides()
+
     totals = Counter()
     pattern_fires = Counter()
+    suppressed_fires = Counter()
     escalation_fires = Counter()
     finding_locations: dict[str, list[str]] = {}
     errors: list[dict] = []
     needs_human_count = 0
+    suppressed_total = 0
 
     for tf in completed:
         try:
-            v = ss.scan_task(tf, catalogue, escalation)
+            v = ss.scan_task(tf, catalogue, escalation, overrides=overrides)
         except Exception as exc:
             errors.append({"task": tf.name, "error": f"{type(exc).__name__}: {exc}"})
             continue
@@ -60,6 +66,9 @@ def run_pass_b(project_root: Path, catalogue: dict, escalation: dict | None) -> 
         for f in v.findings:
             pattern_fires[f.pattern_id] += 1
             finding_locations.setdefault(f.pattern_id, []).append(v.task_id)
+        for f in v.suppressed:
+            suppressed_fires[f.pattern_id] += 1
+            suppressed_total += 1
         for e in v.escalations:
             escalation_fires[e.trigger_id] += 1
 
@@ -89,6 +98,9 @@ def run_pass_b(project_root: Path, catalogue: dict, escalation: dict | None) -> 
             "needs_human": needs_human_count,
         },
         "pattern_fire_counts": dict(pattern_fires),
+        "suppressed_fire_counts": dict(suppressed_fires),
+        "suppressed_total": suppressed_total,
+        "active_overrides": len(overrides),
         "escalation_fire_counts": dict(escalation_fires),
         "top_findings": top_findings,
     }
@@ -129,6 +141,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  Verdicts: PASS={t['PASS']} CONCERN={t['CONCERN']} FAIL={t['FAIL']} (needs_human={t['needs_human']})")
     if summary["pattern_fire_counts"]:
         print(f"  Pattern fires: {summary['pattern_fire_counts']}")
+    if summary.get("suppressed_total", 0) > 0:
+        print(f"  Suppressed by override: {summary['suppressed_total']} ({summary['active_overrides']} active overrides)")
     if summary["escalation_fire_counts"]:
         print(f"  Escalation fires: {summary['escalation_fire_counts']}")
     if summary["errors"]:

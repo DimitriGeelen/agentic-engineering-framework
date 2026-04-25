@@ -2071,3 +2071,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-268
+  learning: "T-1443 v1.4 reviewer dogfood: TTL'd override mechanism end-to-end works. Live test on T-1020 (2 AC-verify-mismatch fires): added wildcard override → audit Pass B totals shifted PASS=1177→1178 CONCERN=158→157, AC-verify-mismatch fires 192→190, audit YAML now reports 'Suppressed: 2 (1 active overrides)'. Per-AC override (--ac N) suppresses one specific finding; wildcard (no --ac) suppresses all matches for (task, pattern). Default TTL 90 days forces quarterly re-review — antifragile property. Suppressions emit override_applied events to feedback-stream for full audit trail. Verdict overall is recomputed AFTER suppression, so suppressing the only finding flips CONCERN/FAIL → PASS as expected. fail-closed: malformed expires_at treated as expired; malformed override entries silently skipped on load."
+  source: P-001
+  task: T-1449
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD

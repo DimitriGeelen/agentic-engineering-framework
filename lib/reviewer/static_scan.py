@@ -30,8 +30,8 @@ from pathlib import Path
 
 import yaml
 
-VERSION = "v1.3"
-SCHEMA_VERSION = 2
+VERSION = "v1.4"
+SCHEMA_VERSION = 3
 
 
 # ───────────────────────── Data classes ─────────────────────────
@@ -96,6 +96,9 @@ class Verdict:
     needs_human: bool = False  # any escalation OR Layer 2 declaration
     risk_declared: str | None = None
     human_signoff_declared: str | None = None
+    # v1.4 additions:
+    suppressed: list[Finding] = field(default_factory=list)  # findings dropped by override
+    expired_overrides: list[dict] = field(default_factory=list)  # surfaced for action
 
     def to_dict(self) -> dict:
         return {
@@ -109,6 +112,8 @@ class Verdict:
             "needs_human": self.needs_human,
             "risk_declared": self.risk_declared,
             "human_signoff_declared": self.human_signoff_declared,
+            "suppressed": [f.to_dict() for f in self.suppressed],
+            "expired_overrides": self.expired_overrides,
         }
 
 
@@ -615,6 +620,7 @@ def scan_task(
     task_path: Path,
     catalogue: dict,
     escalation_catalogue: dict | None = None,
+    overrides: list | None = None,
 ) -> Verdict:
     meta, body = parse_task_file(task_path)
     ac_section = extract_section(body, "Acceptance Criteria") or ""
@@ -631,6 +637,25 @@ def scan_task(
     findings.extend(detect_mock_only_integration(ac_section, verif_section))
     findings.extend(detect_ac_verify_mismatch(ac_section, verif_section))
 
+    task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
+
+    # v1.4: filter findings through overrides
+    suppressed: list[Finding] = []
+    expired: list[dict] = []
+    if overrides:
+        from lib.reviewer.overrides import is_overridden, find_expired
+        kept: list[Finding] = []
+        for f in findings:
+            ov = is_overridden(overrides, task_id, f.pattern_id, f.ac_index)
+            if ov is not None:
+                suppressed.append(f)
+            else:
+                kept.append(f)
+        findings = kept
+        for o in find_expired(overrides):
+            if o.task_id == task_id:
+                expired.append({"id": o.id, "pattern_id": o.pattern_id, "expired_at": o.expires_at})
+
     overall = compute_overall(findings, catalogue.get("verdict_thresholds", {}))
 
     # v1.1: Layer 1 escalation
@@ -642,7 +667,6 @@ def scan_task(
 
     needs_human = bool(escalations) or risk_declared in {"high", "medium"} or human_signoff_declared == "required"
 
-    task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
     return Verdict(
         task_id=task_id,
         scan_id=f"R-{uuid.uuid4().hex[:8]}",
@@ -654,6 +678,8 @@ def scan_task(
         needs_human=needs_human,
         risk_declared=risk_declared,
         human_signoff_declared=human_signoff_declared,
+        suppressed=suppressed,
+        expired_overrides=expired,
     )
 
 
@@ -720,6 +746,17 @@ def render_verdict_md(verdict: Verdict) -> str:
         for i, e in enumerate(verdict.escalations, start=1):
             lines.append(f"  {i}. **{e.trigger_id}** ({e.severity}) — {e.trigger_name}")
             lines.append(f"     - matched: `{e.matched}`")
+    if verdict.suppressed:
+        lines.append("")
+        lines.append(f"- **Suppressed:** {len(verdict.suppressed)} (by override)")
+        for f in verdict.suppressed:
+            ac_loc = f"AC#{f.ac_index} ({f.ac_subhead})" if f.ac_index is not None else f.location
+            lines.append(f"  - {f.pattern_id} @ {ac_loc}")
+    if verdict.expired_overrides:
+        lines.append("")
+        lines.append(f"- **Expired overrides:** {len(verdict.expired_overrides)}")
+        for e in verdict.expired_overrides:
+            lines.append(f"  - {e['id']} pattern={e['pattern_id']} expired_at={e['expired_at']}")
     lines.append("")
     return "\n".join(lines)
 
@@ -816,7 +853,12 @@ def main(argv: list[str] | None = None) -> int:
     if not escalation_path.exists():
         escalation_path = project_root / "policy" / "escalation-patterns.yaml"
     escalation_catalogue = load_catalogue(escalation_path) if escalation_path.exists() else None
-    verdict = scan_task(task_file, catalogue, escalation_catalogue)
+
+    # v1.4: load active overrides from project working memory
+    from lib.reviewer.overrides import load_overrides
+    overrides = load_overrides()
+
+    verdict = scan_task(task_file, catalogue, escalation_catalogue, overrides=overrides)
 
     if not no_write:
         write_verdict_to_task(task_file, verdict)
@@ -831,6 +873,7 @@ def main(argv: list[str] | None = None) -> int:
                 "payload": {
                     "overall": verdict.overall,
                     "finding_count": len(verdict.findings),
+                    "suppressed_count": len(verdict.suppressed),
                     "catalogue_version": verdict.catalogue_version,
                 },
             },
@@ -845,6 +888,32 @@ def main(argv: list[str] | None = None) -> int:
                 "payload": {"task_file": str(task_file.relative_to(project_root))},
             },
         )
+        for f in verdict.suppressed:
+            append_feedback_event(
+                stream,
+                {
+                    "kind": "override_applied",
+                    "timestamp": verdict.timestamp,
+                    "scan_id": verdict.scan_id,
+                    "task_id": verdict.task_id,
+                    "payload": {
+                        "pattern_id": f.pattern_id,
+                        "ac_index": f.ac_index,
+                        "ac_subhead": f.ac_subhead,
+                    },
+                },
+            )
+        for e in verdict.expired_overrides:
+            append_feedback_event(
+                stream,
+                {
+                    "kind": "override_expired",
+                    "timestamp": verdict.timestamp,
+                    "scan_id": verdict.scan_id,
+                    "task_id": verdict.task_id,
+                    "payload": e,
+                },
+            )
 
     if emit_json:
         print(json.dumps(verdict.to_dict(), indent=2))
