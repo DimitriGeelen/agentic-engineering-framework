@@ -4,7 +4,7 @@ name: "4 Claude Code hooks mirrored from termlink are dead code — never regist
 description: >
   Promoted from observation OBS-014
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-25T13:39:44Z
-last_update: 2026-04-25T13:39:44Z
-date_finished: null
+last_update: 2026-04-25T14:01:35Z
+date_finished: 2026-04-25T14:01:35Z
 ---
 
 # T-1459: 4 Claude Code hooks mirrored from termlink are dead code — never registered in .claude/settings.json or cron. Scripts: agents/context/{session-end,stop-guard,subagent-stop,pl007-scanner}.sh plus session-silent-scanner.sh which claims cron invocation but isn't in crontab. Commits b5383596/562c2fc7/a5c4fe85 landed handlers but settings.json was not updated. Likely skipped after the G-016 commit-storm incident but not documented. Needs inception: register (which ones, after what safeguards?), decommission, or document as reference-only.
@@ -75,7 +75,7 @@ date_finished: null
 - [x] Hypotheses + 4 design options enumerated
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -130,9 +130,35 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The G-016 incident is recent enough (within 2 weeks) and the cost-of-being-wrong (commit storm, lost session integrity) is high enough that re-enabling without first reading the G-016 RCA is reckless. Decommissioning loses ~633 lines of intentional design that was crafted as TermLink ports — costs us the optional path without us having investigated. Reference-only mode locks in the current safe state, makes the dead-code status legible to operators, and doesn't preclude any future option.
+
+**Date**: 2026-04-25T14:01:35Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-25T14:01:35Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The G-016 incident is recent enough (within 2 weeks) and the cost-of-being-wrong (commit storm, lost session integrity) is high enough that re-enabling without first reading the G-016 RCA is reckless. Decommissioning loses ~633 lines of intentional design that was crafted as TermLink ports — costs us the optional path without us having investigated. Reference-only mode locks in the current safe state, makes the dead-code status legible to operators, and doesn't preclude any future option.
+
+### 2026-04-25T14:01:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-2d09329f
+- **Timestamp:** 2026-04-25T14:01:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-25T14:01:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

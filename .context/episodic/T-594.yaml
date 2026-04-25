@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-594: Port loop detector to TypeScript — first real TS hook component
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T14:11:46Z
+# ============================================================================
+
+task_id: T-594
+task_name: "Port loop detector to TypeScript — first real TS hook component"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T23:00:46Z
+completed: 2026-03-24T06:35:43Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-24T07:35:37+01:00
+last_commit: 2026-03-24T07:35:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Port loop detector to TypeScript — first production TS hook. Partial-complete — agent ACs done, human AC pending
+
+# Key outcomes
+outcomes:
+  - "`lib/ts/src/loop-detect.ts` exists (moved from spike, adapted for lib/ts/ structure)"
+  - "Compiles to `lib/ts/dist/loop-detect.js` via `fw build` (5.7KB bundle)"
+  - "3 detectors: generic_repeat, ping_pong, no_progress"
+  - "State persisted in `.context/working/.loop-detect.json`"
+  - "PostToolUse hook format: reads JSON stdin, outputs `additionalContext` on stderr"
+  - "Warning at 5 identical calls (exit 0 + stderr message) — verified at call 6"
+  - "Block at 10 identical calls (exit 2 + stderr message) — verified at call 11"
+  - "Handles edge cases: empty input, corrupt state, missing state dir (exit 0 = fail open)"
+  - "Shell escaping test passes: input containing `'''` and `\"` processes correctly"
+  - "Hook registered in `lib/init.sh` settings.json template (PostToolUse section)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/loop-detect.sh"
+  - "bin/fw"
+  - "lib/init.sh"
+  - "lib/ts/dist/loop-detect.js"
+  - "lib/ts/src/loop-detect.ts"
+  - ".tasks/active/T-594-port-loop-detector-to-typescript--first-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-24T07:35:37"
+    action: "T-594: Port loop detector to TypeScript — first production TS hook"
+  - time: "2026-03-24T07:35:51"
+    action: "T-594: Partial-complete — agent ACs done, human AC pending"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 454 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [hooks, typescript, T-586]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 454
+  commits: 3
+  files_changed: 10
+  lines_added: 906
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-594-port-loop-detector-to-typescript--first-.md
+generated_by: context-agent-hybrid

@@ -153,3 +153,71 @@ scan_id: R-1fe827a6
 task_id: T-1450
 payload:
   task_file: .tasks/active/T-1450-t-1443-v15a-reviewer-agent-watchtower-ov.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T14:01:35Z'
+scan_id: R-2d09329f
+task_id: T-1459
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T14:01:35Z'
+scan_id: R-2d09329f
+task_id: T-1459
+payload:
+  task_file: .tasks/active/T-1459-4-claude-code-hooks-mirrored-from-termli.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T14:01:37Z'
+scan_id: R-ba366f39
+task_id: T-1451
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T14:01:37Z'
+scan_id: R-ba366f39
+task_id: T-1451
+payload:
+  task_file: .tasks/active/T-1451-sweep-all-human-handoff-touchpoints--ren.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T14:01:49Z'
+scan_id: R-29ee785c
+task_id: T-1460
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T14:01:49Z'
+scan_id: R-29ee785c
+task_id: T-1460
+payload:
+  task_file: .tasks/active/T-1460-fw-audit-recursive-spawn-pathology--obse.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T14:02:03Z'
+scan_id: R-130cfe95
+task_id: T-1446
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T14:02:03Z'
+scan_id: R-130cfe95
+task_id: T-1446
+payload:
+  task_file: .tasks/active/T-1446-t-1443-v11-reviewer-agent-4-more-anti-pa.md

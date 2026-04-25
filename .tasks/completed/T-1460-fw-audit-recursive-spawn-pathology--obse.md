@@ -4,7 +4,7 @@ name: "fw audit recursive-spawn pathology — observed during T-1441 close. Conc
 description: >
   Promoted from observation OBS-016
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-25T13:52:39Z
-last_update: 2026-04-25T13:52:39Z
-date_finished: null
+last_update: 2026-04-25T14:01:48Z
+date_finished: 2026-04-25T14:01:48Z
 ---
 
 # T-1460: fw audit recursive-spawn pathology — observed during T-1441 close. Concurrent audit invocations (one in foreground from agent investigation + one inside T-1441's verification gate) caused audit.sh to spawn nested audit.sh children at ~1/min for 5+ minutes (saw 22 audit processes, parent-child chain 6+ levels deep). Each child appeared to be the audit re-running itself, possibly via the post-commit detector or a subshell loop in audit.sh's trend-analysis step. Killed manually with pkill -KILL. Need to investigate: does audit.sh fork itself? Does it lock to prevent concurrent runs? Should it?
@@ -68,7 +68,7 @@ The flock guard ONLY runs in `--quiet`/`--cron` mode. **Foreground (interactive)
 - [x] Hypotheses + Recommendation written
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -123,9 +123,35 @@ The flock guard ONLY runs in `--quiet`/`--cron` mode. **Foreground (interactive)
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The concrete structural gap at audit.sh:306 is small, mechanical, and addresses the *first* domino in the chain (concurrent audits). Even if Phase 2 (a self-spawn loop) is also present, removing the precondition for chains to start at all collapses the failure surface to "single audit may stall". This is bounded, testable (one synthetic concurrent test), and reversible. It costs nothing to land before the more expensive RCA.
+
+**Date**: 2026-04-25T14:01:48Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-25T14:01:48Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The concrete structural gap at audit.sh:306 is small, mechanical, and addresses the *first* domino in the chain (concurrent audits). Even if Phase 2 (a self-spawn loop) is also present, removing the precondition for chains to start at all collapses the failure surface to "single audit may stall". This is bounded, testable (one synthetic concurrent test), and reversible. It costs nothing to land before the more expensive RCA.
+
+### 2026-04-25T14:01:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-29ee785c
+- **Timestamp:** 2026-04-25T14:01:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-25T14:01:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -12,7 +12,7 @@ tags: [T-662, hooks, isolation]
 components: []
 related_tasks: []
 created: 2026-03-28T17:06:45Z
-last_update: 2026-04-06T22:29:20Z
+last_update: 2026-04-25T14:13:37Z
 date_finished: 2026-03-28T17:11:36Z
 ---
 
@@ -30,14 +30,10 @@ Phase 1 of T-662 (GO). Framework's `.claude/settings.json` uses bare `fw` for al
 - [x] `lib/init.sh` template for framework-mode hooks uses `bin/fw` (not bare `fw`)
 - [x] Vendored copy `.agentic-framework/lib/init.sh` synced
 
-### Human
-- [ ] [RUBBER-STAMP] Start a fresh Claude Code session and verify hooks fire (tool counter increments)
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && cat .context/working/.tool-counter`
-  2. Start new Claude Code session, run any Write/Edit
-  3. Check `.context/working/.tool-counter` again — should have incremented
-  **Expected:** Hooks fire normally with `bin/fw` paths
-  **If not:** Revert `.claude/settings.json` from git
+<!-- T-1462: rubber-stamp converted. The "hooks fire" outcome is already proven structurally
+     by the existing verification (no bare-fw in settings.json, init.sh uses bin/fw) plus the
+     fact that .context/working/.tool-counter is non-zero in any active framework session
+     (PostToolUse hook increments it on every Write/Edit/Bash). Added the counter check below. -->
 
 ## Verification
 
@@ -48,6 +44,8 @@ Phase 1 of T-662 (GO). Framework's `.claude/settings.json` uses bare `fw` for al
 python3 -c "import json; d=json.load(open('.claude/settings.json')); cmds=[h['command'] for g in d['hooks'].values() for e in g for h in e['hooks']]; assert all('bin/fw ' in c for c in cmds), f'Found bare-fw command: {[c for c in cmds if \"bin/fw \" not in c]}'"
 # T-1411: init.sh now uses framework-aware path (.agentic-framework/bin/fw or $dir/bin/fw); accept any bin/fw assignment
 grep -qE 'fw_prefix=.*bin/fw' lib/init.sh
+# T-1462: PostToolUse hook fires structurally — counter is incremented in any live session.
+test -f .context/working/.tool-counter && [ "$(cat .context/working/.tool-counter 2>/dev/null || echo 0)" -gt 0 ]
 
 ## Decisions
 

@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T06:47:22Z
-last_update: 2026-04-12T09:27:24Z
+last_update: 2026-04-25T14:13:13Z
 date_finished: 2026-04-05T06:51:57Z
 ---
 
@@ -33,30 +33,15 @@ Implements the 5 fixable failure modes from T-877 inception research. See `docs/
 - [x] Vendored copies synced
 - [x] Integration tests pass (3/3)
 
-### Human
-- [ ] [RUBBER-STAMP] Run installer on a test directory and verify improved messaging
-  **Steps:**
-  1. `cd /tmp && mkdir test-install-877 && cd test-install-877 && git init`
-  2. `cd /opt/999-Agentic-Engineering-Framework && bin/fw init /tmp/test-install-877`
-  3. `cd /tmp/test-install-877 && bin/fw doctor`
-  **Expected:** No WARN for git hooks, git identity (if global exists), or enforcement baseline
-  **If not:** Check lib/init.sh for the auto-remediation code
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+<!-- T-1462: rubber-stamp converted to mechanical verification.
+     Original Steps required a human to run fw init in a test dir + observe doctor output.
+     Now: tmp-init verification in ## Verification asserts the F3/F5 outcomes structurally
+     (git hooks installed, enforcement baseline file present). -->
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# T-1462: structural check — fw init on a fresh tmp dir produces hooks + enforcement baseline.
+bash -c 'TMP=$(mktemp -d); cd "$TMP" && git init -q && /opt/999-Agentic-Engineering-Framework/bin/fw init "$TMP" >/dev/null 2>&1; rc=0; for f in .git/hooks/commit-msg .git/hooks/post-commit .git/hooks/pre-push .context/project/enforcement-baseline.sha256; do test -f "$TMP/$f" || rc=1; done; cd / && rm -rf "$TMP"; exit $rc'
 
 ## Decisions
 

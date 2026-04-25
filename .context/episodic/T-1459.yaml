@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1459: 4 Claude Code hooks mirrored from termlink are dead code — never registered in .claude/settings.json or cron. Scripts: agents/context/{session-end,stop-guard,subagent-stop,pl007-scanner}.sh plus session-silent-scanner.sh which claims cron invocation but isn't in crontab. Commits b5383596/562c2fc7/a5c4fe85 landed handlers but settings.json was not updated. Likely skipped after the G-016 commit-storm incident but not documented. Needs inception: register (which ones, after what safeguards?), decommission, or document as reference-only.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T14:01:38Z
+# ============================================================================
+
+task_id: T-1459
+task_name: "4 Claude Code hooks mirrored from termlink are dead code — never registered in .claude/settings.json or cron. Scripts: agents/context/{session-end,stop-guard,subagent-stop,pl007-scanner}.sh plus session-silent-scanner.sh which claims cron invocation but isn't in crontab. Commits b5383596/562c2fc7/a5c4fe85 landed handlers but settings.json was not updated. Likely skipped after the G-016 commit-storm incident but not documented. Needs inception: register (which ones, after what safeguards?), decommission, or document as reference-only."
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T13:39:44Z
+completed: 2026-04-25T14:01:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-25T15:51:48+02:00
+last_commit: 2026-04-25T15:51:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scaffold inception body + recommendation (DEFER/Option D)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (5 scripts confirmed unregistered)"
+  - "Origin commits traced for each script"
+  - "Recommendation written with rationale (DEFER / Option D, with C as Phase 2)"
+  - "Audit findings table captured"
+  - "Hypotheses + 4 design options enumerated"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1459-4-claude-code-hooks-mirrored-from-termli.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T15:51:48"
+    action: "T-1459: scaffold inception body + recommendation (DEFER/Option D)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 1
+  files_changed: 1
+  lines_added: 46
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1459-4-claude-code-hooks-mirrored-from-termli.md
+generated_by: context-agent-hybrid

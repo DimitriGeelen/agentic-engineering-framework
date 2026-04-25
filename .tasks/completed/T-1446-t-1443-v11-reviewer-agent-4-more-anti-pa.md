@@ -4,16 +4,16 @@ name: "T-1443-v1.1 Reviewer agent: 4 more anti-patterns + L-264 fixes + Layer 1 
 description: >
   Build v1.1 of T-1443 reviewer. (a) Fix L-264 false-positive: exclude grep/awk/sed-of-literal-string contexts in swallowed-errors detector. (b) Widen output-spoofing heuristic. (c) Add 4 patterns: empty-output-success, skip-as-pass, mock-only-integration, AC-verify-mismatch. (d) Add policy/escalation-patterns.yaml — Layer 1 mechanical needs-human triggers. (e) Add Layer 2 frontmatter fields risk/human_signoff to task creation. NO Layer 3 audit cron yet (v1.2). Re-dogfood after to measure delta. Per D-009 staged rollout.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [reviewer-agent, ac-validation, anti-patterns, v1.1, escalation]
-components: []
+components: [bin/fw]
 related_tasks: [T-1442, T-1443, T-1445, T-954]
 created: 2026-04-25T10:47:21Z
-last_update: 2026-04-25T10:47:21Z
-date_finished: null
+last_update: 2026-04-25T14:02:07Z
+date_finished: 2026-04-25T14:02:02Z
 ---
 
 # T-1446: T-1443-v1.1 Reviewer agent: 4 more anti-patterns + L-264 fixes + Layer 1 escalation policy
@@ -52,7 +52,7 @@ Source design: `docs/reports/T-1443-independent-reviewer-agent.md`.
 - [x] Re-dogfood delta captured as L-265
 
 ### Human
-- [ ] [REVIEW] v1.1 catalogue feels right vs framework directives — does the L-264 fix introduce new false-negatives?
+- [x] [REVIEW] v1.1 catalogue feels right vs framework directives — does the L-264 fix introduce new false-negatives?
   **Steps:**
   1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer T-1086 --no-write` — confirm PASS
   2. Read v1.1 dogfood findings in this task body
@@ -87,3 +87,25 @@ bin/fw reviewer T-1086 --no-write 2>&1 | grep -q "Overall:.*PASS"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1446-t-1443-v11-reviewer-agent-4-more-anti-pa.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-130cfe95
+- **Timestamp:** 2026-04-25T14:02:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_reviewer_static_scan.py -q`
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-project`
+
+### 2026-04-25T14:02:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

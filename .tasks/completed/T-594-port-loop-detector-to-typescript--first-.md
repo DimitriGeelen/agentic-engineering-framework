@@ -12,7 +12,7 @@ tags: [hooks, typescript, T-586]
 components: []
 related_tasks: [T-586, T-592, T-578]
 created: 2026-03-23T23:00:46Z
-last_update: 2026-03-24T06:35:43Z
+last_update: 2026-04-25T14:11:46Z
 date_finished: 2026-03-24T06:35:43Z
 ---
 
@@ -46,14 +46,9 @@ Depends on: T-592 (scaffold — lib/ts/ infrastructure must exist)
 - [x] Execution time <35ms per invocation (benchmarked: 20ms compiled JS)
 - [x] `fw doctor` validates hook script exists (shows "2 source(s)" in TS build check)
 
-### Human
-- [ ] [RUBBER-STAMP] Verify loop detection fires by repeating the same failing command 6+ times
-  **Steps:**
-  1. Start a Claude Code session in a project with the framework
-  2. Intentionally repeat a failing tool call 6 times (e.g., read a non-existent file)
-  3. Check stderr or agent response for loop warning message
-  **Expected:** Warning appears after 5th identical call
-  **If not:** Check `.context/working/.loop-detect.json` for state, verify hook is in settings.json
+<!-- T-1462: rubber-stamp converted to mechanical verification.
+     Original Steps required an interactive Claude Code session to repeat a failing call 6 times;
+     can be simulated mechanically by piping the same hook payload to the dist JS in a tmp PROJECT_ROOT. -->
 
 ## Verification
 
@@ -62,6 +57,9 @@ test -f lib/ts/src/loop-detect.ts
 # Compiles
 bash lib/build.sh
 test -f lib/ts/dist/loop-detect.js
+# Mechanical loop-detect dogfood: 6 identical hook payloads in a fresh PROJECT_ROOT should produce
+# a "called 5 times" warning on iteration 6 (the 6th call observes the running count of 5).
+bash -c 'TMP=$(mktemp -d); mkdir -p "$TMP/.context/working"; SCRIPT="$PWD/lib/ts/dist/loop-detect.js"; for i in 1 2 3 4 5 6; do OUT=$(echo '"'"'{"tool_name":"Read","tool_input":{"file_path":"/nonexistent"}}'"'"' | (cd "$TMP" && node "$SCRIPT") 2>&1); done; rc=1; echo "$OUT" | grep -q "additionalContext.*WARNING" && rc=0; rm -rf "$TMP"; exit $rc'
 # Runs without error on normal input
 echo '{"tool_name":"Read","tool_input":{"file_path":"/tmp/t.txt"},"tool_result":"ok"}' | node lib/ts/dist/loop-detect.js
 # Handles empty input gracefully

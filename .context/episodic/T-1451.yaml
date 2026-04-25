@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1451: Sweep all human-handoff touchpoints — render clickable Watchtower URLs everywhere agent surfaces work for human
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T14:01:40Z
+# ============================================================================
+
+task_id: T-1451
+task_name: "Sweep all human-handoff touchpoints — render clickable Watchtower URLs everywhere agent surfaces work for human"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T11:29:09Z
+completed: 2026-04-25T14:01:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-25T14:22:48+02:00
+last_commit: 2026-04-25T14:22:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  complete inception audit + GO recommendation (handover-only scope)
+
+# Key outcomes
+outcomes:
+  - "Audit of all human-handoff surfaces captured (above)"
+  - "Gap localized to `agents/handover/handover.sh` (3 sections + 1 missing URL resolver)"
+  - "Recommendation written"
+  - "[Inception decision recorded] go/no-go/defer with chosen scope (handover-only vs broader sweep) — GO recorded 2026-04-25T14:01:15Z by human"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1451-sweep-all-human-handoff-touchpoints--ren.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T14:22:48"
+    action: "T-1451: complete inception audit + GO recommendation (handover-only scope)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 152 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 152
+  commits: 1
+  files_changed: 1
+  lines_added: 49
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1451-sweep-all-human-handoff-touchpoints--ren.md
+generated_by: context-agent-hybrid

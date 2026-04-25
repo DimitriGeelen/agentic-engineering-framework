@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T19:50:36Z
-last_update: 2026-04-13T20:12:06Z
+last_update: 2026-04-25T14:09:28Z
 date_finished: 2026-04-13T20:12:06Z
 ---
 
@@ -33,17 +33,13 @@ Also: non-audit jobs (docs, retention, pickup) have no `--section` flag so match
 - [x] Web tests pass (142/142)
 - [x] Pickup processor interval changed from 15min to 30s (sleep trick)
 
-### Human
-- [ ] [RUBBER-STAMP] /cron page shows last-run data for all 11 jobs
-  **Steps:**
-  1. Open http://localhost:3000/cron
-  2. Check that all 11 jobs show a timestamp (not "no data")
-  **Expected:** At most OE weekly (runs Mondays) may show "no data" if it hasn't run this week
-  **If not:** Note which jobs still show "no data"
+<!-- T-1462: rubber-stamp converted — verification command checks the same condition mechanically.
+     Note: registry has grown from 11 → 16 jobs since T-1241 was filed; 2 weekly + 1 paused
+     legitimately show "no data". Threshold raised from ≤2 to ≤3. -->
 
 ## Verification
 
-curl -sf http://localhost:3000/cron | python3 -c "import sys,re; html=sys.stdin.read(); count=len(re.findall(r'no data', html)); exit(0 if count <= 2 else 1)"
+curl -sf "$(bin/fw watchtower url)/cron" | python3 -c "import sys, re; html=sys.stdin.read(); count=len(re.findall(r'no data', html)); print(f'no_data={count}'); exit(0 if count <= 3 else 1)"
 
 ## Decisions
 

@@ -4,7 +4,7 @@ name: "Sweep all human-handoff touchpoints — render clickable Watchtower URLs 
 description: >
   Audit every code path + agent output template where the agent hands work to the human (Human ACs pending, inception decision, Tier 0 approval, gap acknowledgement, observation triage, pickup processing, pending-update reminders, handover Suggested-First-Action). Each surface should render the corresponding Watchtower URL clickably (e.g. $URL/review/T-XXX, $URL/inception/T-XXX, $URL/approvals, $URL/reviewer/overrides). Triggered by user feedback 2026-04-25 — agent listed task IDs only, friction caused human to ask for links explicitly. Goal: zero-friction review queue.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-25T11:29:09Z
-last_update: 2026-04-25T11:29:09Z
-date_finished: null
+last_update: 2026-04-25T14:01:37Z
+date_finished: 2026-04-25T14:01:37Z
 ---
 
 # T-1451: Sweep all human-handoff touchpoints — render clickable Watchtower URLs everywhere agent surfaces work for human
@@ -62,7 +62,7 @@ Already executed via the audit above (one session). No further spikes needed.
 - [x] Audit of all human-handoff surfaces captured (above)
 - [x] Gap localized to `agents/handover/handover.sh` (3 sections + 1 missing URL resolver)
 - [x] Recommendation written
-- [ ] [Inception decision recorded] go/no-go/defer with chosen scope (handover-only vs broader sweep)
+- [x] [Inception decision recorded] go/no-go/defer with chosen scope (handover-only vs broader sweep) — GO recorded 2026-04-25T14:01:15Z by human
 
 ## Acceptance Criteria
 
@@ -72,7 +72,7 @@ Already executed via the audit above (one session). No further spikes needed.
 - [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -131,7 +131,7 @@ Already executed via the audit above (one session). No further spikes needed.
 
 **Rationale**: The audit revealed that the handover output IS the gap — every other human-facing surface (Tier 0, fw task review, verify-acs) already renders URLs. The handover is also the highest-traffic surface (loaded via `/resume` at every session start, 28+46 task references per render). Other surfaces (audit, healing, fw note list) are lower-traffic and can be addressed if/when they cause friction. Doing the handover scope alone removes ~80% of the visible friction at low risk.
 
-**Date**: 2026-04-25T13:09:53Z
+**Date**: 2026-04-25T14:01:15Z
 
 ## Updates
 
@@ -142,3 +142,25 @@ Already executed via the audit above (one session). No further spikes needed.
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** The audit revealed that the handover output IS the gap — every other human-facing surface (Tier 0, fw task review, verify-acs) already renders URLs. The handover is also the highest-traffic surface (loaded via `/resume` at every session start, 28+46 task references per render). Other surfaces (audit, healing, fw note list) are lower-traffic and can be addressed if/when they cause friction. Doing the handover scope alone removes ~80% of the visible friction at low risk.
+
+### 2026-04-25T14:01:15Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The audit revealed that the handover output IS the gap — every other human-facing surface (Tier 0, fw task review, verify-acs) already renders URLs. The handover is also the highest-traffic surface (loaded via `/resume` at every session start, 28+46 task references per render). Other surfaces (audit, healing, fw note list) are lower-traffic and can be addressed if/when they cause friction. Doing the handover scope alone removes ~80% of the visible friction at low risk.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ba366f39
+- **Timestamp:** 2026-04-25T14:01:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Gap localized to `agents/handover/handover.sh` (3 sections + 1 missing URL resolver)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/handover/handover.sh in: Gap localized to `agents/handover/handover.sh` (3 sections + 1 missing URL resolver)`
+
+### 2026-04-25T14:01:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

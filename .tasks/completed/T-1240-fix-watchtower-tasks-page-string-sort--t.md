@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T19:27:08Z
-last_update: 2026-04-13T19:41:55Z
+last_update: 2026-04-25T14:08:25Z
 date_finished: 2026-04-13T19:41:55Z
 ---
 
@@ -31,19 +31,14 @@ Task IDs sorted as strings — T-1000 appears between T-100 and T-101 instead of
 - [x] /tasks page shows T-1000+ after T-999 (not interleaved with T-1xx)
 - [x] Web tests pass (142/142)
 
-### Human
-- [ ] [RUBBER-STAMP] Tasks page shows T-1000+ tasks at bottom when sorted by ID
-  **Steps:**
-  1. Open http://localhost:3000/tasks?view=list&sort=id
-  2. Scroll to bottom of list
-  **Expected:** T-1239 appears after T-999, not hidden between T-100-T-199
-  **If not:** Check browser console for errors, report which task ID range is visible at bottom
+<!-- T-1462: rubber-stamp converted to Agent AC + verification command per CLAUDE.md rule.
+     Original Human AC: "[RUBBER-STAMP] Tasks page shows T-1000+ tasks at bottom" — text mechanical (curl + parse). -->
 
 ## Verification
 
 python3 -c "from web.shared import task_id_sort_key; assert task_id_sort_key('T-1000') > task_id_sort_key('T-999')"
 python3 -c "from web.shared import task_id_sort_key; assert task_id_sort_key('T-100') < task_id_sort_key('T-1000')"
-curl -sf http://localhost:3000/tasks?view=list | grep -q 'T-1239'
+curl -sf "$(bin/fw watchtower url)/tasks?view=list&sort=id" | python3 -c "import sys, re; html=sys.stdin.read(); nums=[int(x) for x in re.findall(r'T-(\d+)', html)]; high=[n for n in nums if n>=1000]; low=[n for n in nums if 900<=n<1000]; assert high and low and max(i for i,n in enumerate(nums) if n>=1000) > max(i for i,n in enumerate(nums) if 900<=n<1000), 'T-1xxx hidden between T-9xx'"
 
 ## Decisions
 
