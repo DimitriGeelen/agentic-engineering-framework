@@ -2113,3 +2113,21 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-274
+  learning: "sed-based YAML field replace is unsafe for multi-line structures: 's|^components:.*|components: [...]|' leaves orphan block-style '  - item' continuation lines, producing invalid YAML. Default to python regex with multi-line pattern '^components:[^
+]*
+([ 	]+-[^
+]*
+)*' when the source might not be flow-style."
+  source: P-001
+  task: T-1469
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
+- id: L-275
+  learning: "Verification gate (## Verification) executes each non-comment line as a SEPARATE shell command. Multi-line python -c "..." is split mid-quote and fails. Always extract multi-line scripts to tests/scripts/*.py and call them as one line."
+  source: P-011
+  task: T-1469
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD

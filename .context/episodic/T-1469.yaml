@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1469: Symptom B fix — create-task.sh/update-task.sh YAML emit produces valid frontmatter (regression bats)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T19:27:33Z
+# ============================================================================
+
+task_id: T-1469
+task_name: "Symptom B fix — create-task.sh/update-task.sh YAML emit produces valid frontmatter (regression bats)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T19:21:27Z
+completed: 2026-04-25T19:27:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T21:25:29+02:00
+last_commit: 2026-04-25T21:27:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Symptom B fix — components auto-populate handles block-style continuation lines. Single-line verification helper + register bats fabric card. Register fabric card for yaml_parse_all_tasks.py
+
+# Key outcomes
+outcomes:
+  - "Fix `update-task.sh` components auto-populate so it deletes any block-style `  - item` continuation lines that follow the `components:` line BEFORE replacing with flow-style `[...]`. Use a python block (already used elsewhere in this file) rather than sed for multi-line awareness."
+  - "Same fix applied to `related_tasks:` if equivalent block-style overwrite exists (audit shows current code: only tags has python; related_tasks has no auto-populate path — confirm this and document)."
+  - "Bats regression test: synthesize a task file with block-style `components:\n  - X\n  - Y\n`, run the auto-populate code path, assert `python3 -c \"import yaml; yaml.safe_load(open(f))\"` succeeds AND output is valid flow-style with no orphan `- ` lines."
+  - "Verification on existing fixed files: re-run `python3 yaml.safe_load` over all .tasks/active/ + .tasks/completed/ — zero parse errors."
+  - "No regression: `bats tests/unit/*update*` passes."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Symptom B fix — components auto-populate handles block-style continuation lines"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - ".fabric/components/tests-scripts-yaml_parse_all_tasks.yaml"
+  - ".fabric/components/tests-unit-update_task_yaml_components_emit.yaml"
+  - ".tasks/active/T-1469-symptom-b-fix--create-taskshupdate-tasks.md"
+  - "tests/scripts/yaml_parse_all_tasks.py"
+  - "tests/unit/update_task_yaml_components_emit.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T21:25:29"
+    action: "T-1469: Symptom B fix — components auto-populate handles block-style continuation lines"
+  - time: "2026-04-25T21:27:12"
+    action: "T-1469: Single-line verification helper + register bats fabric card"
+  - time: "2026-04-25T21:27:19"
+    action: "T-1469: Register fabric card for yaml_parse_all_tasks.py"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 3
+  files_changed: 6
+  lines_added: 358
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1469-symptom-b-fix--create-taskshupdate-tasks.md
+generated_by: context-agent-hybrid
