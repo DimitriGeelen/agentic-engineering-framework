@@ -2357,6 +2357,30 @@ case "$cmd" in
     self-audit)
         exec "$AGENTS_DIR/audit/self-audit.sh" "$@"
         ;;
+    gpu)
+        # T-1182: GPU coordination — Layer 2 of T-1180 GO. Reactive cross-process kick.
+        gpu_subcmd="${1:-}"
+        shift || true
+        case "$gpu_subcmd" in
+            recover)
+                exec bash "$AGENTS_DIR/gpu-recover/recover.sh" "$@"
+                ;;
+            ""|-h|--help)
+                echo "Usage: fw gpu <subcommand> [options]"
+                echo ""
+                echo "Subcommands:"
+                echo "  recover    Free VRAM by killing heaviest non-ollama consumer"
+                echo ""
+                echo "Run 'fw gpu recover --help' for recover-specific options."
+                exit 0
+                ;;
+            *)
+                echo -e "${RED}Unknown gpu subcommand: $gpu_subcmd${NC}" >&2
+                echo "Run 'fw gpu' for usage." >&2
+                exit 1
+                ;;
+        esac
+        ;;
     test-onboarding)
         exec "$AGENTS_DIR/onboarding-test/test-onboarding.sh" "$@"
         ;;
