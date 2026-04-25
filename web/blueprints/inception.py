@@ -499,23 +499,39 @@ def record_decision(task_id):
         timeout=30,
     )
 
-    # T-1223: log errors for debugging
+    # T-1470: distinguish "primary decision landed" from "side-effect failure".
+    # `fw inception decide` runs the primary decision FIRST (writes ## Decision
+    # block, ticks ACs, completes task), THEN side-effects (episodic gen,
+    # emit_review). A non-zero exit code from a side-effect was previously
+    # surfaced as 500 even though the decision was already recorded — the
+    # T-1455 GO incident (2026-04-25T07:22Z, T-1444 root cause).
+    primary_landed = _decision_recorded_in_task(task_id, decision)
+
     if not ok:
-        import logging
+        import logging  # T-1223: log errors for debugging
         logging.getLogger(__name__).error(
-            "inception decide %s failed: stdout=%r stderr=%r",
-            task_id, stdout[:500], stderr[:500]
+            "inception decide %s failed: primary_landed=%s stdout=%r stderr=%r",
+            task_id, primary_landed, stdout[:500], stderr[:500]
         )
 
     # If called via htmx (e.g., from /approvals page), return inline fragment (T-643)
     if request.headers.get("HX-Request"):
-        if ok:
+        if ok or primary_landed:
             color = "#10b981" if decision == "go" else "#ef4444" if decision == "no-go" else "#6b7280"
             label = decision.upper()
+            warning_html = ""
+            if not ok and primary_landed:
+                # T-1470: side-effect failure — show warning, not error
+                warning_html = (
+                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px;">'
+                    f'⚠ Decision recorded; side-effect warning: {(stderr or stdout)[:150]}'
+                    f'</div>'
+                )
             return (
                 f'<div class="approval-card" style="border-color:{color}; opacity:0.7;">'
                 f'<strong>{task_id}</strong>: Decision recorded — '
                 f'<span style="color:{color}; font-weight:700;">{label}</span>'
+                f'{warning_html}'
                 f'</div>'
             )
         return f'<p style="color:var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
@@ -524,10 +540,40 @@ def record_decision(task_id):
     # so the rendered inception_detail page can show a banner. Without this,
     # the user sees a silent redirect and clicks GO repeatedly.
     if not ok:
+        if primary_landed:
+            # T-1470: primary succeeded, surface as warning (not error)
+            warn = (stderr or stdout or "side-effect warning")[:300]
+            return redirect(url_for("inception.inception_detail", task_id=task_id, warning=warn))
         err = (stderr or stdout or "Unknown error from fw inception decide")[:300]
         return redirect(url_for("inception.inception_detail", task_id=task_id, error=err))
 
     return redirect(url_for("inception.inception_detail", task_id=task_id))
+
+
+def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
+    """T-1470: Detect if `fw inception decide` recorded the decision in the
+    task body, regardless of exit code. Used to separate "primary landed"
+    (return 200 + warning) from "primary failed" (return 500/error)."""
+    import os
+    import re as _re
+    # Task may be in active/ (defer) or completed/ (go/no-go)
+    for loc in ("completed", "active"):
+        d = os.path.join(PROJECT_ROOT, ".tasks", loc)
+        if not os.path.isdir(d):
+            continue
+        for fn in os.listdir(d):
+            if not fn.startswith(f"{task_id}-") or not fn.endswith(".md"):
+                continue
+            try:
+                with open(os.path.join(d, fn)) as f:
+                    body = f.read()
+            except OSError:
+                continue
+            # Look for `## Decision` block + the chosen decision keyword
+            m = _re.search(r"^## Decision\b.*?(?=^## |\Z)", body, _re.MULTILINE | _re.DOTALL)
+            if m and decision.upper() in m.group(0).upper():
+                return True
+    return False
 
 
 @bp.route("/assumptions")
