@@ -218,13 +218,61 @@ User also raised that catalogue should be expanded beyond agent's view via:
 8. **Severity refactor**: separate pattern attributes from task attributes from action policy
 9. **Three policy files** anticipated: `policy/anti-patterns.yaml` (catalogue) + `policy/action-matrix.yaml` (action) + `policy/escalation-overrides.yaml` (Spike I overrides). Plus `policy/escalation-patterns.yaml` from T-1442.
 
-## Still open (next)
+## Dialogue Turns 14–17 (2026-04-25 continued)
 
-- **Spike G** (NEXT): Pattern-consultation interface — how reviewer mechanically loads + applies all policy files together
-- **Spike B**: Routing strategy + per-profile model selection
-- **Spike H**: Slash-command shape + orchestrator integration
-- **Spike C**: Authority bounds (cannot-list, structural enforcement)
-- **Spike E**: Reviewer auditability mechanism (sampling rate, shadow review)
+### Turn 14: Spike G — Pattern-consultation interface
+
+Agent presented cheap-first DAG algorithm (Phase 1 load → 2 cheap static + L1 + L2 → 3 apply overrides → 4 verification fresh (Model V) → 5 dynamic scan → 6 per-AC compute → 7 Human ACs surfaced → 8 atomic envelope write). Three-tier failure policy (T1 hard fail-closed / T2 retry-then-fail / T3 fail-soft). Implementation shape options A/B/C with strong lean for C (library + thin CLI).
+
+### Turn 15: User asks for steelman/strawman against the 4 directives
+
+Refined model emerged:
+- **Q1 ordering**: confirm cheap-first as a **DAG with documented rationale**, no short-circuit (Model V mandates all phases run)
+- **Q2 fail-closed**: refine to **three-tier policy** (T1 hard / T2 retry-then-fail / T3 fail-soft), declared per anti-pattern entry; learning lives in iteration, not in failure handling
+- **Q3 implementation**: confirm Option C with explicit **Python library + bash CLI**, version-pinned via `.framework.yaml`, vendored
+- **Q4 invariants**: confirm with **multi-layer enforcement specifications** — atomicity (write-temp+fsync+rename), idempotency reframed (deterministic bit-exact + semantic signed-for-reproducibility), signature + append-only evidence, sovereignty enforced at 3 layers, retention lifecycle (90d full / 1y summary / archive)
+
+### Turn 16: User asks honest reflection — does design still match original ask?
+
+Agent reflection: design is well-aligned with original ask + antifragility principle, but has grown to multi-month build. Spike A's deferred uncertainty (% of mechanically-evidenceable Human ACs) means we're designing for unmeasured problem size. Recommended **staged rollout** (v1 minimal → v2-v5 progression based on data).
+
+### Turn 17: User pushes back — shorten review windows + more data review moments
+
+Refactor to **micro-version progression** (v1.0 → v1.5 → v2.0 → v2.1 → v3+, each ~1 session) with **three-cadence data review** (continuous capture + weekly auto-summary + threshold alerts + per-version GO). **Spike I feedback stream pulled forward to v1.0** so data accumulates from day 1.
+
+This rollout addendum is captured in both T-1442 and T-1443 research artifacts. T-1442's 8-task decomposition is replaced with the micro-version progression; T-1443's build follow-ups inherit the same staging.
+
+## Decisions captured (final, for this inception)
+
+(Adds to earlier Decisions list)
+
+10. **Cheap-first DAG ordering** with documented rationale, no short-circuit (Model V mandates all phases run)
+11. **Three-tier failure policy** (T1 hard / T2 retry / T3 fail-soft), declared per anti-pattern entry
+12. **Python library + bash CLI** implementation, version-pinned, vendored to consumers
+13. **5 correctness invariants with multi-layer enforcement** specifications (atomicity protocol, idempotency reframed, signature + append-only, sovereignty 3-layer, retention lifecycle)
+14. **Micro-version staged rollout** (v1.0 → v3.0+, each ~1 session) instead of single big build
+15. **Three-cadence data review** (continuous + weekly + threshold + per-version-bump) — frictionless meta-process
+16. **Spike I feedback stream pulled forward to v1.0** — data captures from day 1, UX at v1.3
+
+## Spike status (final)
+
+- ✅ **Spike A**: Reviewer interface (structured envelope, per-AC granularity)
+- 🔄 **Spike B**: Routing strategy — DEFERRED to v3.0 (orchestrator routing, T-1064 dep). v1.2 ships with hardcoded Sonnet.
+- 🔄 **Spike C**: Authority bounds — addressed by 5 invariants + 3-layer sovereignty enforcement; concrete enforcement shipped per-version (envelope schema validator at v1.2, update-task.sh tick rejection at v1.2, Watchtower UI at v1.3).
+- ✅ **Spike D**: Failure mode (insufficient-evidence blocks, needs-human escalates per-AC)
+- 🔄 **Spike E**: Reviewer auditability — addressed by signature + digest + append-only evidence (in envelope from v1.2). Sampling/shadow-review deferred to v3.0+.
+- ✅ **Spike F**: Anti-pattern catalogue (12-category seed + B-Anti-Patterns-Expansion)
+- ✅ **Spike G**: Pattern-consultation algorithm (cheap-first DAG + three-tier failure)
+- 🔄 **Spike H**: Slash-command + orchestrator — `/review T-XXX` shape locked; orchestrator integration deferred to v3.0
+- ✅ **Spike I**: Override mechanism + 7 UX principles + feedback stream
+
+5 spikes resolved; 4 spikes addressed via staging (concrete delivery in named versions).
+
+## Recommendation
+
+**GO** (full text in `.tasks/active/T-1443-independent-reviewer-agent--termlink-dis.md` § Recommendation).
+
+Hand to user via `fw task review T-1443` for GO/NO-GO/DEFER.
 
 ## Anchor files
 

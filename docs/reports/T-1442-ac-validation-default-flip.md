@@ -173,9 +173,48 @@ Recorded in T-1442 Recommendation step 1 + new step 6 (slash-command surface + o
 
 ## Recommendation
 
-**GO** (full text in `.tasks/active/T-1442-ac-validation-default-flip--mechanical-v.md` § Recommendation).
+**GO** (full text in `.tasks/completed/T-1442-ac-validation-default-flip--mechanical-v.md` § Recommendation). Decision recorded 2026-04-25T07:22Z.
 
-Hand to user via `fw task review T-1442` for GO/NO-GO/DEFER.
+## Rollout Addendum (2026-04-25 — post-decision refinement)
+
+Following user pushback on scope-creep risk + tighter-data-review-cadence emphasis, the 8 originally-decomposed B-tasks (B1–B8) are restructured into **micro-version progression** with data-driven advancement gates.
+
+### Micro-version progression
+
+| Version | Adds | ~Time | Success metric |
+|---|---|---|---|
+| **v1.0** | Static anti-pattern scan on `--status work-completed`. 4 patterns. Pure pre-flight. Feedback stream from day 1. | 1 session | Tasks scanned, patterns fired, false-positive count |
+| **v1.1** | `## Verification Output` section + `risk` frontmatter | 1 session | % proactive risk declarations, risk-level distribution |
+| **v1.2** | Reviewer agent (Sonnet hardcoded), per-AC verdicts | 1 session | Per-AC verdict distribution, mechanical-tick rate |
+| **v1.3** | Spike I override mechanism (Watchtower UX MVP + feedback stream consumer) | 1 session | Override frequency, top over-firing patterns, reclassification suggestions |
+| **v1.4** | Layer 1 mechanical patterns (initial 5) | 1 session | Pattern match rate, per-pattern false-positive rate |
+| **v1.5** | Layer 1 expansion via corpus mining | 1 session | Diff between agent-suggested vs human-confirmed patterns |
+| **v2.0** | Daily cron Pass A (drift detection) | 1 session | Drift events / week, drift classes |
+| **v2.1** | Daily cron Pass B (escalation audit) | 1 session | Missed escalations / week, % becoming new Layer 1 patterns |
+| **v3.0+** | Orchestrator routing (T-1064 dep), anti-pattern catalogue expansion (B-N), evidence file split, semantic checks, cross-project peer dispatch | per readiness | per-bump metrics |
+
+### Three-cadence data review
+
+| Cadence | Mechanism | Human time |
+|---|---|---|
+| Continuous | Every `/review` invocation appends structured record to `.context/working/feedback-stream.yaml` (Spike I infrastructure pulled forward to v1.0). Automatic. | 0 |
+| Weekly summary | Friday cron generates Watchtower page: 7-day stats — review count, verdict distribution, top patterns, override velocity, false-positive rate, reclassification suggestions. | ~2 min |
+| Threshold-triggered | Override count >5/week or false-positive rate >20% → push notification + ad-hoc review. | ~5 min when triggered |
+| Per-version-bump | Explicit go/hold/iterate decision before advancing v1.x → v1.x+1, based on weekly summary data. | ~5 min per bump |
+
+**Total human attention**: ~5–10 min/week routine + ad-hoc when alerts fire. Frictionless-feedback principle applied to the meta-process itself.
+
+### Key shift: Spike I feedback stream pulled forward to v1.0
+
+Override UX itself doesn't ship until v1.3, but the **feedback-stream data capture** runs from v1.0 day 1. By v1.3 we already have 3+ sessions of override-relevant data to validate the UX against.
+
+### Why this addresses the calibration risk
+
+Spike A (sample audit of % mechanically-evidenceable Human ACs) was deferred. The micro-version rollout **measures it in production data starting v1.0** — not in an abstract spike. If the % is <30%, we abandon early and avoid sunk cost; if 70%+, we ship faster than full-build would have.
+
+### Antifragility positioned in iteration cycle
+
+Each version's weekly summary feeds the next version's design decisions. Layer 1 patterns aren't designed in advance (v1.4-v1.5) — they're derived from what v1.0-v1.3 actually catches. The catalogue grows with evidence, not speculation.
 
 ## Anchor files
 
