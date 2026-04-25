@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1458: Fix T-1455 inception 404 — workflow_type stuck on build, investigate fw task update --type persistence
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T13:21:01Z
+# ============================================================================
+
+task_id: T-1458
+task_name: "Fix T-1455 inception 404 — workflow_type stuck on build, investigate fw task update --type persistence"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T13:16:45Z
+completed: 2026-04-25T13:20:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T15:20:54+02:00
+last_commit: 2026-04-25T15:20:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix /inception/T-1455 404 + add --type flag to fw note promote
+
+# Key outcomes
+outcomes:
+  - "T-1455 returns HTTP 200 at /inception/T-1455 (data fix landed)"
+  - "Root cause identified: `fw note promote` hard-coded `--type build` with no override flag"
+  - "`fw note promote` accepts `--type <type>` flag and forwards it to create-task.sh"
+  - "Latent silent-failure bug in do_promote fixed (set -euo pipefail killed script before \"not found\" message)"
+  - "4 new bats tests in tests/unit/observe.bats — all 11 pass"
+  - "Learning recorded (L-272)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix /inception/T-1455 404 + add --type flag to fw note promote"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/observe/observe.sh"
+  - ".tasks/active/T-1455-pickup-importer-hard-codes-workflowtypei.md"
+  - ".tasks/active/T-1458-fix-t-1455-inception-404--workflowtype-s.md"
+  - "tests/unit/observe.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T15:20:54"
+    action: "T-1458: fix /inception/T-1455 404 + add --type flag to fw note promote"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 4
+  lines_added: 137
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1458-fix-t-1455-inception-404--workflowtype-s.md
+generated_by: context-agent-hybrid

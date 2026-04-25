@@ -51,3 +51,38 @@ decisions:
     date: 2026-04-25
     task: T-1443
     rationale: "Not specified"
+
+  - id: D-010
+    decision: "Wrap `addEventListener` in DOMContentLoaded check"
+    scope: project
+    date: 2026-04-25
+    task: T-1453
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-011
+    decision: "Extract to `web/static/csrf-htmx.js`, both templates `<script src=>` it"
+    scope: project
+    date: 2026-04-25
+    task: T-1453
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-012
+    decision: "Pass error to redirect target via `?error=...` query string"
+    scope: project
+    date: 2026-04-25
+    task: T-1454
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-013
+    decision: "New `reviewer` blueprint, distinct from existing `review` (mobile human-review page)"
+    scope: project
+    date: 2026-04-25
+    task: T-1450
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-014
+    decision: "No add/remove forms; CLI remains the only mutation path"
+    scope: project
+    date: 2026-04-25
+    task: T-1450
+    rationale: "Auto-captured from task file on completion"

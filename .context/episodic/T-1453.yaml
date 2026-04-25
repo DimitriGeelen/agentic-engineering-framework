@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1453: T-1452a Bugfix: extract static/csrf-htmx.js, share between base.html and review.html, add Playwright regression on /review/<id> mutation flow, audit other standalone templates
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T13:10:14Z
+# ============================================================================
+
+task_id: T-1453
+task_name: "T-1452a Bugfix: extract static/csrf-htmx.js, share between base.html and review.html, add Playwright regression on /review/<id> mutation flow, audit other standalone templates"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T11:51:34Z
+completed: 2026-04-25T12:11:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T14:12:16+02:00
+last_commit: 2026-04-25T14:12:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  extract static/csrf-htmx.js, fix /review/<id> silent 403 (T-1452 GO)
+
+# Key outcomes
+outcomes:
+  - "`web/static/csrf-htmx.js` exists with the `htmx:configRequest` listener and `window.fetchWithCsrf` wrapper extracted verbatim from base.html:429-449"
+  - "`web/templates/base.html` loads the file via `<script src=\"{{ url_for('static', filename='csrf-htmx.js') }}\"></script>` — inline duplicate removed"
+  - "`web/templates/review.html` includes the csrf meta tag (`<meta name=\"csrf-token\" content=\"{{ csrf_token() }}\">`) AND loads the same script"
+  - "After Watchtower restart: POST to `/api/task/T-1452/toggle-ac` with `X-CSRF-Token` header returns 500 (app-layer \"Not an AC checkbox line\" — proves CSRF passed); without header returns 403 (proves gate still enforces)"
+  - "`tests/playwright/test_review_csrf.py` exists — 3 tests (script loads, csrf meta present, toggle-ac click does not 403); all PASS"
+  - "`bin/fw test playwright` ran 400 tests — 399 pass + 1 unrelated pre-existing failure in `test_api_search` (search/v1 endpoint 500, orthogonal to T-1453)"
+  - "No regression in pytest unit suite — 83 tests pass"
+  - "[REVIEW] Open `${URL}/review/T-1452` in a phone/desktop browser, tick the Human AC checkbox, verify the box stays ticked and progress bar updates"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "extract static/csrf-htmx.js, fix /review/<id> silent 403 (T-1452 GO)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Wrap `addEventListener` in DOMContentLoaded check"
+    rationale: "`base.html` loads scripts in `<head>` (before `<body>` exists). The original inline code worked because it lived at end-of-body. The shared script must work in either position."
+    alternatives_rejected: ["Move script tag to end-of-body in base.html — fragile, easy to forget on next standalone template. Defer attribute — works for the script load order but doesn't help if the script has to run on its own immediately."]
+    chose: "Extract to `web/static/csrf-htmx.js`, both templates `<script src=>` it"
+    rationale: "Future standalone templates (mobile second-screen, kiosk, embedded widgets per T-667 design) need the same wiring. One source of truth eliminates the recurrence class."
+    alternatives_rejected: ["Copy-paste the listener into review.html — solves T-1452 specifically but the next standalone template hits the same bug."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1453-t-1452a-bugfix-extract-staticcsrf-htmxjs.md"
+  - "tests/playwright/test_review_csrf.py"
+  - "web/static/csrf-htmx.js"
+  - "web/templates/base.html"
+  - "web/templates/review.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T14:12:16"
+    action: "T-1453: extract static/csrf-htmx.js, fix /review/<id> silent 403 (T-1452 GO)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 1
+  files_changed: 5
+  lines_added: 202
+  lines_removed: 53
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1453-t-1452a-bugfix-extract-staticcsrf-htmxjs.md
+generated_by: context-agent-hybrid

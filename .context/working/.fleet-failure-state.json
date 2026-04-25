@@ -16,10 +16,10 @@
     },
     "ring20-management": {
       "concern_registered": false,
-      "consecutive_failures": 8,
+      "consecutive_failures": 11,
       "first_failure_at": "2026-04-25T10:35:46Z",
       "last_class": "auth-mismatch",
-      "last_failure_at": "2026-04-25T10:37:40Z"
+      "last_failure_at": "2026-04-25T12:28:23Z"
     }
   }
 }

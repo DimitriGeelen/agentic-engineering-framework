@@ -67,9 +67,9 @@ Already executed via the audit above (one session). No further spikes needed.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -127,9 +127,18 @@ Already executed via the audit above (one session). No further spikes needed.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The audit revealed that the handover output IS the gap — every other human-facing surface (Tier 0, fw task review, verify-acs) already renders URLs. The handover is also the highest-traffic surface (loaded via `/resume` at every session start, 28+46 task references per render). Other surfaces (audit, healing, fw note list) are lower-traffic and can be addressed if/when they cause friction. Doing the handover scope alone removes ~80% of the visible friction at low risk.
+
+**Date**: 2026-04-25T13:09:53Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-25T13:09:53Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The audit revealed that the handover output IS the gap — every other human-facing surface (Tier 0, fw task review, verify-acs) already renders URLs. The handover is also the highest-traffic surface (loaded via `/resume` at every session start, 28+46 task references per render). Other surfaces (audit, healing, fw note list) are lower-traffic and can be addressed if/when they cause friction. Doing the handover scope alone removes ~80% of the visible friction at low risk.

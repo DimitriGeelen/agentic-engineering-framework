@@ -51,8 +51,9 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-127.0.0.1 - - [25/Apr/2026 13:23:48] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:23:50] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:14:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:14:43] "GET /inception/T-1452 HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:14:43] "POST /inception/T-1452/decide HTTP/1.1" 400 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -93,8 +94,11 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:24:02] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:24:02] "GET /reviewer/overrides HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:15:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:15:29] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:15:29] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:15:29] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:15:38] "GET /inception/T-1452?error=Required%20AC%20unchecked HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -135,7 +139,8 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:25:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:16:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:16:53] "GET /api/_identity HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -176,7 +181,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:26:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:17:04] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -217,7 +222,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:27:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:18:03] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -258,7 +263,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:28:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:19:02] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -299,7 +304,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:29:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:20:05] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -340,27 +345,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:30:03] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:30:22] "GET /review/T-1445 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:30:22] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:22] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:27] "GET /review/T-1445/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:30:32] "GET /review/T-1445/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:30:37] "GET /review/T-1445/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:30:39] "GET /reviewer/overrides HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:30:39] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:39] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:39] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:39] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:39] "GET /static/highlight.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:39] "GET /static/marked.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:39] "GET /static/purify.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:39] "GET /static/logo.png HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:42] "GET /review/T-1445/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:30:54] "GET /review/T-1446 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:30:54] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:54] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:30:59] "GET /review/T-1446/acs HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:21:03] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -401,7 +386,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:31:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:22:03] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -442,7 +427,10 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:32:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:23:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:23:08] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:23:08] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:23:09] "GET /health HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -483,7 +471,54 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:33:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:09] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:10] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:10] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:10] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:10] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:10] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:12] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:12] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:12] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:12] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:13] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [25/Apr/2026 14:23:13] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:14] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:14] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:14] "GET /fleet HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:14] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:15] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:15] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:15] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:16] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:17] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:17] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:17] "GET /pending HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:17] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:17] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:17] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:17] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:18] "GET /risks HTTP/1.1" 200 -
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml", line 27, column 5
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml", line 27, column 18
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml", line 43, column 3
+127.0.0.1 - - [25/Apr/2026 14:23:22] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:22] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:22] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:22] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [25/Apr/2026 14:23:22] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:22] "GET /settings/ HTTP/1.1" 200 -
+Failed to list Ollama models: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
+127.0.0.1 - - [25/Apr/2026 14:23:22] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:27] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:27] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:23:29] "GET /timeline HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -524,7 +559,10 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:34:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:24:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:24:51] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:24:51] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:24:51] "GET /health HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -565,7 +603,43 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:35:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:53] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:53] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:53] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:53] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:53] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:53] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:55] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:55] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:55] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:55] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:56] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [25/Apr/2026 14:24:56] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:56] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:56] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:56] "GET /fleet HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:56] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:57] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:57] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:57] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:58] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:59] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:59] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:59] "GET /pending HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:59] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:24:59] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:00] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:00] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:00] "GET /risks HTTP/1.1" 200 -
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml", line 27, column 5
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml", line 27, column 18
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml", line 43, column 3
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -606,7 +680,18 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:36:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:25:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:05] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:05] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:05] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:05] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [25/Apr/2026 14:25:05] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:05] "GET /settings/ HTTP/1.1" 200 -
+Failed to list Ollama models: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
+127.0.0.1 - - [25/Apr/2026 14:25:05] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:05] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:05] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:25:08] "GET /timeline HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -647,7 +732,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:37:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:26:05] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -688,7 +773,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:38:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:27:03] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -729,7 +814,10 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:39:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:28:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:28:17] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:28:17] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:28:17] "GET /health HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -770,7 +858,54 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:40:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:20] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:20] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:20] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:20] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:20] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:20] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:22] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:22] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:22] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:22] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:23] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [25/Apr/2026 14:28:23] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:23] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:23] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:23] "GET /fleet HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:23] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:24] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:24] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:24] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:25] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:26] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:26] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:26] "GET /pending HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:26] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:26] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:26] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:27] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:27] "GET /risks HTTP/1.1" 200 -
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml", line 27, column 5
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml", line 27, column 18
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml", line 43, column 3
+127.0.0.1 - - [25/Apr/2026 14:28:31] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:31] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:31] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:31] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [25/Apr/2026 14:28:31] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:31] "GET /settings/ HTTP/1.1" 200 -
+Failed to list Ollama models: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
+127.0.0.1 - - [25/Apr/2026 14:28:31] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:33] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:33] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 14:28:35] "GET /timeline HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -811,7 +946,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:41:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:29:01] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -852,7 +987,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:42:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:30:02] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -893,9 +1028,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:43:03] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:43:03] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:43:04] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:31:04] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -936,36 +1069,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:44:02] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:30] "GET /approvals HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:30] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:30] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:30] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:30] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:30] "GET /static/marked.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:30] "GET /static/highlight.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:30] "GET /static/purify.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:30] "GET /static/logo.png HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:31] "POST /api/approvals/decide HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:42] "GET /review/T-1447 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:42] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:42] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:45] "POST /api/task/T-1447/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:44:47] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:51] "GET /review/T-1450 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:51] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:51] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:53] "POST /api/task/T-1450/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:44:53] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:56] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:58] "POST /api/task/T-1450/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:44:59] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:59] "GET /review/T-1450 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:44:59] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:44:59] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:45:02] "GET /review/T-1447 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:02] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:45:02] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 14:32:03] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -1006,38 +1110,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:45:05] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:05] "POST /api/task/T-1447/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:45:05] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:06] "POST /api/task/T-1447/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:45:06] "POST /api/task/T-1447/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:45:06] "POST /api/task/T-1447/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:45:06] "POST /api/task/T-1447/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:45:07] "POST /api/task/T-1447/toggle-ac HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:45:07] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:07] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:08] "POST /api/task/T-1447/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:45:08] "POST /api/task/T-1447/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:45:11] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:12] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:17] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:17] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:22] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:23] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:27] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:29] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:32] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:35] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:37] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:41] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:42] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:47] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:47] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:52] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:53] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:57] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:45:59] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:02] "GET /review/T-1447/acs HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:33:03] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -1078,22 +1151,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:46:03] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:07] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:12] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:13] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:17] "POST /api/task/T-1447/toggle-ac HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:46:17] "POST /api/task/T-1447/complete HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:46:17] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:22] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:27] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:32] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:37] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:42] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:47] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:52] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:46:57] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:02] "GET /review/T-1447/acs HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:34:05] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -1134,16 +1192,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:47:03] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:07] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:12] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:13] "GET /review/T-1450/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:17] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:22] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:27] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:32] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:37] "GET /review/T-1447/acs HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:47:40] "GET /review/T-1450/acs HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:35:02] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -1184,7 +1233,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:48:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:36:05] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -1225,48 +1274,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:49:04] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:49:28] "GET /inception/T-1452 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:49:28] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/purify.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/highlight.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/marked.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /static/logo.png HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:29] "GET /favicon.ico HTTP/1.1" 404 -
-inception decide T-1452 failed: stdout='=== Task Update ===\nTask:    T-1452 ("RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx POSTs")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1452-rca-reviewt-xxx-page-buttons-silently-fa.md\nERROR: Cannot complete — 1/7 agent AC unchecked:\n  - [ ] [Inception decision recorded] go/no-go/defer with chosen fix shape\n\nOptions:\n  1. Check the criteria in the task file, then retry\n  2. Use --skip-acceptance-criteria to bypass (logged)' stderr=''
-192.168.10.107 - - [25/Apr/2026 13:49:36] "POST /inception/T-1452/decide HTTP/1.1" 500 -
-192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /inception/T-1452 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/highlight.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/marked.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/purify.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:41] "GET /static/logo.png HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /inception/T-1452 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/highlight.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/purify.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/marked.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:45] "GET /static/logo.png HTTP/1.1" 304 -
-inception decide T-1452 failed: stdout='=== Task Update ===\nTask:    T-1452 ("RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx POSTs")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1452-rca-reviewt-xxx-page-buttons-silently-fa.md\nERROR: Cannot complete — 1/7 agent AC unchecked:\n  - [ ] [Inception decision recorded] go/no-go/defer with chosen fix shape\n\nOptions:\n  1. Check the criteria in the task file, then retry\n  2. Use --skip-acceptance-criteria to bypass (logged)' stderr=''
-192.168.10.107 - - [25/Apr/2026 13:49:50] "POST /inception/T-1452/decide HTTP/1.1" 500 -
-192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /inception/T-1452 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/highlight.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/marked.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/purify.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:49:54] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 14:37:02] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -1307,9 +1315,7 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:50:03] "GET / HTTP/1.1" 200 -
-inception decide T-1452 failed: stdout='=== Task Update ===\nTask:    T-1452 ("RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx POSTs")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1452-rca-reviewt-xxx-page-buttons-silently-fa.md\nERROR: Cannot complete — 1/7 agent AC unchecked:\n  - [ ] [Inception decision recorded] go/no-go/defer with chosen fix shape\n\nOptions:\n  1. Check the criteria in the task file, then retry\n  2. Use --skip-acceptance-criteria to bypass (logged)' stderr=''
-192.168.10.107 - - [25/Apr/2026 13:50:05] "POST /inception/T-1452/decide HTTP/1.1" 500 -
+192.168.10.107 - - [25/Apr/2026 14:38:03] "GET / HTTP/1.1" 200 -
 Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
   in "<unicode string>", line 2, column 1:
     id: T-1278
@@ -1350,17 +1356,2246 @@ Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/act
   in "<unicode string>", line 7, column 181:
      ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
                                          ^
-192.168.10.107 - - [25/Apr/2026 13:51:04] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /inception/T-1452 HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/htmx.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/pico.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/highlight.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/marked.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/purify.min.js HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:51:08] "GET /static/logo.png HTTP/1.1" 304 -
-192.168.10.107 - - [25/Apr/2026 13:51:11] "POST /api/task/T-1447/toggle-ac HTTP/1.1" 403 -
-192.168.10.107 - - [25/Apr/2026 13:51:11] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:51:14] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [25/Apr/2026 13:51:14] "POST /inception/T-1452/decide HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 14:39:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:40:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:41:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:42:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:43:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:44:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:45:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:46:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:47:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:48:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:49:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:50:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:51:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:52:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:53:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:54:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:55:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:56:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:57:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:58:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 14:59:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:00:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:01:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:02:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:03:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:04:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:05:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:06:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:07:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:08:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:09:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:30] "GET /review/T-1452 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:30] "GET /static/pico.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:30] "GET /static/htmx.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:30] "GET /static/csrf-htmx.js HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:30] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [25/Apr/2026 15:09:35] "GET /review/T-1452/acs HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:36] "POST /api/task/T-1452/toggle-ac HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:36] "GET /review/T-1452/acs HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:39] "POST /api/task/T-1452/complete HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:40] "GET /review/T-1452/acs HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:44] "GET /review/T-1452 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:44] "GET /static/pico.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:44] "GET /static/htmx.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:44] "GET /static/csrf-htmx.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /inception/T-1451 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /static/pico.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /static/htmx.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /static/csrf-htmx.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /static/highlight.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /static/marked.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /static/purify.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:50] "GET /static/logo.png HTTP/1.1" 304 -
+inception decide T-1451 failed: stdout='=== Task Update ===\nTask:    T-1451 ("Sweep all human-handoff touchpoints — render clickable Watchtower URLs everywhere agent surfaces work for human")\nFile:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1451-sweep-all-human-handoff-touchpoints--ren.md\nERROR: Cannot complete — 1/4 agent AC unchecked:\n  - [ ] [Inception decision recorded] go/no-go/defer with chosen scope (handover-only vs broader sweep)\n\nOptions:\n  1. Check the criteria in the task file, then retry\n  2. Use --skip-acc' stderr=''
+127.0.0.1 - - [25/Apr/2026 15:09:54] "POST /inception/T-1451/decide HTTP/1.1" 500 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /inception/T-1451 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /static/htmx.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /static/csrf-htmx.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /static/pico.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /static/highlight.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /static/marked.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /static/purify.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:09:56] "GET /static/logo.png HTTP/1.1" 304 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /inception/T-1455 HTTP/1.1" 404 -
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /static/pico.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /static/htmx.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /static/csrf-htmx.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /static/highlight.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /static/marked.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /static/purify.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:03] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [25/Apr/2026 15:10:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:10] "GET /review/T-1453 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:10] "GET /static/pico.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:10] "GET /static/htmx.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:10] "GET /static/csrf-htmx.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:13] "POST /api/task/T-1453/toggle-ac HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:13] "GET /review/T-1453/acs HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:14] "POST /api/task/T-1453/complete HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:15] "GET /review/T-1453/acs HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:18] "GET /review/T-1454 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:18] "GET /static/pico.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:18] "GET /static/htmx.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:18] "GET /static/csrf-htmx.js HTTP/1.1" 304 -
+127.0.0.1 - - [25/Apr/2026 15:10:21] "POST /api/task/T-1454/toggle-ac HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:21] "GET /review/T-1454/acs HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:22] "POST /api/task/T-1454/complete HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:10:23] "GET /review/T-1454/acs HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:11:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:12:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:13:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:14:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:15:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+127.0.0.1 - - [25/Apr/2026 15:15:11] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:15:12] "GET /inception/T-1455 HTTP/1.1" 404 -
+127.0.0.1 - - [25/Apr/2026 15:15:12] "GET /inception/T-1451 HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:16:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:17:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:17:05] "GET /inception/T-1455 HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:18:04] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:19:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:20:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 15:20:58] "GET /inception/T-1455 HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:21:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:22:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:23:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:24:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:25:02] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:26:05] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:27:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:28:03] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:29:05] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:30:01] "GET /inception/T-1455 HTTP/1.1" 200 -
+127.0.0.1 - - [25/Apr/2026 15:30:01] "GET /inception/T-1451 HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:30:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [25/Apr/2026 15:30:49] "GET /reviewer/overrides HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1278
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 16, column 3:
+      - bin/fw
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1:
+    id: T-1279
+    ^
+expected <block end>, but found '<block sequence start>'
+  in "<unicode string>", line 17, column 3:
+      - agents/task-create/create-task.sh
+      ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md: mapping values are not allowed here
+  in "<unicode string>", line 7, column 181:
+     ... file moved to completed/). Cause: downstream Auto-trigger: Episo ... 
+                                         ^
+192.168.10.107 - - [25/Apr/2026 15:31:03] "GET / HTTP/1.1" 200 -

@@ -12,7 +12,7 @@ tags: [bugfix, csrf, watchtower, mobile-review, regression]
 components: []
 related_tasks: [T-667, T-1343, T-1450]
 created: 2026-04-25T13:35:00Z
-last_update: 2026-04-25T11:51:10Z
+last_update: 2026-04-25T13:09:38Z
 date_finished: 2026-04-25T11:51:10Z
 ---
 
@@ -87,7 +87,7 @@ This is exactly the kind of regression the v1.0+ reviewer is supposed to catch v
 - [x] [Inception decision recorded] go/no-go/defer with chosen fix shape *(GO with structural-fix recorded 2026-04-25T11:49Z×3 — see Updates section; manually ticked because auto-tick regex did not match this AC text — captured as observation OBS-NEW-csrf-decide-no-feedback)*
 
 ### Human
-- [ ] [REVIEW] Decide go/no-go and choose fix shape (minimal vs structural)
+- [x] [REVIEW] Decide go/no-go and choose fix shape (minimal vs structural)
   **Steps:**
   1. Open http://192.168.10.107:3000/inception/T-1452
   2. Pick: GO (minimal) | GO (structural) | DEFER | NO-GO

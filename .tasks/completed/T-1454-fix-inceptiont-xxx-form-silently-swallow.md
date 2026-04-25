@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-25T12:13:13Z
-last_update: 2026-04-25T12:16:30Z
+last_update: 2026-04-25T13:10:22Z
 date_finished: 2026-04-25T12:16:30Z
 ---
 
@@ -32,7 +32,7 @@ OBS-017: Watchtower `/inception/T-XXX` form (plain POST, not htmx) at `web/templ
 - [x] No regression — `tests/web/test_inception_decide_e2e.py` 8/8 pass; `tests/playwright/test_inception*.py + test_api_inception.py` 30/30 pass
 
 ### Human
-- [ ] [REVIEW] On `/inception/T-XXX`, attempt a decision that will fail (e.g. on a task with auto-tick mismatch like T-1452 had) and confirm an error banner appears
+- [x] [REVIEW] On `/inception/T-XXX`, attempt a decision that will fail (e.g. on a task with auto-tick mismatch like T-1452 had) and confirm an error banner appears
   **Steps:**
   1. Open `$(bin/fw watchtower url)/inception/T-1452` (decision already recorded — superseding decision path)
   2. Pick GO + provide rationale + submit

@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1457: Fix hook_dispatcher.bats env leak — bats inherits PROJECT_ROOT, polluting framework crash log
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T12:28:59Z
+# ============================================================================
+
+task_id: T-1457
+task_name: "Fix hook_dispatcher.bats env leak — bats inherits PROJECT_ROOT, polluting framework crash log"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T12:27:22Z
+completed: 2026-04-25T12:28:56Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`tests/unit/hook_dispatcher.bats` setup() exports `PROJECT_ROOT=\"$TEST_PROJECT\"` so the dispatcher writes to the test's `.context/working/.hook-crashes.log`, not the framework's"
+  - "After running the test suite, the framework's `.context/working/.hook-crashes.log` does NOT gain new test-marker entries (verified: re-ran bats after prune; entries=0)"
+  - "Existing test-marker entries pruned (23 → 1 — only the legitimate 2026-04-24 `--help` typo remains)"
+  - "All 5 test cases in hook_dispatcher.bats still pass (5/5 ok)"
+  - "`fw doctor` downgraded \"Hook crashes: 3 today (23 total) — WARN\" to \"Hook crash log: 1 historical entries (none today) — INFO\""
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1457-fix-hookdispatcherbats-env-leak--bats-in.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1447: T-1443-v1.2 Reviewer agent: Layer 3 audit cron + AC-verify-mismatch transitive-coverage tuning
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T13:30:45Z
+# ============================================================================
+
+task_id: T-1447
+task_name: "T-1443-v1.2 Reviewer agent: Layer 3 audit cron + AC-verify-mismatch transitive-coverage tuning"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T10:54:18Z
+completed: 2026-04-25T13:30:40Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T12:57:35+02:00
+last_commit: 2026-04-25T12:57:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.2 reviewer — Layer 3 audit cron + transitive-coverage tuning
+
+# Key outcomes
+outcomes:
+  - "`bin/fw reviewer audit` exists — runs Pass B (re-scan all completed tasks with current catalogue)"
+  - "Output `.context/audits/reviewer/YYYY-MM-DD.yaml` is valid YAML with: scan_date, catalogue_version, escalation_version, totals (PASS/CONCERN/FAIL/needs_human), pattern_fire_counts, escalation_fire_counts, top_findings (5 by frequency)"
+  - "Cron registry entry added (`.context/cron-registry.yaml`) — daily at 04:37"
+  - "AC-verify-mismatch transitive-coverage: when verification runs `bin/fw test unit`, paths in `tests/unit/*.bats` / `lib/` / `agents/` are exempted; 4 new tests assert this"
+  - "Re-dogfood with v1.2 — AC-verify-mismatch fires dropped 226→192 (15% reduction); result captured as L-266"
+  - "All pytest tests pass (62 total, up from 57 in v1.1)"
+  - "No bats regression — full unit suite ran clean in prior session (939 tests OK)"
+  - "[RUBBER-STAMP] Run `bin/fw reviewer audit` and confirm a YAML report appears in `.context/audits/reviewer/` *(closed by agent with user authorization 2026-04-25 — see Recommendation)*"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/audits/reviewer/2026-04-25.yaml"
+  - ".context/cron-registry.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "lib/reviewer/audit.py"
+  - "lib/reviewer/static_scan.py"
+  - ".tasks/active/T-1447-t-1443-v12-reviewer-agent-layer-3-audit-.md"
+  - "tests/unit/test_reviewer_static_scan.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T12:57:35"
+    action: "T-1447: v1.2 reviewer — Layer 3 audit cron + transitive-coverage tuning"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 156 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-agent, ac-validation, audit-cron, v1.2, antifragile]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 156
+  commits: 1
+  files_changed: 14
+  lines_added: 596
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1447-t-1443-v12-reviewer-agent-layer-3-audit-.md
+generated_by: context-agent-hybrid

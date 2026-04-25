@@ -2099,3 +2099,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-272
+  learning: "When promoting an observation/note to inception via fw note promote, the resulting task is workflow_type=build by default. Adding inception-shaped body sections (Problem Statement/Hypotheses/Recommendation) does not flip the frontmatter — you MUST run fw task update T-XXX --type inception explicitly. Watchtower /inception/T-XXX route 404s on any task where workflow_type != inception (web/blueprints/inception.py:345). Symptom: human reports 'inception page 404'; cause: missed type flip during promotion."
+  source: P-002
+  task: T-1458
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD

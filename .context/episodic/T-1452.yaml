@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1452: RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx POSTs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T13:09:39Z
+# ============================================================================
+
+task_id: T-1452
+task_name: "RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx POSTs"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-25T13:35:00Z
+completed: 2026-04-25T11:51:10Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-04-25T13:47:54+02:00
+last_commit: 2026-04-25T13:47:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA + inception — /review/T-XXX buttons silently fail (CSRF regression)
+
+# Key outcomes
+outcomes:
+  - "RCA captured (this document)"
+  - "Symptom reproduced via curl: HTTP 403 on `/api/task/T-1447/toggle-ac` and `/api/task/T-1447/complete`"
+  - "Root cause identified: `review.html` lacks `htmx:configRequest` CSRF listener"
+  - "Blast radius enumerated: 3 distinct mutations (toggle-ac, complete, tier0/decide)"
+  - "Pre-existing concern: no Playwright test on `/review/<task_id>` mutations"
+  - "Bugfix task drafted (this file as inception; build task spawned post-decision)"
+  - "[Inception decision recorded] go/no-go/defer with chosen fix shape *(GO with structural-fix recorded 2026-04-25T11:49Z×3 — see Updates section; manually ticked because auto-tick regex did not match this AC text — captured as observation OBS-NEW-csrf-decide-no-feedback)*"
+  - "[REVIEW] Decide go/no-go and choose fix shape (minimal vs structural)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".context/approvals/resolved-3b6cf1143f59.yaml"
+  - ".context/audits/2026-04-25.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.approval-notified"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".tasks/active/T-1447-t-1443-v12-reviewer-agent-layer-3-audit-.md"
+  - ".tasks/active/T-1450-t-1443-v15a-reviewer-agent-watchtower-ov.md"
+  - ".tasks/active/T-1451-sweep-all-human-handoff-touchpoints--ren.md"
+  - ".tasks/active/T-1452-rca-reviewt-xxx-page-buttons-silently-fa.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T13:47:54"
+    action: "T-1452: RCA + inception — /review/T-XXX buttons silently fail (CSRF regression)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bugfix, csrf, watchtower, mobile-review, regression]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 19
+  lines_added: 1431
+  lines_removed: 75
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1452-rca-reviewt-xxx-page-buttons-silently-fa.md
+generated_by: context-agent-hybrid

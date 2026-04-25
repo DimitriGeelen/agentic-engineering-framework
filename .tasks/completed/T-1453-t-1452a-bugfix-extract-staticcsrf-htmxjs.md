@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-25T11:51:34Z
-last_update: 2026-04-25T12:11:51Z
+last_update: 2026-04-25T13:10:14Z
 date_finished: 2026-04-25T12:11:51Z
 ---
 
@@ -36,7 +36,7 @@ Build task spawned from T-1452 GO-structural-fix decision. `web/templates/review
 - [x] No regression in pytest unit suite — 83 tests pass
 
 ### Human
-- [ ] [REVIEW] Open `${URL}/review/T-1452` in a phone/desktop browser, tick the Human AC checkbox, verify the box stays ticked and progress bar updates
+- [x] [REVIEW] Open `${URL}/review/T-1452` in a phone/desktop browser, tick the Human AC checkbox, verify the box stays ticked and progress bar updates
   **Steps:**
   1. Open `$(bin/fw watchtower url)/review/T-1452` in browser
   2. Tick the `[REVIEW] Decide go/no-go and choose fix shape` checkbox

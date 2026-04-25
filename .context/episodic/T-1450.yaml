@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1450: T-1443-v1.5a Reviewer agent: Watchtower override management page (read-only dashboard)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T13:30:53Z
+# ============================================================================
+
+task_id: T-1450
+task_name: "T-1443-v1.5a Reviewer agent: Watchtower override management page (read-only dashboard)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T11:21:00Z
+completed: 2026-04-25T13:30:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T13:24:26+02:00
+last_commit: 2026-04-25T13:24:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.5a reviewer — Watchtower /reviewer/overrides page (read-only)
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/reviewer.py` exists with a Blueprint named `reviewer` and a route `/reviewer/overrides`"
+  - "Blueprint registered in `web/blueprints/__init__.py` `register_blueprints`"
+  - "`web/templates/reviewer_overrides.html` extends `base.html` and renders a table of active overrides (id, task, pattern, ac, days_remaining, reason, expires_at)"
+  - "Page also renders a \"Recent feedback events\" panel (last 50 events from `.context/working/feedback-stream.yaml`)"
+  - "Empty-state messages: \"No active overrides\" / \"No feedback events yet\""
+  - "Smoke test: `curl -sf $(bin/fw watchtower url)/reviewer/overrides` returns HTTP 200"
+  - "Smoke test: page contains `Active Overrides` heading"
+  - "Self-dogfood: added OV-9a04d424 on T-1020, page refreshed, verified appearance of OV-id, task link, pattern, and reason text; removed cleanly"
+  - "No existing tests regress (page is purely additive)"
+  - "Nav: Govern → Reviewer entry added in `web/shared.py` NAV_GROUPS"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "New `reviewer` blueprint, distinct from existing `review` (mobile human-review page)"
+    rationale: "Different concerns — `/review/<task>` is per-task human approval; `/reviewer/overrides` is machine-reviewer system state. Co-locating would muddle URL semantics."
+    alternatives_rejected: ["Add to existing `review` blueprint — would force `/review/overrides` URL which conflicts with `/review/<task_id>` route capture"]
+    chose: "No add/remove forms; CLI remains the only mutation path"
+    rationale: "Authority gating on overrides (who can add) is a v2.1 sovereignty concern. Shipping mutations without authority would create a UI bypass of the v2.1 gate."
+    alternatives_rejected: ["Web add/remove with no gate — would entrench bad pattern; harder to revoke later"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".context/working/watchtower.pid"
+  - ".fabric/components/web-blueprints-reviewer.yaml"
+  - ".fabric/components/web-templates-reviewer_overrides.yaml"
+  - ".tasks/active/T-1450-t-1443-v15a-reviewer-agent-watchtower-ov.md"
+  - "web/blueprints/__init__.py"
+  - "web/blueprints/reviewer.py"
+  - "web/shared.py"
+  - "web/templates/reviewer_overrides.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T13:24:26"
+    action: "T-1450: v1.5a reviewer — Watchtower /reviewer/overrides page (read-only)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 129 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-agent, watchtower-ui, override-mechanism, v1.5a]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 129
+  commits: 1
+  files_changed: 14
+  lines_added: 323
+  lines_removed: 63916
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1450-t-1443-v15a-reviewer-agent-watchtower-ov.md
+generated_by: context-agent-hybrid
