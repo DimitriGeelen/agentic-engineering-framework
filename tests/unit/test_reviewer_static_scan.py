@@ -402,8 +402,9 @@ def test_mock_only_integration_negative_no_integration_in_ac():
 
 
 def test_ac_verify_mismatch_positive_unverified_path():
+    """v1.2: requires a non-transitive verification (no generic runner)."""
     ac = "### Agent\n- [x] lib/x/foo.py exists with the new helper\n"
-    verif = "bin/fw test unit\n"
+    verif = "echo 'done'\n"
     f = ss.detect_ac_verify_mismatch(ac, verif)
     assert len(f) == 1 and f[0].pattern_id == "AC-verify-mismatch"
 
@@ -515,6 +516,75 @@ def test_layer2_human_signoff_required_sets_needs_human(tmp_path, catalogue, esc
     v = ss.scan_task(task_file, catalogue, escalation_catalogue)
     assert v.human_signoff_declared == "required"
     assert v.needs_human is True
+
+
+# ───────────────── v1.2: AC-verify-mismatch transitive-coverage (L-265 fix) ─────────────────
+
+
+def test_ac_verify_mismatch_transitive_fw_test_unit_exempts_lib_path():
+    """L-265: AC names lib/foo.sh, verification runs `bin/fw test unit` —
+    that runner exercises lib/, so flag should be suppressed."""
+    ac = "### Agent\n- [x] lib/x/foo.sh ships with the new helper\n"
+    verif = "bin/fw test unit\n"
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert f == [], f"transitive coverage should suppress; got {f}"
+
+
+def test_ac_verify_mismatch_transitive_fw_test_unit_exempts_agents_path():
+    ac = "### Agent\n- [x] agents/audit/audit.sh works as expected\n"
+    verif = "bin/fw test unit\n"
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert f == []
+
+
+def test_ac_verify_mismatch_transitive_pytest_exempts_lib():
+    ac = "### Agent\n- [x] lib/reviewer/static_scan.py exists\n"
+    verif = "pytest tests/unit/\n"
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert f == []
+
+
+def test_ac_verify_mismatch_no_runner_no_exemption():
+    """Without a transitive runner, the original detection still fires."""
+    ac = "### Agent\n- [x] lib/x/foo.sh ships\n"
+    verif = "echo 'done'\n"
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert len(f) == 1
+
+
+# ───────────────── v1.2: Layer 3 audit ─────────────────
+
+
+def test_audit_pass_b_runs_and_writes_yaml(tmp_path, monkeypatch):
+    from lib.reviewer import audit as audit_mod
+
+    project_root = tmp_path
+    (project_root / ".tasks" / "completed").mkdir(parents=True)
+
+    # Create one clean and one dirty completed task
+    clean = project_root / ".tasks" / "completed" / "T-1-clean.md"
+    clean.write_text(
+        "---\nid: T-1\n---\n\n## Acceptance Criteria\n\n### Agent\n- [x] foo done\n\n"
+        "## Verification\n\ntest -f file\n"
+    )
+    dirty = project_root / ".tasks" / "completed" / "T-2-dirty.md"
+    dirty.write_text(
+        "---\nid: T-2\n---\n\n## Acceptance Criteria\n\n### Agent\n- [x] foo done\n\n"
+        "## Verification\n\ntrue\n"
+    )
+
+    cat = ss.load_catalogue(ROOT / "policy" / "anti-patterns.yaml")
+    esc = ss.load_catalogue(ROOT / "policy" / "escalation-patterns.yaml")
+    summary = audit_mod.run_pass_b(project_root, cat, esc)
+
+    assert summary["tasks_scanned"] == 2
+    assert summary["totals"]["PASS"] == 1
+    assert summary["totals"]["FAIL"] == 1
+    out_path = audit_mod.write_audit_yaml(project_root, summary)
+    assert out_path.exists()
+    loaded = yaml.safe_load(out_path.read_text())
+    assert loaded["pass"] == "B"
+    assert loaded["catalogue_version"]
 
 
 def test_layer2_low_risk_does_not_force_needs_human(tmp_path, catalogue, escalation_catalogue):

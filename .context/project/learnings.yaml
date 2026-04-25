@@ -2057,3 +2057,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-266
+  learning: "T-1443 v1.2 reviewer dogfood: AC-verify-mismatch transitive-coverage heuristic measurably reduces FP rate. Catalogue v1.1-seed (8 patterns + Layer 1) over 1358 completed tasks: PASS 86.7% (was 85.8% in v1.1) / CONCERN 11.6% / FAIL 1.7%. AC-verify-mismatch fires dropped 226→192 (15% reduction) — paths transitively covered by 'bin/fw test unit' or pytest now exempted. Other pattern counts steady. Layer 3 audit cron lands at .context/audits/reviewer/YYYY-MM-DD.yaml — atomic write, antifragile (no caching), fail-soft. Pass A drift re-verification deferred to v1.5 (needs sandboxing). Daily cron registered. Next tunings (v1.3+): granularize per-AC verdicts; consider widening transitive-coverage map to include 'fw doctor' covering bin/ + lib/ scripts."
+  source: P-001
+  task: T-1447
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD

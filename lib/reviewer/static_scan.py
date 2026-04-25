@@ -457,6 +457,31 @@ def detect_mock_only_integration(ac_section: str, verification_section: str) -> 
 _FILE_PATH_RE = re.compile(r"\b((?:[a-z0-9_./-]+/)+[a-z0-9_-]+\.[a-z]{1,6})\b", re.IGNORECASE)
 
 
+# v1.2: transitive-coverage heuristic per L-265.
+# A path is "transitively covered" if it sits under a tree exercised by a
+# generic test runner that the verification section invokes.
+_TRANSITIVE_RUNNERS = [
+    # (regex matching verification line, list of dir prefixes whose contents are covered)
+    (re.compile(r"\bbin/fw\s+test\s+(unit|all)\b"), ["tests/unit/", "lib/", "agents/"]),
+    (re.compile(r"\bbin/fw\s+test\s+integration\b"), ["tests/integration/", "lib/", "agents/"]),
+    (re.compile(r"\bbin/fw\s+audit\b"), ["agents/audit/", "lib/audit"]),
+    (re.compile(r"\bbin/fw\s+doctor\b"), ["lib/", "bin/", "agents/"]),
+    (re.compile(r"\bpytest\s+tests/(unit|integration|e2e)/"), ["tests/", "lib/"]),
+    (re.compile(r"\bbats\s+tests/unit/"), ["tests/unit/", "lib/", "agents/"]),
+]
+
+
+def _path_transitively_covered(path: str, verif_text: str) -> bool:
+    """Return True if any verification command is a generic runner that
+    exercises code under any prefix that contains `path`."""
+    for pat, prefixes in _TRANSITIVE_RUNNERS:
+        if pat.search(verif_text):
+            for prefix in prefixes:
+                if path.startswith(prefix):
+                    return True
+    return False
+
+
 def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> list[Finding]:
     """AC checked AND mentions a specific file path, but no verification line touches it.
 
@@ -495,8 +520,11 @@ def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> lis
             # skip very short or generic paths
             if len(path) < 6 or path.endswith(".md") or "/" not in path:
                 continue
-            # if not referenced in verification section at all, flag once
+            # if not referenced in verification section at all
             if path not in verif_text:
+                # v1.2: transitive-coverage exemption per L-265
+                if _path_transitively_covered(path, verif_text):
+                    continue
                 findings.append(
                     Finding(
                         pattern_id="AC-verify-mismatch",
