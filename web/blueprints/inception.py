@@ -382,7 +382,25 @@ def inception_detail(task_id):
     # this, pre-fill contained the whole block including "Recommendation: GO"
     # prefix and Evidence bullets — the stored decision then embedded the
     # self-referential prefix + all evidence bullets (see T-1388 F4).
+    # T-1246 (G-046 fix): when the task file lacks a Recommendation section,
+    # fall back to docs/reports/T-{task_id}-inception.md (CTL-027 artifact).
+    # Tries canonical name first, then T-{id}-*-inception.md for older
+    # descriptive-slug artifacts. Rewards thorough research artifacts instead
+    # of punishing them with an empty pre-fill.
     rec_raw = _extract_section(task_body, "Recommendation") or ""
+    if not rec_raw:
+        reports_dir = PROJECT_ROOT / "docs" / "reports"
+        candidates = [reports_dir / f"{task_id}-inception.md"]
+        candidates.extend(sorted(reports_dir.glob(f"{task_id}-*-inception.md")))
+        for artifact_path in candidates:
+            if artifact_path.exists():
+                try:
+                    artifact_body = artifact_path.read_text()
+                    rec_raw = _extract_section(artifact_body, "Recommendation") or ""
+                    if rec_raw:
+                        break
+                except Exception as e:
+                    logger.warning("Failed to read %s: %s", artifact_path, e)
     rationale_hint = _extract_rationale_from_recommendation(rec_raw)
 
     decision_state = _extract_decision(task_body)
