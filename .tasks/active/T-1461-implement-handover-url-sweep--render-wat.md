@@ -26,12 +26,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `agents/handover/handover.sh` resolves `WT_URL` once at top via `bin/fw watchtower url`
-- [ ] "Awaiting Human Review" listing renders `[T-XXX](${WT_URL}/review/T-XXX)` markdown links
-- [ ] "Awaiting Your Action (Human)" section renders the same review URLs
-- [ ] Inception Phases listing renders `[T-XXX](${WT_URL}/inception/T-XXX)` for `workflow_type: inception`
-- [ ] Latest generated handover contains at least 3 markdown links to /review or /inception (verification command)
-- [ ] Existing handover bats tests still pass
+- [x] `agents/handover/handover.sh` resolves `WT_URL` once at top via `bin/fw watchtower url`
+- [x] "Awaiting Human Review" listing renders `[T-XXX](${WT_URL}/review/T-XXX)` markdown links
+- [x] "Awaiting Your Action (Human)" section renders the same review URLs
+- [x] Inception Phases listing renders `[T-XXX](${WT_URL}/inception/T-XXX)` for `workflow_type: inception`
+- [x] Latest generated handover contains at least 3 markdown links to /review or /inception (verification command)
+- [x] Existing handover bats tests still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

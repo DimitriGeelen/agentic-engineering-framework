@@ -7,6 +7,15 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 HANDOVER_DIR="$CONTEXT_DIR/handovers"
 
+# T-1461: Resolve Watchtower URL once for inline link rendering.
+# Falls back to the literal port file or 3000 if `fw watchtower url` fails — the
+# handover should never crash if Watchtower isn't running. Renders as plain text
+# (just the task ID) when WT_URL is empty.
+WT_URL=$("$FRAMEWORK_ROOT/bin/fw" watchtower url 2>/dev/null | head -1 || true)
+if [ -z "$WT_URL" ]; then
+    WT_URL=""  # explicit empty → renderer skips link wrapping
+fi
+
 # Colors provided by lib/colors.sh (via paths.sh chain)
 
 _resolve_commit_task() {
@@ -97,8 +106,20 @@ if [ "$CHECKPOINT_MODE" = true ]; then
         task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
         task_name=$(grep "^name:" "$f" | head -1 | cut -d: -f2- | sed 's/^ *//')
         task_status=$(grep "^status:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+        task_wftype=$(grep "^workflow_type:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
         [ -n "$task_id" ] && ACTIVE_TASKS="$ACTIVE_TASKS$task_id, "
-        ACTIVE_DETAILS="$ACTIVE_DETAILS- **$task_id**: $task_name ($task_status)\n"
+        # T-1461: render task as a Watchtower link when WT_URL is available.
+        # Inception → /inception/T-XXX, otherwise → /review/T-XXX. Plain bold ID when WT_URL empty.
+        if [ -n "$WT_URL" ]; then
+            if [ "$task_wftype" = "inception" ]; then
+                _link="[$task_id]($WT_URL/inception/$task_id)"
+            else
+                _link="[$task_id]($WT_URL/review/$task_id)"
+            fi
+        else
+            _link="**$task_id**"
+        fi
+        ACTIVE_DETAILS="$ACTIVE_DETAILS- $_link: $task_name ($task_status)\n"
     done
     shopt -u nullglob
     ACTIVE_TASKS="${ACTIVE_TASKS%, }"
@@ -448,6 +469,19 @@ python3 << PYEOF >> "$HANDOVER_FILE"
 import os, re, glob
 
 tasks_dir = "$TASKS_DIR/active"
+WT_URL = "$WT_URL"  # T-1461: empty string → render plain task ID, no link
+
+def review_link(tid, name):
+    """Render a [T-XXX](URL) link to /review/T-XXX, or plain bold ID if no WT_URL."""
+    if WT_URL:
+        return f'[{tid}]({WT_URL}/review/{tid}): {name}'
+    return f'**{tid}**: {name}'
+
+def inception_link(tid, name):
+    if WT_URL:
+        return f'[{tid}]({WT_URL}/inception/{tid}): {name}'
+    return f'**{tid}**: {name}'
+
 horizon_order = {'now': 0, 'next': 1, 'later': 2}
 tasks = []
 
@@ -479,7 +513,7 @@ for _, tid, tname, tstatus, h in tasks:
             print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
             print()
             for pc_tid, pc_name in pending_completed:
-                print(f'- **{pc_tid}**: {pc_name}')
+                print(f'- {review_link(pc_tid, pc_name)}')
             print()
             pending_completed = []
         current_horizon = h
@@ -515,7 +549,26 @@ if pending_completed:
     print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
     print()
     for pc_tid, pc_name in pending_completed:
-        print(f'- **{pc_tid}**: {pc_name}')
+        print(f'- {review_link(pc_tid, pc_name)}')
+    print()
+
+# T-1461: render inception tasks awaiting decision with /inception/T-XXX links
+inception_pending = []
+for _, tid, tname, tstatus, h in tasks:
+    if tstatus == 'work-completed':
+        continue
+    for f in glob.glob(os.path.join(tasks_dir, f'{tid}-*.md')):
+        with open(f) as fh:
+            head = fh.read(2048)
+        if 'workflow_type: inception' in head:
+            inception_pending.append((tid, tname))
+        break
+
+if inception_pending:
+    print('### Inception Phases — Awaiting Decision')
+    print()
+    for ip_tid, ip_name in inception_pending:
+        print(f'- {inception_link(ip_tid, ip_name)}')
     print()
 PYEOF
 
@@ -540,10 +593,11 @@ fi
 
 # Step 2.1: Surface partial-complete tasks (T-372 — blind completion anti-pattern)
 # Tasks that are work-completed but have unchecked Human ACs
-PARTIAL_COMPLETE_SECTION=$(python3 << 'PCEOF'
+PARTIAL_COMPLETE_SECTION=$(WT_URL_FOR_PYTHON="$WT_URL" python3 << 'PCEOF'
 import glob, re, os
 
 tasks_dir = os.environ.get("TASKS_DIR", ".tasks")
+WT_URL = os.environ.get("WT_URL_FOR_PYTHON", "")
 partial = []
 for f in sorted(glob.glob(os.path.join(tasks_dir, "active", "*.md"))):
     with open(f) as fh:
@@ -573,7 +627,11 @@ if partial:
     print("Review each when ready. No urgency implied.")
     print()
     for tid, tname, count, preview in partial:
-        print(f"- **{tid}**: {tname} ({count} unchecked)")
+        # T-1461: render review URL inline if Watchtower is reachable
+        if WT_URL:
+            print(f"- [{tid}]({WT_URL}/review/{tid}): {tname} ({count} unchecked)")
+        else:
+            print(f"- **{tid}**: {tname} ({count} unchecked)")
         print(f"  - e.g.: {preview}")
     print()
 PCEOF
