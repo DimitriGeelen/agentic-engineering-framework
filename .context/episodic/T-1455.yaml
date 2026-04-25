@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1455: Pickup importer hard-codes workflow_type=inception for all envelope types (bug-report, feature-proposal, etc.) — leading to 12 closed bug-fix tasks classified as inception. Audit C-001/missing-research check then warns about absent docs/reports/T-XXX-*.md artifacts that bug fixes don't need. Surgical fix landed in T-1440 (skip pickups in audit). Structural fix should change importer to map: bug-report→build, feature-proposal→inception (or build, with inception only for explicit research questions). See agents/pickup or lib/pickup-bus for importer code.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T18:02:43Z
+# ============================================================================
+
+task_id: T-1455
+task_name: "Pickup importer hard-codes workflow_type=inception for all envelope types (bug-report, feature-proposal, etc.) — leading to 12 closed bug-fix tasks classified as inception. Audit C-001/missing-research check then warns about absent docs/reports/T-XXX-*.md artifacts that bug fixes don't need. Surgical fix landed in T-1440 (skip pickups in audit). Structural fix should change importer to map: bug-report→build, feature-proposal→inception (or build, with inception only for explicit research questions). See agents/pickup or lib/pickup-bus for importer code."
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T12:20:16Z
+completed: 2026-04-25T18:02:40Z
+duration_days: 0
+updates_count: 13
+first_commit: 2026-04-25T14:21:07+02:00
+last_commit: 2026-04-25T16:05:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  promote OBS-015 to inception (pickup importer type mapping). add Recommendation (constrained Option A) + scaffold T-1461 build task
+
+# Key outcomes
+outcomes:
+  - "Audit of 12 misclassified tasks captured in `docs/reports/T-1455-*.md`"
+  - "Type-vs-scope evidence captured for the chosen scope (constrained Option A — bug-report only). OBS-015's 12 bug-fix cases provide the type-vs-scope agreement signal for that class (12/12 misclassified as inception, 0 feature-proposal mislabels). Broader 50-pickup sample was deferred because it would have been needed only for full Option A or hybrid Option C, neither of which was chosen. If a feature-proposal-class incident later requires escalating to Option D, re-open this AC and capture the broader sample then."
+  - "All 3 options enumerated with cost-benefit (research artifact has 5-option table)"
+  - "[Inception decision recorded] go/no-go/defer with chosen option (A/B/C)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/inbox.yaml"
+  - "docs/reports/T-1455-pickup-importer-mapping.md"
+  - ".tasks/active/T-1455-pickup-importer-hard-codes-workflowtypei.md"
+  - ".tasks/active/T-1461-implement-handover-url-sweep--render-wat.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T14:21:07"
+    action: "T-1455: promote OBS-015 to inception (pickup importer type mapping)"
+  - time: "2026-04-25T16:05:16"
+    action: "T-1455: add Recommendation (constrained Option A) + scaffold T-1461 build task"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 342 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 342
+  commits: 2
+  files_changed: 4
+  lines_added: 255
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1455-pickup-importer-hard-codes-workflowtypei.md
+generated_by: context-agent-hybrid

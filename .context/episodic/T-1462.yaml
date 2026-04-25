@@ -1,0 +1,107 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1462: Dogfood RUBBER-STAMP rule — audit all 13 [RUBBER-STAMP] ACs in active tasks, convert deterministic ones to Agent ACs with verification commands, fill missing instructions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T14:15:14Z
+# ============================================================================
+
+task_id: T-1462
+task_name: "Dogfood RUBBER-STAMP rule — audit all 13 [RUBBER-STAMP] ACs in active tasks, convert deterministic ones to Agent ACs with verification commands, fill missing instructions"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T14:06:13Z
+completed: 2026-04-25T14:15:10Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T16:14:42+02:00
+last_commit: 2026-04-25T16:14:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  dogfood RUBBER-STAMP rule — convert 5/13 deterministic ACs, close 5 stuck tasks
+
+# Key outcomes
+outcomes:
+  - "All 13 active-task `[RUBBER-STAMP]` Human ACs categorized: 5 converted, 8 kept-as-human"
+  - "5 conversion candidates have verification commands added to their `## Verification` sections (T-1240, T-1241, T-594, T-880, T-663)"
+  - "All 8 \"keep\" rubber-stamps already have Steps/Expected/If-not filled in (no edits needed)"
+  - "No remaining `[RUBBER-STAMP]` AC violates the CLAUDE.md conversion rule (all 8 are environment-bound)"
+  - "Findings + table captured in this task body"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".context/audits/2026-04-25.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-1446.yaml"
+  - ".context/episodic/T-1451.yaml"
+  - ".context/episodic/T-1459.yaml"
+  - ".context/episodic/T-1460.yaml"
+  - ".context/episodic/T-594.yaml"
+  - ".context/inbox.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/feedback-stream.yaml"
+  - ".context/working/.fleet-failure-state.json"
+  - ".context/working/focus.yaml"
+  - ".context/working/.gate-bypass-log.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".tasks/active/T-1462-dogfood-rubber-stamp-rule--audit-all-13-.md"
+  - ".tasks/completed/T-1240-fix-watchtower-tasks-page-string-sort--t.md"
+  - ".tasks/completed/T-1241-fix-watchtower-cron-page--last-5-files-t.md"
+  - ".tasks/completed/T-1446-t-1443-v11-reviewer-agent-4-more-anti-pa.md"
+  - ".tasks/completed/T-1451-sweep-all-human-handoff-touchpoints--ren.md"
+  - ".tasks/completed/T-1459-4-claude-code-hooks-mirrored-from-termli.md"
+  - ".tasks/completed/T-1460-fw-audit-recursive-spawn-pathology--obse.md"
+  - ".tasks/completed/T-594-port-loop-detector-to-typescript--first-.md"
+  - ".tasks/completed/T-663-fix-framework-hooks--replace-bare-fw-wit.md"
+  - ".tasks/completed/T-880-implement-install-pipeline-auto-remediat.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T16:14:42"
+    action: "T-1462: dogfood RUBBER-STAMP rule — convert 5/13 deterministic ACs, close 5 stuck tasks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 23
+  lines_added: 3862
+  lines_removed: 182
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1462-dogfood-rubber-stamp-rule--audit-all-13-.md
+generated_by: context-agent-hybrid

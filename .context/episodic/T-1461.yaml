@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1461: Implement handover URL sweep — render Watchtower URLs in handover.sh for [REVIEW] tasks, inception decisions, and observation listings (T-1451 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T14:20:51Z
+# ============================================================================
+
+task_id: T-1461
+task_name: "Implement handover URL sweep — render Watchtower URLs in handover.sh for [REVIEW] tasks, inception decisions, and observation listings (T-1451 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T14:01:46Z
+completed: 2026-04-25T14:19:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T16:19:46+02:00
+last_commit: 2026-04-25T16:19:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  render Watchtower URLs in handover.sh (T-1451 GO follow-on)
+
+# Key outcomes
+outcomes:
+  - "`agents/handover/handover.sh` resolves `WT_URL` once at top via `bin/fw watchtower url`"
+  - "\"Awaiting Human Review\" listing renders `[T-XXX](${WT_URL}/review/T-XXX)` markdown links"
+  - "\"Awaiting Your Action (Human)\" section renders the same review URLs"
+  - "Inception Phases listing renders `[T-XXX](${WT_URL}/inception/T-XXX)` for `workflow_type: inception`"
+  - "Latest generated handover contains at least 3 markdown links to /review or /inception (verification command)"
+  - "Existing handover bats tests still pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/handover/handover.sh"
+  - ".tasks/active/T-1461-implement-handover-url-sweep--render-wat.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T16:19:46"
+    action: "T-1461: render Watchtower URLs in handover.sh (T-1451 GO follow-on)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 1
+  files_changed: 2
+  lines_added: 69
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1461-implement-handover-url-sweep--render-wat.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,14 @@
+command_hash: 826dbe40b0f41d223894712be91faf78bdcf227926f2e8ca0789adc28500e61b
+command_preview: 'bin/fw inception decide T-1455 go --rationale "test" --from-watchtower
+  2>&1 | tail -30; echo "EXIT: $?"'
+risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+  recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+  go|no-go --rationale "..."'
+status: approved
+timestamp: '2026-04-25T15:22:16Z'
+type: tier0
+response:
+  decision: approved
+  feedback: null
+  responded_at: '2026-04-25T16:21:29Z'
+  mechanism: watchtower
