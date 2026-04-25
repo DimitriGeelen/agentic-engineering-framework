@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1472: Annotation-based ceremonial AC ticking — replace AGENT_PATTERNS regex with marker-driven detection (OBS-019)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T19:40:47Z
+# ============================================================================
+
+task_id: T-1472
+task_name: "Annotation-based ceremonial AC ticking — replace AGENT_PATTERNS regex with marker-driven detection (OBS-019)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T19:36:32Z
+completed: 2026-04-25T19:40:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-25T21:40:36+02:00
+last_commit: 2026-04-25T21:40:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Annotation-based ceremonial AC ticking (OBS-019 Level D fix). Register fabric card for marker bats
+
+# Key outcomes
+outcomes:
+  - "`tick_inception_decide_acs` reads `<!-- @auto-tick-on-decide -->` markers and ticks every AC line that has the marker on its line or the line above"
+  - "AGENT_PATTERNS regex retained as fallback (covers existing tasks without markers)"
+  - "`.tasks/templates/inception.md` updated: ceremonial ACs gain `<!-- @auto-tick-on-decide -->` markers"
+  - "Bats regression: synthesize task with markered ACs (one with non-standard wording the regex would NOT match), run `tick_inception_decide_acs`, assert all markered ACs are ticked"
+  - "Bats regression: synthesize task WITHOUT markers but with regex-matching wording, assert fallback still ticks them"
+  - "Existing `tests/unit/lib_inception.bats` and `tests/unit/inception_tick_decision_recorded.bats` pass with no regression (28/28)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Annotation-based ceremonial AC ticking (OBS-019 Level D fix)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "HTML comment `<!-- @auto-tick-on-decide -->` on the AC line or directly above"
+    rationale: "adjacent to the content it controls; survives reordering; visible in raw MD; doesn't render in Watchtower (HTML comments stripped)"
+    alternatives_rejected: ["frontmatter list `inception_decide_acs: [1, 2, 3]` — brittle to reordering; divorced from content; requires renumbering on AC insertion"]
+    alternatives_rejected: ["YAML field per AC — over-engineered"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-inception_tick_marker.yaml"
+  - "lib/inception.sh"
+  - ".tasks/active/T-1472-annotation-based-ceremonial-ac-ticking--.md"
+  - ".tasks/templates/inception.md"
+  - "tests/unit/inception_tick_marker.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T21:40:36"
+    action: "T-1472: Annotation-based ceremonial AC ticking (OBS-019 Level D fix)"
+  - time: "2026-04-25T21:40:42"
+    action: "T-1472: Register fabric card for marker bats"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, inception, obs-019, level-d]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 5
+  lines_added: 246
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1472-annotation-based-ceremonial-ac-ticking--.md
+generated_by: context-agent-hybrid

@@ -130,3 +130,17 @@ observations:
     tags: []
     status: dismissed
     promoted_to: null
+  - id: OBS-019
+    text: "AGENT_PATTERNS in lib/inception.sh:tick_inception_decide_acs is fragile — every new AC wording variant requires a regex extension (T-1466 RCA). Level D fix: annotation-based AC ticking (e.g. HTML comment marker  before each ceremonial AC, or frontmatter list of AC indices to tick on decide). Would eliminate the wording-dependency entirely. T-1455 GO 500 was first symptom; will recur on next custom inception AC wording."
+    captured: 2026-04-25T18:20:31Z
+    context_task: null
+    tags: []
+    status: pending
+    promoted_to: null
+  - id: OBS-020
+    text: "resolve"
+    captured: 2026-04-25T19:40:52Z
+    context_task: null
+    tags: []
+    status: pending
+    promoted_to: null
