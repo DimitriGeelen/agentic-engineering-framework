@@ -300,42 +300,50 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# T-1162/T-866: flock guard + timeout for cron mode — prevent zombie accumulation
-# When running as cron (QUIET=true + cron output dir), ensure only one audit runs at a time.
-# If a previous audit is still running, exit immediately rather than stacking up.
-if [ "$QUIET" = true ]; then
-    AUDIT_LOCK_DIR="${CONTEXT_DIR}/locks"
-    mkdir -p "$AUDIT_LOCK_DIR" 2>/dev/null
-    AUDIT_LOCK_FILE="$AUDIT_LOCK_DIR/audit.lock"
-    AUDIT_TIMEOUT="${FW_AUDIT_TIMEOUT:-600}"
+# T-1162/T-866/T-1464: flock guard + timeout — prevent zombie accumulation in cron AND
+# foreground races. Cron-mode (QUIET=true) stays silent on collision; foreground prints
+# a stderr message so the human knows why their audit didn't run.
+AUDIT_LOCK_DIR="${CONTEXT_DIR}/locks"
+mkdir -p "$AUDIT_LOCK_DIR" 2>/dev/null
+AUDIT_LOCK_FILE="$AUDIT_LOCK_DIR/audit.lock"
+AUDIT_TIMEOUT="${FW_AUDIT_TIMEOUT:-600}"
 
-    # Clean up stale lock files (older than timeout + 60s buffer)
+# Clean up stale lock files (older than timeout + 60s buffer)
+if [ -f "$AUDIT_LOCK_FILE" ]; then
+    lock_age=$(( $(date +%s) - $(stat -c %Y "$AUDIT_LOCK_FILE" 2>/dev/null || echo 0) ))
+    if [ "$lock_age" -gt $(( AUDIT_TIMEOUT + 60 )) ]; then
+        rm -f "$AUDIT_LOCK_FILE"
+    fi
+fi
+
+# Use flock if available, otherwise simple lock file
+if command -v flock >/dev/null 2>&1; then
+    exec 200>"$AUDIT_LOCK_FILE"
+    if ! flock -n 200; then
+        # Another audit is running.
+        # Cron mode (QUIET=true): silent exit 0 — preserves zero-zombie cron behaviour.
+        # Foreground: print to stderr so the user understands why nothing ran.
+        if [ "$QUIET" != true ]; then
+            echo "Another audit is already running — exiting" >&2
+        fi
+        exit 0
+    fi
+    # Apply timeout: kill self if still running after AUDIT_TIMEOUT seconds.
+    # Detach the watchdog's stdio so it doesn't keep parent pipes open after exit
+    # (bats `run` and shell pipelines wait on every descendant FD — T-1464).
+    ( sleep "$AUDIT_TIMEOUT" && kill -TERM $$ 2>/dev/null ) </dev/null >/dev/null 2>&1 &
+    AUDIT_TIMEOUT_PID=$!
+    trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null; rm -f '$AUDIT_LOCK_FILE'" EXIT
+else
+    # Fallback: simple lock file (less robust but prevents most zombies)
     if [ -f "$AUDIT_LOCK_FILE" ]; then
-        lock_age=$(( $(date +%s) - $(stat -c %Y "$AUDIT_LOCK_FILE" 2>/dev/null || echo 0) ))
-        if [ "$lock_age" -gt $(( AUDIT_TIMEOUT + 60 )) ]; then
-            rm -f "$AUDIT_LOCK_FILE"
+        if [ "$QUIET" != true ]; then
+            echo "Another audit is already running — exiting" >&2
         fi
+        exit 0
     fi
-
-    # Use flock if available, otherwise simple lock file
-    if command -v flock >/dev/null 2>&1; then
-        exec 200>"$AUDIT_LOCK_FILE"
-        if ! flock -n 200; then
-            # Another audit is running — exit silently (cron mode)
-            exit 0
-        fi
-        # Apply timeout: kill self if still running after AUDIT_TIMEOUT seconds
-        ( sleep "$AUDIT_TIMEOUT" && kill -TERM $$ 2>/dev/null ) &
-        AUDIT_TIMEOUT_PID=$!
-        trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null; rm -f '$AUDIT_LOCK_FILE'" EXIT
-    else
-        # Fallback: simple lock file (less robust but prevents most zombies)
-        if [ -f "$AUDIT_LOCK_FILE" ]; then
-            exit 0
-        fi
-        echo $$ > "$AUDIT_LOCK_FILE"
-        trap "rm -f '$AUDIT_LOCK_FILE'" EXIT
-    fi
+    echo $$ > "$AUDIT_LOCK_FILE"
+    trap "rm -f '$AUDIT_LOCK_FILE'" EXIT
 fi
 
 # Section filter: returns 0 (true) if section should run
@@ -859,6 +867,23 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
 
     if [ "$orphan_refs" -eq 0 ] && [ "$task_commits" -gt 0 ]; then
         pass "All commit task refs resolve to actual tasks"
+    fi
+
+    # T-1255 (G-007): mirror drift check — github vs origin HEAD divergence.
+    # Only runs when both 'origin' and 'github' remotes are configured.
+    if git -C "$PROJECT_ROOT" remote get-url github >/dev/null 2>&1 \
+       && git -C "$PROJECT_ROOT" remote get-url origin >/dev/null 2>&1; then
+        _origin_head=$(timeout 10 git -C "$PROJECT_ROOT" ls-remote origin main 2>/dev/null | awk '"'"'{print $1}'"'"')
+        _github_head=$(timeout 10 git -C "$PROJECT_ROOT" ls-remote github main 2>/dev/null | awk '"'"'{print $1}'"'"')
+        if [ -n "$_origin_head" ] && [ -n "$_github_head" ]; then
+            if [ "$_origin_head" = "$_github_head" ]; then
+                pass "OneDev → GitHub mirror in sync (origin=github=${_origin_head:0:8})"
+            else
+                warn "OneDev → GitHub mirror drift (G-007): origin=${_origin_head:0:8} github=${_github_head:0:8}" \
+                     "Direct push to github (or onedev down at handover time) likely caused divergence" \
+                     "Investigate handover.sh push loop; ensure only origin is pushed (T-1255)"
+            fi
+        fi
     fi
 else
     warn "Not a git repository" \

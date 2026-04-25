@@ -836,8 +836,18 @@ if [ "$AUTO_COMMIT" = true ]; then
         echo -e "${CYAN}Pushing to remotes...${NC}"
         _push_failed=false
         _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-60}"
+        # T-1255 (G-007): When >1 remote is configured, push ONLY to origin.
+        # Mirroring (e.g. github) is OneDev's job via .onedev-buildspec.yml's
+        # PushRepository job. Pushing directly to mirror remotes from the agent
+        # caused github-ahead-of-onedev divergence whenever onedev briefly 502'd
+        # at handover time (T-1253 inception, PL-036).
+        _remote_count=$(git -C "$PROJECT_ROOT" remote 2>/dev/null | wc -l)
         while IFS= read -r remote_name; do
             [ -z "$remote_name" ] && continue
+            if [ "$_remote_count" -gt 1 ] && [ "$remote_name" != "origin" ]; then
+                echo -e "  ${CYAN}Skipping $remote_name (mirrored from origin via PushRepository)${NC}"
+                continue
+            fi
             if timeout "$_push_timeout" git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then
                 echo -e "  ${GREEN}Pushed to $remote_name ✓${NC}"
             else
