@@ -1,0 +1,20 @@
+id: tests/unit/pre_compact_flock.bats
+name: pre_compact_flock
+type: script
+subsystem: unknown
+location: tests/unit/pre_compact_flock.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-04-25
+created_by: unknown

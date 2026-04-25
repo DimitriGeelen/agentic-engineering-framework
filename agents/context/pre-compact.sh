@@ -14,6 +14,25 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
 
+# T-1476: flock against concurrent PreCompact hook fires. When both user-level
+# (~/.claude/settings.json) and project-level (.claude/settings.json) register
+# this hook, /compact triggers two invocations in quick succession — the
+# message-based dedup race-loses (OBS-023). flock ensures only one run does
+# real work; the other exits silently and the single handover stands.
+PRE_COMPACT_LOCK_DIR="$PROJECT_ROOT/.context/working"
+mkdir -p "$PRE_COMPACT_LOCK_DIR" 2>/dev/null
+PRE_COMPACT_LOCK_FILE="$PRE_COMPACT_LOCK_DIR/.pre-compact.lock"
+
+if command -v flock >/dev/null 2>&1; then
+    exec 201>"$PRE_COMPACT_LOCK_FILE"
+    if ! flock -n 201; then
+        # Another pre-compact hook is mid-flight. Exit silently — the other
+        # invocation produces the handover.
+        exit 0
+    fi
+    trap "rm -f '$PRE_COMPACT_LOCK_FILE'" EXIT
+fi
+
 HANDOVER_DEDUP_COOLDOWN=$(fw_config_int "HANDOVER_DEDUP_COOLDOWN" 300)
 
 # Generate handover — always full quality (D-028)
