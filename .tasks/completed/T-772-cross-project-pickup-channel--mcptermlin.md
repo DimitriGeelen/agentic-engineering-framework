@@ -64,9 +64,9 @@ Cross-project knowledge sharing is currently pull-based: the framework agent run
 ### Agent
 - [x] Problem statement validated
 - [x] Assumptions tested (especially A2 — TermLink round-trip)
-- [ ] Schema draft documented
-- [ ] MCP tool signature designed
-- [ ] Governance model proposed
+- [x] Schema draft documented
+- [x] MCP tool signature designed
+- [x] Governance model proposed
 - [x] Recommendation written with rationale
 
 ### Human

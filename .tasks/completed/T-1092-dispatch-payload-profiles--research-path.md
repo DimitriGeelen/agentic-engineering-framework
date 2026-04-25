@@ -102,13 +102,13 @@ All phases write to `docs/reports/T-1092-dispatch-profile-research.md` increment
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Research artifact `docs/reports/T-1092-dispatch-profile-research.md` exists with Phase 1-5 findings
-- [ ] At least 3 distinct dispatch archetypes identified from episodic evidence (A-5 validated or falsified)
-- [ ] CLAUDE.md section-by-section classification recorded (A-1 validated or falsified)
-- [ ] Path A and Path B schema sketches present side-by-side in the artifact
-- [ ] Governance floor list with "breaks if stripped" justification per item
-- [ ] Recommendation section filled with cited evidence
-- [ ] Dialogue log section updated with any clarifying Q&A during exploration
+- [x] Research artifact `docs/reports/T-1092-dispatch-profile-research.md` exists with Phase 1-5 findings
+- [x] At least 3 distinct dispatch archetypes identified from episodic evidence (A-5 validated or falsified)
+- [x] CLAUDE.md section-by-section classification recorded (A-1 validated or falsified)
+- [x] Path A and Path B schema sketches present side-by-side in the artifact
+- [x] Governance floor list with "breaks if stripped" justification per item
+- [x] Recommendation section filled with cited evidence
+- [x] Dialogue log section updated with any clarifying Q&A during exploration
 
 ### Human
 - [x] [REVIEW] Review recommendation and record go/no-go

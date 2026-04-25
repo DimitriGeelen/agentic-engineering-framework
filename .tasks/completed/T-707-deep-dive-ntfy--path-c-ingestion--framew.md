@@ -84,11 +84,11 @@ ntfy (`github.com/binwiederhier/ntfy`) is a simple HTTP-based pub/sub notificati
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Phase 1 complete — framework governance initialized in ntfy project
-- [ ] Phase 2 complete — seed tasks executed, friction points logged
-- [ ] Phase 3 complete — patterns harvested, enhancement designed
-- [ ] Research artifact written with scored patterns
-- [ ] Enhancement integration points identified
+- [x] Phase 1 complete — framework governance initialized in ntfy project
+- [x] Phase 2 complete — seed tasks executed, friction points logged
+- [x] Phase 3 complete — patterns harvested, enhancement designed
+- [x] Research artifact written with scored patterns
+- [x] Enhancement integration points identified
 - [x] Recommendation written with rationale
 
 ### Human

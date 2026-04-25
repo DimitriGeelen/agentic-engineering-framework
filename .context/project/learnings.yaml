@@ -2001,3 +2001,10 @@ learnings:
   date: 2026-04-24
   context: Added via context agent
   application: TBD
+- id: L-259
+  learning: "Inception-decide auto-tick covers only ceremonial Agent ACs (Problem statement / Assumptions / Recommendation written) per T-1194. Custom Agent ACs that map to evidence in docs/reports/T-XXX-*.md (phases, archetypes counted, sections present) do NOT auto-tick — left as user-customized criteria by design. Result: completed inceptions (T-1092, T-707, T-678, T-436, T-772) accumulate unchecked custom Agent ACs that audit CTL-012 then surfaces. Two paths forward: (a) extend decide-time output to list unchecked Agent ACs and prompt for evidence cite, or (b) accept drift and let CTL-012 be the cleanup channel."
+  source: T-1194
+  task: T-1439
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
