@@ -1,6 +1,6 @@
 # claude_code
 
-> TODO: describe what this component does
+> Terminal adapter that spawns Claude Code agent sessions via PTY using claude -p (prompt) or claude -c (interactive) commands
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/terminal/adapters/claude_code.py`
 

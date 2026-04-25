@@ -7,6 +7,15 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 HANDOVER_DIR="$CONTEXT_DIR/handovers"
 
+# T-1461: Resolve Watchtower URL once for inline link rendering.
+# Falls back to the literal port file or 3000 if `fw watchtower url` fails — the
+# handover should never crash if Watchtower isn't running. Renders as plain text
+# (just the task ID) when WT_URL is empty.
+WT_URL=$("$FRAMEWORK_ROOT/bin/fw" watchtower url 2>/dev/null | head -1 || true)
+if [ -z "$WT_URL" ]; then
+    WT_URL=""  # explicit empty → renderer skips link wrapping
+fi
+
 # Colors provided by lib/colors.sh (via paths.sh chain)
 
 _resolve_commit_task() {
@@ -97,8 +106,20 @@ if [ "$CHECKPOINT_MODE" = true ]; then
         task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
         task_name=$(grep "^name:" "$f" | head -1 | cut -d: -f2- | sed 's/^ *//')
         task_status=$(grep "^status:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+        task_wftype=$(grep "^workflow_type:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
         [ -n "$task_id" ] && ACTIVE_TASKS="$ACTIVE_TASKS$task_id, "
-        ACTIVE_DETAILS="$ACTIVE_DETAILS- **$task_id**: $task_name ($task_status)\n"
+        # T-1461: render task as a Watchtower link when WT_URL is available.
+        # Inception → /inception/T-XXX, otherwise → /review/T-XXX. Plain bold ID when WT_URL empty.
+        if [ -n "$WT_URL" ]; then
+            if [ "$task_wftype" = "inception" ]; then
+                _link="[$task_id]($WT_URL/inception/$task_id)"
+            else
+                _link="[$task_id]($WT_URL/review/$task_id)"
+            fi
+        else
+            _link="**$task_id**"
+        fi
+        ACTIVE_DETAILS="$ACTIVE_DETAILS- $_link: $task_name ($task_status)\n"
     done
     shopt -u nullglob
     ACTIVE_TASKS="${ACTIVE_TASKS%, }"
@@ -274,7 +295,7 @@ if [ "$PENDING_OBS" -gt 0 ]; then
     else
         echo -e "${CYAN}Observation inbox: $PENDING_OBS pending${NC}"
     fi
-    echo "  Run: fw note triage"
+    echo "  Run: $(_emit_user_command "note triage")"
 else
     echo -e "${GREEN}✓ Observation inbox clean${NC}"
 fi
@@ -355,6 +376,24 @@ fi
 # Step 2: Create handover template
 echo -e "${YELLOW}Creating handover document...${NC}"
 
+# T-1216 / T-1212 follow-up: detect silent-session recovery invocations
+# from session-silent-scanner.sh and prepend a banner so the next agent
+# immediately knows this handover lacks live agent context.
+if [ "${RECOVERED:-0}" = "1" ]; then
+    RECOVERED_BANNER="> **[recovered, no agent context]** — this handover was auto-generated
+> by the silent-session scanner, not by the originating agent. The original
+> Claude Code session skipped SessionEnd (bug #17885 /exit, #20197 API 500,
+> SIGKILL, or laptop sleep). Treat below as last-observed state only.
+>
+> - Recovered session ID: \`${RECOVERED_SESSION_ID:-unknown}\`
+> - Idle age at recovery: \`${RECOVERED_AGE_MIN:-unknown} min\`
+> - Transcript: \`${RECOVERED_TRANSCRIPT:-unknown}\`
+
+"
+else
+    RECOVERED_BANNER=""
+fi
+
 cat > "$HANDOVER_FILE" << EOF
 ---
 session_id: $SESSION_ID
@@ -388,7 +427,7 @@ session_narrative: ""
 
 # Session Handover: $SESSION_ID
 
-## Where We Are
+${RECOVERED_BANNER}## Where We Are
 
 $(python3 -c "
 import subprocess, re, collections
@@ -430,6 +469,19 @@ python3 << PYEOF >> "$HANDOVER_FILE"
 import os, re, glob
 
 tasks_dir = "$TASKS_DIR/active"
+WT_URL = "$WT_URL"  # T-1461: empty string → render plain task ID, no link
+
+def review_link(tid, name):
+    """Render a [T-XXX](URL) link to /review/T-XXX, or plain bold ID if no WT_URL."""
+    if WT_URL:
+        return f'[{tid}]({WT_URL}/review/{tid}): {name}'
+    return f'**{tid}**: {name}'
+
+def inception_link(tid, name):
+    if WT_URL:
+        return f'[{tid}]({WT_URL}/inception/{tid}): {name}'
+    return f'**{tid}**: {name}'
+
 horizon_order = {'now': 0, 'next': 1, 'later': 2}
 tasks = []
 
@@ -461,7 +513,7 @@ for _, tid, tname, tstatus, h in tasks:
             print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
             print()
             for pc_tid, pc_name in pending_completed:
-                print(f'- **{pc_tid}**: {pc_name}')
+                print(f'- {review_link(pc_tid, pc_name)}')
             print()
             pending_completed = []
         current_horizon = h
@@ -497,7 +549,26 @@ if pending_completed:
     print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
     print()
     for pc_tid, pc_name in pending_completed:
-        print(f'- **{pc_tid}**: {pc_name}')
+        print(f'- {review_link(pc_tid, pc_name)}')
+    print()
+
+# T-1461: render inception tasks awaiting decision with /inception/T-XXX links
+inception_pending = []
+for _, tid, tname, tstatus, h in tasks:
+    if tstatus == 'work-completed':
+        continue
+    for f in glob.glob(os.path.join(tasks_dir, f'{tid}-*.md')):
+        with open(f) as fh:
+            head = fh.read(2048)
+        if 'workflow_type: inception' in head:
+            inception_pending.append((tid, tname))
+        break
+
+if inception_pending:
+    print('### Inception Phases — Awaiting Decision')
+    print()
+    for ip_tid, ip_name in inception_pending:
+        print(f'- {inception_link(ip_tid, ip_name)}')
     print()
 PYEOF
 
@@ -522,10 +593,11 @@ fi
 
 # Step 2.1: Surface partial-complete tasks (T-372 — blind completion anti-pattern)
 # Tasks that are work-completed but have unchecked Human ACs
-PARTIAL_COMPLETE_SECTION=$(python3 << 'PCEOF'
+PARTIAL_COMPLETE_SECTION=$(WT_URL_FOR_PYTHON="$WT_URL" python3 << 'PCEOF'
 import glob, re, os
 
 tasks_dir = os.environ.get("TASKS_DIR", ".tasks")
+WT_URL = os.environ.get("WT_URL_FOR_PYTHON", "")
 partial = []
 for f in sorted(glob.glob(os.path.join(tasks_dir, "active", "*.md"))):
     with open(f) as fh:
@@ -555,7 +627,11 @@ if partial:
     print("Review each when ready. No urgency implied.")
     print()
     for tid, tname, count, preview in partial:
-        print(f"- **{tid}**: {tname} ({count} unchecked)")
+        # T-1461: render review URL inline if Watchtower is reachable
+        if WT_URL:
+            print(f"- [{tid}]({WT_URL}/review/{tid}): {tname} ({count} unchecked)")
+        else:
+            print(f"- **{tid}**: {tname} ({count} unchecked)")
         print(f"  - e.g.: {preview}")
     print()
 PCEOF
@@ -751,15 +827,36 @@ if [ "$AUTO_COMMIT" = true ]; then
         PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Session handover $SESSION_ID"
 
         # Push to all remotes (T-1144: prevent unpushed commit accumulation)
+        # T-1277: bound the push so an unreachable remote (e.g. onedev behind a
+        # down VPN) cannot stall the auto-handover hook for hours.
+        # T-1341 (L-019): default raised 15s → 60s because pre-push hook runs
+        # fw audit (~10s), leaving too little headroom for the actual push at 15s.
+        # Override via FW_HANDOVER_PUSH_TIMEOUT.
         echo ""
         echo -e "${CYAN}Pushing to remotes...${NC}"
         _push_failed=false
+        _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-60}"
+        # T-1255 (G-007): When >1 remote is configured, push ONLY to origin.
+        # Mirroring (e.g. github) is OneDev's job via .onedev-buildspec.yml's
+        # PushRepository job. Pushing directly to mirror remotes from the agent
+        # caused github-ahead-of-onedev divergence whenever onedev briefly 502'd
+        # at handover time (T-1253 inception, PL-036).
+        _remote_count=$(git -C "$PROJECT_ROOT" remote 2>/dev/null | wc -l)
         while IFS= read -r remote_name; do
             [ -z "$remote_name" ] && continue
-            if git -C "$PROJECT_ROOT" push "$remote_name" HEAD 2>&1; then
+            if [ "$_remote_count" -gt 1 ] && [ "$remote_name" != "origin" ]; then
+                echo -e "  ${CYAN}Skipping $remote_name (mirrored from origin via PushRepository)${NC}"
+                continue
+            fi
+            if timeout "$_push_timeout" git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then
                 echo -e "  ${GREEN}Pushed to $remote_name ✓${NC}"
             else
-                echo -e "  ${YELLOW}WARNING: Push to $remote_name failed (non-blocking)${NC}" >&2
+                _exit=$?
+                if [ "$_exit" -eq 124 ]; then
+                    echo -e "  ${YELLOW}WARNING: Push to $remote_name timed out after ${_push_timeout}s (non-blocking, T-1277)${NC}" >&2
+                else
+                    echo -e "  ${YELLOW}WARNING: Push to $remote_name failed (non-blocking)${NC}" >&2
+                fi
                 _push_failed=true
             fi
         done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
@@ -776,7 +873,7 @@ else
     echo "1. Review $HANDOVER_FILE (auto-filled from git data)"
     echo "2. Edit if needed — enrich Decisions, Gotchas, Open Questions"
     _resolve_commit_task
-    echo "3. Commit with: fw git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\""
+    echo "3. Commit with: $(_emit_user_command "git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\"")"
     echo ""
     echo -e "${CYAN}Key sections to complete:${NC}"
     echo "- Where We Are (summary)"

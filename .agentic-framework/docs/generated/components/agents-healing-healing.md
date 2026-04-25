@@ -17,12 +17,6 @@ Usage:
 ./agents/healing/healing.sh resolve T-015 --mitigation "Added retry logic"
 ./agents/healing/healing.sh patterns
 
-### Framework Reference
-
-**Location:** `agents/healing/`
-
-**When to use:** When a task encounters issues (status = `issues`). Implements the antifragile healing loop.
-
 ## Dependencies (5)
 
 | Target | Relationship |

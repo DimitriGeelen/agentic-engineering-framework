@@ -47,4 +47,24 @@ fw_path=$(find_fw) || {
     exit 1
 }
 
+# T-1278: Self-loop guard — if the discovered fw_path is THIS shim, abort.
+# Happens when `bin/fw` inside a framework repo gets overwritten with shim
+# content (past upgrade.sh bug walked a symlink into the repo). Without this
+# guard, the shim exec's itself forever until a wrapping timeout kills it.
+if [ "$(realpath "$fw_path" 2>/dev/null)" = "$(realpath "${BASH_SOURCE[0]}" 2>/dev/null)" ]; then
+    echo "fw: Shim self-loop detected — the discovered bin/fw is this shim itself." >&2
+    echo "" >&2
+    echo "  Path: $fw_path" >&2
+    echo "" >&2
+    echo "  The real CLI is missing from this project. Likely causes:" >&2
+    echo "    - bin/fw was overwritten by a prior 'fw upgrade' bug (fixed in lib/upgrade.sh)" >&2
+    echo "    - Manual mis-copy of fw-shim over bin/fw" >&2
+    echo "" >&2
+    echo "  Restore:" >&2
+    echo "    cd <framework-repo-root>" >&2
+    echo "    git checkout HEAD -- bin/fw" >&2
+    echo "" >&2
+    exit 2
+fi
+
 exec "$fw_path" "$@"

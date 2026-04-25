@@ -6,10 +6,42 @@ from datetime import datetime, timezone
 import yaml
 from flask import Blueprint, abort, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter
+from web.shared import (
+    FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter,
+    get_all_task_metadata, get_episodic_tags, task_id_sort_key,
+)
 from web.subprocess_utils import run_fw_command
 
 bp = Blueprint("tasks", __name__)
+
+
+# ---------------------------------------------------------------------------
+# Enum loading from status-transitions.yaml (T-1179, G-038)
+# ---------------------------------------------------------------------------
+
+_ENUM_CACHE = {}
+
+def _load_enums():
+    """Load workflow_types and horizons from status-transitions.yaml.
+
+    Cached after first load. Falls back to hardcoded defaults if YAML is missing.
+    """
+    if _ENUM_CACHE:
+        return _ENUM_CACHE
+    yaml_path = FRAMEWORK_ROOT / "status-transitions.yaml"
+    try:
+        with open(yaml_path) as f:
+            data = yaml.safe_load(f) or {}
+        _ENUM_CACHE["workflow_types"] = data.get("workflow_types", [])
+        _ENUM_CACHE["horizons"] = data.get("horizons", [])
+        _ENUM_CACHE["statuses"] = data.get("statuses", {}).get("active", [])
+        _ENUM_CACHE["owners"] = data.get("owners", [])
+    except Exception:
+        _ENUM_CACHE["workflow_types"] = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
+        _ENUM_CACHE["horizons"] = ["now", "next", "later"]
+        _ENUM_CACHE["statuses"] = ["captured", "started-work", "issues", "work-completed"]
+        _ENUM_CACHE["owners"] = ["human", "claude-code"]
+    return _ENUM_CACHE
 
 
 # ---------------------------------------------------------------------------
@@ -249,36 +281,10 @@ def _toggle_ac_line(file_path, line_idx):
 
 @bp.route("/tasks")
 def tasks():
-    all_tasks = []
-
-    active_dir = PROJECT_ROOT / ".tasks" / "active"
-    if active_dir.exists():
-        for f in sorted(active_dir.glob("T-*.md")):
-            fm, _ = parse_frontmatter(f.read_text())
-            if fm:
-                fm["_location"] = "active"
-                all_tasks.append(fm)
-
-    completed_dir = PROJECT_ROOT / ".tasks" / "completed"
-    if completed_dir.exists():
-        for f in sorted(completed_dir.glob("T-*.md")):
-            fm, _ = parse_frontmatter(f.read_text())
-            if fm:
-                fm["_location"] = "completed"
-                all_tasks.append(fm)
-
-    # Load episodic tags for component filtering
-    episodic_dir = PROJECT_ROOT / ".context" / "episodic"
-    task_tags = {}
-    if episodic_dir.exists():
-        for f in episodic_dir.glob("T-*.yaml"):
-            try:
-                with open(f) as fh:
-                    edata = yaml.safe_load(fh)
-                if isinstance(edata, dict):
-                    task_tags[edata.get("task_id", f.stem)] = edata.get("tags", [])
-            except yaml.YAMLError:
-                continue
+    # T-1233: Use cached task metadata (avoids re-reading 1200+ files per request)
+    import copy
+    all_tasks = [copy.copy(t) for t in get_all_task_metadata()]
+    task_tags = get_episodic_tags()
 
     for t in all_tasks:
         # Merge frontmatter tags with episodic tags (deduplicated)
@@ -327,7 +333,7 @@ def tasks():
     if sort_by == "name":
         all_tasks.sort(key=lambda t: t.get("name", ""))
     else:
-        all_tasks.sort(key=lambda t: t.get("id", ""))
+        all_tasks.sort(key=task_id_sort_key)
 
     statuses = sorted(set(t.get("status", "") for t in all_tasks if t.get("status")))
     types = sorted(set(t.get("workflow_type", "") for t in all_tasks if t.get("workflow_type")))
@@ -341,6 +347,7 @@ def tasks():
     if view not in ("board", "list"):
         view = "board"
 
+    enums = _load_enums()
     return render_page(
         "tasks.html",
         page_title="Tasks",
@@ -359,6 +366,10 @@ def tasks():
         search_query=search_query,
         sort_by=sort_by,
         view=view,
+        enum_types=enums["workflow_types"],
+        enum_horizons=enums["horizons"],
+        enum_owners=enums["owners"],
+        enum_statuses=enums["statuses"],
     )
 
 
@@ -390,7 +401,7 @@ def task_detail(task_id):
         except yaml.YAMLError:
             episodic = None
 
-    status_options = ["captured", "started-work", "issues", "work-completed"]
+    status_options = _load_enums()["statuses"]
 
     # Parse AC checkboxes for interactive rendering
     ac_items = _parse_acceptance_criteria(task_content)
@@ -436,16 +447,15 @@ def create_task():
     if not name:
         return '<p style="color: var(--pico-del-color);">Task name is required</p>', 400
 
-    allowed_types = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
-    if workflow_type not in allowed_types:
+    enums = _load_enums()
+    if workflow_type not in enums["workflow_types"]:
         return '<p style="color: var(--pico-del-color);">Invalid workflow type</p>', 400
 
-    allowed_owners = ["human", "claude-code"]
-    if owner not in allowed_owners:
+    if owner not in enums["owners"]:
         return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
 
     horizon = request.form.get("horizon", "now").strip()
-    if horizon not in ("now", "next", "later"):
+    if horizon not in enums["horizons"]:
         return '<p style="color: var(--pico-del-color);">Invalid horizon</p>', 400
 
     cmd = [
@@ -478,7 +488,8 @@ def update_task_horizon(task_id):
         abort(404)
 
     horizon = request.form.get("horizon", "")
-    if horizon not in ("now", "next", "later"):
+    enums = _load_enums()
+    if horizon not in enums["horizons"]:
         return '<p style="color: var(--pico-del-color);">Invalid horizon</p>', 400
 
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--horizon", horizon])
@@ -493,7 +504,8 @@ def update_task_owner(task_id):
         abort(404)
 
     owner = request.form.get("owner", "")
-    if owner not in ("human", "claude-code"):
+    enums = _load_enums()
+    if owner not in enums["owners"]:
         return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
 
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--owner", owner])
@@ -508,8 +520,8 @@ def update_task_type(task_id):
         abort(404)
 
     wtype = request.form.get("type", "")
-    allowed = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
-    if wtype not in allowed:
+    enums = _load_enums()
+    if wtype not in enums["workflow_types"]:
         return '<p style="color: var(--pico-del-color);">Invalid workflow type</p>', 400
 
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--type", wtype])
@@ -542,7 +554,7 @@ def update_task_status(task_id):
         abort(404)
 
     status = request.form.get("status", "")
-    allowed = ["captured", "started-work", "issues", "work-completed"]
+    allowed = _load_enums()["statuses"]
     if status not in allowed:
         return '<p style="color: var(--pico-del-color);">Invalid status value</p>', 400
 

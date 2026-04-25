@@ -25,7 +25,7 @@
 | `web/templates/patterns.html` | renders |
 | `web/templates/graduation.html` | renders |
 
-## Used By (6)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|

@@ -47,7 +47,10 @@ do_add_learning() {
     fi
     local next_id=1
     if [ -f "$learnings_file" ]; then
-        local max_id=$(grep "^- id: ${id_prefix}-" "$learnings_file" | sed "s/.*${id_prefix}-0*//" | sort -n | tail -1)
+        # T-1369: match BOTH `- id: L-XXX` (new dash-prefix format) and `  id: L-XXX`
+        # (legacy indented format where `- application:` opens the list item).
+        # Missing the legacy format caused every new L-XXX to collide with old IDs.
+        local max_id=$(grep -E "^[- ]+id: ${id_prefix}-" "$learnings_file" | sed "s/.*${id_prefix}-0*//" | sort -n | tail -1)
         [ -n "$max_id" ] && next_id=$((max_id + 1))
     fi
     local id=$(printf "${id_prefix}-%03d" $next_id)
@@ -92,6 +95,15 @@ EOF
     ' "$learnings_file" > "$temp_file"
 
     mv "$temp_file" "$learnings_file"
+
+    # T-1168: publish learning to bus (one-way, non-fatal).
+    # Shell flow stays safe — publisher silently no-ops on any failure.
+    local publisher="${FRAMEWORK_ROOT:-}/lib/publish-learning-to-bus.sh"
+    if [ -x "$publisher" ]; then
+        L_ID="$id" L_LEARNING="$learning" L_TASK="$task" \
+            L_SOURCE="$source" L_DATE="$date" \
+            "$publisher" 2>/dev/null || true
+    fi
 
     echo -e "${GREEN}Learning added: $id${NC}"
     echo "  $learning"

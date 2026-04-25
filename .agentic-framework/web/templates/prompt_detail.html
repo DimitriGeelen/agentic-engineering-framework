@@ -1,0 +1,66 @@
+<div style="padding:1rem;">
+  <p><a href="/prompts">← Prompts</a></p>
+
+  <h2>{{ prompt.get('name', prompt.get('_slug')) }}</h2>
+
+  <dl style="display:grid;grid-template-columns:max-content 1fr;gap:0.4rem 1rem;font-size:0.9rem;">
+    <dt>Slug</dt><dd><code>{{ prompt['_slug'] }}</code></dd>
+    {% if prompt.get('qid') %}
+      <dt>QID</dt><dd><code>{{ prompt['qid'] }}</code></dd>
+    {% endif %}
+    {% if prompt.get('agent_id') %}
+      <dt>Agent</dt><dd>{{ prompt['agent_id'] }}</dd>
+    {% endif %}
+    <dt>Kind</dt><dd>{{ prompt.get('kind', '?') }}</dd>
+    {% if prompt.get('description') %}
+      <dt>Description</dt><dd>{{ prompt['description'] }}</dd>
+    {% endif %}
+    {% if prompt.get('tags') %}
+      <dt>Tags</dt>
+      <dd>
+        {% for tag in prompt['tags'] %}
+          <span style="background:var(--pico-secondary-background);padding:0.1rem 0.4rem;border-radius:3px;font-size:0.85em;margin-right:0.25rem;">{{ tag }}</span>
+        {% endfor %}
+      </dd>
+    {% endif %}
+    {% if prompt.get('variables') %}
+      <dt>Variables</dt>
+      <dd>
+        {% for v in prompt['variables'] %}
+          <code>{{ '{{' + v + '}}' }}</code>{% if not loop.last %}, {% endif %}
+        {% endfor %}
+      </dd>
+    {% endif %}
+    {% if prompt.get('created') %}
+      <dt>Created</dt><dd><small>{{ prompt['created'] }}</small></dd>
+    {% endif %}
+  </dl>
+
+  <div style="margin-top:1rem;display:flex;gap:0.5rem;align-items:center;">
+    <strong>Body</strong>
+    <button id="copy-btn" type="button" style="padding:0.2rem 0.6rem;font-size:0.85rem;">Copy</button>
+    <span id="copy-status" style="color:var(--pico-muted-color);font-size:0.85rem;"></span>
+  </div>
+
+  <pre id="prompt-body" style="background:var(--pico-code-background);padding:1rem;border-radius:4px;white-space:pre-wrap;">{{ prompt.get('_body', '') }}</pre>
+</div>
+
+<script>
+(function(){
+  var btn = document.getElementById('copy-btn');
+  if (!btn) return;
+  btn.addEventListener('click', function(){
+    var body = document.getElementById('prompt-body').textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(body).then(function(){
+        document.getElementById('copy-status').textContent = 'copied';
+        setTimeout(function(){ document.getElementById('copy-status').textContent = ''; }, 2000);
+      }).catch(function(err){
+        document.getElementById('copy-status').textContent = 'copy failed: ' + err;
+      });
+    } else {
+      document.getElementById('copy-status').textContent = 'clipboard unavailable';
+    }
+  });
+})();
+</script>

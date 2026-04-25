@@ -26,7 +26,7 @@ When agent ACs are complete and human ACs remain:
 | `web/blueprints/tasks.py` | calls |
 | `web/blueprints/tasks.py` | registers |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|

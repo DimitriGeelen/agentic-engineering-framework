@@ -103,6 +103,10 @@ fi
 if [ -f "$FRAMEWORK_ROOT/lib/config.sh" ]; then
     source "$FRAMEWORK_ROOT/lib/config.sh"
 fi
+# Source paths for _emit_user_command (T-1204, T-1146 GO)
+if [ -f "$FRAMEWORK_ROOT/lib/paths.sh" ]; then
+    source "$FRAMEWORK_ROOT/lib/paths.sh"
+fi
 INCEPTION_COMMIT_LIMIT=$(fw_config "INCEPTION_COMMIT_LIMIT" 2 2>/dev/null || echo 2)
 
 # --- Inception Gate (T-126, T-1176) ---
@@ -118,8 +122,12 @@ if [ -n "$TASK_REF" ]; then
         fi
 
         if [ "$HAS_DECISION" = false ]; then
-            # Count existing commits for this inception task
-            INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF" 2>/dev/null | wc -l | tr -d ' ')
+            # Count existing commits for this inception task.
+            # Match only commits whose SUBJECT starts with "T-XXX:" (T-1328) —
+            # using --grep against the full message would match body mentions of
+            # the same ID in unrelated commits. --oneline gives "<sha> <subject>"
+            # so anchor on the subject after the sha.
+            INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
 
             if [ "$INCEPTION_COMMITS" -ge "$INCEPTION_COMMIT_LIMIT" ]; then
                 echo ""
@@ -129,19 +137,19 @@ if [ -n "$TASK_REF" ]; then
                 echo "Inception tasks allow $INCEPTION_COMMIT_LIMIT exploration commits, then require a decision."
                 echo ""
                 echo "Record a decision:"
-                echo "  1. Review: fw task review $TASK_REF  (creates review marker)"
-                echo "  2. Decide: fw inception decide $TASK_REF go --rationale 'reason'"
-                echo "          or fw inception decide $TASK_REF no-go --rationale 'reason'"
+                echo "  1. Review: $(_emit_user_command "task review $TASK_REF")"
+                echo "  2. Decide: $(_emit_user_command "inception decide $TASK_REF go --rationale 'reason'")"
+                echo "          or: $(_emit_user_command "inception decide $TASK_REF no-go --rationale 'reason'")"
                 echo ""
                 echo "Bypass: git commit --no-verify"
                 echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
-                echo "  Configure: fw config set inception_commit_limit N"
+                echo "  Configure: $(_emit_user_command "config set inception_commit_limit N")"
                 exit 1
             else
                 echo ""
                 echo "NOTE: Inception task $TASK_REF — no decision yet (commit $((INCEPTION_COMMITS + 1))/$INCEPTION_COMMIT_LIMIT before gate)"
                 echo "  After exploration:"
-                echo "    fw inception decide $TASK_REF go --rationale '...'"
+                echo "    $(_emit_user_command "inception decide $TASK_REF go --rationale '...'")"
                 echo ""
             fi
         fi
@@ -154,7 +162,8 @@ fi
 # First commit is allowed (task creation). Subsequent commits must have the artifact
 # either on disk already or in the staged changes.
 if [ -n "$TASK_REF" ] && [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
-    INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF" 2>/dev/null | wc -l | tr -d ' ')
+    # T-1328: anchor on subject prefix so body-mentions don't inflate the count
+    INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
     if [ "$INCEPTION_COMMITS" -gt 0 ]; then
         # Check if docs/reports/ changes are in this commit
         HAS_STAGED_RESEARCH=$(git diff --cached --name-only | grep -c "^docs/reports/" || true)
@@ -189,6 +198,27 @@ if [ -n "$TASK_REF" ] && ls "$PROJECT_ROOT/.tasks/completed/${TASK_REF}-"* >/dev
     echo ""
 fi
 
+# --- Critical YAML Shrinkage Guard (T-1243) ---
+# Warn when learnings.yaml, patterns.yaml, or practices.yaml lose >50% of entries.
+# Advisory only (WARN, not BLOCK) — legitimate cleanup is rare but possible.
+for _yaml_file in .context/project/learnings.yaml .context/project/patterns.yaml .context/project/practices.yaml; do
+    if git diff --cached --name-only | grep -q "^${_yaml_file}$"; then
+        _old_lines=$(git show HEAD:"${_yaml_file}" 2>/dev/null | grep -c "^- " || true)
+        _new_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^+- " || true)
+        _del_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^-- " || true)
+        if [ "$_old_lines" -gt 10 ] && [ "$_del_lines" -gt 0 ]; then
+            _remaining=$((_old_lines - _del_lines + _new_lines))
+            if [ "$_remaining" -lt $((_old_lines / 2)) ]; then
+                echo ""
+                echo "WARNING: ${_yaml_file} shrunk from ${_old_lines} to ~${_remaining} entries (>50% loss)"
+                echo "  If intentional, proceed. If accidental: git checkout HEAD -- ${_yaml_file}"
+                echo "  Use 'fw context add-learning' instead of direct file edits."
+                echo ""
+            fi
+        fi
+    fi
+done
+
 exit 0
 HOOK_EOF
 
@@ -203,6 +233,15 @@ HOOK_EOF
 # VERSION=1.6
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+
+# Resolve FRAMEWORK_ROOT for _emit_user_command (T-1204)
+FRAMEWORK_ROOT="$PROJECT_ROOT"
+if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+    _fw_path=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    [ -n "$_fw_path" ] && [ -d "$_fw_path" ] && FRAMEWORK_ROOT="$_fw_path"
+fi
+[ ! -f "$FRAMEWORK_ROOT/lib/paths.sh" ] && [ -f "$PROJECT_ROOT/.agentic-framework/lib/paths.sh" ] && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
+[ -f "$FRAMEWORK_ROOT/lib/paths.sh" ] && source "$FRAMEWORK_ROOT/lib/paths.sh"
 
 # Get the commit message
 COMMIT_MSG=$(git log -1 --format=%B HEAD)
@@ -256,7 +295,7 @@ if [ -d "$FABRIC_DIR" ]; then
         echo ""
         echo "FABRIC: $COMP_COUNT component(s) modified: $COMP_NAMES"
         if [ "$DEP_COUNT" -gt 5 ]; then
-            echo "  High connectivity ($DEP_COUNT edges) — consider: fw fabric blast-radius HEAD"
+            echo "  High connectivity ($DEP_COUNT edges) — consider: $(_fw_cmd 2>/dev/null || echo fw) fabric blast-radius HEAD"
         fi
     fi
 fi
@@ -287,7 +326,7 @@ if [ -d "$FABRIC_DIR" ]; then
     if [ "$UNREG_COUNT" -gt 0 ]; then
         echo ""
         echo "FABRIC: $UNREG_COUNT new file(s) without component cards: $UNREG"
-        echo "  Register: fw fabric register <path>"
+        echo "  Register: $(_fw_cmd 2>/dev/null || echo fw) fabric register <path>"
     fi
 fi
 
@@ -302,7 +341,7 @@ if [ -f "$LATEST" ]; then
         if [ "$ELAPSED" -gt 60 ]; then
             echo ""
             echo "HANDOVER STALE: Last handover has $TODO_COUNT unfilled [TODO] sections (${ELAPSED}min old)"
-            echo "  Run: fw handover --commit"
+            echo "  Run: $(_emit_user_command "handover --commit" 2>/dev/null || echo "fw handover --commit")"
             echo ""
         fi
     fi
@@ -323,7 +362,13 @@ HOOK_EOF
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 export PROJECT_ROOT
 
-# Resolve audit script: check .framework.yaml first, then local agents/
+# Resolve audit script. Priority (T-1396):
+#   1. .framework.yaml -> framework_path (explicit consumer config)
+#   2. $PROJECT_ROOT/agents/audit/audit.sh (framework repo: source-of-truth)
+#   3. $PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh (vendored bootstrap fallback)
+# Root-level agents/ only exists in the framework repo itself; preferring it when
+# present ensures the framework-repo pre-push hook runs HEAD's audit, not the
+# stale vendored bootstrap copy.
 AUDIT_SCRIPT=""
 if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
     FW_PATH=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
@@ -331,19 +376,19 @@ if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
         AUDIT_SCRIPT="$FW_PATH/agents/audit/audit.sh"
     fi
 fi
-if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh" ]; then
-    AUDIT_SCRIPT="$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
-fi
 if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/agents/audit/audit.sh" ]; then
     AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"
+fi
+if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh" ]; then
+    AUDIT_SCRIPT="$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
 fi
 
 # Skip if audit script not found anywhere
 if [ -z "$AUDIT_SCRIPT" ]; then
     echo "ERROR: Audit script not found"
     echo "  Checked: .framework.yaml -> framework_path"
-    echo "  Checked: $PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
     echo "  Checked: $PROJECT_ROOT/agents/audit/audit.sh"
+    echo "  Checked: $PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
     echo "  Push blocked — fix framework path or install audit agent"
     exit 1
 fi
@@ -362,9 +407,9 @@ if [ -n "$_version" ]; then
         _stamped="$_version"
     fi
     echo "$_stamped" > "$PROJECT_ROOT/VERSION"
-    if [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
-        echo "$_stamped" > "$PROJECT_ROOT/.agentic-framework/VERSION"
-    fi
+    # T-1252 (G-006): do NOT stamp .agentic-framework/VERSION — the vendored
+    # framework's VERSION must reflect the framework release that was vendored,
+    # not the consumer project's version.
     echo "VERSION stamped: $_stamped"
 fi
 
@@ -410,7 +455,7 @@ HOOK_EOF
     echo "  - Blocks commits without task references (T-XXX)"
     echo "  - Allows merge commits and rebases"
     echo "  - Runs audit before push (blocks on FAIL, warns on WARN)"
-    echo "  - Bypass: fw tier0 approve (Tier 0 protected)"
+    echo "  - Bypass: $(_emit_user_command "tier0 approve") (Tier 0 protected)"
     echo "           then: git commit/push --no-verify"
 }
 

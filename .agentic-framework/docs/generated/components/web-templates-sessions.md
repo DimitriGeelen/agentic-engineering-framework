@@ -1,6 +1,6 @@
 # sessions
 
-> TODO: describe what this component does
+> Jinja2 template rendering the sessions management page with session cards showing provider, status, and metadata
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/sessions.html`
 

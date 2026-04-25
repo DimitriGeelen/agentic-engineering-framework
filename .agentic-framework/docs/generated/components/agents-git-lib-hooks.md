@@ -8,12 +8,14 @@
 
 Git Agent - Hook installation subcommand
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `C-004` | calls |
 | `lib/tasks.sh` | calls |
+| `lib/config.sh` | calls |
+| `lib/paths.sh` | calls |
 
 ## Used By (1)
 

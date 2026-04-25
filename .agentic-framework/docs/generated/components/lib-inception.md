@@ -21,19 +21,26 @@ When the active task has `workflow_type: inception`:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/review.sh` | calls |
+| `lib/task-audit.sh` | calls |
 
-## Used By (3)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/lib_inception.bats` | called-by |
 | `tests/unit/lib_inception.bats` | called_by |
+| `docs/reports/T-1125-termlink-send-file-delivery-semantics.md` | produced-by_by |
+| `docs/reports/T-1129-termlink-session-learnings.md` | produced-by_by |
+| `docs/reports/T-1136-session-init-concerns-check.md` | produced-by_by |
+| `docs/reports/T-1212-consumer-watchtower-rca.md` | produced-by_by |
+| `docs/reports/T-607-correction-refinement-loop.md` | produced-by_by |
+| `tests/unit/inception_decide_ac_tick.bats` | called_by |
 
 ## Related
 

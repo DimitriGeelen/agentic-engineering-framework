@@ -17,11 +17,6 @@ Tests get_yaml_field() — YAML frontmatter field extraction
 |--------|-------------|
 | `lib/yaml.sh` | calls |
 
-## Related
-
-### Tasks
-- T-764: Add unit tests for core libs — tasks, yaml, keylock, enums, paths
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_yaml.yaml`*
 *Last verified: 2026-04-05*

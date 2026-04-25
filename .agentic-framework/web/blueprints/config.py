@@ -29,6 +29,8 @@ SETTINGS = [
     ("KEYLOCK_TIMEOUT", "300", "Per-key lock stale cleanup timeout in seconds"),
     ("TERMLINK_WORKER_TIMEOUT", "600", "TermLink worker execution timeout in seconds"),
     ("HANDOVER_DEDUP_COOLDOWN", "300", "Seconds between duplicate handover detection"),
+    ("INCEPTION_COMMIT_LIMIT", "2", "Max exploration commits before inception decision gate"),
+    ("CONSUMER_SCAN_DIRS", "/opt", "Colon-separated directories to scan for consumer projects"),
 ]
 
 

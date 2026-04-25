@@ -11,12 +11,6 @@
 Unit tests for agents/resume/resume.sh
 Origin: T-922
 
-### Framework Reference
-
-**Location:** `agents/resume/`
-
-**When to use:** After context compaction, returning from breaks, or when feeling lost about current state.
-
 ## Dependencies (1)
 
 | Target | Relationship |

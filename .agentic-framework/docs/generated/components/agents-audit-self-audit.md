@@ -33,7 +33,7 @@ Exit codes: 0=pass, 1=warnings, 2=failures
 | `agents/context/post-compact-resume.sh` | reads |
 | `lib/paths.sh` | calls |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|

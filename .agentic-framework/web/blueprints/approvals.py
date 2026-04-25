@@ -7,6 +7,7 @@ Shows three urgency-ordered sections:
 """
 
 import os
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,7 +15,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata
 
 bp = Blueprint("approvals", __name__)
 
@@ -74,6 +75,24 @@ def _load_resolved_approvals():
     return resolved[:20]  # Last 20
 
 
+# T-1415 (T-1388 B5 / F2): Count inline `- A\d+:` assumption bullets in task body.
+# Most inception tasks list assumptions inline under ## Assumptions rather than
+# registering via `fw assumption add`, so the /approvals badge read "0" even
+# when the body clearly showed several. Fall back to the body count and mark
+# source=body so the template can render the provenance.
+_INLINE_ASSUMPTION_RE = re.compile(r"^- A\d+:", re.MULTILINE)
+
+
+def _count_body_assumptions(body: str) -> int:
+    """Count inline `- A\\d+:` assumption bullets under the ## Assumptions section."""
+    from web.blueprints.inception import _extract_section
+
+    section = _extract_section(body, "Assumptions")
+    if not section:
+        return 0
+    return len(_INLINE_ASSUMPTION_RE.findall(section))
+
+
 def _load_pending_go_decisions():
     """Scan active inception tasks where decision is still pending.
 
@@ -82,22 +101,32 @@ def _load_pending_go_decisions():
     """
     from web.blueprints.inception import _extract_decision, _extract_section, _load_assumptions
 
-    task_dir = PROJECT_ROOT / ".tasks" / "active"
-    if not task_dir.exists():
-        return []
-
     assumptions = _load_assumptions()
     results = []
 
-    for f in sorted(task_dir.glob("T-*.md")):
+    # T-1244: Use shared task metadata cache to filter to active+inception tasks
+    # before reading bodies. Avoids re-globbing 100+ active tasks per request.
+    candidates = [
+        fm for fm in get_all_task_metadata()
+        if fm.get("_location") == "active" and fm.get("workflow_type") == "inception"
+    ]
+    candidates.sort(key=lambda fm: task_id_sort_key(fm.get("_path", "")))
+
+    for fm in candidates:
+        path = fm.get("_path")
+        if not path:
+            continue
         try:
-            content = f.read_text()
+            content = Path(path).read_text()
         except OSError:
             continue
-        fm, body = parse_frontmatter(content)
-        if not fm or fm.get("workflow_type") != "inception":
-            continue
+        _, body = parse_frontmatter(content)
         if _extract_decision(body) != "pending":
+            continue
+
+        # T-1123: Only show inception tasks with a recommendation (skip captured/unexplored)
+        rec_section = _extract_section(body, "Recommendation")
+        if not rec_section or len(rec_section.strip()) < 20:
             continue
 
         task_id = fm.get("id", "")
@@ -119,11 +148,28 @@ def _load_pending_go_decisions():
         if len(problem_excerpt) > 200:
             problem_excerpt = problem_excerpt[:197] + "..."
 
-        # Extract recommendation or GO criteria for rationale prepopulation
-        rec = _extract_section(body, "Recommendation")
-        if not rec or len(rec) < 10:
+        # Extract recommendation for display (T-1119: show full recommendation)
+        rec_raw = _extract_section(body, "Recommendation")
+        rec_display = ""  # Full recommendation for visible display
+        rec_decision = ""  # GO/NO-GO/DEFER extracted
+        if rec_raw and len(rec_raw) > 10:
+            rec_display = rec_raw.strip()
+            # Extract the recommendation decision
+            for line in rec_raw.split("\n"):
+                stripped = line.strip().replace("**", "").replace("*", "")
+                if stripped.lower().startswith("recommendation:"):
+                    rec_decision = stripped.split(":", 1)[1].strip().split()[0].upper()
+                    break
+
+        # Fallback to GO criteria for rationale hint
+        # T-1150: NO truncation — the textarea pre-fill becomes the permanent decision
+        # rationale when the human clicks approve. Truncating here = truncating the decision.
+        # (Previous 200-char cap caused data loss in recorded decisions.)
+        rationale_hint = ""
+        if rec_raw and len(rec_raw) > 10:
+            rationale_hint = rec_raw.replace("**", "").replace("*", "").strip()
+        else:
             gonogo = _extract_section(body, "Go/No-Go Criteria")
-            # Extract just the "GO if:" bullet points
             if gonogo:
                 go_lines = []
                 in_go = False
@@ -136,28 +182,38 @@ def _load_pending_go_decisions():
                         break
                     if in_go and stripped.startswith("- "):
                         go_lines.append(stripped[2:].strip())
-                rec = "; ".join(go_lines) if go_lines else ""
+                rationale_hint = "; ".join(go_lines) if go_lines else ""
 
-        # Truncate rationale hint
-        rationale_hint = ""
-        if rec:
-            # Strip markdown formatting
-            hint = rec.replace("**", "").replace("*", "").strip()
-            if len(hint) > 200:
-                hint = hint[:197] + "..."
-            rationale_hint = hint
+        # T-1214: Extract Go/No-Go Criteria for fallback display when recommendation missing
+        go_nogo_raw = _extract_section(body, "Go/No-Go Criteria")
+
+        # T-1415 (T-1388 B5 / F2): Fall back to body-inline assumptions when none registered.
+        if linked:
+            assumption_counts = {
+                "total": len(linked),
+                "validated": sum(1 for a in linked if a.get("status") == "validated"),
+                "source": "ledger",
+            }
+        else:
+            body_count = _count_body_assumptions(body)
+            assumption_counts = {
+                "total": body_count,
+                "validated": 0,
+                "source": "body" if body_count else "ledger",
+            }
 
         results.append({
             "task_id": task_id,
             "name": fm.get("name", ""),
             "status": fm.get("status", ""),
             "problem_excerpt": problem_excerpt,
-            "assumption_counts": {
-                "total": len(linked),
-                "validated": sum(1 for a in linked if a.get("status") == "validated"),
-            },
+            "problem_full": problem,
+            "assumption_counts": assumption_counts,
             "artifacts": artifacts,
             "rationale_hint": rationale_hint,
+            "recommendation": rec_display,
+            "rec_decision": rec_decision,
+            "go_nogo_criteria": go_nogo_raw,
         })
 
     return results
@@ -174,21 +230,26 @@ def _load_pending_human_acs():
 
     from web.blueprints.tasks import _parse_acceptance_criteria
 
-    task_dir = PROJECT_ROOT / ".tasks" / "active"
-    if not task_dir.exists():
-        return []
-
     results = []
     now = time.time()
 
-    for f in sorted(task_dir.glob("T-*.md")):
+    # T-1244: Pull active-task frontmatter from shared cache instead of
+    # re-globbing per request. Body still required for AC parse.
+    candidates = [
+        fm for fm in get_all_task_metadata()
+        if fm.get("_location") == "active"
+    ]
+    candidates.sort(key=lambda fm: task_id_sort_key(fm.get("_path", "")))
+
+    for fm in candidates:
+        path = fm.get("_path")
+        if not path:
+            continue
         try:
-            content = f.read_text()
+            content = Path(path).read_text()
         except OSError:
             continue
-        fm, body = parse_frontmatter(content)
-        if not fm:
-            continue
+        _, body = parse_frontmatter(content)
 
         all_acs = _parse_acceptance_criteria(body)
         human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
@@ -311,20 +372,31 @@ def decide_approval():
 
     now_ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    exec_result = None
     if decision == "approved":
         # Write the approval token that check-tier0.sh expects
         # Format: <command_hash> <unix_timestamp>
         APPROVAL_FILE.parent.mkdir(parents=True, exist_ok=True)
         APPROVAL_FILE.write_text(f"{command_hash} {int(time.time())}\n")
 
+        # Self-consuming execution for idempotent bookkeeping commands that
+        # would otherwise be orphaned if no agent retries (T-1192 structural
+        # fix). Scope: `fw inception decide T-XXX go|no-go --rationale "..."`.
+        command_preview = data.get("command_preview", "")
+        if _is_inception_decide(command_preview):
+            exec_result = _execute_inception_decide(command_preview)
+
     # Move pending → resolved
     data["status"] = decision
-    data["response"] = {
+    response_dict = {
         "decision": decision,
         "feedback": feedback or None,
         "responded_at": now_ts,
         "mechanism": "watchtower",
     }
+    if exec_result is not None:
+        response_dict["auto_executed"] = exec_result
+    data["response"] = response_dict
 
     resolved_file = APPROVALS_DIR / f"resolved-{command_hash[:12]}.yaml"
     with open(resolved_file, "w") as fh:
@@ -335,7 +407,59 @@ def decide_approval():
 
     status_color = "var(--pico-ins-color)" if decision == "approved" else "var(--pico-del-color)"
     status_icon = "Approved" if decision == "approved" else "Rejected"
-    return f'<p style="color:{status_color};">{status_icon}. Agent can retry the command.</p>'
+    msg = f'{status_icon}.'
+    if exec_result is not None:
+        if exec_result.get("ok"):
+            msg += f' Auto-executed — {exec_result.get("summary", "decision recorded")}.'
+        else:
+            msg += f' Auto-execute failed: {exec_result.get("error", "unknown")}. Agent can retry.'
+    else:
+        msg += ' Agent can retry the command.'
+    return f'<p style="color:{status_color};">{msg}</p>'
+
+
+def _is_inception_decide(command_preview: str) -> bool:
+    """Detect `fw inception decide T-XXX go|no-go --rationale ...` shape."""
+    return bool(re.search(r"(?:^|/|\\s)fw inception decide T-\\d+ (?:go|no-go)\\b", command_preview))
+
+
+def _execute_inception_decide(command_preview: str) -> dict:
+    """Run the approved `fw inception decide` command and return a status dict."""
+    import shlex
+    import subprocess
+
+    cmd_str = " ".join(command_preview.split())
+    m = re.search(r"fw inception decide (T-\\d+) (go|no-go)", cmd_str)
+    if not m:
+        return {"ok": False, "error": "could not parse command", "summary": "", "stdout_tail": ""}
+    task_id, verdict = m.group(1), m.group(2)
+    rat_m = re.search(r'--rationale\\s+"(.*)"(?:\\s|$)', cmd_str, re.DOTALL)
+    rationale = rat_m.group(1) if rat_m else "Approved via Watchtower (no rationale captured)"
+
+    fw_bin = str(PROJECT_ROOT / ".agentic-framework" / "bin" / "fw")
+    if not Path(fw_bin).exists():
+        fw_bin = "fw"
+
+    argv = [fw_bin, "inception", "decide", task_id, verdict, "--rationale", rationale]
+    try:
+        # T-1193: strip CLAUDECODE so the inner gate (T-679/T-1259) treats this as a
+        # human action routed through Watchtower, not an agent invocation. TIER0_AUTOEXEC
+        # signals the outer hook that this subprocess was authorized via approvals.
+        subproc_env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+        subproc_env["TIER0_AUTOEXEC"] = "1"
+        proc = subprocess.run(
+            argv, cwd=str(PROJECT_ROOT),
+            env=subproc_env,
+            capture_output=True, text=True, timeout=30,
+        )
+        stdout_tail = (proc.stdout or "")[-400:]
+        if proc.returncode == 0:
+            return {"ok": True, "summary": f"{task_id} decided {verdict}", "error": None, "stdout_tail": stdout_tail}
+        return {"ok": False, "error": (proc.stderr or "").strip()[:400] or f"exit {proc.returncode}", "summary": "", "stdout_tail": stdout_tail}
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "timeout (30s)", "summary": "", "stdout_tail": ""}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}", "summary": "", "stdout_tail": ""}
 
 
 @bp.route("/api/approvals/complete-batch", methods=["POST"])

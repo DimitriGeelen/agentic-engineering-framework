@@ -15,12 +15,6 @@ Tests pickup pipeline: validation, dedup, ID generation, processing
 |--------|-------------|
 | `lib/pickup.sh` | calls |
 
-## Related
-
-### Tasks
-- T-774: Pickup pipeline core — lib/pickup.sh with receive/process/dedup/log
-- T-775: fw pickup send — consumer-side CLI for local and TermLink push
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_pickup.yaml`*
 *Last verified: 2026-03-30*

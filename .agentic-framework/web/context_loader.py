@@ -50,3 +50,7 @@ def load_directives() -> list:
     """Load directives list from directives.yaml."""
     data = load_yaml(_PROJECT_DIR / "directives.yaml", label="directives")
     return data.get("directives") or []
+def load_received_learnings() -> list:
+    """Load cross-project learnings mirrored by subscribe-learnings-from-bus.sh (T-1217)."""
+    data = load_yaml(_PROJECT_DIR / "received-learnings.yaml", label="received_learnings")
+    return data.get("received") or []

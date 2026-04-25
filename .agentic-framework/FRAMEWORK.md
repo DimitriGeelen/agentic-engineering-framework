@@ -246,6 +246,26 @@ fw version
 fw doctor
 ```
 
+## Isolation Model (T-1189/G-031)
+
+The framework supports two canonical isolation patterns:
+
+| Pattern | Mechanism | Use case |
+|---------|-----------|----------|
+| **Vendored dir** | `fw init` / `fw vendor` copies framework into `.agentic-framework/` | Consumer projects (default) |
+| **Shim dispatch** | `bin/fw-shim` detects project, routes to vendored copy | Multi-project environments |
+
+**How it works:** `fw init /path/to/project` calls `do_vendor()` which copies `bin/`, `lib/`, `agents/`, `web/`, `docs/`, `.tasks/templates/`, `FRAMEWORK.md`, and `metrics.sh` into the project's `.agentic-framework/` directory. The project is then self-contained. The shim (`~/.local/bin/fw`) detects which project you're in and routes to that project's vendored copy.
+
+**Upgrading:** `fw upgrade /path/to/project` syncs the vendored copy from the framework repo. It delegates to the same `do_vendor()` function, ensuring the same files are synced.
+
+**Legacy patterns to avoid:**
+- Manual `cp` from framework to project — use `fw vendor` instead
+- Symlinks into framework repo — breaks project isolation
+- Oversized global install at `~/.agentic-framework` — the shim obsoletes this
+
+`fw doctor` checks for problematic patterns (nested vendored dirs, oversized global installs).
+
 ## Setting Up a New Project
 
 ```bash

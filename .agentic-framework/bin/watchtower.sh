@@ -18,8 +18,12 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
 source "$FRAMEWORK_ROOT/lib/firewall.sh"
-PID_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.pid"
-LOG_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.log"
+# PID/LOG in PROJECT_ROOT so review.sh and watchtower.sh find them in the same place (T-1154)
+PID_FILE="$PROJECT_ROOT/.context/working/watchtower.pid"
+# T-1287: port + url triple alongside pid (foundation for T-1284 3-layer discovery)
+PORT_FILE="$PROJECT_ROOT/.context/working/watchtower.port"
+URL_FILE="$PROJECT_ROOT/.context/working/watchtower.url"
+LOG_FILE="$PROJECT_ROOT/.context/working/watchtower.log"
 DEFAULT_PORT=$(fw_config "PORT" 3000)
 
 # Colors provided by lib/colors.sh (via paths.sh chain)
@@ -72,7 +76,7 @@ do_stop() {
 
     if ! kill -0 "$pid" 2>/dev/null; then
         log_warn "Stale PID file (PID $pid not running). Cleaning up."
-        rm -f "$PID_FILE"
+        rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
         return 0
     fi
 
@@ -99,7 +103,7 @@ do_stop() {
         return 1
     fi
 
-    rm -f "$PID_FILE"
+    rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
     log_info "Watchtower stopped."
 }
 
@@ -180,7 +184,7 @@ do_start() {
         if ! kill -0 "$new_pid" 2>/dev/null; then
             log_error "Watchtower exited immediately. Last 10 lines of log:"
             tail -10 "$LOG_FILE" >&2
-            rm -f "$PID_FILE"
+            rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
             exit 1
         fi
 
@@ -188,11 +192,24 @@ do_start() {
         if curl -sf "http://localhost:${port}/" > /dev/null 2>&1; then
             log_info "Health check passed."
             ensure_firewall_open "$port"
+
+            local lan_ip
+            lan_ip=$(detect_lan_ip)
+
+            # T-1287: write port + url triple atomically (Layer 1 source of truth)
+            # URL prefers LAN IP for external callers; falls back to localhost.
+            local url
+            if [ -n "$lan_ip" ]; then
+                url="http://${lan_ip}:${port}"
+            else
+                url="http://localhost:${port}"
+            fi
+            printf '%s\n' "$port" > "${PORT_FILE}.tmp" && mv "${PORT_FILE}.tmp" "$PORT_FILE"
+            printf '%s\n' "$url"  > "${URL_FILE}.tmp"  && mv "${URL_FILE}.tmp"  "$URL_FILE"
+
             echo ""
             echo -e "${BOLD}Watchtower is running${NC}"
             echo -e "  Local:  http://localhost:${port}"
-            local lan_ip
-            lan_ip=$(detect_lan_ip)
             if [ -n "$lan_ip" ]; then
                 echo -e "  LAN:    http://${lan_ip}:${port}"
             fi
@@ -262,6 +279,27 @@ do_status() {
 }
 
 # ---------------------------------------------------------------------------
+# do_port / do_url — Public accessors for triple-file source-of-truth (T-1376 B5)
+# ---------------------------------------------------------------------------
+do_port() {
+    if [ -f "$PORT_FILE" ]; then
+        cat "$PORT_FILE"
+    else
+        fw_config "PORT" "$DEFAULT_PORT"
+    fi
+}
+
+do_url() {
+    if [ -f "$URL_FILE" ]; then
+        cat "$URL_FILE"
+    else
+        local p
+        p=$(fw_config "PORT" "$DEFAULT_PORT")
+        echo "http://localhost:$p"
+    fi
+}
+
+# ---------------------------------------------------------------------------
 # Main dispatch
 # ---------------------------------------------------------------------------
 cmd="${1:-}"
@@ -272,21 +310,25 @@ case "$cmd" in
     stop)    do_stop ;;
     restart) do_restart "$@" ;;
     status)  do_status ;;
+    port)    do_port ;;
+    url)     do_url ;;
     ""|help|-h|--help)
-        echo "Usage: $(basename "$0") {start|stop|restart|status} [options]"
+        echo "Usage: $(basename "$0") {start|stop|restart|status|port|url} [options]"
         echo ""
         echo "Commands:"
         echo "  start   [--port N] [--debug]  Start Watchtower"
         echo "  stop                           Stop Watchtower"
         echo "  restart [--port N] [--debug]  Stop then start"
         echo "  status                         Show current state"
+        echo "  port                           Print current port (triple-file source of truth; T-1376 B5)"
+        echo "  url                            Print current URL (triple-file source of truth; T-1376 B5)"
         echo ""
         echo "Environment:"
         echo "  FW_PORT  Default port (default: 3000)"
         ;;
     *)
         log_error "Unknown command: $cmd"
-        echo "Usage: $(basename "$0") {start|stop|restart|status}" >&2
+        echo "Usage: $(basename "$0") {start|stop|restart|status|port|url}" >&2
         exit 1
         ;;
 esac

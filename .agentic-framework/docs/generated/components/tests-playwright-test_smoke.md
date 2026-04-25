@@ -8,6 +8,16 @@
 
 Populated from conftest.py base_url fixture
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+
+## Related
+
+### Tasks
+- T-969: Playwright test infrastructure — tests/playwright/ + fw test playwright + conftest.py (T-968 Phase 1)
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_smoke.yaml`*
 *Last verified: 2026-04-06*

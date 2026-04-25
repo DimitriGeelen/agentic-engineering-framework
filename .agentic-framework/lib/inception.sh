@@ -202,6 +202,9 @@ AGENT_PATTERNS = [
     re.compile(r'^Problem statement validated', re.IGNORECASE),
     re.compile(r'^Assumptions tested', re.IGNORECASE),
     re.compile(r'^Recommendation written with rationale', re.IGNORECASE),
+    # T-1466: ACs added by pickup imports / authored manually that simply
+    # restate "decision recorded" — the decide command itself satisfies them.
+    re.compile(r'\[Inception decision recorded\]', re.IGNORECASE),
 ]
 has_recommendation = bool(re.search(r'^## Recommendation\s*$', content, re.MULTILINE))
 

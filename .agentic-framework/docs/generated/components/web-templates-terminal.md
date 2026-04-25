@@ -1,6 +1,6 @@
 # terminal
 
-> TODO: describe what this component does
+> Jinja2 template rendering the interactive web terminal UI with tabbed sessions, xterm.js integration, and session controls
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/terminal.html`
 

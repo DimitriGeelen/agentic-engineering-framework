@@ -12,12 +12,6 @@ re-vendors from there. Uses upstream_repo from .framework.yaml.
 Global installs (~/.agentic-framework with .git): fetches and resets
 to latest upstream (legacy path, pre-T-499).
 
-### Framework Reference
-
-**Location:** `agents/task-create/update-task.sh`
-
-**When to use:** To change task status. Auto-triggers healing diagnosis on `issues`, and finalizes tasks on `work-completed`.
-
 ## Used By (3)
 
 | Component | Relationship |
@@ -29,7 +23,6 @@ to latest upstream (legacy path, pre-T-499).
 ## Related
 
 ### Tasks
-- T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 

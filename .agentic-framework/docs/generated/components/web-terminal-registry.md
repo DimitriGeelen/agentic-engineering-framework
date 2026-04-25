@@ -1,6 +1,6 @@
 # registry
 
-> TODO: describe what this component does
+> Provides CRUD operations and YAML file persistence for terminal session records stored in .context/sessions/
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/terminal/registry.py`
 

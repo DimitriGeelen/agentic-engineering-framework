@@ -18,11 +18,6 @@ is_valid_horizon, is_valid_transition, valid_transitions_for
 |--------|-------------|
 | `lib/enums.sh` | calls |
 
-## Related
-
-### Tasks
-- T-764: Add unit tests for core libs — tasks, yaml, keylock, enums, paths
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_enums.yaml`*
 *Last verified: 2026-04-05*

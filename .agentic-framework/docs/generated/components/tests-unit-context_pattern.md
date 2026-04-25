@@ -21,11 +21,6 @@ Tests the do_add_pattern() function:
 |--------|-------------|
 | `agents/context/context.sh` | calls |
 
-## Related
-
-### Tasks
-- T-758: Add unit tests for context pattern and status libs (16+ tests)
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_pattern.yaml`*
 *Last verified: 2026-04-05*

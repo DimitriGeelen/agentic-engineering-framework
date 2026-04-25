@@ -17,11 +17,6 @@ Tests _sed_i() — portable in-place sed edit
 |--------|-------------|
 | `lib/compat.sh` | calls |
 
-## Related
-
-### Tasks
-- T-766: Add unit tests for lib/compat.sh and lib/runtime.sh
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_compat.yaml`*
 *Last verified: 2026-04-05*

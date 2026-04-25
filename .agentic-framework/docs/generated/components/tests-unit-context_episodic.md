@@ -22,11 +22,6 @@ Tests git-mining helpers and do_generate_episodic():
 |--------|-------------|
 | `agents/context/context.sh` | calls |
 
-## Related
-
-### Tasks
-- T-762: Fix remaining shellcheck warnings + unit tests for episodic, init, safe-commands libs
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_episodic.yaml`*
 *Last verified: 2026-04-05*

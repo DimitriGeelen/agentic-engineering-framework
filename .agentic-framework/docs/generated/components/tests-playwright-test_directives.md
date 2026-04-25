@@ -6,6 +6,11 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+
 ## Related
 
 ### Tasks

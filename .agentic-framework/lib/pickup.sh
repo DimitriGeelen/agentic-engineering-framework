@@ -254,12 +254,20 @@ pickup_create_inception() {
 
     local task_name="Pickup: ${summary} (from ${source_project})"
 
-    # Create inception task (not build — T-469 lesson)
+    # T-1465 (T-1455 GO, constrained Option A): bug-reports describe a known fix —
+    # they belong as build tasks. Only research-style envelopes (feature-proposal,
+    # learning, pattern) need the inception go/no-go arc. Function name retained
+    # for backward compatibility.
+    local task_type="inception"
+    if [ "$pickup_type" = "bug-report" ]; then
+        task_type="build"
+    fi
+
     if command -v fw >/dev/null 2>&1; then
         local create_out
         create_out=$(fw task create \
             --name "$task_name" \
-            --type inception \
+            --type "$task_type" \
             --owner agent \
             --description "Auto-created from pickup envelope. Source: ${source_project}${source_task:+, task ${source_task}}. Type: ${pickup_type}." \
             --horizon next \

@@ -17,6 +17,18 @@ Detection:
 3. Blocks if markers are absent (exit code 2)
 Exempt dispatches:
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/dispatch/preamble.md` | reads |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/context/check-agent-dispatch.sh` | complements |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-dispatch-pre.yaml`*
 *Last verified: 2026-03-23*

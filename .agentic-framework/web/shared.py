@@ -19,7 +19,54 @@ logger = logging.getLogger(__name__)
 
 APP_DIR = Path(__file__).resolve().parent
 FRAMEWORK_ROOT = APP_DIR.parent
-PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", str(FRAMEWORK_ROOT)))
+
+
+def _discover_project_root(start: Path) -> Path | None:
+    """Walk up from `start` looking for `.framework.yaml` (consumer marker).
+
+    Returns the first ancestor containing `.framework.yaml`, or None if
+    filesystem root is reached. Matches bash `paths.sh` behaviour (T-1310).
+    """
+    try:
+        cur = Path(start).resolve()
+    except OSError:
+        return None
+    while True:
+        if (cur / ".framework.yaml").is_file():
+            return cur
+        if cur.parent == cur:
+            return None
+        cur = cur.parent
+
+
+def _resolve_project_root() -> tuple[Path, str]:
+    """Resolve PROJECT_ROOT from (in order): env var, discovered, FRAMEWORK_ROOT.
+
+    Returns (path, source_label) where source ∈ {'env', 'discovered', 'framework'}.
+    Env wins unconditionally — operators and `bin/fw` rely on it.
+    """
+    env_val = os.environ.get("PROJECT_ROOT")
+    if env_val:
+        return Path(env_val), "env"
+    discovered = _discover_project_root(Path.cwd())
+    if discovered is not None:
+        return discovered, "discovered"
+    return FRAMEWORK_ROOT, "framework"
+
+
+PROJECT_ROOT, _PROJECT_ROOT_SOURCE = _resolve_project_root()
+if _PROJECT_ROOT_SOURCE != "env":
+    logger.debug("PROJECT_ROOT resolved via %s: %s", _PROJECT_ROOT_SOURCE, PROJECT_ROOT)
+
+
+def task_id_sort_key(value):
+    """Extract numeric portion of task ID for natural sorting.
+
+    Works with task ID strings ('T-1000'), Path objects, or dicts with 'id' key.
+    """
+    s = value.get("id", "") if isinstance(value, dict) else str(value)
+    m = re_mod.search(r"T-(\d+)", s)
+    return int(m.group(1)) if m else 0
 
 # ---------------------------------------------------------------------------
 # Navigation — grouped for Watchtower command center
@@ -31,6 +78,7 @@ NAV_GROUPS = [
         ("Inception",   "inception.inception_list",  None),
         ("Assumptions", "inception.assumptions_list", None),
         ("Timeline",    "timeline.timeline",         None),
+        ("Prompts",     "prompts.prompts_list",      None),
     ]),
     ("Knowledge", [
         ("Learnings",   "discovery.learnings",   None),
@@ -52,10 +100,12 @@ NAV_GROUPS = [
         ("Risks",         "risks.risk_register",                   None),
         ("Gaps",          "discovery.gaps",                        None),
         ("Quality",       "quality.quality_gate",                  None),
+        ("Reviewer",      "reviewer.reviewer_overrides",           None),
         ("Metrics",       "metrics.project_metrics",               None),
         ("Costs",         "costs.costs_dashboard",                 None),
         ("Config",        "config.config_page",                    None),
         ("Cron",          "cron.cron_registry",                    None),
+        ("Pending",       "pending.pending_page",                  None),
     ]),
 ]
 
@@ -78,16 +128,23 @@ def build_ambient():
         "attention_count": 0,
     }
 
-    # Focus task — currently active tasks
+    # Focus task — prefer .context/working/focus.yaml (T-1308), fall back to
+    # first active task alphabetically when focus is null/missing/malformed.
     active_dir = PROJECT_ROOT / ".tasks" / "active"
+    focus_file = PROJECT_ROOT / ".context" / "working" / "focus.yaml"
+    focus_data = load_yaml(focus_file, label="focus.yaml") if focus_file.exists() else {}
+    current = (focus_data or {}).get("current_task")
+    if current and re_mod.match(r"^T-\d{3,}$", str(current)):
+        ambient["focus_task"] = str(current)
     if active_dir.exists():
-        active_tasks = sorted(active_dir.glob("T-*.md"))
+        active_tasks = sorted(active_dir.glob("T-*.md"), key=task_id_sort_key)
         if active_tasks:
-            # Use the first active task as focus
-            stem = active_tasks[0].stem
-            match = re_mod.match(r"(T-\d{3,})", stem)
-            if match:
-                ambient["focus_task"] = match.group(1)
+            if not ambient["focus_task"]:
+                # Fallback: first active task alphabetically.
+                stem = active_tasks[0].stem
+                match = re_mod.match(r"(T-\d{3,})", stem)
+                if match:
+                    ambient["focus_task"] = match.group(1)
             ambient["attention_count"] = len(active_tasks)
 
     # Session age — from latest handover
@@ -195,6 +252,79 @@ def parse_frontmatter(content):
     return fm, fm_match.group(2)
 
 
+# ---------------------------------------------------------------------------
+# Task metadata cache (T-1233: avoid re-reading 1200+ files on every request)
+# ---------------------------------------------------------------------------
+
+import time as _time
+
+_task_cache = {"data": None, "names": None, "tags": None, "ts": 0}
+_TASK_CACHE_TTL = 30  # seconds
+
+
+def get_all_task_metadata():
+    """Return list of frontmatter dicts for all tasks (active + completed).
+
+    Cached for _TASK_CACHE_TTL seconds. Each dict has '_location' key.
+    """
+    now = _time.monotonic()
+    if _task_cache["data"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
+        return _task_cache["data"]
+
+    all_tasks = []
+    names = {}
+    for location in ("active", "completed"):
+        task_dir = PROJECT_ROOT / ".tasks" / location
+        if not task_dir.exists():
+            continue
+        for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
+            fm, _ = parse_frontmatter(f.read_text())
+            if fm:
+                fm["_location"] = location
+                fm["_path"] = str(f)  # T-1244: enable body re-read without re-glob
+                all_tasks.append(fm)
+                tid = fm.get("id", "")
+                name = fm.get("name", "")
+                if tid and name:
+                    names[tid] = name
+
+    _task_cache["data"] = all_tasks
+    _task_cache["names"] = names
+    _task_cache["ts"] = now
+    return all_tasks
+
+
+def get_task_names():
+    """Return {task_id: name} dict. Uses task cache."""
+    now = _time.monotonic()
+    if _task_cache["names"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
+        return _task_cache["names"]
+    get_all_task_metadata()  # populate cache
+    return _task_cache["names"] or {}
+
+
+def get_episodic_tags():
+    """Return {task_id: [tags]} from episodic files. Cached."""
+    now = _time.monotonic()
+    if _task_cache["tags"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
+        return _task_cache["tags"]
+
+    tags = {}
+    episodic_dir = PROJECT_ROOT / ".context" / "episodic"
+    if episodic_dir.exists():
+        for f in episodic_dir.glob("T-*.yaml"):
+            try:
+                with open(f) as fh:
+                    edata = yaml.safe_load(fh)
+                if isinstance(edata, dict):
+                    tags[edata.get("task_id", f.stem)] = edata.get("tags", [])
+            except yaml.YAMLError:
+                continue
+
+    _task_cache["tags"] = tags
+    return tags
+
+
 def sse_event(event_type, **kwargs):
     """Format a Server-Sent Event string.
 
@@ -215,7 +345,9 @@ def load_latest_audit():
     audit_dir = PROJECT_ROOT / ".context" / "audits"
     if not audit_dir.exists():
         return None, {}, []
-    audit_files = sorted(audit_dir.glob("*.yaml"), reverse=True)
+    # T-1307: filter to date-named audits only so stray non-date YAML
+    # (e.g. upgrades.yaml) can't win the reverse-sort.
+    audit_files = sorted(audit_dir.glob("[0-9][0-9][0-9][0-9]-*.yaml"), reverse=True)
     if not audit_files:
         return None, {}, []
     data = load_yaml(audit_files[0], label="audit report")

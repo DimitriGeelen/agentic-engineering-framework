@@ -11,9 +11,10 @@ Creates handover documents for session continuity
 
 ### Framework Reference
 
-**Location:** `agents/handover/`
-
-**When to use:** MANDATORY at end of every session.
+- **Generate handover AFTER work is done, not before**
+- Never generate a skeleton handover "to fill in later" — the session may not survive to fill it
+- When generating handover: fill in ALL [TODO] sections immediately in the same operation
+- For mid-session checkpoints: `fw handover --checkpoint`
 
 ## Dependencies (8)
 
@@ -28,7 +29,7 @@ Creates handover documents for session continuity
 | `agents/context/session-metrics.sh` | calls |
 | `lib/notify.sh` | calls |
 
-## Used By (7)
+## Used By (9)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -39,6 +40,8 @@ Creates handover documents for session continuity
 | `agents/context/checkpoint.sh` | called-by |
 | `tests/unit/handover.bats` | tested_by |
 | `tests/unit/handover.bats` | called_by |
+| `agents/session-capture/AGENT.md` | triggers_by |
+| `tests/unit/handover_push_timeout.bats` | called_by |
 
 ## Documentation
 

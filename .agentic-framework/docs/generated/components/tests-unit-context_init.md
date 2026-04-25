@@ -22,11 +22,6 @@ Tests do_init():
 |--------|-------------|
 | `agents/context/context.sh` | calls |
 
-## Related
-
-### Tasks
-- T-762: Fix remaining shellcheck warnings + unit tests for episodic, init, safe-commands libs
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_init.yaml`*
 *Last verified: 2026-04-05*

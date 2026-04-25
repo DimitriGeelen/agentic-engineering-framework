@@ -1,6 +1,6 @@
 # profiles
 
-> TODO: describe what this component does
+> Loads named session profile presets from profiles.yaml for the terminal session creation UI
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/terminal/profiles.py`
 

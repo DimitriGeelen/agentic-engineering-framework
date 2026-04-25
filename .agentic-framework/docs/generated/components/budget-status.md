@@ -19,7 +19,7 @@
 ## Related
 
 ### Tasks
-- T-831: Session quality metrics — session-metrics.sh JSONL analyzer + handover integration
+- T-832: Fix install.sh unbound LOCAL_REPO variable in update path
 - T-833: Fix install.sh SIGPIPE exit 141 — head -1 in pipe with set -e
 - T-847: Session housekeeping — memory updates and handover
 - T-937: Commit pending handover checkpoints

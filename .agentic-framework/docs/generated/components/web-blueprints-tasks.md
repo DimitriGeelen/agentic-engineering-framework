@@ -6,7 +6,7 @@
 
 ## What It Does
 
-Helpers — file finding and frontmatter editing (T-181 spike)
+Enum loading from status-transitions.yaml (T-1179, G-038)
 
 ### Framework Reference
 
@@ -29,7 +29,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `web/templates/task_detail.html` | renders |
 | `web/subprocess_utils.py` | calls |
 
-## Used By (8)
+## Used By (9)
 
 | Component | Relationship |
 |-----------|-------------|

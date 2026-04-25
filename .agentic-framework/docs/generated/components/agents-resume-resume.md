@@ -9,12 +9,6 @@
 Resume Agent - Post-compaction recovery and state synchronization
 Synthesizes current state from handover, working memory, git, and tasks
 
-### Framework Reference
-
-**Location:** `agents/resume/`
-
-**When to use:** After context compaction, returning from breaks, or when feeling lost about current state.
-
 ## Dependencies (1)
 
 | Target | Relationship |

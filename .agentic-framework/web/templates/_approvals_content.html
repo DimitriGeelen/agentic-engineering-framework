@@ -1,24 +1,27 @@
 <!-- Approvals content fragment — served by /approvals/content for htmx polling (T-669) -->
 
-<!-- Summary counts bar -->
+<!-- Summary counts bar — T-1416 (T-1388 B6 / F5): split into Decisions vs Verifications -->
 <div class="approvals-summary">
-    <div class="approval-stat {{ 'tier0-active' if tier0_count else '' }}">
-        <span class="stat-value">{{ tier0_count }}</span>
-        <span class="stat-label">Tier 0</span>
-    </div>
-    <div class="approval-stat {{ 'go-active' if go_count else '' }}">
-        <span class="stat-value">{{ go_count }}</span>
-        <span class="stat-label">GO Decisions</span>
-    </div>
-    <div class="approval-stat {{ 'ac-active' if ac_count else '' }}">
+    <a href="#section-decisions" class="approval-stat approval-stat-group {{ 'decisions-active' if (tier0_count + go_count) else '' }}" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ tier0_count + go_count }}</span>
+        <span class="stat-label">Decisions</span>
+        <span class="stat-breakdown">{{ tier0_count }} Tier 0 · {{ go_count }} GO/NO-GO</span>
+    </a>
+    <a href="#section-verifications" class="approval-stat approval-stat-group {{ 'ac-active' if ac_count else '' }}" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ ac_count }}</span>
-        <span class="stat-label">Human ACs</span>
-    </div>
+        <span class="stat-label">Verifications</span>
+        <span class="stat-breakdown">Human ACs</span>
+    </a>
     <div class="approval-stat total">
         <span class="stat-value">{{ total_count }}</span>
         <span class="stat-label">Total</span>
     </div>
 </div>
+
+<!-- T-1416 (T-1388 B6 / F5): Decisions group (Section A + B) -->
+{% if pending_tier0 or pending_go %}
+<h2 id="section-decisions" class="approvals-group-heading">Decisions</h2>
+{% endif %}
 
 <!-- Section A: Tier 0 Approvals -->
 {% if pending_tier0 %}
@@ -37,6 +40,7 @@
 
     {% if item.status == 'pending' %}
     <form hx-post="/api/approvals/decide" hx-target="#result-{{ loop.index }}" hx-swap="innerHTML">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="command_hash" value="{{ item.command_hash }}">
         <textarea name="feedback" class="approval-feedback" placeholder="Optional feedback..."></textarea>
         <div class="approval-actions">
@@ -81,11 +85,51 @@
     {% endif %}
     {% if t.assumption_counts.total %}
     <div class="approval-meta">
-        Assumptions: {{ t.assumption_counts.validated }}/{{ t.assumption_counts.total }} validated
+        Assumptions: {{ t.assumption_counts.validated }}/{{ t.assumption_counts.total }} validated{% if t.assumption_counts.source == 'body' %} <span style="opacity:0.65;" title="Counted from inline `- A\d+:` bullets in the task body (not registered via `fw assumption add`)">(from body)</span>{% endif %}
+    </div>
+    {% endif %}
+    {% if t.recommendation %}
+    <details style="margin-top:0.5rem; background:var(--pico-card-sectionning-background-color); padding:0.5rem 0.75rem; border-radius:4px;" open>
+        <summary style="font-weight:600; cursor:pointer;">
+            Agent Recommendation:
+            {% if t.rec_decision == 'GO' %}
+            <span style="color:#10b981;">GO</span>
+            {% elif t.rec_decision == 'NO-GO' %}
+            <span style="color:#ef4444;">NO-GO</span>
+            {% elif t.rec_decision == 'DEFER' %}
+            <span style="color:#6b7280;">DEFER</span>
+            {% else %}
+            {{ t.rec_decision }}
+            {% endif %}
+        </summary>
+        <div style="font-size:0.85rem; margin-top:0.4rem; white-space:pre-wrap; line-height:1.5;">{{ t.recommendation }}</div>
+    </details>
+    {% else %}
+    {# T-1214: Fallback context when agent recommendation is missing #}
+    <div style="margin-top:0.5rem; background:#f59e0b11; border:1px solid #f59e0b44; padding:0.5rem 0.75rem; border-radius:4px;">
+        <div style="font-size:0.8rem; font-weight:600; color:#b45309; margin-bottom:0.3rem;">
+            No agent recommendation written yet
+        </div>
+        {% if t.problem_full %}
+        <div style="font-size:0.85rem; margin-top:0.3rem;">
+            <strong>Problem:</strong> {{ t.problem_full[:300] }}{% if t.problem_full|length > 300 %}...{% endif %}
+        </div>
+        {% endif %}
+        {% if t.go_nogo_criteria %}
+        <details style="margin-top:0.3rem;" open>
+            <summary style="font-size:0.85rem; font-weight:600; cursor:pointer;">Go/No-Go Criteria</summary>
+            <div style="font-size:0.85rem; margin-top:0.3rem; white-space:pre-wrap; line-height:1.4;">{{ t.go_nogo_criteria }}</div>
+        </details>
+        {% endif %}
+        <div style="font-size:0.75rem; color:#b45309; margin-top:0.4rem;">
+            Review the <a href="/inception/{{ t.task_id }}">full task</a> for research findings,
+            or ask the agent to write a recommendation.
+        </div>
     </div>
     {% endif %}
     <form hx-post="/inception/{{ t.task_id }}/decide" hx-target="closest .go-decision" hx-swap="outerHTML"
           style="margin-top:0.5rem;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="decision-inline">
             <label><input type="radio" name="decision" value="go" required>
                 <span class="dec-go">GO</span></label>
@@ -106,11 +150,14 @@
 {% endfor %}
 {% endif %}
 
-<!-- Section C: Human Acceptance Criteria -->
+<!-- T-1416 (T-1388 B6 / F5): Verifications group (Section C) -->
 {% if pending_acs %}
+<h2 id="section-verifications" class="approvals-group-heading">Verifications</h2>
+
+<!-- Section C: Human ACs (renamed to "Verifications" under new group heading) -->
 <div class="section-header">
     <h3>Human Acceptance Criteria</h3>
-    <small>{{ ac_count }} across {{ ac_task_count }} task{{ 's' if ac_task_count != 1 }}</small>
+    <small>{{ ac_count }} across {{ ac_task_count }} task{{ 's' if ac_task_count != 1 }} — rubber-stamp + review checks</small>
 </div>
 
 <!-- Batch completion button (T-846) — only for tasks with ALL ACs checked -->
@@ -118,6 +165,7 @@
 <div id="batch-complete-result" style="margin-bottom:0.5rem;">
     <form hx-post="/api/approvals/complete-batch" hx-target="#batch-complete-result" hx-swap="innerHTML"
           hx-confirm="Complete {{ ready_count }} task(s) with all Human ACs checked?" style="display:inline;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;">
             Complete {{ ready_count }} Ready Task{{ 's' if ready_count != 1 }}
         </button>
@@ -195,6 +243,7 @@ function filterACs(filter) {
             <form hx-post="/api/task/{{ t.task_id }}/toggle-ac"
                   hx-target="find input[type=checkbox]" hx-swap="outerHTML"
                   style="display:inline;" onclick="event.stopPropagation();">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="line" value="{{ ac.line_idx }}">
                 <input type="checkbox" {% if ac.checked %}checked{% endif %}
                        onchange="this.form.requestSubmit()"
@@ -230,6 +279,7 @@ function filterACs(filter) {
     {% if unchecked_count == 0 %}
     <div style="margin-top:0.5rem;">
         <form hx-post="/api/task/{{ t.task_id }}/complete" hx-target="closest .human-ac-group" hx-swap="outerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 1rem; font-size:0.8rem;">
                 Complete Task
             </button>

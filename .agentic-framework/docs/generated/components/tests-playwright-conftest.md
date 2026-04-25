@@ -54,6 +54,11 @@ Check if already running on test port
 | `tests/playwright/test_task_detail.py` | called_by |
 | `tests/playwright/test_task_detail_enhanced.py` | called_by |
 
+## Related
+
+### Tasks
+- T-969: Playwright test infrastructure — tests/playwright/ + fw test playwright + conftest.py (T-968 Phase 1)
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-conftest.yaml`*
 *Last verified: 2026-04-06*

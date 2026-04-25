@@ -22,7 +22,7 @@ Auto-appended by audit.sh on each run
 ## Related
 
 ### Tasks
-- T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
+- T-825: Timeline token usage — show per-session token costs in Watchtower /timeline
 - T-847: Session housekeeping — memory updates and handover
 - T-937: Commit pending handover checkpoints
 - T-940: Commit accumulated generated docs and cron audits

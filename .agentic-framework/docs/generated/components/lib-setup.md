@@ -37,7 +37,6 @@ Steps:
 ## Related
 
 ### Tasks
-- T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---

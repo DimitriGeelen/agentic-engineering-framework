@@ -17,11 +17,6 @@ Tests do_inception routing, show_inception_help, argument validation
 |--------|-------------|
 | `lib/inception.sh` | calls |
 
-## Related
-
-### Tasks
-- T-780: Unit tests for untested lib files — version, preflight, notify, bus, inception
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_inception.yaml`*
 *Last verified: 2026-04-05*

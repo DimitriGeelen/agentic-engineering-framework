@@ -23,11 +23,34 @@ def _history_path(project_root=None):
     return Path(project_root) / _HISTORY_FILE
 
 
+# T-1235: Cache parsed metrics history (19K lines, called 3x per /discoveries)
+import time as _time_mod
+import os as _os
+
+_metrics_cache = {"data": None, "mtime": 0, "ts": 0}
+_METRICS_CACHE_TTL = 60  # seconds
+
+
 def load_entries(project_root=None):
-    """Load all entries from metrics-history.yaml, newest first."""
+    """Load all entries from metrics-history.yaml, newest first.
+
+    T-1235: Cached for 60s or until file mtime changes.
+    """
     path = _history_path(project_root)
     if not path.exists():
         return []
+
+    now = _time_mod.monotonic()
+    try:
+        current_mtime = _os.path.getmtime(path)
+    except OSError:
+        current_mtime = 0
+
+    if (_metrics_cache["data"] is not None
+            and current_mtime == _metrics_cache["mtime"]
+            and (now - _metrics_cache["ts"]) < _METRICS_CACHE_TTL):
+        return _metrics_cache["data"]
+
     try:
         with open(path) as f:
             data = yaml.safe_load(f)
@@ -48,6 +71,9 @@ def load_entries(project_root=None):
             else:
                 e["_ts"] = datetime.min.replace(tzinfo=timezone.utc)
         entries.sort(key=lambda x: x["_ts"], reverse=True)
+        _metrics_cache["data"] = entries
+        _metrics_cache["mtime"] = current_mtime
+        _metrics_cache["ts"] = now
         return entries
     except Exception as e:
         logger.warning("Failed to parse metrics history %s: %s", path, e)

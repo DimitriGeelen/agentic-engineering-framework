@@ -9,12 +9,13 @@
 Task Creation Agent - Mechanical Operations
 Creates properly structured tasks following the framework specification
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/paths.sh` | calls |
 | `lib/enums.sh` | calls |
+| `lib/keylock.sh` | calls |
 
 ## Used By (6)
 

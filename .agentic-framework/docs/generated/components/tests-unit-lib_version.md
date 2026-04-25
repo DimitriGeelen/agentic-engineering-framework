@@ -17,11 +17,6 @@ Tests _read_fw_version(), do_version_bump (dry-run), do_version_check
 |--------|-------------|
 | `lib/version.sh` | calls |
 
-## Related
-
-### Tasks
-- T-780: Unit tests for untested lib files — version, preflight, notify, bus, inception
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_version.yaml`*
 *Last verified: 2026-04-05*

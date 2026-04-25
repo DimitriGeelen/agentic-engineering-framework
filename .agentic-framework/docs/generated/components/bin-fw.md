@@ -16,22 +16,13 @@ When run from inside the framework repo itself, it auto-detects.
 
 ### Framework Reference
 
-The `fw` command is the single entry point for all framework operations. It resolves paths, sets environment variables, and routes to agents.
+`fw` is the single entry point for all framework operations — it resolves paths, sets env vars, and routes to agents. Discover commands via `fw help`, `fw <cmd> --help`, or the Quick Reference section below.
 
-```bash
-fw help              # Show all commands
-fw version           # Show version and paths
-fw doctor            # Check framework health
-fw audit             # Run compliance audit
-fw context init      # Initialize session
-fw git commit -m "T-XXX: description"
-fw handover --commit # Generate and commit handover
-fw task create --name "Fix bug" --type build --owner human
-```
+**Path resolution:** `fw` finds the framework via `bin/fw`'s location (inside framework repo) or via `.framework.yaml` in the project root (shared tooling mode).
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (41)
+## Dependencies (43)
 
 | Target | Relationship |
 |--------|-------------|
@@ -76,8 +67,10 @@ fw task create --name "Fix bug" --type build --owner human
 | `lib/colors.sh` | calls |
 | `lib/costs.sh` | calls |
 | `lib/config.sh` | calls |
+| `lib/task-audit.sh` | calls |
+| `lib/watchtower.sh` | calls |
 
-## Used By (87)
+## Used By (89)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -168,6 +161,7 @@ fw task create --name "Fix bug" --type build --owner human
 | `tests/integration/fw_vendor.bats` | called_by |
 | `tests/integration/fw_version.bats` | called_by |
 | `tests/integration/fw_work_on.bats` | called_by |
+| `lib/release.sh` | called_by_by |
 
 ## Documentation
 
@@ -177,11 +171,11 @@ fw task create --name "Fix bug" --type build --owner human
 ## Related
 
 ### Tasks
-- T-873: Fix fw approvals status exit 1 with no resolved approvals
 - T-874: Sync vendored bin/fw with T-873 approvals fix
 - T-889: fw config set/get — read and write persistent settings in .framework.yaml
 - T-890: Add fw config to help output and CLAUDE.md quick reference
 - T-898: Fix _derive_version — use framework git repo, not cwd
+- T-969: Playwright test infrastructure — tests/playwright/ + fw test playwright + conftest.py (T-968 Phase 1)
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-fw.yaml`*

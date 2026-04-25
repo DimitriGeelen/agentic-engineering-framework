@@ -6,9 +6,15 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+
 ## Related
 
 ### Tasks
+- T-970: 5 initial Playwright regression tests — terminal, inception, tasks, fabric, search (T-968 Phase 2)
 - T-980: Terminal session profile selector in Watchtower UI
 
 ---

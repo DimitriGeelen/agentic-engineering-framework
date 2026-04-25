@@ -31,6 +31,7 @@ Enforcement:
 
 ### Tasks
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-819: Build lib/config.sh — 3-tier config resolution for framework settings
 - T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
 
 ---

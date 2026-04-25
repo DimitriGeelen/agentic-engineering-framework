@@ -8,8 +8,6 @@
 
 ## What It Does
 
-May succeed or fail depending on task, but should not 400
-
 ## Dependencies (1)
 
 | Target | Relationship |

@@ -1,6 +1,6 @@
 # config
 
-> TODO: describe what this component does
+> Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/config.sh`
 
@@ -16,17 +16,13 @@ Origin: T-817 inception (traceAI pattern adoption), T-819 build
 
 ### Framework Reference
 
-Framework settings follow a 4-tier resolution: explicit CLI flag > `FW_*` env var > `.framework.yaml` > hardcoded default.
+4-tier resolution: explicit CLI flag > `FW_*` env var > `.framework.yaml` > hardcoded default. Persistent per-project config: `fw config set KEY VALUE` writes to `.framework.yaml`.
 
-Persistent per-project configuration: `fw config set KEY VALUE` writes to `.framework.yaml`.
-
-| Setting | Env Var | Default | Purpose |
-|---------|---------|---------|---------|
-| Context window | `FW_CONTEXT_WINDOW` | `300000` | Token budget enforcement |
-| Dispatch limit | `FW_DISPATCH_LIMIT` | `2` | Agent tool cap before TermLink gate |
-| Watchtower port | `FW_PORT` | `3000` | Web UI listen port |
-| Safe mode | `FW_SAFE_MODE` | `0` | Bypass task gate (escape hatch) |
-|
+Agent-relevant settings:
+- `FW_CONTEXT_WINDOW` (300000) — budget enforcement ceiling
+- `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
+- `FW_SAFE_MODE` (0) — bypass task gate (escape hatch)
+- `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
 
 *(truncated — see CLAUDE.md for full section)*
 
@@ -36,7 +32,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 |--------|-------------|
 | `lib/config.sh` | calls |
 
-## Used By (20)
+## Used By (22)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -60,6 +56,8 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 | `lib/verify-acs.sh` | called_by |
 | `tests/unit/lib_config.bats` | called_by |
 | `web/templates/config.html` | read_by |
+| `agents/git/lib/hooks.sh` | called_by |
+| `agents/monitor/liveness-check.sh` | called_by |
 
 ## Related
 

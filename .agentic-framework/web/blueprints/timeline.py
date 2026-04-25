@@ -6,7 +6,7 @@ import re as re_mod
 import yaml
 from flask import Blueprint, abort, render_template
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, get_task_names
 
 logger = logging.getLogger(__name__)
 
@@ -50,21 +50,8 @@ def _compute_session_deltas(sessions):
 
 
 def _load_task_names():
-    """Build {task_id: name} dict from active and completed task files."""
-    names = {}
-    for subdir in ("active", "completed"):
-        d = PROJECT_ROOT / ".tasks" / subdir
-        if not d.exists():
-            continue
-        for f in d.glob("T-*.md"):
-            fm, _ = parse_frontmatter(f.read_text())
-            if not fm:
-                continue
-            tid = fm.get("id", "")
-            name = fm.get("name", "")
-            if tid and name:
-                names[tid] = name
-    return names
+    """Build {task_id: name} dict. T-1233: Delegates to shared cache."""
+    return get_task_names()
 
 
 def _truncate(text, max_len=100):
@@ -115,69 +102,105 @@ def _collapse_emergency_runs(sessions):
     return collapsed
 
 
-@bp.route("/timeline")
-def timeline():
+# T-1233: Session cache for timeline (580+ handover files are append-only)
+import time as _time
+
+_session_cache = {"data": None, "count": 0, "ts": 0}
+_SESSION_CACHE_TTL = 30  # seconds
+
+
+def _build_sessions():
+    """Parse all handover files into session dicts (without task name enrichment)."""
     handovers_dir = PROJECT_ROOT / ".context" / "handovers"
     sessions = []
+    if not handovers_dir.exists():
+        return sessions
+
+    for f in sorted(handovers_dir.glob("S-*.md"), reverse=True):
+        content = f.read_text()
+        fm, _ = parse_frontmatter(content)
+        if not fm:
+            continue
+
+        where_match = re_mod.search(
+            r"## Where We Are\n\n(.*?)(?=\n## |\Z)", content, re_mod.DOTALL
+        )
+        narrative = fm.get("session_narrative", "")
+        if not narrative and where_match:
+            narrative = where_match.group(1).strip()
+
+        tasks_touched = fm.get("tasks_touched", []) or []
+        tasks_completed = fm.get("tasks_completed", []) or []
+        is_emergency = fm.get("type") == "emergency"
+
+        sessions.append(
+            {
+                "id": fm.get("session_id", f.stem),
+                "timestamp": str(fm.get("timestamp", "")),
+                "_tasks_touched_ids": tasks_touched,
+                "_tasks_completed_ids": tasks_completed,
+                "tasks_touched": [],   # enriched later
+                "tasks_completed": [],  # enriched later
+                "touched_count": len(tasks_touched),
+                "completed_count": len(tasks_completed),
+                "narrative": narrative,
+                "narrative_short": _truncate(narrative),
+                "predecessor": fm.get("predecessor", ""),
+                "is_emergency": is_emergency,
+                "token_usage": fm.get("token_usage", ""),
+                "token_input": fm.get("token_input", ""),
+                "token_cache_read": fm.get("token_cache_read", ""),
+                "token_cache_create": fm.get("token_cache_create", ""),
+                "token_output": fm.get("token_output", ""),
+                "commits_per_turn": fm.get("commits_per_turn", ""),
+                "first_commit_turn": fm.get("first_commit_turn", ""),
+                "failed_tool_call_rate": fm.get("failed_tool_call_rate", ""),
+                "edit_bursts": fm.get("edit_bursts", ""),
+                "productive_turns_ratio": fm.get("productive_turns_ratio", ""),
+                "session_commits_per_turn": fm.get("session_commits_per_turn", ""),
+                "session_failed_tool_call_rate": fm.get("session_failed_tool_call_rate", ""),
+                "session_edit_bursts": fm.get("session_edit_bursts", ""),
+                "session_productive_turns_ratio": fm.get("session_productive_turns_ratio", ""),
+                "session_commits": fm.get("session_commits", ""),
+            }
+        )
+    return sessions
+
+
+def _get_cached_sessions():
+    """Return cached session list, rebuilding if stale or new handovers added."""
+    handovers_dir = PROJECT_ROOT / ".context" / "handovers"
+    current_count = len(list(handovers_dir.glob("S-*.md"))) if handovers_dir.exists() else 0
+    now = _time.monotonic()
+
+    if (_session_cache["data"] is not None
+            and current_count == _session_cache["count"]
+            and (now - _session_cache["ts"]) < _SESSION_CACHE_TTL):
+        return _session_cache["data"]
+
+    sessions = _build_sessions()
+    _session_cache["data"] = sessions
+    _session_cache["count"] = current_count
+    _session_cache["ts"] = now
+    return sessions
+
+
+@bp.route("/timeline")
+def timeline():
+    import copy
+    sessions = [copy.copy(s) for s in _get_cached_sessions()]
     task_names = _load_task_names()
 
-    if handovers_dir.exists():
-        for f in sorted(handovers_dir.glob("S-*.md"), reverse=True):
-            content = f.read_text()
-            fm, _ = parse_frontmatter(content)
-            if not fm:
-                continue
-
-            where_match = re_mod.search(
-                r"## Where We Are\n\n(.*?)(?=\n## |\Z)", content, re_mod.DOTALL
-            )
-            narrative = fm.get("session_narrative", "")
-            if not narrative and where_match:
-                narrative = where_match.group(1).strip()
-
-            tasks_touched = fm.get("tasks_touched", []) or []
-            tasks_completed = fm.get("tasks_completed", []) or []
-
-            is_emergency = fm.get("type") == "emergency"
-
-            # Enrich task IDs with names
-            touched_rich = [
-                {"id": t, "name": task_names.get(t, "")} for t in tasks_touched
-            ]
-            completed_rich = [
-                {"id": t, "name": task_names.get(t, "")} for t in tasks_completed
-            ]
-
-            sessions.append(
-                {
-                    "id": fm.get("session_id", f.stem),
-                    "timestamp": str(fm.get("timestamp", "")),
-                    "tasks_touched": touched_rich,
-                    "tasks_completed": completed_rich,
-                    "touched_count": len(tasks_touched),
-                    "completed_count": len(tasks_completed),
-                    "narrative": narrative,
-                    "narrative_short": _truncate(narrative),
-                    "predecessor": fm.get("predecessor", ""),
-                    "is_emergency": is_emergency,
-                    "token_usage": fm.get("token_usage", ""),
-                    "token_input": fm.get("token_input", ""),
-                    "token_cache_read": fm.get("token_cache_read", ""),
-                    "token_cache_create": fm.get("token_cache_create", ""),
-                    "token_output": fm.get("token_output", ""),
-                    "commits_per_turn": fm.get("commits_per_turn", ""),
-                    "first_commit_turn": fm.get("first_commit_turn", ""),
-                    "failed_tool_call_rate": fm.get("failed_tool_call_rate", ""),
-                    "edit_bursts": fm.get("edit_bursts", ""),
-                    "productive_turns_ratio": fm.get("productive_turns_ratio", ""),
-                    # Per-session deltas (T-852)
-                    "session_commits_per_turn": fm.get("session_commits_per_turn", ""),
-                    "session_failed_tool_call_rate": fm.get("session_failed_tool_call_rate", ""),
-                    "session_edit_bursts": fm.get("session_edit_bursts", ""),
-                    "session_productive_turns_ratio": fm.get("session_productive_turns_ratio", ""),
-                    "session_commits": fm.get("session_commits", ""),
-                }
-            )
+    # Enrich task IDs with names (fast — just dict lookups)
+    for s in sessions:
+        s["tasks_touched"] = [
+            {"id": t, "name": task_names.get(t, "")}
+            for t in s.get("_tasks_touched_ids", [])
+        ]
+        s["tasks_completed"] = [
+            {"id": t, "name": task_names.get(t, "")}
+            for t in s.get("_tasks_completed_ids", [])
+        ]
 
     sessions = _collapse_emergency_runs(sessions)
     _compute_session_deltas(sessions)

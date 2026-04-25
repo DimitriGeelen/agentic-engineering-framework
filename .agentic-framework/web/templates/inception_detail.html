@@ -278,12 +278,37 @@
 </article>
 {% endif %}
 
-<!-- Agent Recommendation (T-679) -->
+<!-- Agent Recommendation (T-679, T-1391 F3 dedupe) -->
 {% if sections.recommendation %}
-<article class="section-card">
-    <header>Agent Recommendation</header>
-    <div class="section-content">{{ sections.recommendation }}</div>
-</article>
+    {% if dec == 'pending' %}
+        {# Pending: Recommendation is the human's primary input — show prominently. #}
+        <article class="section-card">
+            <header>Agent Recommendation</header>
+            <div class="section-content">{{ sections.recommendation }}</div>
+        </article>
+    {% elif decision_matches_recommendation %}
+        {# Adopted: Decision carries the signal — collapse Recommendation for inspection. #}
+        <details class="section-card" style="padding: 0.75rem 1rem;">
+            <summary style="font-weight: 600; cursor: pointer;">
+                Agent Recommendation: <strong>{{ rec_stance | upper }}</strong>
+                <span style="font-weight: 400; color: var(--pico-muted-color); font-size: 0.85rem;">
+                    — adopted by human, see Decision Record
+                </span>
+            </summary>
+            <div class="section-content" style="margin-top: 0.75rem;">{{ sections.recommendation }}</div>
+        </details>
+    {% else %}
+        {# Overridden: both must be visible with explicit labels so the override is unambiguous. #}
+        <article class="section-card" style="border-left: 4px solid #f9a825;">
+            <header>
+                Agent Recommendation: <strong>{{ rec_stance | upper if rec_stance else '?' }}</strong>
+                <span style="font-weight: 400; color: #c62828; font-size: 0.85rem;">
+                    — overridden by human decision ({{ dec | upper }})
+                </span>
+            </header>
+            <div class="section-content">{{ sections.recommendation }}</div>
+        </article>
+    {% endif %}
 {% endif %}
 
 <!-- Structural Upgrade (T-1108, added per T-1105 chokepoint+invariant-test discipline) -->
@@ -294,25 +319,52 @@
 </article>
 {% endif %}
 
-<!-- Decision Details -->
+<!-- Dynamic extra sections (T-1177, G-036 fix) -->
+{% for sec in extra_sections %}
+<article class="section-card">
+    <header>{{ sec.heading }}</header>
+    <div class="section-content">{{ sec.content }}</div>
+</article>
+{% endfor %}
+
+<!-- Decision Details + Re-decide form (T-1389 B2 — G-057) -->
 {% if sections.decision and dec != 'pending' %}
 <article class="section-card">
     <header>Decision Record</header>
     <div class="section-content">{{ sections.decision }}</div>
 </article>
-{% elif dec == 'pending' and task._location == 'active' %}
+{% endif %}
+
+{% if task._location == 'active' %}
 <article class="section-card">
-    <header>Record Decision</header>
+    <header>{% if dec == 'pending' %}Record Decision{% else %}Record Superseding Decision{% endif %}</header>
+    {% if request.args.get('error') %}
+    <div role="alert" style="background: var(--pico-del-color, #fee); border: 1px solid #c33; color: #800; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.75rem; font-size: 0.85rem;">
+        <strong>Decision NOT recorded.</strong>
+        <code style="display: block; margin-top: 0.4rem; white-space: pre-wrap; background: rgba(255,255,255,0.5); padding: 0.4rem; border-radius: 4px;">{{ request.args.get('error') }}</code>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem; opacity: 0.85;">
+            Common causes: required Acceptance Criteria still unchecked, sovereignty gate, or task review marker missing.
+            Re-submit after addressing the cause; previous attempts did NOT persist.
+        </p>
+    </div>
+    {% endif %}
+    {% if dec != 'pending' %}
+    <p style="font-size: 0.85rem; color: var(--pico-muted-color); margin-bottom: 0.75rem;">
+        Current decision: <strong>{{ dec | upper }}</strong>. Recording a new decision replaces the
+        canonical <code>## Decision</code> block and appends a new entry to <code>## Updates</code>
+        preserving audit trail.
+    </p>
+    {% endif %}
     <form action="/inception/{{ task_id }}/decide" method="post" class="decision-form">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="decision-buttons">
-            <label><input type="radio" name="decision" value="go" required><span class="dec-go">GO</span></label>
+            <label><input type="radio" name="decision" value="go" {% if dec == 'pending' %}required{% endif %}><span class="dec-go">GO</span></label>
             <label><input type="radio" name="decision" value="no-go"><span class="dec-nogo">NO-GO</span></label>
             <label><input type="radio" name="decision" value="defer"><span class="dec-defer">DEFER</span></label>
         </div>
-        <textarea name="rationale" placeholder="Rationale for this decision..." required
+        <textarea name="rationale" placeholder="{% if dec == 'pending' %}Rationale for this decision...{% else %}Rationale for superseding the previous decision...{% endif %}" required
                   style="font-size: 0.85rem; min-height: 60px; margin-bottom: 0.5rem;">{{ rationale_hint or '' }}</textarea>
-        <button type="submit" class="text-sm">Record Decision</button>
+        <button type="submit" class="text-sm">{% if dec == 'pending' %}Record Decision{% else %}Record Superseding Decision{% endif %}</button>
     </form>
 </article>
 {% endif %}

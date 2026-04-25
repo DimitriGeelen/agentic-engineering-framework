@@ -17,7 +17,7 @@ Safe directories for file viewer (relative to PROJECT_ROOT)
 | `web/templates/docs_index.html` | renders |
 | `web/templates/docs_detail.html` | renders |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|

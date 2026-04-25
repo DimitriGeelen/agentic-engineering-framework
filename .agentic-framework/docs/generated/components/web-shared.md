@@ -10,7 +10,7 @@
 
 Path resolution
 
-## Used By (42)
+## Used By (45)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -56,10 +56,14 @@ Path resolution
 | `web/blueprints/config.py` | called_by |
 | `web/blueprints/costs.py` | called_by |
 | `web/blueprints/discovery.py` | called_by |
+| `web/blueprints/prompts.py` | called_by |
+| `web/blueprints/pending.py` | called_by |
+| `web/blueprints/fleet.py` | called_by |
 
 ## Related
 
 ### Tasks
+- T-819: Build lib/config.sh — 3-tier config resolution for framework settings
 - T-851: Linkable task references in handover session summary — clickable T-XXX links to Watchtower task pages
 - T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 - T-964: Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)

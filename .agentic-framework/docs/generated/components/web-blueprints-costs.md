@@ -13,7 +13,7 @@
 | `web/shared.py` | calls |
 | `web/templates/costs.html` | renders |
 
-## Used By (9)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|

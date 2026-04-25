@@ -6,7 +6,7 @@
 
 ## What It Does
 
-Active tasks with no recent update
+Active tasks with no recent update — use shared cache
 
 ### Framework Reference
 
@@ -31,7 +31,7 @@ Active tasks with no recent update
 | `web/blueprints/costs.py` | calls |
 | `web/blueprints/costs.py` | registers |
 
-## Used By (4)
+## Used By (9)
 
 | Component | Relationship |
 |-----------|-------------|

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from flask import Blueprint, Response, request
 
-from web.context_loader import load_concerns, load_decisions, load_learnings, load_patterns, load_practices
+from web.context_loader import load_concerns, load_decisions, load_learnings, load_patterns, load_practices, load_received_learnings
 from web.shared import PROJECT_ROOT, render_page, sse_event
 
 log = logging.getLogger(__name__)
@@ -98,12 +98,15 @@ def learnings():
 
     practices_list = load_practices()
 
+    received = load_received_learnings()
+
     return render_page(
         "learnings.html",
         page_title="Learnings",
         learnings=learnings_list,
         patterns=patterns_grouped,
         practices=practices_list,
+        received_learnings=received,
     )
 
 
@@ -582,9 +585,21 @@ def patterns_api():
     })
 
 
-def _count_applications(learning_id):
-    """Count how many distinct tasks/episodics reference this learning ID."""
-    referenced = set()
+# T-1233: Reverse index for learning application counts (was 562K file reads/request)
+import time as _time_mod
+
+_app_index_cache = {"data": None, "ts": 0}
+_APP_INDEX_TTL = 60  # seconds — graduation page is less frequently visited
+
+
+def _build_application_index():
+    """Build {learning_id: count} by scanning files once."""
+    now = _time_mod.monotonic()
+    if _app_index_cache["data"] is not None and (now - _app_index_cache["ts"]) < _APP_INDEX_TTL:
+        return _app_index_cache["data"]
+
+    # Collect all L-XXX references across all files
+    counts = {}  # learning_id -> set of referencing task IDs
 
     # Search episodics
     ep_dir = PROJECT_ROOT / ".context" / "episodic"
@@ -592,8 +607,9 @@ def _count_applications(learning_id):
         for f in ep_dir.glob("T-*.yaml"):
             try:
                 content = f.read_text()
-                if learning_id in content:
-                    referenced.add(f.stem)
+                for m in re_mod.finditer(r'\bL-\d{3,}\b', content):
+                    lid = m.group(0)
+                    counts.setdefault(lid, set()).add(f.stem)
             except Exception:
                 continue
 
@@ -605,24 +621,40 @@ def _count_applications(learning_id):
         for f in td.glob("T-*.md"):
             try:
                 content = f.read_text()
-                if learning_id in content:
-                    m = re_mod.match(r"(T-\d+)", f.name)
-                    if m:
-                        referenced.add(m.group(1))
+                tid_m = re_mod.match(r"(T-\d+)", f.name)
+                tid = tid_m.group(1) if tid_m else f.stem
+                for m in re_mod.finditer(r'\bL-\d{3,}\b', content):
+                    lid = m.group(0)
+                    counts.setdefault(lid, set()).add(tid)
             except Exception:
                 continue
 
     # Search patterns
     pf = PROJECT_ROOT / ".context" / "project" / "patterns.yaml"
-    extra = 0
+    pattern_lids = set()
     if pf.exists():
         try:
-            if learning_id in pf.read_text():
-                extra = 1
+            content = pf.read_text()
+            for m in re_mod.finditer(r'\bL-\d{3,}\b', content):
+                pattern_lids.add(m.group(0))
         except Exception:
             pass
 
-    return len(referenced) + extra
+    # Convert to counts
+    result = {}
+    all_lids = set(counts.keys()) | pattern_lids
+    for lid in all_lids:
+        result[lid] = len(counts.get(lid, set())) + (1 if lid in pattern_lids else 0)
+
+    _app_index_cache["data"] = result
+    _app_index_cache["ts"] = now
+    return result
+
+
+def _count_applications(learning_id):
+    """Count how many distinct tasks/episodics reference this learning ID."""
+    index = _build_application_index()
+    return index.get(learning_id, 0)
 
 
 @bp.route("/graduation")

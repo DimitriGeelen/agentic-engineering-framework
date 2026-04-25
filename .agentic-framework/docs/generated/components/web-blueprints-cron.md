@@ -15,7 +15,7 @@ Cron files managed by the framework
 | `web/shared.py` | calls |
 | `web/templates/cron.html` | renders |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|

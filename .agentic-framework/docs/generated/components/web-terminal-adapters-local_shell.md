@@ -1,6 +1,6 @@
 # local_shell
 
-> TODO: describe what this component does
+> Terminal adapter that spawns local shell sessions via PTY fork for interactive shell access in the web terminal
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/terminal/adapters/local_shell.py`
 

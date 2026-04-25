@@ -1,6 +1,6 @@
 # terminal
 
-> TODO: describe what this component does
+> Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/terminal.py`
 
@@ -20,7 +20,7 @@ Singleton registry and adapter map (initialized on first use)
 | `web/terminal/session.py` | calls |
 | `web/templates/terminal.html` | renders |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|

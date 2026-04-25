@@ -95,12 +95,24 @@ def collect_files() -> list[Path]:
     return files
 
 
+# T-1235: TTL cache for tag aggregation (was reading 1166 episodic files per /search load)
+import time as _time_mod
+
+_tag_cache = {"data": None, "ts": 0}
+_TAG_CACHE_TTL = 60  # seconds
+
+
 def aggregate_tags(limit: int = 30) -> list[dict]:
     """Aggregate tags from episodic memory for the tag cloud (T-392).
 
     Returns a list of {"tag": str, "count": int} sorted by count descending.
     Excludes low-value tags (single-char, pure IDs like D-001, P-001).
+    T-1235: Cached for 60s to avoid re-reading 1166 files per request.
     """
+    now = _time_mod.monotonic()
+    if _tag_cache["data"] is not None and (now - _tag_cache["ts"]) < _TAG_CACHE_TTL:
+        return _tag_cache["data"][:limit]
+
     import yaml as _yaml
 
     counts: dict[str, int] = {}
@@ -127,6 +139,8 @@ def aggregate_tags(limit: int = 30) -> list[dict]:
         if not skip.match(t) and c >= 2
     ]
     filtered.sort(key=lambda x: (-x["count"], x["tag"]))
+    _tag_cache["data"] = filtered
+    _tag_cache["ts"] = now
     return filtered[:limit]
 
 

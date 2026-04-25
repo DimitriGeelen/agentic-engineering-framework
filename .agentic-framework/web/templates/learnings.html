@@ -74,3 +74,35 @@
     <p class="text-muted italic">No practices recorded yet.</p>
     {% endif %}
 </details>
+<!-- Received learnings (T-1218) — cross-project mirror written by T-1217's subscriber -->
+{% if received_learnings %}
+<details>
+    <summary><strong>Received from peers ({{ received_learnings|length }})</strong></summary>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">Origin</th>
+                <th scope="col">ID</th>
+                <th scope="col">Learning</th>
+                <th scope="col">Task</th>
+                <th scope="col">Source</th>
+                <th scope="col">Date</th>
+                <th scope="col">Received</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in received_learnings %}
+            <tr>
+                <td><code>{{ r.origin_project }}</code></td>
+                <td><code>{{ r.learning_id }}</code></td>
+                <td>{{ r.learning }}</td>
+                <td>{% if r.task %}<code>{{ r.task }}</code>{% endif %}</td>
+                <td><small>{{ r.source | default('') }}</small></td>
+                <td><small>{{ r.date | default('') }}</small></td>
+                <td><small>{{ r.received_at | default('') }}</small></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</details>
+{% endif %}

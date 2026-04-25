@@ -9,10 +9,16 @@ It NEVER directly mutates tasks, patterns, or context.
 import os
 import re
 import subprocess
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 
 import yaml
+
+
+def _task_file_sort_key(path):
+    """Extract numeric portion of task filename for natural sorting."""
+    m = re.search(r"T-(\d+)", path.stem)
+    return int(m.group(1)) if m else 0
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +94,7 @@ def gather_inputs(project_root, framework_root, errors=None):
     active_tasks = []
     active_dir = project_root / ".tasks" / "active"
     if active_dir.exists():
-        for f in sorted(active_dir.glob("T-*.md")):
+        for f in sorted(active_dir.glob("T-*.md"), key=_task_file_sort_key):
             task = parse_task(f)
             if task:
                 active_tasks.append(task)
@@ -97,7 +103,7 @@ def gather_inputs(project_root, framework_root, errors=None):
     completed_tasks = []
     completed_dir = project_root / ".tasks" / "completed"
     if completed_dir.exists():
-        for f in sorted(completed_dir.glob("T-*.md")):
+        for f in sorted(completed_dir.glob("T-*.md"), key=_task_file_sort_key):
             task = parse_task(f)
             if task:
                 completed_tasks.append(task)
@@ -265,6 +271,8 @@ def compute_health(inputs):
                     lu = datetime.fromisoformat(last_update.replace("Z", "+00:00"))
                 elif isinstance(last_update, datetime):
                     lu = last_update if last_update.tzinfo else last_update.replace(tzinfo=timezone.utc)
+                elif isinstance(last_update, date):
+                    lu = datetime.combine(last_update, time.min, tzinfo=timezone.utc)
                 else:
                     continue
                 if (now - lu).days >= 14:
@@ -342,6 +350,8 @@ def extract_warnings(inputs):
                     lu = datetime.fromisoformat(last_update.replace("Z", "+00:00"))
                 elif isinstance(last_update, datetime):
                     lu = last_update if last_update.tzinfo else last_update.replace(tzinfo=timezone.utc)
+                elif isinstance(last_update, date):
+                    lu = datetime.combine(last_update, time.min, tzinfo=timezone.utc)
                 else:
                     continue
                 days = (now - lu).days
@@ -407,6 +417,8 @@ def _compute_velocity(completed_tasks):
                     dt = datetime.fromisoformat(finished.replace("Z", "+00:00"))
                 elif isinstance(finished, datetime):
                     dt = finished if finished.tzinfo else finished.replace(tzinfo=timezone.utc)
+                elif isinstance(finished, date):
+                    dt = datetime.combine(finished, time.min, tzinfo=timezone.utc)
                 else:
                     continue
                 if (now - dt) <= window:

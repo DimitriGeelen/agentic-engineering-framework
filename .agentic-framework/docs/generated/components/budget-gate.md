@@ -46,6 +46,7 @@ Performance target: <100ms per invocation
 ### Tasks
 - T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-819: Build lib/config.sh — 3-tier config resolution for framework settings
 - T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
 - T-834: Fix budget gate false critical — update CONTEXT_WINDOW default 200K to 1M for Opus 4.6
 
