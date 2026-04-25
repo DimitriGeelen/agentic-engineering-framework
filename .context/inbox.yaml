@@ -102,3 +102,10 @@ observations:
     tags: [hooks]
     status: pending
     promoted_to: null
+  - id: OBS-015
+    text: "Pickup importer hard-codes workflow_type=inception for all envelope types (bug-report, feature-proposal, etc.) — leading to 12 closed bug-fix tasks classified as inception. Audit C-001/missing-research check then warns about absent docs/reports/T-XXX-*.md artifacts that bug fixes don't need. Surgical fix landed in T-1440 (skip pickups in audit). Structural fix should change importer to map: bug-report→build, feature-proposal→inception (or build, with inception only for explicit research questions). See agents/pickup or lib/pickup-bus for importer code."
+    captured: 2026-04-25T05:55:27Z
+    context_task: T-1440
+    tags: [classification]
+    status: pending
+    promoted_to: null

@@ -76,7 +76,11 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
             missing_episodic.append(task_id)
 
         # Loop 4: Research artifact check (inception tasks only)
-        if workflow_type == "inception":
+        # T-1440: skip pickup-auto-created tasks — they're misclassified as
+        # inception by the pickup importer but are bug reports / feature
+        # proposals (no research artifact expected; the fix landed via commits).
+        is_pickup_import = "Auto-created from pickup envelope" in content
+        if workflow_type == "inception" and not is_pickup_import:
             inception_count += 1
             has_artifact = False
 
