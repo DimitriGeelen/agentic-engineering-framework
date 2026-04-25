@@ -274,15 +274,19 @@ This rollout addendum is captured in both T-1442 and T-1443 research artifacts. 
 
 Hand to user via `fw task review T-1443` for GO/NO-GO/DEFER.
 
-## Empirical Results (v1.0 → v1.2, 2026-04-25)
+## Empirical Results (v1.0 → v1.4, 2026-04-25)
 
-Three micro-versions shipped in single session. Per D-009 staged rollout, each version was followed by re-dogfood over all 1358 completed tasks.
+Five micro-versions shipped in two sessions. Per D-009 staged rollout, each version was followed by re-dogfood over all 1358 completed tasks.
 
 | Version | Patterns | Layers | Tests | PASS | CONCERN | FAIL | needs_human |
 |---------|----------|--------|-------|------|---------|------|-------------|
 | v1.0 (T-1445) | 4 seed | code-path | 31 | 98.9% | 0.0% | 1.1% | n/a |
 | v1.1 (T-1446) | 8 seed | + Layer 1/2 | 57 | 85.8% | 12.5% | 1.7% | 3.4% |
 | v1.2 (T-1447) | 8 + transitive | + Layer 3 cron | 62 | 86.7% | 11.6% | 1.7% | 3.4% |
+| v1.3 (T-1448) | 8 (same) | + per-AC linkage | 68 | 86.7% | 11.6% | 1.7% | 3.4% |
+| v1.4 (T-1449) | 8 (same) | + override mechanism | 83 | 86.7%* | 11.6%* | 1.7%* | 3.4%* |
+
+*v1.4 baseline: identical to v1.3 with zero active overrides. Live test (single wildcard override on T-1020): PASS=86.7%→86.8% CONCERN=11.6%→11.5%, AC-verify-mismatch fires 192→190.
 
 Pattern fire counts (v1.2 final):
 - AC-verify-mismatch: 192 (was 226 in v1.1; -15% via transitive-coverage tuning)
@@ -302,13 +306,14 @@ Layer 1 escalations (v1.2):
 
 **Validated assumption:** the unmeasured-problem-size question from the inception (% of Human ACs that are mechanically evidenceable) is now measured. Across 1358 historical completions, ~13% have at least one mechanically-detectable concern; ~3% are FAILs with high-confidence patterns; ~3.4% require Layer-1 escalation regardless. This is the empirical baseline for v1.3+ tuning and v3+ pattern expansion.
 
-Learning entries: L-264 (v1.0 dogfood), L-265 (v1.1 dogfood + L-264-(a) fix), L-266 (v1.2 transitive-coverage delta).
+Learning entries: L-264 (v1.0 dogfood), L-265 (v1.1 + L-264-(a) fix), L-266 (v1.2 transitive-coverage delta), L-267 (v1.3 per-AC linkage shipped without changing detection sensitivity), L-268 (v1.4 override mechanism live-validated on T-1020).
 
 ## Tunings recorded for next versions
 
-- **v1.3** (per-AC granular): split task-level verdict into per-AC findings; link findings to specific AC checkboxes for actionable feedback.
-- **v1.4** (override mechanism): wire `feedback-stream.yaml` events from observation to action — TTL'd overrides per-pattern.
-- **v1.5** (Pass A drift re-verification): sandboxed re-run of task verification commands to detect post-completion drift.
+- ✅ **v1.3** (per-AC granular): shipped — `Finding.ac_index/ac_subhead/ac_text` populated by AC-bound detectors; verdict groups findings under each AC.
+- ✅ **v1.4** (override mechanism): shipped — TTL'd per-(task, pattern, ac?) waivers; `bin/fw reviewer override add/list/prune/remove`; suppressions emit `override_applied` to feedback-stream; default 90d TTL forces quarterly re-review.
+- **v1.5** (Pass A drift re-verification): sandboxed re-run of task verification commands to detect post-completion drift. High blast radius — needs isolation strategy. Bundle with Watchtower override management UI.
+- **v2.1** (sovereignty enforcement on overrides): authority gate on who can add overrides; Watchtower approval flow.
 - **v3+** (catalogue expansion): mine literature + internal corpus + peer-agent dispatch to extend 8 seed patterns toward 12+ categories.
 
 ## Anchor files
