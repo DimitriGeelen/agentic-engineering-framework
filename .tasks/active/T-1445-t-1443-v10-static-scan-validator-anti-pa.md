@@ -88,6 +88,24 @@ This is exactly the unmeasured assumption v1.0 was scoped to measure — the rat
   **Expected:** verdict is concise, evidence-cited, actionable. False-positives (if any) are obvious and easy to override.
   **If not:** capture findings in `.context/working/feedback-stream.yaml` via override; will inform v1.1 tuning
 
+## Recommendation
+
+**Recommendation:** GO — accept v1.0 as shipped, proceed to v1.1 tuning.
+
+**Rationale:** The v1.0 scope was to **measure the unmeasured** — what fraction of completed work shows mechanically-evidenceable false success in production data? Result: 1.1% (15/1358 completed tasks fail static scan; 14/15 are real signal). This baseline now exists; before v1.0 it didn't. Verdict format is greppable, evidence-cited, and visible in Watchtower task pages. Default-pass behavior keeps blast radius small while v1.1 tunes the catalogue.
+
+**Evidence:**
+- 1358 completed tasks scanned, 98.9% PASS (1343), 1.1% FAIL (15) — baseline established
+- 14/15 FAIL findings are real signal (e.g., `bin/fw doctor >/dev/null 2>&1 || true` hides failures behind `|| true`)
+- 1 false positive identified (T-1086 grep-of-literal — flagged as v1.1 tuning candidate)
+- 31 unit tests pass, 939 bats tests pass (no regression)
+- Verdict block already lands on every `--status work-completed` (this task itself has one)
+- v1.1 candidate tunings captured as L-264 — the override mechanism (T-1449) is already built and merged
+
+**Out-of-scope (deferred to later micro-versions):** Layer 1 escalation (v1.1), Layer 2 risk-based human signoff (v1.1), Layer 3 daily audit cron (v1.2), per-AC granular verdicts (v1.3), orchestrator routing (v3+). All explicitly NOT in v1.0 per D-009 staged rollout.
+
+**The Human AC asks one question:** when you read the `## Reviewer Verdict` block on this task (or any completed task), does it feel useful? If yes → check the box, close v1.0. If no → drop a note in `.context/working/feedback-stream.yaml` and we'll fold the format change into v1.1.
+
 ## Verification
 
 python3 -m pytest tests/unit/test_reviewer_static_scan.py -q
