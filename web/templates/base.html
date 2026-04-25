@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
     <script src="{{ url_for('static', filename='htmx-ext-sse.js') }}"></script>
+    <script src="{{ url_for('static', filename='csrf-htmx.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='highlight-github-dark.min.css') }}">
     <script src="{{ url_for('static', filename='highlight.min.js') }}"></script>
     <script src="{{ url_for('static', filename='marked.min.js') }}"></script>
@@ -426,27 +427,8 @@
             }
         });
 
-        // CSRF token for htmx requests
-        document.body.addEventListener('htmx:configRequest', function(event) {
-            var csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (csrfToken) {
-                event.detail.headers['X-CSRF-Token'] = csrfToken.getAttribute('content');
-            }
-        });
-
-        // fetch() wrapper that auto-attaches X-CSRF-Token (T-1343 / G-048 Option A)
-        window.fetchWithCsrf = function(url, options) {
-            options = options || {};
-            var method = (options.method || 'GET').toUpperCase();
-            if (method !== 'GET' && method !== 'HEAD') {
-                var meta = document.querySelector('meta[name="csrf-token"]');
-                if (meta) {
-                    options.headers = options.headers || {};
-                    options.headers['X-CSRF-Token'] = meta.getAttribute('content');
-                }
-            }
-            return fetch(url, options);
-        };
+        // CSRF listener + fetchWithCsrf moved to web/static/csrf-htmx.js (T-1453)
+        // so standalone templates (review.html) can share the same code.
 
         // Update active nav after htmx navigation
         document.body.addEventListener('htmx:afterSwap', function(event) {
