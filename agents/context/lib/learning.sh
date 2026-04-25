@@ -72,7 +72,7 @@ EOF
     awk -v id="$id" -v learning="$learning" -v source="${source:-unknown}" -v task="${task:-unknown}" -v date="$date" '
         /^# Candidate learnings/ || /^candidates:/ {
             print "- id: " id
-            print "  learning: \"" learning "\""
+            gsub("\"", "\\\"", learning); print "  learning: \"" learning "\""
             print "  source: " source
             print "  task: " task
             print "  date: " date
@@ -84,7 +84,7 @@ EOF
         END {
             if (!found) {
                 print "- id: " id
-                print "  learning: \"" learning "\""
+                gsub("\"", "\\\"", learning); print "  learning: \"" learning "\""
                 print "  source: " source
                 print "  task: " task
                 print "  date: " date
