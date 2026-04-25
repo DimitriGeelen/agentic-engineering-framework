@@ -2152,3 +2152,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-279
+  learning: "Heisenbug investigation pattern: when adding diagnostic instrumentation makes a failing test pass (T-1475 / OBS-022 — bats fails inside audit eval producing zero output, but adding env-dump+set-x preamble makes it pass), the diagnostic itself widens a timing/race window. Root cause sits in the difference between the diagnostic-on and diagnostic-off paths. Lesson: when a probe affects the outcome, that's a signal, not noise — the next iteration should bisect what the probe is changing (not assume the probe is the fix). Captured for future audit bug investigations."
+  source: P-001
+  task: T-1475
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD

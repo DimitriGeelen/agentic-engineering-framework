@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1475: CTL-013 audit diagnostic — capture stderr/stdout on verification failure (debug OBS-022)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T20:59:20Z
+# ============================================================================
+
+task_id: T-1475
+task_name: "CTL-013 audit diagnostic — capture stderr/stdout on verification failure (debug OBS-022)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-25T20:25:01Z
+completed: 2026-04-25T20:59:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T22:59:14+02:00
+last_commit: 2026-04-25T22:59:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CTL-013 audit diagnostic — capture stderr/stdout + xtrace mode
+
+# Key outcomes
+outcomes:
+  - "`agents/audit/audit.sh` CTL-013 verification block tees stderr/stdout to a tempfile when `FW_AUDIT_VERIFY_DEBUG=1`"
+  - "On verification failure with DEBUG set, first 20 lines of captured output are emitted to stderr alongside the existing FAIL message"
+  - "FW_AUDIT_VERIFY_TRACE=1 adds bash xtrace to captured output for deepest visibility"
+  - "Default behavior (DEBUG unset) unchanged — `>/dev/null 2>&1` still applies, no perf/output regression"
+  - "`bash -n agents/audit/audit.sh` parses"
+  - "DEBUG path produces actionable diagnostic output (rc=N, first 20 lines, separator)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-1475-ctl-013-audit-diagnostic--capture-stderr.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T22:59:14"
+    action: "T-1475: CTL-013 audit diagnostic — capture stderr/stdout + xtrace mode"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 34 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, diagnostic, ctl-013, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 34
+  commits: 1
+  files_changed: 2
+  lines_added: 120
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1475-ctl-013-audit-diagnostic--capture-stderr.md
+generated_by: context-agent-hybrid
