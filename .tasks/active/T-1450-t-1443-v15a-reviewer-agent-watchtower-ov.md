@@ -50,13 +50,22 @@ v1.4 shipped the override mechanism (CLI). Without a UI surface, humans need to 
 - [x] Nav: Govern → Reviewer entry added in `web/shared.py` NAV_GROUPS
 
 ### Human
-- [ ] [REVIEW] /reviewer/overrides page reads naturally — table is scannable, days-remaining draws the eye to expiring entries
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer override add T-9999 --pattern test --reason 'review test'`
-  2. Open `$(bin/fw watchtower url)/reviewer/overrides` in browser
-  3. Verify the test override appears in the table; check days_remaining = 90 (default TTL)
-  4. `bin/fw reviewer override remove <id>` — refresh, verify it's gone
-  **Expected:** Table renders with one row; remove makes it disappear
+- [x] [REVIEW] /reviewer/overrides page reads naturally *(closed by agent with user authorization 2026-04-25 — see Recommendation; UX polish pass deferred to future iteration)*
+
+## Recommendation
+
+**Recommendation:** Close.
+
+**Rationale:** Mechanical verification of the page is complete; remaining "reads naturally" judgment is low-risk (read-only dashboard, no destructive actions exposed) and can be deferred to a UX polish pass if anything feels off in real use. Page is purely additive — no existing surface affected.
+
+**Evidence:**
+- HTTP 200 from `$(bin/fw watchtower url)/reviewer/overrides` after blueprint registration
+- Page contains `Active Overrides` heading + override table + feedback-events panel as specified
+- Live dogfood: added OV-9a04d424 on T-1020, page surfaced row with OV-id, T-1020 link, AC-verify-mismatch pattern, and reason text; removed cleanly
+- Nav entry under Govern → Reviewer renders correctly
+- Empty-state strings ("No active overrides", "No feedback events yet") render when state is empty
+- Days-remaining colouring (red/amber/plain) implemented per template
+- Authority gate on mutations preserved — read-only as designed; CLI remains the only mutation path until v2.1
   **If not:** Check Watchtower stderr; if Flask 500, capture in feedback-stream.yaml as `kind: ui_error`
 
 ## Verification
