@@ -19,7 +19,7 @@ do_promote() {
     shift || true
 
     case "$subcmd" in
-        suggest|status|L-*)
+        suggest|status|L-*|PL-*)
             python3 - "$subcmd" "$@" << 'PYPROMOTE'
 import os, sys, yaml, re
 from datetime import datetime
@@ -215,8 +215,8 @@ elif subcmd == 'status':
         print(f'  {YELLOW}{ready} learning(s) ready for promotion{NC} — run: fw promote suggest')
 
 
-# --- PROMOTE L-XXX command ---
-elif subcmd.startswith('L-'):
+# --- PROMOTE L-XXX or PL-XXX command (T-1283) ---
+elif subcmd.startswith('L-') or subcmd.startswith('PL-'):
     learning_id = subcmd
 
     # Parse args
