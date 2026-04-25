@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1465: Pickup importer: bug-report→build, others→inception (T-1455 GO follow-on, constrained Option A)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T18:08:12Z
+# ============================================================================
+
+task_id: T-1465
+task_name: "Pickup importer: bug-report→build, others→inception (T-1455 GO follow-on, constrained Option A)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T18:06:41Z
+completed: 2026-04-25T18:08:08Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`pickup_create_inception()` in lib/pickup.sh routes `bug-report` envelopes to `--type build` and all other valid types to `--type inception`"
+  - "New bats test verifies the routing for both branches (bug-report → build, feature-proposal → inception)"
+  - "Existing pickup tests still pass (no regression in pickup_origin_frontmatter, pickup_self_deferred)"
+  - "Tags still include the original `pickup_type` so audit/reporting can filter by envelope type"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1465-pickup-importer-bug-reportbuild-othersin.md
+generated_by: context-agent-hybrid
