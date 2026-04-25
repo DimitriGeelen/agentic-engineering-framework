@@ -32,8 +32,12 @@ teardown() {
     awk '/if ! flock -n 201/,/fi/' "$FRAMEWORK_ROOT/agents/context/pre-compact.sh" | grep -q 'exit 0'
 }
 
-@test "pre-compact.sh registers EXIT trap to clean lockfile (T-1476)" {
-    grep -q "trap.*rm -f.*PRE_COMPACT_LOCK_FILE.*EXIT" "$FRAMEWORK_ROOT/agents/context/pre-compact.sh"
+@test "pre-compact.sh does NOT trap-rm the lockfile (T-1478 fix)" {
+    # T-1476 originally added: trap "rm -f '$PRE_COMPACT_LOCK_FILE'" EXIT
+    # T-1478 found that trap to be the cause of sequential bypass: A's trap
+    # removed the lockfile on exit, so B opened a fresh inode and got a fresh
+    # lock. The trap was removed; the lockfile is left in place (empty, harmless).
+    ! grep -qE "^[[:space:]]*trap[[:space:]].*rm[[:space:]].*PRE_COMPACT_LOCK_FILE.*EXIT" "$FRAMEWORK_ROOT/agents/context/pre-compact.sh"
 }
 
 @test "pre-compact.sh degrades gracefully when flock is missing (T-1476)" {

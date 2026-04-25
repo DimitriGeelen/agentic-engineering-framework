@@ -2159,3 +2159,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-280
+  learning: "flock + trap-rm of lockfile defeats sequential mutual exclusion: if process A's exit-trap removes the lockfile, process B opens a fresh inode at the same path and B's flock grants on a different lock. For dual-fire dedup against hooks that may run sequentially, layer time-window dedup (timestamp file) on top of flock — flock alone catches only true concurrency."
+  source: P-001
+  task: T-1478
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
