@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>Reviewer Overrides</h2>
+    <p>
+      Active TTL'd overrides suppress known false-positive findings emitted by the
+      static-scan reviewer (<code>fw reviewer T-XXX</code>, <code>fw reviewer audit</code>).
+      Mutations are CLI-only for now: <code>fw reviewer override add|list|prune|remove</code>.
+      Authority-gated web mutations land in v2.1.
+    </p>
+    <p>
+      <strong>Active:</strong> {{ active_count }} &nbsp;
+      <strong>Expired:</strong> {{ expired_count }}
+    </p>
+  </header>
+
+  <h3>Active Overrides</h3>
+  {% if overrides %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Task</th>
+        <th>Pattern</th>
+        <th>AC</th>
+        <th>Days remaining</th>
+        <th>Expires</th>
+        <th>Reason</th>
+        <th>Added by</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in overrides %}
+      <tr {% if o.is_expired %}style="opacity:0.5"{% endif %}>
+        <td><code>{{ o.id }}</code></td>
+        <td><a href="/review/{{ o.task_id }}">{{ o.task_id }}</a></td>
+        <td><code>{{ o.pattern_id }}</code></td>
+        <td>{{ o.ac_index }}</td>
+        <td>
+          {% if o.is_expired %}<strong style="color:var(--pico-color-red-500)">EXPIRED</strong>
+          {% elif o.days_remaining < 14 %}<strong style="color:var(--pico-color-amber-500)">{{ o.days_remaining }}</strong>
+          {% else %}{{ o.days_remaining }}{% endif %}
+        </td>
+        <td><small>{{ o.expires_at }}</small></td>
+        <td><small>{{ o.reason }}</small></td>
+        <td><small>{{ o.added_by }}</small></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p><em>No active overrides.</em></p>
+  {% endif %}
+
+  <h3>Recent feedback-stream events</h3>
+  {% if event_counts %}
+  <p>
+    {% for k, v in event_counts.items() %}
+      <code>{{ k }}</code>: {{ v }}{% if not loop.last %}, {% endif %}
+    {% endfor %}
+  </p>
+  {% endif %}
+  {% if events %}
+  <table>
+    <thead>
+      <tr>
+        <th>Kind</th>
+        <th>Timestamp</th>
+        <th>Task</th>
+        <th>Scan ID</th>
+        <th>Payload</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in events %}
+      <tr>
+        <td><code>{{ e.kind }}</code></td>
+        <td><small>{{ e.timestamp }}</small></td>
+        <td>{% if e.task_id %}<a href="/review/{{ e.task_id }}">{{ e.task_id }}</a>{% endif %}</td>
+        <td><small><code>{{ e.scan_id }}</code></small></td>
+        <td><small>{{ e.payload }}</small></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p><em>No feedback events yet — run <code>fw reviewer T-XXX</code> on a completed task.</em></p>
+  {% endif %}
+</article>
+{% endblock %}

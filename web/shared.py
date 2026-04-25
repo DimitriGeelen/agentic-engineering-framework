@@ -100,6 +100,7 @@ NAV_GROUPS = [
         ("Risks",         "risks.risk_register",                   None),
         ("Gaps",          "discovery.gaps",                        None),
         ("Quality",       "quality.quality_gate",                  None),
+        ("Reviewer",      "reviewer.reviewer_overrides",           None),
         ("Metrics",       "metrics.project_metrics",               None),
         ("Costs",         "costs.costs_dashboard",                 None),
         ("Config",        "config.config_page",                    None),

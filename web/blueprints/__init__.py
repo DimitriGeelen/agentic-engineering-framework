@@ -32,12 +32,13 @@ def register_blueprints(app):
     from web.blueprints.prompts import bp as prompts_bp
     from web.blueprints.pending import bp as pending_bp
     from web.blueprints.fleet import bp as fleet_bp
+    from web.blueprints.reviewer import bp as reviewer_bp
 
     for bp in (
         core_bp, tasks_bp, timeline_bp, discovery_bp, quality_bp,
         session_bp, metrics_bp, cockpit_bp, inception_bp, enforcement_bp,
         risks_bp, fabric_bp, discoveries_bp, docs_bp, settings_bp, cron_bp, api_bp,
         approvals_bp, review_bp, costs_bp, config_bp, terminal_bp, sessions_page_bp,
-        prompts_bp, pending_bp, fleet_bp,
+        prompts_bp, pending_bp, fleet_bp, reviewer_bp,
     ):
         app.register_blueprint(bp)
