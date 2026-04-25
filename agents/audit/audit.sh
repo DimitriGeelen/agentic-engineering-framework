@@ -2426,9 +2426,12 @@ for f in glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")):
     if cycle_min >= 5:
         continue
 
-    # Filter 3: skip tasks with 2+ commits (proves substantive work happened)
+    # Filter 3: skip tasks with 1+ commits (proves work was captured).
+    # Retroactive workflow (work first, task created+closed) produces 1 commit
+    # at completion time — legitimate, not an anomaly. Real concern is 0 commits
+    # AND fast cycle: work-completed without any captured artifact (T-1263).
     commits = count_commits(tid)
-    if commits >= 2:
+    if commits >= 1:
         continue
 
     # Filter 4: skip administrative batch-evidence/batch-tick tasks (T-1262)
