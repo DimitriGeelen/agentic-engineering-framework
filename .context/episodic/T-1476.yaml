@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1476: Add flock guard to pre-compact.sh — mitigate dual-handover commits from concurrent hook fires (OBS-023)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T21:03:47Z
+# ============================================================================
+
+task_id: T-1476
+task_name: "Add flock guard to pre-compact.sh — mitigate dual-handover commits from concurrent hook fires (OBS-023)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T21:02:18Z
+completed: 2026-04-25T21:03:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T23:03:38+02:00
+last_commit: 2026-04-25T23:03:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  flock guard for pre-compact.sh (mitigate OBS-023 dual handover)
+
+# Key outcomes
+outcomes:
+  - "`agents/context/pre-compact.sh` acquires a flock on `.context/working/.pre-compact.lock` before running"
+  - "On lock acquisition failure (concurrent hook), exits 0 silently (the other run will produce the handover)"
+  - "Lock is released on exit (trap cleanup)"
+  - "Flock missing → falls back to existing behaviour (no breakage on systems without flock)"
+  - "`bash -n agents/context/pre-compact.sh` parses"
+  - "Bats test exercises both branches (lock acquired → runs; lock held → exits silently)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/pre-compact.sh"
+  - ".fabric/components/tests-unit-pre_compact_flock.yaml"
+  - ".tasks/active/T-1476-add-flock-guard-to-pre-compactsh--mitiga.md"
+  - "tests/unit/pre_compact_flock.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T23:03:38"
+    action: "T-1476: flock guard for pre-compact.sh (mitigate OBS-023 dual handover)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 4
+  lines_added: 198
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1476-add-flock-guard-to-pre-compactsh--mitiga.md
+generated_by: context-agent-hybrid
