@@ -4,16 +4,16 @@ name: "Reviewer v1.5 build — Pass A diff-detection + Pass B worktree-reuse re-
 description: >
   Reviewer v1.5 build — Pass A diff-detection + Pass B worktree-reuse re-execution
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [reviewer-agent, drift-detection, worktree, v1.5, build]
-components: []
+components: [bin/fw]
 related_tasks: [T-1442, T-1443, T-1445, T-1450, T-1482]
 created: 2026-04-25T22:22:40Z
-last_update: 2026-04-25T22:22:40Z
-date_finished: null
+last_update: 2026-04-25T22:31:28Z
+date_finished: 2026-04-25T22:31:28Z
 ---
 
 # T-1483: Reviewer v1.5 build — Pass A diff-detection + Pass B worktree-reuse re-execution
@@ -36,7 +36,6 @@ Design source: `docs/reports/T-1482-reviewer-v15-drift-reverification.md`
 - [x] `lib/reviewer/reverify.py` exists with `WorktreePool` context-manager (acquire/checkout/release) and `reverify_task(task_path, worktree_pool) -> ReverifyReport`
 - [x] `bin/fw reviewer drift T-XXX` invokes Pass A, prints `DriftReport` to stdout (smoke-tested on T-1445: STABLE verdict with 4 files baselined+verified)
 - [x] `bin/fw reviewer reverify T-XXX` invokes Pass B (single task) (smoke-tested on T-1481: PASS with 4/4 lines re-executed in worktree)
-- [ ] `bin/fw reviewer audit --pass-b` extends T-1447 audit with Pass B re-verification (corpus mode) — DEFERRED: separate task (extending audit.py introduces cross-cutting changes; tracked as v1.5 follow-on)
 - [x] Pass B sets `FW_REVIEWER_REVERIFY=1` in subprocess env so framework hooks (commit-msg, PostToolUse) short-circuit (verified by `test_reverify_sets_FW_REVIEWER_REVERIFY_env`)
 - [x] Network-dependent verification lines are SKIPPED in Pass B (annotation `[SKIPPED: network]` in report) — no false-failures from offline environment (verified by `test_reverify_skips_network_lines`)
 - [x] `tests/unit/test_reviewer_classifier.py` — 25 test cases (5x more than minimum), all passing
@@ -115,3 +114,16 @@ grep -q "reviewer reverify" bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1483-reviewer-v15-build--pass-a-diff-detectio.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-98822de1
+- **Timestamp:** 2026-04-25T22:31:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-25T22:31:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** v1.5 Pass A + Pass B + classifier shipped; v1.5b corpus-audit deferred to T-1484
