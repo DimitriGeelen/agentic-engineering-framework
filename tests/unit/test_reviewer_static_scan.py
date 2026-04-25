@@ -601,3 +601,74 @@ def test_layer2_low_risk_does_not_force_needs_human(tmp_path, catalogue, escalat
     v = ss.scan_task(task_file, catalogue, escalation_catalogue)
     assert v.risk_declared == "low"
     assert v.needs_human is False  # no Layer 1 triggers, no required signoff
+
+
+# ───────────────── v1.3 per-AC granular ─────────────────
+
+
+def test_v13_finding_dataclass_has_ac_fields_default_none():
+    f = ss.Finding(
+        pattern_id="x", pattern_name="x",
+        detection_confidence="deterministic", lie_severity="severe",
+        location="loc", evidence="ev",
+    )
+    assert f.ac_index is None
+    assert f.ac_subhead is None
+    assert f.ac_text is None
+    d = f.to_dict()
+    assert "ac_index" in d and "ac_subhead" in d and "ac_text" in d
+
+
+def test_v13_empty_body_populates_ac_fields():
+    section = "### Agent\n- [x] real one\n- [x] TODO\n"
+    fs = ss.detect_empty_body(section)
+    assert len(fs) == 1
+    assert fs[0].ac_index == 2
+    assert fs[0].ac_subhead == "Agent"
+    assert fs[0].ac_text and "TODO" in fs[0].ac_text
+
+
+def test_v13_ac_verify_mismatch_populates_ac_fields():
+    ac = "### Agent\n- [x] lib/widget/xyz.py exists with thing\n"
+    verif = "echo 'no path here'\n"
+    fs = ss.detect_ac_verify_mismatch(ac, verif)
+    assert len(fs) == 1
+    assert fs[0].ac_index == 1
+    assert fs[0].ac_subhead == "Agent"
+    assert fs[0].ac_text and "lib/widget/xyz.py" in fs[0].ac_text
+
+
+def test_v13_render_groups_per_ac_findings():
+    v = ss.Verdict(
+        task_id="T-1", scan_id="R-test", timestamp="2026-04-25T00:00:00Z",
+        overall="FAIL", catalogue_version="v1.3-seed",
+    )
+    v.findings = [
+        ss.Finding(
+            pattern_id="empty-body", pattern_name="x",
+            detection_confidence="deterministic", lie_severity="severe",
+            location="AC#1 (Agent)", evidence="[ ] TODO",
+            ac_index=1, ac_subhead="Agent", ac_text="TODO",
+        ),
+        ss.Finding(
+            pattern_id="tautology", pattern_name="x",
+            detection_confidence="deterministic", lie_severity="severe",
+            location="Verification:line 1", evidence="true",
+        ),
+    ]
+    md = ss.render_verdict_md(v)
+    assert "Per-AC findings" in md
+    assert "Verification-level findings" in md
+    assert "AC#1 (Agent)" in md
+
+
+def test_v13_verdict_section_re_matches_old_versions():
+    text = "preamble\n\n## Reviewer Verdict (v1.0)\nold body\n\n## Other\n"
+    assert ss._VERDICT_SECTION_RE.search(text) is not None
+    text2 = "preamble\n\n## Reviewer Verdict (v1.2)\nold body\n\n## Other\n"
+    assert ss._VERDICT_SECTION_RE.search(text2) is not None
+
+
+def test_v13_version_bumped():
+    assert ss.VERSION == "v1.3"
+    assert ss.SCHEMA_VERSION == 2

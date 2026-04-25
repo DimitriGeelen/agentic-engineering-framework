@@ -15,8 +15,8 @@
 # Schema version: 1
 # Source: T-1443 inception + spikes A/D/F/G/I
 
-schema_version: 1
-catalogue_version: "v1.1-seed"
+schema_version: 2
+catalogue_version: "v1.3-seed"
 policy_origin: T-1443
 
 patterns:

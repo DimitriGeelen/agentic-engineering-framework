@@ -2064,3 +2064,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-267
+  learning: "T-1443 v1.3 reviewer dogfood: per-AC granular linkage shipped without changing detection sensitivity. Pass B totals identical to v1.2 (1358 scanned: PASS=1177 CONCERN=158 FAIL=23, needs_human=46) — the change is in finding *structure* (ac_index/ac_subhead/ac_text), not pattern detection. AC-bound findings (empty-body, AC-verify-mismatch) now group under each AC checkbox in rendered verdicts; verification-level findings (tautology, swallowed-errors, etc.) stay in their own group. Foundation for v1.4 override mechanism — overrides need stable AC anchors. _VERDICT_SECTION_RE now matches any `v*` so prior-version verdicts in completed task files get cleanly replaced on re-scan instead of accumulating duplicates."
+  source: P-001
+  task: T-1448
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD

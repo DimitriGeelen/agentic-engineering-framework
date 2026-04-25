@@ -1,7 +1,7 @@
 scan_date: '2026-04-25'
-scan_timestamp: '2026-04-25T10:56:42Z'
+scan_timestamp: '2026-04-25T11:11:26Z'
 pass: B
-catalogue_version: v1.1-seed
+catalogue_version: v1.3-seed
 escalation_version: v1.1-seed
 tasks_scanned: 1358
 errors: []

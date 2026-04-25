@@ -30,8 +30,8 @@ from pathlib import Path
 
 import yaml
 
-VERSION = "v1.0"
-SCHEMA_VERSION = 1
+VERSION = "v1.3"
+SCHEMA_VERSION = 2
 
 
 # ───────────────────────── Data classes ─────────────────────────
@@ -45,6 +45,10 @@ class Finding:
     lie_severity: str
     location: str  # e.g. "Verification:line 3" or "AC#2 (Agent)"
     evidence: str  # the offending line, trimmed
+    # v1.3: per-AC linkage (None for verification-level findings)
+    ac_index: int | None = None
+    ac_subhead: str | None = None
+    ac_text: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -54,6 +58,9 @@ class Finding:
             "lie_severity": self.lie_severity,
             "location": self.location,
             "evidence": self.evidence,
+            "ac_index": self.ac_index,
+            "ac_subhead": self.ac_subhead,
+            "ac_text": self.ac_text,
         }
 
 
@@ -238,6 +245,9 @@ def detect_empty_body(ac_section: str) -> list[Finding]:
                     lie_severity="severe",
                     location=f"AC#{counter} ({current_subhead})",
                     evidence=raw.strip()[:200],
+                    ac_index=counter,
+                    ac_subhead=current_subhead,
+                    ac_text=body.strip()[:200],
                 )
             )
     return findings
@@ -533,6 +543,9 @@ def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> lis
                         lie_severity="narrow",
                         location=f"AC#{counter} ({current_subhead})",
                         evidence=f"path={path} in: {body[:150]}",
+                        ac_index=counter,
+                        ac_subhead=current_subhead,
+                        ac_text=body.strip()[:200],
                     )
                 )
                 break  # one finding per AC line
@@ -647,8 +660,9 @@ def scan_task(
 # ───────────────────────── Verdict rendering ─────────────────────────
 
 VERDICT_HEADER = f"## Reviewer Verdict ({VERSION})"
+# v1.3: match any v* header so prior-version verdicts are cleanly replaced.
 _VERDICT_SECTION_RE = re.compile(
-    rf"^{re.escape(VERDICT_HEADER)}\s*\n(.*?)(?=^## |\Z)",
+    r"^## Reviewer Verdict \(v[0-9.]+\)\s*\n(.*?)(?=^## |\Z)",
     re.MULTILINE | re.DOTALL,
 )
 
@@ -669,13 +683,35 @@ def render_verdict_md(verdict: Verdict) -> str:
         lines.append(f"- **Human signoff (declared):** {verdict.human_signoff_declared}")
     if verdict.findings:
         lines.append(f"- **Findings:** {len(verdict.findings)}")
-        lines.append("")
-        for i, f in enumerate(verdict.findings, start=1):
-            lines.append(
-                f"  {i}. **{f.pattern_id}** ({f.lie_severity}, {f.detection_confidence}) "
-                f"@ {f.location}"
-            )
-            lines.append(f"     - evidence: `{f.evidence}`")
+        ac_bound = [f for f in verdict.findings if f.ac_index is not None]
+        verif_bound = [f for f in verdict.findings if f.ac_index is None]
+        # v1.3: per-AC grouping
+        if ac_bound:
+            lines.append("")
+            lines.append("**Per-AC findings:**")
+            lines.append("")
+            grouped: dict[tuple[str, int], list[Finding]] = {}
+            for f in ac_bound:
+                grouped.setdefault((f.ac_subhead or "ACs", f.ac_index or 0), []).append(f)
+            for (subhead, idx) in sorted(grouped.keys()):
+                fs = grouped[(subhead, idx)]
+                ac_text = fs[0].ac_text or ""
+                lines.append(f"- **AC#{idx} ({subhead})** — {ac_text}")
+                for f in fs:
+                    lines.append(
+                        f"  - **{f.pattern_id}** ({f.lie_severity}, {f.detection_confidence}) "
+                        f"— `{f.evidence}`"
+                    )
+        if verif_bound:
+            lines.append("")
+            lines.append("**Verification-level findings:**")
+            lines.append("")
+            for i, f in enumerate(verif_bound, start=1):
+                lines.append(
+                    f"  {i}. **{f.pattern_id}** ({f.lie_severity}, {f.detection_confidence}) "
+                    f"@ {f.location}"
+                )
+                lines.append(f"     - evidence: `{f.evidence}`")
     else:
         lines.append("- **Findings:** none")
     if verdict.escalations:
