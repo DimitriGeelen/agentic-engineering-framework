@@ -843,6 +843,49 @@ print(f'{total},{broken},{stale_paths}')
             echo -e "  ${YELLOW}WARN${NC}  Only $hook_total hooks configured (expected 11+)"
             warnings=$((warnings + 1))
         fi
+
+        # T-1480: Duplicate framework hook scan (root cause of OBS-023).
+        # Mirrors T-1479's check from `fw upgrade` so users see it on every
+        # `fw doctor` run, not only when upgrading. Read-only — surfaces
+        # the overlap; remediation stays the user's call.
+        local user_settings_file="$HOME/.claude/settings.json"
+        if [ -f "$user_settings_file" ]; then
+            local dup_pairs
+            dup_pairs=$(USER_FILE="$user_settings_file" PROJ_FILE="$settings_file" python3 -c "
+import json, os
+def fw_hooks(path):
+    out = set()
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError, OSError):
+        return out
+    for event, entries in data.get('hooks', {}).items():
+        for entry in entries:
+            for hook in entry.get('hooks', []):
+                cmd = hook.get('command', '')
+                if 'fw hook' in cmd:
+                    name = cmd.split('fw hook ')[-1].strip().split()[0]
+                elif '.agentic-framework' in cmd:
+                    name = cmd.strip().split('/')[-1]
+                else:
+                    continue
+                out.add((event, name))
+    return out
+user = fw_hooks(os.environ['USER_FILE'])
+proj = fw_hooks(os.environ['PROJ_FILE'])
+overlap = sorted(user & proj)
+print('|'.join(f'{e}:{n}' for e, n in overlap))
+" 2>/dev/null || echo "")
+            if [ -n "$dup_pairs" ]; then
+                local dup_count
+                dup_count=$(echo "$dup_pairs" | tr '|' '\n' | wc -l)
+                echo -e "  ${YELLOW}WARN${NC}  Duplicate framework hook(s) in $user_settings_file: $dup_count overlap"
+                echo -e "        Pairs: $(echo "$dup_pairs" | tr '|' ' ')"
+                echo -e "        Both fire on every Claude Code event (cause of OBS-023). Recommend removing duplicates from $user_settings_file."
+                warnings=$((warnings + 1))
+            fi
+        fi
     else
         echo -e "  ${YELLOW}WARN${NC}  No .claude/settings.json found (run: fw init)"
         warnings=$((warnings + 1))
