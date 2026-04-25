@@ -520,6 +520,13 @@ def record_decision(task_id):
             )
         return f'<p style="color:var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
 
+    # T-1454 (OBS-017): non-htmx form path — surface failure via ?error= query param
+    # so the rendered inception_detail page can show a banner. Without this,
+    # the user sees a silent redirect and clicks GO repeatedly.
+    if not ok:
+        err = (stderr or stdout or "Unknown error from fw inception decide")[:300]
+        return redirect(url_for("inception.inception_detail", task_id=task_id, error=err))
+
     return redirect(url_for("inception.inception_detail", task_id=task_id))
 
 

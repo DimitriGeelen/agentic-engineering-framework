@@ -233,3 +233,56 @@ def test_inception_decide_rejects_malformed_task_id(consumer_project, monkeypatc
         data={"decision": "go", "rationale": "bad id", "_csrf_token": csrf},
     )
     assert resp.status_code == 404
+
+
+def test_inception_decide_failure_redirects_with_error_param(consumer_project, monkeypatch):
+    """T-1454 (OBS-017): non-htmx decide failure redirects with ?error= so the
+    inception_detail page can render an error banner. Without this, the user
+    sees a silent reload and clicks GO repeatedly (3 duplicate Updates entries
+    captured in T-1452 session)."""
+    _make_inception_task(consumer_project, "T-9996")
+    client, csrf = _flask_client(monkeypatch)
+
+    # Mock the underlying fw call to fail
+    import web.blueprints.inception as inception_bp
+    monkeypatch.setattr(
+        inception_bp, "run_fw_command",
+        lambda *args, **kwargs: ("", "Required AC unchecked: foo", False),
+    )
+
+    resp = client.post(
+        "/inception/T-9996/decide",
+        data={"decision": "go", "rationale": "test", "_csrf_token": csrf},
+    )
+
+    # Must be a redirect (302) with ?error= in Location, not a silent 302 to /inception/T-XXX
+    assert resp.status_code == 302
+    location = resp.headers.get("Location", "")
+    assert "/inception/T-9996" in location, f"redirect target wrong: {location}"
+    assert "error=" in location, (
+        f"redirect missing error= param — silent failure regression. Location={location}"
+    )
+    assert "Required+AC+unchecked" in location or "Required%20AC%20unchecked" in location, (
+        f"error message not propagated: {location}"
+    )
+
+
+def test_inception_decide_failure_htmx_returns_500(consumer_project, monkeypatch):
+    """htmx path is unchanged — returns 500 with error fragment (T-643)."""
+    _make_inception_task(consumer_project, "T-9995")
+    client, csrf = _flask_client(monkeypatch)
+
+    import web.blueprints.inception as inception_bp
+    monkeypatch.setattr(
+        inception_bp, "run_fw_command",
+        lambda *args, **kwargs: ("", "Required AC unchecked: foo", False),
+    )
+
+    resp = client.post(
+        "/inception/T-9995/decide",
+        data={"decision": "go", "rationale": "test", "_csrf_token": csrf},
+        headers={"HX-Request": "true"},
+    )
+
+    assert resp.status_code == 500
+    assert b"Error:" in resp.data

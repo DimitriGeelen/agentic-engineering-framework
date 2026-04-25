@@ -338,6 +338,16 @@
 {% if task._location == 'active' %}
 <article class="section-card">
     <header>{% if dec == 'pending' %}Record Decision{% else %}Record Superseding Decision{% endif %}</header>
+    {% if request.args.get('error') %}
+    <div role="alert" style="background: var(--pico-del-color, #fee); border: 1px solid #c33; color: #800; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.75rem; font-size: 0.85rem;">
+        <strong>Decision NOT recorded.</strong>
+        <code style="display: block; margin-top: 0.4rem; white-space: pre-wrap; background: rgba(255,255,255,0.5); padding: 0.4rem; border-radius: 4px;">{{ request.args.get('error') }}</code>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem; opacity: 0.85;">
+            Common causes: required Acceptance Criteria still unchecked, sovereignty gate, or task review marker missing.
+            Re-submit after addressing the cause; previous attempts did NOT persist.
+        </p>
+    </div>
+    {% endif %}
     {% if dec != 'pending' %}
     <p style="font-size: 0.85rem; color: var(--pico-muted-color); margin-bottom: 0.75rem;">
         Current decision: <strong>{{ dec | upper }}</strong>. Recording a new decision replaces the
