@@ -198,6 +198,10 @@ PATTERNS = [
 
 # T-1194: when Recommendation section exists, also tick the 3 ceremonial
 # Agent ACs from the default inception template. Never touches custom ACs.
+# T-1472 (OBS-019 Level D): primary detection is now `<!-- @auto-tick-on-decide -->`
+# marker — adjacent to the AC line or on the line above. AGENT_PATTERNS regex
+# is retained as a fallback for tasks predating the marker (most existing
+# inception tasks). Markered detection wins on text-wording independence.
 AGENT_PATTERNS = [
     re.compile(r'^Problem statement validated', re.IGNORECASE),
     re.compile(r'^Assumptions tested', re.IGNORECASE),
@@ -206,23 +210,27 @@ AGENT_PATTERNS = [
     # restate "decision recorded" — the decide command itself satisfies them.
     re.compile(r'\[Inception decision recorded\]', re.IGNORECASE),
 ]
+TICK_MARKER = '<!-- @auto-tick-on-decide -->'
 has_recommendation = bool(re.search(r'^## Recommendation\s*$', content, re.MULTILINE))
 
 lines = content.split('\n')
 in_human = False
 in_agent = False
 out = []
+prev_line = ''
 for line in lines:
     stripped = line.strip()
     if stripped == '### Human':
         in_human = True
         in_agent = False
         out.append(line)
+        prev_line = line
         continue
     if stripped == '### Agent':
         in_agent = True
         in_human = False
         out.append(line)
+        prev_line = line
         continue
     # Exit subsection at next ## or ### header.
     if (in_human or in_agent) and (line.startswith('## ') or line.startswith('### ')):
@@ -230,13 +238,19 @@ for line in lines:
         in_agent = False
     if in_human:
         m = re.match(r'^(\s*)- \[ \](.*)$', line)
-        if m and any(p.search(m.group(2)) for p in PATTERNS):
-            line = f'{m.group(1)}- [x]{m.group(2)}'
+        if m:
+            # T-1472: marker on this line OR on the line above wins
+            has_marker = (TICK_MARKER in line) or (TICK_MARKER in prev_line)
+            if has_marker or any(p.search(m.group(2)) for p in PATTERNS):
+                line = f'{m.group(1)}- [x]{m.group(2)}'
     elif in_agent and has_recommendation:
         m = re.match(r'^(\s*)- \[ \]\s*(.*)$', line)
-        if m and any(p.search(m.group(2)) for p in AGENT_PATTERNS):
-            line = f'{m.group(1)}- [x] {m.group(2)}'
+        if m:
+            has_marker = (TICK_MARKER in line) or (TICK_MARKER in prev_line)
+            if has_marker or any(p.search(m.group(2)) for p in AGENT_PATTERNS):
+                line = f'{m.group(1)}- [x] {m.group(2)}'
     out.append(line)
+    prev_line = line
 
 with open(task_file, 'w') as f:
     f.write('\n'.join(out))

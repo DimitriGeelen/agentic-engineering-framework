@@ -44,11 +44,15 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
+<!-- @auto-tick-on-decide -->
 - [ ] Problem statement validated
+<!-- @auto-tick-on-decide -->
 - [ ] Assumptions tested
+<!-- @auto-tick-on-decide -->
 - [ ] Recommendation written with rationale
 
 ### Human
+<!-- @auto-tick-on-decide -->
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
