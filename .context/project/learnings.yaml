@@ -2050,3 +2050,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-265
+  learning: "T-1443 v1.1 reviewer dogfood: catalogue grew 4→8 patterns + Layer 1 escalation. New distribution over 1358 completed tasks: PASS 85.8% / CONCERN 12.5% / FAIL 1.7% (was 98.9 / 0 / 1.1 in v1.0). L-264-(a) fix verified — T-1086 (grep-of-literal --no-verify) now PASS. New pattern fires: AC-verify-mismatch 226 (high FP rate — heuristic flags transitively-verified paths, e.g. AC mentions agents/foo/bar.sh which is exercised by 'bin/fw test unit' but not greppable in verification text); empty-output-success 46; skip-as-pass 11; mock-only-integration 4. Layer 1 escalations: cross-project-blast 31, destructive-action 13, secret-handling 1, external-publish 1; 3.4% of tasks (46) flagged needs_human. v1.2 tuning candidates: (1) AC-verify-mismatch — add transitive-verification heuristic (path is exercised if any verification command runs a test runner that covers the path's test suite); (2) Consider downgrading AC-verify-mismatch from narrow→staleness severity until tuned. Layer 1 escalation feels well-calibrated at 3.4% rate."
+  source: P-001
+  task: T-1446
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD

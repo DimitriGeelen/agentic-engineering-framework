@@ -16,7 +16,7 @@
 # Source: T-1443 inception + spikes A/D/F/G/I
 
 schema_version: 1
-catalogue_version: "v1.0-seed"
+catalogue_version: "v1.1-seed"
 policy_origin: T-1443
 
 patterns:
@@ -86,12 +86,85 @@ patterns:
       Pattern: a line that prints success text followed by no exit-status check.
       Heuristic — the false-positive rate is non-trivial; v1.0 raises CONCERN
       not FAIL on this pattern alone.
+
+      v1.1: widened token set (TESTS PASSED, BUILD SUCCESSFUL, VERIFIED, GREEN).
     examples_positive:
       - "echo 'TESTS PASS' >> evidence.txt"
       - "printf 'BUILD OK\\n' && exit 0"
+      - "echo 'VERIFIED' >> log"
     examples_negative:
       - "bin/fw test unit | tee /tmp/test.log; grep -q 'PASS' /tmp/test.log"
       - "test \"$(./run-tests.sh)\" = 'OK'"
+
+  - id: empty-output-success
+    name: "Exit-code-only verification with discarded output"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_empty_output_success"
+    description: >
+      Verification line that redirects output to /dev/null and relies solely
+      on the exit code. Many commands return 0 even when no real work is done
+      (compilers without input, idempotent operations, etc.). Asserting on
+      output content is the antifragile alternative.
+      Exempt: `grep -q`, `test`, `[ ]` — these are designed for silent assertion.
+    examples_positive:
+      - "bin/fw doctor > /dev/null"
+      - "make build > /dev/null 2>&1"
+    examples_negative:
+      - "grep -q 'expected' file.txt"
+      - "test -f required.json"
+
+  - id: skip-as-pass
+    name: "Skipped/collected tests treated as pass"
+    detection_confidence: deterministic
+    lie_severity: severe
+    detector_ref: "lib.reviewer.static_scan:detect_skip_as_pass"
+    description: >
+      Verification command runs in collect-only or skip-mode, exiting 0 without
+      executing the underlying assertion. `pytest --collect-only`, `make test
+      SKIP=true`, `xfail`-decorated tests, etc. The runner reports success
+      but the test never ran.
+    examples_positive:
+      - "pytest --collect-only tests/"
+      - "make test SKIP=true"
+      - "pytest -m 'not slow' --xfail tests/"
+    examples_negative:
+      - "pytest tests/unit/"
+      - "bin/fw test integration"
+
+  - id: mock-only-integration
+    name: "Integration AC verified only by unit tests"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_mock_only_integration"
+    description: >
+      AC promises integration / e2e / cross-process behavior, but verification
+      commands only reference `tests/unit/` paths. Unit tests cannot cover
+      integration claims by definition.
+      Heuristic — does not cover semantic mock detection (the harder case).
+    examples_positive:
+      - "AC: 'integration tested' + Verification: pytest tests/unit/test_x.py"
+    examples_negative:
+      - "AC: 'integration tested' + Verification: pytest tests/integration/"
+      - "AC: 'unit test exists' + Verification: pytest tests/unit/"
+
+  - id: AC-verify-mismatch
+    name: "Checked AC names a file path the verification never touches"
+    detection_confidence: heuristic
+    lie_severity: narrow
+    detector_ref: "lib.reviewer.static_scan:detect_ac_verify_mismatch"
+    description: >
+      A checked Agent AC mentions a specific source file path with a code
+      extension (.py, .sh, .yaml, etc.), but no verification line references
+      that path. Suggests the AC was ticked without mechanical proof of the
+      file's existence/correctness.
+      Conservative — only fires when path is explicitly named in AC body and
+      not in any non-comment verification line. False-positive risk: aspirational
+      paths in long AC narratives.
+    examples_positive:
+      - "AC: 'lib/x/foo.py exists' (checked) + Verification: no reference to lib/x/foo.py"
+    examples_negative:
+      - "AC: 'lib/x/foo.py exists' (checked) + Verification: 'test -f lib/x/foo.py'"
 
 # Verdict thresholds (v1.0):
 #   any pattern with lie_severity in {complete, severe} fires → FAIL

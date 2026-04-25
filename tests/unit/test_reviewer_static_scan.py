@@ -218,7 +218,7 @@ def _make_task(tmp_path: Path, name: str, body_extra: str = "") -> Path:
         "# T-9999: Test\n\n"
         "## Acceptance Criteria\n\n"
         "### Agent\n"
-        "- [x] Real criterion: lib/x.py exists\n\n"
+        "- [x] Real criterion describing what was done\n\n"
         "## Verification\n\n"
         + body_extra
         + "\n## Decisions\n\nnone\n"
@@ -299,3 +299,235 @@ def test_feedback_stream_is_append_only(tmp_path):
     ss.append_feedback_event(stream, {"kind": "scan_emitted", "timestamp": "t2", "scan_id": "r2", "task_id": "T-2", "payload": {}})
     second = stream.read_text()
     assert second.startswith(first), "earlier events must remain unchanged at file head"
+
+
+# ───────────────── v1.1: L-264 fix — grep-of-literal exception ─────────────────
+
+
+def test_swallowed_errors_l264_grep_of_no_verify_string():
+    """Regression for T-1086: grep -c 'git commit --no-verify' must NOT fire."""
+    section = "grep -c 'git commit --no-verify' agents/git/lib/hooks.sh\n"
+    assert ss.detect_swallowed_errors(section) == []
+
+
+def test_swallowed_errors_l264_awk_of_no_verify():
+    section = "awk '/--no-verify/' file.sh\n"
+    assert ss.detect_swallowed_errors(section) == []
+
+
+def test_swallowed_errors_l264_real_no_verify_still_fires():
+    """The fix must not introduce new false-negatives on real --no-verify use."""
+    section = "git commit --no-verify -m 'skip'\n"
+    assert len(ss.detect_swallowed_errors(section)) == 1
+
+
+# ───────────────── v1.1: empty-output-success ─────────────────
+
+
+def test_empty_output_success_positive_dev_null():
+    f = ss.detect_empty_output_success("bin/fw doctor > /dev/null\n")
+    assert len(f) == 1 and f[0].pattern_id == "empty-output-success"
+
+
+def test_empty_output_success_positive_dev_null_2_1():
+    f = ss.detect_empty_output_success("make build > /dev/null 2>&1\n")
+    assert len(f) == 1
+
+
+def test_empty_output_success_negative_grep_q_exempted():
+    f = ss.detect_empty_output_success("grep -q 'expected' file.txt > /dev/null\n")
+    assert f == []
+
+
+def test_empty_output_success_negative_test_exempted():
+    f = ss.detect_empty_output_success("test -f required.json\n")
+    assert f == []
+
+
+# ───────────────── v1.1: skip-as-pass ─────────────────
+
+
+def test_skip_as_pass_positive_collect_only():
+    f = ss.detect_skip_as_pass("pytest --collect-only tests/\n")
+    assert len(f) == 1 and f[0].pattern_id == "skip-as-pass"
+
+
+def test_skip_as_pass_positive_skip_env():
+    f = ss.detect_skip_as_pass("make test SKIP=true\n")
+    assert len(f) == 1
+
+
+def test_skip_as_pass_negative_normal_pytest():
+    f = ss.detect_skip_as_pass("pytest tests/unit/\n")
+    assert f == []
+
+
+def test_skip_as_pass_negative_marker_filter():
+    f = ss.detect_skip_as_pass("pytest -m unit tests/\n")
+    assert f == []
+
+
+# ───────────────── v1.1: mock-only-integration ─────────────────
+
+
+def test_mock_only_integration_positive():
+    ac = "### Agent\n- [x] Integration tested with real database\n"
+    verif = "pytest tests/unit/test_db.py\n"
+    f = ss.detect_mock_only_integration(ac, verif)
+    assert len(f) == 1 and f[0].pattern_id == "mock-only-integration"
+
+
+def test_mock_only_integration_positive_e2e_word():
+    ac = "### Agent\n- [x] End-to-end flow validated\n"
+    verif = "pytest tests/unit/test_flow.py\n"
+    f = ss.detect_mock_only_integration(ac, verif)
+    assert len(f) == 1
+
+
+def test_mock_only_integration_negative_real_integration_path():
+    ac = "### Agent\n- [x] Integration tested with real database\n"
+    verif = "pytest tests/integration/test_db.py\n"
+    f = ss.detect_mock_only_integration(ac, verif)
+    assert f == []
+
+
+def test_mock_only_integration_negative_no_integration_in_ac():
+    ac = "### Agent\n- [x] Unit test exists for foo\n"
+    verif = "pytest tests/unit/test_foo.py\n"
+    f = ss.detect_mock_only_integration(ac, verif)
+    assert f == []
+
+
+# ───────────────── v1.1: AC-verify-mismatch ─────────────────
+
+
+def test_ac_verify_mismatch_positive_unverified_path():
+    ac = "### Agent\n- [x] lib/x/foo.py exists with the new helper\n"
+    verif = "bin/fw test unit\n"
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert len(f) == 1 and f[0].pattern_id == "AC-verify-mismatch"
+
+
+def test_ac_verify_mismatch_negative_path_referenced():
+    ac = "### Agent\n- [x] lib/x/foo.py exists with the new helper\n"
+    verif = "test -f lib/x/foo.py\n"
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert f == []
+
+
+def test_ac_verify_mismatch_negative_unchecked_ac():
+    ac = "### Agent\n- [ ] lib/x/foo.py exists with the new helper\n"
+    verif = "bin/fw test unit\n"
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert f == []
+
+
+def test_ac_verify_mismatch_skips_human_section():
+    ac = "### Human\n- [x] lib/x/foo.py looks right\n"
+    verif = "bin/fw test unit\n"
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert f == []
+
+
+# ───────────────── v1.1: catalogue v1.1-seed ─────────────────
+
+
+def test_catalogue_v11_has_eight_patterns(catalogue):
+    expected = {"tautology", "empty-body", "swallowed-errors", "output-spoofing",
+                "empty-output-success", "skip-as-pass", "mock-only-integration", "AC-verify-mismatch"}
+    actual = {p["id"] for p in catalogue["patterns"]}
+    assert expected.issubset(actual)
+
+
+# ───────────────── v1.1: Layer 1 escalation ─────────────────
+
+
+@pytest.fixture
+def escalation_catalogue() -> dict:
+    return ss.load_catalogue(ROOT / "policy" / "escalation-patterns.yaml")
+
+
+def test_escalation_destructive_action_fires_on_force_push(escalation_catalogue):
+    triggers = ss.evaluate_escalations(
+        ac_section="",
+        verif_section="git push --force origin main\n",
+        meta={},
+        escalation_catalogue=escalation_catalogue,
+    )
+    ids = {t.trigger_id for t in triggers}
+    assert "destructive-action" in ids
+
+
+def test_escalation_external_publish_fires_on_npm_publish(escalation_catalogue):
+    triggers = ss.evaluate_escalations(
+        ac_section="",
+        verif_section="npm publish --access public\n",
+        meta={},
+        escalation_catalogue=escalation_catalogue,
+    )
+    ids = {t.trigger_id for t in triggers}
+    assert "external-publish" in ids
+
+
+def test_escalation_no_fire_on_benign_task(escalation_catalogue):
+    triggers = ss.evaluate_escalations(
+        ac_section="### Agent\n- [x] foo.py exists\n",
+        verif_section="test -f foo.py\n",
+        meta={},
+        escalation_catalogue=escalation_catalogue,
+    )
+    assert triggers == []
+
+
+# ───────────────── v1.1: Layer 2 frontmatter ─────────────────
+
+
+def test_layer2_risk_high_sets_needs_human(tmp_path, catalogue, escalation_catalogue):
+    task_file = tmp_path / ".tasks" / "active" / "T-9999-test.md"
+    task_file.parent.mkdir(parents=True)
+    task_file.write_text(
+        "---\n"
+        "id: T-9999\n"
+        'name: "Test"\n'
+        "status: started-work\n"
+        "risk: high\n"
+        "---\n\n"
+        "# T-9999: Test\n\n"
+        "## Acceptance Criteria\n\n### Agent\n- [x] foo exists\n\n"
+        "## Verification\n\ntest -f foo\n\n"
+    )
+    v = ss.scan_task(task_file, catalogue, escalation_catalogue)
+    assert v.risk_declared == "high"
+    assert v.needs_human is True
+
+
+def test_layer2_human_signoff_required_sets_needs_human(tmp_path, catalogue, escalation_catalogue):
+    task_file = tmp_path / ".tasks" / "active" / "T-9999-test.md"
+    task_file.parent.mkdir(parents=True)
+    task_file.write_text(
+        "---\n"
+        "id: T-9999\n"
+        "human_signoff: required\n"
+        "---\n\n"
+        "## Acceptance Criteria\n\n### Agent\n- [x] foo exists\n\n"
+        "## Verification\n\ntest -f foo\n\n"
+    )
+    v = ss.scan_task(task_file, catalogue, escalation_catalogue)
+    assert v.human_signoff_declared == "required"
+    assert v.needs_human is True
+
+
+def test_layer2_low_risk_does_not_force_needs_human(tmp_path, catalogue, escalation_catalogue):
+    task_file = tmp_path / ".tasks" / "active" / "T-9999-test.md"
+    task_file.parent.mkdir(parents=True)
+    task_file.write_text(
+        "---\n"
+        "id: T-9999\n"
+        "risk: low\n"
+        "---\n\n"
+        "## Acceptance Criteria\n\n### Agent\n- [x] foo exists\n\n"
+        "## Verification\n\ntest -f foo\n\n"
+    )
+    v = ss.scan_task(task_file, catalogue, escalation_catalogue)
+    assert v.risk_declared == "low"
+    assert v.needs_human is False  # no Layer 1 triggers, no required signoff

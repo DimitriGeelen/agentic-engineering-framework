@@ -58,6 +58,25 @@ class Finding:
 
 
 @dataclass
+class EscalationTrigger:
+    """A Layer 1 escalation pattern that fired against the task."""
+    trigger_id: str
+    trigger_name: str
+    severity: str
+    reason: str
+    matched: str  # short snippet of the matching text
+
+    def to_dict(self) -> dict:
+        return {
+            "trigger_id": self.trigger_id,
+            "trigger_name": self.trigger_name,
+            "severity": self.severity,
+            "reason": self.reason,
+            "matched": self.matched,
+        }
+
+
+@dataclass
 class Verdict:
     task_id: str
     scan_id: str
@@ -65,6 +84,11 @@ class Verdict:
     overall: str  # PASS | CONCERN | FAIL
     findings: list[Finding] = field(default_factory=list)
     catalogue_version: str = ""
+    # v1.1 additions:
+    escalations: list[EscalationTrigger] = field(default_factory=list)
+    needs_human: bool = False  # any escalation OR Layer 2 declaration
+    risk_declared: str | None = None
+    human_signoff_declared: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -74,6 +98,10 @@ class Verdict:
             "overall": self.overall,
             "catalogue_version": self.catalogue_version,
             "findings": [f.to_dict() for f in self.findings],
+            "escalations": [e.to_dict() for e in self.escalations],
+            "needs_human": self.needs_human,
+            "risk_declared": self.risk_declared,
+            "human_signoff_declared": self.human_signoff_declared,
         }
 
 
@@ -223,6 +251,13 @@ _SWALLOWED_PATTERNS = [
     (re.compile(r"^\s*set\s+\+e\s*$"), "set +e (errors disabled)"),
 ]
 
+# L-264-(a): false positive when --no-verify appears inside a literal
+# string argument to grep/awk/sed/jq — that's verifying the *presence* of
+# the bypass marker, not using it.
+_GREP_LITERAL_RE = re.compile(
+    r"\b(grep|awk|sed|jq|rg|ag)\b[^|]*['\"][^'\"]*--no-verify[^'\"]*['\"]"
+)
+
 
 def detect_swallowed_errors(verification_section: str) -> list[Finding]:
     findings: list[Finding] = []
@@ -231,6 +266,9 @@ def detect_swallowed_errors(verification_section: str) -> list[Finding]:
     for lineno, raw in enumerate(verification_section.splitlines(), start=1):
         line = raw.strip()
         if not line or line.startswith("#"):
+            continue
+        # L-264-(a): suppress if --no-verify appears as a grep/awk/sed pattern
+        if _GREP_LITERAL_RE.search(line):
             continue
         for pat, _label in _SWALLOWED_PATTERNS:
             if pat.search(line):
@@ -248,8 +286,10 @@ def detect_swallowed_errors(verification_section: str) -> list[Finding]:
     return findings
 
 
+# L-264-(b): widened — added more success markers + catch standalone
+# success-printing lines as well as echo/printf forms.
 _SUCCESS_TOKEN_RE = re.compile(
-    r"\b(TESTS\s+PASS|BUILD\s+OK|ALL\s+GREEN|SUCCESS|PASSED|OK)\b",
+    r"\b(TESTS?\s+PASS(?:ED|ING)?|BUILD\s+(?:OK|SUCCESSF?UL)|ALL\s+GREEN|SUCCESS|PASSED|VERIFIED|DONE|GREEN)\b",
     re.IGNORECASE,
 )
 _ECHO_PRINTF_RE = re.compile(r"^\s*(echo|printf)\s+", re.IGNORECASE)
@@ -261,6 +301,8 @@ def detect_output_spoofing(verification_section: str) -> list[Finding]:
     Conservative — only flags lines where echo/printf produces a success token
     AND the line is not piped into grep/test/awk/etc. (which would constitute
     a real assertion).
+
+    v1.1 widening: more success tokens, also catches `echo "OK" >> file`.
     """
     findings: list[Finding] = []
     if not verification_section:
@@ -292,6 +334,183 @@ def detect_output_spoofing(verification_section: str) -> list[Finding]:
     return findings
 
 
+# ───────────────────────── v1.1 detectors ─────────────────────────
+
+
+def detect_empty_output_success(verification_section: str) -> list[Finding]:
+    """Verification redirects all output to /dev/null and relies only on exit code.
+
+    Risk: many commands exit 0 even when no real work happens (`grep` with
+    `-q` is fine, but `command > /dev/null` without checking output is suspect).
+    Heuristic — flag lines ending in `> /dev/null` (without 2>&1 + grep -q etc).
+    """
+    findings: list[Finding] = []
+    if not verification_section:
+        return findings
+    for lineno, raw in enumerate(verification_section.splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        # only flag if line is essentially `cmd > /dev/null` with no further check
+        if not re.search(r">\s*/dev/null\s*(2>&1)?\s*$", line):
+            continue
+        # exempt grep -q (silent grep is the correct pattern)
+        if re.search(r"\bgrep\s+(-\w*q\w*|--quiet)\b", line):
+            continue
+        # exempt test/[
+        if re.match(r"^(test|\[)\b", line):
+            continue
+        findings.append(
+            Finding(
+                pattern_id="empty-output-success",
+                pattern_name="Exit-code-only verification with discarded output",
+                detection_confidence="heuristic",
+                lie_severity="partial",
+                location=f"Verification:line {lineno}",
+                evidence=line[:200],
+            )
+        )
+    return findings
+
+
+_SKIP_AS_PASS_RE = re.compile(
+    r"(--collect-only|--skip\b|SKIP=true|--dry-run|--check-only|pytest\.mark\.skip|@unittest\.skip|xfail|@xfail|--xfail)",
+    re.IGNORECASE,
+)
+
+
+def detect_skip_as_pass(verification_section: str) -> list[Finding]:
+    """Verification command flags that collect/skip rather than execute.
+
+    `pytest --collect-only` exits 0 if collection succeeds — does NOT run tests.
+    `make test SKIP=true` typically skips. xfail-ed assertions count as passes.
+    """
+    findings: list[Finding] = []
+    if not verification_section:
+        return findings
+    for lineno, raw in enumerate(verification_section.splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if _SKIP_AS_PASS_RE.search(line):
+            findings.append(
+                Finding(
+                    pattern_id="skip-as-pass",
+                    pattern_name="Skipped/collected tests treated as pass",
+                    detection_confidence="deterministic",
+                    lie_severity="severe",
+                    location=f"Verification:line {lineno}",
+                    evidence=line[:200],
+                )
+            )
+    return findings
+
+
+_INTEGRATION_AC_RE = re.compile(
+    r"\b(integration|end[- ]to[- ]end|e2e|cross[- ](module|service|process)|live\s+(api|db))\b",
+    re.IGNORECASE,
+)
+_UNIT_PATH_RE = re.compile(r"\btests?/unit\b|\bspec/unit\b|_unit_test|test_unit_")
+
+
+def detect_mock_only_integration(ac_section: str, verification_section: str) -> list[Finding]:
+    """AC promises integration but verification only exercises tests/unit/.
+
+    Heuristic — fires when:
+      - any AC mentions integration / e2e / cross-process, AND
+      - verification commands only reference tests/unit/ paths (no integration).
+    """
+    findings: list[Finding] = []
+    if not ac_section or not verification_section:
+        return findings
+    if not _INTEGRATION_AC_RE.search(ac_section):
+        return findings
+    # find any non-comment verification line referencing a test path
+    test_path_lines = []
+    has_integration_path = False
+    for raw in verification_section.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if re.search(r"\btests?/", line):
+            test_path_lines.append(line)
+            if not _UNIT_PATH_RE.search(line) and re.search(r"\btests?/(integration|e2e|playwright|web)", line):
+                has_integration_path = True
+    if not test_path_lines:
+        return findings  # no test paths referenced at all → not this pattern
+    if has_integration_path:
+        return findings  # actually runs integration tests
+    # Only unit-test paths but AC promises integration
+    findings.append(
+        Finding(
+            pattern_id="mock-only-integration",
+            pattern_name="Integration AC verified only by unit tests",
+            detection_confidence="heuristic",
+            lie_severity="partial",
+            location="AC vs Verification cross-check",
+            evidence=(test_path_lines[0] if test_path_lines else "")[:200],
+        )
+    )
+    return findings
+
+
+_FILE_PATH_RE = re.compile(r"\b((?:[a-z0-9_./-]+/)+[a-z0-9_-]+\.[a-z]{1,6})\b", re.IGNORECASE)
+
+
+def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> list[Finding]:
+    """AC checked AND mentions a specific file path, but no verification line touches it.
+
+    Heuristic — high false-positive risk if AC references aspirational paths.
+    Conservative: only fires when:
+      - the AC is checked ([x]) AND
+      - it mentions a file path with a known source extension AND
+      - no non-comment verification line mentions that path.
+    """
+    findings: list[Finding] = []
+    if not ac_section or not verification_section:
+        return findings
+    verif_text = "\n".join(
+        ln for ln in verification_section.splitlines()
+        if ln.strip() and not ln.strip().startswith("#")
+    )
+    counter = 0
+    current_subhead = "ACs"
+    for raw in ac_section.splitlines():
+        if raw.strip().startswith("### "):
+            current_subhead = raw.strip().lstrip("# ").strip()
+            counter = 0
+            continue
+        m = _AC_LINE_RE.match(raw)
+        if not m:
+            continue
+        counter += 1
+        if m.group("state").lower() != "x":
+            continue
+        body = m.group("body")
+        # only check Agent ACs (humans verify their own)
+        if "human" in current_subhead.lower():
+            continue
+        for fp_match in _FILE_PATH_RE.finditer(body):
+            path = fp_match.group(1)
+            # skip very short or generic paths
+            if len(path) < 6 or path.endswith(".md") or "/" not in path:
+                continue
+            # if not referenced in verification section at all, flag once
+            if path not in verif_text:
+                findings.append(
+                    Finding(
+                        pattern_id="AC-verify-mismatch",
+                        pattern_name="Checked AC names a file path the verification never touches",
+                        detection_confidence="heuristic",
+                        lie_severity="narrow",
+                        location=f"AC#{counter} ({current_subhead})",
+                        evidence=f"path={path} in: {body[:150]}",
+                    )
+                )
+                break  # one finding per AC line
+    return findings
+
+
 # ───────────────────────── Orchestration ─────────────────────────
 
 
@@ -308,8 +527,55 @@ def compute_overall(findings: list[Finding], thresholds: dict) -> str:
     return "PASS"
 
 
-def scan_task(task_path: Path, catalogue: dict) -> Verdict:
-    _meta, body = parse_task_file(task_path)
+def evaluate_escalations(
+    ac_section: str,
+    verif_section: str,
+    meta: dict,
+    escalation_catalogue: dict | None,
+) -> list[EscalationTrigger]:
+    """Layer 1: match Layer-1 escalation patterns against AC + verification text."""
+    if not escalation_catalogue:
+        return []
+    triggers: list[EscalationTrigger] = []
+    for trig in escalation_catalogue.get("triggers", []):
+        for matcher in trig.get("match", []):
+            kind = matcher.get("kind")
+            pattern = matcher.get("pattern")
+            if not kind or not pattern:
+                continue
+            haystack = ""
+            if kind == "ac_text":
+                haystack = ac_section
+            elif kind == "verification_text":
+                haystack = verif_section
+            elif kind == "task_metadata":
+                haystack = json.dumps(meta or {}, default=str)
+            if not haystack:
+                continue
+            try:
+                m = re.search(pattern, haystack, re.IGNORECASE)
+            except re.error:
+                continue
+            if m:
+                triggers.append(
+                    EscalationTrigger(
+                        trigger_id=trig["id"],
+                        trigger_name=trig.get("name", trig["id"]),
+                        severity=trig.get("severity", "medium"),
+                        reason=trig.get("reason", ""),
+                        matched=m.group(0)[:160],
+                    )
+                )
+                break  # one finding per trigger id
+    return triggers
+
+
+def scan_task(
+    task_path: Path,
+    catalogue: dict,
+    escalation_catalogue: dict | None = None,
+) -> Verdict:
+    meta, body = parse_task_file(task_path)
     ac_section = extract_section(body, "Acceptance Criteria") or ""
     verif_section = extract_section(body, "Verification") or ""
 
@@ -318,8 +584,22 @@ def scan_task(task_path: Path, catalogue: dict) -> Verdict:
     findings.extend(detect_empty_body(ac_section))
     findings.extend(detect_swallowed_errors(verif_section))
     findings.extend(detect_output_spoofing(verif_section))
+    # v1.1 detectors
+    findings.extend(detect_empty_output_success(verif_section))
+    findings.extend(detect_skip_as_pass(verif_section))
+    findings.extend(detect_mock_only_integration(ac_section, verif_section))
+    findings.extend(detect_ac_verify_mismatch(ac_section, verif_section))
 
     overall = compute_overall(findings, catalogue.get("verdict_thresholds", {}))
+
+    # v1.1: Layer 1 escalation
+    escalations = evaluate_escalations(ac_section, verif_section, meta, escalation_catalogue)
+
+    # v1.1: Layer 2 frontmatter
+    risk_declared = (meta or {}).get("risk")
+    human_signoff_declared = (meta or {}).get("human_signoff")
+
+    needs_human = bool(escalations) or risk_declared in {"high", "medium"} or human_signoff_declared == "required"
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
     return Verdict(
@@ -329,6 +609,10 @@ def scan_task(task_path: Path, catalogue: dict) -> Verdict:
         overall=overall,
         findings=findings,
         catalogue_version=catalogue.get("catalogue_version", "unknown"),
+        escalations=escalations,
+        needs_human=needs_human,
+        risk_declared=risk_declared,
+        human_signoff_declared=human_signoff_declared,
     )
 
 
@@ -349,7 +633,12 @@ def render_verdict_md(verdict: Verdict) -> str:
         f"- **Timestamp:** {verdict.timestamp}",
         f"- **Catalogue:** {verdict.catalogue_version}",
         f"- **Overall:** {verdict.overall}",
+        f"- **Needs Human:** {'yes' if verdict.needs_human else 'no'}",
     ]
+    if verdict.risk_declared:
+        lines.append(f"- **Risk (declared):** {verdict.risk_declared}")
+    if verdict.human_signoff_declared:
+        lines.append(f"- **Human signoff (declared):** {verdict.human_signoff_declared}")
     if verdict.findings:
         lines.append(f"- **Findings:** {len(verdict.findings)}")
         lines.append("")
@@ -361,6 +650,12 @@ def render_verdict_md(verdict: Verdict) -> str:
             lines.append(f"     - evidence: `{f.evidence}`")
     else:
         lines.append("- **Findings:** none")
+    if verdict.escalations:
+        lines.append("")
+        lines.append(f"- **Layer-1 escalations:** {len(verdict.escalations)}")
+        for i, e in enumerate(verdict.escalations, start=1):
+            lines.append(f"  {i}. **{e.trigger_id}** ({e.severity}) — {e.trigger_name}")
+            lines.append(f"     - matched: `{e.matched}`")
     lines.append("")
     return "\n".join(lines)
 
@@ -452,7 +747,12 @@ def main(argv: list[str] | None = None) -> int:
         return 4
 
     catalogue = load_catalogue(catalogue_path)
-    verdict = scan_task(task_file, catalogue)
+    # v1.1: Layer 1 escalation catalogue (optional — absence = no Layer 1)
+    escalation_path = framework_root / "policy" / "escalation-patterns.yaml"
+    if not escalation_path.exists():
+        escalation_path = project_root / "policy" / "escalation-patterns.yaml"
+    escalation_catalogue = load_catalogue(escalation_path) if escalation_path.exists() else None
+    verdict = scan_task(task_file, catalogue, escalation_catalogue)
 
     if not no_write:
         write_verdict_to_task(task_file, verdict)
