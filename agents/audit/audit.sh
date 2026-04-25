@@ -2412,6 +2412,7 @@ for f in glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")):
     owner = fm.get("owner", "?")
     wtype = fm.get("workflow_type", "?")
     tid = fm.get("id", "?")
+    name = str(fm.get("name", ""))
 
     # Only flag human-owned tasks — agent tasks completing fast is normal
     if owner != "human":
@@ -2428,6 +2429,10 @@ for f in glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")):
     # Filter 3: skip tasks with 2+ commits (proves substantive work happened)
     commits = count_commits(tid)
     if commits >= 2:
+        continue
+
+    # Filter 4: skip administrative batch-evidence/batch-tick tasks (T-1262)
+    if name.startswith("Batch-evidence") or name.startswith("Batch-tick"):
         continue
 
     # Remaining: human task, fast, 0-1 commits, non-trivial type — flag it
