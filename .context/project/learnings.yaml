@@ -2106,3 +2106,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-273
+  learning: "When adding new AC text to inception templates, also extend AGENT_PATTERNS in lib/inception.sh:tick_inception_decide_acs — otherwise the AC stays unchecked at decide-time and /inception/T-XXX returns 500 (P-010 blocks completion). T-1455 saga RCA."
+  source: P-010
+  task: T-1466
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
