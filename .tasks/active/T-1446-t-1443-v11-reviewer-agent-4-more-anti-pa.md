@@ -48,7 +48,7 @@ Source design: `docs/reports/T-1443-independent-reviewer-agent.md`.
 - [x] `policy/escalation-patterns.yaml` exists with Layer 1 mechanical triggers (destructive-action, external-publish, cross-project-blast, secret-handling — 4 triggers)
 - [x] Layer 2: reviewer reads `risk` and `human_signoff` from task frontmatter and includes in verdict envelope (Verdict.risk_declared / human_signoff_declared)
 - [x] All pytest tests pass (57 total, up from 31 in v1.0)
-- [ ] All bats tests pass (no regression from v1.0 — `bin/fw test unit`)
+- [x] All bats tests pass (no regression from v1.0 — `bin/fw test unit`) — 943/943 OK on 2026-04-25 (T-1458 session)
 - [x] Re-dogfood delta captured as L-265
 
 ### Human
