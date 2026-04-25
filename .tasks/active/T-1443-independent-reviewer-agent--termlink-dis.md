@@ -4,15 +4,15 @@ name: "Independent reviewer agent — TermLink-dispatched, evidence-gated, can a
 description: >
   Inception I-B (linked to T-1442 I-A). Design an independent reviewer agent dispatched via TermLink (own profile in agents/reviewer/) that reads recorded evidence (per I-A) and auto-ticks Agent ACs when evidence is sufficient, escalating to human only for genuine judgment ACs. Authority is mechanical-tick only; sovereignty preserved. Open: scope (generic vs per-tier), trigger (work-completed gate vs button), profile location/shape, output protocol (bus? task body? Watchtower?).
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [governance, reviewer-agent, termlink-dispatch, friction-reduction, slash-command, orchestrator-routing]
 components: []
 related_tasks: [T-1442, T-1064, T-1065]
 created: 2026-04-25T06:35:13Z
-last_update: 2026-04-25T06:35:13Z
+last_update: 2026-04-25T07:29:59Z
 date_finished: null
 ---
 
@@ -37,16 +37,28 @@ Full framing + dialogue genesis: `docs/reports/T-1442-ac-validation-default-flip
 
 ## Exploration Plan
 
-(NOT YET EXECUTED — waiting on T-1442 GO. Several spikes already shaped by T-1442 dialogue.)
+(Active dialogue underway 2026-04-25. Several spikes resolved; remaining captured below.)
 
-- **Spike A** (15m, INPUT KNOWN per T-1442 Q1): Sketch reviewer interface — input = task `## Verification Output` summary + `docs/reports/T-XXX-evidence.md` full evidence + optional bus envelope. Output = verdict (mechanical-tick / needs-human / insufficient-evidence) + reasoning + anti-pattern flags. Output protocol still open.
-- **Spike B** (15m, REFRAMED): Routing strategy (was: profile scope) — now scoped as "what routing rules govern which model class handles which review." Inputs: task `risk` field, Layer 1 pattern match, evidence size, AC count, fabric blast-radius. Outputs: model class (Haiku / Sonnet / Opus / external) + dispatch path (TermLink vs direct API). Cost/value comparison across profiles.
-- **Spike C** (10m): Define authority bounds — explicit cannot-list (cannot tick Human ACs, cannot decide inceptions, cannot mark `work-completed` itself, cannot bypass Layer 1 pattern match).
-- **Spike D** (10m): Failure-mode design — when reviewer says "evidence insufficient": block status change (hard prereq), warn, or surface to human queue? Default lean: block (per Model V principle).
-- **Spike E** (5m): Reviewer auditability — sampling? periodic re-review of reviewer's tick decisions? Random-shadow human review of N% of ticks?
-- **Spike F** (10m, NEW from T-1442 dialogue): Anti-pattern catalogue — enumerate the false-positive shapes the reviewer must specifically defend against (tautology assertions, empty outputs reported as success, mock-only coverage masquerading as integration, narrow happy-path-only tests, skipped tests counted as passes, --no-verify-style bypasses).
-- **Spike G** (10m, NEW from T-1442 dialogue): Pattern-consultation interface — how does reviewer load `policy/escalation-patterns.yaml` and apply rules over commit list + fabric components + frontmatter + AC content?
-- **Spike H** (15m, NEW from T-1442 dialogue): Slash-command interface + orchestrator routing integration. Design `/review T-XXX` (and `fw skill invoke review --task T-XXX` programmatic equivalent) as the single uniform entry point. Behind it: orchestrator (T-1064) routes to model class per task profile. Same routing primitive as T-1064/T-1065. Soft dependency: T-1064 must be operational, OR T-1443 ships with hard-coded model default and swaps when T-1064 lands.
+- **Spike A** (RESOLVED): Reviewer interface — structured envelope (input = task file + frontmatter + agent_acs + evidence + context + routing; output = overall_verdict + per_ac granular verdicts + drivers_evaluated + classification_drift_flag + reviewer_signature + digest). Per-AC granularity is foundational. Full sketch in dialogue log.
+- **Spike B** (15m, OPEN, REFRAMED): Routing strategy — what rules govern which model class handles which review. Inputs: task risk, Layer 1 match, evidence size, AC count, fabric blast-radius. Outputs: model class (Haiku/Sonnet/Opus/external) + dispatch path. Tackled after Spike G.
+- **Spike C** (10m, OPEN): Authority bounds — explicit cannot-list (cannot tick Human ACs structurally enforced; cannot decide inceptions; cannot mark `work-completed` itself; cannot bypass Layer 1; cannot create or revoke its own overrides — Spike I).
+- **Spike D** (10m, RESOLVED): Failure-mode design — `insufficient-evidence` verdict structurally blocks `work-completed` (Model V hard prereq); `needs-human` puts AC on human queue but doesn't reject whole task; per-AC granularity means partial blocks are possible.
+- **Spike E** (5m, OPEN): Reviewer auditability — sampling rate, shadow review, reviewer_signature + digest already in envelope. Concrete sampling policy still TBD.
+- **Spike F** (RESOLVED with refactor): Anti-pattern catalogue — 12-category seed (tautology, empty-body, mock-only-integration, empty-output-success, skip-as-pass, safety-bypass, stale-evidence, AC-verify-mismatch, output-spoofing, swallowed-errors, zero-test-gaming, partial-truth-scope). REFACTORED severity model (T-1443 Turn 13): separate pattern attributes (`detection_confidence`, `lie_severity`) from task attributes (`risk`, `blast_radius` via T-1442) from action policy. Two policy files: `policy/anti-patterns.yaml` (catalogue) + `policy/action-matrix.yaml` (response mapping).
+- **Spike G** (10m, OPEN, NEXT): Pattern-consultation interface — how reviewer mechanically loads + applies all policy files together (`policy/anti-patterns.yaml` + `policy/escalation-patterns.yaml` from T-1442 + `policy/action-matrix.yaml` + `policy/escalation-overrides.yaml` from Spike I) over evidence + commits + fabric components + frontmatter + AC content.
+- **Spike H** (15m, OPEN): Slash-command + orchestrator routing — `/review T-XXX` as uniform entry point; behind it orchestrator (T-1064) routes to model class. Tackled after Spike G + B cluster.
+- **Spike I** (RESOLVED): Override mechanism (NEW from T-1443 dialogue) — Watchtower review-screen UX with one-click defaults + opt-in structured-feedback checkboxes (don't-escalate-pattern / reclassify-AC-type / snooze) + free-text reason. Override file format `policy/escalation-overrides.yaml` with TTL + auto-revoke triggers. 7 UX principles locked (frictionless, opt-in, structured, consistent, aggregable, reversible, sovereignty-preserving). Append-only feedback stream `.context/working/feedback-stream.yaml`.
+
+## Build follow-ups (anticipated, recorded for eventual Recommendation)
+
+- **B-Reviewer-Core**: Reviewer agent profile (`agents/reviewer/`) + `/review` slash-command surface
+- **B-Routing**: Orchestrator routing integration (T-1064 dep)
+- **B-Anti-Patterns-Seed**: Initial 12-category catalogue (`policy/anti-patterns.yaml`)
+- **B-Anti-Patterns-Expansion** (B-N): Multi-source catalogue expansion — external research (test-smell literature, mutation testing) + internal corpus mining (`.tasks/completed/` + `.context/audits/` + `concerns.yaml`) + peer-agent TermLink dispatch for cross-project anti-pattern capture
+- **B-Action-Matrix**: `policy/action-matrix.yaml` + decision-tree implementation
+- **B-Override-System**: `policy/escalation-overrides.yaml` schema + Watchtower UX + auto-revoke triggers + feedback stream writer
+- **B-Auditability**: Reviewer-of-reviewer sampling + Watchtower override-management page
+- **B-Authority-Enforcement**: Structural enforcement of cannot-list (e.g. `update-task.sh` rejects ticks on `### Human` ACs from agent-signed envelopes)
 
 ## Technical Constraints
 
@@ -139,3 +151,7 @@ Linked sister inception (prerequisite): **T-1442** (AC validation default-flip).
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-25T07:29:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

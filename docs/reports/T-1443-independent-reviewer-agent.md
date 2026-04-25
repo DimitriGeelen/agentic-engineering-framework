@@ -82,13 +82,149 @@ User raised in T-1442 dialogue: should reviewer be exposed via `/review` slash c
 **Spike H added**: slash-command interface + orchestrator routing integration.
 **Soft dependency:** T-1064 must be operational, or T-1443 ships with hard-coded default and swaps when T-1064 lands.
 
-### Still open (will reopen on T-1442 GO)
+## Status (2026-04-25 update)
+**T-1442 GO recorded.** Active dialogue underway. Spikes A, D, F (refactored), I resolved. Remaining: B, C, E, G (next), H.
 
-- Spike B (now): routing strategy + per-profile model selection
-- Spike H: slash-command shape + orchestrator integration
-- Output protocol (envelope shape, where verdict lands)
-- Failure-mode policy (block vs warn vs human-queue) — strong lean: block
-- Reviewer auditability mechanism (sampling rate, shadow review)
+## Dialogue Log (active session)
+
+### 2026-04-25 — Turn 8: Spike A (reviewer interface)
+
+Agent proposed structured envelope:
+- **Input**: task file (frontmatter + agent_acs) + evidence (summary + full + optional bus) + context (commits + fabric blast-radius + Layer 1 patterns) + routing metadata (model_class + review_depth)
+- **Output**: overall_verdict (mechanical-tick / needs-human / insufficient-evidence) + per-AC granular verdicts + reasoning + reviewer_signature + digest
+
+Three baked-in shape decisions:
+1. Output is structured envelope, not free-form text
+2. Per-AC verdicts (granular) — reviewer acts per individual Agent AC, not whole task
+3. Reviewer signature + digest for auditability + tamper detection
+
+### 2026-04-25 — Turn 9: User question — how is "needs-human" established?
+
+User flagged that my "needs-human" verdict was overloaded. Five distinct drivers identified:
+
+1. **Original AC classification** — `### Human` vs `### Agent` heading at task creation
+2. **Layer 1 mechanical patterns** — `policy/escalation-patterns.yaml` (T-1442)
+3. **Layer 2 frontmatter** — `risk: high`, `human_signoff: required`
+4. **Evidence anti-patterns at runtime** — reviewer-detected (Spike F)
+5. **AC content semantic patterns** — subjective-judgment language (codifiable as Layer 1 sub-pattern)
+
+**Verdict rule**: AC needs human if ANY driver fires (additive, not exclusive).
+
+**Critical sovereignty rule**: Reviewer NEVER auto-ticks a `### Human` AC. Original classification is inviolable. Reviewer can only:
+- Surface Human ACs with full evidence + recommendation
+- Flag classification drift ("could be reclassified Agent")
+- Pre-fill verification steps to speed human review
+
+Refined per-AC envelope: `original_classification` + `drivers_evaluated` + `reviewer_judgment` + `classification_drift_flag` + `action`.
+
+### 2026-04-25 — Turn 10: User asks for learning loop — Spike I emerges
+
+User: *"want to emphasize... means to learn, where I can say don't ask me for this in the future or something like that?"*
+
+Two feedback shapes identified:
+- **A: "Don't escalate this pattern again"** — suppress matching Layer 1 pattern for fingerprint
+- **B: "Reclassify this AC type as Agent"** — tune T-954 guidance, flag drift as resolved
+
+Override mechanism designed:
+- File: `policy/escalation-overrides.yaml`
+- Per-override: source_pattern + scope (fingerprint, breadth) + action (suppress / downgrade-to-warn) + reason + created_by (always human) + created_at + expires_at + auto_revoke_triggers
+- Watchtower UX: collapsed-by-default override checkboxes alongside Approve/Decline/Insufficient buttons
+- Antifragility safeguards: auto-revoke on related-incident detection by Pass B audit cron, on concern register hits, on TTL expiry; surface for renewal
+
+Sovereignty: human creates overrides; agent never; auto-revoke triggers respect human authority.
+
+### 2026-04-25 — Turn 11: User emphasizes feedback UX is load-bearing
+
+User: *"these UX capabilities for human to quickly consistently provide feedback is important for this to work well... frictionless feedback, makes regular feedback, pre-formatted feedback options with ability to expand, structured data signals."*
+
+Seven UX principles locked:
+1. Default path is one-click (a/d/i keyboard shortcuts)
+2. Override options always visible, never required (collapsed-by-default but discoverable)
+3. Pre-formatted choices first, free-text last
+4. Consistent across every escalation (muscle memory)
+5. Structured data only — no free-form classification
+6. Aggregable + queryable — every click writes structured record to `.context/working/feedback-stream.yaml`
+7. Reversible without penalty — every override has undo + TTL
+
+Feedback stream feeds three downstream consumers: Layer 1 pattern catalogue, T-954 classification guidance, Watchtower analytics page.
+
+### 2026-04-25 — Turn 12: Spike F (anti-pattern catalogue) seed
+
+Agent drafted 12-category seed:
+1. Tautology assertion
+2. Empty-body test
+3. Mock-only integration
+4. Empty-output success
+5. Skip-as-pass
+6. Safety-mechanism bypass
+7. Stale evidence
+8. AC-verification mismatch
+9. Output spoofing
+10. Swallowed errors
+11. Zero-test gaming
+12. Partial-truth scope
+
+Each with detection mechanism (static / dynamic) and tier applicability.
+
+### 2026-04-25 — Turn 13: User flags severity-axis conflation — major refactor
+
+User: *"not sure if we using classification low/medium/high correctly here... believe we are mixing risks with occurrences / type of failure / cause of failure can that be?"*
+
+**Conceded conflation.** Three axes were collapsed into one HIGH/MEDIUM label:
+- Detection confidence (am I sure this IS the pattern?)
+- Lie severity (how badly does the evidence shape mislead?)
+- Action severity (what should the framework do in response?)
+
+**Refactored model:**
+
+**Axis A — about the anti-pattern itself (intrinsic):**
+- `detection_confidence`: deterministic / heuristic / semantic
+- `lie_severity`: complete / severe / partial / narrow / staleness
+
+**Axis B — about the task being verified (already-existing concerns):**
+- `task.risk` (T-1442 Layer 2 frontmatter)
+- `task.blast_radius` (`fw fabric impact`)
+- `task.workflow_type`
+
+**Axis C — action = function(A, B, overrides)** — separate policy file `policy/action-matrix.yaml`. Decision matrix combines anti-pattern attributes with task attributes to determine action (block / escalate / note). Spike I overrides apply at the action layer.
+
+Default action mapping (rough):
+| lie_severity | risk | action |
+|---|---|---|
+| complete or severe | any | block (insufficient-evidence) |
+| partial | low | escalate (needs-human) |
+| partial | medium / high | block |
+| narrow | low | note |
+| narrow | medium | escalate |
+| narrow | high | block |
+| staleness | any | re-run (Model V mandates) |
+
+User also raised that catalogue should be expanded beyond agent's view via:
+- External research (industry test-smell catalogues, mutation testing literature, academic SE)
+- Internal corpus mining (`.tasks/completed/` evidence files, `.context/audits/`, `concerns.yaml`)
+- Peer-agent TermLink dispatch for cross-project anti-pattern capture
+
+→ Captured as **B-Anti-Patterns-Expansion** (B-N) follow-up build task.
+
+## Decisions captured (so far)
+
+1. **Reviewer interface = structured envelope** with per-AC granularity + signature + digest (Spike A)
+2. **Per-AC verdicts, not whole-task** — partial blocks possible (Spike A + D)
+3. **Sovereignty preservation: reviewer NEVER ticks `### Human` ACs** — structurally enforced
+4. **5-driver "needs-human" model**: original classification + Layer 1 + Layer 2 + anti-patterns + AC semantic class — additive (Turn 9)
+5. **Spike I — override mechanism**: don't-ask-pattern + reclassify-AC-type with TTL + auto-revoke; human creates, agent never
+6. **7 UX principles** for Watchtower feedback (Turn 11)
+7. **Anti-pattern catalogue 12-category seed** + multi-source expansion (Spike F + Turn 13)
+8. **Severity refactor**: separate pattern attributes from task attributes from action policy
+9. **Three policy files** anticipated: `policy/anti-patterns.yaml` (catalogue) + `policy/action-matrix.yaml` (action) + `policy/escalation-overrides.yaml` (Spike I overrides). Plus `policy/escalation-patterns.yaml` from T-1442.
+
+## Still open (next)
+
+- **Spike G** (NEXT): Pattern-consultation interface — how reviewer mechanically loads + applies all policy files together
+- **Spike B**: Routing strategy + per-profile model selection
+- **Spike H**: Slash-command shape + orchestrator integration
+- **Spike C**: Authority bounds (cannot-list, structural enforcement)
+- **Spike E**: Reviewer auditability mechanism (sampling rate, shadow review)
 
 ## Anchor files
 
