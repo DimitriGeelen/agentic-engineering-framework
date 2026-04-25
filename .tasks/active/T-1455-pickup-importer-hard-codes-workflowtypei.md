@@ -77,6 +77,27 @@ A go/no-go decision recorded on `/inception/T-1455` selecting one of A/B/C, with
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 
+## Recommendation
+
+**Recommendation:** GO with **constrained Option A** — only `bug-report` envelopes map to `build`; all other types (`feature-proposal`, `learning`, `pattern`) keep the current `inception` mapping.
+
+**Rationale:** This is the smallest change that resolves OBS-015's friction without reopening T-469's structural risk. T-469 was triggered by an envelope whose content was actually a *new subsystem build*; the protection was "treat every pickup as inception" precisely because the envelope `type:` field was untrusted. Bug-reports are the most type-faithful kind — people rarely call a brand-new feature a "bug" — and bug fixes are by nature scope-constrained (one bug, one fix). For that one type, the mislabel risk is bounded enough that the friction (12 inceptions worth of audit churn) outweighs it. For all other types — especially `feature-proposal`, where T-469's exact failure pattern lives — keep the inception default.
+
+**Evidence:**
+- OBS-015 cited *12 misclassifications, all bug-fix*. Zero misclassified feature-proposals were named — strong signal that bug-report is the dominant friction type.
+- `lib/pickup.sh:262` is a single hard-coded `--type inception` line; the constrained-A change is ~3 LoC (`case` on `pickup_type`, default to `inception`).
+- T-469's worst-case sender mislabel ("feature mislabeled as bug-report") is bounded by what a bug fix can do: one component, one fix, normal task gates apply. A feature mislabeled as feature-proposal stays inception → still protected.
+- T-1440 already silenced the C-001 audit warning surgically. Constrained Option A removes the *cause* of the misclassification rather than just the warning, but Option B (status quo) is equally acceptable if the team prefers minimal change.
+
+**Alternatives considered:**
+- **Option B (do nothing):** Leave T-1440's audit-skip as the only fix. Acceptable but leaves bug-reports semantically misclassified in queries/reports by `workflow_type`.
+- **Option A (full mapping):** Map every type semantically. Reopens T-469 risk on `feature-proposal` envelopes. Rejected.
+- **Option C (hybrid type + size gate):** Adds heuristic detection. Most code, hardest to validate, fragile to wording shifts in summaries. Rejected for now — revisit if constrained-A produces a misclassified-feature-proposal incident.
+- **Option D (envelope `scope_validated` flag):** Sender opts into non-inception mapping. Cleanest long-term but requires envelope-schema migration across all consumer projects. Defer.
+
+**Out-of-scope follow-up:**
+- After constrained Option A lands, watch for any `workflow_type: build` task that turned out to need inception scoping — that's the canary for revisiting Option C/D.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
