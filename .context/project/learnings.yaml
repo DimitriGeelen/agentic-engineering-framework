@@ -2138,3 +2138,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-277
+  learning: "Annotation-based detection beats text-pattern matching for governance markers: <!-- @auto-tick-on-decide --> markers adjacent to AC lines are wording-independent and survive AC reordering. Pattern: when matching content for governance behavior, prefer explicit markers over regex against text — the latter accumulates AGENT_PATTERNS-style technical debt with every new wording variant (T-1466 RCA, T-1472 fix)."
+  source: P-001
+  task: T-1472
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
