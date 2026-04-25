@@ -2125,9 +2125,16 @@ learnings:
   context: Added via context agent
   application: TBD
 - id: L-275
-  learning: "Verification gate (## Verification) executes each non-comment line as a SEPARATE shell command. Multi-line python -c "..." is split mid-quote and fails. Always extract multi-line scripts to tests/scripts/*.py and call them as one line."
+  learning: 'Verification gate (## Verification) executes each non-comment line as a SEPARATE shell command. Multi-line python -c "..." is split mid-quote and fails. Always extract multi-line scripts to tests/scripts/*.py and call them as one line.'
   source: P-011
   task: T-1469
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
+- id: L-276
+  learning: "Endpoint hardening pattern: when shelling out to a CLI that runs primary-action + side-effects, exit code alone is insufficient to distinguish 'primary failed' from 'side-effect failed after primary landed'. Detect primary-landed by reading the side-effect target (task body, DB row, etc) AFTER the call, then return 200+warning if landed else 500/error. Without this, transient side-effect failures (network blip, parse error, log write) cause user-visible 'failure' on completed work."
+  source: P-001
+  task: T-1470
   date: 2026-04-25
   context: Added via context agent
   application: TBD

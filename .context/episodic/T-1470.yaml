@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1470: Symptom A fix — Watchtower /inception/decide returns 200 with warning on auto-trigger failure (not 500)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T19:31:41Z
+# ============================================================================
+
+task_id: T-1470
+task_name: "Symptom A fix — Watchtower /inception/decide returns 200 with warning on auto-trigger failure (not 500)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T19:28:15Z
+completed: 2026-04-25T19:31:27Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T21:31:20+02:00
+last_commit: 2026-04-25T21:31:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Symptom A fix — Watchtower decide returns 200+warning on side-effect failure. Register fabric card for hardening pytest
+
+# Key outcomes
+outcomes:
+  - "After `run_fw_command` returns, detect \"primary decision landed\" by reading task frontmatter: status == \"work-completed\" AND task file location reflects the decision (in .tasks/completed/ for go/no-go, status == \"started-work\" with Decision block for defer)."
+  - "When primary landed but exit code non-zero: return HTTP 200 with `warning` field in payload (htmx fragment shows decision-recorded badge + dim warning text; non-htmx redirects with `?warning=` query param)."
+  - "When primary did NOT land: keep existing 500/redirect-with-error behavior."
+  - "Pytest regression: simulate `run_fw_command` returning ok=False but task file showing work-completed — assert status_code == 200 and warning in response."
+  - "Pytest regression: simulate primary failure (task still started-work) — assert existing 500/redirect path still triggers."
+  - "No regression: existing inception decide tests pass (29/29)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Symptom A fix — Watchtower decide returns 200+warning on side-effect failure"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-web-test_inception_decide_hardening.yaml"
+  - ".tasks/active/T-1470-symptom-a-fix--watchtower-inceptiondecid.md"
+  - "tests/web/test_inception_decide_hardening.py"
+  - "web/blueprints/inception.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T21:31:20"
+    action: "T-1470: Symptom A fix — Watchtower decide returns 200+warning on side-effect failure"
+  - time: "2026-04-25T21:31:27"
+    action: "T-1470: Register fabric card for hardening pytest"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 4
+  lines_added: 350
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1470-symptom-a-fix--watchtower-inceptiondecid.md
+generated_by: context-agent-hybrid
