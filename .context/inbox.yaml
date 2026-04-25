@@ -144,3 +144,17 @@ observations:
     tags: []
     status: dismissed
     promoted_to: null
+  - id: OBS-021
+    text: "add"
+    captured: 2026-04-25T20:24:19Z
+    context_task: null
+    tags: []
+    status: dismissed
+    promoted_to: null
+  - id: OBS-022
+    text: "CTL-013 false positive on T-1472: audit reports verification fails, but isolated runs (bats + cd-prefix + eval) all return rc=0. Audit context loses something between the eval and the test. Recurring noise in fw audit since 2026-04-25."
+    captured: 2026-04-25T20:24:28Z
+    context_task: T-1472
+    tags: [bug]
+    status: pending
+    promoted_to: null
