@@ -274,6 +274,43 @@ This rollout addendum is captured in both T-1442 and T-1443 research artifacts. 
 
 Hand to user via `fw task review T-1443` for GO/NO-GO/DEFER.
 
+## Empirical Results (v1.0 → v1.2, 2026-04-25)
+
+Three micro-versions shipped in single session. Per D-009 staged rollout, each version was followed by re-dogfood over all 1358 completed tasks.
+
+| Version | Patterns | Layers | Tests | PASS | CONCERN | FAIL | needs_human |
+|---------|----------|--------|-------|------|---------|------|-------------|
+| v1.0 (T-1445) | 4 seed | code-path | 31 | 98.9% | 0.0% | 1.1% | n/a |
+| v1.1 (T-1446) | 8 seed | + Layer 1/2 | 57 | 85.8% | 12.5% | 1.7% | 3.4% |
+| v1.2 (T-1447) | 8 + transitive | + Layer 3 cron | 62 | 86.7% | 11.6% | 1.7% | 3.4% |
+
+Pattern fire counts (v1.2 final):
+- AC-verify-mismatch: 192 (was 226 in v1.1; -15% via transitive-coverage tuning)
+- empty-output-success: 46
+- swallowed-errors: 14 (was 15; T-1086 false-positive cleared by L-264 fix)
+- skip-as-pass: 11
+- mock-only-integration: 4
+- tautology: 3
+- output-spoofing: 0 (heuristic still too narrow — v1.3+ tuning candidate)
+- empty-body: 0 (no historical task ships with placeholder body)
+
+Layer 1 escalations (v1.2):
+- cross-project-blast: 31
+- destructive-action: 13
+- secret-handling: 1
+- external-publish: 1
+
+**Validated assumption:** the unmeasured-problem-size question from the inception (% of Human ACs that are mechanically evidenceable) is now measured. Across 1358 historical completions, ~13% have at least one mechanically-detectable concern; ~3% are FAILs with high-confidence patterns; ~3.4% require Layer-1 escalation regardless. This is the empirical baseline for v1.3+ tuning and v3+ pattern expansion.
+
+Learning entries: L-264 (v1.0 dogfood), L-265 (v1.1 dogfood + L-264-(a) fix), L-266 (v1.2 transitive-coverage delta).
+
+## Tunings recorded for next versions
+
+- **v1.3** (per-AC granular): split task-level verdict into per-AC findings; link findings to specific AC checkboxes for actionable feedback.
+- **v1.4** (override mechanism): wire `feedback-stream.yaml` events from observation to action — TTL'd overrides per-pattern.
+- **v1.5** (Pass A drift re-verification): sandboxed re-run of task verification commands to detect post-completion drift.
+- **v3+** (catalogue expansion): mine literature + internal corpus + peer-agent dispatch to extend 8 seed patterns toward 12+ categories.
+
 ## Anchor files
 
 | Artifact | Path |
