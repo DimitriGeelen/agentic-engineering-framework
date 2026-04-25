@@ -37,3 +37,17 @@ decisions:
     date: 2026-04-24
     task: T-1063
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-008
+    decision: "Verification systems must be antifragile by construction: false success is structurally worse than acknowledged failure because false success propagates and compounds (T-XXX builds on T-XX1's claimed-working foundation). Therefore: NO caching of verification evidence, NO lazy hybrid trust models, NO first-time exception. Every verification is fresh, every time. Pay in compute (cheap, tireless), never in trust (expensive, scarce). Manifests as: Model V always-fresh re-verification on every --status work-completed; daily cron Pass A re-validates rolling window against current HEAD; Pass B retrospective escalation audit catches false-negative classification, every catch tunes Layer 1 catalogue. Adopted via T-1442 GO 2026-04-25."
+    scope: project
+    date: 2026-04-25
+    task: T-1442
+    rationale: "Not specified"
+
+  - id: D-009
+    decision: "Staged micro-version rollout pattern for infrastructure builds with unmeasured problem-size: when the design depends on an UNTESTED assumption (e.g. percentage of mechanically-evidenceable Human ACs in T-1442/T-1443), prefer micro-version progression (~1 session each) with three-cadence data review (continuous capture + weekly auto-summary + threshold alerts + per-version-bump GO) over upfront big-build. Each version is independently shippable and revertible. Spike A's deferred uncertainty becomes v1.0 production data, not abstract assumption. Antifragility lives in the iteration cycle. Adopted via T-1443 GO 2026-04-25."
+    scope: project
+    date: 2026-04-25
+    task: T-1443
+    rationale: "Not specified"

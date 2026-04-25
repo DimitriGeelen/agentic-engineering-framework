@@ -2008,3 +2008,31 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-260
+  learning: "Antifragility verification principle: 'false success is worse than acknowledged failure'. Ruled out caching, lazy hybrids, first-time-trust exceptions in T-1442 reviewer design. Reframes the friction-vs-rigor tradeoff as human-time-friction (expensive, scarce) vs computational-time-friction (cheap, tireless). Pay in compute, never in trust. Applied: always-fresh re-verification at every work-completed; no cache; daily cron re-validates rolling window against current HEAD."
+  source: P-001
+  task: T-1442
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
+- id: L-261
+  learning: "Severity-axis conflation in design: when a single HIGH/MEDIUM label means three different things (detection certainty + lie severity + action urgency), the label carries no signal. Refactored T-1443 anti-pattern catalogue to separate axes: pattern.detection_confidence + pattern.lie_severity + task.risk + task.blast_radius → action via decision matrix. Generalized: any time you find yourself reaching for HIGH/MEDIUM/LOW, ask which dimension you're labelling and whether it's actually orthogonal to other dimensions sharing the label."
+  source: P-002
+  task: T-1443
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
+- id: L-262
+  learning: "Frictionless feedback UX is load-bearing for any system depending on a learning loop. Override mechanisms, classification drift detection, anti-pattern catalogue tuning all FAIL if feedback friction prevents humans from giving feedback. The 7 UX principles from T-1443 Spike I: (1) default path one-click; (2) override options visible but never required; (3) pre-formatted choices first, free-text last; (4) consistent across every escalation; (5) structured data only — no free-form classification; (6) aggregable + queryable; (7) reversible without penalty. Emerged when user pushed back that 'these UX capabilities for human to quickly consistently provide feedback is important for this to work well.'"
+  source: P-001
+  task: T-1443
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
+- id: L-263
+  learning: "Design-discipline tool: steelman/strawman vs the 4 framework directives. When evaluating a design decision, structure as: (a) steelman — best case FOR mapped to which directive(s) support it; (b) strawman — best case AGAINST mapped to which directive(s) weaken/oppose; (c) net read — refined recommendation. Forces honest evaluation against Antifragility / Reliability / Usability / Portability rather than abstract pros/cons. Demonstrated in T-1443 Turn 15 evaluating cheap-first ordering, fail-closed defaults, library-vs-monolithic, and 5 correctness invariants — each refined by the strawman analysis (DAG not strict sequence; three-tier failure not blanket; explicit language choice; multi-layer enforcement vs single-point)."
+  source: P-002
+  task: T-1443
+  date: 2026-04-25
+  context: Added via context agent
+  application: TBD
