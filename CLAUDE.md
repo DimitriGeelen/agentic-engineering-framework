@@ -810,6 +810,12 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 - `fw cron generate|status|list|run|pause|resume <job-id>`
 - `fw config set|get|list|overrides` — persistent `.framework.yaml` settings
 
+**Reviewer (anti-pattern static scan, T-1443):**
+- `fw reviewer T-XXX` — scan one task; writes verdict to `## Reviewer Verdict` block
+- `fw reviewer audit` — Layer 3 daily Pass-B re-scan of all completed tasks
+- `fw reviewer override add T-XXX --pattern X [--ac N] --reason '...' [--ttl 90]` — TTL'd FP suppression
+- `fw reviewer override list|prune|remove OV-XXXX`
+
 **Knowledge and navigation:**
 - `fw decisions` / `fw learnings` / `fw practices` / `fw timeline`
 - `fw ask "query"` / `fw recall "query"` / `fw search "term"` / `fw docs`
