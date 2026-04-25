@@ -81,6 +81,10 @@ Question: **is it worth proposing (via cross-project TermLink pickup) a structur
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # For inception tasks, verification is often not needed (decisions, not code).
 
+## Research Artifact
+
+See `docs/reports/T-1332-g045-pickup-decision.md` for the persisted thinking trail (decision summary + rationale + downstream owners). Per T-1441.
+
 ## Recommendation
 
 **Recommendation:** GO — send the cross-project pickup, but narrow it

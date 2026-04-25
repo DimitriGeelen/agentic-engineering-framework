@@ -80,6 +80,10 @@ Question: **should this rule be codified in CLAUDE.md (and possibly enforced via
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # For inception tasks, verification is often not needed (decisions, not code).
 
+## Research Artifact
+
+See `docs/reports/T-1333-gap-homing-codification.md` for the persisted thinking trail and link to the codification destination (CLAUDE.md § Gap Homing). Per T-1441.
+
 ## Recommendation
 
 **Recommendation:** GO — codify as Tier-1 CLAUDE.md prose, not schema enforcement
