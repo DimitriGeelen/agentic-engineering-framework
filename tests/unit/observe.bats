@@ -74,3 +74,35 @@ teardown() {
     # Should fail or show help
     [ "$status" -ne 0 ] || [[ "$output" == *"Usage"* ]] || [[ "$output" == *"fw note"* ]]
 }
+
+# --- Promote (T-1458) ---
+
+@test "promote --help shows usage with --type flag" {
+    run "$OBSERVE" promote --help
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"--type"* ]]
+}
+
+@test "promote without OBS-NNN errors with usage hint" {
+    export PROJECT_ROOT="$TEST_DIR"
+    run "$OBSERVE" promote
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Usage: fw note promote"* ]]
+    [[ "$output" == *"--type"* ]]
+}
+
+@test "promote rejects unknown flag" {
+    export PROJECT_ROOT="$TEST_DIR"
+    run "$OBSERVE" promote OBS-001 --frobnicate
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Unknown flag"* ]]
+}
+
+@test "promote --type inception is parsed (no syntax/flag error)" {
+    export PROJECT_ROOT="$TEST_DIR"
+    # OBS-001 won't exist in fresh inbox — should fail with 'not found', NOT with flag-parse error
+    run "$OBSERVE" promote OBS-001 --type inception
+    [ "$status" -ne 0 ]
+    # Confirms --type was accepted; failure is the missing-observation path
+    [[ "$output" == *"not found"* ]]
+}

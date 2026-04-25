@@ -162,30 +162,50 @@ do_count() {
 }
 
 do_promote() {
-    local obs_id="${1:-}"
+    local obs_id=""
+    local task_type="build"
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --type|-t) task_type="$2"; shift 2 ;;
+            -h|--help)
+                echo "Usage: fw note promote OBS-NNN [--type <build|inception|...>]"
+                return 0 ;;
+            -*)
+                echo -e "${RED}Unknown flag: $1${NC}" >&2
+                echo "Usage: fw note promote OBS-NNN [--type <build|inception|...>]" >&2
+                return 1 ;;
+            *)
+                if [ -z "$obs_id" ]; then obs_id="$1"; else
+                    echo -e "${RED}Unexpected argument: $1${NC}" >&2; return 1
+                fi
+                shift ;;
+        esac
+    done
     if [ -z "$obs_id" ]; then
-        echo -e "${RED}Usage: fw note promote OBS-NNN${NC}" >&2
+        echo -e "${RED}Usage: fw note promote OBS-NNN [--type <build|inception|...>]${NC}" >&2
         return 1
     fi
 
     ensure_inbox
 
     local text
-    text=$(grep -A1 "id: $obs_id" "$INBOX_FILE" 2>/dev/null | grep 'text:' | sed 's/.*text: "//;s/"$//')
+    # Pipeline tolerant of empty matches (set -euo pipefail otherwise kills
+    # the script silently when the observation doesn't exist — T-1458).
+    text=$(grep -A1 "id: $obs_id" "$INBOX_FILE" 2>/dev/null | grep 'text:' | sed 's/.*text: "//;s/"$//' || true)
 
     if [ -z "$text" ]; then
         echo -e "${RED}Observation $obs_id not found${NC}" >&2
         return 1
     fi
 
-    echo -e "${YELLOW}Promoting $obs_id to task...${NC}"
+    echo -e "${YELLOW}Promoting $obs_id to task (type: $task_type)...${NC}"
     echo ""
 
     # Create task
     PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" \
         --name "$text" \
         --description "Promoted from observation $obs_id" \
-        --type build \
+        --type "$task_type" \
         --owner human
 
     # Mark as promoted
@@ -250,7 +270,7 @@ show_help() {
     echo "  fw note list                             Show pending observations"
     echo "  fw note count                            Pending count (for prompts)"
     echo "  fw note triage                           Review pending observations"
-    echo "  fw note promote OBS-NNN                  Promote to task"
+    echo "  fw note promote OBS-NNN [--type T]       Promote to task (default type: build)"
     echo "  fw note dismiss OBS-NNN --reason \"...\"   Dismiss with reason"
     echo ""
     echo "The inbox lives at: .context/inbox.yaml"

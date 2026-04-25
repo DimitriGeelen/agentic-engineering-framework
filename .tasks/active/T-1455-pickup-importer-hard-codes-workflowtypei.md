@@ -5,14 +5,14 @@ description: >
   Promoted from observation OBS-015
 
 status: captured
-workflow_type: build
+workflow_type: inception
 owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-25T12:20:16Z
-last_update: 2026-04-25T12:20:16Z
+last_update: 2026-04-25T13:17:02Z
 date_finished: null
 ---
 
@@ -94,3 +94,6 @@ A go/no-go decision recorded on `/inception/T-1455` selecting one of A/B/C, with
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1455-pickup-importer-hard-codes-workflowtypei.md
 - **Context:** Initial task creation
+
+### 2026-04-25T13:17:02Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → inception
