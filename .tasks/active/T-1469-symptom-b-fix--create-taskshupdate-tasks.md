@@ -52,22 +52,11 @@ This task fixes the **emit site** so future task closes don't re-introduce malfo
 ## Verification
 
 # Bats regression for the new test
-cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/update_task_yaml_components_emit.bats 2>&1 | tail -5
-# All task files parse as valid YAML
-cd /opt/999-Agentic-Engineering-Framework && python3 -c "
-import yaml, pathlib, sys
-errs = 0
-for p in list(pathlib.Path('.tasks/active').glob('*.md')) + list(pathlib.Path('.tasks/completed').glob('*.md')):
-    txt = p.read_text()
-    if not txt.startswith('---'): continue
-    try:
-        yaml.safe_load(txt.split('---', 2)[1])
-    except Exception as e:
-        print(f'PARSE ERROR {p}: {e}'); errs += 1
-sys.exit(1 if errs else 0)
-"
+cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/update_task_yaml_components_emit.bats >/dev/null
 # All existing update-task tests still pass
-cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/update_task*.bats 2>&1 | tail -5
+cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/update_task_components_lookup.bats tests/unit/update_task_episodic_gen.bats tests/unit/update_task_verification.bats tests/unit/update_task_yaml_components_emit.bats >/dev/null
+# All task files parse as valid YAML
+cd /opt/999-Agentic-Engineering-Framework && python3 tests/scripts/yaml_parse_all_tasks.py
 
 ## Decisions
 
