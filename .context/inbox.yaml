@@ -135,12 +135,12 @@ observations:
     captured: 2026-04-25T18:20:31Z
     context_task: null
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-020
     text: "resolve"
     captured: 2026-04-25T19:40:52Z
     context_task: null
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
