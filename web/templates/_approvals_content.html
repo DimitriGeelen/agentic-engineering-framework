@@ -40,6 +40,7 @@
 
     {% if item.status == 'pending' %}
     <form hx-post="/api/approvals/decide" hx-target="#result-{{ loop.index }}" hx-swap="innerHTML">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="command_hash" value="{{ item.command_hash }}">
         <textarea name="feedback" class="approval-feedback" placeholder="Optional feedback..."></textarea>
         <div class="approval-actions">
@@ -128,6 +129,7 @@
     {% endif %}
     <form hx-post="/inception/{{ t.task_id }}/decide" hx-target="closest .go-decision" hx-swap="outerHTML"
           style="margin-top:0.5rem;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="decision-inline">
             <label><input type="radio" name="decision" value="go" required>
                 <span class="dec-go">GO</span></label>
@@ -163,6 +165,7 @@
 <div id="batch-complete-result" style="margin-bottom:0.5rem;">
     <form hx-post="/api/approvals/complete-batch" hx-target="#batch-complete-result" hx-swap="innerHTML"
           hx-confirm="Complete {{ ready_count }} task(s) with all Human ACs checked?" style="display:inline;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;">
             Complete {{ ready_count }} Ready Task{{ 's' if ready_count != 1 }}
         </button>
@@ -240,6 +243,7 @@ function filterACs(filter) {
             <form hx-post="/api/task/{{ t.task_id }}/toggle-ac"
                   hx-target="find input[type=checkbox]" hx-swap="outerHTML"
                   style="display:inline;" onclick="event.stopPropagation();">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="line" value="{{ ac.line_idx }}">
                 <input type="checkbox" {% if ac.checked %}checked{% endif %}
                        onchange="this.form.requestSubmit()"
@@ -275,6 +279,7 @@ function filterACs(filter) {
     {% if unchecked_count == 0 %}
     <div style="margin-top:0.5rem;">
         <form hx-post="/api/task/{{ t.task_id }}/complete" hx-target="closest .human-ac-group" hx-swap="outerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 1rem; font-size:0.8rem;">
                 Complete Task
             </button>
