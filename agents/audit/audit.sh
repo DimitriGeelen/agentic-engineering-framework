@@ -1922,13 +1922,49 @@ for task_file in $recent_completed; do
         cmd_pass=0
         cmd_fail=0
         for cmd in "${verify_cmds[@]}"; do
-            if eval "$cmd" >/dev/null 2>&1; then
+            if [ -n "${FW_AUDIT_VERIFY_DEBUG:-}" ]; then
+                # T-1475: capture stderr/stdout so CTL-013 false positives can be
+                # diagnosed (OBS-022 — audit reports bats fails, isolated runs pass).
+                _aud_out=$(mktemp 2>/dev/null || echo "/tmp/fw-audit-verify-$$")
+                # FW_AUDIT_VERIFY_TRACE=1 adds bash xtrace for deepest visibility.
+                if [ -n "${FW_AUDIT_VERIFY_TRACE:-}" ]; then
+                    _eval_rc=0
+                    {
+                        echo "PWD=$PWD"
+                        echo "BASH_OPTS=$-"
+                        echo "PATH=$PATH"
+                        env | grep -E '^(BATS|TMPDIR|HOME|SHELL|TERM|TAP)' | sort
+                        set -x
+                        eval "$cmd"
+                        set +x
+                    } >"$_aud_out" 2>&1 || _eval_rc=$?
+                else
+                    # T-1475: brace-grouped redirection (NOT subshell). When the
+                    # eval'd command was bats, the prior subshell variant produced
+                    # rc=1 with no output (Heisenbug — observable failure with
+                    # `( eval "$cmd" ) >X 2>&1`, but a brace-group `{ eval ...; } >X 2>&1`
+                    # passes consistently). Root cause unconfirmed (likely bats
+                    # parent-shell coupling); brace-group sidesteps it.
+                    _eval_rc=0
+                    { eval "$cmd"; } >"$_aud_out" 2>&1 || _eval_rc=$?
+                fi
+                if [ "$_eval_rc" -eq 0 ]; then
+                    cmd_pass=$((cmd_pass + 1))
+                    rm -f "$_aud_out"
+                else
+                    cmd_fail=$((cmd_fail + 1))
+                    echo "DEBUG ($task_id) FAIL (rc=$_eval_rc): $cmd" >&2
+                    echo "DEBUG ($task_id) captured output (first 20 lines):" >&2
+                    head -20 "$_aud_out" >&2 || true
+                    echo "DEBUG ($task_id) ---" >&2
+                    rm -f "$_aud_out"
+                fi
+            elif eval "$cmd" >/dev/null 2>&1; then
                 cmd_pass=$((cmd_pass + 1))
             else
                 cmd_fail=$((cmd_fail + 1))
-                # FW_AUDIT_VERIFY_DEBUG=1 surfaces the failing command for diagnosis
-                # (T-1395: surface which CTL-013 verification step is failing).
-                [ -n "${FW_AUDIT_VERIFY_DEBUG:-}" ] && echo "DEBUG ($task_id) FAIL: $cmd" >&2
+                # T-1395: surface which CTL-013 verification step is failing.
+                # FW_AUDIT_VERIFY_DEBUG=1 also dumps captured output (T-1475).
             fi
         done
         if [ "$cmd_fail" -eq 0 ]; then
