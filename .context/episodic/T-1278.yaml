@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1278: Fix bin/fw self-exec loop — shim was overwriting real CLI in framework repo
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T20:00:39Z
+# ============================================================================
+
+task_id: T-1278
+task_name: "Fix bin/fw self-exec loop — shim was overwriting real CLI in framework repo"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-17T09:55:00Z
+completed: 2026-04-21T20:36:51Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-04-17T12:35:27+02:00
+last_commit: 2026-04-21T22:36:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix lib/upgrade.sh cp-through-destination-symlink that silently overwrites real bin/fw. Close — shim self-loop guard + fw doctor masquerade check + upgrade defence-in-depth + bats regression (2 tests pass)
+
+# Key outcomes
+outcomes:
+  - "Guard against self-loop: shim aborts if `$fw_path` resolves to its own `$BASH_SOURCE` (compare realpath). Exit with explicit error: \"fw shim found only itself — real CLI is missing from this project; run `fw upgrade` or restore `bin/fw` from git.\" — bin/fw-shim:36-53"
+  - "`fw doctor` check: detect when `bin/fw` in a framework repo is the shim (size < 200 lines, or checks for shim-only markers like `find_fw()`). Report as FAIL. — bin/fw:1433-1448"
+  - "`fw upgrade` refuses to overwrite a framework-repo `bin/fw` with the shim (detects `FRAMEWORK.md` at same level). — lib/upgrade.sh:379-389"
+  - "Bats unit test: synthesize a shim-over-real situation in a tmp dir and assert the guard trips within 1 second. — tests/unit/fw_shim_selfloop_guard.bats (2 tests, both pass)"
+  - "Restore already applied to working tree (`git checkout HEAD -- bin/fw`). — lib/upgrade.sh:383 `rm -f \"$current_fw\"` before cp prevents recurrence"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix lib/upgrade.sh cp-through-destination-symlink that silently overwrites real bin/fw"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - "bin/fw"
+  - "bin/fw-shim"
+  - ".context/audits/2026-04-21.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/observations/issue-report-fw-shim-selfloop.md"
+  - ".context/working/watchtower.log"
+  - "lib/upgrade.sh"
+  - ".tasks/active/T-1278-fix-bin-fw-shim-self-exec-loop.md"
+  - "tests/unit/fw_shim_selfloop_guard.bats"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-17T12:35:27"
+    action: "T-1278: Fix lib/upgrade.sh cp-through-destination-symlink that silently overwrites real bin/fw"
+  - time: "2026-04-21T22:36:48"
+    action: "T-1278: Close — shim self-loop guard + fw doctor masquerade check + upgrade defence-in-depth + bats regression (2 tests pass)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6401 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, tooling, shim, regression]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6401
+  commits: 2
+  files_changed: 17
+  lines_added: 11864
+  lines_removed: 1105
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1278-fix-bin-fw-shim-self-exec-loop.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,117 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1279: Fix fw work-on / task-create race condition on task-ID allocation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-25T20:00:40Z
+# ============================================================================
+
+task_id: T-1279
+task_name: "Fix fw work-on / task-create race condition on task-ID allocation"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-17T10:35:00Z
+completed: 2026-04-20T19:43:31Z
+duration_days: 3
+updates_count: 3
+first_commit: 2026-04-17T12:54:15+02:00
+last_commit: 2026-04-24T14:18:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  File RCA for fw work-on task-ID race condition. Rescue stray T-1278 files from the ID race — reassign to T-1280/1281/1282. Park T-1289 duplicate (T-ID race) + generate T-1299 episodic. Rescue 7-way T-1345 duplicate (pickup intra-run race) + register G-052. Serialize task-ID allocation (G-052 fix). Partial-complete + L-026 (TOCTOU filesystem-counter) + follow-ups T-1366/T-1367; land episodics T-1363/T-1364 + fabric cards. annotate with race-condition evidence — fix is not watertight
+
+# Key outcomes
+outcomes:
+  - "`generate_id()` acquires a per-framework lock (via `lib/keylock.sh`) covering the entire read-max → write-file sequence, not just the ID computation"
+  - "Lock key: `task-id-allocation` (or similar single-key), scope: project-wide"
+  - "Bats test `tests/unit/task_id_race.bats` — spawns 5 parallel `create-task.sh` invocations and asserts 5 distinct IDs (also 10-parallel stress case)"
+  - "`fw audit` check: detect any two task files sharing the same `id:` frontmatter value; report as FAIL with both paths"
+  - "Follow-up work captured: T-1366 (keylock timeout), T-1367 (fw task reid repair tool). T-1278 stray-file cleanup already done in prior session via reassignment to T-1280/1281/1282."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "annotate with race-condition evidence — fix is not watertight"
+    source: git-mined
+  - description: "Serialize task-ID allocation (G-052 fix)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/task-create/create-task.sh"
+  - ".context/episodic/T-1299.yaml"
+  - ".context/episodic/T-1363.yaml"
+  - ".context/episodic/T-1364.yaml"
+  - ".context/project/concerns.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/observations/issue-report-fw-work-on-id-race.md"
+  - ".fabric/components/tests-unit-hook_absolute_paths.yaml"
+  - ".fabric/components/tests-unit-task_id_race.yaml"
+  - ".tasks/active/T-1279-fix-fw-work-on-task-id-race-condition.md"
+  - ".tasks/active/T-1280-fix-inception-decide-on-consumer-project.md"
+  - ".tasks/active/T-1281-e2e-test-inception-decide-on-consumer-pr.md"
+  - ".tasks/active/T-1282-e2e-test-inception-decide-on-vendored-co.md"
+  - ".tasks/active/T-1289-fix-fabricwatch-patternsyaml-yaml-schema.md"
+  - ".tasks/active/T-1345-pickup-codify-rpc-resilience-tier-taxono.md"
+  - ".tasks/active/T-1348-pickup-fw-fabric-drift-and-scan-miss-rec.md"
+  - ".tasks/active/T-1349-pickup-vendored-agentic-framework-tracks.md"
+  - ".tasks/active/T-1350-pickup-watchtower-csrf-403-after-restart.md"
+  - ".tasks/active/T-1351-pickup-watchtower-fabric-crashes-keyerro.md"
+  - ".tasks/active/T-1352-pickup-watchtower-flask-secretkey-auto-r.md"
+  - ".tasks/active/T-1353-pickup-watchtower-loadlatestaudit-picks-.md"
+  - ".tasks/active/T-1365-pickup-multi-agent-dispatch-safety-model.md"
+  - ".tasks/active/T-1366-keylockacquire-add-optional-timeout-floc.md"
+  - ".tasks/active/T-1367-fw-task-reid-t-xxxx---new-t-yyyy--repair.md"
+  - ".tasks/completed/T-1363-session-wrap-up--t-1343-episodic---skip-.md"
+  - ".tasks/completed/T-1364-g-053-a-absolute-hook-paths-at-fw-initup.md"
+  - "tests/unit/task_id_race.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-17T12:54:15"
+    action: "T-1279: File RCA for fw work-on task-ID race condition"
+  - time: "2026-04-17T13:05:45"
+    action: "T-1279: Rescue stray T-1278 files from the ID race — reassign to T-1280/1281/1282"
+  - time: "2026-04-20T01:43:21"
+    action: "T-1279: Park T-1289 duplicate (T-ID race) + generate T-1299 episodic"
+  - time: "2026-04-20T09:59:00"
+    action: "T-1279: Rescue 7-way T-1345 duplicate (pickup intra-run race) + register G-052"
+  - time: "2026-04-20T21:37:50"
+    action: "T-1279: Serialize task-ID allocation (G-052 fix)"
+  - time: "2026-04-20T21:43:31"
+    action: "T-1279: Partial-complete + L-026 (TOCTOU filesystem-counter) + follow-ups T-1366/T-1367; land episodics T-1363/T-1364 + fabric cards"
+  - time: "2026-04-24T14:18:54"
+    action: "T-1279: annotate with race-condition evidence — fix is not watertight"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 4868 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, tooling, race-condition, task-system]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4868
+  commits: 8
+  files_changed: 39
+  lines_added: 2519
+  lines_removed: 193
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1279-fix-fw-work-on-task-id-race-condition.md
+generated_by: context-agent-hybrid
