@@ -134,6 +134,91 @@ EOF
     [[ "$output" == *"0/0"* ]]
 }
 
+@test "review: T-1492 — emit_review survives pipefail when inception task has no Recommendation line" {
+    # Regression: pre-fix, grep-finds-nothing under pipefail aborted emit_review
+    # via command substitution; .reviewed-T-XXX marker was never created and
+    # the function exited silently between "Scan QR" and the marker touch.
+    local file="$TEST_TEMP_DIR/.tasks/active/T-1492a-test.md"
+    cat > "$file" <<EOF
+---
+id: T-1492a
+name: "Inception with no recommendation"
+workflow_type: inception
+owner: human
+---
+
+# T-1492a: Inception with no recommendation
+
+## Acceptance Criteria
+
+### Human
+- [ ] [REVIEW] decide
+EOF
+    # Run with the exact shell mode update-task.sh uses
+    set -euo pipefail
+    run emit_review "T-1492a" "$file"
+    [ "$status" -eq 0 ]
+    # Marker MUST exist — proves we reached past the bug site (line ~150)
+    [ -f "$TEST_TEMP_DIR/.context/working/.reviewed-T-1492a" ]
+    # Warning MUST be emitted (no silent fallback)
+    [[ "$output" == *"No \`**Recommendation:**\` line found"* ]]
+}
+
+@test "review: T-1492 — HTML-commented Recommendation line does not poison the rationale" {
+    # If the only **Recommendation:** match is inside an HTML comment, treat
+    # it as missing rather than extracting the comment marker as rationale.
+    local file="$TEST_TEMP_DIR/.tasks/active/T-1492b-test.md"
+    cat > "$file" <<EOF
+---
+id: T-1492b
+name: "Recommendation in HTML comment only"
+workflow_type: inception
+owner: human
+---
+
+# T-1492b: only commented recommendation
+
+<!-- **Recommendation:** TBD -->
+
+## Acceptance Criteria
+
+### Human
+- [ ] [REVIEW] decide
+EOF
+    set -euo pipefail
+    run emit_review "T-1492b" "$file"
+    [ "$status" -eq 0 ]
+    [ -f "$TEST_TEMP_DIR/.context/working/.reviewed-T-1492b" ]
+    [[ "$output" == *"No \`**Recommendation:**\` line found"* ]]
+}
+
+@test "review: T-1492 — present Recommendation line is extracted into the CLI rationale" {
+    local file="$TEST_TEMP_DIR/.tasks/active/T-1492c-test.md"
+    cat > "$file" <<EOF
+---
+id: T-1492c
+name: "Has recommendation"
+workflow_type: inception
+owner: human
+---
+
+# T-1492c
+
+**Recommendation:** GO — apply the fix
+
+## Acceptance Criteria
+
+### Human
+- [ ] [REVIEW] decide
+EOF
+    set -euo pipefail
+    run emit_review "T-1492c" "$file"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"GO — apply the fix"* ]]
+    # No warning when recommendation is present
+    [[ "$output" != *"No \`**Recommendation:**\` line found"* ]]
+}
+
 @test "review: emit_review respects WATCHTOWER_URL env var" {
     export WATCHTOWER_URL="http://custom:8080"
     local task_file

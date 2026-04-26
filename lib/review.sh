@@ -125,10 +125,24 @@ except ImportError:
 
     # CLI alternative for inception tasks (T-973, T-1201)
     if [ "$workflow_type" = "inception" ]; then
-        # Extract recommendation line for pre-filled rationale
+        # Extract recommendation line for pre-filled rationale.
+        # T-1492: widen pattern (indented OK, skip HTML-commented), terminate
+        # pipeline with `|| true` so command-substitution exit code cannot
+        # propagate under `set -euo pipefail` and abort emit_review mid-flight
+        # (which previously left .reviewed-T-XXX uncreated, blocking inception decide).
         local _rec_line=""
-        _rec_line=$(grep -A1 '^\*\*Recommendation:\*\*' "$task_file" 2>/dev/null | head -1 | sed 's/^\*\*Recommendation:\*\*[[:space:]]*//')
-        [ -z "$_rec_line" ] && _rec_line="your rationale"
+        local _rec_raw=""
+        _rec_raw=$(grep -m1 '^[[:space:]]*\*\*Recommendation:' "$task_file" 2>/dev/null \
+            | grep -v '<!--' || true)
+        if [ -n "$_rec_raw" ]; then
+            _rec_line=$(echo "$_rec_raw" \
+                | sed -e 's/^[[:space:]]*\*\*Recommendation:\*\*[[:space:]]*//' \
+                      -e 's/^[[:space:]]*\*\*Recommendation:[[:space:]]*//')
+        fi
+        if [ -z "$_rec_line" ]; then
+            echo -e "  ${YELLOW}Note: No \`**Recommendation:**\` line found in task body — using fallback rationale${NC}" >&2
+            _rec_line="your rationale"
+        fi
         # Truncate to fit terminal (keep under 60 chars)
         _rec_line="${_rec_line:0:58}"
         echo -e "  ${BOLD}CLI:${NC} cd $PROJECT_ROOT &&"
