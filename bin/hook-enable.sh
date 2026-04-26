@@ -70,7 +70,20 @@ if [ ! -f "$settings_file" ]; then
     exit 3
 fi
 
-command_str=".agentic-framework/bin/fw hook $name"
+# T-1504: emit ABSOLUTE path. Claude Code's hook runner (POSIX sh -c) does
+# not chdir to the project root, so a relative path like
+# `.agentic-framework/bin/fw` only resolves when the parent shell happens
+# to be at project root — rarely true after any cd/subshell/pipeline.
+# Downstream 003-NTB-ATC-Plugin observed 680 silent failures in one session.
+# Mirrors init.sh:584 (T-1364 G-053-A) which already emits absolute paths
+# at init/upgrade time; this closes the second code path used by custom
+# `fw hook-enable` registrations.
+project_dir="$(cd "$(dirname "$settings_file")/.." && pwd)"
+fw_prefix="$project_dir/.agentic-framework/bin/fw"
+if [ -x "$project_dir/bin/fw" ] && [ -f "$project_dir/FRAMEWORK.md" ]; then
+    fw_prefix="$project_dir/bin/fw"
+fi
+command_str="$fw_prefix hook $name"
 
 python3 - "$settings_file" "$event" "$matcher" "$command_str" "$dry_run" <<'PY'
 import json, os, sys, tempfile
