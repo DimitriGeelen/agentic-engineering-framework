@@ -15,4 +15,8 @@ depended_by:
   type: used-by
 - target: web/templates/config.html
   type: rendered_by
-last_enriched: '2026-04-09'
+- target: web/templates/reviewer_audit.html
+  type: extended_by
+- target: web/templates/reviewer_overrides.html
+  type: extended_by
+last_enriched: '2026-04-26'

@@ -95,7 +95,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-19'
+last_enriched: '2026-04-26'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -281,3 +281,9 @@ depended_by:
 - tests/integration/cron_install.bats
 - target: lib/release.sh
   type: called_by_by
+- target: agents/context/pl007-scanner.sh
+  type: called_by
+- target: agents/context/subagent-stop.sh
+  type: called_by
+- target: tests/unit/task_reid.bats
+  type: called_by

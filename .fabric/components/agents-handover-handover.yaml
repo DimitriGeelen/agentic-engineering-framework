@@ -24,7 +24,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-23'
+last_enriched: '2026-04-26'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by
@@ -43,6 +43,10 @@ depended_by:
 - target: agents/session-capture/AGENT.md
   type: triggers_by
 - target: tests/unit/handover_push_timeout.bats
+  type: called_by
+- target: agents/context/session-end.sh
+  type: called_by
+- target: agents/context/session-silent-scanner.sh
   type: called_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
