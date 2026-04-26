@@ -569,8 +569,11 @@ def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
                     body = f.read()
             except OSError:
                 continue
-            # Look for `## Decision` block + the chosen decision keyword
-            m = _re.search(r"^## Decision\b.*?(?=^## |\Z)", body, _re.MULTILINE | _re.DOTALL)
+            # Look for `## Decision` block + the chosen decision keyword.
+            # T-1527: terminate at any H2-or-deeper heading so `### timestamp`
+            # Updates entries appended below the Decision section don't get
+            # captured into the keyword check (sister bug to T-1519/T-1526).
+            m = _re.search(r"^## Decision\b.*?(?=^#{2,} |\Z)", body, _re.MULTILINE | _re.DOTALL)
             if m and decision.upper() in m.group(0).upper():
                 return True
     return False

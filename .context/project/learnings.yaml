@@ -2259,16 +2259,25 @@ learnings:
   application: TBD
 - id: L-293
   learning: |
-    Section-rewriter terminators that stop only at H2 silently swallow H3+ content on next rewrite.
-    Hit twice in 24 hours: T-1519 (lib/reviewer/static_scan.py _VERDICT_SECTION_RE used regex
-    `(?=^## |\Z)`) and T-1526 (lib/inception.sh do_decide python heredoc state machine used
-    `line.startswith('## ')`). Class: any code that captures-or-skips a section bounded by H2
-    must use H2-or-deeper terminator (regex `^#{2,} `, python `re.match(r'^#{2,} ', line)`).
-    Bodies of these sections contain only Bold lines or paragraph text — never headings — so
-    widening the terminator never breaks duplicate-collapse or section semantics.
-    Audit trigger: grep -rn '^## ' lib/ agents/ for section regexes; review their terminators.
+    Section-rewriter/reader terminators that stop only at H2 misbehave on H3+ children.
+    Hit three times: T-1519 (lib/reviewer/static_scan.py _VERDICT_SECTION_RE swallowed
+    update entries), T-1526 (lib/inception.sh do_decide heredoc swallowed entries on
+    re-decide), T-1527 (web/blueprints/inception.py _decision_recorded_in_task
+    over-captured Updates entries into the keyword check, false-positiving GO/NO-GO).
+    Classification rule (from T-1527 audit of 30+ section regex sites):
+      (a) Use H2+ terminator (`^#{2,} ` / `(?=^#{2,} |\Z)`) when the section has
+          NO intentional H3 sub-structure but downstream code may APPEND H3 entries
+          below it (Decision, Reviewer Verdict, Recommendation when followed by EOF).
+      (b) Keep H2-only terminator when the section has STRUCTURAL H3 children that
+          must remain inside the capture (Acceptance Criteria → ### Agent / ### Human;
+          Updates → ### timestamp entries that ARE the section's content).
+      (c) Body-content checks that grep for `**Recommendation:**` / `**Decision**:`
+          are functionally safe with either terminator (H3 lines don't match those
+          patterns) — but prefer H2+ for defense-in-depth.
+    Audit trigger: `grep -rn '^## ' lib/ agents/ web/blueprints/` for section regexes;
+    classify each as (a)/(b)/(c) before deciding the terminator.
   source: P-011
-  task: T-1526
-  date: 2026-04-26
-  context: Added via context agent
+  task: T-1527
+  date: 2026-04-27
+  context: Refined via T-1527 codebase audit
   application: TBD
