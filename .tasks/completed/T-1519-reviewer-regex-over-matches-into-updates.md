@@ -4,7 +4,7 @@ name: "Reviewer regex over-matches into Updates entries below verdict block"
 description: >
   Reviewer regex over-matches into Updates entries below verdict block
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-26T21:20:17Z
-last_update: 2026-04-26T21:20:17Z
-date_finished: null
+last_update: 2026-04-26T21:23:42Z
+date_finished: 2026-04-26T21:23:42Z
 ---
 
 # T-1519: Reviewer regex over-matches into Updates entries below verdict block
@@ -74,3 +74,16 @@ python3 -m pytest tests/unit/test_reviewer_verdict_preserves_updates.py -q 2>&1 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1519-reviewer-regex-over-matches-into-updates.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-56a01af5
+- **Timestamp:** 2026-04-26T21:23:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T21:23:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Regex fix + 3 regression tests + sanity-inverse confirmed + live smoke verified
