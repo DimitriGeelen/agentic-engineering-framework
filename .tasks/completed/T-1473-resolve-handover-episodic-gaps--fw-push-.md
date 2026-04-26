@@ -46,6 +46,7 @@ test -f .context/episodic/T-1279.yaml
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.4)
+<!-- drift-baseline: {} -->
 
 - **Scan ID:** R-3862acae
 - **Timestamp:** 2026-04-25T20:01:28Z

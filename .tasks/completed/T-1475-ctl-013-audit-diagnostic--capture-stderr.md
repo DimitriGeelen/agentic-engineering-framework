@@ -80,6 +80,7 @@ bash -n agents/audit/audit.sh
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.4)
+<!-- drift-baseline: {"agents/audit/audit.sh": "c6dc8be4e1d58251d45ed9ffe94a4b13a66db701628d6f36aae07a62dda4c58a"} -->
 
 - **Scan ID:** R-2553864b
 - **Timestamp:** 2026-04-25T20:59:17Z

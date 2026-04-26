@@ -157,6 +157,7 @@ T-1443 v1.0 (T-1445) ships a **static-scan validator** — it reads task body fo
 - **Rationale:** Pass A alone catches ~40% of drift — insufficient as verdict. Pass B alone is fast enough but wastes work re-running unchanged tasks. Hybrid uses cheap signal to gate expensive deep-check; matches the corpus shape (50% read-only / 17.5% state-touching / 20% network) at the right cost.
 
 ## Reviewer Verdict (v1.4)
+<!-- drift-baseline: {} -->
 
 - **Scan ID:** R-d49d82f1
 - **Timestamp:** 2026-04-25T22:22:04Z

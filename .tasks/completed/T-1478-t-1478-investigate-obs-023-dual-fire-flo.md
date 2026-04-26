@@ -88,6 +88,7 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/pre_compact_flock.b
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.4)
+<!-- drift-baseline: {"agents/context/pre-compact.sh": "8e9f379a08c435f780f481bb1ab2eb570cd2441640cec74a98e92a22844f5e56", "tests/unit/pre_compact_flock.bats": "f29392f9c45d326ec40187fa664865a5f47487b6c33e77d4d7b3eddeb87f4ce3", "tests/unit/pre_compact_timewindow_dedup.bats": "4a998cb3947e2df194e9716ac616cc5621416ad6fbb793485adfb1cca2d9d5b1"} -->
 
 - **Scan ID:** R-ff3b1ad9
 - **Timestamp:** 2026-04-25T21:25:17Z

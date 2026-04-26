@@ -83,6 +83,7 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/upgrade_dedupe_user
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.4)
+<!-- drift-baseline: {"lib/upgrade.sh": "961e3cf90e1e413a79044622863795a0bcd9808ed61463ebae7b6d0a51fbe9b2", "tests/unit/upgrade_dedupe_user_hooks.bats": "fcfc15fb0e3a18d9b30611dae1adb8e86aea81b31f2775deccf0de07a73a17c7"} -->
 
 - **Scan ID:** R-b1e83b95
 - **Timestamp:** 2026-04-25T21:49:43Z

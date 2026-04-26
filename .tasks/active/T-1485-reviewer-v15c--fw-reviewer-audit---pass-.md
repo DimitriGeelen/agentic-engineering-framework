@@ -4,16 +4,16 @@ name: "Reviewer v1.5c — fw reviewer audit --pass-a corpus drift mode (baseline
 description: >
   Reviewer v1.5c — fw reviewer audit --pass-a corpus drift mode (baseline init + drift scan)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [reviewer-agent, drift-detection, v1.5c, build, audit, cron]
-components: [lib/reviewer/audit.py, lib/reviewer/drift.py, bin/fw]
+components: [bin/fw, tests/unit/test_reviewer_audit_pass_a.py]
 related_tasks: [T-1442, T-1443, T-1483, T-1484]
 created: 2026-04-26T07:17:23Z
-last_update: 2026-04-26T07:18:00Z
-date_finished: null
+last_update: 2026-04-26T07:22:01Z
+date_finished: 2026-04-26T07:22:01Z
 ---
 
 # T-1485: Reviewer v1.5c — fw reviewer audit --pass-a corpus drift mode (baseline init + drift scan)
@@ -101,3 +101,20 @@ grep -q "pass-a" bin/fw
 ### 2026-04-26T07:18:00Z — scope-defined
 - **Action:** Filled ACs, Verification, Recommendation per build-readiness gate
 - **Context:** v1.5c follow-on to T-1483/T-1484; closes v1.5 Reviewer arc end-to-end
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-e92a8ad1
+- **Timestamp:** 2026-04-26T07:22:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Output YAML to `.context/audits/reviewer/YYYY-MM-DD-pass-a.yaml` with: scan_date, scan_timestamp, mode, tasks_scanned, totals (STABLE/DRIFTED/NO-BASELINE/NO-VERIFICATION), per_task list (task_id, verd
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/reviewer/YYYY-MM-DD-pass-a.yaml in: Output YAML to `.context/audits/reviewer/YYYY-MM-DD-pass-a.yaml` with: scan_date, scan_timestamp, mode, tasks_scanned, totals (STABLE/DRIFTED/NO-BASEL`
+
+### 2026-04-26T07:22:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

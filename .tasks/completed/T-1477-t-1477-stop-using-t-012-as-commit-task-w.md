@@ -77,6 +77,7 @@ bats tests/unit/handover_t012_active_only.bats
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.4)
+<!-- drift-baseline: {"agents/handover/handover.sh": "3315c8635845a7ccdd824927ab11b97902ce44c0260b73a1c5b59cc6cbf18d47", "tests/unit/handover_t012_active_only.bats": "785243466a07987d237092317cd4e7b73c90b7dbc4d746f8d2cd39f92d79bbf6"} -->
 
 - **Scan ID:** R-3a80ff36
 - **Timestamp:** 2026-04-25T21:07:13Z

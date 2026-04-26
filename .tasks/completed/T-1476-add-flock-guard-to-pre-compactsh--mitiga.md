@@ -85,6 +85,7 @@ bats tests/unit/pre_compact_flock.bats
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.4)
+<!-- drift-baseline: {"agents/context/pre-compact.sh": "8e9f379a08c435f780f481bb1ab2eb570cd2441640cec74a98e92a22844f5e56", "tests/unit/pre_compact_flock.bats": "f29392f9c45d326ec40187fa664865a5f47487b6c33e77d4d7b3eddeb87f4ce3"} -->
 
 - **Scan ID:** R-daa4031a
 - **Timestamp:** 2026-04-25T21:03:44Z

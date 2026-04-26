@@ -80,6 +80,7 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/upgrade_duplicate_h
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.4)
+<!-- drift-baseline: {"lib/upgrade.sh": "961e3cf90e1e413a79044622863795a0bcd9808ed61463ebae7b6d0a51fbe9b2", "tests/unit/upgrade_duplicate_hook_detection.bats": "98931e6363acb7f0321c09ce1019a759dc93de631bfdbfe511c19bc5c425f8fe"} -->
 
 - **Scan ID:** R-c8b5070f
 - **Timestamp:** 2026-04-25T21:31:53Z
