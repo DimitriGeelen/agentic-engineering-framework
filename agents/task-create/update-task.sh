@@ -223,7 +223,12 @@ print(text)
         # T-1317: cd to PROJECT_ROOT first so relative paths in verification
         # commands resolve consistently regardless of caller CWD (Watchtower
         # launches from FRAMEWORK_ROOT, CLI from PROJECT_ROOT).
-        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; cd "$PROJECT_ROOT" && eval "$cmd") > /tmp/verify-$$.out 2>&1; then
+        # T-1493: close inherited keylock FDs in the subshell so daemons
+        # spawned by the verification command (.NET VBCSCompiler, gradle,
+        # etc.) cannot inherit the lock FD and block future fw task ops.
+        local _close_locks_cmd
+        _close_locks_cmd=$(type keylock_subshell_close_cmd >/dev/null 2>&1 && keylock_subshell_close_cmd || true)
+        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; eval "$_close_locks_cmd"; cd "$PROJECT_ROOT" && eval "$cmd") > /tmp/verify-$$.out 2>&1; then
             echo -e "  ${GREEN}PASS${NC}: $display_cmd"
             verify_pass=$((verify_pass + 1))
         else

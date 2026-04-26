@@ -4,15 +4,15 @@ name: "Pickup: update-task.sh flock leaks lock FD to dotnets VBCSCompiler daemon
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-146. Type: bug-report.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-26T11:06:01Z
-last_update: 2026-04-26T11:06:01Z
+last_update: 2026-04-26T17:37:05Z
 date_finished: null
 source_task_id_in_origin: T-146
 source_project_in_origin: "003-NTB-ATC-Plugin"
@@ -22,14 +22,21 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`lib/keylock.sh` opens lock FDs (starting at 200) via `exec ${fd}>"$lock_file"` without `O_CLOEXEC`. Any child process spawned while a lock is held inherits the FD. When the child is a long-lived daemon (.NET's VBCSCompiler, sbt server, gradle daemon, etc.), the FD outlives the build that spawned it — blocking any later `flock` on the same key indefinitely.
+
+**Real impact (P-015 / 003-NTB-ATC-Plugin / T-146):** Verification ran `dotnet build`. dotnet spawned VBCSCompiler. VBCSCompiler inherited fd 200 (the keylock FD). The subsequent active→completed status transition tried to re-acquire the lock — blocked forever until the user manually killed the daemon.
+
+**Fix (a) from envelope:** Wrap verification execution in a subshell that closes the lock FDs before executing the user command. Implementation: add `keylock_subshell_close_cmd` helper to `lib/keylock.sh` that emits `exec N>&-` for every currently-held lock FD, and `eval` its output inside `run_verification_commands` before `eval "$cmd"`.
+
+Out of scope: fix (c) watchdog (separate task if the FD-close fix proves insufficient).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `keylock_subshell_close_cmd` helper added to `lib/keylock.sh`, emits `exec N>&-` for every held FD
+- [x] `run_verification_commands` in `agents/task-create/update-task.sh` evals the helper output inside the verification subshell BEFORE running the user command
+- [x] Bats test: hold a lock, run `keylock_subshell_close_cmd`, verify it emits a close command for the held FD
+- [x] Bats test: hold a lock, run a child that backgrounds and sleeps; with the close-cmd in the subshell, child does NOT inherit the FD (`lsof` check or fd-test)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -48,9 +55,9 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+bash -n lib/keylock.sh
+bash -n agents/task-create/update-task.sh
+bats tests/unit/keylock_subshell_close.bats
 
 ## Decisions
 
@@ -69,3 +76,7 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1493-pickup-update-tasksh-flock-leaks-lock-fd.md
 - **Context:** Initial task creation
+
+### 2026-04-26T17:37:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
