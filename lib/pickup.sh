@@ -402,7 +402,7 @@ pickup_process_one() {
 
 do_pickup_send() {
     local pickup_type="" summary="" detail="" priority="medium"
-    local source_project="" task_id="" tags="" remote=""
+    local source_project="" task_id="" tags="" remote="" session=""
 
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -414,6 +414,7 @@ do_pickup_send() {
             --task-id) task_id="$2"; shift 2 ;;
             --tags) tags="$2"; shift 2 ;;
             --remote) remote="$2"; shift 2 ;;
+            --session) session="$2"; shift 2 ;;
             -h|--help)
                 echo -e "${BOLD}fw pickup send${NC} — Create and deliver a pickup envelope"
                 echo ""
@@ -429,7 +430,8 @@ do_pickup_send() {
                 echo "  --source-project NAME Project name (default: basename of PROJECT_ROOT)"
                 echo "  --task-id T-NNN       Originating task ID"
                 echo "  --tags TAG1,TAG2      Comma-separated tags"
-                echo "  --remote HOST         Push via termlink remote push to HOST"
+                echo "  --remote HUB          Push via termlink remote push to HUB (hub address or profile)"
+                echo "  --session SESSION     Target session name or ID on the remote hub (required with --remote)"
                 echo "  -h, --help            Show this help"
                 return 0
                 ;;
@@ -449,6 +451,13 @@ do_pickup_send() {
     esac
     if [ -z "$summary" ]; then
         echo -e "${RED}--summary is required${NC}" >&2
+        return 1
+    fi
+    # T-1494: validate --remote/--session pairing BEFORE writing the envelope
+    # so a misconfigured invocation doesn't leave a phantom file in the inbox.
+    if [ -n "$remote" ] && [ -z "$session" ]; then
+        echo -e "${RED}--remote requires --session SESSION (target session on the remote hub)${NC}" >&2
+        echo "  Discover sessions: termlink remote list <HUB>" >&2
         return 1
     fi
 
@@ -491,11 +500,11 @@ EOF
 
     echo -e "${GREEN}Created${NC} $filename"
 
-    # Remote push if requested
+    # Remote push if requested (validated upstream — see --remote/--session gate)
     if [ -n "$remote" ]; then
         if command -v termlink >/dev/null 2>&1; then
-            echo -e "Pushing to ${BOLD}$remote${NC} via termlink..."
-            termlink remote push "$remote" "$filepath" 2>&1
+            echo -e "Pushing to ${BOLD}$remote${NC} (session ${BOLD}$session${NC}) via termlink..."
+            termlink remote push "$remote" "$session" "$filepath" 2>&1
         else
             echo -e "${YELLOW}WARN: termlink not installed — envelope saved locally only${NC}" >&2
             echo "  Install: brew install DimitriGeelen/termlink/termlink"
