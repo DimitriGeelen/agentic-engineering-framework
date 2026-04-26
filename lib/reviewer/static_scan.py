@@ -2,9 +2,9 @@
 
 Detects anti-patterns in completed task files. v1.0 scope:
 - 4 seed patterns: tautology, empty-body, swallowed-errors, output-spoofing
-- Verdict written to task body under `## Reviewer Verdict (v1.0)`
+- Verdict written to task body under `#{2,}Reviewer Verdict (v1.0)`
 - Append-only feedback stream at `.context/working/feedback-stream.yaml`
-- Sovereignty: NEVER modifies AC checkboxes (### Human or ### Agent)
+- Sovereignty: NEVER modifies AC checkboxes (##{2,}Human or ### Agent)
 
 Wired in v1.0:
 - `bin/fw reviewer T-XXX` (manual)
@@ -232,7 +232,7 @@ def detect_empty_body(ac_section: str) -> list[Finding]:
     current_subhead = "ACs"
     counter = 0
     for raw in ac_section.splitlines():
-        if raw.strip().startswith("### "):
+        if raw.strip().startswith("##{2,}"):
             current_subhead = raw.strip().lstrip("# ").strip()
             counter = 0
             continue
@@ -516,7 +516,7 @@ def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> lis
     counter = 0
     current_subhead = "ACs"
     for raw in ac_section.splitlines():
-        if raw.strip().startswith("### "):
+        if raw.strip().startswith("##{2,}"):
             current_subhead = raw.strip().lstrip("# ").strip()
             counter = 0
             continue
@@ -687,8 +687,11 @@ def scan_task(
 
 VERDICT_HEADER = f"## Reviewer Verdict ({VERSION})"
 # v1.3: match any v* header so prior-version verdicts are cleanly replaced.
+# T-1519: terminate at any heading level ≥ H2 (#{2,}or ### or deeper), not just
+# H2. update-task.sh appends `##{2,}timestamp` Updates entries at EOF after the
+# verdict was first written — re-scanning would otherwise nuke them.
 _VERDICT_SECTION_RE = re.compile(
-    r"^## Reviewer Verdict \(v[0-9.]+\)\s*\n(.*?)(?=^## |\Z)",
+    r"^## Reviewer Verdict \(v[0-9.]+\)\s*\n(.*?)(?=^#{2,} |\Z)",
     re.MULTILINE | re.DOTALL,
 )
 
@@ -762,7 +765,7 @@ def render_verdict_md(verdict: Verdict) -> str:
 
 
 def write_verdict_to_task(task_path: Path, verdict: Verdict) -> None:
-    """Replace existing `## Reviewer Verdict (v1.0)` section, or append.
+    """Replace existing `#{2,}Reviewer Verdict (v1.0)` section, or append.
 
     Sovereignty invariant: this function ONLY touches the verdict section.
     It must not modify AC checkboxes or any other section.
