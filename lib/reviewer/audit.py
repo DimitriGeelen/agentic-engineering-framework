@@ -128,6 +128,162 @@ def write_audit_yaml(project_root: Path, summary: dict, suffix: str = "") -> Pat
     return out_path
 
 
+def _completed_tasks_newest_first(project_root: Path, limit: int | None) -> list[Path]:
+    completed_dir = project_root / ".tasks" / "completed"
+
+    def _task_id_num(p: Path) -> int:
+        try:
+            return int(p.name.split("-")[1])
+        except (IndexError, ValueError):
+            return 0
+
+    tasks = sorted(completed_dir.glob("T-*.md"), key=_task_id_num, reverse=True)
+    if limit is not None:
+        tasks = tasks[:limit]
+    return tasks
+
+
+def run_pass_a_baseline(
+    project_root: Path,
+    limit: int | None = None,
+    force: bool = False,
+) -> dict:
+    """v1.5 Pass A baseline init (T-1485). Writes drift baselines for completed tasks.
+
+    Idempotent: skips tasks that already have a baseline unless `force=True`.
+    """
+    from lib.reviewer.drift import (
+        compute_hashes,
+        extract_file_refs,
+        read_baseline,
+        write_baseline,
+    )
+    from lib.reviewer.static_scan import extract_section
+
+    tasks = _completed_tasks_newest_first(project_root, limit)
+    written = 0
+    skipped_existing = 0
+    skipped_no_verification = 0
+    per_task: list[dict] = []
+    errors: list[dict] = []
+
+    for tf in tasks:
+        try:
+            text = tf.read_text()
+            body = text.split("---", 2)[2] if text.startswith("---") else text
+            verification = extract_section(body, "Verification") or ""
+            if not verification.strip():
+                skipped_no_verification += 1
+                per_task.append({"task_id": tf.stem.split("-", 2)[0] + "-" + tf.stem.split("-")[1],
+                                 "action": "skipped-no-verification", "n_files": 0})
+                continue
+            existing = read_baseline(text)
+            if existing and not force:
+                skipped_existing += 1
+                per_task.append({"task_id": tf.stem.split("-", 2)[0] + "-" + tf.stem.split("-")[1],
+                                 "action": "skipped-has-baseline", "n_files": len(existing)})
+                continue
+            refs = extract_file_refs(verification, project_root)
+            baseline = compute_hashes(refs, project_root)
+            new_text = write_baseline(text, baseline)
+            tf.write_text(new_text)
+            written += 1
+            per_task.append({"task_id": tf.stem.split("-", 2)[0] + "-" + tf.stem.split("-")[1],
+                             "action": "baseline-written", "n_files": len(baseline)})
+        except Exception as exc:
+            errors.append({"task": tf.name, "error": f"{type(exc).__name__}: {exc}"})
+
+    return {
+        "scan_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "scan_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "mode": "pass-a-baseline",
+        "tasks_scanned": len(tasks),
+        "limit": limit,
+        "force": force,
+        "totals": {
+            "written": written,
+            "skipped_existing": skipped_existing,
+            "skipped_no_verification": skipped_no_verification,
+            "errors": len(errors),
+        },
+        "errors": errors,
+        "per_task": per_task,
+    }
+
+
+def run_pass_a_drift(
+    project_root: Path,
+    limit: int | None = None,
+) -> dict:
+    """v1.5 Pass A corpus drift scan (T-1485). Compare current hashes vs baselines."""
+    from lib.reviewer.drift import detect_drift, read_baseline
+    from lib.reviewer.static_scan import extract_section
+
+    tasks = _completed_tasks_newest_first(project_root, limit)
+    totals = Counter()
+    per_task: list[dict] = []
+    errors: list[dict] = []
+
+    for tf in tasks:
+        try:
+            text = tf.read_text()
+            body = text.split("---", 2)[2] if text.startswith("---") else text
+            verification = extract_section(body, "Verification") or ""
+            if not verification.strip():
+                totals["NO-VERIFICATION"] += 1
+                per_task.append({
+                    "task_id": tf.stem.split("-", 2)[0] + "-" + tf.stem.split("-")[1],
+                    "verdict": "NO-VERIFICATION",
+                    "has_drift": False,
+                    "n_unchanged": 0, "n_changed": 0,
+                    "n_missing": 0, "n_no_baseline": 0,
+                })
+                continue
+            baseline = read_baseline(text)
+            if not baseline:
+                totals["NO-BASELINE"] += 1
+                per_task.append({
+                    "task_id": tf.stem.split("-", 2)[0] + "-" + tf.stem.split("-")[1],
+                    "verdict": "NO-BASELINE",
+                    "has_drift": False,
+                    "n_unchanged": 0, "n_changed": 0,
+                    "n_missing": 0, "n_no_baseline": 0,
+                })
+                continue
+            rep = detect_drift(tf, project_root)
+            verdict = "DRIFTED" if rep.has_drift else "STABLE"
+            totals[verdict] += 1
+            per_task.append({
+                "task_id": rep.task_id,
+                "verdict": verdict,
+                "has_drift": rep.has_drift,
+                "n_unchanged": len(rep.unchanged),
+                "n_changed": len(rep.changed),
+                "n_missing": len(rep.missing),
+                "n_no_baseline": len(rep.no_baseline),
+                "changed_files": rep.changed[:10],  # cap for YAML noise
+                "missing_files": rep.missing[:10],
+            })
+        except Exception as exc:
+            errors.append({"task": tf.name, "error": f"{type(exc).__name__}: {exc}"})
+
+    return {
+        "scan_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "scan_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "mode": "pass-a",
+        "tasks_scanned": len(tasks),
+        "limit": limit,
+        "totals": {
+            "STABLE": totals.get("STABLE", 0),
+            "DRIFTED": totals.get("DRIFTED", 0),
+            "NO-BASELINE": totals.get("NO-BASELINE", 0),
+            "NO-VERIFICATION": totals.get("NO-VERIFICATION", 0),
+        },
+        "errors": errors,
+        "per_task": per_task,
+    }
+
+
 def run_pass_b_reverify(
     project_root: Path,
     limit: int | None = None,
@@ -205,6 +361,22 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(prog="fw reviewer audit")
     parser.add_argument(
+        "--pass-a",
+        dest="pass_a",
+        action="store_true",
+        help="v1.5 Pass A corpus drift scan (cheap signal, file-hash compare vs baseline)",
+    )
+    parser.add_argument(
+        "--baseline",
+        action="store_true",
+        help="With --pass-a: write drift baselines instead of comparing (one-shot init)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="With --pass-a --baseline: overwrite existing baselines (default is idempotent)",
+    )
+    parser.add_argument(
         "--pass-b",
         dest="pass_b",
         action="store_true",
@@ -217,6 +389,38 @@ def main(argv: list[str] | None = None) -> int:
 
     project_root = Path(os.environ.get("PROJECT_ROOT") or os.getcwd())
     framework_root = Path(os.environ.get("FRAMEWORK_ROOT") or project_root)
+
+    if args.pass_a and args.baseline:
+        summary = run_pass_a_baseline(project_root, limit=args.limit, force=args.force)
+        out_path = write_audit_yaml(project_root, summary, suffix="-pass-a-baseline")
+        t = summary["totals"]
+        print(f"Reviewer audit (v1.5 Pass A baseline init) — {summary['scan_date']}")
+        print(f"  Scanned: {summary['tasks_scanned']} task(s)"
+              + (f" (limited to {args.limit})" if args.limit else "")
+              + (" [force]" if args.force else ""))
+        print(f"  Written: {t['written']}  Skipped (had baseline): {t['skipped_existing']}  "
+              f"Skipped (no verification): {t['skipped_no_verification']}  Errors: {t['errors']}")
+        print(f"  Wrote: {out_path.relative_to(project_root)}")
+        return 0
+
+    if args.pass_a:
+        summary = run_pass_a_drift(project_root, limit=args.limit)
+        out_path = write_audit_yaml(project_root, summary, suffix="-pass-a")
+        t = summary["totals"]
+        print(f"Reviewer audit (v1.5 Pass A drift scan) — {summary['scan_date']}")
+        print(f"  Scanned: {summary['tasks_scanned']} task(s)"
+              + (f" (limited to {args.limit})" if args.limit else ""))
+        print(f"  Verdicts: STABLE={t['STABLE']} DRIFTED={t['DRIFTED']} "
+              f"NO-BASELINE={t['NO-BASELINE']} NO-VERIFICATION={t['NO-VERIFICATION']}")
+        if not args.quiet:
+            for row in summary["per_task"]:
+                if row["verdict"] == "DRIFTED":
+                    print(f"    [DRIFTED] {row['task_id']}  "
+                          f"changed={row['n_changed']} missing={row['n_missing']}")
+        if summary["errors"]:
+            print(f"  Errors: {len(summary['errors'])} (see YAML)")
+        print(f"  Wrote: {out_path.relative_to(project_root)}")
+        return 0 if t["DRIFTED"] == 0 else 1
 
     if args.pass_b:
         summary = run_pass_b_reverify(
