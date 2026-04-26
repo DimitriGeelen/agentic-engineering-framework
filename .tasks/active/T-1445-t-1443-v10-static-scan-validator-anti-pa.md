@@ -142,6 +142,7 @@ test -f .context/working/feedback-stream.yaml
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.4)
+<!-- drift-baseline: {"bin/fw": "588e05e34bc1bb98f1bf0d55883f2046955cff83da5b1c4a60259ae8c573a0c9", "lib/reviewer/static_scan.py": "014e932f6abb4c3e95f306ffde05e2806fa03e91cacc86ce12bb932271595598", "policy/anti-patterns.yaml": "af6ad4ba8766210b48adee67c9b97d696e61da5bc8c7b9b4faca907c1a080877", "tests/unit/test_reviewer_static_scan.py": "0deabd11aceb02b7661a0a42aca706d2ef1ba0ee2ef9b80e32b3750e274fe863"} -->
 
 - **Scan ID:** R-2ba76969
 - **Timestamp:** 2026-04-25T22:10:25Z

@@ -4,16 +4,16 @@ name: "Reviewer v1.5b — extend fw reviewer audit with --pass-b corpus mode (cr
 description: >
   Reviewer v1.5b — extend fw reviewer audit with --pass-b corpus mode (cron-friendly)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [reviewer-agent, drift-detection, worktree, v1.5b, build, audit, cron]
-components: [lib/reviewer/audit.py, bin/fw]
+components: [bin/fw, tests/unit/test_reviewer_audit_pass_b.py]
 related_tasks: [T-1442, T-1443, T-1483]
 created: 2026-04-25T22:31:11Z
-last_update: 2026-04-26T07:05:00Z
-date_finished: null
+last_update: 2026-04-26T07:16:19Z
+date_finished: 2026-04-26T07:16:19Z
 ---
 
 # T-1484: Reviewer v1.5b — extend fw reviewer audit with --pass-b corpus mode (cron-friendly)
@@ -41,18 +41,18 @@ Network-dependent verifications skipped per Spike 1 classifier (offline-environm
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/reviewer/audit.py` exposes `run_pass_b_reverify(project_root, limit=None, timeout_per_line=30) -> dict`
-- [ ] `--pass-b` flag in `audit.py main()` selects reverify mode; default behavior unchanged
-- [ ] `--limit N` caps tasks scanned (cron budget control)
-- [ ] `--quiet` suppresses per-task output (cron noise control)
-- [ ] `--timeout N` overrides per-line timeout (default 30s)
-- [ ] Output YAML written to `.context/audits/reviewer/YYYY-MM-DD-pass-b.yaml` with: scan_date, scan_timestamp, mode=pass-b, tasks_scanned, totals (PASS/FAIL/NO-VERIFICATION/ERROR), per_task list (task_id, sha, overall, n_pass, n_fail, n_skipped), errors list
-- [ ] Single shared `WorktreePool` reused across all tasks (verified: pool.path stable, single `git worktree add` call)
-- [ ] Exit code: 0 if all tasks PASS or NO-VERIFICATION; 1 if any FAIL/ERROR; 3 on catalogue/setup failure
-- [ ] `bin/fw reviewer audit --help` mentions `--pass-b`, `--limit`, `--quiet`, `--timeout`
-- [ ] `tests/unit/test_reviewer_audit_pass_b.py` covers: tiny-repo smoke (2 completed tasks, 1 PASS + 1 FAIL → summary correct, exit 1), `--limit` caps tasks, NO-VERIFICATION counted separately, YAML schema stable, single-pool reuse
-- [ ] All existing reviewer unit tests still pass (no regression)
-- [ ] `bash -n bin/fw` parses cleanly
+- [x] `lib/reviewer/audit.py` exposes `run_pass_b_reverify(project_root, limit=None, timeout_per_line=30) -> dict`
+- [x] `--pass-b` flag in `audit.py main()` selects reverify mode; default behavior unchanged
+- [x] `--limit N` caps tasks scanned (cron budget control)
+- [x] `--quiet` suppresses per-task output (cron noise control)
+- [x] `--timeout N` overrides per-line timeout (default 30s)
+- [x] Output YAML written to `.context/audits/reviewer/YYYY-MM-DD-pass-b.yaml` with: scan_date, scan_timestamp, mode=pass-b, tasks_scanned, totals (PASS/FAIL/NO-VERIFICATION/ERROR), per_task list (task_id, sha, overall, n_pass, n_fail, n_skipped, n_error), errors list (verified via test_pass_b_summary_yaml_round_trip)
+- [x] Single shared `WorktreePool` reused across all tasks (verified by test_pass_b_reuses_single_worktree — enter_count == 1 across 3 tasks)
+- [x] Exit code: 0 if all tasks PASS or NO-VERIFICATION; 1 if any FAIL/ERROR; 3 on catalogue/setup failure
+- [x] `bin/fw reviewer audit --help` mentions `--pass-b`, `--limit`, `--quiet`, `--timeout`
+- [x] `tests/unit/test_reviewer_audit_pass_b.py` covers: tiny-repo smoke (2 completed tasks, 1 PASS + 1 FAIL → summary correct, exit 1), `--limit` caps tasks, NO-VERIFICATION counted separately, network skip, unknown-SHA error, YAML schema stable, single-pool reuse, no leaked worktree (9 tests)
+- [x] All existing reviewer unit tests still pass (145/145 reviewer suite: classifier 25 + drift 17 + reverify 11 + static_scan + overrides + new pass-b 9)
+- [x] `bash -n bin/fw` parses cleanly
 
 ### Human
 - [ ] [REVIEW] `fw reviewer audit --pass-b --limit 5 --quiet` is suitable for a daily cron entry
@@ -71,7 +71,32 @@ python3 -c "from lib.reviewer.audit import run_pass_b_reverify"
 bash -n bin/fw
 grep -q "pass-b" bin/fw
 
+## Recommendation
+
+**Recommendation:** GO — Pass B corpus reverify wired into the existing audit cron with opt-in `--pass-b` flag. Default behavior preserved (no surprise to existing cron operators). Worktree-pool reuse from T-1483 means corpus runs are cheap (~3.7s/task on real data, well inside any reasonable cron budget).
+
+**Rationale:** This is the v1.5b deferred-during-T-1483 scope. With this landing, the v1.5 Reviewer drift+reverify story is complete end-to-end: per-task CLIs (`fw reviewer drift|reverify T-XXX`) + corpus cron (`fw reviewer audit --pass-b`). Cron operators who want Pass B can flip the flag; everyone else keeps the v1.0 static-scan re-scan they already had.
+
+**Evidence:**
+- 9 new tests in `tests/unit/test_reviewer_audit_pass_b.py` — all green
+- Full reviewer regression: 145/145 pass (no regression on v1.0/v1.2/v1.4/v1.5)
+- Real-corpus smoke: `--limit 10` scanned newest 10 completed tasks in 37s → 8 PASS / 1 FAIL (T-1480, n_error=1) / 1 NO-VERIFICATION (T-1482 inception). Caught a real signal (T-1480 timeout) on the first run.
+- `git worktree list` after run: no leaks
+- YAML schema verified by round-trip test
+- `bash -n bin/fw` clean
+
+**Out-of-scope (deferred to v1.5c/v1.6+):**
+- `fw reviewer audit --pass-a` corpus drift mode (cheap signal pass over all tasks)
+- Auto-quarantine of FAIL'd tasks (sovereignty-model dependency)
+- Network-stub server for curl-based verifications (current Pass A skipping is acceptable)
+- Cron entry registration in `agentic-audit.crontab` (operator-driven; we don't enable cron jobs by default)
+
 ## Decisions
+
+### 2026-04-26 — Newest-first numeric task-ID sort
+- **Chose:** Sort completed tasks by numeric ID descending so `--limit N` hits recent tasks
+- **Why:** Default lexicographic sort puts T-001..T-009 first (pre-Verification-gate era — all NO-VERIFICATION). Cron with `--limit 50` would waste budget on tasks that produce no signal. Numeric-descending hits the work where verification gates exist and drift is most likely.
+- **Rejected:** Mtime-based sort (less predictable across re-clones); lexicographic (default — wrong for our task-ID convention).
 
 ### 2026-04-26 — Separate YAML file (`-pass-b.yaml`) instead of merging into existing audit YAML
 - **Chose:** Distinct file per mode
@@ -93,3 +118,20 @@ grep -q "pass-b" bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7efa8340
+- **Timestamp:** 2026-04-26T07:16:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — Output YAML written to `.context/audits/reviewer/YYYY-MM-DD-pass-b.yaml` with: scan_date, scan_timestamp, mode=pass-b, tasks_scanned, totals (PASS/FAIL/NO-VERIFICATION/ERROR), per_task list (task_id, 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/reviewer/YYYY-MM-DD-pass-b.yaml in: Output YAML written to `.context/audits/reviewer/YYYY-MM-DD-pass-b.yaml` with: scan_date, scan_timestamp, mode=pass-b, tasks_scanned, totals (PASS/FAI`
+
+### 2026-04-26T07:16:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

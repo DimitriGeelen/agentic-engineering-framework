@@ -4,7 +4,7 @@ name: "Reviewer v1.5 drift re-verification — sandbox isolation strategy (workt
 description: >
   Reviewer v1.5 drift re-verification — sandbox isolation strategy (worktree vs container vs subprocess)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [reviewer-agent, drift-detection, isolation-strategy, sandbox, v1.5]
 components: []
 related_tasks: [T-1442, T-1443, T-1445, T-1448, T-1449, T-1450]
 created: 2026-04-25T22:10:49Z
-last_update: 2026-04-25T22:10:49Z
-date_finished: null
+last_update: 2026-04-25T22:22:04Z
+date_finished: 2026-04-25T22:22:04Z
 ---
 
 # T-1482: Reviewer v1.5 drift re-verification — sandbox isolation strategy (worktree vs container vs subprocess)
@@ -78,7 +78,7 @@ T-1443 v1.0 (T-1445) ships a **static-scan validator** — it reads task body fo
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -140,9 +140,31 @@ T-1443 v1.0 (T-1445) ships a **static-scan validator** — it reads task body fo
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Pass A alone catches ~40% of drift — insufficient as verdict. Pass B alone is fast enough but wastes work re-running unchanged tasks. Hybrid uses cheap signal to gate expensive deep-check; matches the corpus shape (50% read-only / 17.5% state-touching / 20% network) at the right cost.
+
+**Date**: 2026-04-25T22:22:03Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-25T22:22:03Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Pass A alone catches ~40% of drift — insufficient as verdict. Pass B alone is fast enough but wastes work re-running unchanged tasks. Hybrid uses cheap signal to gate expensive deep-check; matches the corpus shape (50% read-only / 17.5% state-touching / 20% network) at the right cost.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d49d82f1
+- **Timestamp:** 2026-04-25T22:22:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-25T22:22:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

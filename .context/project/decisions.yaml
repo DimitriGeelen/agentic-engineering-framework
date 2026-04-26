@@ -121,3 +121,73 @@ decisions:
     date: 2026-04-25
     task: T-1449
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-020
+    decision: "HTML comment `<!-- @auto-tick-on-decide -->` on the AC line or directly above"
+    scope: project
+    date: 2026-04-25
+    task: T-1472
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-021
+    decision: "Python lib at `lib/reviewer/static_scan.py` + bash CLI shim invoking it"
+    scope: project
+    date: 2026-04-25
+    task: T-1445
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-022
+    decision: "v1.0 writes verdict to `## Reviewer Verdict (v1.0)` section in task .md file"
+    scope: project
+    date: 2026-04-25
+    task: T-1445
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-023
+    decision: "static_scan.py never opens task file in write mode for AC sections; only appends to ## Reviewer Verdict"
+    scope: project
+    date: 2026-04-25
+    task: T-1445
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-024
+    decision: "Separate small CLI files matching the `override_cli.py` precedent"
+    scope: project
+    date: 2026-04-25
+    task: T-1483
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-025
+    decision: "`<!-- drift-baseline: {json} -->` marker inside the existing verdict section"
+    scope: project
+    date: 2026-04-25
+    task: T-1483
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-026
+    decision: "WorktreePool context manager — one worktree per audit run, checkout per task"
+    scope: project
+    date: 2026-04-25
+    task: T-1483
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-027
+    decision: "Sort completed tasks by numeric ID descending so `--limit N` hits recent tasks"
+    scope: project
+    date: 2026-04-26
+    task: T-1484
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-028
+    decision: "Distinct file per mode"
+    scope: project
+    date: 2026-04-26
+    task: T-1484
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-029
+    decision: "Opt-in"
+    scope: project
+    date: 2026-04-26
+    task: T-1484
+    rationale: "Auto-captured from task file on completion"
