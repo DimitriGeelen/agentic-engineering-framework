@@ -2514,6 +2514,86 @@ case "$d5_level" in
         ;;
 esac
 
+# D13: Inception Limbo (Score 15, T-1490 / OBS-025)
+# Inception tasks where the human decision is recorded but the workflow
+# never reached completed/. Two classes:
+#   A) status=work-completed + has Decision + Human AC unchecked → sweep eligible
+#      (mechanical fix: bin/fw inception sweep)
+#   B) status=started-work + has Decision + all ACs checked → transition bug
+#      (manual fix: agents/task-create/update-task.sh --status work-completed
+#       --skip-sovereignty; underlying do_inception_decide bug deserves RCA)
+d13_result=$(python3 << 'D13EOF'
+import os, glob, re
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+ACTIVE = os.path.join(PROJECT_ROOT, ".tasks", "active")
+
+DECISION_RE = re.compile(r"^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)", re.MULTILINE)
+HUMAN_HEADER_RE = re.compile(r"^### Human\b", re.MULTILINE)
+NEXT_HEADER_RE = re.compile(r"^## ", re.MULTILINE)
+UNCHECKED_RE = re.compile(r"^\s*- \[ \]", re.MULTILINE)
+
+def fm_field(text, name):
+    m = re.search(rf"^{name}:\s*(\S.*?)\s*$", text, re.MULTILINE)
+    return m.group(1).strip() if m else ""
+
+def section(text, header_re):
+    m = header_re.search(text)
+    if not m:
+        return ""
+    rest = text[m.end():]
+    n = NEXT_HEADER_RE.search(rest)
+    return rest[: n.start()] if n else rest
+
+def count_unchecked(text, header_re):
+    sec = section(text, header_re)
+    return len(UNCHECKED_RE.findall(sec))
+
+class_a = []  # work-completed but Human AC unticked
+class_b = []  # started-work but all ACs ticked + decision recorded
+
+for f in sorted(glob.glob(os.path.join(ACTIVE, "T-*.md"))):
+    try:
+        text = open(f).read()
+    except OSError:
+        continue
+    if fm_field(text, "workflow_type") != "inception":
+        continue
+    status = fm_field(text, "status")
+    if not DECISION_RE.search(text):
+        continue
+    tid = fm_field(text, "id")
+    human_unchecked = count_unchecked(text, HUMAN_HEADER_RE)
+    if status == "work-completed" and human_unchecked > 0:
+        class_a.append(f"{tid}(A:{human_unchecked}hu)")
+    elif status == "started-work" and human_unchecked == 0:
+        class_b.append(f"{tid}(B)")
+
+total = len(class_a) + len(class_b)
+if total == 0:
+    print("PASS 0")
+else:
+    parts = class_a + class_b
+    shown = parts[:8]
+    extra = f" (+{total-8} more)" if total > 8 else ""
+    a_n, b_n = len(class_a), len(class_b)
+    print(f"WARN {total} A={a_n}/B={b_n} {' '.join(shown)}{extra}")
+D13EOF
+)
+d13_level=$(echo "$d13_result" | awk '{print $1}')
+d13_count=$(echo "$d13_result" | awk '{print $2}')
+d13_detail=$(echo "$d13_result" | cut -d' ' -f3-)
+case "$d13_level" in
+    WARN)
+        warn "D13: Inception limbo — $d13_count task(s): $d13_detail" \
+             "Decision recorded but workflow stuck in active/" \
+             "Class A: bin/fw inception sweep | Class B: manual update-task.sh --status work-completed --skip-sovereignty"
+        ;;
+    *)
+        pass "D13: Inception limbo — no stuck inceptions"
+        ;;
+esac
+
 # D3: Commit Velocity Anomalies (Score 16)
 # Compare daily commit count against 7-day moving average
 d3_result=$(python3 << 'D3EOF'
