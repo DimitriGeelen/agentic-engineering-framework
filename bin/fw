@@ -2021,12 +2021,16 @@ if os.path.isdir(active_dir):
             continue
 
         human_block = human_match.group(1)
-        human_total = len(re.findall(r'^\s*-\s*\[[ x]\]', human_block, re.MULTILINE))
-        human_checked = len(re.findall(r'^\s*-\s*\[x\]', human_block, re.MULTILINE))
+        # G-047: strip HTML <!-- ... --> comment blocks before counting ACs.
+        # Default template includes an example "- [ ] [REVIEW] Dashboard renders correctly"
+        # inside a comment that must not register as a real unchecked AC.
+        human_block_uncommented = re.sub(r'<!--.*?-->', '', human_block, flags=re.DOTALL)
+        human_total = len(re.findall(r'^\s*-\s*\[[ x]\]', human_block_uncommented, re.MULTILINE))
+        human_checked = len(re.findall(r'^\s*-\s*\[x\]', human_block_uncommented, re.MULTILINE))
         human_unchecked = human_total - human_checked
 
         if human_unchecked > 0:
-            unchecked_items = re.findall(r'^\s*-\s*\[ \]\s*(.*)', human_block, re.MULTILINE)
+            unchecked_items = re.findall(r'^\s*-\s*\[ \]\s*(.*)', human_block_uncommented, re.MULTILINE)
             results.append({
                 'id': fm.get('id', fn),
                 'name': fm.get('name', ''),
