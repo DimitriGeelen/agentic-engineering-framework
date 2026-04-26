@@ -24,8 +24,12 @@ emit_review() {
         return 1
     fi
 
-    # Find task file if not provided
-    if [ -z "$task_file" ]; then
+    # T-1509: Treat task_file arg as a HINT, not a hard requirement. Callers
+    # may pass a path that became stale (e.g. inception decide passes the
+    # active/ path, but update-task.sh has since moved the file to completed/).
+    # Fall back to discovery when the hint is empty OR points at a missing file.
+    if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
+        task_file=""
         for f in "$PROJECT_ROOT/.tasks/active/$task_id"*.md "$PROJECT_ROOT/.tasks/completed/$task_id"*.md; do
             if [ -f "$f" ]; then
                 task_file="$f"

@@ -502,10 +502,13 @@ EOF
     echo "Task: $task_id"
     echo "Decision: $decision_upper"
 
-    # T-634: Auto-emit review (URL + QR + artifacts) after decision
+    # T-634: Auto-emit review (URL + QR + artifacts) after decision.
+    # T-1509: omit task_file arg — update-task.sh has moved go/no-go tasks to
+    # completed/ by this point, making the active/ path stale. emit_review
+    # rediscovers from $task_id; defense-in-depth lives in review.sh.
     if [ -f "$FW_LIB_DIR/review.sh" ]; then
         source "$FW_LIB_DIR/review.sh"
-        emit_review "$task_id" "$task_file"
+        emit_review "$task_id"
     fi
 
     if [ "$decision" = "go" ]; then
