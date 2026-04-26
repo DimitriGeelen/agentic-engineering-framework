@@ -2173,3 +2173,10 @@ learnings:
   date: 2026-04-26
   context: Added via context agent
   application: TBD
+- id: L-282
+  learning: "Silent gate-failure pattern: when a high-level orchestrator (e.g. do_inception_decide) calls a gated tool (e.g. update-task.sh with P-010/P-011) without checking exit code, gate refusals create hidden state. User sees 'success' message; task is actually stuck. Pattern detection: any 'do_X' that runs persistent state mutation followed by a gated transition needs to propagate the transition's exit code. Applied: T-1491 root-caused inception decide silent failure (caused T-1346, T-1388, and T-1423's 49 historical sweep targets)."
+  source: P-001
+  task: T-1491
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD

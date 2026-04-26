@@ -8,16 +8,16 @@ description: >
   the user sees "Inception decision recorded" in green and never learns the
   task is stuck.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [rca, inception, governance, silent-failure, g-019]
 components: [lib/inception.sh]
 related_tasks: [T-1346, T-1388, T-1466, T-1472, T-1490, T-1423]
 created: 2026-04-26T09:48:00Z
-last_update: 2026-04-26T09:48:00Z
-date_finished: null
+last_update: 2026-04-26T09:56:02Z
+date_finished: 2026-04-26T09:56:02Z
 ---
 
 # T-1491: RCA — do_inception_decide records Decision but status transition silently fails
@@ -165,3 +165,15 @@ fi
 ### 2026-04-26 — RCA executed
 - **Action:** Reproduced T-1388 transition manually (rolled back); git archaeology localized root cause to pre-T-1466 wording dependency + persisting silent-failure layer at lib/inception.sh:454
 - **Output:** Findings + Recommendation sections of this task
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-87203e25
+- **Timestamp:** 2026-04-26T09:56:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T09:56:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1488: RCA — CTL-013 false positive on T-1472 (OBS-022 follow-on with T-1475 diagnostics)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T09:50:30Z
+# ============================================================================
+
+task_id: T-1488
+task_name: "RCA — CTL-013 false positive on T-1472 (OBS-022 follow-on with T-1475 diagnostics)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T09:01:00Z
+completed: 2026-04-26T09:11:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T11:11:40+02:00
+last_commit: 2026-04-26T11:17:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — CTL-013 bats Heisenbug confirmed, recommend defer to Pass B. Tick Agent ACs + L-281 (Heisenbug-defer learning) + cleanup. OBS-025 — inception limbo state (Human AC ✓ but no decision)
+
+# Key outcomes
+outcomes:
+  - "Reproduce confirmed: `touch .tasks/completed/T-1472-*.md && FW_AUDIT_VERIFY_DEBUG=1 bin/fw audit` shows `DEBUG (T-1472) FAIL (rc=1)` with empty captured output"
+  - "TRACE collapses bug confirmed: same command with `FW_AUDIT_VERIFY_TRACE=1` shows `[PASS] CTL-013: T-1472 verification re-run: 1/1 pass`"
+  - "Shim reproduction attempted (FD 200, FD 3, both closed; brace, subshell, bare; stdin redirect) — none reproduce; Heisenbug requires full audit context"
+  - "T-1472 mtime restored (`touch -d 2026-04-25T19:40:42Z`) so audit's `ls -t | head -3` doesn't keep flagging it during the residual aging window"
+  - "Findings + recommendation written to this task's Context + Recommendation sections"
+  - "[REVIEW] Approve the recommended Level B fix: skip bats invocations in CTL-013 verify-rerun and emit a one-line \"see fw reviewer audit --pass-b T-XXX\" hint instead"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Tick Agent ACs + L-281 (Heisenbug-defer learning) + cleanup"
+    source: git-mined
+  - description: "RCA — CTL-013 bats Heisenbug confirmed, recommend defer to Pass B"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Level B targeted fix — skip bats invocations in CTL-013 verify-rerun, emit hint pointing at Pass B"
+    rationale: "Pass B (T-1484) just landed and supersedes inline re-execution for the bats case; minimal code change preserves CTL-013's value for non-bats checks; reversible"
+    alternatives_rejected: ["Level D full deprecation (out of scope for an RCA task; deserves its own inception with stakeholder review)"]
+    alternatives_rejected: ["Continue chasing the Heisenbug (3 sessions of investigation already; diminishing returns; structural fix is now available)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/inbox.yaml"
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1488-rca--ctl-013-false-positive-on-t-1472-ob.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T11:11:40"
+    action: "T-1488: RCA — CTL-013 bats Heisenbug confirmed, recommend defer to Pass B"
+  - time: "2026-04-26T11:12:22"
+    action: "T-1488: Tick Agent ACs + L-281 (Heisenbug-defer learning) + cleanup"
+  - time: "2026-04-26T11:17:51"
+    action: "T-1488: OBS-025 — inception limbo state (Human AC ✓ but no decision)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, ctl-013, rca, heisenbug, obs-022]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 3
+  files_changed: 3
+  lines_added: 153
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1488-rca--ctl-013-false-positive-on-t-1472-ob.md
+generated_by: context-agent-hybrid
