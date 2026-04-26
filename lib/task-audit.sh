@@ -120,9 +120,13 @@ audit_inception_recommendation() {
     # and the next '## ' heading), strip HTML comments, then look for a
     # substantive **Recommendation:** line.
     local section
+    # T-1528: terminate at any H2-or-deeper heading. Without this, an
+    # Updates entry below Recommendation containing a literal `**Recommendation:**`
+    # line could be falsely captured into the substantive check. Same class as
+    # T-1519/T-1526/T-1527 — see L-293.
     section=$(awk '
         /^## Recommendation[[:space:]]*$/ { in_rec=1; next }
-        in_rec && /^## / { exit }
+        in_rec && /^#{2,} / { exit }
         in_rec { print }
     ' "$task_file")
 

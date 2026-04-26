@@ -2916,7 +2916,9 @@ ACTIVE_DIR = os.path.join(PROJECT_ROOT, ".tasks", "active")
 
 def has_substantive_recommendation(text):
     # Locate ## Recommendation section body (until next ## heading)
-    m = re.search(r'^## Recommendation\s*$(.*?)(?=^## |\Z)', text, re.MULTILINE | re.DOTALL)
+    # T-1528: H2+ terminator (L-293) — prevents Updates entries with literal
+    # `**Recommendation:**` text from false-positiving the substantive check.
+    m = re.search(r'^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL)
     if not m:
         return True  # no section = different audit concern, not ours
     body = m.group(1)
