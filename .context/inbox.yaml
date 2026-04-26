@@ -200,3 +200,19 @@ observations:
     tags: []
     status: dismissed
     promoted_to: null
+  - id: OBS-029
+    text: "add"
+    captured: 2026-04-26T21:51:15Z
+    context_task: null
+    tags: []
+    status: dismissed
+    promoted_to: null
+    urgent: true
+  - id: OBS-030
+    text: "User-level /root/.claude/settings.json has 16 framework hooks duplicating project-level — ROOT CAUSE behind T-1520 dual-fire (also OBS-023). T-1481 shipped 'fw upgrade --dedupe-user-hooks' to fix. Must run from a consumer project (not framework repo) and affects all consumer projects on host — needs human authorization."
+    captured: 2026-04-26T21:51:25Z
+    context_task: null
+    tags: []
+    status: pending
+    promoted_to: null
+    urgent: true

@@ -388,7 +388,16 @@ if [ -n "$NEW_STATUS" ]; then
             if [ "$ALL_UNCHECKED" -eq 0 ]; then
                 echo -e "${GREEN}All ACs checked (including human) ✓${NC}"
                 DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
-                mv "$TASK_FILE" "$DEST"
+                # T-1523: use `git mv` when tracked so both rename sides land
+                # in the index together — avoids leaving the active/* deletion
+                # as an unstaged working-tree change that pollutes subsequent
+                # commits and requires a cleanup follow-up.
+                if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
+                    git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
+                        || mv "$TASK_FILE" "$DEST"
+                else
+                    mv "$TASK_FILE" "$DEST"
+                fi
                 TASK_FILE="$DEST"
                 echo -e "${GREEN}Moved to completed/${NC}"
 
@@ -717,7 +726,13 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
     else
         DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
         if [ "$(dirname "$TASK_FILE")" != "$TASKS_DIR/completed" ]; then
-            mv "$TASK_FILE" "$DEST"
+            # T-1523: git mv when tracked so both rename sides stage atomically
+            if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
+                git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
+                    || mv "$TASK_FILE" "$DEST"
+            else
+                mv "$TASK_FILE" "$DEST"
+            fi
             TASK_FILE="$DEST"
             echo -e "${GREEN}Moved to completed/${NC}"
 
