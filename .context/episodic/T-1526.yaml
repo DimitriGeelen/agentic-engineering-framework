@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1526: Inception decision rewriter swallows H3 entries below ## Decision (T-1519 sister bug)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T22:04:18Z
+# ============================================================================
+
+task_id: T-1526
+task_name: "Inception decision rewriter swallows H3 entries below ## Decision (T-1519 sister bug)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T22:01:34Z
+completed: 2026-04-26T22:04:14Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T00:04:07+02:00
+last_commit: 2026-04-27T00:04:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Decision rewriter terminates at H2+ to preserve H3 entries
+
+# Key outcomes
+outcomes:
+  - "Decision rewriter exits `in_decision` on any H2-or-deeper heading (H2 OR H3 OR more)"
+  - "Duplicate `## Decision` collapse still works (test: two `## Decision` blocks → one block kept)"
+  - "Synthetic test: task with `## Decision` then `### 2026-04-26 — entry` then EOF → after re-decide, the `### entry` H3 is preserved"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/lib/inception.sh"
+  - ".agentic-framework/VERSION"
+  - "lib/inception.sh"
+  - ".tasks/active/T-1526-inception-decision-rewriter-swallows-h3-.md"
+  - "tests/unit/test_inception_decide_preserves_h3.py"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T00:04:07"
+    action: "T-1526: Decision rewriter terminates at H2+ to preserve H3 entries"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 6
+  lines_added: 180
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1526-inception-decision-rewriter-swallows-h3-.md
+generated_by: context-agent-hybrid
