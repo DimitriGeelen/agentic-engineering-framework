@@ -478,6 +478,11 @@ EOF
     # --skip-sovereignty bypasses only R-033 (sovereignty gate) because inception decide
     # itself required Tier 0 approval — human authority was already exercised (T-637).
     # P-010 (AC gate) and P-011 (verification gate) are NOT bypassed (T-1101/T-1142).
+    #
+    # T-1515: Capture and propagate update-task.sh exit codes. Prior code discarded
+    # them (T-1491 RCA), causing P-010/P-011 failures to leave tasks in class 2
+    # stuck state (started-work + Decision recorded) while the user saw "recorded".
+    local _uts_rc=0
     if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then
         echo ""
         # T-1223: If task is in captured status, transition to started-work first.
@@ -486,8 +491,28 @@ EOF
         _current_status=$(grep '^status:' "$task_file" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//')
         if [ "$_current_status" = "captured" ]; then
             "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status started-work --skip-sovereignty --reason "Inception decision in progress" 2>&1
+            _uts_rc=$?
+            if [ "$_uts_rc" -ne 0 ]; then
+                echo "" >&2
+                echo -e "${RED}ERROR: status transition captured→started-work failed (exit $_uts_rc)${NC}" >&2
+                echo -e "${YELLOW}Decision was recorded but status is stuck. Recover with:${NC}" >&2
+                echo "  $(_emit_user_command "inception sweep")" >&2
+                echo "  $(_emit_user_command "task verify $task_id")" >&2
+                return "$_uts_rc"
+            fi
         fi
         "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --skip-sovereignty --reason "Inception decision: $decision_upper" 2>&1
+        _uts_rc=$?
+        if [ "$_uts_rc" -ne 0 ]; then
+            echo "" >&2
+            echo -e "${RED}ERROR: status transition started-work→work-completed failed (exit $_uts_rc)${NC}" >&2
+            echo -e "${YELLOW}Decision is recorded in the task body but status is stuck at started-work.${NC}" >&2
+            echo -e "${YELLOW}Common causes: P-010 (unchecked AC), P-011 (verification command failure).${NC}" >&2
+            echo -e "${YELLOW}Recover with:${NC}" >&2
+            echo "  $(_emit_user_command "task verify $task_id")  # see what's blocking" >&2
+            echo "  $(_emit_user_command "inception sweep")     # if you've fixed the blocker" >&2
+            return "$_uts_rc"
+        fi
     fi
 
     # Clean up review marker (T-973)

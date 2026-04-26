@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1515: Fix do_inception_decide silent failure: propagate update-task.sh exit code (T-1491 root cause)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T20:34:36Z
+# ============================================================================
+
+task_id: T-1515
+task_name: "Fix do_inception_decide silent failure: propagate update-task.sh exit code (T-1491 root cause)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T20:32:09Z
+completed: 2026-04-26T20:34:32Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`do_inception_decide` captures the exit code from each `update-task.sh` invocation (the `captured → started-work` step at line 488 and the `→ work-completed` step at line 490)"
+  - "On non-zero exit: print clear error pointing to `fw inception sweep` (recovery) and `fw task verify` (diagnostic), do not print the success line, and return non-zero from `do_inception_decide`"
+  - "On zero exit: existing behavior preserved (success line, emit_review, next-step hint)"
+  - "Bats test in `tests/unit/` simulates a failing `update-task.sh` and asserts the function reports failure with non-zero exit code"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1515-fix-doinceptiondecide-silent-failure-pro.md
+generated_by: context-agent-hybrid
