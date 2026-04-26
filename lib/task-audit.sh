@@ -135,7 +135,13 @@ audit_inception_recommendation() {
         /-->/ { in_c=0 }
     ')
 
-    if printf '%s\n' "$stripped" | grep -qE '^[[:space:]]*\*\*Recommendation:\*\*[[:space:]]*[A-Za-z]'; then
+    # T-1510: also accept the bulleted form `- **Recommendation:** ...` and
+    # `* **Recommendation:** ...` — both are valid markdown for inception
+    # bodies that author the recommendation as a list item under a parent
+    # heading. Without the optional `[-*]?` bullet marker the gate rejected
+    # T-844 and T-705 (both DEFER'd weeks ago, with live `- **Recommendation:**`
+    # lines on disk).
+    if printf '%s\n' "$stripped" | grep -qE '^[[:space:]]*[-*]?[[:space:]]*\*\*Recommendation:\*\*[[:space:]]*[A-Za-z]'; then
         return 0
     fi
     return 1

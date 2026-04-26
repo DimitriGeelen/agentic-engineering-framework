@@ -138,6 +138,30 @@ EOF
     [ "$status" -eq 0 ]
 }
 
+@test "audit_inception_recommendation: bulleted - **Recommendation:** passes (T-1510)" {
+    # Older inception tasks (T-844, T-705) author the recommendation as a
+    # markdown list item: `- **Recommendation:** DEFER`. The original regex
+    # required whitespace-only indent and rejected these as empty.
+    local f
+    f=$(_make_inception_with_rec "T-9607" '- **Recommendation:** DEFER
+- **Rationale:** Spec instability — KCP at v0.14 with 17 active RFCs.
+- **Evidence:**
+  - artifact at docs/reports/T-705-kcp-integration.md')
+
+    run audit_inception_recommendation "$f"
+    [ "$status" -eq 0 ]
+}
+
+@test "audit_inception_recommendation: bulleted * **Recommendation:** passes (T-1510)" {
+    # Asterisk bullet form, less common but valid markdown.
+    local f
+    f=$(_make_inception_with_rec "T-9608" '* **Recommendation:** GO
+* **Rationale:** Bounded fix.')
+
+    run audit_inception_recommendation "$f"
+    [ "$status" -eq 0 ]
+}
+
 @test "do_inception_decide: refuses when Recommendation block is HTML-comment only" {
     local task_id="T-9605"
     local f

@@ -2921,8 +2921,12 @@ def has_substantive_recommendation(text):
     body = m.group(1)
     # Strip multi-line HTML comments
     body = re.sub(r'<!--.*?-->', '', body, flags=re.DOTALL)
-    # Look for a non-empty **Recommendation:** line
-    return bool(re.search(r'^\s*\*\*Recommendation:\*\*\s*\S', body, re.MULTILINE))
+    # T-1510: accept bulleted (`- **Recommendation:**` / `* **Recommendation:**`)
+    # AND plain (`**Recommendation:**`) forms. Original \s* pattern only
+    # allowed whitespace before the bold marker, so older inception tasks that
+    # authored the recommendation as a list item (T-844, T-705) were
+    # false-positived as empty.
+    return bool(re.search(r'^\s*[-*]?\s*\*\*Recommendation:\*\*\s*\S', body, re.MULTILINE))
 
 empty = []
 for f in glob.glob(os.path.join(ACTIVE_DIR, "T-*.md")):
