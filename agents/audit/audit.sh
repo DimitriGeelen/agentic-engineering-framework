@@ -2516,12 +2516,13 @@ esac
 
 # D13: Inception Limbo (Score 15, T-1490 / OBS-025)
 # Inception tasks where the human decision is recorded but the workflow
-# never reached completed/. Two classes:
-#   A) status=work-completed + has Decision + Human AC unchecked → sweep eligible
-#      (mechanical fix: bin/fw inception sweep)
-#   B) status=started-work + has Decision + all ACs checked → transition bug
-#      (manual fix: agents/task-create/update-task.sh --status work-completed
-#       --skip-sovereignty; underlying do_inception_decide bug deserves RCA)
+# never reached completed/. Two classes — both now sweep-eligible:
+#   A) status=work-completed + has Decision + Human AC unchecked
+#      (T-1423 sweep ticks AC + moves to completed/ when all ACs check out)
+#   B) status=started-work + has GO/NO-GO Decision + all ACs checked
+#      (T-1514 sweep promotes started-work→work-completed in place, then
+#       runs class A logic. Underlying root cause closed in T-1515:
+#       do_inception_decide now propagates update-task.sh exit codes.)
 d13_result=$(python3 << 'D13EOF'
 import os, glob, re
 
@@ -2587,7 +2588,7 @@ case "$d13_level" in
     WARN)
         warn "D13: Inception limbo — $d13_count task(s): $d13_detail" \
              "Decision recorded but workflow stuck in active/" \
-             "Class A: bin/fw inception sweep | Class B: manual update-task.sh --status work-completed --skip-sovereignty"
+             "Recover both classes with: bin/fw inception sweep (T-1514)"
         ;;
     *)
         pass "D13: Inception limbo — no stuck inceptions"

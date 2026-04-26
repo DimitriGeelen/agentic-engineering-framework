@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1516: Refresh D13 audit guidance to point at T-1514 sweep + T-1515 root-cause closure
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T20:40:58Z
+# ============================================================================
+
+task_id: T-1516
+task_name: "Refresh D13 audit guidance to point at T-1514 sweep + T-1515 root-cause closure"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T20:39:52Z
+completed: 2026-04-26T20:40:55Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "D13 comment block in `agents/audit/audit.sh` reflects T-1514 sweep + T-1515 root-cause closure (no longer says \"manual fix\" or \"deserves RCA\")"
+  - "Warn message recommends `bin/fw inception sweep` as the canonical recovery for both classes A and B"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1516-refresh-d13-audit-guidance-to-point-at-t.md
+generated_by: context-agent-hybrid
