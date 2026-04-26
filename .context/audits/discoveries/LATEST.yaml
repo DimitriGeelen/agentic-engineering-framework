@@ -1,22 +1,5 @@
-timestamp: 2026-04-26T14:24:48Z
+timestamp: 2026-04-26T15:00:01Z
 findings:
-  - id: D1
-    level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1434)"
-  - id: D2
-    level: FAIL
-    check: "D2: Human review queue — 9 task(s) waiting >30d: T-446(42d) T-448(28d) T-460(44d) T-470(44d) T-481(42d) T-505(40d) T-511(40d) T-518(39d) T-530(34d) T-612(31d) T-613(29d) T-706(28d) T-708(28d) T-710(28d) T-782(27d)"
-    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
-  - id: D8
-    level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
-  - id: D10
-    level: WARN
-    check: "D10: Decision-without-dialogue — 13 task(s): T-815 T-1151 T-608 T-586 T-993"
-    mitigation: "Review flagged tasks — human dialogue may have been skipped"
-  - id: D11
-    level: PASS
-    check: "D11: Gap register staleness — all gaps fresh"
   - id: D4
     level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
@@ -30,13 +13,13 @@ findings:
     mitigation: "Class A: bin/fw inception sweep "
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=51 avg=62 ratio=0.8x)"
+    check: "D3: Commit velocity — insufficient data"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 115_commits_24h)"
+    check: "D7: Commit bunching — none (PASS no_recent_commits)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=28.7 earlier=20.9)"
+    check: "D6: Completion velocity — normal (PASS recent=29.7 earlier=20.9)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
@@ -51,7 +34,7 @@ findings:
     check: "D15: Inception limbo state — none (PASS no_limbo)"
 
 summary:
-  pass: 11
-  warn: 3
-  fail: 1
-  total: 15
+  pass: 8
+  warn: 2
+  fail: 0
+  total: 10

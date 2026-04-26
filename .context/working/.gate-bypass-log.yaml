@@ -338,3 +338,8 @@
   flag: '--skip-sovereignty'
   caller: 'check_human_sovereignty'
   reason: 'RCA probe — DO NOT KEEP'
+- timestamp: '2026-04-26T14:46:56Z'
+  task: 'T-1507'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'

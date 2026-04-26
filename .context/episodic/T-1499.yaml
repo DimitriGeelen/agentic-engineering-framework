@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1499: Pickup: Advies gevraagd: Ring20 hosting pattern voor Novis simulator + REST proxy (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T14:46:46Z
+# ============================================================================
+
+task_id: T-1499
+task_name: "Pickup: Advies gevraagd: Ring20 hosting pattern voor Novis simulator + REST proxy (from 003-NTB-ATC-Plugin)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T11:13:13Z
+completed: 2026-04-26T14:46:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T16:14:54+02:00
+last_commit: 2026-04-26T16:14:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1499/T-1507: Fill empty inception bodies (D14 backlog cleanup)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-1499-pickup-advies-gevraagd-ring20-hosting-pa.md"
+  - ".tasks/active/T-1507-inception-decide-cliwatchtower-output-tr.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T16:14:54"
+    action: "T-1499/T-1507: Fill empty inception bodies (D14 backlog cleanup)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 213 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, feature-proposal]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 213
+  commits: 1
+  files_changed: 4
+  lines_added: 67
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1499-pickup-advies-gevraagd-ring20-hosting-pa.md
+generated_by: context-agent-hybrid
