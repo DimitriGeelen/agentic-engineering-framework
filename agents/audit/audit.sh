@@ -2900,6 +2900,71 @@ case "$d9_level" in
 esac
 
 echo ""
+
+# D14: Empty Recommendation in inception tasks (T-1497)
+# Pickup-created inceptions land in the "Awaiting Decision" queue with
+# HTML-comment-only Recommendation sections. The do_inception_decide gate
+# (lib/inception.sh + lib/task-audit.sh:audit_inception_recommendation)
+# now blocks decide-time, but capturing the pre-decide state in the audit
+# trail makes the regression visible BEFORE someone tries to decide.
+d14_result=$(python3 << 'D14EOF'
+import os, re, glob
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+ACTIVE_DIR = os.path.join(PROJECT_ROOT, ".tasks", "active")
+
+def has_substantive_recommendation(text):
+    # Locate ## Recommendation section body (until next ## heading)
+    m = re.search(r'^## Recommendation\s*$(.*?)(?=^## |\Z)', text, re.MULTILINE | re.DOTALL)
+    if not m:
+        return True  # no section = different audit concern, not ours
+    body = m.group(1)
+    # Strip multi-line HTML comments
+    body = re.sub(r'<!--.*?-->', '', body, flags=re.DOTALL)
+    # Look for a non-empty **Recommendation:** line
+    return bool(re.search(r'^\s*\*\*Recommendation:\*\*\s*\S', body, re.MULTILINE))
+
+empty = []
+for f in glob.glob(os.path.join(ACTIVE_DIR, "T-*.md")):
+    try:
+        with open(f) as fh:
+            text = fh.read()
+    except Exception:
+        continue
+    if "workflow_type: inception" not in text:
+        continue
+    # Only flag tasks where someone could try to decide (started-work or captured)
+    fm = re.match(r'^---\n(.*?)\n---', text, re.DOTALL)
+    if fm:
+        status_m = re.search(r'^status:\s*(\S+)', fm.group(1), re.MULTILINE)
+        if status_m and status_m.group(1) not in ("started-work", "captured"):
+            continue
+    if not has_substantive_recommendation(text):
+        empty.append(os.path.basename(f).split("-")[0] + "-" + os.path.basename(f).split("-")[1])
+
+if empty:
+    # Cap output length so a long list doesn't blow up the audit yaml
+    sample = " ".join(empty[:5])
+    suffix = f" (+{len(empty)-5} more)" if len(empty) > 5 else ""
+    print(f"WARN {len(empty)}_empty: {sample}{suffix}")
+else:
+    print("PASS no_empty_recommendations")
+D14EOF
+)
+d14_level=$(echo "$d14_result" | awk '{print $1}')
+case "$d14_level" in
+    WARN)
+        d14_detail=$(echo "$d14_result" | cut -d' ' -f2-)
+        warn "D14: Empty inception Recommendation — $d14_detail" \
+             "Inception tasks await decision with HTML-comment-only Recommendation" \
+             "Fill ## Recommendation block with **Recommendation:** + rationale before decide"
+        ;;
+    *)
+        pass "D14: Empty inception Recommendation — none ($d14_result)"
+        ;;
+esac
+
+echo ""
 fi # end discovery-trends
 
 # ============================================

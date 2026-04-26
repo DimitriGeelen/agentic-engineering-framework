@@ -350,26 +350,22 @@ do_inception_decide() {
         exit 1
     fi
 
-    # Gate: require ## Recommendation with actual content (T-974)
-    local has_recommendation=false
-    if grep -q '^## Recommendation' "$task_file"; then
-        # Check it has content beyond just comments/placeholders
-        local rec_content
-        rec_content=$(sed -n '/^## Recommendation/,/^## /p' "$task_file" | grep -v '^## ' | grep -v '^<!--' | grep -v '^\-\->' | grep -v '^$' | head -1)
-        if [ -n "$rec_content" ]; then
-            has_recommendation=true
-        fi
-    fi
-    if ! $has_recommendation; then
+    # Gate: require ## Recommendation with actual content (T-974, hardened by T-1497).
+    # The previous inline check used `grep -v '^<!--'` which only filtered the opening
+    # line of multi-line HTML comments — the Recommendation template's commented
+    # `**Recommendation:** GO / NO-GO / DEFER` line leaked past the filter and the
+    # gate accepted empty Recommendation sections. T-1501/T-1502 reached the human
+    # decision queue with blank bodies. Use the multi-line-aware helper instead.
+    if ! audit_inception_recommendation "$task_file"; then
         echo -e "${RED}ERROR: ## Recommendation section required before decision${NC}" >&2
         echo "" >&2
-        echo -e "The task file must contain a ## Recommendation section with:" >&2
+        echo -e "The task file must contain a ## Recommendation section with a non-commented:" >&2
         echo -e "  **Recommendation:** GO / NO-GO / DEFER" >&2
         echo -e "  **Rationale:** Why (cite evidence)" >&2
         echo -e "  **Evidence:** Bullet list of findings" >&2
         echo "" >&2
         echo -e "Watchtower reads this section — without it, the human sees no recommendation." >&2
-        echo -e "Write the recommendation, then re-run this command." >&2
+        echo -e "Write the recommendation outside the HTML comment, then re-run this command." >&2
         exit 1
     fi
 
