@@ -1326,3 +1326,112 @@ scan_id: R-694b5368
 task_id: T-1515
 payload:
   task_file: .tasks/active/T-1515-fix-doinceptiondecide-silent-failure-pro.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T20:40:55Z'
+scan_id: R-69d6477b
+task_id: T-1516
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T20:40:55Z'
+scan_id: R-69d6477b
+task_id: T-1516
+payload:
+  task_file: .tasks/active/T-1516-refresh-d13-audit-guidance-to-point-at-t.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T21:08:34Z'
+scan_id: R-9b874ad3
+task_id: T-1517
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T21:08:34Z'
+scan_id: R-9b874ad3
+task_id: T-1517
+payload:
+  task_file: .tasks/active/T-1517-handover-mislabels-deferd-inceptions-as-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T21:14:53Z'
+scan_id: R-4a603e3b
+task_id: T-1518
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T21:14:53Z'
+scan_id: R-4a603e3b
+task_id: T-1518
+payload:
+  task_file: .tasks/active/T-1518-approvals-page-surface-deferred-inceptio.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T21:16:15Z'
+scan_id: R-b90238d8
+task_id: T-1517
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T21:16:15Z'
+scan_id: R-b90238d8
+task_id: T-1517
+payload:
+  task_file: .tasks/completed/T-1517-handover-mislabels-deferd-inceptions-as-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T21:16:46Z'
+scan_id: R-1cce91fc
+task_id: T-1517
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T21:16:46Z'
+scan_id: R-1cce91fc
+task_id: T-1517
+payload:
+  task_file: .tasks/completed/T-1517-handover-mislabels-deferd-inceptions-as-.md
+---
+kind: rendering_concern
+timestamp: '2026-04-26T21:18:00Z'
+task_id: T-1517
+payload:
+  observation: |
+    fw reviewer re-scan on T-1517 nuked a legitimate status-update entry
+    that had been appended below the prior ## Reviewer Verdict block.
+    The verdict-replacement appears to span from '## Reviewer Verdict' to
+    EOF rather than to the next '## ' header. This corrupts the audit trail
+    (status-update entries) when the reviewer is re-run on a task that has
+    had Updates appended after the first scan.
+  reproduction: |
+    1. fw reviewer T-XXX (writes verdict at end-of-file)
+    2. update-task.sh on the same task → appends ## Updates entry below verdict
+    3. fw reviewer T-XXX again → verdict block rewritten, entries below LOST
+  evidence: |
+    git diff before revert showed the status-update block (timestamp,
+    --status work-completed, reason text) being removed when only the
+    verdict timestamp + scan_id changed.
+  suggested_fix: |
+    Bound the verdict-block replacement to the next '## ' or '### 2026-' /
+    similar update entry, OR enforce that the verdict block is always
+    the LAST block and disallow updates after it.
