@@ -1,5 +1,5 @@
-# Audit Results - 2026-04-25-2352
-timestamp: 2026-04-25T21:52:11Z
+# Audit Results - 2026-04-26-1253
+timestamp: 2026-04-26T10:53:01Z
 sections: "structure"
 summary:
   pass: 9
@@ -24,9 +24,9 @@ findings:
     check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
     mitigation: "Run: fw fabric drift"
   - level: PASS
-    check: "Fabric: 449 registered, 0 unregistered"
+    check: "Fabric: 453 registered, 0 unregistered"
   - level: WARN
-    check: "Fabric: 22/450 cards have no edges"
+    check: "Fabric: 21/454 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (449 cards)"
+    check: "Fabric drift: All watched source files registered (453 cards)"

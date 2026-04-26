@@ -8,6 +8,7 @@
 
 ## What It Does
 
+REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 SubagentStop hook — capture sub-agent returns, auto-migrate to fw bus (T-1213)
 Fires when a Task-tool sub-agent finishes. Reads the sub-agent transcript from
 disk (payload.transcript_path), measures the last assistant message in bytes,
@@ -17,7 +18,6 @@ for size-distribution analysis (S2 data stream from T-1209).
 2. If bytes > THRESHOLD, posts the full message to `fw bus` as a blob so
 subsequent turns can read it via R-NNN without re-ingesting the raw blob.
 SubagentStop cannot mutate the orchestrator-visible response (Claude Code docs:
-hooks cannot modify subagent behavior; exit 2 only forces re-execution). So this
 
 ## Dependencies (3)
 

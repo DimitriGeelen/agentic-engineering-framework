@@ -221,3 +221,700 @@ scan_id: R-130cfe95
 task_id: T-1446
 payload:
   task_file: .tasks/active/T-1446-t-1443-v11-reviewer-agent-4-more-anti-pa.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T14:15:10Z'
+scan_id: R-e2e9c2ab
+task_id: T-1462
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T14:15:10Z'
+scan_id: R-e2e9c2ab
+task_id: T-1462
+payload:
+  task_file: .tasks/active/T-1462-dogfood-rubber-stamp-rule--audit-all-13-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T14:20:48Z'
+scan_id: R-78703e9d
+task_id: T-1461
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T14:20:48Z'
+scan_id: R-78703e9d
+task_id: T-1461
+payload:
+  task_file: .tasks/active/T-1461-implement-handover-url-sweep--render-wat.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T15:27:40Z'
+scan_id: R-f698dd8c
+task_id: T-1463
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T15:27:40Z'
+scan_id: R-f698dd8c
+task_id: T-1463
+payload:
+  task_file: .tasks/active/T-1463-t-1459-follow-on-brand-5-dead-claude-cod.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T16:13:40Z'
+scan_id: R-bb98c606
+task_id: T-1464
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T16:13:40Z'
+scan_id: R-bb98c606
+task_id: T-1464
+payload:
+  task_file: .tasks/active/T-1464-t-1460-phase-1-follow-on-lift-quiet-only.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T16:25:23Z'
+scan_id: R-c5e07782
+task_id: T-1455
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T16:25:23Z'
+scan_id: R-c5e07782
+task_id: T-1455
+payload:
+  task_file: .tasks/active/T-1455-pickup-importer-hard-codes-workflowtypei.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T18:02:40Z'
+scan_id: R-7a83809e
+task_id: T-1455
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T18:02:40Z'
+scan_id: R-7a83809e
+task_id: T-1455
+payload:
+  task_file: .tasks/active/T-1455-pickup-importer-hard-codes-workflowtypei.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T18:08:09Z'
+scan_id: R-71ac1c97
+task_id: T-1465
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T18:08:09Z'
+scan_id: R-71ac1c97
+task_id: T-1465
+payload:
+  task_file: .tasks/active/T-1465-pickup-importer-bug-reportbuild-othersin.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T18:10:35Z'
+scan_id: R-e8a8a17d
+task_id: T-1466
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T18:10:35Z'
+scan_id: R-e8a8a17d
+task_id: T-1466
+payload:
+  task_file: .tasks/active/T-1466-libinceptionsh-tickinceptiondecideacs-mi.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T18:17:43Z'
+scan_id: R-b6f133c1
+task_id: T-1448
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T18:17:43Z'
+scan_id: R-b6f133c1
+task_id: T-1448
+payload:
+  task_file: .tasks/active/T-1448-t-1443-v13-reviewer-agent-per-ac-granula.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T18:17:53Z'
+scan_id: R-1f54700f
+task_id: T-1449
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T18:17:53Z'
+scan_id: R-1f54700f
+task_id: T-1449
+payload:
+  task_file: .tasks/active/T-1449-t-1443-v14-reviewer-agent-ttld-override-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T18:39:18Z'
+scan_id: R-d09c874f
+task_id: T-1467
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T18:39:18Z'
+scan_id: R-d09c874f
+task_id: T-1467
+payload:
+  task_file: .tasks/active/T-1467-backfill-missing-inception-research-arti.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T18:56:11Z'
+scan_id: R-a7f0af7c
+task_id: T-1468
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T18:56:11Z'
+scan_id: R-a7f0af7c
+task_id: T-1468
+payload:
+  task_file: .tasks/active/T-1468-repair-6-task-files-with-broken-yaml-fro.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T19:08:12Z'
+scan_id: R-8c2de888
+task_id: T-1444
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T19:08:12Z'
+scan_id: R-8c2de888
+task_id: T-1444
+payload:
+  task_file: .tasks/active/T-1444-structural-bugfix--malformed-task-yaml-f.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T19:27:30Z'
+scan_id: R-ca271e66
+task_id: T-1469
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T19:27:30Z'
+scan_id: R-ca271e66
+task_id: T-1469
+payload:
+  task_file: .tasks/active/T-1469-symptom-b-fix--create-taskshupdate-tasks.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T19:31:38Z'
+scan_id: R-0ff847e0
+task_id: T-1470
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T19:31:38Z'
+scan_id: R-0ff847e0
+task_id: T-1470
+payload:
+  task_file: .tasks/active/T-1470-symptom-a-fix--watchtower-inceptiondecid.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T19:36:59Z'
+scan_id: R-c0a775fd
+task_id: T-1471
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T19:36:59Z'
+scan_id: R-c0a775fd
+task_id: T-1471
+payload:
+  task_file: .tasks/active/T-1471-doc-drift-fix--add-gpu-subcommand-to-cla.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T19:40:45Z'
+scan_id: R-6d50f564
+task_id: T-1472
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T19:40:45Z'
+scan_id: R-6d50f564
+task_id: T-1472
+payload:
+  task_file: .tasks/active/T-1472-annotation-based-ceremonial-ac-ticking--.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T20:01:28Z'
+scan_id: R-3862acae
+task_id: T-1473
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T20:01:28Z'
+scan_id: R-3862acae
+task_id: T-1473
+payload:
+  task_file: .tasks/active/T-1473-resolve-handover-episodic-gaps--fw-push-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T20:04:08Z'
+scan_id: R-0aeff58a
+task_id: T-1474
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T20:04:08Z'
+scan_id: R-0aeff58a
+task_id: T-1474
+payload:
+  task_file: .tasks/active/T-1474-fw-push-skips-all-remotes-when-no-origin.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T20:59:17Z'
+scan_id: R-2553864b
+task_id: T-1475
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T20:59:17Z'
+scan_id: R-2553864b
+task_id: T-1475
+payload:
+  task_file: .tasks/active/T-1475-ctl-013-audit-diagnostic--capture-stderr.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T21:03:44Z'
+scan_id: R-daa4031a
+task_id: T-1476
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T21:03:44Z'
+scan_id: R-daa4031a
+task_id: T-1476
+payload:
+  task_file: .tasks/active/T-1476-add-flock-guard-to-pre-compactsh--mitiga.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T21:07:13Z'
+scan_id: R-3a80ff36
+task_id: T-1477
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T21:07:13Z'
+scan_id: R-3a80ff36
+task_id: T-1477
+payload:
+  task_file: .tasks/active/T-1477-t-1477-stop-using-t-012-as-commit-task-w.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T21:25:17Z'
+scan_id: R-ff3b1ad9
+task_id: T-1478
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T21:25:17Z'
+scan_id: R-ff3b1ad9
+task_id: T-1478
+payload:
+  task_file: .tasks/active/T-1478-t-1478-investigate-obs-023-dual-fire-flo.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T21:31:53Z'
+scan_id: R-c8b5070f
+task_id: T-1479
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T21:31:53Z'
+scan_id: R-c8b5070f
+task_id: T-1479
+payload:
+  task_file: .tasks/active/T-1479-t-1479-fw-upgrade-detects-duplicate-fram.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T21:35:46Z'
+scan_id: R-7ac01ecd
+task_id: T-1480
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T21:35:46Z'
+scan_id: R-7ac01ecd
+task_id: T-1480
+payload:
+  task_file: .tasks/active/T-1480-t-1480-fw-doctor-surfaces-duplicate-fram.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T21:49:43Z'
+scan_id: R-b1e83b95
+task_id: T-1481
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T21:49:43Z'
+scan_id: R-b1e83b95
+task_id: T-1481
+payload:
+  task_file: .tasks/active/T-1481-t-1481-fw-upgrade---dedupe-user-hooks-op.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T22:10:25Z'
+scan_id: R-e18af61b
+task_id: T-1445
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T22:10:25Z'
+scan_id: R-e18af61b
+task_id: T-1445
+payload:
+  task_file: .tasks/active/T-1445-t-1443-v10-static-scan-validator-anti-pa.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T22:10:25Z'
+scan_id: R-2ba76969
+task_id: T-1445
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T22:10:25Z'
+scan_id: R-2ba76969
+task_id: T-1445
+payload:
+  task_file: .tasks/active/T-1445-t-1443-v10-static-scan-validator-anti-pa.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T22:22:04Z'
+scan_id: R-d49d82f1
+task_id: T-1482
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T22:22:04Z'
+scan_id: R-d49d82f1
+task_id: T-1482
+payload:
+  task_file: .tasks/active/T-1482-reviewer-v15-drift-re-verification--sand.md
+---
+kind: scan_emitted
+timestamp: '2026-04-25T22:31:29Z'
+scan_id: R-98822de1
+task_id: T-1483
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-25T22:31:29Z'
+scan_id: R-98822de1
+task_id: T-1483
+payload:
+  task_file: .tasks/active/T-1483-reviewer-v15-build--pass-a-diff-detectio.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T07:16:21Z'
+scan_id: R-7efa8340
+task_id: T-1484
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T07:16:21Z'
+scan_id: R-7efa8340
+task_id: T-1484
+payload:
+  task_file: .tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T07:22:03Z'
+scan_id: R-e92a8ad1
+task_id: T-1485
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T07:22:03Z'
+scan_id: R-e92a8ad1
+task_id: T-1485
+payload:
+  task_file: .tasks/active/T-1485-reviewer-v15c--fw-reviewer-audit---pass-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T07:27:38Z'
+scan_id: R-04622bf1
+task_id: T-1486
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T07:27:38Z'
+scan_id: R-04622bf1
+task_id: T-1486
+payload:
+  task_file: .tasks/active/T-1486-watchtower-revieweraudit-page--surface-l.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T07:29:49Z'
+scan_id: R-816d0217
+task_id: T-1487
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T07:29:49Z'
+scan_id: R-816d0217
+task_id: T-1487
+payload:
+  task_file: .tasks/active/T-1487-watchtower-nav-add-reviewer-audit-link-r.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T09:11:48Z'
+scan_id: R-56a45a2e
+task_id: T-1488
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T09:11:48Z'
+scan_id: R-56a45a2e
+task_id: T-1488
+payload:
+  task_file: .tasks/active/T-1488-rca--ctl-013-false-positive-on-t-1472-ob.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T09:25:19Z'
+scan_id: R-c333fac0
+task_id: T-1489
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T09:25:19Z'
+scan_id: R-c333fac0
+task_id: T-1489
+payload:
+  task_file: .tasks/active/T-1489-fabric-enrich--close-1726-no-edge-cards-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T09:32:26Z'
+scan_id: R-5b99c872
+task_id: T-1346
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T09:32:26Z'
+scan_id: R-5b99c872
+task_id: T-1346
+payload:
+  task_file: .tasks/active/T-1346-global-rootagentic-framework-install--is.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T09:48:42Z'
+scan_id: R-d34d0b5a
+task_id: T-1490
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T09:48:42Z'
+scan_id: R-d34d0b5a
+task_id: T-1490
+payload:
+  task_file: .tasks/active/T-1490-add-d13-audit-discovery-check--limbo-inc.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T09:53:14Z'
+scan_id: R-844e1c41
+task_id: T-1388
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T09:53:14Z'
+scan_id: R-844e1c41
+task_id: T-1388
+payload:
+  task_file: .tasks/active/T-1388-watchtower-inceptiont-xxx-page-is-one-sh.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T09:56:02Z'
+scan_id: R-87203e25
+task_id: T-1491
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T09:56:02Z'
+scan_id: R-87203e25
+task_id: T-1491
+payload:
+  task_file: .tasks/active/T-1491-rca--doinceptiondecide-records-decision-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T11:04:57Z'
+scan_id: R-8efb46ff
+task_id: T-1492
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T11:04:57Z'
+scan_id: R-8efb46ff
+task_id: T-1492
+payload:
+  task_file: .tasks/active/T-1492-pickup-reviewsh-emitreview-silent-exit-o.md

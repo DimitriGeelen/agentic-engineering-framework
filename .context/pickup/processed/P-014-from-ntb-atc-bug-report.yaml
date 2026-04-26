@@ -1,0 +1,42 @@
+pickup_id: P-014
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-154"
+  agent: "claude-code"
+  timestamp: "2026-04-26T10:53:07Z"
+payload:
+  summary: "review.sh emit_review silent-exit on missing top-level Recommendation line + pipefail interaction"
+  detail: ".agentic-framework/lib/review.sh::emit_review aborts silently when the inception
+task body lacks an unindented `**Recommendation:**` line.
+
+REPRO (hit live during T-154):
+1. Inception task body keeps the template's HTML-commented recommendation block
+   (or recommendation lives in a separate research artifact).
+2. Run `fw task review T-XXX` — emit_review enters the inception-CLI block
+   (around line 130) and runs:
+     _rec_line=$(grep -A1 '^\*\*Recommendation:\*\*' "$task_file" 2>/dev/null \
+                 | head -1 | sed ...)
+3. With `set -euo pipefail` (and `pipefail` enabled), grep-finds-nothing makes
+   the pipeline exit non-zero in a command substitution. The function aborts
+   between the "Scan QR" line and the marker-touch line.
+4. `.context/working/.reviewed-T-XXX` is never created.
+5. `fw inception decide T-XXX go` later fails: "Task review required before
+   decision" — with no hint that review.sh silently aborted.
+
+DIAGNOSIS COST: three round-trips with the human + bash -x trace.
+
+SUGGESTED FIX (one of):
+  (a) Append `|| true` to the grep pipeline at review.sh:~130:
+        _rec_line=$(grep -A1 '^\*\*Recommendation:\*\*' "$task_file" 2>/dev/null \
+                    | head -1 | sed ...) || true
+  (b) Widen the pattern + skip HTML comments:
+        grep -A1 '^[[:space:]]*\*\*Recommendation:' "$task_file" | grep -v '<!--'
+  (c) Both. Plus: log a clear warning when no recommendation was found, instead
+      of failing silent.
+
+EVIDENCE: see .context/project/concerns.yaml C-011 (this project). Originating
+task: T-154 (003-NTB-ATC-Plugin). Captured 2026-04-26."
+  priority: high
+  tags: [framework, review, inception, pipefail]

@@ -8,6 +8,7 @@
 
 ## What It Does
 
+REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 Stop hook — conversation-capture nudge (T-1211)
 Fires after every assistant response. Never blocks (exits 0). Emits an
 agent-visible stderr nudge when a "pure conversation" session has accumulated
@@ -17,7 +18,6 @@ agent's next turn (per Claude Code hooks semantics). On seeing it, the agent
 proactively asks the user a y/n:
 "We've been talking for N exchanges without capturing anything. Should I
 create a task to summarize this conversation so far? (y/n)"
-On 'y': agent creates a task via `fw work-on "summary" --type spec` and
 
 ## Dependencies (2)
 

@@ -16,7 +16,7 @@ tags: [rca, inception, governance, silent-failure, g-019]
 components: [lib/inception.sh]
 related_tasks: [T-1346, T-1388, T-1466, T-1472, T-1490, T-1423]
 created: 2026-04-26T09:48:00Z
-last_update: 2026-04-26T09:56:02Z
+last_update: 2026-04-26T10:59:38Z
 date_finished: 2026-04-26T09:56:02Z
 ---
 
@@ -87,7 +87,7 @@ cost of this silent failure.
 
 ### Human
 
-- [ ] [REVIEW] Approve the recommended Level D fix: capture update-task.sh's exit code in do_inception_decide and surface failure with actionable error
+- [x] [REVIEW] Approve the recommended Level D fix: capture update-task.sh's exit code in do_inception_decide and surface failure with actionable error
   **Steps:**
   1. Read the Recommendation section below
   2. Decide: GO (apply the patch + test) / NO-GO (accept silent failure) / DEFER (open inception for broader gate-error-propagation review)

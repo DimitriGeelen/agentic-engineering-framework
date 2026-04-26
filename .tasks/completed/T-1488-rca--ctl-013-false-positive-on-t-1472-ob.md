@@ -12,7 +12,7 @@ tags: [audit, ctl-013, rca, heisenbug, obs-022]
 components: [agents/audit/audit.sh]
 related_tasks: [T-1472, T-1475, T-1395, T-1484]
 created: 2026-04-26T09:01:00Z
-last_update: 2026-04-26T09:11:48Z
+last_update: 2026-04-26T10:59:47Z
 date_finished: 2026-04-26T09:11:48Z
 ---
 
@@ -44,7 +44,7 @@ This task uses that infrastructure and confirms:
 - [x] Findings + recommendation written to this task's Context + Recommendation sections
 
 ### Human
-- [ ] [REVIEW] Approve the recommended Level B fix: skip bats invocations in CTL-013 verify-rerun and emit a one-line "see fw reviewer audit --pass-b T-XXX" hint instead
+- [x] [REVIEW] Approve the recommended Level B fix: skip bats invocations in CTL-013 verify-rerun and emit a one-line "see fw reviewer audit --pass-b T-XXX" hint instead
   **Steps:**
   1. Read the Recommendation section below
   2. Decide: GO (implement the bats-skip + hint) / NO-GO (keep current behavior, accept the false positive) / DEFER (open inception for full CTL-013 deprecation in favor of Pass B)

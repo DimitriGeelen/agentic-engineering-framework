@@ -1,0 +1,93 @@
+scan_date: '2026-04-26'
+scan_timestamp: '2026-04-26T07:14:35Z'
+mode: pass-b
+tasks_scanned: 10
+limit: 10
+timeout_per_line: 30
+totals:
+  PASS: 8
+  FAIL: 1
+  NO-VERIFICATION: 1
+  ERROR: 0
+errors: []
+per_task:
+- task_id: T-1482
+  sha: null
+  overall: NO-VERIFICATION
+  n_pass: 0
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null
+- task_id: T-1481
+  sha: e64967f00a483c654a245f7bf6a28013b5de7107
+  overall: PASS
+  n_pass: 4
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null
+- task_id: T-1480
+  sha: a5512a600d3a3583b5eaa9d751f8f55d18f5aaf2
+  overall: FAIL
+  n_pass: 3
+  n_fail: 0
+  n_skipped: 0
+  n_error: 1
+  error: null
+- task_id: T-1479
+  sha: 89446c14f190ab3bfc183f2255143a2e8b404fdf
+  overall: PASS
+  n_pass: 4
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null
+- task_id: T-1478
+  sha: 1154237ba3200c8adff123cd4b0b02a6d3e46f08
+  overall: PASS
+  n_pass: 6
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null
+- task_id: T-1477
+  sha: 404a00b30674dbc5870a2bc152e7451e71d4759b
+  overall: PASS
+  n_pass: 2
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null
+- task_id: T-1476
+  sha: ee7dc75e455dc0270f9195111b20599acb51ee3a
+  overall: PASS
+  n_pass: 2
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null
+- task_id: T-1475
+  sha: 5cf5611842dcd138fbd58ba23d702e21683a44e3
+  overall: PASS
+  n_pass: 1
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null
+- task_id: T-1474
+  sha: 4259cef0a74c90065daf6b732d40e08cf01fe35c
+  overall: PASS
+  n_pass: 2
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null
+- task_id: T-1473
+  sha: cd98262dafb124fa7e673d936c7714556c5a20e3
+  overall: PASS
+  n_pass: 2
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null

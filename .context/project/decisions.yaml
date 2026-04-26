@@ -191,3 +191,17 @@ decisions:
     date: 2026-04-26
     task: T-1484
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-030
+    decision: "Level B targeted fix — skip bats invocations in CTL-013 verify-rerun, emit hint pointing at Pass B"
+    scope: project
+    date: 2026-04-26
+    task: T-1488
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-031
+    decision: "Level D structural fix — propagate update-task.sh exit code in do_inception_decide"
+    scope: project
+    date: 2026-04-26
+    task: T-1491
+    rationale: "Auto-captured from task file on completion"

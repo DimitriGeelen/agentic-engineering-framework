@@ -1,0 +1,43 @@
+scan_date: '2026-04-26'
+scan_timestamp: '2026-04-26T07:20:59Z'
+mode: pass-a-baseline
+tasks_scanned: 10
+limit: 10
+force: false
+totals:
+  written: 10
+  skipped_existing: 0
+  skipped_no_verification: 0
+  errors: 0
+errors: []
+per_task:
+- task_id: T-1482
+  action: baseline-written
+  n_files: 0
+- task_id: T-1481
+  action: baseline-written
+  n_files: 2
+- task_id: T-1480
+  action: baseline-written
+  n_files: 2
+- task_id: T-1479
+  action: baseline-written
+  n_files: 2
+- task_id: T-1478
+  action: baseline-written
+  n_files: 3
+- task_id: T-1477
+  action: baseline-written
+  n_files: 2
+- task_id: T-1476
+  action: baseline-written
+  n_files: 2
+- task_id: T-1475
+  action: baseline-written
+  n_files: 1
+- task_id: T-1474
+  action: baseline-written
+  n_files: 2
+- task_id: T-1473
+  action: baseline-written
+  n_files: 0
