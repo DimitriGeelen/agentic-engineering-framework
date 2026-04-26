@@ -137,6 +137,18 @@ The `## Verification` section contains shell commands that **must pass** before 
 - Each non-comment line is executed as a shell command
 - First 5 lines of failure output are shown for debugging
 
+**Toolchain build commands (L-291, T-1501):** If your task touched compileable artifacts, the matching build command MUST be in `## Verification`. The framework is toolchain-agnostic by design — it runs only what you write, so a forgotten `dotnet build` ships broken DLLs to master (origin: 003-NTB-ATC-Plugin T-077, 5 days undetected).
+
+| You edited | Add to `## Verification` |
+|------------|--------------------------|
+| `*.vbproj` / `*.csproj` / `*.xaml` | `dotnet build` |
+| `*.go` | `go build ./...` |
+| `Cargo.toml` / `*.rs` | `cargo check` |
+| `tsconfig.json` / `*.ts` | `tsc --noEmit` |
+| `pom.xml` / `*.java` | `mvn -q compile` |
+
+If the toolchain is not installed on the gate-running host, scope the command (e.g. `command -v dotnet >/dev/null && dotnet build`). Don't omit the check.
+
 ### Task Lifecycle
 
 ```

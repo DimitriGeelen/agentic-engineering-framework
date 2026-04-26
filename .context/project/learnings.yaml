@@ -2243,3 +2243,10 @@ learnings:
   date: 2026-04-26
   context: Added via context agent
   application: TBD
+- id: L-291
+  learning: "Tasks editing compileable artifacts (e.g. *.vbproj, *.csproj, *.xaml, *.go, Cargo.toml, tsconfig.json, pom.xml) MUST include the toolchain build command (dotnet build / go build / cargo check / tsc --noEmit / mvn compile) in ## Verification. P-011 only runs what the agent writes — broken-build state can ship to master if the agent forgets. Origin: 003-NTB-ATC-Plugin T-077 (broken WPF DLL on master, 5 days undetected). T-1501 inception decision: DEFER framework-side inference (Portability), capture this learning + template hint instead. Promotion threshold: 2nd recurrence triggers consumer-config schema in .framework.yaml."
+  source: P-011
+  task: T-1501
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD
