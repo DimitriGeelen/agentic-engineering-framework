@@ -173,8 +173,14 @@ fi
 # ── Destructive pattern detected ──
 DESCRIPTION="${MATCH_RESULT#BLOCKED|}"
 
-# Compute command hash for approval matching
-COMMAND_HASH=$(echo -n "$COMMAND" | sha256sum | awk '{print $1}')
+# Compute command hash for approval matching.
+# T-1500: normalize whitespace before hashing so an agent regenerating the
+# blocked command for retry (with reflowed args, extra spaces, trailing
+# newline differences) still matches the approval. Single-use semantics
+# (rm -f on consume) bound the marginal collision risk; the human approved
+# the human-readable risk description, not a byte-exact command.
+COMMAND_NORMALIZED=$(printf '%s' "$COMMAND" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')
+COMMAND_HASH=$(printf '%s' "$COMMAND_NORMALIZED" | sha256sum | awk '{print $1}')
 
 # ── T-1508: Idempotency sentinel — short-circuit duplicate hook firings ──
 # When the same hook is registered in both .claude/settings.json (project) and
