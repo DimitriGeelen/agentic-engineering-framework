@@ -557,21 +557,44 @@ if pending_completed:
     print()
 
 # T-1461: render inception tasks awaiting decision with /inception/T-XXX links
+# T-1517: split into "Awaiting Decision" (no recorded Decision) and "Deferred"
+#         (Decision == DEFER) — DEFER'd inceptions are parked, not pending,
+#         so labelling them as "Awaiting Decision" mismatches /approvals which
+#         correctly filters by `decision == 'pending'`.
 inception_pending = []
+inception_deferred = []
+decision_re = re.compile(r'^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b', re.M)
 for _, tid, tname, tstatus, h in tasks:
     if tstatus == 'work-completed':
         continue
     for f in glob.glob(os.path.join(tasks_dir, f'{tid}-*.md')):
         with open(f) as fh:
-            head = fh.read(2048)
-        if 'workflow_type: inception' in head:
+            body = fh.read()
+        if 'workflow_type: inception' not in body[:2048]:
+            break
+        m = decision_re.search(body)
+        if m is None:
             inception_pending.append((tid, tname))
+        elif m.group(1) == 'DEFER':
+            inception_deferred.append((tid, tname))
+        # GO/NO-GO: in-flight close — sweep handles the move; skip both lists.
         break
 
 if inception_pending:
     print('### Inception Phases — Awaiting Decision')
     print()
     for ip_tid, ip_name in inception_pending:
+        print(f'- {inception_link(ip_tid, ip_name)}')
+    print()
+
+if inception_deferred:
+    print('### Deferred Inceptions — Watching for Recurrence')
+    print()
+    print('These inceptions reached a DEFER decision and are parked. They are')
+    print('NOT awaiting a first decision. They re-surface for promotion if the')
+    print('promotion criteria in their Recommendation block are met.')
+    print()
+    for ip_tid, ip_name in inception_deferred:
         print(f'- {inception_link(ip_tid, ip_name)}')
     print()
 PYEOF
