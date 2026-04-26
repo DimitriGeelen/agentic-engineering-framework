@@ -1,0 +1,60 @@
+---
+id: T-1525
+name: "T-1523 git mv test #2"
+description: >
+  T-1523 git mv test #2
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-26T21:57:43Z
+last_update: 2026-04-26T21:57:43Z
+date_finished: null
+---
+
+# T-1525: T-1523 git mv test #2
+
+## Context
+
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+
+## Acceptance Criteria
+
+### Agent
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] git mv stages atomically
+- [x] no orphan deletion in working tree
+
+
+## Verification
+
+# Shell commands that MUST pass before work-completed. One per line.
+# Lines starting with # are comments (skipped). Empty lines ignored.
+# The completion gate runs each command — if any exits non-zero, completion is blocked.
+#
+# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
+# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
+# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
+# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-26T21:57:43Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1525-t-1523-git-mv-test-2.md
+- **Context:** Initial task creation
