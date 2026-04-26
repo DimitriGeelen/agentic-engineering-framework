@@ -1,7 +1,7 @@
-# Audit Results - 2026-04-26-1607
-timestamp: 2026-04-26T14:07:55Z
+# Audit Results - 2026-04-26-1624
+timestamp: 2026-04-26T14:24:48Z
 summary:
-  pass: 313
+  pass: 315
   warn: 12
   fail: 1
 findings:
@@ -26,12 +26,13 @@ findings:
     mitigation: "Run: fw fabric enrich"
   - level: PASS
     check: "Fabric drift: All watched source files registered (456 cards)"
-  - level: PASS
-    check: "All 61 active tasks are valid"
+  - level: WARN
+    check: "Task T-1511-d15-audit-check--inception-limbo-state-s.md missing field: owner"
+    mitigation: "Fix missing field: owner in T-1511-d15-audit-check--inception-limbo-state-s.md"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 99% (3558/3593 commits reference tasks)"
+    check: "Git traceability: 99% (3561/3596 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -54,7 +55,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 1433 episodic summaries have quality content"
+    check: "All 1434 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -81,11 +82,11 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-1497)"
+    check: "CTL-001: Focus file has active task (T-1511)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 14 (last commit: 10 minutes ago)"
+    check: "CTL-004: Tool counter at 37 (last commit: 8 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
@@ -115,7 +116,7 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-1388 has decision (14 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-1507 has decision (3 commits)"
+    check: "CTL-009: Inception T-1507 has decision (4 commits)"
   - level: PASS
     check: "CTL-009: Inception T-550 has decision (6 commits)"
   - level: PASS
@@ -123,9 +124,9 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-704 has decision (4 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-705 has decision (6 commits)"
+    check: "CTL-009: Inception T-705 has decision (7 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-844 has decision (3 commits)"
+    check: "CTL-009: Inception T-844 has decision (4 commits)"
   - level: PASS
     check: "CTL-009: Inception T-084 has decision (3 commits)"
   - level: PASS
@@ -335,7 +336,7 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-1482 has decision (3 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-1505 has decision (4 commits)"
+    check: "CTL-009: Inception T-1505 has decision (5 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1506 has decision (4 commits)"
   - level: PASS
@@ -572,6 +573,8 @@ findings:
   - level: WARN
     check: "CTL-012: Completed task T-436 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: PASS
+    check: "CTL-013: T-1510 verification re-run: 4/4 pass"
   - level: WARN
     check: "CTL-013: T-1509 verification re-run: 1 command(s) failing"
     mitigation: "Review T-1509 — environment may have changed"
@@ -634,7 +637,7 @@ findings:
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1433)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1434)"
   - level: FAIL
     check: "D2: Human review queue — 9 task(s) waiting >30d: T-446(42d) T-448(28d) T-460(44d) T-470(44d) T-481(42d) T-505(40d) T-511(40d) T-518(39d) T-530(34d) T-612(31d) T-613(29d) T-706(28d) T-708(28d) T-710(28d) T-782(27d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
@@ -656,17 +659,18 @@ findings:
     check: "D13: Inception limbo — 4 task(s): A=2/B=2 T-1372(A:1hu) T-1376(A:1hu) T-1388(B) T-1501(B)"
     mitigation: "Class A: bin/fw inception sweep "
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=48 avg=62 ratio=0.8x)"
+    check: "D3: Commit velocity — normal (PASS today=51 avg=62 ratio=0.8x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 119_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 115_commits_24h)"
   - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=28.3 earlier=20.9)"
+    check: "D6: Completion velocity — normal (PASS recent=28.7 earlier=20.9)"
   - level: PASS
     check: "D12: Bypass log — no log file"
   - level: PASS
     check: "D9: Control drift — normal (PASS 10_audits_checked)"
-  - level: WARN
-    check: "D14: Empty inception Recommendation — 4_empty: T-1499 T-844 T-705 T-1507"
-    mitigation: "Fill ## Recommendation block with **Recommendation:** + rationale before decide"
+  - level: PASS
+    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
+  - level: PASS
+    check: "D15: Inception limbo state — none (PASS no_limbo)"
   - level: PASS
     check: "CTL-016: No failure patterns recorded"

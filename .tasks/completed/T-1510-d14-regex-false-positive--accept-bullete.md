@@ -4,16 +4,16 @@ name: "D14 regex false-positive — accept bulleted '- **Recommendation:**' form
 description: >
   D14 regex false-positive — accept bulleted '- **Recommendation:**' format in audit_inception_recommendation + agents/audit/audit.sh
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-004, lib/task-audit.sh]
 related_tasks: []
 created: 2026-04-26T14:15:02Z
-last_update: 2026-04-26T14:15:02Z
-date_finished: null
+last_update: 2026-04-26T14:18:49Z
+date_finished: 2026-04-26T14:18:49Z
 ---
 
 # T-1510: D14 regex false-positive — accept bulleted '- **Recommendation:**' format in audit_inception_recommendation + agents/audit/audit.sh
@@ -39,11 +39,11 @@ Fix: widen the pattern to accept an optional bullet marker `[-*]` before the bol
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/task-audit.sh:audit_inception_recommendation` accepts `- **Recommendation:** GO` (bulleted) AND `**Recommendation:** GO` (plain) AND `  **Recommendation:** GO` (indented).
-- [ ] `agents/audit/audit.sh` D14 Python helper `has_substantive_recommendation` accepts the same three forms.
-- [ ] New bats test case `audit_inception_recommendation: bulleted **Recommendation:** still passes` in `tests/unit/inception_decide_recommendation_gate.bats`.
-- [ ] After fix, `bin/fw audit` no longer flags T-844 and T-705 in D14 (both have bulleted recommendations).
-- [ ] Existing tests still pass: `bats tests/unit/inception_decide_recommendation_gate.bats` (all 6 prior cases).
+- [x] `lib/task-audit.sh:audit_inception_recommendation` accepts `- **Recommendation:** GO` (bulleted) AND `**Recommendation:** GO` (plain) AND `  **Recommendation:** GO` (indented).
+- [x] `agents/audit/audit.sh` D14 Python helper `has_substantive_recommendation` accepts the same three forms.
+- [x] New bats test case `audit_inception_recommendation: bulleted **Recommendation:** still passes` in `tests/unit/inception_decide_recommendation_gate.bats`.
+- [x] After fix, `bin/fw audit` no longer flags T-844 and T-705 in D14 (both have bulleted recommendations).
+- [x] Existing tests still pass: `bats tests/unit/inception_decide_recommendation_gate.bats` (all 6 prior cases) — now 8 cases total, all pass.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -84,3 +84,15 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw audit 2>&1 | grep -q "PASS n
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1510-d14-regex-false-positive--accept-bullete.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-adb57fb6
+- **Timestamp:** 2026-04-26T14:20:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T14:18:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

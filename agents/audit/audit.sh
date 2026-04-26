@@ -2968,6 +2968,81 @@ case "$d14_level" in
         ;;
 esac
 
+# D15: Inception limbo state (T-1511, OBS-025)
+# Inceptions with status=started-work, owner=human, all Human ACs ticked,
+# but no **Decision**: line in the body. Operator checked the AC boxes
+# intending to complete, then forgot to run `fw inception decide`. The
+# task stays in active/ as a ghost — D5 anomaly only fires on age, so
+# the bug is invisible until tasks rot. Excludes DEFER decisions
+# (intentional keep-active).
+d15_result=$(python3 << 'D15EOF'
+import os, re, glob
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+ACTIVE_DIR = os.path.join(PROJECT_ROOT, ".tasks", "active")
+
+def is_limbo(text):
+    fm = re.match(r'^---\n(.*?)\n---', text, re.DOTALL)
+    if not fm:
+        return False
+    front = fm.group(1)
+    if "workflow_type: inception" not in front:
+        return False
+    status_m = re.search(r'^status:\s*(\S+)', front, re.MULTILINE)
+    owner_m = re.search(r'^owner:\s*(\S+)', front, re.MULTILINE)
+    if not status_m or status_m.group(1) != "started-work":
+        return False
+    if not owner_m or owner_m.group(1) != "human":
+        return False
+    # Decision check — any **Decision**: line means not in limbo
+    if re.search(r'^\*\*Decision\*\*:\s*\S', text, re.MULTILINE):
+        return False
+    # Human ACs — find ### Human section and check for unchecked items
+    human_m = re.search(r'^### Human\s*$(.*?)(?=^### |^## |\Z)', text, re.MULTILINE | re.DOTALL)
+    if not human_m:
+        return False  # no Human section = different shape, not our concern
+    human_body = human_m.group(1)
+    # Strip HTML comments so commented-out templates don't count
+    human_body = re.sub(r'<!--.*?-->', '', human_body, flags=re.DOTALL)
+    unchecked = len(re.findall(r'^- \[ \]', human_body, re.MULTILINE))
+    checked = len(re.findall(r'^- \[x\]', human_body, re.MULTILINE | re.IGNORECASE))
+    # Limbo only when there ARE Human ACs AND none are unchecked
+    return checked > 0 and unchecked == 0
+
+limbo = []
+for f in glob.glob(os.path.join(ACTIVE_DIR, "T-*.md")):
+    try:
+        with open(f) as fh:
+            text = fh.read()
+    except Exception:
+        continue
+    if is_limbo(text):
+        bn = os.path.basename(f)
+        # T-XXXX-slug.md → T-XXXX
+        m = re.match(r'^(T-\d+)', bn)
+        if m:
+            limbo.append(m.group(1))
+
+if limbo:
+    sample = " ".join(limbo[:5])
+    suffix = f" (+{len(limbo)-5} more)" if len(limbo) > 5 else ""
+    print(f"WARN {len(limbo)}_limbo: {sample}{suffix}")
+else:
+    print("PASS no_limbo")
+D15EOF
+)
+d15_level=$(echo "$d15_result" | awk '{print $1}')
+case "$d15_level" in
+    WARN)
+        d15_detail=$(echo "$d15_result" | cut -d' ' -f2-)
+        warn "D15: Inception limbo state — $d15_detail" \
+             "Inception with all Human ACs ticked but no decision recorded — operator forgot to run fw inception decide" \
+             "Run: fw inception decide T-XXX go|no-go|defer --rationale '...'"
+        ;;
+    *)
+        pass "D15: Inception limbo state — none ($d15_result)"
+        ;;
+esac
+
 echo ""
 fi # end discovery-trends
 

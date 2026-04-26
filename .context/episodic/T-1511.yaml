@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1511: D15 audit check — inception limbo state (started-work + owner: agenthuman + all Human ACs ticked + no Decision recorded)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T14:35:48Z
+# ============================================================================
+
+task_id: T-1511
+task_name: "D15 audit check — inception limbo state (started-work + owner: agenthuman + all Human ACs ticked + no Decision recorded)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T14:23:33Z
+completed: 2026-04-26T14:35:45Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "New D15 discovery in `agents/audit/audit.sh` — flags inception tasks with `status: started-work`, `owner: human`, zero unchecked Human ACs, AND no `**Decision**:` line in the body."
+  - "D15 emits one of three states: `PASS no_limbo`, `WARN N_limbo: T-XXX...`, or `WARN` summary listing flagged task IDs."
+  - "Limbo detector excludes tasks with `**Decision**: DEFER` (intentional keep-active) — ANY `**Decision**:` line excludes (covers DEFER, GO, NO-GO)."
+  - "Running `bin/fw audit` after the change shows D15 in the output and does not break any existing check — D14 still reports `PASS no_empty_recommendations`, D15 reports `PASS no_limbo`."
+  - "No false positives on tasks that legitimately belong in active/ — manually verified across all 17 active inception tasks; none currently in true limbo. Near-misses (T-1284, T-1388 with Decision recorded but status not transitioned) are a different bug class (T-1509 family, not D15's concern)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1511-d15-audit-check--inception-limbo-state-s.md
+generated_by: context-agent-hybrid

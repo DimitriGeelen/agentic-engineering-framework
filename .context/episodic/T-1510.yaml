@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1510: D14 regex false-positive — accept bulleted '- **Recommendation:**' format in audit_inception_recommendation + agents/audit/audit.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T14:20:37Z
+# ============================================================================
+
+task_id: T-1510
+task_name: "D14 regex false-positive — accept bulleted '- **Recommendation:**' format in audit_inception_recommendation + agents/audit/audit.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T14:15:02Z
+completed: 2026-04-26T14:18:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-26T16:18:32+02:00
+last_commit: 2026-04-26T16:18:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Accept bulleted '- **Recommendation:**' format in D14 + audit_inception_recommendation
+
+# Key outcomes
+outcomes:
+  - "`lib/task-audit.sh:audit_inception_recommendation` accepts `- **Recommendation:** GO` (bulleted) AND `**Recommendation:** GO` (plain) AND `  **Recommendation:** GO` (indented)."
+  - "`agents/audit/audit.sh` D14 Python helper `has_substantive_recommendation` accepts the same three forms."
+  - "New bats test case `audit_inception_recommendation: bulleted **Recommendation:** still passes` in `tests/unit/inception_decide_recommendation_gate.bats`."
+  - "After fix, `bin/fw audit` no longer flags T-844 and T-705 in D14 (both have bulleted recommendations)."
+  - "Existing tests still pass: `bats tests/unit/inception_decide_recommendation_gate.bats` (all 6 prior cases) — now 8 cases total, all pass."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "lib/task-audit.sh"
+  - ".tasks/active/T-1510-d14-regex-false-positive--accept-bullete.md"
+  - "tests/unit/inception_decide_recommendation_gate.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T16:18:32"
+    action: "T-1510: Accept bulleted '- **Recommendation:**' format in D14 + audit_inception_recommendation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 7
+  lines_added: 126
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1510-d14-regex-false-positive--accept-bullete.md
+generated_by: context-agent-hybrid

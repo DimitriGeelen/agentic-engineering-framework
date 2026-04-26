@@ -1088,3 +1088,37 @@ scan_id: R-999c5143
 task_id: T-1502
 payload:
   task_file: .tasks/active/T-1502-pickup-r-033-sovereignty-dual-fires-on-i.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T14:20:34Z'
+scan_id: R-adb57fb6
+task_id: T-1510
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T14:20:34Z'
+scan_id: R-adb57fb6
+task_id: T-1510
+payload:
+  task_file: .tasks/active/T-1510-d14-regex-false-positive--accept-bullete.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T14:35:46Z'
+scan_id: R-a3c39136
+task_id: T-1511
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T14:35:46Z'
+scan_id: R-a3c39136
+task_id: T-1511
+payload:
+  task_file: .tasks/active/T-1511-d15-audit-check--inception-limbo-state-s.md

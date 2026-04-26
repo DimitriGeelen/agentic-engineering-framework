@@ -177,7 +177,7 @@ observations:
     captured: 2026-04-26T09:17:12Z
     context_task: T-1488
     tags: [bug]
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-026
     text: "add"
@@ -193,3 +193,10 @@ observations:
     tags: [bug]
     status: promoted
     promoted_to: task
+  - id: OBS-028
+    text: "resolve"
+    captured: 2026-04-26T14:27:31Z
+    context_task: T-1511
+    tags: []
+    status: dismissed
+    promoted_to: null
