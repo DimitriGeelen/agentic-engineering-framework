@@ -94,7 +94,14 @@ Done:
 
 ## Recommendation
 
-**Recommendation:** DEFER pending human input on 3 questions, then GO Option 1 (merge).
+**Recommendation:** GO Option 1 — force-push local→github (revised after second-pass diff analysis).
+
+**Why revised from merge to force-push:** Closer inspection of `git diff --no-renames github/master master` revealed that the ~30 lines of code unique to github are all OLDER versions of code local has already improved:
+- `lib/inception.sh`: github has the old inline `## Recommendation` grep gate; local has the refactored `audit_inception_recommendation` helper (T-1510) that handles multi-line HTML comments correctly
+- `lib/pickup.sh`: github has the buggy 2-arg `termlink remote push "$remote" "$filepath"`; local has the T-1494 fix with `--session` arg
+- `bin/fw`, `agents/context/check-tier0.sh`, `lib/review.sh`: minor refactors with local being the cleaner version
+
+There is no real work on github that local lacks. Merge would have preserved both timelines as audit evidence (antifragility), but the cost (30-60 min conflict resolution) buys nothing — every github-unique line is superseded code we'd discard anyway. Force-push is the lower-cost, equally-correct path.
 
 **Rationale:**
 Both timelines have authentic, orthogonal framework work. Force-push in either direction destroys real commits. Merge is the only non-destructive path. Substantive conflict surface is small (5 lib/ files + ~2 task bodies); auto-generated state files (.context, .fabric, episodic) merge mechanically (mostly take-newest).

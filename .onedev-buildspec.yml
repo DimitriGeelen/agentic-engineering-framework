@@ -107,7 +107,7 @@ jobs:
         remoteUrl: https://github.com/DimitriGeelen/agentic-engineering-framework.git
         userName: DimitriGeelen
         passwordSecret: github-push-token
-        force: false
+        force: true
         condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
     triggers:
       - !BranchUpdateTrigger
