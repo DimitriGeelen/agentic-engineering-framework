@@ -178,6 +178,21 @@ fi
 # ─── Normal Mode ───
 HANDOVER_FILE="$HANDOVER_DIR/$SESSION_ID.md"
 
+# T-1522: Self-lock against concurrent normal-mode invocations. SESSION_ID is
+# minute-precision so two callers in the same minute write to the same file;
+# the cat > ... cat >> ... interleave produces duplicate sections (T-1520).
+# Upstream pre-compact.sh now dedups, but checkpoint.sh and audit.sh have no
+# shared dedup with pre-compact, so they could still race.
+HANDOVER_LOCK="$HANDOVER_DIR/.handover.lock"
+mkdir -p "$HANDOVER_DIR" 2>/dev/null
+if command -v flock >/dev/null 2>&1; then
+    exec 202>"$HANDOVER_LOCK"
+    if ! flock -n 202; then
+        echo -e "${YELLOW}Another handover is running — skipping this invocation${NC}" >&2
+        exit 0
+    fi
+fi
+
 echo -e "${CYAN}=== Handover Agent ===${NC}"
 echo "Session: $SESSION_ID"
 echo "Timestamp: $TIMESTAMP"
