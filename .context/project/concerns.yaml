@@ -1444,12 +1444,14 @@ concerns:
   trigger_event: "2026-04-22: hit during T-1270 work — wanted to record a corrected decision after fresh research, had to strip `## Decisions` by hand. User filed as high-priority bugfix inception (T-1388)."
   detection_lag_days: "0"
   what_works_now: "Normal happy-path (pending → decide once) works correctly. Agent-invocation guard (T-1259) blocks programmatic `fw inception decide` from CLAUDECODE=1 sessions — the Watchtower form is the only legitimate decide path. This guard is the reason the UI gap matters: when Watchtower's form is unavailable, there is no sanctioned path at all."
-  what_remains: "Active — no fix yet. T-1388 inception captures full root cause, assumptions (A1-A4), and exploration plan (spikes A-D including D1 'reopen' vs D2 'new-decision-with-confirm' UX sketches). Awaiting GO/NO-GO decision before build."
-  mitigation_candidate: "UI: add 'Re-open decision' or 'Record new decision' affordance on the Decision Record card. Backend: new POST route or extend record_decision to accept supersedes flag. Invariant: both decision entries must land in `## Updates` to preserve audit trail."
-  related_tasks: [T-1388, T-1270, T-1259]
-  status: watching
+  what_remains: "Closed 2026-04-26 — T-1389 shipped the 'Record Superseding Decision' affordance on /inception/T-XXX (template now gates on task._location == 'active', not dec == 'pending'). Backend idempotency already guaranteed by T-1262 (replace canonical block + append to Updates). Playwright tests in TestRedecideAffordance guard against regression. Sister builds T-1390/T-1391/T-1415/T-1416 polished rationale extraction, dedupe, assumptions counter, and approvals split."
+  mitigation_candidate: "Implemented: 'Record Superseding Decision' form on Decision Record card. Both decisions land in ## Updates; canonical ## Decision block is replaced atomically. T-1259 agent-invocation guard remains in force — Watchtower form is the only sanctioned decide path."
+  related_tasks: [T-1388, T-1389, T-1390, T-1391, T-1415, T-1416, T-1270, T-1259, T-1262]
+  status: resolved
+  resolved_date: 2026-04-26
+  resolved_by: T-1389
   created: 2026-04-22
-  last_reviewed: 2026-04-22
+  last_reviewed: 2026-04-26
 
 - id: G-058
   type: gap

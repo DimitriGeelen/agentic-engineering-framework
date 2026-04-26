@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1388: Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affordance after decision recorded
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T20:57:24Z
+# ============================================================================
+
+task_id: T-1388
+task_name: "Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affordance after decision recorded"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-22T21:35:53Z
+completed: 2026-04-26T19:30:17Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-04-22T23:40:38+02:00
+last_commit: 2026-04-24T10:10:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — Watchtower /inception/T-XXX is one-shot (no revoke/re-decide). Phase-2 simulation — 5 frictions reproduced, Recommendation GO (S-broad). Tick Agent ACs + add B1-B6 closure evidence to parent inception
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (see `docs/reports/T-1388-watchtower-inception-no-redecide.md` §Problem statement + live reproduction screenshots)"
+  - "Assumptions tested (Spikes A/B/C/D executed — see research artifact §Spike A..D)"
+  - "Recommendation written with rationale (§Recommendation below, adopted by GO decision on 2026-04-22)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/assumptions.yaml"
+  - ".context/project/concerns.yaml"
+  - ".context/working/focus.yaml"
+  - "docs/reports/T-1388-approvals-snapshot.md"
+  - "docs/reports/T-1388-watchtower-inception-no-redecide.md"
+  - "docs/screenshots/T-1388-evidence-1-pending-form.png"
+  - "docs/screenshots/T-1388-evidence-2-decided-locked.png"
+  - "docs/screenshots/T-1388-evidence-3-approvals-page.png"
+  - ".tasks/active/T-1388-watchtower-inceptiont-xxx-page-is-one-sh.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-22T23:40:38"
+    action: "T-1388: Inception — Watchtower /inception/T-XXX is one-shot (no revoke/re-decide)"
+  - time: "2026-04-22T23:54:29"
+    action: "T-1388: Phase-2 simulation — 5 frictions reproduced, Recommendation GO (S-broad)"
+  - time: "2026-04-24T10:10:32"
+    action: "T-1388: Tick Agent ACs + add B1-B6 closure evidence to parent inception"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 5634 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5634
+  commits: 4
+  files_changed: 10
+  lines_added: 3515
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1388-watchtower-inceptiont-xxx-page-is-one-sh.md
+generated_by: context-agent-hybrid

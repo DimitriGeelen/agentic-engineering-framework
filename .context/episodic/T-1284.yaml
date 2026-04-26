@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1284: Watchtower port discovery regression — current _watchtower_url probes common ports and picks anything that answers (picked :8080 which was not Watchtower). Redesign against 4 directives (antifragility, reliability, usability, portability).
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T20:57:24Z
+# ============================================================================
+
+task_id: T-1284
+task_name: "Watchtower port discovery regression — current _watchtower_url probes common ports and picks anything that answers (picked :8080 which was not Watchtower). Redesign against 4 directives (antifragility, reliability, usability, portability)."
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-17T16:48:04Z
+completed: 2026-04-26T19:30:17Z
+duration_days: 9
+updates_count: 3
+first_commit: 2026-04-17T18:53:36+02:00
+last_commit: 2026-04-17T18:53:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — Watchtower port discovery redesign (4-directive analysis + 3-layer design)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1284-watchtower-port-discovery-redesign.md"
+  - ".tasks/active/T-1284-watchtower-port-discovery-regression--cu.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-17T18:53:36"
+    action: "T-1284: Inception — Watchtower port discovery redesign (4-directive analysis + 3-layer design)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13122 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13122
+  commits: 1
+  files_changed: 2
+  lines_added: 348
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1284-watchtower-port-discovery-regression--cu.md
+generated_by: context-agent-hybrid
