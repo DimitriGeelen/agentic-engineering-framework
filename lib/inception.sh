@@ -378,6 +378,42 @@ do_inception_decide() {
     local decision_upper
     decision_upper=$(echo "$decision" | tr '[:lower:]' '[:upper:]')
 
+    # T-1503: Preflight Agent AC check BEFORE mutating task body.
+    # Original bug: tick_inception_decide_acs ran AFTER the Decision/Updates
+    # writes, so a task with custom (non-auto-tick) Agent ACs would have its
+    # body poisoned (Decision block + Updates entry written) and then
+    # update-task.sh would block at the P-010 AC gate, leaving the task
+    # in an inconsistent state (decision recorded but status=started-work).
+    # Retries appended duplicate Updates entries.
+    #
+    # Fix: tick first, then count remaining unchecked Agent ACs. If any
+    # remain, abort here — task body untouched, no duplicate retries possible.
+    # Mirrors update-task.sh:73-105 AC counting logic; no new behavior, just
+    # early validation. (T-131 in downstream 003-NTB-ATC-Plugin / P-010.)
+    if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then
+        tick_inception_decide_acs "$task_file"
+
+        local _ac_section _agent_acs _agent_total _agent_checked _agent_unchecked
+        _ac_section=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$task_file" 2>/dev/null | sed '$d' | sed '/<!--/,/-->/d')
+        if echo "$_ac_section" | grep -q '^### Agent'; then
+            _agent_acs=$(echo "$_ac_section" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
+            _agent_total=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+            _agent_checked=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[x\]' || true)
+            _agent_unchecked=$((_agent_total - _agent_checked))
+            if [ "$_agent_total" -gt 0 ] && [ "$_agent_unchecked" -gt 0 ]; then
+                echo -e "${RED}ERROR: Cannot record decision — $_agent_unchecked/$_agent_total agent AC unchecked${NC}" >&2
+                echo "" >&2
+                echo "Unchecked Agent ACs:" >&2
+                echo "$_agent_acs" | grep -E '^\s*-\s*\[ \]' | head -10 >&2
+                echo "" >&2
+                echo -e "${YELLOW}Why this gate exists:${NC} recording the decision before validating ACs would" >&2
+                echo "leave the task body with Decision=$decision_upper but status stuck at started-work" >&2
+                echo "(T-1503/P-010). Tick the ACs (or remove them if not needed), then re-run." >&2
+                exit 1
+            fi
+        fi
+    fi
+
     # Update Decision section via Python
     python3 - "$task_file" "$decision_upper" "$rationale" "$timestamp" << 'PYDECIDE'
 import sys
@@ -427,6 +463,10 @@ PYDECIDE
     # T-1324: Tick the Human AC that authorizes go/no-go BEFORE update-task.sh's
     # work-completed gate runs — otherwise the AC stays unchecked and the gate
     # keeps the task in partial-complete forever (G-008 contributor; P-039).
+    # T-1503: tick now runs as part of the preflight above for go/no-go decisions
+    # so we can validate AC state before mutating the task body. Re-run here
+    # for the defer path (which skips preflight) and as a safety net for
+    # Human ACs added between preflight and now.
     tick_inception_decide_acs "$task_file"
 
     # Add update entry
