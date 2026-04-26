@@ -711,22 +711,25 @@ do_doctor() {
     if [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ] && [ -d "$FRAMEWORK_ROOT/.agentic-framework" ]; then
         local _vdrift=0
         local _vdrift_list=""
-        local _f
-        for _f in "$FRAMEWORK_ROOT"/bin/fw \
-                  "$FRAMEWORK_ROOT"/lib/*.sh \
-                  "$FRAMEWORK_ROOT"/agents/context/*.sh \
-                  "$FRAMEWORK_ROOT"/agents/task-create/*.sh; do
+        local _f _vf _rel
+        # T-1521: Walk the vendored tree itself, not a hand-curated source glob.
+        # T-1434's original glob list missed agents/handover, agents/audit,
+        # agents/git, lib/reviewer, web/blueprints — all synced by `fw vendor`.
+        # Walking the vendor tree guarantees coverage of whatever vendor put there.
+        while IFS= read -r _vf; do
+            _rel="${_vf#$FRAMEWORK_ROOT/.agentic-framework/}"
+            _f="$FRAMEWORK_ROOT/$_rel"
             [ -f "$_f" ] || continue
-            local _rel="${_f#$FRAMEWORK_ROOT/}"
-            local _v="$FRAMEWORK_ROOT/.agentic-framework/$_rel"
-            [ -f "$_v" ] || continue
-            if ! diff -q "$_f" "$_v" >/dev/null 2>&1; then
+            if ! diff -q "$_f" "$_vf" >/dev/null 2>&1; then
                 _vdrift=$((_vdrift + 1))
                 if [ "$_vdrift" -le 5 ]; then
                     _vdrift_list="$_vdrift_list\n           - $_rel"
                 fi
             fi
-        done
+        done < <(find "$FRAMEWORK_ROOT/.agentic-framework"/{bin,lib,agents,web} -type f \
+                    \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "*.html" \) \
+                    -not -path "*/__pycache__/*" \
+                    2>/dev/null)
         if [ "$_vdrift" -eq 0 ]; then
             echo -e "  ${GREEN}OK${NC}  No vendored-source drift"
         else
