@@ -412,6 +412,7 @@ do_inception_decide() {
 
     # Update Decision section via Python
     python3 - "$task_file" "$decision_upper" "$rationale" "$timestamp" << 'PYDECIDE'
+import re
 import sys
 
 task_file, decision, rationale, timestamp = sys.argv[1:5]
@@ -444,7 +445,14 @@ for line in lines:
         # Subsequent Decision sections (duplicates) — swallow entirely
         continue
     if in_decision:
-        if line.startswith('## '):
+        # T-1526: terminate at any heading H2-or-deeper (## or ### or more),
+        # not just H2. update-task.sh appends `### timestamp` entries at EOF;
+        # if a task lacks a trailing `## Updates` H2, those H3s land between
+        # the Decision block and EOF. Old terminator (H2 only) swallowed them
+        # on the next decide call. Decision blocks themselves contain only
+        # `**Bold**` lines, never headings, so widening to H2+ doesn't break
+        # the duplicate-collapse semantics.
+        if re.match(r'^#{2,} ', line):
             in_decision = False
             new_lines.append('')
             new_lines.append(line)
