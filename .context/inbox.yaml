@@ -172,3 +172,10 @@ observations:
     tags: []
     status: dismissed
     promoted_to: null
+  - id: OBS-025
+    text: "Inception limbo state: T-1346 + T-1388 have all Human ACs ticked but no inception decide recorded — status stuck at started-work, owner=human. Audit D5 anomaly only fires on age (T-1346 6d, T-1388 4d). Suggest a discovery check: inception + started-work + owner:human + 0 unchecked Human ACs + no decision recorded = limbo (operator forgot to run fw inception decide after checking the box)."
+    captured: 2026-04-26T09:17:12Z
+    context_task: T-1488
+    tags: [bug]
+    status: pending
+    promoted_to: null
