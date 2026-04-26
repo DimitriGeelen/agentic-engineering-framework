@@ -2236,3 +2236,10 @@ learnings:
   date: 2026-04-26
   context: Added via context agent
   application: TBD
+- id: L-290
+  learning: "fw fabric drift reports stale edges for files that DO exist (e.g., .context/handovers/LATEST.md, .context/working/focus.yaml, .context/bus/blobs/). Existence check appears to use wrong path resolution. Affects audit warning count and noise in drift output."
+  source: ad-hoc-2026-04-26
+  task: T-1494
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD

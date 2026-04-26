@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1498: Pickup: fw hook dispatcher hard-blocks all tool calls when target script is missing (downstream T-007) (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T17:43:07Z
+# ============================================================================
+
+task_id: T-1498
+task_name: "Pickup: fw hook dispatcher hard-blocks all tool calls when target script is missing (downstream T-007) (from 003-NTB-ATC-Plugin)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T11:13:09Z
+completed: 2026-04-26T17:43:04Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Confirm graceful hook-missing fallback at `bin/fw:4046-4056` (T-1360 / G-053-B)"
+  - "Confirm `fw doctor` checks hook script existence at `bin/fw:1171-1177`"
+  - "Document mode (2) as out-of-scope (TermLink dispatch, not hook dispatcher) — to be filed separately if it recurs"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 389 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 389
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1498-pickup-fw-hook-dispatcher-hard-blocks-al.md
+generated_by: context-agent-hybrid

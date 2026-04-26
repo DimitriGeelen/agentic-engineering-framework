@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1493: Pickup: update-task.sh flock leaks lock FD to dotnets VBCSCompiler daemon, blocking future fw task updates (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T17:38:56Z
+# ============================================================================
+
+task_id: T-1493
+task_name: "Pickup: update-task.sh flock leaks lock FD to dotnets VBCSCompiler daemon, blocking future fw task updates (from 003-NTB-ATC-Plugin)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T11:06:01Z
+completed: 2026-04-26T17:38:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T19:38:45+02:00
+last_commit: 2026-04-26T19:38:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Close keylock FDs in verification subshells (FD leak to daemons)
+
+# Key outcomes
+outcomes:
+  - "`keylock_subshell_close_cmd` helper added to `lib/keylock.sh`, emits `exec N>&-` for every held FD"
+  - "`run_verification_commands` in `agents/task-create/update-task.sh` evals the helper output inside the verification subshell BEFORE running the user command"
+  - "Bats test: hold a lock, run `keylock_subshell_close_cmd`, verify it emits a close command for the held FD"
+  - "Bats test: hold a lock, run a child that backgrounds and sleeps; with the close-cmd in the subshell, child does NOT inherit the FD (`lsof` check or fd-test)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - ".fabric/components/tests-unit-keylock_subshell_close.yaml"
+  - "lib/keylock.sh"
+  - ".tasks/active/T-1493-pickup-update-tasksh-flock-leaks-lock-fd.md"
+  - "tests/unit/keylock_subshell_close.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T19:38:45"
+    action: "T-1493: Close keylock FDs in verification subshells (FD leak to daemons)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 392 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 392
+  commits: 1
+  files_changed: 5
+  lines_added: 143
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1493-pickup-update-tasksh-flock-leaks-lock-fd.md
+generated_by: context-agent-hybrid

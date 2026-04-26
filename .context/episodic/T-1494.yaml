@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1494: Pickup: fw pickup send --remote signature mismatch — broken cross-project delivery (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T17:35:34Z
+# ============================================================================
+
+task_id: T-1494
+task_name: "Pickup: fw pickup send --remote signature mismatch — broken cross-project delivery (from 003-NTB-ATC-Plugin)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T11:09:01Z
+completed: 2026-04-26T17:35:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T19:35:20+02:00
+last_commit: 2026-04-26T19:35:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix fw pickup send --remote signature mismatch
+
+# Key outcomes
+outcomes:
+  - "`fw pickup send` accepts `--session SESSION` argument (CLI + parser)"
+  - "When `--remote HUB` is given, `--session SESSION` is required (clear error if missing)"
+  - "Call site at `lib/pickup.sh:498` passes both `$remote` (hub) and `$session` to `termlink remote push`"
+  - "Help text (`fw pickup send --help`) documents the new `--session` flag and the requirement"
+  - "Bats unit test covers: (1) `--remote without --session` errors, (2) both args present builds correct command line"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix fw pickup send --remote signature mismatch"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-pickup_send_remote_session.yaml"
+  - "lib/pickup.sh"
+  - ".tasks/active/T-1494-pickup-fw-pickup-send---remote-signature.md"
+  - "tests/unit/pickup_send_remote_session.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T19:35:20"
+    action: "T-1494: Fix fw pickup send --remote signature mismatch"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 386 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 386
+  commits: 1
+  files_changed: 4
+  lines_added: 102
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1494-pickup-fw-pickup-send---remote-signature.md
+generated_by: context-agent-hybrid

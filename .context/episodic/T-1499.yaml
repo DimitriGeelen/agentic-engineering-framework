@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-26T14:46:46Z
+# Generated: 2026-04-26T17:24:28Z
 # ============================================================================
 
 task_id: T-1499
@@ -13,15 +13,15 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-04-26T11:13:13Z
-completed: 2026-04-26T14:46:42Z
+completed: 2026-04-26T17:24:24Z
 duration_days: 0
 updates_count: 2
 first_commit: 2026-04-26T16:14:54+02:00
-last_commit: 2026-04-26T16:14:54+02:00
+last_commit: 2026-04-26T19:03:14+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  T-1499/T-1507: Fill empty inception bodies (D14 backlog cleanup)
+  T-1499/T-1507: Fill empty inception bodies (D14 backlog cleanup). Reopen + mediate via TermLink — captured ring20-management response. Relay back to 003-NTB-ATC-Plugin via TermLink push + research artifact
 
 # Key outcomes
 outcomes:
@@ -43,19 +43,36 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
+  - ".context/audits/2026-04-26.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-1499.yaml"
+  - ".context/episodic/T-1507.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/feedback-stream.yaml"
+  - ".context/working/.fleet-failure-state.json"
   - ".context/working/focus.yaml"
+  - ".context/working/.gate-bypass-log.yaml"
   - ".context/working/session.yaml"
+  - "docs/reports/T-1499-ring20-hosting-mediation.md"
   - ".tasks/active/T-1499-pickup-advies-gevraagd-ring20-hosting-pa.md"
   - ".tasks/active/T-1507-inception-decide-cliwatchtower-output-tr.md"
+  - ".tasks/completed/T-1507-inception-decide-cliwatchtower-output-tr.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-04-26T16:14:54"
     action: "T-1499/T-1507: Fill empty inception bodies (D14 backlog cleanup)"
+  - time: "2026-04-26T17:34:39"
+    action: "T-1499: Reopen + mediate via TermLink — captured ring20-management response"
+  - time: "2026-04-26T19:03:14"
+    action: "T-1499: Relay back to 003-NTB-ATC-Plugin via TermLink push + research artifact"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 213 min
+  # Completed successfully in 3 commit(s), 371 min
 
 # Related tasks
 related_tasks:
@@ -68,11 +85,11 @@ tags: [pickup, feature-proposal]
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 213
-  commits: 1
-  files_changed: 4
-  lines_added: 67
-  lines_removed: 29
+  wall_clock_minutes: 371
+  commits: 3
+  files_changed: 17
+  lines_added: 804
+  lines_removed: 789
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1499-pickup-advies-gevraagd-ring20-hosting-pa.md
