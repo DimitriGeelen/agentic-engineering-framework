@@ -66,6 +66,38 @@ def _load_feedback_events(limit: int = 50) -> list[dict]:
     return list(reversed(events))[:limit]
 
 
+def _latest_yaml(directory: Path, suffix: str) -> tuple[Path | None, dict | None]:
+    """Return (path, parsed) for the lexicographically newest file matching `*-{suffix}.yaml`."""
+    if not directory.exists():
+        return None, None
+    candidates = sorted(directory.glob(f"*-{suffix}.yaml"))
+    if not candidates:
+        return None, None
+    latest = candidates[-1]
+    try:
+        return latest, yaml.safe_load(latest.read_text())
+    except (OSError, yaml.YAMLError):
+        return latest, None
+
+
+@bp.route("/reviewer/audit")
+def reviewer_audit():
+    """Surface latest Pass A + Pass B corpus YAML state (T-1486)."""
+    audit_dir = PROJECT_ROOT / ".context" / "audits" / "reviewer"
+    pass_a_path, pass_a = _latest_yaml(audit_dir, "pass-a")
+    pass_b_path, pass_b = _latest_yaml(audit_dir, "pass-b")
+
+    return render_template(
+        "reviewer_audit.html",
+        page_title="Reviewer Audit",
+        active_endpoint="reviewer.reviewer_audit",
+        pass_a=pass_a,
+        pass_a_path=pass_a_path.name if pass_a_path else None,
+        pass_b=pass_b,
+        pass_b_path=pass_b_path.name if pass_b_path else None,
+    )
+
+
 @bp.route("/reviewer/overrides")
 def reviewer_overrides():
     overrides = _load_overrides()
