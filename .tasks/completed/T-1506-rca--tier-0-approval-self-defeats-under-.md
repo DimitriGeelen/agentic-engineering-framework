@@ -4,7 +4,7 @@ name: "RCA — Tier 0 approval self-defeats under duplicate hook registration (.
 description: >
   RCA — Tier 0 approval self-defeats under duplicate hook registration (.claude/settings.json + /root/.claude/settings.json both register check-tier0)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-26T11:23:07Z
-last_update: 2026-04-26T11:23:07Z
-date_finished: null
+last_update: 2026-04-26T11:32:42Z
+date_finished: 2026-04-26T11:32:42Z
 ---
 
 # T-1506: RCA — Tier 0 approval self-defeats under duplicate hook registration (.claude/settings.json + /root/.claude/settings.json both register check-tier0)
@@ -69,15 +69,15 @@ The deeper class of problem (G-019 territory): **any hook that mutates single-us
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -178,9 +178,49 @@ The deeper class of problem (G-019 territory): **any hook that mutates single-us
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 1. Antifragility: failure was invisible (Tier 0 is supposed to be the strongest gate; nobody knew it could self-defeat). Both layers make duplication visible AND harmless.
+2. Bounded scope: ~55 lines + 2 bats tests. No architecture change; no new dependencies.
+3. Generalizes: the sentinel pattern in (b) is a template for fixing `checkpoint.sh` and `check-agent-dispatch.sh` later. Document as L-XXX (idempotent-hook pattern).
+4. Evidence-based: confirmed live in this session — bypass log shows the same approved hash consumed twice (11:17:19 + 11:19:35) while the agent observed only blocks. Two human approvals, zero successful pushes.
+
+Alternative considered (DEFER): open a broader inception covering all 3 vulnerable hooks + a hook-design-policy doc. Rejected: tier0 is acutely broken now (blocks legitimate work in this session); the other two are slower-burning. Fix tier0 first, then survey.
+
+Alternative considered (NO-GO — variant (d) doctor-only): rely on humans to clean up via `fw doctor` warnings. Rejected: violates antifragility — the gate is still latently broken between detection and cleanup; a duplicate arising mid-session blocks all destructive work until someone runs doctor and edits two files.
+
+Alternative considered (variant (c) — N-use TTL): changes Tier 0 semantics from "single-use" to "≤M-use within window." Rejected: weakens the security model. The sentinel approach in (b) preserves single-use semantics (once consumed, only same-hash same-invocation duplicates short-circuit; new commands still need fresh approval).
+
+**Date**: 2026-04-26T11:32:42Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-26T11:32:42Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 1. Antifragility: failure was invisible (Tier 0 is supposed to be the strongest gate; nobody knew it could self-defeat). Both layers make duplication visible AND harmless.
+2. Bounded scope: ~55 lines + 2 bats tests. No architecture change; no new dependencies.
+3. Generalizes: the sentinel pattern in (b) is a template for fixing `checkpoint.sh` and `check-agent-dispatch.sh` later. Document as L-XXX (idempotent-hook pattern).
+4. Evidence-based: confirmed live in this session — bypass log shows the same approved hash consumed twice (11:17:19 + 11:19:35) while the agent observed only blocks. Two human approvals, zero successful pushes.
+
+Alternative considered (DEFER): open a broader inception covering all 3 vulnerable hooks + a hook-design-policy doc. Rejected: tier0 is acutely broken now (blocks legitimate work in this session); the other two are slower-burning. Fix tier0 first, then survey.
+
+Alternative considered (NO-GO — variant (d) doctor-only): rely on humans to clean up via `fw doctor` warnings. Rejected: violates antifragility — the gate is still latently broken between detection and cleanup; a duplicate arising mid-session blocks all destructive work until someone runs doctor and edits two files.
+
+Alternative considered (variant (c) — N-use TTL): changes Tier 0 semantics from "single-use" to "≤M-use within window." Rejected: weakens the security model. The sentinel approach in (b) preserves single-use semantics (once consumed, only same-hash same-invocation duplicates short-circuit; new commands still need fresh approval).
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-3d1b8b0f
+- **Timestamp:** 2026-04-26T11:32:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T11:32:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

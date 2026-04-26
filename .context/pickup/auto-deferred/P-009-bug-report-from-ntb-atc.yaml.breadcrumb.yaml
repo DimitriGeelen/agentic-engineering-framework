@@ -1,0 +1,4 @@
+reason: triple-dedup
+blocking_task: T-1498
+deferred_at: 2026-04-26T11:13:29Z
+envelope: P-009-bug-report-from-ntb-atc.yaml

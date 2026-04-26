@@ -1,0 +1,40 @@
+pickup_id: P-010
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-131"
+  agent: "claude-code"
+  timestamp: "2026-04-25T16:03:01Z"
+payload:
+  summary: "Watchtower /inception/decide returns 500 on partial-complete success + decision-record happens before AC gate"
+  detail: "Two coupled failures observed when user clicked GO in Watchtower for inception tasks T-131 and T-132 (003-NTB-ATC-Plugin, 2026-04-25 17:56-17:57). Full RCA + prevention candidates documented in concerns.yaml C-009.
+
+PROBLEM 1 — T-131 partial-decide leaves task in inconsistent state:
+- Decide flow appended 'Inception decision recorded GO' to Updates section
+- update-task.sh then blocked at P-010 AC gate (5/5 unchecked) and exited 1
+- Result: task body has decision=GO but status stayed at started-work
+- Retrying the decide creates duplicate Updates entries (no idempotency)
+- Watchtower returned 500 to user
+
+PROBLEM 2 — T-132 false 500 on partial-complete success:
+- Underlying CLI succeeded: status=work-completed, owner=human, date_finished set, partial-complete recorded
+- Stdout contains success markers ('Status: started-work → work-completed', 'date_finished set to ...')
+- BUT fw inception decide exited non-zero (some line in update-task.sh post-transition path under set -euo pipefail)
+- web/blueprints/inception.py:411 record_decision treats non-zero exit as failure and returns 500
+- User sees Error message while the task actually transitioned correctly
+
+PREVENTION CANDIDATES:
+1. lib/inception.sh: preflight AC check before writing the Decision/Updates entries (don't poison task body with stale decision when transition can't proceed)
+2. lib/inception.sh: idempotent Decision/Updates writer (replace not append)
+3. update-task.sh: bash -x trace under partial-complete to find the non-zero-exit line in the post-transition path (auto-decisions, components resolver, learning detector); fix at source
+4. web/blueprints/inception.py:411 record_decision: parse stdout for success markers; treat success-with-non-zero-exit as success — defensive layer protecting UX even if (3) regresses
+5. CLAUDE.md project rule (downstream consumers): check Agent AC checkboxes when populating ## Recommendation, to prevent the T-131 path
+
+LOG EXCERPTS (003-NTB-ATC-Plugin/.context/working/watchtower.log):
+- T-131: 'inception decide T-131 failed: stdout=...ERROR: Cannot complete — 5/5 agent AC unchecked... POST /inception/T-131/decide HTTP/1.1 500'
+- T-132: 'inception decide T-132 failed: stdout=...Acceptance criteria: 5/5 checked ✓...Status: started-work → work-completed...date_finished set...Partial-complete: 1 human AC pending verification...Task stays in active/ — owner set to human... POST /inception/T-132/decide HTTP/1.1 500'
+
+Composes badly with C-006 (R-033 sovereignty dual-fire on inception completion) — multiple failure modes overlap in the same code path."
+  priority: high
+  tags: [watchtower, inception, decide, partial-complete, set-e]

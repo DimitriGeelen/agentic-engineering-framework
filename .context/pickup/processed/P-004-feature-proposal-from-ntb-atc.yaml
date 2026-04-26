@@ -1,0 +1,65 @@
+pickup_id: P-004
+version: 2
+type: feature-proposal
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-045"
+  agent: "claude-code"
+  timestamp: "2026-04-19T10:35:33Z"
+  revised: "2026-04-19T10:41:00Z"
+payload:
+  summary: "Advies gevraagd: Ring20 hosting pattern voor Novis simulator + REST proxy"
+  detail: |
+    T-045 inception on 003-NTB-ATC-Plugin.
+
+    CONTEXT: ring20-management (.122) is de orchestratie/advies-agent voor
+    de Ring20 fleet, niet zelf compute-host. Deze envelope vraagt ADVIES
+    over waar/hoe twee services binnen Ring20 deployed moeten worden —
+    niet om op .122 te draaien.
+
+    TE DEPLOYEN WORKLOAD:
+    - Novis SOAP simulator (.NET Core 10, stateless, één SOAP endpoint)
+    - REST proxy over de simulator (.NET Core 10, OpenAPI 3.1, OAuth2
+      device-code flow tegen yellowtwig.nl Azure AD tenant)
+
+    ALTERNATIEF: Marc (architect, external) bood YellowTwig Azure aan.
+    Dimitri wil Ring20 als eerste optie beoordelen.
+
+    ADVIES NODIG VAN RING20-MANAGEMENT:
+
+    1. Welke Ring20 host(s) zijn geschikt voor deze workload?
+       - Containers vs processes
+       - Expected resource profile: laag (~256 MB RAM, ~1 vCPU per service)
+       - Co-locatie met bestaande services OK, of gescheiden VM?
+
+    2. Wat is het standaard deployment-pattern op Ring20?
+       - Registry (onedev container registry, Docker Hub, GHCR)?
+       - IaC / compose / helm / nomad?
+       - CI/CD — wordt dit verwacht via onedev pipelines of handmatig?
+
+    3. Bereikbaarheid voor externe clients (WPF AddIn op Nooteboom
+       engineer-laptops):
+       - Wordt service via `*.geelenandcompany.com` DNS exposed?
+       - Reverse proxy (Traefik/Caddy/nginx) — wie beheert, hoe vraag ik routing aan?
+       - TLS cert-provisioning — Let's Encrypt wildcard of per-service?
+
+    4. Auth-integratie:
+       - Ring20 heeft eigen identity? Zo ja, moet ik federeren met
+         yellowtwig.nl tenant, of direct tegen yellowtwig auth?
+       - Device-code flow vraagt GEEN callback-URI; zou dus geen reverse-proxy
+         callbacks nodig moeten hebben.
+
+    5. Policies / blokkers:
+       - Zijn er compliance- of security-regels die .NET Core 10 services
+         verhinderen of vormgeven?
+       - Logs / metrics — verwacht centrale ingestion (Loki, Grafana)?
+
+    OUT OF SCOPE (nu):
+    - Daadwerkelijk deployen — dit is feasibility only
+    - Productie-stap naar Nooteboom infra (later, na Ring20/Azure keuze)
+
+    TIME-BOX: 1 dag (response gewenst voor 2026-04-20 14:00 CET).
+
+    Volledig context + opties-matrix: docs/reports/T-045-azure-hosting-inception.md
+  priority: medium
+  tags: [hosting, inception, ring20, advice-request]

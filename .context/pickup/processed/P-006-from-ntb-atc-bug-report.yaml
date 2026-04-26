@@ -1,0 +1,26 @@
+pickup_id: P-006
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-062"
+  agent: "claude-code"
+  timestamp: "2026-04-22T07:57:45Z"
+payload:
+  summary: "fw pickup send --remote signature mismatch — broken cross-project delivery"
+  detail: "Root cause: .agentic-framework/lib/pickup.sh:343 calls 'termlink remote push "$remote" "$filepath"' with single HOST arg, but termlink remote push (termlink --help remote) requires <HUB> <SESSION> [FILE] — hub address + session ID are two separate args.
+
+Impact: --remote silently never delivers. Envelopes accumulate in local inbox. Observed: 5 undelivered envelopes P-001..P-005 in 003-NTB-ATC-Plugin inbox (oldest 2026-04-15, 7+ days stale).
+
+Also missing: no option for local cross-project delivery (target PROJECT_PATH). Governance hooks correctly block manual cp across project boundaries, so this leaves no sanctioned path for cross-project pickup on a single machine.
+
+Proposed fix (pick one or combine):
+ (a) Split --remote into --hub HOST:PORT --session NAME, pass both to termlink remote push.
+ (b) Add --target PROJECT_PATH for local cross-project delivery — framework writes envelope directly into target's .context/pickup/inbox/.
+ (c) After delivery (either transport), move sender's envelope from inbox/ to sent/ so local inbox only holds received items.
+
+Also consider: periodic 'fw pickup stale' warning — any envelope > N days in inbox with source == current project suggests undelivered.
+
+Captured in 003-NTB-ATC-Plugin as T-062 (commit 25d0825)."
+  priority: medium
+  tags: [pickup, termlink, framework-tooling, cross-project]

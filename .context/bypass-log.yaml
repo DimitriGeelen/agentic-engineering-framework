@@ -752,3 +752,17 @@ bypasses:
   command_hash: 18f084d0216c818b5d5bf8dc431f8f938bdcf836550099d83510984c10fd1317
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-04-26T11:17:19Z'
+  tier: 0
+  risk: 'FORCE PUSH: Can overwrite remote commit history'
+  command_preview: git push --force-with-lease onedev master 2>&1 | tail -10
+  command_hash: 29eb949badf9b7109e207c67c5d49ebe0986749736d6cd997142c89600670bb7
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-04-26T11:19:35Z'
+  tier: 0
+  risk: 'FORCE PUSH: Can overwrite remote commit history'
+  command_preview: git push --force-with-lease onedev master 2>&1 | tail -10
+  command_hash: 29eb949badf9b7109e207c67c5d49ebe0986749736d6cd997142c89600670bb7
+  authorized_by: human
+  mechanism: fw tier0 approve

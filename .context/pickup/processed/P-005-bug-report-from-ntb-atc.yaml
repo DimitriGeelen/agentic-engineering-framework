@@ -1,0 +1,21 @@
+pickup_id: P-005
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-014"
+  agent: "claude-code"
+  timestamp: "2026-04-22T05:37:40Z"
+payload:
+  summary: "T-014: fw tier0 approve hash drift — unnormalized COMMAND in check-tier0.sh:167"
+  detail: "Root cause: check-tier0.sh:167 hashes raw $COMMAND (sha256sum). When Claude regenerates a blocked command for retry, trivial differences (leading/trailing whitespace, heredoc body edits, quote style, arg reordering) produce a different SHA-256 digest. Approval token matches never fire. 5-min TTL is not the issue.
+
+Proposed fix (minimal):
+  COMMAND_NORMALIZED=$(echo "$COMMAND" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')
+  COMMAND_HASH=$(echo -n "$COMMAND_NORMALIZED" | sha256sum | awk '{print $1}')
+
+Applies to both block-time (line 167) and pending write (line 372). Approve flow in bin/fw:2606-2615 just copies the pending hash verbatim, so the fix is localized to check-tier0.sh.
+
+Full investigation trail: 003-NTB-ATC-Plugin .tasks/active/T-014-bugfix-fw-tier0-approve-hash-drift-on-re.md (commit 8aa6f3b)."
+  priority: high
+  tags: [tier0, hash-stability, framework, pretooluse]

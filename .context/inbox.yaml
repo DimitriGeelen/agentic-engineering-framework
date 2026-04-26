@@ -179,3 +179,17 @@ observations:
     tags: [bug]
     status: pending
     promoted_to: null
+  - id: OBS-026
+    text: "add"
+    captured: 2026-04-26T11:33:45Z
+    context_task: null
+    tags: []
+    status: dismissed
+    promoted_to: null
+  - id: OBS-027
+    text: "Inception decide CLI/Watchtower output truncates long rationale comments mid-sentence (T-1506 close: '...sett' cut from '/root/.claude/settings.json'). Affects readability of post-decision side-effect warning. Likely a fixed-width terminal/template buffer; check do_inception_decide post-print + Watchtower /inception/T-XXX rendering of rationale."
+    captured: 2026-04-26T11:33:54Z
+    context_task: null
+    tags: [bug]
+    status: promoted
+    promoted_to: task

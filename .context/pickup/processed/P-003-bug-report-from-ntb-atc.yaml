@@ -1,0 +1,13 @@
+pickup_id: P-003
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-007"
+  agent: "claude-code"
+  timestamp: "2026-04-15T15:20:12Z"
+payload:
+  summary: "fw hook dispatcher hard-blocks all tool calls when target script is missing (downstream T-007)"
+  detail: "Observed in downstream project 003-NTB-ATC-Plugin as T-007. Two failure modes of the same class: (1) PreToolUse:Bash hook [.agentic-framework/bin/fw hook check-project-boundary] errors 'Hook script not found or not executable: /home/dimitri-mint-dev/.agentic-framework/agents/context/check-project-boundary.sh' and blocks every subsequent Bash call including ls — user session becomes unrecoverable without manual hook removal. (2) fw task review T-002 errored with 'bash: /tmp/tl-dispatch/fabric-purpose-fill/run.sh: No such file or directory' — dispatch registered but target script never materialized. Structural flaw: framework registers call-sites but doesn't guarantee targets exist. Proposed fix: (a) fw hook dispatcher should fail gracefully (log + skip) when target absent instead of hard-block, (b) dispatch machinery should either materialize before calling or fail with clear non-blocking error referencing the registry, (c) fw audit/doctor should check that every registered hook AND every registered dispatch points to an existing executable."
+  priority: high
+  tags: [hooks, pretooluse, framework-tooling, dispatch]

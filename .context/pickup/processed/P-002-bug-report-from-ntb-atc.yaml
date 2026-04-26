@@ -1,0 +1,13 @@
+pickup_id: P-002
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-013"
+  agent: "claude-code"
+  timestamp: "2026-04-15T15:20:02Z"
+payload:
+  summary: "Inception template missing Recommendation/Decision sections — fail-fast at creation + audit check (downstream T-013)"
+  detail: "Observed in downstream project 003-NTB-ATC-Plugin as T-013. fw task create --type inception produces a template that under-specifies two required sections. Missing ## Recommendation causes fw inception decide to error late 'Recommendation section required'. Missing ## Decision (singular) causes the decision writer to fall back to ## Updates, producing duplicate decision blocks on retry clicks. Observed on downstream T-002 and T-010 (pre-patch). Knock-on: Watchtower decide form 500s, fw inception status parsing confused. Proposed fix: (1) ensure upstream inception template has both sections with placeholder comments, (2) add creation-time validation in create-task.sh that fails if either section missing after template expansion, (3) add CTL-0XX audit rule in audit.sh that flags active inception tasks missing either section. Downstream template already patched locally; upstream needs propagation + guards. Framework task T-1263 was created during earlier dispatch with matching scope and Verification commands — can be picked up."
+  priority: medium
+  tags: [inception, template, audit, watchtower]

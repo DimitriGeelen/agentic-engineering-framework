@@ -1,0 +1,23 @@
+pickup_id: P-007
+version: 1
+type: feature-proposal
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-108"
+  agent: "claude-code"
+  timestamp: "2026-04-24T19:10:59Z"
+payload:
+  summary: "Extend verification-gate.sh: when task touches .vbproj/.xaml, require dotnet build"
+  detail: "C-001 (003-NTB-ATC-Plugin/.context/project/concerns.yaml) — Task completion gate let a broken WPF build (T-077, .NET Framework 4.8 + WPF) reach master. The task's Agent ACs didn't include 'dotnet build succeeds on target toolchain'; only a Human AC did, which was deferred. The DLL was unbuildable on dev-box (missing Microsoft.NET.Sdk) and on Windows (missing .NET Framework 4.8 dev pack), broken state sat in master 5 days until T-098 tried to use it.
+
+Proposal: extend verification-gate.sh — if a task's commits touch *.vbproj OR add *.xaml files, mechanically run 'dotnet build' as part of the verification gate (P-011). Block work-completed if build fails. Mirrors the existing P-010/P-011 pattern: shell-command-driven, agent-can-write-it-into-the-task, framework-enforces.
+
+Two design options:
+1. Auto-injected verification step (gate detects file pattern, appends required dotnet build line to the task's verification block at completion time)
+2. Convention-only (gate detects pattern, refuses work-completed unless 'dotnet build' appears in the verification block)
+
+Option 2 is cleaner — keeps verification block as the single source of truth, just enforces a contract.
+
+This is a structural prevention (Level C / Tier 1); the alternative is per-task discipline (already in concerns.yaml as candidate #1) which doesn't actually prevent recurrence."
+  priority: medium
+  tags: [verification-gate, wpf, build-enforcement, C-001]

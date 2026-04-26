@@ -1,0 +1,50 @@
+pickup_id: P-011
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-140"
+  agent: "claude-code"
+  timestamp: "2026-04-25T20:48:18Z"
+payload:
+  summary: "fw hook-enable.sh:73 generates relative-path hook commands that fail when shell cwd != project root (680 silent occurrences in one downstream project)"
+  detail: "Observed in downstream 003-NTB-ATC-Plugin (T-140 RCA):
+
+PostToolUse hooks fail with `/bin/sh: 1: .agentic-framework/bin/fw: not found`
+whenever the shell that invokes the hook has a cwd other than the project
+root. POSIX `sh -c` (used by Claude Code's hook runner) does not chdir to
+the project root before invoking the hook, so a relative path like
+`.agentic-framework/bin/fw` resolves only when the parent shell happens
+to already be at project root. This is rarely true once a session does
+any `cd /tmp`, sub-shell, pipeline, or non-interactive Bash.
+
+In the downstream session (single project, single jsonl, ~3 weeks
+of activity), this fired **680 times** silently. Per-invocation it carries
+the literal "non-blocking status code" prefix, so it never surfaces as a
+user-visible error.
+
+Source location: `.agentic-framework/bin/hook-enable.sh:73`:
+
+    command_str=".agentic-framework/bin/fw hook $name"
+
+Suggested fix (one of):
+
+    command_str="cd \"\$CLAUDE_PROJECT_DIR\" && .agentic-framework/bin/fw hook $name"
+
+or:
+
+    command_str="\$CLAUDE_PROJECT_DIR/.agentic-framework/bin/fw hook $name"
+
+`$CLAUDE_PROJECT_DIR` is the documented Claude Code env var available to
+hook commands. Either rewrite makes the hook cwd-safe.
+
+Impact: every PostToolUse-driven framework feature (token-usage metrics,
+budget gate, tool counter, wrap-up signal, commit-cadence reminders,
+fabric drift detection, etc.) is silently degraded for ~7.5% of tool
+calls in this project. Other downstream projects using `fw hook-enable`
+have the same bug latently.
+
+Full RCA + recurrence-detection blind-spot analysis at
+docs/reports/T-140-hook-failures-rca.md in 003-NTB-ATC-Plugin."
+  priority: high
+  tags: [hooks, settings.json, relative-path, silent-failure]

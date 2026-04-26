@@ -1,0 +1,50 @@
+pickup_id: P-012
+version: 1
+type: feature-proposal
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-140"
+  agent: "claude-code"
+  timestamp: "2026-04-25T20:48:35Z"
+payload:
+  summary: "fw doctor hook-health: scan session jsonl for hook failure rate, FAIL doctor if rate > threshold (closes detection blind spot revealed by T-140 RCA)"
+  detail: "Originating evidence: T-140 RCA in 003-NTB-ATC-Plugin (sister bug-report
+envelope filed in this same batch).
+
+Problem: the framework instruments tool calls (session-metrics extractor
+counts failed_tool_calls) but does not consume that metric in any audit.
+A class of failure that hits 680 times over weeks goes undetected by
+`fw audit`, `fw doctor`, and the discovery pipeline because every
+individual hook failure is non-blocking and silent. The aggregate is
+visible only if a human inspects /root/.claude/projects/.../*.jsonl by
+hand.
+
+Proposal: a `fw doctor hook-health` audit (or rolled into `fw doctor`
+proper) that:
+
+ 1. Reads the most recent N entries (default 1000) of the project's
+    Claude Code session jsonl.
+ 2. Counts (a) total hook invocations and (b) hook invocations with
+    non-empty stderr matching common failure patterns
+    (`not found`, `command not found`, `permission denied`, `error:`,
+    etc.). Make the patterns configurable.
+ 3. FAILs (exit 2) if failure-rate > 1% over the sample. WARNs at >0.1%.
+ 4. Outputs the top-3 distinct failure messages by count for triage.
+
+Why this is load-bearing: a future hook regression of a different shape
+(say, a misnamed hook subcommand, a missing dependency) would also go
+undetected for hundreds of invocations without this audit. The bug fix
+proposed in the sister bug-report only addresses the specific path
+issue; the audit is the structural fix.
+
+Optional extension: same scan from `fw discovery` or as a SessionStart
+hook that compares the last session's failure-rate to a 7-day baseline,
+so regressions surface as "your hook health degraded between session
+N and N+1".
+
+Acceptance test for this feature: run against the T-140 session jsonl
+with the bug present — expect FAIL with message reporting 680/9229
+hook failures (~7.4%) and the top failure pattern. Run after the
+hook-enable.sh:73 fix is deployed — expect PASS."
+  priority: medium
+  tags: [doctor, audit, hook-health, detection-gap]

@@ -1,0 +1,13 @@
+pickup_id: P-001
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-012"
+  agent: "claude-code"
+  timestamp: "2026-04-15T15:19:46Z"
+payload:
+  summary: "Watchtower /inception/decide fails: CLAUDECODE env inheritance blocks finalizer (downstream T-012)"
+  detail: "Observed in downstream project 003-NTB-ATC-Plugin as T-012. Watchtower's POST /inception/T-XXX/decide records the decision block but the finalizer (status transition + file move + episodic) is blocked because the web subprocess inherits CLAUDECODE=1 from the parent Claude Code shell, which trips the T-1259 guard at lib/inception.sh:204. Root cause is NOT R-033 (that is correctly bypassed via --skip-sovereignty at lib/inception.sh:346). Concrete repro: downstream T-006 (inception, owner=human) has status=work-completed in frontmatter with all ACs checked including [REVIEW] but task file never moved to completed/ and no episodic auto-generated. Recommended fix from prior investigation (framework task T-1262): add --from-watchtower flag pass-through on lib/inception.sh CLAUDECODE guard, wire through web/blueprints/inception.py and web/subprocess_utils.py (~25 LOC). Also strip CLAUDECODE from the subprocess env dict as defense-in-depth. Duplicate-decision-block writes on retry should be made idempotent. Related existing tracker: T-1260."
+  priority: high
+  tags: [inception, sovereignty, watchtower, claudecode]

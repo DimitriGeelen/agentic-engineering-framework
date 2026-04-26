@@ -1,0 +1,67 @@
+pickup_id: P-008
+version: 1
+type: feature-proposal
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-115"
+  agent: "claude-code"
+  timestamp: "2026-04-25T08:00:00Z"
+payload:
+  summary: "R-033 sovereignty dual-fires on inception completion (decide + work-completed) — collapse to one"
+  detail: |
+    Pattern hit repeatedly across projects (003-NTB-ATC-Plugin: T-011,
+    T-115, T-077-era closures): inception tasks owned by humans require
+    TWO sovereignty exercises to close, even though the human's decision
+    IS the sovereignty moment.
+
+    Current flow:
+      1. Agent does exploration, fills `## Recommendation`, presents to human.
+      2. Human runs `fw inception decide T-XXX go --rationale "..."`
+         (or via Watchtower QR). Decision is recorded with full human
+         authority. Status remains `started-work`.
+      3. To actually close the task, `fw task update T-XXX --status
+         work-completed` must run, which re-fires R-033 sovereignty as
+         if no authority had been exercised. Watchtower flow is broken
+         (T-012) so this devolves to `--skip-sovereignty` every time.
+
+    Impact:
+    - Every inception close burns a sovereignty bypass with logged audit
+      noise.
+    - Compounded by T-012: Watchtower `/inception/decide` finalizer is
+      blocked by CLAUDECODE env-inheritance, so the "intended" path
+      doesn't transition status either.
+    - Friction tax on the most-recommended workflow (inception → decision
+      → close).
+
+    Proposed fix (preference order, agent's view):
+
+    1. `fw inception decide T-XXX go|no-go` should auto-transition
+       status to work-completed when AC + verification gates pass at
+       decide-time. Sovereignty is exercised once, at the decision.
+       Cleanest. Localised to `lib/inception.sh`. The decide command
+       already has the human in the loop; treat that as the close.
+
+    2. R-033 should accept a fresh GO/NO-GO entry in `## Decision`
+       (timestamp within configurable window — e.g. 5 minutes) as
+       sovereignty proof for the immediate work-completed transition.
+       Generalises to any flow with a recorded human decision; not
+       inception-specific.
+
+    3. Fallback (if 1+2 too invasive): when status is started-work and
+       `## Decision` contains a non-placeholder entry from today, the
+       work-completed gate should short-circuit with an explicit
+       "decision-already-recorded, transitioning" message rather than
+       prompting Watchtower a second time.
+
+    Captured as C-006 in 003-NTB-ATC-Plugin/.context/project/concerns.yaml
+    and T-115 inception artifact docs/reports/T-115-azure-auth-inception.md.
+
+    Cross-reference: T-012 (Watchtower decide-finalizer broken on
+    CLAUDECODE env) is the partner bug — fixing one without the other
+    leaves either the CLI or the UI path broken. Both should be
+    considered together when planning the fix.
+
+  priority: medium
+  tags: [inception, sovereignty, gates, framework-tooling, R-033, related-T-012]
+filename: P-008-feature-proposal.yaml
+target_project: "999-Agentic-Engineering-Framework"

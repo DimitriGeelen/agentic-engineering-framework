@@ -2180,3 +2180,17 @@ learnings:
   date: 2026-04-26
   context: Added via context agent
   application: TBD
+- id: PL-006
+  learning: "Fleet doctor observed auth-mismatch on hub 'ring20-management' (192.168.10.122:9100). date_observed=2026-04-26T11:42:37Z hub_fingerprint=sha256:22c19fedafd73da27cb86945d8ae6002202fd4f4e75d22ce8d4097bd19d00d46. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-26
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-283
+  learning: "Hooks that consume single-use state (rm + exit) are broken under duplicate registration. T-1506 hit it on tier0; T-1508 fixed via .consumed sentinel pattern (write hash+timestamp on consume, short-circuit if matching sentinel age<TTL on subsequent fires). Detection (T-1479/T-1480/T-1481) without robustness was insufficient — duplicates persisted in user .claude/settings.json across machines and the gate self-defeated. Generalizable: checkpoint.sh (6 rm calls) and check-agent-dispatch.sh (1 rm) are likely vulnerable to same pattern; same sentinel approach applies."
+  source: P-001
+  task: T-1508
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD

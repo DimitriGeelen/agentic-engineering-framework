@@ -1,0 +1,27 @@
+pickup_id: P-009
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-007"
+  agent: "claude-code"
+  timestamp: "2026-04-25T09:16:21Z"
+payload:
+  summary: "Status query on P-006 (T-007 + T-014)"
+  detail: "Asking for triage / processing status on P-006 forwarded earlier (cross-project pickup). Two parked bugs in 003-NTB-ATC-Plugin awaiting upstream framework-agent fix:
+
+- T-007: PreToolUse:Bash hook check-project-boundary.sh script missing (every Bash call blocked in user session on dimitri-mint-dev dev box). See P-006 envelope for full context.
+- T-014: fw tier0 approve hash drift on retry (approve-then-retry rehashes the command, mismatches stored approval, blocks again).
+
+Both classified framework-tooling, parked captured/horizon:now in 003-NTB-ATC-Plugin.
+
+Asking:
+1. Triaged on your side?
+2. ETA / planned next session?
+3. Need additional repro evidence (e.g. exact hook config, exact command-string used for tier0)?
+
+Low priority — these are paused, not blocking us actively (Dimitri uses gpu-host-107 which has the hook script; and tier0 retry is a friction issue, not a hard block).
+
+Also emitted as termlink event seq 496 (pickup.status_query) for sync-channel visibility."
+  priority: low
+  tags: [status-query, framework-tooling, T-007, T-014, P-006-followup]

@@ -1,0 +1,50 @@
+pickup_id: P-015
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-146"
+  agent: "claude-code"
+  timestamp: "2026-04-26T11:05:38Z"
+payload:
+  summary: "update-task.sh flock leaks lock FD to dotnet's VBCSCompiler daemon, blocking future fw task updates"
+  detail: "update-task.sh's flock-based locking on .context/locks/T-XXX.lock leaks the
+lock FD into dotnet's persistent VBCSCompiler daemon when a task's
+## Verification section runs `dotnet build`. The daemon outlives the build,
+holding the inherited FD indefinitely. Subsequent fw task operations on the
+same task block forever on flock.
+
+REPRO (hit live during T-146 closure, 2026-04-26):
+1. Task body has `## Verification` containing `dotnet build src/.../X.csproj`.
+2. Run `fw task update T-XXX --status work-completed`.
+3. update-task.sh acquires flock on .context/locks/T-XXX.lock, runs verification.
+4. dotnet spawns VBCSCompiler (~/.dotnet/sdk/.../Roslyn/bincore/VBCSCompiler).
+5. Daemon inherits fd 200 (the flock FD) — confirmed via:
+     lsof | grep T-XXX.lock
+     # VBCSCompiler  <pid>  ...  200w  REG  ...  T-XXX.lock
+6. Verification passes; first update completes (lock briefly released).
+7. Status transition triggers a SECOND flock acquisition (e.g., to move
+   active/ → completed/, generate episodic). Blocks indefinitely.
+8. Workaround: `kill <VBCSCompiler-pid>` releases the FD; flock proceeds.
+
+ROOT CAUSE: flock -x N is inherited across exec unless O_CLOEXEC is set.
+update-task.sh redirects to fd 200 without close-on-exec. .NET's shared-
+compilation daemon model is designed to outlive the build for performance —
+classic FD-leak-through-daemon-fork.
+
+SUGGESTED FIXES (one or more):
+  (a) Wrap verification execution in a subshell that closes fd 200:
+        ( exec 200>&-; eval "$cmd" )
+  (b) Don't hold the lock during verification at all — acquire briefly to
+      read frontmatter, release, run verification, re-acquire for mutation.
+  (c) Add a watchdog: if flock blocks >30s, run `lsof .context/locks/T-XXX.lock`
+      and emit a warning naming the holder. Better than silent indefinite hang.
+
+LOCAL MITIGATION (project side): change verification to use
+`dotnet build /p:UseSharedCompilation=false ...` — but this hurts performance
+and only addresses dotnet, not other daemon-spawning verifiers.
+
+EVIDENCE: see .context/project/concerns.yaml C-012 for full forensics.
+Originating task: T-146 (003-NTB-ATC-Plugin). Captured 2026-04-26."
+  priority: high
+  tags: [framework, update-task, flock, fd-leak, dotnet]

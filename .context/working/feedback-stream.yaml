@@ -918,3 +918,37 @@ scan_id: R-8efb46ff
 task_id: T-1492
 payload:
   task_file: .tasks/active/T-1492-pickup-reviewsh-emitreview-silent-exit-o.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T11:32:42Z'
+scan_id: R-3d1b8b0f
+task_id: T-1506
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T11:32:42Z'
+scan_id: R-3d1b8b0f
+task_id: T-1506
+payload:
+  task_file: .tasks/active/T-1506-rca--tier-0-approval-self-defeats-under-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T11:44:25Z'
+scan_id: R-7fa38c3b
+task_id: T-1508
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T11:44:25Z'
+scan_id: R-7fa38c3b
+task_id: T-1508
+payload:
+  task_file: .tasks/active/T-1508-t-1506-build--tier-0-idempotency-sentine.md

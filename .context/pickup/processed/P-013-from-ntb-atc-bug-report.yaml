@@ -1,0 +1,84 @@
+pickup_id: P-013
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-141"
+  agent: "claude-code"
+  timestamp: "2026-04-25T21:30:00Z"
+payload:
+  summary: "Watchtower discovery (_watchtower_url) fails closed when /api/_identity returns 404; fw serve writes triple-file non-atomically (partial state observed); fw doctor misdiagnoses partial triple as 'stale pid'"
+  detail: "Three coupled defects in Watchtower discovery, surfaced together
+in 003-NTB-ATC-Plugin on 2026-04-25 (within ~1h of filing T-140).
+This is the second occurrence of the T-140 detection-blind-spot class:
+the framework cannot diagnose its own broken state cleanly.
+
+SYMPTOM
+    cd /003-NTB-ATC-Plugin && fw task review T-140
+    → 'No Watchtower reachable for project: /003-NTB-ATC-Plugin'
+    → exit 1
+…while a Watchtower WAS running (PID 163082, port 3039,
+curl http://localhost:3039/ → 200 OK, page rendered).
+
+DEFECT 1 — Discovery requires /api/_identity, no graceful fallback
+    File: .agentic-framework/lib/watchtower.sh:40-122
+    `_watchtower_url()` → `_wt_identity_matches()` (line 52-59) requires
+    the JSON response from `/api/_identity` to contain
+    `\"service\":\"watchtower\"` AND `\"project_root\":\"<our_root>\"`.
+    When the endpoint returns the project's 404 HTML page (because the
+    running Watchtower predates the endpoint addition), match fails.
+    Layer-1 (triple-file) and Layer-2 (port probe) both reject. Discovery
+    exits with 'No Watchtower reachable'.
+    Suggested fallback: if /api/_identity returns 404 AND the URL responds
+    with a Watchtower-shaped HTML page (e.g., contains
+    `<title>Watchtower —`), trust the triple-file. Older Watchtowers are
+    legitimate.
+
+DEFECT 2 — Triple-file written non-atomically; partial state observed
+    File: .agentic-framework/bin/fw (fw serve / watchtower start path)
+    Observed: `watchtower.pid` populated (163082, alive), but
+    `watchtower.url` and `watchtower.port` were ZERO BYTES. This is a
+    corrupted state, not a stale state — the pid is current.
+    Likely cause: pid is written before url/port and the write is not
+    atomic, OR an older `fw serve` only wrote `.pid` and `.url`/`.port`
+    were added later without a backfill.
+    Suggested fix: write all three files via `mktemp + mv` (atomic
+    rename). Refuse to start if a partial triple exists (force `fw serve
+    stop` to clean up first).
+
+DEFECT 3 — fw doctor misdiagnoses partial triple
+    File: .agentic-framework/bin/fw:1019-1044
+    Logic:
+        if [ -n \"\$_wt_pid\" ] && kill -0 \"\$_wt_pid\" 2>/dev/null && [ -n \"\$_wt_url\" ]; then
+            ... identity check ...
+        else
+            echo 'WARN  Stale Watchtower triple (pid \$_wt_pid not running)'
+        fi
+    When `_wt_url` is empty, condition fails → reports 'pid not running'
+    even though pid IS running. Wrong diagnosis leads the user to
+    `bin/watchtower.sh stop && start`, which masks the real bug
+    (corrupt url/port files).
+    Suggested fix: distinguish three cases —
+        (a) pid alive + url empty → 'Corrupt triple (pid \$X alive, url
+            empty) — run: fw serve restart'
+        (b) pid not running → 'Stale triple (pid \$X gone)'
+        (c) pid alive + url present + identity fails → 'Identity mismatch
+            (running Watchtower predates /api/_identity?)'
+
+WORKAROUND USED TODAY
+    WATCHTOWER_URL=http://localhost:3039 fw task review T-140
+    → succeeded (env override skips identity probe)
+
+RELATED
+    Same blind-spot class as T-140 (PostToolUse hook failures): framework
+    has the data to diagnose itself but the diagnosis path is wrong or
+    silent. See docs/reports/T-140-hook-failures-rca.md §Recurrence for
+    the joint analysis.
+
+REPRO ENVIRONMENT
+    Framework version: clone of agentic-framework at `.agentic-framework/`
+    in 003-NTB-ATC-Plugin (commit unknown; pre-`/api/_identity` endpoint).
+    Trigger: an older Watchtower instance still running; or a partial
+    triple-file from any source."
+  priority: high
+  tags: [watchtower, discovery, fw-serve, fw-doctor, silent-degrade, partial-state]
