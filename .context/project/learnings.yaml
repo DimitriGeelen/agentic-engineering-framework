@@ -2229,3 +2229,10 @@ learnings:
   date: 2026-04-26
   context: Added via context agent
   application: TBD
+- id: L-289
+  learning: "Pickup router auto-ingests envelopes pushed FROM this project that land in the local TermLink hub inbox, creating phantom self-loop tasks. T-1512 was auto-created from P-040, the relay-back the framework had just sent to 003-NTB-ATC-Plugin. Mitigation: pickup router should skip envelopes where source_project == $PROJECT_NAME. Recurrence threshold: file structural fix task on second occurrence."
+  source: P-040
+  task: T-1512
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD
