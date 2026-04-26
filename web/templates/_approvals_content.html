@@ -21,6 +21,13 @@
 <!-- T-1416 (T-1388 B6 / F5): Decisions group (Section A + B) -->
 {% if pending_tier0 or pending_go %}
 <h2 id="section-decisions" class="approvals-group-heading">Decisions</h2>
+{% elif deferred_count and deferred_count > 0 %}
+<!-- T-1518: empty-state exit ramp — point users at the inception board where DEFER'd live -->
+<p class="approvals-empty-hint" style="font-size:0.85rem; color:var(--pico-muted-color); margin:0.5rem 0 1rem;">
+    No pending decisions.
+    <a href="/inception?decision=defer">{{ deferred_count }} deferred inception{{ '' if deferred_count == 1 else 's' }}</a>
+    parked on the inception board (watching for promotion criteria).
+</p>
 {% endif %}
 
 <!-- Section A: Tier 0 Approvals -->
