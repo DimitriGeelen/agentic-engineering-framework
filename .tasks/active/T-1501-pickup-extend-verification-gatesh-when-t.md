@@ -158,7 +158,7 @@ The right path is documented mitigation now, structural fix later if the pattern
 - Watch: if a second consumer hits the same class of bug within 30 days, promote DEFER → GO with the consumer-config schema (A3) as the implementation path.
 - Never: hardcode `.vbproj → dotnet build` directly in `verification-gate.sh`.
 
-**Date**: 2026-04-26T13:57:39Z
+**Date**: 2026-04-26T14:47:09Z
 
 ## Updates
 
@@ -170,6 +170,20 @@ The right path is documented mitigation now, structural fix later if the pattern
 - **Change:** horizon: next → now (auto-sync)
 
 ### 2026-04-26T13:57:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** The bug is real and the structural-prevention case is honest, but two things weigh against immediate framework code:
+
+1. Toolchain-agnostic is load-bearing. Hardcoding `*.vbproj → dotnet build` opens the long tail (`*.go`, `Cargo.toml`, `tsconfig.json`, `pom.xml`, ...). Each addition is a maintenance burden the framework can't actually validate (no .NET / Go / Rust test fixtures). Portability (directive #4) is one of four constitutional principles for a reason.
+
+2. Single-instance evidence. T-077 is the only confirmed incident across all consumer projects audited. The systemic-prevention case requires ≥2 instances. One incident → learning + per-task discipline; ≥2 → structural fix. We're at 1.
+
+The right path is documented mitigation now, structural fix later if the pattern repeats:
+- Now: capture L-XXX learning ("agent edits *.vbproj/.csproj/.xaml → ## Verification MUST include `dotnet build`"). Add to the inception/build templates as a hint comment in `## Verification` for build/refactor tasks. Update CLAUDE.md §Verification with a "Toolchain build commands" subsection.
+- Watch: if a second consumer hits the same class of bug within 30 days, promote DEFER → GO with the consumer-config schema (A3) as the implementation path.
+- Never: hardcode `.vbproj → dotnet build` directly in `verification-gate.sh`.
+
+### 2026-04-26T14:47:09Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** DEFER
 - **Rationale:** The bug is real and the structural-prevention case is honest, but two things weigh against immediate framework code:

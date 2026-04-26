@@ -1156,3 +1156,122 @@ scan_id: R-2695d265
 task_id: T-1507
 payload:
   task_file: .tasks/active/T-1507-inception-decide-cliwatchtower-output-tr.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T17:24:24Z'
+scan_id: R-05ebef13
+task_id: T-1499
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T17:24:24Z'
+scan_id: R-05ebef13
+task_id: T-1499
+payload:
+  task_file: .tasks/active/T-1499-pickup-advies-gevraagd-ring20-hosting-pa.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T17:35:31Z'
+scan_id: R-0f97a67a
+task_id: T-1494
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T17:35:31Z'
+scan_id: R-0f97a67a
+task_id: T-1494
+payload:
+  task_file: .tasks/active/T-1494-pickup-fw-pickup-send---remote-signature.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T17:38:53Z'
+scan_id: R-531da103
+task_id: T-1493
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T17:38:53Z'
+scan_id: R-531da103
+task_id: T-1493
+payload:
+  task_file: .tasks/active/T-1493-pickup-update-tasksh-flock-leaks-lock-fd.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T17:40:17Z'
+scan_id: R-b771285f
+task_id: T-1496
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T17:40:17Z'
+scan_id: R-b771285f
+task_id: T-1496
+payload:
+  task_file: .tasks/active/T-1496-pickup-watchtower-inceptiondecide-fails-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T17:41:59Z'
+scan_id: R-46b240fb
+task_id: T-1495
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T17:41:59Z'
+scan_id: R-46b240fb
+task_id: T-1495
+payload:
+  task_file: .tasks/active/T-1495-pickup-watchtower-discovery-watchtowerur.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T17:43:05Z'
+scan_id: R-81a195ca
+task_id: T-1498
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T17:43:05Z'
+scan_id: R-81a195ca
+task_id: T-1498
+payload:
+  task_file: .tasks/active/T-1498-pickup-fw-hook-dispatcher-hard-blocks-al.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T18:45:03Z'
+scan_id: R-927e64f0
+task_id: T-1512
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T18:45:03Z'
+scan_id: R-927e64f0
+task_id: T-1512
+payload:
+  task_file: .tasks/active/T-1512-pickup-re-t-045-hosting-advice--relay-re.md

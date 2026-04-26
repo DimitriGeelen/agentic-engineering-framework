@@ -4,16 +4,16 @@ name: "Pickup: fw pickup send --remote signature mismatch — broken cross-proje
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-062. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [pickup, bug-report]
-components: []
+components: [lib/pickup.sh, tests/unit/pickup_send_remote_session.bats]
 related_tasks: []
 created: 2026-04-26T11:09:01Z
-last_update: 2026-04-26T17:33:30Z
-date_finished: null
+last_update: 2026-04-26T17:35:30Z
+date_finished: 2026-04-26T17:35:30Z
 source_task_id_in_origin: T-062
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -64,3 +64,15 @@ bats tests/unit/pickup_send_remote_session.bats
 ### 2026-04-26T17:33:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0f97a67a
+- **Timestamp:** 2026-04-26T17:35:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T17:35:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
