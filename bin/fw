@@ -2815,13 +2815,35 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         exec "$AGENTS_DIR/git/git.sh" "$@"
         ;;
     push)
-        # T-1153: Push to all remotes with per-remote status
+        # T-1153: Push to all remotes with per-remote status.
+        # T-1513: align with handover hook's T-1255 logic — when `origin` exists
+        # and multiple remotes are configured, push only to origin (mirrors are
+        # OneDev's job via PushRepository). Also skip remotes whose push URL is
+        # the sentinel `no_push` (set via `git remote set-url --push X no_push`).
         echo -e "${BOLD}fw push${NC} — Push to all remotes"
         echo ""
         _push_ok=0
         _push_fail=0
+        _push_skipped=0
+        _remote_count=$(git -C "$PROJECT_ROOT" remote 2>/dev/null | wc -l)
+        if git -C "$PROJECT_ROOT" remote 2>/dev/null | grep -qx 'origin'; then
+            _has_origin=true
+        else
+            _has_origin=false
+        fi
         while IFS= read -r _remote; do
             [ -z "$_remote" ] && continue
+            if [ "$_has_origin" = true ] && [ "$_remote_count" -gt 1 ] && [ "$_remote" != "origin" ]; then
+                echo -e "  $_remote: ${CYAN}skipped (mirrored from origin)${NC}"
+                _push_skipped=$((_push_skipped + 1))
+                continue
+            fi
+            _push_url=$(git -C "$PROJECT_ROOT" remote get-url --push "$_remote" 2>/dev/null)
+            if [ "$_push_url" = "no_push" ]; then
+                echo -e "  $_remote: ${CYAN}skipped (push disabled)${NC}"
+                _push_skipped=$((_push_skipped + 1))
+                continue
+            fi
             echo -n "  $_remote: "
             if git -C "$PROJECT_ROOT" push "$_remote" HEAD "$@" 2>&1 | tail -1; then
                 _push_ok=$((_push_ok + 1))
@@ -2832,10 +2854,10 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
         echo ""
         if [ "$_push_fail" -gt 0 ]; then
-            echo -e "${YELLOW}$_push_ok pushed, $_push_fail failed${NC}"
+            echo -e "${YELLOW}$_push_ok pushed, $_push_skipped skipped, $_push_fail failed${NC}"
             exit 1
         else
-            echo -e "${GREEN}All $_push_ok remote(s) pushed ✓${NC}"
+            echo -e "${GREEN}$_push_ok pushed, $_push_skipped skipped ✓${NC}"
         fi
         ;;
     handover)
