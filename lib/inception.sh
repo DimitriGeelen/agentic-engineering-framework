@@ -549,12 +549,27 @@ do_inception_sweep() {
     local still_pending=0
     local skipped=""
 
+    local promoted=0
     for f in "$active_dir"/T-*.md; do
         [ -f "$f" ] || continue
         scanned=$((scanned+1))
 
-        # Must be work-completed
-        grep -q "^status: work-completed$" "$f" || continue
+        # T-1514: cover two stuck-state classes from T-1491 silent failure:
+        #   class 1 — status: work-completed + decision recorded (sweep ticks AC + moves)
+        #   class 2 — status: started-work + GO/NO-GO recorded (decide ran but status
+        #             update was swallowed; promote to work-completed first)
+        # DEFER on a started-work task is the legitimate "keep exploring" state and
+        # is left untouched — only closing decisions (GO/NO-GO) trigger promotion.
+        local current_status
+        current_status=$(grep '^status:' "$f" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//')
+        case "$current_status" in
+            work-completed) ;;
+            started-work)
+                # Only class 2 candidates: must be a closing decision
+                grep -qE '^\*\*Decision\*\*: (GO|NO-GO)' "$f" || continue
+                ;;
+            *) continue ;;
+        esac
         # Must have a recorded decision
         grep -qE "^\*\*Decision\*\*: (GO|NO-GO|DEFER)" "$f" || continue
 
@@ -565,8 +580,21 @@ do_inception_sweep() {
         if [ "$dry_run" = true ]; then
             local dec
             dec=$(grep -E "^\*\*Decision\*\*:" "$f" | head -1 | sed 's/^\*\*Decision\*\*: //; s/ .*//')
-            echo "  $tid: decision=$dec"
+            echo "  $tid: status=$current_status decision=$dec"
             continue
+        fi
+
+        # Class 2 recovery: status stuck at started-work + closing decision.
+        # Promote to work-completed in place — decision is already recorded, so
+        # the transition is just finishing what do_inception_decide started
+        # before T-1491's exit-code propagation fix landed.
+        if [ "$current_status" = "started-work" ]; then
+            local _now
+            _now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            _sed_i 's/^status: started-work$/status: work-completed/' "$f"
+            _sed_i "s/^last_update:.*/last_update: $_now/" "$f"
+            promoted=$((promoted+1))
+            echo "  $tid: promoted started-work → work-completed (T-1491 class 2 recovery)"
         fi
 
         # Tick the Human AC
@@ -594,7 +622,7 @@ do_inception_sweep() {
         echo -e "${BOLD}Dry run:${NC} scanned=$scanned  eligible=$eligible"
         echo "Re-run without --dry-run to apply."
     else
-        echo -e "${BOLD}Sweep complete:${NC} scanned=$scanned  eligible=$eligible  ticked=$ticked  moved=$moved  stays-pending=$still_pending"
+        echo -e "${BOLD}Sweep complete:${NC} scanned=$scanned  eligible=$eligible  promoted=$promoted  ticked=$ticked  moved=$moved  stays-pending=$still_pending"
         if [ "$still_pending" -gt 0 ]; then
             echo ""
             echo -e "${YELLOW}Tasks with other Human ACs still pending (tick patterns didn't cover them):${NC}"

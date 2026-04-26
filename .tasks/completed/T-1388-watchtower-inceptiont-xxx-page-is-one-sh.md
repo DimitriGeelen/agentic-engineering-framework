@@ -4,7 +4,7 @@ name: "Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affo
 description: >
   Inception: Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affordance after decision recorded
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-22T21:35:53Z
-last_update: 2026-04-22T21:37:45Z
+last_update: 2026-04-26T19:30:17Z
 date_finished: null
 ---
 

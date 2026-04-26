@@ -4,7 +4,7 @@ name: "Watchtower port discovery regression — current _watchtower_url probes c
 description: >
   Inception: Watchtower port discovery regression — current _watchtower_url probes common ports and picks anything that answers (picked :8080 which was not Watchtower). Redesign against 4 directives (antifragility, reliability, usability, portability).
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T16:48:04Z
-last_update: 2026-04-17T16:53:36Z
+last_update: 2026-04-26T19:30:17Z
 date_finished: null
 ---
 
@@ -74,7 +74,7 @@ identity endpoint, multi-Watchtower coordination (one-per-project vs shared).
 - [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
