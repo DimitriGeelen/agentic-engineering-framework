@@ -7,16 +7,16 @@ description: >
   classes: A (work-completed + Human AC unticked → sweep eligible) and
   B (started-work + decision + all ACs ticked → transition bug).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [audit, discovery, obs-025, inception, limbo]
-components: [agents/audit/audit.sh]
+components: [C-004]
 related_tasks: [T-1346, T-1372, T-1376, T-1388]
 created: 2026-04-26T09:32:00Z
-last_update: 2026-04-26T09:32:00Z
-date_finished: null
+last_update: 2026-04-26T09:46:52Z
+date_finished: 2026-04-26T09:46:52Z
 ---
 
 # T-1490: Add D13 audit discovery check — limbo inceptions (OBS-025)
@@ -61,3 +61,20 @@ bin/fw audit > /tmp/fw-audit-T-1490.log 2>&1; grep -q "^\[WARN\] D13: Inception 
 
 ### 2026-04-26T09:32:00Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d34d0b5a
+- **Timestamp:** 2026-04-26T09:48:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 2
+     - evidence: `bats tests/unit/audit_d13_inception_limbo.bats >/dev/null`
+
+### 2026-04-26T09:46:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
