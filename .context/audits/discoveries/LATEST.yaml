@@ -1,11 +1,11 @@
-timestamp: 2026-04-26T11:00:01Z
+timestamp: 2026-04-26T14:07:55Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1424)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1433)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 9 task(s) waiting >30d: T-446(42d) T-448(28d) T-460(44d) T-470(44d) T-481(42d) T-505(39d) T-511(39d) T-518(39d) T-530(34d) T-612(30d) T-613(29d) T-706(28d) T-708(27d) T-710(27d) T-782(26d)"
+    check: "D2: Human review queue — 9 task(s) waiting >30d: T-446(42d) T-448(28d) T-460(44d) T-470(44d) T-481(42d) T-505(40d) T-511(40d) T-518(39d) T-530(34d) T-612(31d) T-613(29d) T-706(28d) T-708(28d) T-710(28d) T-782(27d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - id: D8
     level: PASS
@@ -17,9 +17,39 @@ findings:
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
+  - id: D4
+    level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
+    level: WARN
+    check: "D5: Task lifecycle — 4 anomaly(s): T-651(1min,human) T-1283(8d-active) T-1284(8d-active) T-1062(18d-active)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D13
+    level: WARN
+    check: "D13: Inception limbo — 4 task(s): A=2/B=2 T-1372(A:1hu) T-1376(A:1hu) T-1388(B) T-1501(B)"
+    mitigation: "Class A: bin/fw inception sweep "
+  - id: D3
+    level: PASS
+    check: "D3: Commit velocity — normal (PASS today=48 avg=62 ratio=0.8x)"
+  - id: D7
+    level: PASS
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 119_commits_24h)"
+  - id: D6
+    level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=28.3 earlier=20.9)"
+  - id: D12
+    level: PASS
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
+  - id: D14
+    level: WARN
+    check: "D14: Empty inception Recommendation — 4_empty: T-1499 T-844 T-705 T-1507"
+    mitigation: "Fill ## Recommendation block with **Recommendation:** + rationale before decide"
 
 summary:
-  pass: 3
-  warn: 1
+  pass: 9
+  warn: 4
   fail: 1
-  total: 5
+  total: 14

@@ -1,6 +1,0 @@
-command_hash: 29eb949badf9b7109e207c67c5d49ebe0986749736d6cd997142c89600670bb7
-command_preview: git push --force-with-lease onedev master 2>&1 | tail -10
-risk: 'FORCE PUSH: Can overwrite remote commit history'
-status: pending
-timestamp: '2026-04-26T11:19:35Z'
-type: tier0

@@ -1037,3 +1037,54 @@ scan_id: R-953c21f9
 task_id: T-1509
 payload:
   task_file: .tasks/active/T-1509-watchtower-inceptiondecide-returns-500-o.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T13:54:18Z'
+scan_id: R-2f694a54
+task_id: T-1497
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T13:54:18Z'
+scan_id: R-2f694a54
+task_id: T-1497
+payload:
+  task_file: .tasks/active/T-1497-pickup-inception-template-missing-recomm.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T13:55:04Z'
+scan_id: R-138e62a4
+task_id: T-1497
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T13:55:04Z'
+scan_id: R-138e62a4
+task_id: T-1497
+payload:
+  task_file: .tasks/active/T-1497-pickup-inception-template-missing-recomm.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T13:58:26Z'
+scan_id: R-999c5143
+task_id: T-1502
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T13:58:26Z'
+scan_id: R-999c5143
+task_id: T-1502
+payload:
+  task_file: .tasks/active/T-1502-pickup-r-033-sovereignty-dual-fires-on-i.md

@@ -2222,3 +2222,10 @@ learnings:
   date: 2026-04-26
   context: Added via context agent
   application: TBD
+- id: L-288
+  learning: "Pickup-created inception tasks reach the human review queue with empty Recommendation sections because the inception template's instructional placeholder is wrapped in a multi-line HTML <!-- ... --> comment, and the inline content-check at lib/inception.sh:358 only filtered single-line <!-- markers. A multi-line-aware audit_inception_recommendation helper (awk tracks comment state) is the right structural gate. Pattern: any task-body audit that strips HTML comments must handle MULTI-LINE comments, not just single-line markers."
+  source: P-001
+  task: T-1497
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD

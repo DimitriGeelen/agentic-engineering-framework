@@ -4,16 +4,16 @@ name: "Pickup: R-033 sovereignty dual-fires on inception completion (decide + wo
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-115. Type: feature-proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: [pickup, feature-proposal]
-components: []
+components: [C-004, lib/inception.sh, lib/task-audit.sh]
 related_tasks: []
 created: 2026-04-26T11:13:25Z
-last_update: 2026-04-26T13:43:38Z
-date_finished: null
+last_update: 2026-04-26T13:58:26Z
+date_finished: 2026-04-26T13:58:26Z
 source_task_id_in_origin: T-115
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -54,15 +54,15 @@ Origin (003-NTB-ATC-Plugin / P-008 / T-115): downstream agent observed "every in
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -141,7 +141,24 @@ The right action is closure + a learning entry, not a code change:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: The pickup's "dual-fire" is a misreading of the existing structural design, not a bug:
+
+1. Pickup's Option 1 already exists. `lib/inception.sh:494` chains `update-task.sh --status work-completed --skip-sovereignty` after recording the decision — the `decide → work-completed` auto-transition has been live since T-637. Pickup's preferred fix is what the framework does today.
+
+2. Watchtower path also works. T-1262 added `--from-watchtower` which exempts the T-1259 CLAUDECODE guard. Five inceptions decided in this session via Watchtower (T-1500, T-1503, T-1504, T-1505, T-1509) all transitioned to `completed/` cleanly with no second human prompt.
+
+3. What the pickup called "dual-fire" is one human action + one audit log entry. Bypass-log inspection shows exactly ONE entry per inception close (e.g. `T-1455 2026-04-25T18:02:40Z "Inception decision: GO"`). The bypass entry IS the structural audit record proving the human's decide-time authority propagated to the work-completed transition. Removing the second R-033 check would also remove that audit entry — reducing fidelity, not improving it.
+
+4. Cross-reference partner bug T-1496. Pickup mentions T-012 (Watchtower CLAUDECODE-inheritance breaking the finalizer) — that pickup is now T-1496 here. T-1496 should be evaluated separately; resolving it (along with T-1262 already shipped) closes the Watchtower path without touching R-033.
+
+The right action is closure + a learning entry, not a code change:
+- Close T-1502 as NO-GO with this rationale.
+- Capture L-XXX: "R-033 dual-fire is a misreading — `do_inception_decide` already passes `--skip-sovereignty` to the chained work-completed call. The bypass-log entry is the structural audit record, not noise."
+- Inform 003-NTB-ATC-Plugin via pickup-back: this works as designed; if you're seeing two prompts, your framework is pre-T-1262 — run `fw upgrade`.
+
+**Date**: 2026-04-26T13:58:25Z
 
 ## Updates
 
@@ -151,3 +168,34 @@ The right action is closure + a learning entry, not a code change:
 ### 2026-04-26T13:43:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-26T13:58:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** The pickup's "dual-fire" is a misreading of the existing structural design, not a bug:
+
+1. Pickup's Option 1 already exists. `lib/inception.sh:494` chains `update-task.sh --status work-completed --skip-sovereignty` after recording the decision — the `decide → work-completed` auto-transition has been live since T-637. Pickup's preferred fix is what the framework does today.
+
+2. Watchtower path also works. T-1262 added `--from-watchtower` which exempts the T-1259 CLAUDECODE guard. Five inceptions decided in this session via Watchtower (T-1500, T-1503, T-1504, T-1505, T-1509) all transitioned to `completed/` cleanly with no second human prompt.
+
+3. What the pickup called "dual-fire" is one human action + one audit log entry. Bypass-log inspection shows exactly ONE entry per inception close (e.g. `T-1455 2026-04-25T18:02:40Z "Inception decision: GO"`). The bypass entry IS the structural audit record proving the human's decide-time authority propagated to the work-completed transition. Removing the second R-033 check would also remove that audit entry — reducing fidelity, not improving it.
+
+4. Cross-reference partner bug T-1496. Pickup mentions T-012 (Watchtower CLAUDECODE-inheritance breaking the finalizer) — that pickup is now T-1496 here. T-1496 should be evaluated separately; resolving it (along with T-1262 already shipped) closes the Watchtower path without touching R-033.
+
+The right action is closure + a learning entry, not a code change:
+- Close T-1502 as NO-GO with this rationale.
+- Capture L-XXX: "R-033 dual-fire is a misreading — `do_inception_decide` already passes `--skip-sovereignty` to the chained work-completed call. The bypass-log entry is the structural audit record, not noise."
+- Inform 003-NTB-ATC-Plugin via pickup-back: this works as designed; if you're seeing two prompts, your framework is pre-T-1262 — run `fw upgrade`.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-999c5143
+- **Timestamp:** 2026-04-26T13:58:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T13:58:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO

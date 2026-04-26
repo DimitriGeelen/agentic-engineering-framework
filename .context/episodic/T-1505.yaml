@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1505: Pickup: fw doctor hook-health: scan session jsonl for hook failure rate, FAIL doctor if rate > threshold (closes detection blind spot revealed by T-140 RCA) (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T12:58:49Z
+# ============================================================================
+
+task_id: T-1505
+task_name: "Pickup: fw doctor hook-health: scan session jsonl for hook failure rate, FAIL doctor if rate > threshold (closes detection blind spot revealed by T-140 RCA) (from 003-NTB-ATC-Plugin)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T11:13:37Z
+completed: 2026-04-26T12:58:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T14:11:04+02:00
+last_commit: 2026-04-26T14:11:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fill inception body — doctor hook-health scan (motivated by T-1504 RCA)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1505-pickup-fw-doctor-hook-health-scan-sessio.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T14:11:04"
+    action: "T-1505: Fill inception body — doctor hook-health scan (motivated by T-1504 RCA)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 105 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, feature-proposal]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 105
+  commits: 1
+  files_changed: 1
+  lines_added: 87
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1505-pickup-fw-doctor-hook-health-scan-sessio.md
+generated_by: context-agent-hybrid

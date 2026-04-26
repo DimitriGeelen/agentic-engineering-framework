@@ -4,16 +4,16 @@ name: "Pickup: Inception template missing Recommendation/Decision sections — f
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-013. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
-components: []
+components: [C-004, lib/inception.sh, lib/task-audit.sh]
 related_tasks: []
 created: 2026-04-26T11:13:05Z
-last_update: 2026-04-26T13:45:44Z
-date_finished: null
+last_update: 2026-04-26T13:55:10Z
+date_finished: 2026-04-26T13:54:59Z
 source_task_id_in_origin: T-013
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -79,3 +79,20 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/inception_decide_at
 ### 2026-04-26T13:45:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-138e62a4
+- **Timestamp:** 2026-04-26T13:55:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `fw audit` discovery check flags inception tasks in `started-work` or `captured` status with empty Recommendation. New rule e.g. `discoveries/empty-inception-recommendation.yaml`.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=discoveries/empty-inception-recommendation.yaml in: `fw audit` discovery check flags inception tasks in `started-work` or `captured` status with empty Recommendation. New rule e.g. `discoveries/empty-in`
+
+### 2026-04-26T13:54:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
