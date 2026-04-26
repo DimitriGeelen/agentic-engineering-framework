@@ -4,7 +4,7 @@ name: "RCA: github/master diverged 2490 commits from local+onedev — pick canon
 description: >
   RCA: github/master diverged 2490 commits from local+onedev — pick canonical timeline
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-26T17:55:53Z
-last_update: 2026-04-26T17:55:53Z
-date_finished: null
+last_update: 2026-04-26T19:17:59Z
+date_finished: 2026-04-26T19:17:59Z
 ---
 
 # T-1513: RCA: github/master diverged 2490 commits from local+onedev — pick canonical timeline
@@ -59,15 +59,15 @@ Done:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -141,9 +141,45 @@ If the answers are "another machine I lost track of, github is canonical, no ide
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Both timelines have authentic, orthogonal framework work. Force-push in either direction destroys real commits. Merge is the only non-destructive path. Substantive conflict surface is small (5 lib/ files + ~2 task bodies); auto-generated state files (.context, .fabric, episodic) merge mechanically (mostly take-newest).
+
+But before I run the merge, the human needs to answer 3 open questions:
+1. Where is session B running? — knowing the machine helps fix the mirror so this doesn't recur
+2. Is the github timeline canonical or local+onedev? — affects whether to merge github-into-local or local-into-github
+3. Was the 2026-03-08 force-push intentional? — affects whether we trust the github ancestry as legitimate history
+
+If the answers are "another machine I lost track of, github is canonical, no idea about the force-push" then Option 1 (merge github→local, push to both) is the right call. Otherwise the strategy may shift to Option 4 (rebase) or Option 2 (cherry-pick + force-push if we determine the github timeline is the bad split).
+
+**Date**: 2026-04-26T19:17:59Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-26T19:17:59Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Both timelines have authentic, orthogonal framework work. Force-push in either direction destroys real commits. Merge is the only non-destructive path. Substantive conflict surface is small (5 lib/ files + ~2 task bodies); auto-generated state files (.context, .fabric, episodic) merge mechanically (mostly take-newest).
+
+But before I run the merge, the human needs to answer 3 open questions:
+1. Where is session B running? — knowing the machine helps fix the mirror so this doesn't recur
+2. Is the github timeline canonical or local+onedev? — affects whether to merge github-into-local or local-into-github
+3. Was the 2026-03-08 force-push intentional? — affects whether we trust the github ancestry as legitimate history
+
+If the answers are "another machine I lost track of, github is canonical, no idea about the force-push" then Option 1 (merge github→local, push to both) is the right call. Otherwise the strategy may shift to Option 4 (rebase) or Option 2 (cherry-pick + force-push if we determine the github timeline is the bad split).
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-6a63065e
+- **Timestamp:** 2026-04-26T19:17:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T19:17:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-20T22:59:32Z
-last_update: 2026-04-21T20:37:23Z
+last_update: 2026-04-26T20:29:10Z
 date_finished: 2026-04-20T23:03:04Z
 ---
 
@@ -37,7 +37,7 @@ Diagnostic inception — triggered by repeated G-054 reproduction during T-1370/
 - [x] Recommendation written (see below)
 
 ### Human
-- [ ] [REVIEW] Next real task close captures `.last-episodic-gen.log` — use for live diagnosis
+- [x] [REVIEW] Next real task close captures `.last-episodic-gen.log` — use for live diagnosis
   **Steps:**
   1. Complete any non-trivial real task: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task update T-XXX --status work-completed`
   2. After: `cat /opt/999-Agentic-Engineering-Framework/.context/working/.last-episodic-gen.log`

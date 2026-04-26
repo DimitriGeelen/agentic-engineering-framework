@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1376: Port parameter visibility — why agents keep defaulting to :3000 after T-1154 + T-1287 + T-885 + T-1284 landed, and the minimum fix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T20:30:13Z
+# ============================================================================
+
+task_id: T-1376
+task_name: "Port parameter visibility — why agents keep defaulting to :3000 after T-1154 + T-1287 + T-885 + T-1284 landed, and the minimum fix"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-22T08:07:28Z
+completed: 2026-04-22T18:31:02Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-04-22T10:10:22+02:00
+last_commit: 2026-04-22T10:10:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — port parameter visibility; audit found 3 anti-pattern sites (lib/init.sh, lib/templates/claude-project.md, agents/monitor/liveness-check.sh); GO with B1-B5 build plan
+
+# Key outcomes
+outcomes:
+  - "Audit surfaced all hardcoded :3000 sites in bin/ lib/ agents/"
+  - "Classified sites as anti-pattern (fix) vs. fallback (leave)"
+  - "Recommendation written"
+  - "[REVIEW] Review findings and approve go/no-go on FS2, FS3, FS4"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1376-port-parameter-visibility--why-agents-ke.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-22T10:10:22"
+    action: "T-1376: Inception — port parameter visibility; audit found 3 anti-pattern sites (lib/init.sh, lib/templates/claude-project.md, agents/monitor/liveness-check.sh); GO with B1-B5 build plan"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 623 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 623
+  commits: 1
+  files_changed: 1
+  lines_added: 138
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1376-port-parameter-visibility--why-agents-ke.md
+generated_by: context-agent-hybrid

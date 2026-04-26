@@ -1275,3 +1275,54 @@ scan_id: R-927e64f0
 task_id: T-1512
 payload:
   task_file: .tasks/active/T-1512-pickup-re-t-045-hosting-advice--relay-re.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T19:17:59Z'
+scan_id: R-6a63065e
+task_id: T-1513
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T19:17:59Z'
+scan_id: R-6a63065e
+task_id: T-1513
+payload:
+  task_file: .tasks/active/T-1513-rca-githubmaster-diverged-2490-commits-f.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T19:31:16Z'
+scan_id: R-daf614a7
+task_id: T-1514
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T19:31:16Z'
+scan_id: R-daf614a7
+task_id: T-1514
+payload:
+  task_file: .tasks/active/T-1514-extend-fw-inception-sweep-to-recover-sta.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T20:34:34Z'
+scan_id: R-694b5368
+task_id: T-1515
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T20:34:34Z'
+scan_id: R-694b5368
+task_id: T-1515
+payload:
+  task_file: .tasks/active/T-1515-fix-doinceptiondecide-silent-failure-pro.md

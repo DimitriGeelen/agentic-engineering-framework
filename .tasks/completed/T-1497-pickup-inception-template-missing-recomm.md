@@ -12,7 +12,7 @@ tags: [pickup, bug-report]
 components: [C-004, lib/inception.sh, lib/task-audit.sh]
 related_tasks: []
 created: 2026-04-26T11:13:05Z
-last_update: 2026-04-26T13:55:10Z
+last_update: 2026-04-26T20:31:32Z
 date_finished: 2026-04-26T13:54:59Z
 source_task_id_in_origin: T-013
 source_project_in_origin: "003-NTB-ATC-Plugin"
@@ -42,7 +42,7 @@ Source pickup: 003-NTB-ATC-Plugin / T-013 / P-002. Pickup proposed (1) creation-
 - [x] Existing tests still pass: `inception_decide_atomicity.bats`, `inception_decide_emit_review_post_move.bats`, `hook_enable_absolute_path.bats`, `tier0_hash_normalization.bats`.
 
 ### Human
-- [ ] [REVIEW] After landing, attempt to decide a fresh inception with empty Recommendation via Watchtower
+- [x] [REVIEW] After landing, attempt to decide a fresh inception with empty Recommendation via Watchtower
   **Steps:**
   1. Pick any inception in the "Awaiting Decision" queue with empty body (or create a test one)
   2. Click GO at http://192.168.10.107:3000/inception/T-XXXX

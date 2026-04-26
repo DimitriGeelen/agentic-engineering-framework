@@ -766,3 +766,24 @@ bypasses:
   command_hash: 29eb949badf9b7109e207c67c5d49ebe0986749736d6cd997142c89600670bb7
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-04-26T18:56:40Z'
+  tier: 0
+  risk: 'FORCE PUSH: Can overwrite remote commit history'
+  command_preview: git push github master --force-with-lease 2>&1 | tail -20
+  command_hash: fe11955acebcb13a8c6c7a8d8ad4cf4044dab789fe9c43af0cd36fc87752862b
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-04-26T18:57:00Z'
+  tier: 0
+  risk: 'FORCE PUSH: Can overwrite remote commit history'
+  command_preview: git push github master --force-with-lease 2>&1 | tail -20
+  command_hash: fe11955acebcb13a8c6c7a8d8ad4cf4044dab789fe9c43af0cd36fc87752862b
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-04-26T18:57:50Z'
+  tier: 0
+  risk: 'FORCE PUSH: Can overwrite remote commit history'
+  command_preview: git push github master --force-with-lease 2>&1 | tail -20
+  command_hash: fe11955acebcb13a8c6c7a8d8ad4cf4044dab789fe9c43af0cd36fc87752862b
+  authorized_by: human
+  mechanism: fw tier0 approve

@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1497: Pickup: Inception template missing Recommendation/Decision sections — fail-fast at creation + audit check (downstream T-013) (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T20:31:33Z
+# ============================================================================
+
+task_id: T-1497
+task_name: "Pickup: Inception template missing Recommendation/Decision sections — fail-fast at creation + audit check (downstream T-013) (from 003-NTB-ATC-Plugin)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T11:13:05Z
+completed: 2026-04-26T13:55:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T15:54:04+02:00
+last_commit: 2026-04-26T15:55:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Structural gate — block inception decide on empty ## Recommendation (closes governance regression). Close — episodic + learning (multi-line HTML comment audit pattern). Move to partial-complete (agent ACs done, awaiting [REVIEW] human AC)
+
+# Key outcomes
+outcomes:
+  - "`lib/inception.sh:do_inception_decide` refuses with a clear error when `## Recommendation` section has no `**Recommendation:**` line outside HTML comments. Error message points at `fw task review T-XXX` for the agent and includes the path to fix."
+  - "New helper `audit_inception_recommendation` lives in `lib/task-audit.sh` (or equivalent) — pure function, returns 0 if Recommendation has substantive content (a non-commented `**Recommendation:**` line), 1 otherwise."
+  - "`fw audit` discovery check flags inception tasks in `started-work` or `captured` status with empty Recommendation. New rule e.g. `discoveries/empty-inception-recommendation.yaml`."
+  - "Regression test `tests/unit/inception_decide_recommendation_gate.bats` — 4 cases: (a) empty Recommendation blocks, (b) HTML-comment-only blocks, (c) `**Recommendation:**` line allows decide, (d) DEFER decisions also gated (consistency)."
+  - "Existing tests still pass: `inception_decide_atomicity.bats`, `inception_decide_emit_review_post_move.bats`, `hook_enable_absolute_path.bats`, `tier0_hash_normalization.bats`."
+  - "[REVIEW] After landing, attempt to decide a fresh inception with empty Recommendation via Watchtower"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "lib/inception.sh"
+  - "lib/task-audit.sh"
+  - ".tasks/active/T-1497-pickup-inception-template-missing-recomm.md"
+  - ".tasks/active/T-1501-pickup-extend-verification-gatesh-when-t.md"
+  - ".tasks/active/T-1502-pickup-r-033-sovereignty-dual-fires-on-i.md"
+  - "tests/unit/inception_decide_recommendation_gate.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T15:54:04"
+    action: "T-1497: Structural gate — block inception decide on empty ## Recommendation (closes governance regression)"
+  - time: "2026-04-26T15:54:40"
+    action: "T-1497: Close — episodic + learning (multi-line HTML comment audit pattern)"
+  - time: "2026-04-26T15:55:27"
+    action: "T-1497: Move to partial-complete (agent ACs done, awaiting [REVIEW] human AC)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 162 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 162
+  commits: 3
+  files_changed: 7
+  lines_added: 544
+  lines_removed: 168
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1497-pickup-inception-template-missing-recomm.md
+generated_by: context-agent-hybrid

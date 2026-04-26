@@ -1,0 +1,115 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1445: T-1443-v1.0 Static-scan validator: anti-pattern detection on work-completed (4 patterns + feedback stream + task-body verdict)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T20:30:47Z
+# ============================================================================
+
+task_id: T-1445
+task_name: "T-1443-v1.0 Static-scan validator: anti-pattern detection on work-completed (4 patterns + feedback stream + task-body verdict)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T10:17:40Z
+completed: 2026-04-25T22:10:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T12:35:58+02:00
+last_commit: 2026-04-25T21:33:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.0 reviewer agent — static-scan with 4 seed anti-patterns. v1.0 dogfood — 1358 tasks scanned, 1.1% FAIL rate, L-264 captured. Tick OBS-016-blocked AC — audit-passes verified post T-1460/T-1464. Add Recommendation block (GO — v1.0 measurement objective met) per T-679
+
+# Key outcomes
+outcomes:
+  - "`lib/reviewer/static_scan.py` exists with 4 anti-pattern detectors (tautology, empty-body, swallowed-errors/--no-verify, output-spoofing)"
+  - "`policy/anti-patterns.yaml` exists with 4 seed pattern definitions (id, name, detection_confidence, lie_severity, detector_ref, examples)"
+  - "`bin/fw reviewer T-XXX` invokes static-scan and writes verdict to task body"
+  - "`update-task.sh --status work-completed` triggers static-scan and includes verdict in commit-output"
+  - "Verdict section format: `## Reviewer Verdict (v1.0)` with timestamp, scan_id, findings list (per-pattern), overall verdict (PASS/CONCERN/FAIL)"
+  - "`.context/working/feedback-stream.yaml` is created on first run, structured as append-only (events: scan_emitted, verdict_recorded)"
+  - "Unit tests in `tests/unit/test_reviewer_static_scan.py` — 31 test cases (>=2 positive + 2 negative per pattern + sovereignty + idempotency + stream tests)"
+  - "All unit tests pass: `bin/fw test unit` (939 bats tests OK + 31 pytest tests OK; bats run 2026-04-25T10:35Z)"
+  - "`bin/fw audit` passes (warn allowed, no fail) — Verified 2026-04-25T18:13Z (`bin/fw audit --quiet` rc=0). OBS-016 fix landed in T-1460 (flock guard, T-1464 lifted QUIET-only wrap); 14 audits in 14 days, no recursive-spawn."
+  - "Reviewer never modifies `### Human` AC checkboxes — enforced by code path (no AC-mutation in static_scan.py); test asserts task body checkboxes unchanged"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Python lib at `lib/reviewer/static_scan.py` + bash CLI shim invoking it"
+    rationale: "Static-scan logic needs YAML/regex/AST work that's awkward in pure bash; Python tested at length in `tests/unit/`. Bash shim aligns with rest of `bin/fw` style."
+    alternatives_rejected: ["Pure bash (regex-only would miss output-spoofing detection); Pure Python entry point (breaks `fw <verb>` discoverability)."]
+    chose: "v1.0 writes verdict to `## Reviewer Verdict (v1.0)` section in task .md file"
+    rationale: "Visible in Watchtower task page without new infrastructure; one-screen UX; greppable. Bus envelope adds complexity v1.0 doesn't need."
+    alternatives_rejected: ["`fw bus post` envelope (defer to v1.2 when we add signed digest); separate `.context/reviews/` dir (creates discovery problem; task body is the natural surface)."]
+    chose: "static_scan.py never opens task file in write mode for AC sections; only appends to ## Reviewer Verdict"
+    rationale: "v1.0 only needs one of the three layers (code-path). Schema + UI enforcement come v1.2/v1.3. Keep blast radius small."
+    alternatives_rejected: ["Full 3-layer enforcement now (premature; 5 invariants doc says staged is correct)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - "bin/fw"
+  - ".context/audits/2026-04-25.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/feedback-stream.yaml"
+  - ".context/working/.fleet-failure-state.json"
+  - ".context/working/.fleet-learning-ring20-management"
+  - ".context/working/focus.yaml"
+  - ".context/working/.hook-crashes.log"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "lib/reviewer/__init__.py"
+  - "lib/reviewer/static_scan.py"
+  - "policy/anti-patterns.yaml"
+  - ".tasks/active/T-1445-t-1443-v10-static-scan-validator-anti-pa.md"
+  - "tests/unit/test_reviewer_static_scan.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T12:35:58"
+    action: "T-1445: v1.0 reviewer agent — static-scan with 4 seed anti-patterns"
+  - time: "2026-04-25T12:46:40"
+    action: "T-1445: v1.0 dogfood — 1358 tasks scanned, 1.1% FAIL rate, L-264 captured"
+  - time: "2026-04-25T20:16:23"
+    action: "T-1445: Tick OBS-016-blocked AC — audit-passes verified post T-1460/T-1464"
+  - time: "2026-04-25T21:33:34"
+    action: "T-1445: Add Recommendation block (GO — v1.0 measurement objective met) per T-679"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 712 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-agent, ac-validation, anti-patterns, v1.0, static-scan]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 712
+  commits: 4
+  files_changed: 23
+  lines_added: 3338
+  lines_removed: 75
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1445-t-1443-v10-static-scan-validator-anti-pa.md
+generated_by: context-agent-hybrid

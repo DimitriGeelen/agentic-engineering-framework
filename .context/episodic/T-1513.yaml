@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1513: RCA: github/master diverged 2490 commits from local+onedev — pick canonical timeline
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T19:18:03Z
+# ============================================================================
+
+task_id: T-1513
+task_name: "RCA: github/master diverged 2490 commits from local+onedev — pick canonical timeline"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T17:55:53Z
+completed: 2026-04-26T19:17:59Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-26T20:00:05+02:00
+last_commit: 2026-04-26T20:58:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — github/master 2490-commit divergence (research artifact). Force-push local→github (Option 1 GO) + OneDev mirror force=true
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1513-github-divergence-rca.md"
+  - ".onedev-buildspec.yml"
+  - ".tasks/active/T-1513-rca-githubmaster-diverged-2490-commits-f.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T20:00:05"
+    action: "T-1513: RCA — github/master 2490-commit divergence (research artifact)"
+  - time: "2026-04-26T20:58:58"
+    action: "T-1513: Force-push local→github (Option 1 GO) + OneDev mirror force=true"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 82 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 82
+  commits: 2
+  files_changed: 3
+  lines_added: 302
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1513-rca-githubmaster-diverged-2490-commits-f.md
+generated_by: context-agent-hybrid

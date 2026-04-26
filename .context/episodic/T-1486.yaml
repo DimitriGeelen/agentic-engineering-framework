@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1486: Watchtower /reviewer/audit page — surface latest Pass A + Pass B corpus YAML state
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T20:31:12Z
+# ============================================================================
+
+task_id: T-1486
+task_name: "Watchtower /reviewer/audit page — surface latest Pass A + Pass B corpus YAML state"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-26T07:23:15Z
+completed: 2026-04-26T07:27:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T09:27:21+02:00
+last_commit: 2026-04-26T09:27:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower /reviewer/audit page — Pass A + Pass B visualisation. Close (Agent ACs ✓) — /reviewer/audit Watchtower page shipped
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/reviewer.py` adds `/reviewer/audit` route handler"
+  - "Handler reads the most recent `*-pass-a.yaml` and `*-pass-b.yaml` from `.context/audits/reviewer/` (sorted by filename, newest wins)"
+  - "Template `web/templates/reviewer_audit.html` renders both summaries (Pass A, Pass B) with totals + per-task rows"
+  - "Task IDs in per-task rows link to `/review/<task_id>`"
+  - "Page handles missing YAML files without 500 (verified by `test_route_renders_when_no_audit_files`)"
+  - "Page returns HTTP 200 (verified live: `curl -sf $(bin/fw watchtower url)/reviewer/audit` exits 0)"
+  - "Page contains \"Reviewer Audit\" header (verified live: `grep -q \"Reviewer Audit\"` succeeds on response)"
+  - "~~Playwright Tier 3 test~~ Replaced with 5 Flask test-client smoke tests covering both filled and empty render paths (cheaper than Playwright; same signal for read-only template)"
+  - "`tests/unit/test_reviewer_audit_blueprint.py` covers: lexicographic latest-file selection, missing-file None return, no-match returns None, distinguishes pass-a from pass-a-baseline, malformed YAML handled, route renders empty, route renders with drifted Pass A, route renders with FAIL Pass B, /reviewer/overrides regression check (9 tests)"
+  - "Existing `/reviewer/overrides` still works (verified live: HTTP 200)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-test_reviewer_audit_blueprint.yaml"
+  - ".fabric/components/tests-unit-test_reviewer_audit_pass_a.yaml"
+  - ".fabric/components/tests-unit-test_reviewer_audit_pass_b.yaml"
+  - ".fabric/components/web-templates-reviewer_audit.yaml"
+  - ".tasks/active/T-1486-watchtower-revieweraudit-page--surface-l.md"
+  - "tests/unit/test_reviewer_audit_blueprint.py"
+  - "web/blueprints/reviewer.py"
+  - "web/templates/reviewer_audit.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T09:27:21"
+    action: "T-1486: Watchtower /reviewer/audit page — Pass A + Pass B visualisation"
+  - time: "2026-04-26T09:27:51"
+    action: "T-1486: Close (Agent ACs ✓) — /reviewer/audit Watchtower page shipped"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-agent, watchtower, ui, v1.5d]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 8
+  lines_added: 531
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1486-watchtower-revieweraudit-page--surface-l.md
+generated_by: context-agent-hybrid

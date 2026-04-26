@@ -12,7 +12,7 @@ tags: [reviewer-agent, watchtower, ui, v1.5d]
 components: [tests/unit/test_reviewer_audit_blueprint.py, web/blueprints/reviewer.py, web/templates/reviewer_audit.html]
 related_tasks: [T-1483, T-1484, T-1485]
 created: 2026-04-26T07:23:15Z
-last_update: 2026-04-26T07:27:37Z
+last_update: 2026-04-26T20:31:11Z
 date_finished: 2026-04-26T07:27:37Z
 ---
 
@@ -46,7 +46,7 @@ Read-only (no mutations), follows the existing `reviewer_overrides.html` templat
 - [x] Existing `/reviewer/overrides` still works (verified live: HTTP 200)
 
 ### Human
-- [ ] [REVIEW] Page is readable and surfaces drift/reverify state usefully
+- [x] [REVIEW] Page is readable and surfaces drift/reverify state usefully
   **Steps:**
   1. Open `$(bin/fw watchtower url)/reviewer/audit` in browser
   2. Confirm both Pass A and Pass B sections render (or "no data" message if absent)
