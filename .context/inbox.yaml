@@ -156,12 +156,19 @@ observations:
     captured: 2026-04-25T20:24:28Z
     context_task: T-1472
     tags: [bug]
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-023
     text: "Dual PreCompact hook fire causes dual handover commits. Root cause: user-level ~/.claude/settings.json has '.agentic-framework/bin/fw hook pre-compact' (relative path) that resolves to the framework repo's vendored shim; project-level .claude/settings.json has '/opt/.../bin/fw hook pre-compact' (absolute). Both fire on /compact. The pre-compact.sh dedup (HANDOVER_DEDUP_COOLDOWN) didn't catch run-2 — needs investigation. Symptom: every /compact creates 2 commits with same session ID (96fff229+98a31ce5 on this session). Fix candidates: (a) flock around pre-compact.sh, (b) atomic .handover-running marker file written before commit, (c) fw upgrade detect+remove duplicate when user-level already has framework hooks."
     captured: 2026-04-25T21:02:09Z
     context_task: T-1474
     tags: [bug]
+    status: dismissed
+    promoted_to: null
+  - id: OBS-024
+    text: "show"
+    captured: 2026-04-26T09:00:08Z
+    context_task: null
+    tags: []
     status: dismissed
     promoted_to: null
