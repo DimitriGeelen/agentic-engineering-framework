@@ -187,6 +187,15 @@ This corrects the earlier misjudgement (NO-GO/decline). Being the wrong addresse
 - **Open items flagged by ring20-management:** (a) TLS automation gap on `*.ring20.geelenandcompany.com`, (b) availability profile mismatch for residential-ISP homelab, (c) no Ring20 IdP — Azure AD federation simplest
 - **Full response:** captured under `## Response from ring20-management` below
 
+### 2026-04-26T17:00:00Z — relay-back-delivered [termlink-mediation]
+- **Action:** Delivered relay response back to consumer 003-NTB-ATC-Plugin
+- **Channel:** `termlink remote push local-test tl-bubfbc3w` (the consumer's registered session, `host=dev-box, project=ntb-atc`)
+- **Files in consumer's TermLink inbox:**
+  - `T-045-hosting-advice-from-ring20-management.md` (9332 bytes) — verbatim ring20-management reply
+  - `P-040-feature-proposal.yaml` (1018 bytes) — pickup envelope wrapping the response with summary + tags
+- **Caveats:** consumer session has stale 8d heartbeat and no PTY — files sit in the hub inbox until the consumer's TermLink agent reattaches and pulls. Cannot guarantee read receipt from this side; the relay-back is fire-and-forget.
+- **No SSH route:** dev-box has no saved hub profile and no SSH config in this project. The local-hub push is the only available channel.
+
 ## Response from ring20-management
 
 **Source:** ring20-management agent (192.168.10.122), session `tl-chh52mlp`

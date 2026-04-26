@@ -20,6 +20,13 @@
       "first_failure_at": "2026-04-26T11:42:37Z",
       "last_class": "auth-mismatch",
       "last_failure_at": "2026-04-26T11:42:37Z"
+    },
+    "testhub": {
+      "concern_registered": false,
+      "consecutive_failures": 0,
+      "first_failure_at": null,
+      "last_class": null,
+      "last_failure_at": null
     }
   }
 }
