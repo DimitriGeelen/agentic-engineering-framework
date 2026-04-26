@@ -4,16 +4,16 @@ name: "update-task.sh: git stage both sides of active→completed move so close 
 description: >
   update-task.sh: git stage both sides of active→completed move so close commits don't need cleanup follow-ups
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-04-26T21:55:32Z
-last_update: 2026-04-26T21:55:32Z
-date_finished: null
+last_update: 2026-04-26T21:58:43Z
+date_finished: 2026-04-26T21:58:43Z
 ---
 
 # T-1523: update-task.sh: git stage both sides of active→completed move so close commits don't need cleanup follow-ups
@@ -74,3 +74,15 @@ Fix: use `git mv` when the file is tracked (auto-stages both rename sides); fall
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1523-update-tasksh-git-stage-both-sides-of-ac.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-346488b2
+- **Timestamp:** 2026-04-26T21:58:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T21:58:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
