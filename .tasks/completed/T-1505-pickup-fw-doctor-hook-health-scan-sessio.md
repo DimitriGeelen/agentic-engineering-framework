@@ -4,7 +4,7 @@ name: "Pickup: fw doctor hook-health: scan session jsonl for hook failure rate, 
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-140. Type: feature-proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-26T11:13:37Z
-last_update: 2026-04-26T12:08:32Z
-date_finished: null
+last_update: 2026-04-26T12:58:45Z
+date_finished: 2026-04-26T12:58:45Z
 source_task_id_in_origin: T-140
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -85,15 +85,15 @@ T-1504 RCA: 003-NTB-ATC-Plugin had **680 PostToolUse hook failures** in one sess
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -160,7 +160,13 @@ The Antifragility directive (G-019) applies directly: "fix the framework's blind
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Without runtime hook-health monitoring, the framework is structurally blind to hook failures. T-1504's 680 silent occurrences in one downstream session is the existence proof that this blind spot DOES catch real bugs in the wild — it took a manual RCA dive to even find them. Static config validation (T-1480/T-1364/T-1287) cannot substitute for runtime truth. The work is bounded, the JSONL parsing precedent exists (T-1334), and the cost (one new doctor check) is small compared to the failure-class avoidance.
+
+The Antifragility directive (G-019) applies directly: "fix the framework's blindness, not just the symptom." T-1504 fixed the symptom; T-1505 fixes the blindness.
+
+**Date**: 2026-04-26T12:58:45Z
 
 ## Updates
 
@@ -170,3 +176,23 @@ The Antifragility directive (G-019) applies directly: "fix the framework's blind
 ### 2026-04-26T12:08:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-26T12:58:45Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Without runtime hook-health monitoring, the framework is structurally blind to hook failures. T-1504's 680 silent occurrences in one downstream session is the existence proof that this blind spot DOES catch real bugs in the wild — it took a manual RCA dive to even find them. Static config validation (T-1480/T-1364/T-1287) cannot substitute for runtime truth. The work is bounded, the JSONL parsing precedent exists (T-1334), and the cost (one new doctor check) is small compared to the failure-class avoidance.
+
+The Antifragility directive (G-019) applies directly: "fix the framework's blindness, not just the symptom." T-1504 fixed the symptom; T-1505 fixes the blindness.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-370511be
+- **Timestamp:** 2026-04-26T12:58:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T12:58:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

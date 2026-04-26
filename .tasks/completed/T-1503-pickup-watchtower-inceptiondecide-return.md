@@ -4,16 +4,16 @@ name: "Pickup: Watchtower /inception/decide returns 500 on partial-complete succ
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-131. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [pickup, bug-report]
-components: []
+components: [lib/inception.sh, tests/unit/inception_decide_atomicity.bats]
 related_tasks: []
 created: 2026-04-26T11:13:29Z
-last_update: 2026-04-26T12:05:24Z
-date_finished: null
+last_update: 2026-04-26T12:07:43Z
+date_finished: 2026-04-26T12:07:43Z
 source_task_id_in_origin: T-131
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -75,3 +75,15 @@ bats tests/unit/inception_decide_atomicity.bats
 ### 2026-04-26T12:05:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a9a760f3
+- **Timestamp:** 2026-04-26T12:07:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T12:07:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

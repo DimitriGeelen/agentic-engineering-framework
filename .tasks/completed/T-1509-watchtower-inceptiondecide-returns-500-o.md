@@ -4,16 +4,16 @@ name: "Watchtower /inception/decide returns 500 on partial-complete success — 
 description: >
   Split from T-1503 P-010. update-task.sh exits non-zero in post-transition path under set -euo pipefail (auto-decisions, components resolver, learning detector, or similar). web/blueprints/inception.py:411 record_decision treats non-zero exit as failure → 500 to user. Underlying transition succeeded. Fix area: defensive parse of stdout success markers in record_decision + RCA the spurious non-zero exit in update-task.sh post-transition path.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/inception.sh, lib/review.sh, tests/unit/inception_decide_atomicity.bats]
 related_tasks: []
 created: 2026-04-26T12:05:09Z
-last_update: 2026-04-26T13:08:20Z
-date_finished: null
+last_update: 2026-04-26T13:14:13Z
+date_finished: 2026-04-26T13:14:13Z
 ---
 
 # T-1509: Watchtower /inception/decide returns 500 on partial-complete success — record_decision misreads stdout (split from T-1503)
@@ -75,3 +75,15 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/inception_decide_at
 ### 2026-04-26T13:08:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-953c21f9
+- **Timestamp:** 2026-04-26T13:14:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T13:14:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1503: Pickup: Watchtower /inception/decide returns 500 on partial-complete success + decision-record happens before AC gate (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T12:07:48Z
+# ============================================================================
+
+task_id: T-1503
+task_name: "Pickup: Watchtower /inception/decide returns 500 on partial-complete success + decision-record happens before AC gate (from 003-NTB-ATC-Plugin)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T11:13:29Z
+completed: 2026-04-26T12:07:43Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T14:07:28+02:00
+last_commit: 2026-04-26T14:07:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Atomic decide — preflight Agent AC check before Decision/Updates write
+
+# Key outcomes
+outcomes:
+  - "`do_inception_decide` invokes `tick_inception_decide_acs` BEFORE writing Decision section / Updates entry"
+  - "After ticking, if any Agent AC is still unchecked, abort with clear error citing which ACs (no mutation of task body)"
+  - "Bats regression: inception task with one custom unticked Agent AC + go decision → fails fast, task body unchanged (no Decision section, no Updates entry)"
+  - "Bats regression: inception task with all-auto-tick or all-checked Agent ACs → full success (Decision written, Updates appended, status work-completed)"
+  - "Existing inception tests still pass (T-1262 idempotent Decision writer, T-1324 tick-before-gate semantics, T-1492 emit_review pipefail)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-inception_decide_atomicity.yaml"
+  - "lib/inception.sh"
+  - ".tasks/active/T-1503-pickup-watchtower-inceptiondecide-return.md"
+  - ".tasks/active/T-1509-watchtower-inceptiondecide-returns-500-o.md"
+  - "tests/unit/inception_decide_atomicity.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T14:07:28"
+    action: "T-1503: Atomic decide — preflight Agent AC check before Decision/Updates write"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 54 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 54
+  commits: 1
+  files_changed: 5
+  lines_added: 310
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1503-pickup-watchtower-inceptiondecide-return.md
+generated_by: context-agent-hybrid

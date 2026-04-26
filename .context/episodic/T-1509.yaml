@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1509: Watchtower /inception/decide returns 500 on partial-complete success — record_decision misreads stdout (split from T-1503)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T13:14:19Z
+# ============================================================================
+
+task_id: T-1509
+task_name: "Watchtower /inception/decide returns 500 on partial-complete success — record_decision misreads stdout (split from T-1503)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T12:05:09Z
+completed: 2026-04-26T13:14:13Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-26T15:14:03+02:00
+last_commit: 2026-04-26T15:14:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix do_inception_decide non-zero exit on success — emit_review post-move stale path
+
+# Key outcomes
+outcomes:
+  - "`lib/review.sh:emit_review` falls back to discovery when the passed `task_file` arg is invalid (empty OR points at a non-existent path), instead of `return 1`. Discovery searches both `active/` and `completed/`."
+  - "`lib/inception.sh` no longer passes a stale `active/` path to `emit_review` after `update-task.sh` has moved the task to `completed/`. Either re-resolve the path post-move OR omit the arg and rely on discovery."
+  - "New regression test `tests/unit/inception_decide_emit_review_post_move.bats` reproduces the bug pre-fix (red) and confirms `do_inception_decide` exits 0 post-fix on a successful go decision (green)."
+  - "Existing `inception_decide_atomicity.bats` and `hook_enable_absolute_path.bats` still pass."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix do_inception_decide non-zero exit on success — emit_review post-move stale path"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/inception.sh"
+  - "lib/review.sh"
+  - ".tasks/active/T-1509-watchtower-inceptiondecide-returns-500-o.md"
+  - "tests/unit/inception_decide_emit_review_post_move.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T15:14:03"
+    action: "T-1509: Fix do_inception_decide non-zero exit on success — emit_review post-move stale path"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 69 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 69
+  commits: 1
+  files_changed: 4
+  lines_added: 173
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1509-watchtower-inceptiondecide-returns-500-o.md
+generated_by: context-agent-hybrid

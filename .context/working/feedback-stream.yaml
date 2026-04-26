@@ -952,3 +952,88 @@ scan_id: R-7fa38c3b
 task_id: T-1508
 payload:
   task_file: .tasks/active/T-1508-t-1506-build--tier-0-idempotency-sentine.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T11:58:30Z'
+scan_id: R-4d4a923d
+task_id: T-1500
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T11:58:30Z'
+scan_id: R-4d4a923d
+task_id: T-1500
+payload:
+  task_file: .tasks/active/T-1500-pickup-t-014-fw-tier0-approve-hash-drift.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T12:02:31Z'
+scan_id: R-9092c31c
+task_id: T-1504
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T12:02:31Z'
+scan_id: R-9092c31c
+task_id: T-1504
+payload:
+  task_file: .tasks/active/T-1504-pickup-fw-hook-enablesh73-generates-rela.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T12:07:46Z'
+scan_id: R-a9a760f3
+task_id: T-1503
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T12:07:46Z'
+scan_id: R-a9a760f3
+task_id: T-1503
+payload:
+  task_file: .tasks/active/T-1503-pickup-watchtower-inceptiondecide-return.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T12:58:45Z'
+scan_id: R-370511be
+task_id: T-1505
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T12:58:45Z'
+scan_id: R-370511be
+task_id: T-1505
+payload:
+  task_file: .tasks/active/T-1505-pickup-fw-doctor-hook-health-scan-sessio.md
+---
+kind: scan_emitted
+timestamp: '2026-04-26T13:14:16Z'
+scan_id: R-953c21f9
+task_id: T-1509
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-26T13:14:16Z'
+scan_id: R-953c21f9
+task_id: T-1509
+payload:
+  task_file: .tasks/active/T-1509-watchtower-inceptiondecide-returns-500-o.md

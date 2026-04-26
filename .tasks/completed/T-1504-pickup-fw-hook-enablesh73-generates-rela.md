@@ -4,16 +4,16 @@ name: "Pickup: fw hook-enable.sh:73 generates relative-path hook commands that f
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-140. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [pickup, bug-report]
-components: []
+components: [bin/hook-enable.sh, tests/unit/hook_enable_absolute_path.bats]
 related_tasks: []
 created: 2026-04-26T11:13:33Z
-last_update: 2026-04-26T12:00:24Z
-date_finished: null
+last_update: 2026-04-26T12:02:30Z
+date_finished: 2026-04-26T12:02:30Z
 source_task_id_in_origin: T-140
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -68,3 +68,15 @@ bats tests/unit/hook_enable_absolute_path.bats
 ### 2026-04-26T12:00:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-9092c31c
+- **Timestamp:** 2026-04-26T12:02:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T12:02:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

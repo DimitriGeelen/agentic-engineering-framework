@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1504: Pickup: fw hook-enable.sh:73 generates relative-path hook commands that fail when shell cwd != project root (680 silent occurrences in one downstream project) (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T12:02:33Z
+# ============================================================================
+
+task_id: T-1504
+task_name: "Pickup: fw hook-enable.sh:73 generates relative-path hook commands that fail when shell cwd != project root (680 silent occurrences in one downstream project) (from 003-NTB-ATC-Plugin)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T11:13:33Z
+completed: 2026-04-26T12:02:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T14:02:21+02:00
+last_commit: 2026-04-26T14:02:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw hook-enable emits absolute hook command path (closes 680-failure-class)
+
+# Key outcomes
+outcomes:
+  - "`bin/hook-enable.sh` resolves PROJECT_ROOT to absolute path and emits absolute hook command (matching `init.sh:584` pattern: framework repo uses `bin/fw`, consumer uses `.agentic-framework/bin/fw`)"
+  - "Bats regression test: registered hook command is absolute, contains the project root, and survives a sub-shell `cd /tmp` (i.e. resolves correctly via `sh -c`)"
+  - "Idempotency preserved (re-registering same hook is no-op, even though command_str now differs from the legacy relative form? — test by re-registering returns \"already registered\" only when path matches)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/hook-enable.sh"
+  - ".fabric/components/tests-unit-hook_enable_absolute_path.yaml"
+  - ".tasks/active/T-1504-pickup-fw-hook-enablesh73-generates-rela.md"
+  - "tests/unit/hook_enable_absolute_path.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T14:02:21"
+    action: "T-1504: fw hook-enable emits absolute hook command path (closes 680-failure-class)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 48 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 48
+  commits: 1
+  files_changed: 4
+  lines_added: 168
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1504-pickup-fw-hook-enablesh73-generates-rela.md
+generated_by: context-agent-hybrid

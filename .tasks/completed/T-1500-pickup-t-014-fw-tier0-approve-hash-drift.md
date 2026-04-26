@@ -4,16 +4,16 @@ name: "Pickup: T-014: fw tier0 approve hash drift — unnormalized COMMAND in ch
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-014. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [pickup, bug-report]
-components: []
+components: [agents/context/check-tier0.sh, tests/unit/tier0_hash_normalization.bats]
 related_tasks: []
 created: 2026-04-26T11:13:17Z
-last_update: 2026-04-26T11:55:43Z
-date_finished: null
+last_update: 2026-04-26T11:58:24Z
+date_finished: 2026-04-26T11:58:24Z
 source_task_id_in_origin: T-014
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -37,10 +37,10 @@ Single hash site at line 177; downstream consumers (sentinel 196, approval 215, 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `check-tier0.sh:177` normalizes `$COMMAND` (collapse internal whitespace runs + trim ends) before sha256
-- [ ] Regression bats test: approval written for command-with-extra-whitespace matches retry without (and vice versa); structurally-different command does NOT match
-- [ ] Existing `tier0_idempotency.bats` still passes (T-1508 sentinel intact)
-- [ ] Existing `check_tier0_comment_stripping.bats` still passes (T-1427 stripping intact)
+- [x] `check-tier0.sh:177` normalizes `$COMMAND` (collapse internal whitespace runs + trim ends) before sha256
+- [x] Regression bats test: approval written for command-with-extra-whitespace matches retry without (and vice versa); structurally-different command does NOT match
+- [x] Existing `tier0_idempotency.bats` still passes (T-1508 sentinel intact)
+- [x] Existing `check_tier0_comment_stripping.bats` still passes (T-1427 stripping intact)
 
 ## Verification
 
@@ -70,3 +70,15 @@ bats tests/unit/check_tier0_comment_stripping.bats
 ### 2026-04-26T11:55:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-4d4a923d
+- **Timestamp:** 2026-04-26T11:58:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T11:58:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

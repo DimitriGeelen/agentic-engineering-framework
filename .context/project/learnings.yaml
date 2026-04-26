@@ -2194,3 +2194,31 @@ learnings:
   date: 2026-04-26
   context: Added via context agent
   application: TBD
+- id: L-284
+  learning: "Tier 0 hash drift on retry: hashing raw $COMMAND meant any whitespace re-flow between block-and-approve and retry produced a different sha256, defeating the approval. T-1500 normalized whitespace (tr -s + sed trim) before hash. Sister to T-1508 (duplicate-hook self-defeat). Generalizes: any single-use approval keyed by exact-string hash should normalize incidental whitespace; the human approves the human-readable command, not byte-exact bytes. Single-use semantics bound the marginal collision risk."
+  source: P-001
+  task: T-1500
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD
+- id: L-285
+  learning: "Cross-codepath hook-command path generation: T-1364 (G-053-A) fixed lib/init.sh:584 to emit absolute hook commands at init/upgrade time, but fw hook-enable.sh:73 was a SECOND code path with the same relative-path bug — left untouched, producing 680 silent failures in one downstream session. Generalizes: when a code-generation pattern is fixed in one site, audit ALL sites that emit similar config (init, upgrade, hook-enable, manual edits in templates). Detection blind spot: hook failures carry 'non-blocking status code' prefix so they don't surface as user-visible errors — see T-1505 (proposed fw doctor hook-health scan) for prevention. T-1504 closed by mirroring init.sh:584 absolute-prefix pattern."
+  source: P-001
+  task: T-1504
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD
+- id: L-286
+  learning: "Body-mutation gates must validate before mutating: do_inception_decide wrote Decision section + Updates entry BEFORE running the AC gate (T-1503). Failed AC gate left task with Decision=GO but status=started-work, and retries appended duplicate Updates entries. Fix: preflight pattern — tick + count + abort BEFORE any persistent mutation. Generalizes: any function that (a) mutates persistent state then (b) validates a gate is broken under failure-of-(b); reverse the order. Sister to T-1262 (idempotent Decision writer) which made step (a) replace-not-append, but didn't fix the ordering. Combined now: no Decision is written without all preconditions met, and even if one IS written it's idempotent."
+  source: P-001
+  task: T-1503
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD
+- id: L-287
+  learning: "After update-task.sh transitions a task to work-completed, any variable holding the active/ path becomes stale because the file moves to completed/. Callers that pass the cached path to downstream helpers (e.g. lib/inception.sh passed it to emit_review) will hit '[ ! -f $path ]' and abort under set -e. Mitigation: treat the task_file arg as a hint, not a requirement — fall back to discovery (search both active/ and completed/ via task_id) on stale paths. Or: re-resolve the path post-move."
+  source: P-001
+  task: T-1509
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD
