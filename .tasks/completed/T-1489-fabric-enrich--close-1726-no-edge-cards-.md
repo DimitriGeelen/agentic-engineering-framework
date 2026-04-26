@@ -5,7 +5,7 @@ description: >
   Run fw fabric enrich to add 29 mechanically-detectable edges (9 forward, 20 reverse) to 17 cards
   that previously had no graph connections. Closes long-standing audit advisory.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,8 +13,8 @@ tags: [fabric, enrichment, audit-warn]
 components: [.fabric/components/]
 related_tasks: []
 created: 2026-04-26T09:18:26Z
-last_update: 2026-04-26T09:18:26Z
-date_finished: null
+last_update: 2026-04-26T09:23:30Z
+date_finished: 2026-04-26T09:23:30Z
 ---
 
 # T-1489: Fabric enrich — close 17/26 no-edge cards (mechanical dependency detection)
@@ -39,7 +39,9 @@ Mechanical, idempotent, reversible by `git revert`. No design choices.
 
 ## Verification
 
-bin/fw audit 2>&1 | grep -q "Fabric: 21/454 cards have no edges"
+# bin/fw audit's pipe terminates early when grep finds match → SIGPIPE 141 with pipefail (L-002).
+# Buffer to file first.
+bin/fw audit > /tmp/fw-audit-T-1489.log 2>&1; grep -q "Fabric: 21/454 cards have no edges" /tmp/fw-audit-T-1489.log
 
 ## Updates
 
@@ -51,3 +53,15 @@ bin/fw audit 2>&1 | grep -q "Fabric: 21/454 cards have no edges"
 ### 2026-04-26 — enrichment ran
 - **Action:** `fw fabric enrich` processed 454 cards, enriched 17 (9 depends_on + 20 depended_by edges added)
 - **Result:** Audit no-edge count: 26 → 21
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c333fac0
+- **Timestamp:** 2026-04-26T09:25:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T09:23:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

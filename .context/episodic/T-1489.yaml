@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1489: Fabric enrich — close 17/26 no-edge cards (mechanical dependency detection)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T09:25:21Z
+# ============================================================================
+
+task_id: T-1489
+task_name: "Fabric enrich — close 17/26 no-edge cards (mechanical dependency detection)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-26T09:18:26Z
+completed: 2026-04-26T09:23:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T11:21:21+02:00
+last_commit: 2026-04-26T11:21:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fabric enrich — 17 cards gain 29 edges, audit 26→21 no-edge
+
+# Key outcomes
+outcomes:
+  - "`fw fabric enrich --dry-run` confirms ~17 cards / ~29 edges to add (no surprises)"
+  - "`fw fabric enrich` (no flags = enrich all) runs cleanly"
+  - "`fw audit` no-edge count drops (26 → 21 = 5 fewer cards in the no-edge set; remaining 21 are genuinely edge-less, e.g. standalone scripts/tests)"
+  - "No fabric drift introduced (`fw audit` orphan count remains 0)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/agents-handover-handover.yaml"
+  - ".fabric/components/agents-task-create-create-task.yaml"
+  - ".fabric/components/agents-task-create-update-task.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/context-project-metrics-history.yaml"
+  - ".fabric/components/lib-init.yaml"
+  - ".fabric/components/lib-pickup.yaml"
+  - ".fabric/components/lib-upgrade.yaml"
+  - ".fabric/components/tests-unit-test_reviewer_audit_blueprint.yaml"
+  - ".fabric/components/tests-web-test_inception_decide_hardening.yaml"
+  - ".fabric/components/web-app.yaml"
+  - ".fabric/components/web-blueprints-__init__.yaml"
+  - ".fabric/components/web-blueprints-reviewer.yaml"
+  - ".fabric/components/web-shared.yaml"
+  - ".fabric/components/web-templates-base.yaml"
+  - ".fabric/components/web-templates-reviewer_audit.yaml"
+  - ".fabric/components/web-templates-reviewer_overrides.yaml"
+  - ".tasks/active/T-1489-fabric-enrich--close-1726-no-edge-cards-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T11:21:21"
+    action: "T-1489: Fabric enrich — 17 cards gain 29 edges, audit 26→21 no-edge"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fabric, enrichment, audit-warn]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 18
+  lines_added: 141
+  lines_removed: 71
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1489-fabric-enrich--close-1726-no-edge-cards-.md
+generated_by: context-agent-hybrid
