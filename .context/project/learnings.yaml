@@ -2166,3 +2166,10 @@ learnings:
   date: 2026-04-25
   context: Added via context agent
   application: TBD
+- id: L-281
+  learning: "When 3+ sessions cannot localize a Heisenbug AND a structural alternative exists (separate code path with cleaner isolation), defer to the alternative rather than continuing to chase the timing/state issue. Cost of investigation grows; cost of defer is bounded by the alternative's quality. Applied: T-1395+T-1475+T-1488 chased CTL-013 bats false positive — Reviewer Pass B (T-1484) supersedes inline re-execution with worktree isolation; recommended skip-and-pointer."
+  source: P-001
+  task: T-1488
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD
