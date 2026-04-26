@@ -4,16 +4,16 @@ name: "Global /root/.agentic-framework install — isolation leak risk, deprecat
 description: >
   Inception: Global /root/.agentic-framework install — isolation leak risk, deprecation path
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, tests/playwright/conftest.py]
 related_tasks: []
 created: 2026-04-20T07:50:36Z
-last_update: 2026-04-20T07:51:26Z
-date_finished: null
+last_update: 2026-04-26T09:32:26Z
+date_finished: 2026-04-26T09:32:26Z
 ---
 
 # T-1346: Global /root/.agentic-framework install — isolation leak risk, deprecation path
@@ -215,3 +215,16 @@ Decomposition (see docs/reports/T-1346-global-install-isolation.md):
 - B3 — `install.sh` pre-install check: list vendored consumer projects and prompt before re-linking the legacy global shim.
 
 B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scripts that rely on the global path may see a vendored-pin mismatch — acceptable trade-off since pin-mismatch is the correct signal.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-5b99c872
+- **Timestamp:** 2026-04-26T09:32:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-26T09:32:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO recorded 2026-04-20

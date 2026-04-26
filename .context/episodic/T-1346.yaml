@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1346: Global /root/.agentic-framework install — isolation leak risk, deprecation path
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T09:32:29Z
+# ============================================================================
+
+task_id: T-1346
+task_name: "Global /root/.agentic-framework install — isolation leak risk, deprecation path"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-20T07:50:36Z
+completed: 2026-04-26T09:32:26Z
+duration_days: 6
+updates_count: 5
+first_commit: 2026-04-20T11:42:20+02:00
+last_commit: 2026-04-20T11:42:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Tick agent ACs (artifact + A1 verified + recommendation written)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (`docs/reports/T-1346-global-install-isolation.md` §Problem statement)"
+  - "Assumptions tested (A1 confirmed via code inspection of `bin/fw:57,77-100`; A2 confirmed via 10+ vendored consumers found)"
+  - "Recommendation written with rationale (## Recommendation section: GO Option B++ with B1/B2/B3 decomposition)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1346-global-rootagentic-framework-install--is.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-20T11:42:20"
+    action: "T-1346: Tick agent ACs (artifact + A1 verified + recommendation written)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8741 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8741
+  commits: 1
+  files_changed: 1
+  lines_added: 104
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1346-global-rootagentic-framework-install--is.md
+generated_by: context-agent-hybrid
