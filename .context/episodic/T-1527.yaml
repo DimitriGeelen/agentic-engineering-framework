@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1527: L-293 audit — scan section-rewriter regexes for H2-only terminator class
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T22:26:35Z
+# ============================================================================
+
+task_id: T-1527
+task_name: "L-293 audit — scan section-rewriter regexes for H2-only terminator class"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T22:21:57Z
+completed: 2026-04-26T22:26:32Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T00:26:26+02:00
+last_commit: 2026-04-27T00:26:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Decision keyword check terminates at H2+ (T-1519/T-1526 sister)
+
+# Key outcomes
+outcomes:
+  - "Audit complete — every `^## ` capture/terminator site classified as either: (a) intentional H2-only (section has structural H3 children like AC's `### Agent`/`### Human`), (b) body-content-check naturally rejects H3 (e.g. greps for `**Recommendation:**`), (c) already fixed (T-1519), or (d) bug — H2-only terminator on a section that gets H3 entries appended."
+  - "Bug found at `web/blueprints/inception.py:573` (`_decision_recorded_in_task`) — Decision section reader uses `(?=^## |\Z)`, would over-capture appended `### timestamp` Updates entries and false-positive the keyword check. Fix to `(?=^#{2,} |\Z)`."
+  - "Regression test added that fails on the old terminator and passes on the new one."
+  - "L-293 entry refined with the audit's classification rule (H2-only is correct when section has structural H3 children; H2+ is required when section is H3-children-free but downstream code appends H3)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1527-l-293-audit--scan-section-rewriter-regex.md"
+  - "tests/unit/test_inception_decision_keyword_check.py"
+  - "web/blueprints/inception.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T00:26:26"
+    action: "T-1527: Decision keyword check terminates at H2+ (T-1519/T-1526 sister)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 4
+  lines_added: 150
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1527-l-293-audit--scan-section-rewriter-regex.md
+generated_by: context-agent-hybrid
