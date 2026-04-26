@@ -2250,3 +2250,10 @@ learnings:
   date: 2026-04-26
   context: Added via context agent
   application: TBD
+- id: L-292
+  learning: "Self-vendored framework repo causes PreCompact hook to fire twice — once via project-level config (uses framework source) and once via user-level config matching .agentic-framework/bin/fw (uses vendored copy). When vendored copy lacks features added to source (here: T-1476/T-1478 dual-layer dedup), the second fire isn't deduplicated, producing duplicate handover sections + duplicate commits + push race. Run 'fw vendor' periodically in framework repo to keep vendored copy in sync. Trigger to scan: 'find .agentic-framework -type f -name *.sh | while read vf; do diff -q ${vf#.agentic-framework/} $vf || true; done'"
+  source: P-009
+  task: T-1520
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD

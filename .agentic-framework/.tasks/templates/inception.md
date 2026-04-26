@@ -44,11 +44,15 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
+<!-- @auto-tick-on-decide -->
 - [ ] Problem statement validated
+<!-- @auto-tick-on-decide -->
 - [ ] Assumptions tested
+<!-- @auto-tick-on-decide -->
 - [ ] Recommendation written with rationale
 
 ### Human
+<!-- @auto-tick-on-decide -->
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
@@ -73,6 +77,11 @@ date_finished: null
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # For inception tasks, verification is often not needed (decisions, not code).
+#
+# Toolchain hint (L-291): if a GO decision will mean editing *.vbproj/*.csproj/*.xaml,
+# *.go, Cargo.toml, tsconfig.json, or pom.xml in the build task, plan to add the
+# matching build command (dotnet build / go build / cargo check / tsc --noEmit /
+# mvn compile) to that build task's ## Verification — P-011 only runs what you write.
 
 ## Recommendation
 

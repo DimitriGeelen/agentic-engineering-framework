@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>Reviewer Audit</h2>
+    <p>
+      Latest corpus-mode reviewer output (T-1484/T-1485 v1.5).
+      <strong>Pass A</strong> is the cheap drift signal (file-hash diff vs baseline);
+      <strong>Pass B</strong> re-executes <code>## Verification</code> blocks inside a worktree at
+      each task's completion SHA. Both are read-only; the data shown here comes from the most
+      recent YAML written under <code>.context/audits/reviewer/</code>.
+    </p>
+    <p>
+      <small>
+        Run via cron: <code>fw reviewer audit --pass-a</code> /
+        <code>fw reviewer audit --pass-b</code>.
+        See <a href="/reviewer/overrides">Reviewer Overrides</a> for TTL'd false-positive suppressions.
+      </small>
+    </p>
+  </header>
+
+  {# ───────────────── Pass A ───────────────── #}
+  <h3>Pass A — Drift Signal</h3>
+  {% if pass_a %}
+  <p>
+    <strong>Source:</strong> <code>{{ pass_a_path }}</code>
+    &nbsp;<strong>Scanned:</strong> {{ pass_a.tasks_scanned }}
+    {% if pass_a.limit %}(limit {{ pass_a.limit }}){% endif %}
+    &nbsp;<strong>When:</strong> <small>{{ pass_a.scan_timestamp }}</small>
+  </p>
+  <p>
+    <strong>STABLE:</strong> {{ pass_a.totals.STABLE }} &nbsp;
+    <strong>DRIFTED:</strong>
+    {% if pass_a.totals.DRIFTED > 0 %}
+      <strong style="color:var(--pico-color-amber-500)">{{ pass_a.totals.DRIFTED }}</strong>
+    {% else %}{{ pass_a.totals.DRIFTED }}{% endif %} &nbsp;
+    <strong>NO-BASELINE:</strong> {{ pass_a.totals['NO-BASELINE'] }} &nbsp;
+    <strong>NO-VERIFICATION:</strong> {{ pass_a.totals['NO-VERIFICATION'] }}
+  </p>
+
+  {% set drifted = pass_a.per_task | selectattr('verdict', 'equalto', 'DRIFTED') | list %}
+  {% if drifted %}
+  <h4>Drifted tasks ({{ drifted|length }})</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Changed</th>
+        <th>Missing</th>
+        <th>Unchanged</th>
+        <th>Files (first 10)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in drifted %}
+      <tr>
+        <td><a href="/review/{{ row.task_id }}">{{ row.task_id }}</a></td>
+        <td><strong style="color:var(--pico-color-amber-500)">{{ row.n_changed }}</strong></td>
+        <td>{% if row.n_missing > 0 %}<strong style="color:var(--pico-color-red-500)">{{ row.n_missing }}</strong>{% else %}0{% endif %}</td>
+        <td><small>{{ row.n_unchanged }}</small></td>
+        <td><small>
+          {% for f in row.changed_files %}<code>{{ f }}</code>{% if not loop.last %}, {% endif %}{% endfor %}
+        </small></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p><em>No drifted tasks in the latest scan.</em></p>
+  {% endif %}
+  {% else %}
+  <p><em>No Pass A audit YAML yet. Run <code>fw reviewer audit --pass-a --baseline</code> first to seed baselines, then <code>fw reviewer audit --pass-a</code> to scan.</em></p>
+  {% endif %}
+
+  {# ───────────────── Pass B ───────────────── #}
+  <h3>Pass B — Worktree Re-execution</h3>
+  {% if pass_b %}
+  <p>
+    <strong>Source:</strong> <code>{{ pass_b_path }}</code>
+    &nbsp;<strong>Scanned:</strong> {{ pass_b.tasks_scanned }}
+    {% if pass_b.limit %}(limit {{ pass_b.limit }}){% endif %}
+    &nbsp;<strong>When:</strong> <small>{{ pass_b.scan_timestamp }}</small>
+  </p>
+  <p>
+    <strong>PASS:</strong> {{ pass_b.totals.PASS }} &nbsp;
+    <strong>FAIL:</strong>
+    {% if pass_b.totals.FAIL > 0 %}
+      <strong style="color:var(--pico-color-red-500)">{{ pass_b.totals.FAIL }}</strong>
+    {% else %}{{ pass_b.totals.FAIL }}{% endif %} &nbsp;
+    <strong>NO-VERIFICATION:</strong> {{ pass_b.totals['NO-VERIFICATION'] }} &nbsp;
+    <strong>ERROR:</strong> {{ pass_b.totals.ERROR }}
+  </p>
+
+  {% set fails = pass_b.per_task | rejectattr('overall', 'equalto', 'PASS') | rejectattr('overall', 'equalto', 'NO-VERIFICATION') | list %}
+  {% if fails %}
+  <h4>Non-PASS tasks ({{ fails|length }})</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Verdict</th>
+        <th>SHA</th>
+        <th>PASS</th>
+        <th>FAIL</th>
+        <th>SKIPPED</th>
+        <th>ERROR</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in fails %}
+      <tr>
+        <td><a href="/review/{{ row.task_id }}">{{ row.task_id }}</a></td>
+        <td>
+          {% if row.overall == 'FAIL' %}<strong style="color:var(--pico-color-red-500)">FAIL</strong>
+          {% else %}<strong style="color:var(--pico-color-amber-500)">{{ row.overall }}</strong>{% endif %}
+        </td>
+        <td><small>{{ (row.sha or 'none')[:8] }}</small></td>
+        <td>{{ row.n_pass }}</td>
+        <td>{{ row.n_fail }}</td>
+        <td>{{ row.n_skipped }}</td>
+        <td>{{ row.n_error or 0 }}</td>
+        <td><small>{{ row.error or '' }}</small></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p><em>No FAIL or ERROR tasks in the latest scan.</em></p>
+  {% endif %}
+  {% else %}
+  <p><em>No Pass B audit YAML yet. Run <code>fw reviewer audit --pass-b</code> to scan.</em></p>
+  {% endif %}
+</article>
+{% endblock %}

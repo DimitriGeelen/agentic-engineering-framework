@@ -292,12 +292,37 @@ def _load_pending_human_acs():
     return results
 
 
+def _count_deferred_inceptions():
+    """Count active inceptions with a recorded DEFER decision (T-1518).
+
+    DEFER'd inceptions are excluded from /approvals (decision != pending) but
+    remain visible on /inception?decision=defer. This count powers an exit-ramp
+    hint when /approvals has no pending decisions.
+    """
+    count = 0
+    for fm in get_all_task_metadata():
+        if fm.get("_location") != "active" or fm.get("workflow_type") != "inception":
+            continue
+        path = fm.get("_path")
+        if not path:
+            continue
+        try:
+            body = Path(path).read_text()
+        except OSError:
+            continue
+        # Match the canonical block emitted by do_inception_decide
+        if re.search(r"^\*\*Decision\*\*:\s*DEFER\b", body, re.M):
+            count += 1
+    return count
+
+
 def _build_approvals_context():
     """Build template context for approvals page."""
     pending_tier0 = _load_pending_approvals()
     resolved_tier0 = _load_resolved_approvals()
     pending_go = _load_pending_go_decisions()
     pending_acs = _load_pending_human_acs()
+    deferred_count = _count_deferred_inceptions()
 
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
     go_count = len(pending_go)
@@ -325,6 +350,7 @@ def _build_approvals_context():
         total_count=total,
         active_count=tier0_count,
         ready_count=ready_count,
+        deferred_count=deferred_count,
     )
 
 

@@ -8,6 +8,7 @@
 
 ## What It Does
 
+REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
 SessionEnd hook — S1 reason logger + S2 handover trigger (T-1212)
 Fires on session termination. Always exits 0.
 S1: appends {ts, session_id, reason} JSON line to
@@ -17,7 +18,6 @@ S2: if no handover exists for the current session_id
 `fw handover` in the background. Background so the hook returns fast
 (<2s) regardless of handover duration — some session-end reasons
 (e.g. API 500 kill) give us very little grace period.
-Known Claude Code bugs this hook tolerates:
 
 ## Dependencies (3)
 

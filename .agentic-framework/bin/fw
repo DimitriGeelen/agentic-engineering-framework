@@ -843,6 +843,49 @@ print(f'{total},{broken},{stale_paths}')
             echo -e "  ${YELLOW}WARN${NC}  Only $hook_total hooks configured (expected 11+)"
             warnings=$((warnings + 1))
         fi
+
+        # T-1480: Duplicate framework hook scan (root cause of OBS-023).
+        # Mirrors T-1479's check from `fw upgrade` so users see it on every
+        # `fw doctor` run, not only when upgrading. Read-only — surfaces
+        # the overlap; remediation stays the user's call.
+        local user_settings_file="$HOME/.claude/settings.json"
+        if [ -f "$user_settings_file" ]; then
+            local dup_pairs
+            dup_pairs=$(USER_FILE="$user_settings_file" PROJ_FILE="$settings_file" python3 -c "
+import json, os
+def fw_hooks(path):
+    out = set()
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError, OSError):
+        return out
+    for event, entries in data.get('hooks', {}).items():
+        for entry in entries:
+            for hook in entry.get('hooks', []):
+                cmd = hook.get('command', '')
+                if 'fw hook' in cmd:
+                    name = cmd.split('fw hook ')[-1].strip().split()[0]
+                elif '.agentic-framework' in cmd:
+                    name = cmd.strip().split('/')[-1]
+                else:
+                    continue
+                out.add((event, name))
+    return out
+user = fw_hooks(os.environ['USER_FILE'])
+proj = fw_hooks(os.environ['PROJ_FILE'])
+overlap = sorted(user & proj)
+print('|'.join(f'{e}:{n}' for e, n in overlap))
+" 2>/dev/null || echo "")
+            if [ -n "$dup_pairs" ]; then
+                local dup_count
+                dup_count=$(echo "$dup_pairs" | tr '|' '\n' | wc -l)
+                echo -e "  ${YELLOW}WARN${NC}  Duplicate framework hook(s) in $user_settings_file: $dup_count overlap"
+                echo -e "        Pairs: $(echo "$dup_pairs" | tr '|' ' ')"
+                echo -e "        Both fire on every Claude Code event (cause of OBS-023). Recommend removing duplicates from $user_settings_file."
+                warnings=$((warnings + 1))
+            fi
+        fi
     else
         echo -e "  ${YELLOW}WARN${NC}  No .claude/settings.json found (run: fw init)"
         warnings=$((warnings + 1))
@@ -1978,12 +2021,16 @@ if os.path.isdir(active_dir):
             continue
 
         human_block = human_match.group(1)
-        human_total = len(re.findall(r'^\s*-\s*\[[ x]\]', human_block, re.MULTILINE))
-        human_checked = len(re.findall(r'^\s*-\s*\[x\]', human_block, re.MULTILINE))
+        # G-047: strip HTML <!-- ... --> comment blocks before counting ACs.
+        # Default template includes an example "- [ ] [REVIEW] Dashboard renders correctly"
+        # inside a comment that must not register as a real unchecked AC.
+        human_block_uncommented = re.sub(r'<!--.*?-->', '', human_block, flags=re.DOTALL)
+        human_total = len(re.findall(r'^\s*-\s*\[[ x]\]', human_block_uncommented, re.MULTILINE))
+        human_checked = len(re.findall(r'^\s*-\s*\[x\]', human_block_uncommented, re.MULTILINE))
         human_unchecked = human_total - human_checked
 
         if human_unchecked > 0:
-            unchecked_items = re.findall(r'^\s*-\s*\[ \]\s*(.*)', human_block, re.MULTILINE)
+            unchecked_items = re.findall(r'^\s*-\s*\[ \]\s*(.*)', human_block_uncommented, re.MULTILINE)
             results.append({
                 'id': fm.get('id', fn),
                 'name': fm.get('name', ''),
@@ -2328,14 +2375,28 @@ case "$cmd" in
         if [ "${1:-}" = "" ] || [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
             echo "Usage:"
             echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task"
-            echo "  fw reviewer audit                                            Layer 3 daily Pass-B re-scan"
+            echo "  fw reviewer audit [--pass-a [--baseline [--force]] | --pass-b]"
+            echo "                    [--limit N] [--quiet] [--timeout N]"
+            echo "                                                               Layer 3 daily corpus re-scan"
+            echo "                                                               (default: static-scan;"
+            echo "                                                                --pass-a: v1.5 drift signal;"
+            echo "                                                                --pass-b: v1.5 reverify)"
+            echo "  fw reviewer drift T-XXX                                      v1.5 Pass A — file-hash drift"
+            echo "  fw reviewer reverify T-XXX                                   v1.5 Pass B — worktree re-execution"
             echo "  fw reviewer override add T-XXX --pattern X [--ac N] --reason '...' [--ttl 90]"
             echo "  fw reviewer override list                                    Active overrides + days remaining"
             echo "  fw reviewer override prune                                   Drop expired entries"
             echo "  fw reviewer override remove OV-XXXX                          Remove specific override"
             echo ""
             echo "Scan: writes verdict to task body under '## Reviewer Verdict (vX.Y)'."
-            echo "Audit: re-scans every completed task; writes .context/audits/reviewer/YYYY-MM-DD.yaml"
+            echo "Audit (default): static-scan re-scan; writes .context/audits/reviewer/YYYY-MM-DD.yaml"
+            echo "Audit --pass-a: v1.5 drift signal corpus scan; writes YYYY-MM-DD-pass-a.yaml"
+            echo "  --baseline: one-shot init (write hashes); --force: overwrite existing baselines"
+            echo "Audit --pass-b: v1.5 worktree re-execution corpus mode; writes YYYY-MM-DD-pass-b.yaml"
+            echo "  --limit N caps tasks (cron budget); --quiet suppresses per-task lines; --timeout N (default 30s)"
+            echo "Drift (v1.5 Pass A): hashes files referenced in ## Verification, compares vs baseline."
+            echo "Reverify (v1.5 Pass B): re-executes verification commands inside a worktree at the"
+            echo "  task's completion SHA. Network-dependent lines are skipped."
             echo "Overrides: per-(task,pattern,ac?) TTL'd waivers stored in"
             echo "  .context/working/reviewer-overrides.yaml. Suppress known false positives"
             echo "  for a bounded window; suppressions are logged to feedback-stream.yaml."
@@ -2351,11 +2412,45 @@ case "$cmd" in
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.override_cli "$@"
         fi
+        if [ "${1:-}" = "drift" ]; then
+            shift
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                python3 -m lib.reviewer.drift_cli "$@"
+        fi
+        if [ "${1:-}" = "reverify" ]; then
+            shift
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                python3 -m lib.reviewer.reverify_cli "$@"
+        fi
         exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
             python3 -m lib.reviewer.static_scan "$@"
         ;;
     self-audit)
         exec "$AGENTS_DIR/audit/self-audit.sh" "$@"
+        ;;
+    gpu)
+        # T-1182: GPU coordination — Layer 2 of T-1180 GO. Reactive cross-process kick.
+        gpu_subcmd="${1:-}"
+        shift || true
+        case "$gpu_subcmd" in
+            recover)
+                exec bash "$AGENTS_DIR/gpu-recover/recover.sh" "$@"
+                ;;
+            ""|-h|--help)
+                echo "Usage: fw gpu <subcommand> [options]"
+                echo ""
+                echo "Subcommands:"
+                echo "  recover    Free VRAM by killing heaviest non-ollama consumer"
+                echo ""
+                echo "Run 'fw gpu recover --help' for recover-specific options."
+                exit 0
+                ;;
+            *)
+                echo -e "${RED}Unknown gpu subcommand: $gpu_subcmd${NC}" >&2
+                echo "Run 'fw gpu' for usage." >&2
+                exit 1
+                ;;
+        esac
         ;;
     test-onboarding)
         exec "$AGENTS_DIR/onboarding-test/test-onboarding.sh" "$@"
@@ -2720,13 +2815,35 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         exec "$AGENTS_DIR/git/git.sh" "$@"
         ;;
     push)
-        # T-1153: Push to all remotes with per-remote status
+        # T-1153: Push to all remotes with per-remote status.
+        # T-1513: align with handover hook's T-1255 logic — when `origin` exists
+        # and multiple remotes are configured, push only to origin (mirrors are
+        # OneDev's job via PushRepository). Also skip remotes whose push URL is
+        # the sentinel `no_push` (set via `git remote set-url --push X no_push`).
         echo -e "${BOLD}fw push${NC} — Push to all remotes"
         echo ""
         _push_ok=0
         _push_fail=0
+        _push_skipped=0
+        _remote_count=$(git -C "$PROJECT_ROOT" remote 2>/dev/null | wc -l)
+        if git -C "$PROJECT_ROOT" remote 2>/dev/null | grep -qx 'origin'; then
+            _has_origin=true
+        else
+            _has_origin=false
+        fi
         while IFS= read -r _remote; do
             [ -z "$_remote" ] && continue
+            if [ "$_has_origin" = true ] && [ "$_remote_count" -gt 1 ] && [ "$_remote" != "origin" ]; then
+                echo -e "  $_remote: ${CYAN}skipped (mirrored from origin)${NC}"
+                _push_skipped=$((_push_skipped + 1))
+                continue
+            fi
+            _push_url=$(git -C "$PROJECT_ROOT" remote get-url --push "$_remote" 2>/dev/null)
+            if [ "$_push_url" = "no_push" ]; then
+                echo -e "  $_remote: ${CYAN}skipped (push disabled)${NC}"
+                _push_skipped=$((_push_skipped + 1))
+                continue
+            fi
             echo -n "  $_remote: "
             if git -C "$PROJECT_ROOT" push "$_remote" HEAD "$@" 2>&1 | tail -1; then
                 _push_ok=$((_push_ok + 1))
@@ -2737,10 +2854,10 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
         echo ""
         if [ "$_push_fail" -gt 0 ]; then
-            echo -e "${YELLOW}$_push_ok pushed, $_push_fail failed${NC}"
+            echo -e "${YELLOW}$_push_ok pushed, $_push_skipped skipped, $_push_fail failed${NC}"
             exit 1
         else
-            echo -e "${GREEN}All $_push_ok remote(s) pushed ✓${NC}"
+            echo -e "${GREEN}$_push_ok pushed, $_push_skipped skipped ✓${NC}"
         fi
         ;;
     handover)

@@ -24,8 +24,12 @@ emit_review() {
         return 1
     fi
 
-    # Find task file if not provided
-    if [ -z "$task_file" ]; then
+    # T-1509: Treat task_file arg as a HINT, not a hard requirement. Callers
+    # may pass a path that became stale (e.g. inception decide passes the
+    # active/ path, but update-task.sh has since moved the file to completed/).
+    # Fall back to discovery when the hint is empty OR points at a missing file.
+    if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
+        task_file=""
         for f in "$PROJECT_ROOT/.tasks/active/$task_id"*.md "$PROJECT_ROOT/.tasks/completed/$task_id"*.md; do
             if [ -f "$f" ]; then
                 task_file="$f"
@@ -125,10 +129,24 @@ except ImportError:
 
     # CLI alternative for inception tasks (T-973, T-1201)
     if [ "$workflow_type" = "inception" ]; then
-        # Extract recommendation line for pre-filled rationale
+        # Extract recommendation line for pre-filled rationale.
+        # T-1492: widen pattern (indented OK, skip HTML-commented), terminate
+        # pipeline with `|| true` so command-substitution exit code cannot
+        # propagate under `set -euo pipefail` and abort emit_review mid-flight
+        # (which previously left .reviewed-T-XXX uncreated, blocking inception decide).
         local _rec_line=""
-        _rec_line=$(grep -A1 '^\*\*Recommendation:\*\*' "$task_file" 2>/dev/null | head -1 | sed 's/^\*\*Recommendation:\*\*[[:space:]]*//')
-        [ -z "$_rec_line" ] && _rec_line="your rationale"
+        local _rec_raw=""
+        _rec_raw=$(grep -m1 '^[[:space:]]*\*\*Recommendation:' "$task_file" 2>/dev/null \
+            | grep -v '<!--' || true)
+        if [ -n "$_rec_raw" ]; then
+            _rec_line=$(echo "$_rec_raw" \
+                | sed -e 's/^[[:space:]]*\*\*Recommendation:\*\*[[:space:]]*//' \
+                      -e 's/^[[:space:]]*\*\*Recommendation:[[:space:]]*//')
+        fi
+        if [ -z "$_rec_line" ]; then
+            echo -e "  ${YELLOW}Note: No \`**Recommendation:**\` line found in task body — using fallback rationale${NC}" >&2
+            _rec_line="your rationale"
+        fi
         # Truncate to fit terminal (keep under 60 chars)
         _rec_line="${_rec_line:0:58}"
         echo -e "  ${BOLD}CLI:${NC} cd $PROJECT_ROOT &&"

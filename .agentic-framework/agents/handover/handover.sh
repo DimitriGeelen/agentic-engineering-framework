@@ -21,8 +21,12 @@ fi
 _resolve_commit_task() {
     # If task already set by --task flag, keep it
     if [ -n "$COMMIT_TASK" ]; then return; fi
-    # Check if T-012 exists (framework's own handover task)
-    if [ -n "$(ls "$TASKS_DIR/active/T-012-"*.md "$TASKS_DIR/completed/T-012-"*.md 2>/dev/null)" ]; then
+    # T-1477: Check T-012 in active/ ONLY. The original code matched completed/
+    # too, so every handover commit carried "T-012" even after that task was
+    # closed long ago — producing a recurring "Task T-012 is closed" warning
+    # from pre-commit. The auto-create branch below handles "no active handover
+    # task" correctly.
+    if [ -n "$(ls "$TASKS_DIR/active/T-012-"*.md 2>/dev/null)" ]; then
         COMMIT_TASK="T-012"
         return
     fi
@@ -553,21 +557,44 @@ if pending_completed:
     print()
 
 # T-1461: render inception tasks awaiting decision with /inception/T-XXX links
+# T-1517: split into "Awaiting Decision" (no recorded Decision) and "Deferred"
+#         (Decision == DEFER) — DEFER'd inceptions are parked, not pending,
+#         so labelling them as "Awaiting Decision" mismatches /approvals which
+#         correctly filters by `decision == 'pending'`.
 inception_pending = []
+inception_deferred = []
+decision_re = re.compile(r'^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b', re.M)
 for _, tid, tname, tstatus, h in tasks:
     if tstatus == 'work-completed':
         continue
     for f in glob.glob(os.path.join(tasks_dir, f'{tid}-*.md')):
         with open(f) as fh:
-            head = fh.read(2048)
-        if 'workflow_type: inception' in head:
+            body = fh.read()
+        if 'workflow_type: inception' not in body[:2048]:
+            break
+        m = decision_re.search(body)
+        if m is None:
             inception_pending.append((tid, tname))
+        elif m.group(1) == 'DEFER':
+            inception_deferred.append((tid, tname))
+        # GO/NO-GO: in-flight close — sweep handles the move; skip both lists.
         break
 
 if inception_pending:
     print('### Inception Phases — Awaiting Decision')
     print()
     for ip_tid, ip_name in inception_pending:
+        print(f'- {inception_link(ip_tid, ip_name)}')
+    print()
+
+if inception_deferred:
+    print('### Deferred Inceptions — Watching for Recurrence')
+    print()
+    print('These inceptions reached a DEFER decision and are parked. They are')
+    print('NOT awaiting a first decision. They re-surface for promotion if the')
+    print('promotion criteria in their Recommendation block are met.')
+    print()
+    for ip_tid, ip_name in inception_deferred:
         print(f'- {inception_link(ip_tid, ip_name)}')
     print()
 PYEOF
@@ -836,15 +863,23 @@ if [ "$AUTO_COMMIT" = true ]; then
         echo -e "${CYAN}Pushing to remotes...${NC}"
         _push_failed=false
         _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-60}"
-        # T-1255 (G-007): When >1 remote is configured, push ONLY to origin.
-        # Mirroring (e.g. github) is OneDev's job via .onedev-buildspec.yml's
-        # PushRepository job. Pushing directly to mirror remotes from the agent
-        # caused github-ahead-of-onedev divergence whenever onedev briefly 502'd
-        # at handover time (T-1253 inception, PL-036).
+        # T-1255 (G-007): When >1 remote is configured AND `origin` is one of them,
+        # push ONLY to origin. Mirroring (e.g. github) is OneDev's job via
+        # .onedev-buildspec.yml's PushRepository job. Pushing directly to mirror
+        # remotes caused github-ahead-of-onedev divergence whenever onedev briefly
+        # 502'd at handover time (T-1253 inception, PL-036).
+        # T-1474: Guard against the no-origin case. If no remote is named `origin`,
+        # there is no canonical source for OneDev to mirror from, so the assumption
+        # that other remotes are "mirrors" is invalid — push to all of them.
         _remote_count=$(git -C "$PROJECT_ROOT" remote 2>/dev/null | wc -l)
+        if git -C "$PROJECT_ROOT" remote 2>/dev/null | grep -qx 'origin'; then
+            _has_origin=true
+        else
+            _has_origin=false
+        fi
         while IFS= read -r remote_name; do
             [ -z "$remote_name" ] && continue
-            if [ "$_remote_count" -gt 1 ] && [ "$remote_name" != "origin" ]; then
+            if [ "$_has_origin" = true ] && [ "$_remote_count" -gt 1 ] && [ "$remote_name" != "origin" ]; then
                 echo -e "  ${CYAN}Skipping $remote_name (mirrored from origin via PushRepository)${NC}"
                 continue
             fi

@@ -19,7 +19,7 @@ do_promote() {
     shift || true
 
     case "$subcmd" in
-        suggest|status|L-*)
+        suggest|status|L-*|PL-*)
             python3 - "$subcmd" "$@" << 'PYPROMOTE'
 import os, sys, yaml, re
 from datetime import datetime
@@ -59,11 +59,17 @@ if os.path.isfile(practices_file):
     practices = p_data.get('practices', [])
 
 # Build a set of learning IDs already promoted
+# T-1279/PL-083: check BOTH `derived_from` (legacy practices that named the
+# learning directly) AND `promoted_from` (canonical field set by fw promote
+# itself, which always uses a directive D1/D2/... for derived_from). Without
+# the promoted_from check, a practice created by fw promote is never seen as
+# already-promoted, so suggest re-recommends and a duplicate PP-XXX is made.
 promoted_ids = set()
 for p in practices:
+    pf = p.get('promoted_from', '')
+    if isinstance(pf, str) and (pf.startswith('L-') or pf.startswith('PL-')):
+        promoted_ids.add(pf)
     origin = p.get('derived_from', '')
-    # Check if any learning was the origin
-    # Practices can derive from directives (D1) or learnings (L-001/PL-001)
     if isinstance(origin, str) and (origin.startswith('L-') or origin.startswith('PL-')):
         promoted_ids.add(origin)
     elif isinstance(origin, list):
@@ -209,8 +215,8 @@ elif subcmd == 'status':
         print(f'  {YELLOW}{ready} learning(s) ready for promotion{NC} — run: fw promote suggest')
 
 
-# --- PROMOTE L-XXX command ---
-elif subcmd.startswith('L-'):
+# --- PROMOTE L-XXX or PL-XXX command (T-1283) ---
+elif subcmd.startswith('L-') or subcmd.startswith('PL-'):
     learning_id = subcmd
 
     # Parse args

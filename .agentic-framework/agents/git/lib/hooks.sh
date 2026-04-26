@@ -42,12 +42,19 @@ do_install_hooks() {
     fi
 
     # Create commit-msg hook
+    # PL-078: install-hooks short-circuits on the commit-msg `# VERSION=`
+    # marker alone (see line ~32-42). When you change content of ANY hook
+    # (commit-msg, post-commit, pre-push), bump the commit-msg marker too
+    # so consumers' next install-hooks call redeploys all three. Without
+    # the bump, your fix sits in the template indefinitely and deployed
+    # hooks stay stale (T-1252 sat dormant on /opt/termlink and
+    # /opt/999-AEF for unknown days, surfacing only as fw doctor warnings).
     cat > "$commit_msg_hook" << 'HOOK_EOF'
 #!/bin/bash
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.6
+# VERSION=1.7
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")

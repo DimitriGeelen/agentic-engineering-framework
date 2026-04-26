@@ -173,8 +173,44 @@ fi
 # ── Destructive pattern detected ──
 DESCRIPTION="${MATCH_RESULT#BLOCKED|}"
 
-# Compute command hash for approval matching
-COMMAND_HASH=$(echo -n "$COMMAND" | sha256sum | awk '{print $1}')
+# Compute command hash for approval matching.
+# T-1500: normalize whitespace before hashing so an agent regenerating the
+# blocked command for retry (with reflowed args, extra spaces, trailing
+# newline differences) still matches the approval. Single-use semantics
+# (rm -f on consume) bound the marginal collision risk; the human approved
+# the human-readable risk description, not a byte-exact command.
+COMMAND_NORMALIZED=$(printf '%s' "$COMMAND" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')
+COMMAND_HASH=$(printf '%s' "$COMMAND_NORMALIZED" | sha256sum | awk '{print $1}')
+
+# ── T-1508: Idempotency sentinel — short-circuit duplicate hook firings ──
+# When the same hook is registered in both .claude/settings.json (project) and
+# ~/.claude/settings.json (user), each Bash call fires every hook twice. The
+# first invocation consumes the approval (rm -f $APPROVAL_FILE) and exits 0;
+# without this sentinel, the second invocation finds no approval and BLOCKS,
+# defeating the gate entirely. T-1506 RCA confirmed live (see L-XXX).
+#
+# Mechanism: on consume, write ${APPROVAL_FILE}.consumed (hash + timestamp).
+# Before any block path runs, check if a recent (<5s) sentinel matches this
+# command's hash. If so, allow without re-blocking. 5s is short enough that
+# the next legitimate destructive command in this terminal still requires a
+# fresh approval, but long enough to absorb every plausible duplicate-fire.
+CONSUMED_FILE="${APPROVAL_FILE}.consumed"
+if [ -f "$CONSUMED_FILE" ]; then
+    CONSUMED_HASH=$(awk '{print $1}' "$CONSUMED_FILE" 2>/dev/null)
+    CONSUMED_TIME=$(awk '{print $2}' "$CONSUMED_FILE" 2>/dev/null)
+    CURRENT_TIME=$(date +%s)
+    if [ "$CONSUMED_HASH" = "$COMMAND_HASH" ]; then
+        AGE=$((CURRENT_TIME - ${CONSUMED_TIME:-0}))
+        if [ "$AGE" -lt 5 ]; then
+            # Same command, just consumed by a sibling hook fire — allow without re-blocking.
+            exit 0
+        fi
+    fi
+    # Stale sentinel — clean up so we don't accumulate cruft.
+    if [ -n "${CONSUMED_TIME:-}" ] && [ "$((${CURRENT_TIME:-$(date +%s)} - CONSUMED_TIME))" -ge 5 ]; then
+        rm -f "$CONSUMED_FILE"
+    fi
+fi
 
 # ── Check for valid approval token ──
 if [ -f "$APPROVAL_FILE" ]; then
@@ -187,6 +223,9 @@ if [ -f "$APPROVAL_FILE" ]; then
         if [ "$AGE" -lt 300 ]; then
             # Valid approval — consume it and allow
             rm -f "$APPROVAL_FILE"
+            # T-1508: write idempotency sentinel so duplicate hook firings
+            # for the same command short-circuit instead of re-blocking.
+            echo "$COMMAND_HASH $(date +%s)" > "$CONSUMED_FILE"
 
             # Log to bypass-log for audit trail (fire-and-forget)
             # Data passed via env vars to avoid shell interpolation into source code (T-595)

@@ -101,6 +101,26 @@ keylock_acquire() {
     return 0
 }
 
+# Emit shell commands that close every currently-held lock FD.
+#
+# T-1493: lock FDs opened via `exec N>"$lock_file"` do NOT have O_CLOEXEC
+# set. Children spawned while a lock is held inherit the FD; long-lived
+# daemons (.NET VBCSCompiler, gradle daemon, etc.) keep it open after the
+# spawning command exits, blocking later flock acquisitions on the same
+# key indefinitely.
+#
+# Use inside a subshell BEFORE running a command that may daemonize:
+#   ( eval "$(keylock_subshell_close_cmd)"; my_command )
+#
+# In the parent, the FDs remain open and the lock is still held — only
+# the subshell's view is altered, so children inherit a closed FD instead.
+keylock_subshell_close_cmd() {
+    local key
+    for key in "${!_KEYLOCK_FDS[@]}"; do
+        printf 'exec %s>&-; ' "${_KEYLOCK_FDS[$key]}"
+    done
+}
+
 # Release a per-key lock
 keylock_release() {
     local key="$1"

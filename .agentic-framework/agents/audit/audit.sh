@@ -1922,13 +1922,49 @@ for task_file in $recent_completed; do
         cmd_pass=0
         cmd_fail=0
         for cmd in "${verify_cmds[@]}"; do
-            if eval "$cmd" >/dev/null 2>&1; then
+            if [ -n "${FW_AUDIT_VERIFY_DEBUG:-}" ]; then
+                # T-1475: capture stderr/stdout so CTL-013 false positives can be
+                # diagnosed (OBS-022 — audit reports bats fails, isolated runs pass).
+                _aud_out=$(mktemp 2>/dev/null || echo "/tmp/fw-audit-verify-$$")
+                # FW_AUDIT_VERIFY_TRACE=1 adds bash xtrace for deepest visibility.
+                if [ -n "${FW_AUDIT_VERIFY_TRACE:-}" ]; then
+                    _eval_rc=0
+                    {
+                        echo "PWD=$PWD"
+                        echo "BASH_OPTS=$-"
+                        echo "PATH=$PATH"
+                        env | grep -E '^(BATS|TMPDIR|HOME|SHELL|TERM|TAP)' | sort
+                        set -x
+                        eval "$cmd"
+                        set +x
+                    } >"$_aud_out" 2>&1 || _eval_rc=$?
+                else
+                    # T-1475: brace-grouped redirection (NOT subshell). When the
+                    # eval'd command was bats, the prior subshell variant produced
+                    # rc=1 with no output (Heisenbug — observable failure with
+                    # `( eval "$cmd" ) >X 2>&1`, but a brace-group `{ eval ...; } >X 2>&1`
+                    # passes consistently). Root cause unconfirmed (likely bats
+                    # parent-shell coupling); brace-group sidesteps it.
+                    _eval_rc=0
+                    { eval "$cmd"; } >"$_aud_out" 2>&1 || _eval_rc=$?
+                fi
+                if [ "$_eval_rc" -eq 0 ]; then
+                    cmd_pass=$((cmd_pass + 1))
+                    rm -f "$_aud_out"
+                else
+                    cmd_fail=$((cmd_fail + 1))
+                    echo "DEBUG ($task_id) FAIL (rc=$_eval_rc): $cmd" >&2
+                    echo "DEBUG ($task_id) captured output (first 20 lines):" >&2
+                    head -20 "$_aud_out" >&2 || true
+                    echo "DEBUG ($task_id) ---" >&2
+                    rm -f "$_aud_out"
+                fi
+            elif eval "$cmd" >/dev/null 2>&1; then
                 cmd_pass=$((cmd_pass + 1))
             else
                 cmd_fail=$((cmd_fail + 1))
-                # FW_AUDIT_VERIFY_DEBUG=1 surfaces the failing command for diagnosis
-                # (T-1395: surface which CTL-013 verification step is failing).
-                [ -n "${FW_AUDIT_VERIFY_DEBUG:-}" ] && echo "DEBUG ($task_id) FAIL: $cmd" >&2
+                # T-1395: surface which CTL-013 verification step is failing.
+                # FW_AUDIT_VERIFY_DEBUG=1 also dumps captured output (T-1475).
             fi
         done
         if [ "$cmd_fail" -eq 0 ]; then
@@ -2412,6 +2448,7 @@ for f in glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")):
     owner = fm.get("owner", "?")
     wtype = fm.get("workflow_type", "?")
     tid = fm.get("id", "?")
+    name = str(fm.get("name", ""))
 
     # Only flag human-owned tasks — agent tasks completing fast is normal
     if owner != "human":
@@ -2425,9 +2462,16 @@ for f in glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")):
     if cycle_min >= 5:
         continue
 
-    # Filter 3: skip tasks with 2+ commits (proves substantive work happened)
+    # Filter 3: skip tasks with 1+ commits (proves work was captured).
+    # Retroactive workflow (work first, task created+closed) produces 1 commit
+    # at completion time — legitimate, not an anomaly. Real concern is 0 commits
+    # AND fast cycle: work-completed without any captured artifact (T-1263).
     commits = count_commits(tid)
-    if commits >= 2:
+    if commits >= 1:
+        continue
+
+    # Filter 4: skip administrative batch-evidence/batch-tick tasks (T-1262)
+    if name.startswith("Batch-evidence") or name.startswith("Batch-tick"):
         continue
 
     # Remaining: human task, fast, 0-1 commits, non-trivial type — flag it
@@ -2467,6 +2511,87 @@ case "$d5_level" in
         ;;
     *)
         pass "D5: Task lifecycle — no anomalies"
+        ;;
+esac
+
+# D13: Inception Limbo (Score 15, T-1490 / OBS-025)
+# Inception tasks where the human decision is recorded but the workflow
+# never reached completed/. Two classes — both now sweep-eligible:
+#   A) status=work-completed + has Decision + Human AC unchecked
+#      (T-1423 sweep ticks AC + moves to completed/ when all ACs check out)
+#   B) status=started-work + has GO/NO-GO Decision + all ACs checked
+#      (T-1514 sweep promotes started-work→work-completed in place, then
+#       runs class A logic. Underlying root cause closed in T-1515:
+#       do_inception_decide now propagates update-task.sh exit codes.)
+d13_result=$(python3 << 'D13EOF'
+import os, glob, re
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+ACTIVE = os.path.join(PROJECT_ROOT, ".tasks", "active")
+
+DECISION_RE = re.compile(r"^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)", re.MULTILINE)
+HUMAN_HEADER_RE = re.compile(r"^### Human\b", re.MULTILINE)
+NEXT_HEADER_RE = re.compile(r"^## ", re.MULTILINE)
+UNCHECKED_RE = re.compile(r"^\s*- \[ \]", re.MULTILINE)
+
+def fm_field(text, name):
+    m = re.search(rf"^{name}:\s*(\S.*?)\s*$", text, re.MULTILINE)
+    return m.group(1).strip() if m else ""
+
+def section(text, header_re):
+    m = header_re.search(text)
+    if not m:
+        return ""
+    rest = text[m.end():]
+    n = NEXT_HEADER_RE.search(rest)
+    return rest[: n.start()] if n else rest
+
+def count_unchecked(text, header_re):
+    sec = section(text, header_re)
+    return len(UNCHECKED_RE.findall(sec))
+
+class_a = []  # work-completed but Human AC unticked
+class_b = []  # started-work but all ACs ticked + decision recorded
+
+for f in sorted(glob.glob(os.path.join(ACTIVE, "T-*.md"))):
+    try:
+        text = open(f).read()
+    except OSError:
+        continue
+    if fm_field(text, "workflow_type") != "inception":
+        continue
+    status = fm_field(text, "status")
+    if not DECISION_RE.search(text):
+        continue
+    tid = fm_field(text, "id")
+    human_unchecked = count_unchecked(text, HUMAN_HEADER_RE)
+    if status == "work-completed" and human_unchecked > 0:
+        class_a.append(f"{tid}(A:{human_unchecked}hu)")
+    elif status == "started-work" and human_unchecked == 0:
+        class_b.append(f"{tid}(B)")
+
+total = len(class_a) + len(class_b)
+if total == 0:
+    print("PASS 0")
+else:
+    parts = class_a + class_b
+    shown = parts[:8]
+    extra = f" (+{total-8} more)" if total > 8 else ""
+    a_n, b_n = len(class_a), len(class_b)
+    print(f"WARN {total} A={a_n}/B={b_n} {' '.join(shown)}{extra}")
+D13EOF
+)
+d13_level=$(echo "$d13_result" | awk '{print $1}')
+d13_count=$(echo "$d13_result" | awk '{print $2}')
+d13_detail=$(echo "$d13_result" | cut -d' ' -f3-)
+case "$d13_level" in
+    WARN)
+        warn "D13: Inception limbo — $d13_count task(s): $d13_detail" \
+             "Decision recorded but workflow stuck in active/" \
+             "Recover both classes with: bin/fw inception sweep (T-1514)"
+        ;;
+    *)
+        pass "D13: Inception limbo — no stuck inceptions"
         ;;
 esac
 
@@ -2772,6 +2897,150 @@ case "$d9_level" in
         ;;
     *)
         pass "D9: Control drift — normal ($d9_result)"
+        ;;
+esac
+
+echo ""
+
+# D14: Empty Recommendation in inception tasks (T-1497)
+# Pickup-created inceptions land in the "Awaiting Decision" queue with
+# HTML-comment-only Recommendation sections. The do_inception_decide gate
+# (lib/inception.sh + lib/task-audit.sh:audit_inception_recommendation)
+# now blocks decide-time, but capturing the pre-decide state in the audit
+# trail makes the regression visible BEFORE someone tries to decide.
+d14_result=$(python3 << 'D14EOF'
+import os, re, glob
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+ACTIVE_DIR = os.path.join(PROJECT_ROOT, ".tasks", "active")
+
+def has_substantive_recommendation(text):
+    # Locate ## Recommendation section body (until next ## heading)
+    m = re.search(r'^## Recommendation\s*$(.*?)(?=^## |\Z)', text, re.MULTILINE | re.DOTALL)
+    if not m:
+        return True  # no section = different audit concern, not ours
+    body = m.group(1)
+    # Strip multi-line HTML comments
+    body = re.sub(r'<!--.*?-->', '', body, flags=re.DOTALL)
+    # T-1510: accept bulleted (`- **Recommendation:**` / `* **Recommendation:**`)
+    # AND plain (`**Recommendation:**`) forms. Original \s* pattern only
+    # allowed whitespace before the bold marker, so older inception tasks that
+    # authored the recommendation as a list item (T-844, T-705) were
+    # false-positived as empty.
+    return bool(re.search(r'^\s*[-*]?\s*\*\*Recommendation:\*\*\s*\S', body, re.MULTILINE))
+
+empty = []
+for f in glob.glob(os.path.join(ACTIVE_DIR, "T-*.md")):
+    try:
+        with open(f) as fh:
+            text = fh.read()
+    except Exception:
+        continue
+    if "workflow_type: inception" not in text:
+        continue
+    # Only flag tasks where someone could try to decide (started-work or captured)
+    fm = re.match(r'^---\n(.*?)\n---', text, re.DOTALL)
+    if fm:
+        status_m = re.search(r'^status:\s*(\S+)', fm.group(1), re.MULTILINE)
+        if status_m and status_m.group(1) not in ("started-work", "captured"):
+            continue
+    if not has_substantive_recommendation(text):
+        empty.append(os.path.basename(f).split("-")[0] + "-" + os.path.basename(f).split("-")[1])
+
+if empty:
+    # Cap output length so a long list doesn't blow up the audit yaml
+    sample = " ".join(empty[:5])
+    suffix = f" (+{len(empty)-5} more)" if len(empty) > 5 else ""
+    print(f"WARN {len(empty)}_empty: {sample}{suffix}")
+else:
+    print("PASS no_empty_recommendations")
+D14EOF
+)
+d14_level=$(echo "$d14_result" | awk '{print $1}')
+case "$d14_level" in
+    WARN)
+        d14_detail=$(echo "$d14_result" | cut -d' ' -f2-)
+        warn "D14: Empty inception Recommendation — $d14_detail" \
+             "Inception tasks await decision with HTML-comment-only Recommendation" \
+             "Fill ## Recommendation block with **Recommendation:** + rationale before decide"
+        ;;
+    *)
+        pass "D14: Empty inception Recommendation — none ($d14_result)"
+        ;;
+esac
+
+# D15: Inception limbo state (T-1511, OBS-025)
+# Inceptions with status=started-work, owner=human, all Human ACs ticked,
+# but no **Decision**: line in the body. Operator checked the AC boxes
+# intending to complete, then forgot to run `fw inception decide`. The
+# task stays in active/ as a ghost — D5 anomaly only fires on age, so
+# the bug is invisible until tasks rot. Excludes DEFER decisions
+# (intentional keep-active).
+d15_result=$(python3 << 'D15EOF'
+import os, re, glob
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+ACTIVE_DIR = os.path.join(PROJECT_ROOT, ".tasks", "active")
+
+def is_limbo(text):
+    fm = re.match(r'^---\n(.*?)\n---', text, re.DOTALL)
+    if not fm:
+        return False
+    front = fm.group(1)
+    if "workflow_type: inception" not in front:
+        return False
+    status_m = re.search(r'^status:\s*(\S+)', front, re.MULTILINE)
+    owner_m = re.search(r'^owner:\s*(\S+)', front, re.MULTILINE)
+    if not status_m or status_m.group(1) != "started-work":
+        return False
+    if not owner_m or owner_m.group(1) != "human":
+        return False
+    # Decision check — any **Decision**: line means not in limbo
+    if re.search(r'^\*\*Decision\*\*:\s*\S', text, re.MULTILINE):
+        return False
+    # Human ACs — find ### Human section and check for unchecked items
+    human_m = re.search(r'^### Human\s*$(.*?)(?=^### |^## |\Z)', text, re.MULTILINE | re.DOTALL)
+    if not human_m:
+        return False  # no Human section = different shape, not our concern
+    human_body = human_m.group(1)
+    # Strip HTML comments so commented-out templates don't count
+    human_body = re.sub(r'<!--.*?-->', '', human_body, flags=re.DOTALL)
+    unchecked = len(re.findall(r'^- \[ \]', human_body, re.MULTILINE))
+    checked = len(re.findall(r'^- \[x\]', human_body, re.MULTILINE | re.IGNORECASE))
+    # Limbo only when there ARE Human ACs AND none are unchecked
+    return checked > 0 and unchecked == 0
+
+limbo = []
+for f in glob.glob(os.path.join(ACTIVE_DIR, "T-*.md")):
+    try:
+        with open(f) as fh:
+            text = fh.read()
+    except Exception:
+        continue
+    if is_limbo(text):
+        bn = os.path.basename(f)
+        # T-XXXX-slug.md → T-XXXX
+        m = re.match(r'^(T-\d+)', bn)
+        if m:
+            limbo.append(m.group(1))
+
+if limbo:
+    sample = " ".join(limbo[:5])
+    suffix = f" (+{len(limbo)-5} more)" if len(limbo) > 5 else ""
+    print(f"WARN {len(limbo)}_limbo: {sample}{suffix}")
+else:
+    print("PASS no_limbo")
+D15EOF
+)
+d15_level=$(echo "$d15_result" | awk '{print $1}')
+case "$d15_level" in
+    WARN)
+        d15_detail=$(echo "$d15_result" | cut -d' ' -f2-)
+        warn "D15: Inception limbo state — $d15_detail" \
+             "Inception with all Human ACs ticked but no decision recorded — operator forgot to run fw inception decide" \
+             "Run: fw inception decide T-XXX go|no-go|defer --rationale '...'"
+        ;;
+    *)
+        pass "D15: Inception limbo state — none ($d15_result)"
         ;;
 esac
 
