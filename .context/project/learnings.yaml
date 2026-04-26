@@ -2257,3 +2257,18 @@ learnings:
   date: 2026-04-26
   context: Added via context agent
   application: TBD
+- id: L-293
+  learning: |
+    Section-rewriter terminators that stop only at H2 silently swallow H3+ content on next rewrite.
+    Hit twice in 24 hours: T-1519 (lib/reviewer/static_scan.py _VERDICT_SECTION_RE used regex
+    `(?=^## |\Z)`) and T-1526 (lib/inception.sh do_decide python heredoc state machine used
+    `line.startswith('## ')`). Class: any code that captures-or-skips a section bounded by H2
+    must use H2-or-deeper terminator (regex `^#{2,} `, python `re.match(r'^#{2,} ', line)`).
+    Bodies of these sections contain only Bold lines or paragraph text — never headings — so
+    widening the terminator never breaks duplicate-collapse or section semantics.
+    Audit trigger: grep -rn '^## ' lib/ agents/ for section regexes; review their terminators.
+  source: P-011
+  task: T-1526
+  date: 2026-04-26
+  context: Added via context agent
+  application: TBD
