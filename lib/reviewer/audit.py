@@ -1,10 +1,19 @@
-"""Layer 3 audit cron (T-1443 v1.2).
+"""Layer 3 audit cron (T-1443 v1.2, T-1484 v1.5b).
 
-Pass B: re-runs the reviewer over all completed tasks with the current
-catalogue and writes a daily summary to `.context/audits/reviewer/`.
+Default mode (static-scan re-run): re-runs the reviewer's anti-pattern
+catalogue over all completed tasks. Writes daily summary to
+`.context/audits/reviewer/YYYY-MM-DD.yaml`.
 
-Pass A (drift re-verification — re-run task verification scripts) is deferred
-to v1.5 with isolation. Pass A has high blast radius and needs sandboxing.
+`--pass-b` mode (v1.5 Pass B reverify, T-1484): for every completed task,
+checks out the completion SHA into a single shared git worktree and
+re-executes the `## Verification` block (skipping network-dependent
+lines per Spike 1 classifier). Writes
+`.context/audits/reviewer/YYYY-MM-DD-pass-b.yaml`.
+
+Note on terminology: the v1.0 docstring used "Pass B" for the static
+catalogue re-scan. T-1483/v1.5 introduced "Pass A" (drift signal) and
+"Pass B" (worktree re-execution). The `--pass-b` flag here selects the
+v1.5 meaning. Default behavior is unchanged.
 
 Antifragile: pure compute, no caching. Runs end-to-end every invocation.
 Fail-soft (T3): exceptions caught at task level, reported in YAML output.
@@ -12,6 +21,7 @@ Fail-soft (T3): exceptions caught at task level, reported in YAML output.
 
 from __future__ import annotations
 
+import argparse
 import sys
 from collections import Counter
 from datetime import datetime, timezone
@@ -106,11 +116,11 @@ def run_pass_b(project_root: Path, catalogue: dict, escalation: dict | None) -> 
     }
 
 
-def write_audit_yaml(project_root: Path, summary: dict) -> Path:
+def write_audit_yaml(project_root: Path, summary: dict, suffix: str = "") -> Path:
+    """Write summary YAML atomically. `suffix` (e.g. '-pass-b') keeps modes separate."""
     out_dir = project_root / ".context" / "audits" / "reviewer"
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{summary['scan_date']}.yaml"
-    # write atomically
+    out_path = out_dir / f"{summary['scan_date']}{suffix}.yaml"
     tmp = out_path.with_suffix(".yaml.tmp")
     with open(tmp, "w") as fh:
         yaml.safe_dump(summary, fh, sort_keys=False)
@@ -118,11 +128,118 @@ def write_audit_yaml(project_root: Path, summary: dict) -> Path:
     return out_path
 
 
+def run_pass_b_reverify(
+    project_root: Path,
+    limit: int | None = None,
+    timeout_per_line: int = 30,
+) -> dict:
+    """v1.5 Pass B corpus mode (T-1484).
+
+    Re-execute every completed task's `## Verification` block inside a single
+    shared git worktree at the task's completion SHA. Network-dependent lines
+    skipped. Returns summary dict for YAML output.
+    """
+    from lib.reviewer.reverify import WorktreePool, reverify_task
+
+    completed_dir = project_root / ".tasks" / "completed"
+
+    def _task_id_num(p: Path) -> int:
+        # Sort by numeric task ID descending (newest first) so --limit hits recent tasks.
+        try:
+            return int(p.name.split("-")[1])
+        except (IndexError, ValueError):
+            return 0
+
+    completed = sorted(completed_dir.glob("T-*.md"), key=_task_id_num, reverse=True)
+    if limit is not None:
+        completed = completed[:limit]
+
+    totals = Counter()
+    per_task: list[dict] = []
+    errors: list[dict] = []
+
+    with WorktreePool(project_root) as pool:
+        for tf in completed:
+            try:
+                rep = reverify_task(tf, pool, timeout_per_line=timeout_per_line)
+            except Exception as exc:
+                errors.append({"task": tf.name, "error": f"{type(exc).__name__}: {exc}"})
+                totals["ERROR"] += 1
+                continue
+            n_pass = sum(1 for r in rep.results if r.status == "PASS")
+            n_fail = sum(1 for r in rep.results if r.status == "FAIL")
+            n_skip = sum(1 for r in rep.results if r.status == "SKIPPED")
+            n_error = sum(1 for r in rep.results if r.status == "ERROR")
+            totals[rep.overall] += 1
+            per_task.append({
+                "task_id": rep.task_id,
+                "sha": rep.sha,
+                "overall": rep.overall,
+                "n_pass": n_pass,
+                "n_fail": n_fail,
+                "n_skipped": n_skip,
+                "n_error": n_error,
+                "error": rep.error,
+            })
+
+    return {
+        "scan_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "scan_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "mode": "pass-b",
+        "tasks_scanned": len(per_task),
+        "limit": limit,
+        "timeout_per_line": timeout_per_line,
+        "totals": {
+            "PASS": totals.get("PASS", 0),
+            "FAIL": totals.get("FAIL", 0),
+            "NO-VERIFICATION": totals.get("NO-VERIFICATION", 0),
+            "ERROR": totals.get("ERROR", 0),
+        },
+        "errors": errors,
+        "per_task": per_task,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     import os
 
+    parser = argparse.ArgumentParser(prog="fw reviewer audit")
+    parser.add_argument(
+        "--pass-b",
+        dest="pass_b",
+        action="store_true",
+        help="v1.5 Pass B corpus reverify (worktree-reuse re-execution of ## Verification)",
+    )
+    parser.add_argument("--limit", type=int, default=None, help="Cap tasks scanned (cron budget)")
+    parser.add_argument("--timeout", type=int, default=30, help="Per-line timeout seconds (default 30)")
+    parser.add_argument("--quiet", action="store_true", help="Suppress per-task summary lines")
+    args = parser.parse_args(argv)
+
     project_root = Path(os.environ.get("PROJECT_ROOT") or os.getcwd())
     framework_root = Path(os.environ.get("FRAMEWORK_ROOT") or project_root)
+
+    if args.pass_b:
+        summary = run_pass_b_reverify(
+            project_root, limit=args.limit, timeout_per_line=args.timeout
+        )
+        out_path = write_audit_yaml(project_root, summary, suffix="-pass-b")
+        t = summary["totals"]
+        print(f"Reviewer audit (v1.5 Pass B reverify) — {summary['scan_date']}")
+        print(f"  Scanned: {summary['tasks_scanned']} completed task(s)"
+              + (f" (limited to {args.limit})" if args.limit else ""))
+        print(f"  Verdicts: PASS={t['PASS']} FAIL={t['FAIL']} "
+              f"NO-VERIFICATION={t['NO-VERIFICATION']} ERROR={t['ERROR']}")
+        if not args.quiet:
+            for row in summary["per_task"]:
+                if row["overall"] != "PASS":
+                    print(f"    [{row['overall']}] {row['task_id']} "
+                          f"sha={(row['sha'] or 'none')[:8]} "
+                          f"PASS={row['n_pass']} FAIL={row['n_fail']} "
+                          f"SKIPPED={row['n_skipped']} ERROR={row.get('n_error', 0)}")
+        if summary["errors"]:
+            print(f"  Errors: {len(summary['errors'])} (see YAML)")
+        print(f"  Wrote: {out_path.relative_to(project_root)}")
+        return 0 if (t["FAIL"] == 0 and t["ERROR"] == 0) else 1
 
     try:
         catalogue, escalation = _load_catalogues(framework_root, project_root)
@@ -134,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
     out_path = write_audit_yaml(project_root, summary)
 
     t = summary["totals"]
-    print(f"Reviewer audit (Pass B) — {summary['scan_date']}")
+    print(f"Reviewer audit (static-scan re-run) — {summary['scan_date']}")
     print(f"  Catalogue: {summary['catalogue_version']}")
     print(f"  Escalation: {summary['escalation_version']}")
     print(f"  Scanned: {summary['tasks_scanned']} completed task(s)")
