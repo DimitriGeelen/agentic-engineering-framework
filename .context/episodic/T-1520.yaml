@@ -1,0 +1,145 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1520: Vendored pre-compact.sh drift causes duplicate handover artefact (RCA: missing T-1476 dedup)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-26T21:38:55Z
+# ============================================================================
+
+task_id: T-1520
+task_name: "Vendored pre-compact.sh drift causes duplicate handover artefact (RCA: missing T-1476 dedup)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T21:35:01Z
+completed: 2026-04-26T21:38:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-26T23:37:39+02:00
+last_commit: 2026-04-26T23:37:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Resync vendored .agentic-framework + clean duplicated handover artefact
+
+# Key outcomes
+outcomes:
+  - "`diff agents/context/pre-compact.sh .agentic-framework/agents/context/pre-compact.sh` returns empty (no drift)"
+  - "After fresh handover invocation, source handover file has each unique H2 section appearing exactly once"
+  - "Truncated/cleaned LATEST.md has no duplicate sections"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/audit/audit.sh"
+  - ".agentic-framework/agents/context/check-tier0.sh"
+  - ".agentic-framework/agents/context/lib/learning.sh"
+  - ".agentic-framework/agents/context/pre-compact.sh"
+  - ".agentic-framework/agents/git/lib/hooks.sh"
+  - ".agentic-framework/agents/gpu-recover/AGENT.md"
+  - ".agentic-framework/agents/gpu-recover/recover.sh"
+  - ".agentic-framework/agents/handover/handover.sh"
+  - ".agentic-framework/agents/task-create/update-task.sh"
+  - ".agentic-framework/bin/fw"
+  - ".agentic-framework/bin/hook-enable.sh"
+  - ".agentic-framework/docs/generated/components/agents-context-pl007-scanner.md"
+  - ".agentic-framework/docs/generated/components/agents-context-session-end.md"
+  - ".agentic-framework/docs/generated/components/agents-context-session-silent-scanner.md"
+  - ".agentic-framework/docs/generated/components/agents-context-stop-guard.md"
+  - ".agentic-framework/docs/generated/components/agents-context-subagent-stop.md"
+  - ".agentic-framework/docs/generated/components/agents-gpu-recover-recover.md"
+  - ".agentic-framework/docs/generated/components/lib-reviewer-override_cli.md"
+  - ".agentic-framework/docs/generated/components/lib-reviewer-overrides.md"
+  - ".agentic-framework/docs/generated/components/tests-playwright-test_review_csrf.md"
+  - ".agentic-framework/docs/generated/components/tests-scripts-yaml_parse_all_tasks.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-audit_flock.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-doctor_duplicate_hook_detection.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-handover_push_no_origin.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-handover_t012_active_only.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-inception_tick_decision_recorded.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-inception_tick_marker.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-pickup_type_routing.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-pre_compact_flock.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-pre_compact_timewindow_dedup.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-test_reviewer_overrides.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-update_task_yaml_components_emit.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-upgrade_dedupe_user_hooks.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-upgrade_duplicate_hook_detection.md"
+  - ".agentic-framework/docs/generated/components/tests-web-test_inception_decide_hardening.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-reviewer.md"
+  - ".agentic-framework/docs/generated/components/web-static-csrf-htmx.md"
+  - ".agentic-framework/docs/generated/components/web-templates-reviewer_overrides.md"
+  - ".agentic-framework/docs/reports/T-1451-handoff-url-sweep.md"
+  - ".agentic-framework/docs/reports/T-1452-csrf-token-htmx-rca.md"
+  - ".agentic-framework/docs/reports/T-1459-dead-claude-hooks.md"
+  - ".agentic-framework/docs/reports/T-1460-audit-recursive-spawn-rca.md"
+  - ".agentic-framework/docs/reports/T-1482-reviewer-v15-drift-reverification.md"
+  - ".agentic-framework/docs/reports/T-1499-ring20-hosting-mediation.md"
+  - ".agentic-framework/docs/reports/T-1501-toolchain-build-verification.md"
+  - ".agentic-framework/docs/reports/T-1513-github-divergence-rca.md"
+  - ".agentic-framework/lib/inception.sh"
+  - ".agentic-framework/lib/keylock.sh"
+  - ".agentic-framework/lib/pickup.sh"
+  - ".agentic-framework/lib/promote.sh"
+  - ".agentic-framework/lib/reviewer/audit.py"
+  - ".agentic-framework/lib/reviewer/classifier.py"
+  - ".agentic-framework/lib/reviewer/drift_cli.py"
+  - ".agentic-framework/lib/reviewer/drift.py"
+  - ".agentic-framework/lib/reviewer/reverify_cli.py"
+  - ".agentic-framework/lib/reviewer/reverify.py"
+  - ".agentic-framework/lib/reviewer/static_scan.py"
+  - ".agentic-framework/lib/review.sh"
+  - ".agentic-framework/lib/task-audit.sh"
+  - ".agentic-framework/lib/upgrade.sh"
+  - ".agentic-framework/.tasks/templates/default.md"
+  - ".agentic-framework/.tasks/templates/inception.md"
+  - ".agentic-framework/web/blueprints/approvals.py"
+  - ".agentic-framework/web/blueprints/inception.py"
+  - ".agentic-framework/web/blueprints/reviewer.py"
+  - ".agentic-framework/web/shared.py"
+  - ".agentic-framework/web/templates/_approvals_content.html"
+  - ".agentic-framework/web/templates/reviewer_audit.html"
+  - ".context/handovers/S-2026-0426-2325.md"
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1520-vendored-pre-compactsh-drift-causes-dupl.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T23:37:39"
+    action: "T-1520: Resync vendored .agentic-framework + clean duplicated handover artefact"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 71
+  lines_added: 3512
+  lines_removed: 215
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1520-vendored-pre-compactsh-drift-causes-dupl.md
+generated_by: context-agent-hybrid
