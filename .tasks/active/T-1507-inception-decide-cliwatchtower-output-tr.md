@@ -116,15 +116,33 @@ Live evidence (T-1506 GO close, 2026-04-26T11:32:42Z): the user-visible "side-ef
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO (small bounded fix)
+
+**Rationale:** Localized the truncation site by code-read (no spike needed): `web/blueprints/inception.py:527` clips the side-effect warning to `[:150]` chars in the htmx response fragment, and `web/blueprints/inception.py:545` clips to `[:300]` chars in the non-htmx redirect path. That is where T-1506's `…/root/.claude/sett` cutoff came from. The fix is mechanical and tightly scoped: bump the caps to a readable size (≈800 chars), append a `… (truncated, see server log)` suffix when the cap fires so the operator knows there's more content. Server logs already capture full stdout/stderr at `[:500]` (line 514), so the recovery path exists. No CLI-side truncation needed (CLI streams subprocess output unmodified).
+
+T-1509 (closed in this session) addressed the happy-path trigger that made the `[:150]` cap fire on every successful decision. The cap now only matters on real side-effect failures (rare). But "rare and unreadable when it fires" is exactly the failure mode this should prevent, and the fix is a 5-line edit with one regression test. Build cost is hours, blast radius is one display surface.
+
+**Evidence:**
+- **A1 confirmed:** truncation site is `web/blueprints/inception.py:527` (htmx, `[:150]`) and `:545` (non-htmx redirect, `[:300]`). Verified by grep.
+- **A2 partially falsified:** it is a byte cap (150/300), not terminal-width — the cap lives in the Flask response, not in any terminal-width measurement. The CLI itself does not truncate; subprocess output is streamed unmodified.
+- **A3 falsified:** `/inception/T-XXX` rationale rendering is NOT capped. `_extract_rationale_from_recommendation` (lines 28-60) does a semantic slice between markers, no character limit. So the audit-trail surface (the page where rationale is read post-decision) is fine.
+- **A4 N/A here:** `agents/docgen/generate_article.py:219` does cap rationale at `[:80]` but that is article generation, not the live `/decisions` index. Separate concern; flag as follow-up if articles are ever the audit-trail surface.
+- **A5 confirmed:** no structured logging of CLI-side emit, BUT line 514 already logs stdout/stderr to Python logger at `[:500]`. Recovery path exists for operators with log access.
+
+**Proposed bounded fix (one task, one PR):**
+1. Bump line 527 cap `150 → 800`, append `…(truncated)` if `len(stderr or stdout) > 800`.
+2. Bump line 545 cap `300 → 800` (URL query-string can absorb 800; redirects rarely hit URL length limits at this size).
+3. Bump line 514 log-side cap `500 → 2000` so log-side recovery captures the full bug context.
+4. Regression test: `tests/web/test_inception_decide_*.py` — simulate fw subprocess returning stderr `'X' * 1000`, assert response contains either full text or `(truncated)` marker.
+5. NO CLI-side change.
+
+**Alternatives considered:**
+- *Remove caps entirely*: rejected — htmx fragment is injected into a small card; uncapped HTML risks layout breakage on long traces. Bounded with hint is the right ergonomics.
+- *Smart wrap-aware truncation*: rejected — over-engineered for a side-effect warning. A clear suffix marker is enough.
+- *DEFER*: rejected — fix is small, T-1509 already removed the trigger but the next side-effect failure (different cause) will hit the same readability wall. Worth landing now.
+- *Fix CLI separately*: rejected — CLI doesn't truncate; nothing to fix there. The task title's framing is misleading; the bug lives entirely in the Watchtower htmx/redirect display.
+
+**Build estimate:** 1 hour (one file edit + one test case + one commit). 1 build task to spawn after GO.
 
 ## Decisions
 
