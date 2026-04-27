@@ -1,0 +1,55 @@
+# Escalation drift summary — T-1555 Layer B v1
+# Re-emitted on every scanner run. Read-only artifact.
+generated: 2026-04-27T16:48:04.289351+00:00
+corpus_total: 1469
+bug_class_total: 320
+bug_class_pct: 21
+h1_flagged: 316
+h1_pct_of_bug_class: 98
+h2_repeat_patterns: 49
+h3_flagged: 262
+h3_pct_of_bug_class: 81
+recent_30d_flagged: 218
+report_md: docs/reports/T-1549-escalation-scan-v0.md
+recent_sample:
+  - tid: "T-1014-fix-playwright-navigation-test-timeout--"
+    name: "Fix Playwright navigation test timeout — batch contention"
+  - tid: "T-1026-playwright-tests--docs-detail-review-acs"
+    name: "Playwright tests — docs detail, review ACs, POST error handling"
+  - tid: "T-1027-fix-graduation-page-playwright-test-time"
+    name: "Fix graduation page Playwright test timeout"
+  - tid: "T-1040-playwright-networkidle-migration--replac"
+    name: "Playwright networkidle migration — replace networkidle with domcontentloaded acr"
+  - tid: "T-1045-fix-playwright-test-server--enable-flask"
+    name: "Fix Playwright test server — enable Flask threaded mode to prevent sequential re"
+  - tid: "T-1051-playwright-response-time-regression-test"
+    name: "Playwright response time regression test — verify no route takes >5s"
+  - tid: "T-1053-version-bump-to-1586--332-playwright-tes"
+    name: "Version bump to 1.5.86 — 332 Playwright tests, timing report, performance regres"
+  - tid: "T-1069-one-time-horizon-status-data-cleanup--fi"
+    name: "One-time horizon-status data cleanup — fix 52 inconsistent tasks"
+  - tid: "T-1073-fix-playwright-test-suite--mass-failures"
+    name: "Fix Playwright test suite — mass failures across API and UI tests"
+  - tid: "T-1075-fix-project-boundary-false-positive--ter"
+    name: "Fix project boundary false positive — TermLink commands inside loops/pipes"
+h2_top:
+  - learning: "P-010"
+    task_count: 99
+  - learning: "P-011"
+    task_count: 69
+  - learning: "L-006"
+    task_count: 54
+  - learning: "L-001"
+    task_count: 38
+  - learning: "PL-007"
+    task_count: 24
+  - learning: "L-293"
+    task_count: 16
+  - learning: "L-002"
+    task_count: 13
+  - learning: "L-291"
+    task_count: 13
+  - learning: "P-001"
+    task_count: 12
+  - learning: "PL-003"
+    task_count: 12

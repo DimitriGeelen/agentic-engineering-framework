@@ -150,3 +150,12 @@ jobs:
     origin_task: T-1399
     status: paused
     description: "Pings human at 10:00 daily for pending-updates entries (blocked cross-project or cross-machine actions) older than 24h. Paused by default — activate via Watchtower /cron once a ntfy channel is configured."
+
+  - id: escalation-drift-daily
+    name: "Escalation drift scan (G-019 Layer B v1)"
+    schedule: "23 5 * * *"
+    command: "cd /opt/999-Agentic-Engineering-Framework && python3 tools/escalation-scan-v0.py"
+    source_file: agentic-audit.crontab
+    origin_task: T-1555
+    status: active
+    description: "Daily scan of completed tasks for symptom-fix candidates: bug-class without ## RCA (H1), repeated learning-IDs across 3+ tasks in 30 days (H2), bug-class without RCA AND no learning capture (H3). Writes machine-readable summary to .context/working/escalation-drift-LATEST.yaml + human-readable report to docs/reports/T-1549-escalation-scan-v0.md. Antifragile (no caching). Surfaces drift after Layer A (T-1550 RCA gate) baseline."

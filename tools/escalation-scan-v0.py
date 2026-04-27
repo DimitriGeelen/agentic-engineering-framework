@@ -22,6 +22,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 COMPLETED = ROOT / ".tasks" / "completed"
 REPORT = ROOT / "docs" / "reports" / "T-1549-escalation-scan-v0.md"
+# T-1555 Layer B v1: stable machine-readable summary for cron consumers.
+# Watchtower / metrics / drift dashboards read this; the .md remains for humans.
+LATEST_YAML = ROOT / ".context" / "working" / "escalation-drift-LATEST.yaml"
 
 BUG_TITLE_RE = re.compile(
     r"\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b", re.I
@@ -241,7 +244,36 @@ def main() -> None:
             "(e.g. corrections within a session, not across tasks) → re-scope before building v1.\n"
         )
 
+    # T-1555 Layer B v1: machine-readable summary for cron / Watchtower.
+    # Hand-rolled YAML (no PyYAML dependency in framework runtime).
+    LATEST_YAML.parent.mkdir(parents=True, exist_ok=True)
+    h2_top = sorted(h2_repeats, key=lambda x: -len(x[1]))[:10]
+    with LATEST_YAML.open("w") as f:
+        f.write("# Escalation drift summary — T-1555 Layer B v1\n")
+        f.write("# Re-emitted on every scanner run. Read-only artifact.\n")
+        f.write(f"generated: {datetime.now(timezone.utc).isoformat()}\n")
+        f.write(f"corpus_total: {len(all_tasks)}\n")
+        f.write(f"bug_class_total: {len(bug_class_tasks)}\n")
+        f.write(f"bug_class_pct: {bc_pct}\n")
+        f.write(f"h1_flagged: {len(h1_flagged)}\n")
+        f.write(f"h1_pct_of_bug_class: {h1_pct}\n")
+        f.write(f"h2_repeat_patterns: {len(h2_repeats)}\n")
+        f.write(f"h3_flagged: {len(h3_flagged)}\n")
+        f.write(f"h3_pct_of_bug_class: {h3_pct}\n")
+        f.write(f"recent_30d_flagged: {len(recent_flagged)}\n")
+        f.write(f"report_md: {REPORT.relative_to(ROOT)}\n")
+        f.write("recent_sample:\n")
+        for tid, name in recent_flagged[:10]:
+            safe_name = name.replace('"', "'")
+            f.write(f'  - tid: "{tid}"\n')
+            f.write(f'    name: "{safe_name}"\n')
+        f.write("h2_top:\n")
+        for lid, tids in h2_top:
+            f.write(f'  - learning: "{lid}"\n')
+            f.write(f"    task_count: {len(tids)}\n")
+
     print(f"Report written: {REPORT}")
+    print(f"Latest YAML:    {LATEST_YAML}")
     print(
         f"Corpus: {len(all_tasks)} tasks; "
         f"bug-class: {len(bug_class_tasks)}; "
