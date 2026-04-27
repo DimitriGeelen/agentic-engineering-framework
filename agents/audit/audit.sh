@@ -912,6 +912,33 @@ else
     fi
 fi
 
+# T-1573 / F8: Surface .gate-bypass-log.yaml — auth-flag bypasses
+# (--skip-sovereignty, --skip-acceptance-criteria, --skip-rca, etc.) are
+# logged by update-task.sh:32-42 but nothing read the file before now.
+GATE_BYPASS_LOG="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+if [ -f "$GATE_BYPASS_LOG" ]; then
+    gb_total=$(grep -c "^- timestamp:" "$GATE_BYPASS_LOG" 2>/dev/null || echo 0)
+    # Count entries with timestamp in last 7 days
+    cutoff=$(date -u -d "7 days ago" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || \
+             date -u -v-7d +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "1970-01-01T00:00:00Z")
+    gb_recent=$(awk -v cutoff="$cutoff" '
+        /^- timestamp:/ {
+            ts=$0; gsub(/.*timestamp: ['"'"'"]?/, "", ts); gsub(/['"'"'"]?$/, "", ts);
+            if (ts >= cutoff) c++
+        }
+        END { print c+0 }
+    ' "$GATE_BYPASS_LOG" 2>/dev/null || echo 0)
+    if [ "$gb_recent" -gt 10 ]; then
+        warn "Gate-bypass log: $gb_recent bypasses in last 7 days" \
+             "$gb_total total entries; bypass-as-pattern signal" \
+             "Review .context/working/.gate-bypass-log.yaml — investigate caller distribution"
+    else
+        pass "Gate-bypass log: $gb_recent in last 7 days ($gb_total total)"
+    fi
+else
+    pass "Gate-bypass log: clean (no bypasses recorded)"
+fi
+
 # Check for commit-msg hook (validates task references)
 if [ -f "$PROJECT_ROOT/.git/hooks/commit-msg" ]; then
     pass "Commit-msg hook installed"
