@@ -2360,3 +2360,17 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: PL-007
+  learning: "Fleet doctor observed tofu-violation on hub 'ring20-dashboard' (192.168.10.121:9100). date_observed=2026-04-27T18:38:31Z hub_fingerprint=sha256:7f927cc0c6ee272caa06033c8964a952616da736b92b90f1fd7e1b5a4420d10e. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-27
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-305
+  learning: "Verification commands that pipe long-running output through 'grep -q' can fail with exit 141 (SIGPIPE) under set -o pipefail: grep -q closes stdin on first match, and the upstream command (e.g. 'fw doctor') gets SIGPIPE'd. Recipe: capture output to a temp file first, then grep ('cmd > /tmp/.out 2>&1 && grep -E \"pattern\" /tmp/.out > /dev/null && rm -f /tmp/.out'). Same class as L-302 (pipefail trap on no-match) but the trigger is OPPOSITE — too much output, not too little."
+  source: P-001
+  task: T-1558
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
