@@ -3575,9 +3575,9 @@ PYREVQ
                 for tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
                     [ -f "$tf" ] || continue
                     if head -20 "$tf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
-                        tf_id=$(grep "^id:" "$tf" | head -1 | sed 's/id:[[:space:]]*//')
-                        tf_name=$(grep "^name:" "$tf" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
-                        tf_status=$(grep "^status:" "$tf" | head -1 | sed 's/status:[[:space:]]*//')
+                        tf_id=$({ grep "^id:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/id:[[:space:]]*//')
+                        tf_name=$({ grep "^name:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+                        tf_status=$({ grep "^status:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
                         if [ "$tf_status" = "work-completed" ]; then
                             echo -e "  ${GREEN}✓${NC}  ${tf_id}: ${tf_name}"
                         else

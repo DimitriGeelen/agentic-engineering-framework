@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1566: L-302 sweep: 3 final sites in bin/fw (close-out)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T20:56:20Z
+# ============================================================================
+
+task_id: T-1566
+task_name: "L-302 sweep: 3 final sites in bin/fw (close-out)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T20:54:37Z
+completed: 2026-04-27T20:55:55Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "3 grep|head sites at bin/fw:3578-3580 (onboarding-task scan block) wrapped with `{ grep ... 2>/dev/null || true; }` — completes the L-302 sweep across the framework codebase (foundation lib/yaml.sh + lib/config.sh from T-1557, lib/upgrade.sh + lib/dispatch.sh from T-1560, lib/pickup.sh from T-1562, agents/task-create/update-task.sh from T-1563, 13 agents/ scripts from T-1564, and now bin/fw)."
+  - "`bin/fw doctor` end-to-end smoke test passes after the change."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1566-l-302-sweep-3-final-sites-in-binfw-close.md
+generated_by: context-agent-hybrid
