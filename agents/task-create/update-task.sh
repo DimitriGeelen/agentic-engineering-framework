@@ -163,14 +163,47 @@ check_acceptance_criteria() {
     fi
 }
 
-# Recommendation Gate (T-679 / T-1529)
-# Fires only when PARTIAL_COMPLETE=true (Human ACs remain — task is going to
-# the human-review queue). Requires a substantive `## Recommendation` block
-# with a `**Recommendation:**` line so reviewers see an agent advisory.
+# Recommendation Gate (T-679 / T-1529 / T-1572 F6)
+# Fires when ANY needs-human signal is true:
+#   1. PARTIAL_COMPLETE=true (Human ACs remain — original T-679 trigger)
+#   2. Frontmatter `human_signoff: required`
+#   3. Frontmatter `risk: high` or `risk: medium`
+#   4. Prior `## Reviewer Verdict` block declares `Needs Human: yes`
+# This aligns the artefact gate with the reviewer's classification
+# (lib/reviewer/static_scan.py:668). T-1565 audit F6: a task with
+# `human_signoff: required` and no Human ACs in body could complete silently
+# with no Recommendation written — the reviewer flagged it; the gate didn't.
 # OBS-031: 19/22 awaiting-review tasks were blank because T-679 was advisory only.
 # L-293: uses H2+ terminator to avoid false-positives from appended Updates entries.
 check_recommendation_for_review() {
-    [ "${PARTIAL_COMPLETE:-false}" = true ] || return 0
+    # T-1572 F6: compute unified needs_human flag (PARTIAL_COMPLETE OR
+    # frontmatter signals OR prior reviewer verdict).
+    local needs_human="false"
+    if [ "${PARTIAL_COMPLETE:-false}" = true ]; then
+        needs_human="true"
+    else
+        needs_human=$(python3 - "$TASK_FILE" <<'PYNH' 2>/dev/null || echo false
+import sys, re
+try:
+    text = open(sys.argv[1]).read()
+except OSError:
+    print("false"); sys.exit(0)
+fm_m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+fm = fm_m.group(1) if fm_m else ""
+if re.search(r"^human_signoff:\s*[\"']?required\b", fm, re.MULTILINE):
+    print("true"); sys.exit(0)
+if re.search(r"^risk:\s*[\"']?(high|medium)\b", fm, re.MULTILINE | re.IGNORECASE):
+    print("true"); sys.exit(0)
+v_m = re.search(r"^## Reviewer Verdict \(v[0-9.]+\)[^\n]*\n(.*?)(?=^#{2,} |\Z)",
+                text, re.MULTILINE | re.DOTALL)
+if v_m and re.search(r"^- \*\*Needs Human:\*\*\s*yes\b",
+                     v_m.group(1), re.MULTILINE | re.IGNORECASE):
+    print("true"); sys.exit(0)
+print("false")
+PYNH
+)
+    fi
+    [ "$needs_human" = "true" ] || return 0
 
     local rec_state
     rec_state=$(python3 - "$TASK_FILE" <<'PYREC' 2>/dev/null || echo "error"
@@ -202,7 +235,7 @@ PYREC
                 log_gate_bypass "--skip-recommendation" "check_recommendation_for_review"
                 return 0
             fi
-            echo -e "${RED}ERROR: Cannot complete — Human ACs remain but ## Recommendation is $rec_state.${NC}" >&2
+            echo -e "${RED}ERROR: Cannot complete — task needs human review but ## Recommendation is $rec_state.${NC}" >&2
             echo "" >&2
             echo "T-679 (CLAUDE.md): never present a blank decision to the human." >&2
             echo "Reviewers will see /review/$(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') with no agent advisory." >&2
