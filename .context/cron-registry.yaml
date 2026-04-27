@@ -19,7 +19,7 @@ jobs:
   - id: structural-30m
     name: "Structural audits (30 min)"
     schedule: "*/30 * * * *"
-    command: "fw audit --section structure,compliance,quality,discovery --cron"
+    command: "flock -n /var/lock/agentic-cron-structural-30m.lock -c 'fw audit --section structure,compliance,quality,discovery --cron'"
     source_file: agentic-audit.crontab
     origin_task: T-184
     status: active
@@ -28,7 +28,7 @@ jobs:
   - id: traceability-hourly
     name: "Git traceability + episodic (hourly)"
     schedule: "0 * * * *"
-    command: "fw audit --section traceability,episodic,discovery-trends --cron"
+    command: "flock -n /var/lock/agentic-cron-traceability-hourly.lock -c 'fw audit --section traceability,episodic,discovery-trends --cron'"
     source_file: agentic-audit.crontab
     origin_task: T-184
     status: active
@@ -37,7 +37,7 @@ jobs:
   - id: observations-6h
     name: "Observations + gaps (6 hourly)"
     schedule: "0 */6 * * *"
-    command: "fw audit --section observations,gaps --cron"
+    command: "flock -n /var/lock/agentic-cron-observations-6h.lock -c 'fw audit --section observations,gaps --cron'"
     source_file: agentic-audit.crontab
     origin_task: T-184
     status: active
@@ -46,7 +46,7 @@ jobs:
   - id: oe-fast-30m
     name: "OE fast checks (30 min)"
     schedule: "15,45 * * * *"
-    command: "fw audit --section oe-fast,oe-research --cron"
+    command: "flock -n /var/lock/agentic-cron-oe-fast-30m.lock -c 'fw audit --section oe-fast,oe-research --cron'"
     source_file: agentic-audit.crontab
     origin_task: T-196
     status: active
@@ -55,7 +55,7 @@ jobs:
   - id: oe-hourly
     name: "OE hourly checks"
     schedule: "30 * * * *"
-    command: "fw audit --section oe-hourly --cron"
+    command: "flock -n /var/lock/agentic-cron-oe-hourly.lock -c 'fw audit --section oe-hourly --cron'"
     source_file: agentic-audit.crontab
     origin_task: T-196
     status: active
@@ -64,7 +64,7 @@ jobs:
   - id: oe-daily
     name: "OE daily checks"
     schedule: "0 7 * * *"
-    command: "fw audit --section oe-daily --cron"
+    command: "flock -n /var/lock/agentic-cron-oe-daily.lock -c 'fw audit --section oe-daily --cron'"
     source_file: agentic-audit.crontab
     origin_task: T-196
     status: active
@@ -73,7 +73,7 @@ jobs:
   - id: oe-weekly
     name: "OE weekly checks"
     schedule: "0 9 * * 1"
-    command: "fw audit --section oe-weekly --cron"
+    command: "flock -n /var/lock/agentic-cron-oe-weekly.lock -c 'fw audit --section oe-weekly --cron'"
     source_file: agentic-audit.crontab
     origin_task: T-196
     status: active
@@ -82,7 +82,7 @@ jobs:
   - id: full-daily
     name: "Full audit (daily)"
     schedule: "0 8 * * *"
-    command: "fw audit --cron"
+    command: "flock -n /var/lock/agentic-cron-full-daily.lock -c 'fw audit --cron'"
     source_file: agentic-audit.crontab
     origin_task: T-184
     status: active
@@ -109,7 +109,7 @@ jobs:
   - id: pickup-process
     name: "Pickup inbox processor (1 min)"
     schedule: "* * * * *"
-    command: "fw pickup process"
+    command: "flock -n /var/lock/agentic-cron-pickup-process.lock -c 'fw pickup process'"
     source_file: agentic-audit.crontab
     origin_task: T-778
     status: active

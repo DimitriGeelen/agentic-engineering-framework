@@ -9,28 +9,28 @@ PATH=/usr/local/bin:/usr/bin:/bin
 37 4 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" reviewer audit 2>/dev/null
 
 # Structural audits (30 min)
-*/30 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section structure,compliance,quality,discovery --cron 2>/dev/null
+*/30 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-structural-30m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section structure,compliance,quality,discovery --cron' 2>/dev/null
 
 # Git traceability + episodic (hourly)
-0 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section traceability,episodic,discovery-trends --cron 2>/dev/null
+0 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-traceability-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section traceability,episodic,discovery-trends --cron' 2>/dev/null
 
 # Observations + gaps (6 hourly)
-0 */6 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps --cron 2>/dev/null
+0 */6 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-observations-6h.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps --cron' 2>/dev/null
 
 # OE fast checks (30 min)
-15,45 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-fast,oe-research --cron 2>/dev/null
+15,45 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-fast-30m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-fast,oe-research --cron' 2>/dev/null
 
 # OE hourly checks
-30 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-hourly --cron 2>/dev/null
+30 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-hourly --cron' 2>/dev/null
 
 # OE daily checks
-0 7 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-daily --cron 2>/dev/null
+0 7 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-daily --cron' 2>/dev/null
 
 # OE weekly checks
-0 9 * * 1 root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-weekly --cron 2>/dev/null
+0 9 * * 1 root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-weekly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-weekly --cron' 2>/dev/null
 
 # Full audit (daily)
-0 8 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --cron 2>/dev/null
+0 8 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-full-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --cron' 2>/dev/null
 
 # Component docs regeneration (daily)
 15 8 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" docs --all 2>/dev/null
@@ -39,7 +39,7 @@ PATH=/usr/local/bin:/usr/bin:/bin
 0 9 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 -c "import os,datetime; cutoff=str(datetime.date.today()-datetime.timedelta(days=7)); d='.context/audits/cron'; [os.remove(os.path.join(d,f)) for f in os.listdir(d) if f.endswith('.yaml') and len(f)>=15 and f[4]=='-' and f[:10]<cutoff]" 2>/dev/null
 
 # Pickup inbox processor (1 min)
-* * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" pickup process 2>/dev/null
+* * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-pickup-process.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" pickup process' 2>/dev/null
 
 # Weekly release tagging (Monday 10:00)
 0 10 * * 1 root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" release tag-and-release 2>/dev/null
