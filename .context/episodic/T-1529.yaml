@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1529: T-1529: Structural gate for ## Recommendation block (T-679 enforcement)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T06:19:15Z
+# ============================================================================
+
+task_id: T-1529
+task_name: "T-1529: Structural gate for ## Recommendation block (T-679 enforcement)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T06:15:50Z
+completed: 2026-04-27T06:19:12Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T08:19:07+02:00
+last_commit: 2026-04-27T08:19:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Structural gate for ## Recommendation block (T-679 enforcement)
+
+# Key outcomes
+outcomes:
+  - "New gate function `check_recommendation_for_review` in `agents/task-create/update-task.sh` fires only when PARTIAL_COMPLETE=true."
+  - "Uses H2+ terminator regex (L-293 compliance) to extract Recommendation section, strips HTML comments, requires substantive `**Recommendation:**` line."
+  - "Blocks `work-completed` with actionable error message (template for what to add) on missing/empty Recommendation."
+  - "Bypassable via `--skip-recommendation` flag (logged via `log_gate_bypass` like other gates)."
+  - "`--force` triggers `--skip-recommendation` (mirroring AC/verification deprecated bundle)."
+  - "Test: closing T-1529 itself (which has Recommendation) succeeds; closing a synthetic task with empty Recommendation + unchecked Human AC blocks."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - ".tasks/active/T-1529-t-1529-structural-gate-for--recommendati.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T08:19:07"
+    action: "T-1529: Structural gate for ## Recommendation block (T-679 enforcement)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 155
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1529-t-1529-structural-gate-for--recommendati.md
+generated_by: context-agent-hybrid
