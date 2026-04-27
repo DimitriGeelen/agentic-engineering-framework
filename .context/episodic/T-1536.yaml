@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1536: fw review-queue CLI command — list awaiting-review tasks with verdicts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T11:00:33Z
+# ============================================================================
+
+task_id: T-1536
+task_name: "fw review-queue CLI command — list awaiting-review tasks with verdicts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T10:52:55Z
+completed: 2026-04-27T11:00:30Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`bin/fw review-queue` is wired and prints a tabular listing of all active tasks with at least one unchecked Human AC"
+  - "Each row shows: verdict (`GO`/`DEFER`/`NO-GO`/`?`) + age (e.g. `12d`) + task ID + truncated name"
+  - "Sort: GO first (rubber-stamp candidates), then DEFER, then NO-GO, then unknown; within each verdict, oldest first"
+  - "`fw review-queue --help` shows usage"
+  - "Tabular output contains at least 5 `GO` lines on the current host (matches /approvals state)"
+  - "Trailing summary line shows total count (e.g. \"42 task(s) awaiting human review\")"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Top-level `fw review-queue` (sibling to `fw approvals`)"
+    rationale: "`fw approvals` is bound to the Tier 0 approval queue (pending/status/expire). The Awaiting-Human-Review queue is a different concept (Human ACs on work-completed tasks). Cohabiting under `approvals` would muddy the namespace."
+    alternatives_rejected: ["`fw approvals review-queue` — namespace dilution. `fw task review-queue` — the queue is bigger than per-task action and reads more naturally as a top-level verb."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1536-fw-review-queue-cli-command--list-awaiti.md
+generated_by: context-agent-hybrid

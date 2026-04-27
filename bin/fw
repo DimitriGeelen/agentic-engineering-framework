@@ -530,6 +530,7 @@ show_help() {
     echo -e "  ${GREEN}promote${NC} <cmd>         Graduation pipeline (suggest, status, L-XXX)"
     echo -e "  ${GREEN}tier0${NC} <cmd>          Tier 0 enforcement (approve, status)"
     echo -e "  ${GREEN}approvals${NC} <cmd>      Approval queue (pending, status, expire)"
+    echo -e "  ${GREEN}review-queue${NC}         List tasks awaiting human review (with verdicts)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
     echo -e "  ${GREEN}dispatch${NC} <cmd>       SSH-based cross-machine communication (send, hosts)"
@@ -3316,6 +3317,124 @@ print('0')
                 exit 1
                 ;;
         esac
+        ;;
+    review-queue)
+        # T-1536: terminal mirror of Watchtower /approvals "Awaiting Human ACs"
+        # Lists active tasks with unchecked Human ACs, prefixed by agent verdict.
+        rq_arg="${1:-}"
+        if [ "$rq_arg" = "--help" ] || [ "$rq_arg" = "-h" ] || [ "$rq_arg" = "help" ]; then
+            echo -e "${BOLD}fw review-queue${NC} — list tasks awaiting human review (T-1536)"
+            echo ""
+            echo "Shows active tasks with unchecked Human ACs, prefixed with the agent's"
+            echo "recommendation verdict (GO/DEFER/NO-GO/?). Companion to Watchtower /approvals."
+            echo ""
+            echo "Sort: GO first (rubber-stamp), then DEFER, then NO-GO, then unknown."
+            echo "Within each verdict: oldest first (stale > fresh)."
+            echo ""
+            echo "Usage:"
+            echo "  fw review-queue           Show queue"
+            echo "  fw review-queue --help    This message"
+            exit 0
+        fi
+        PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PYREVQ'
+import os, re, sys, time
+from pathlib import Path
+from datetime import datetime
+
+# T-1533: shared helper. Robust to running from /opt/999-... where web/ is on the path.
+sys.path.insert(0, os.environ.get("PROJECT_ROOT", "."))
+try:
+    from web.shared import extract_recommendation_verdict
+except ImportError:
+    # Inline fallback if web/ isn't importable (e.g. consumer project)
+    def extract_recommendation_verdict(body):
+        if not body:
+            return "?"
+        m = re.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)", body,
+                      re.MULTILINE | re.DOTALL)
+        if not m:
+            return "?"
+        body2 = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.DOTALL)
+        v = re.search(r"\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b", body2, re.IGNORECASE)
+        return v.group(1).upper() if v else "?"
+
+ROOT = Path(os.environ.get("PROJECT_ROOT", ".")).resolve()
+ACTIVE = ROOT / ".tasks" / "active"
+if not ACTIVE.is_dir():
+    print("No .tasks/active directory.", file=sys.stderr)
+    sys.exit(0)
+
+now = time.time()
+rows = []
+for f in sorted(ACTIVE.glob("*.md")):
+    text = f.read_text(errors="replace")
+    # Find ### Human section
+    ac_m = re.search(r"^## Acceptance Criteria\s*\n(.*?)(?=\n## |\Z)", text,
+                     re.MULTILINE | re.DOTALL)
+    if not ac_m:
+        continue
+    human_m = re.search(r"### Human\s*\n(.*?)(?=\n### |\Z)", ac_m.group(1), re.DOTALL)
+    if not human_m:
+        continue
+    unchecked = len(re.findall(r"^\s*-\s*\[ \]", human_m.group(1), re.MULTILINE))
+    if unchecked == 0:
+        continue
+    # Frontmatter
+    fm_m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+    fm_text = fm_m.group(1) if fm_m else ""
+    tid = (re.search(r"^id:\s*(\S+)", fm_text, re.MULTILINE) or [None, ""])
+    tid_v = tid.group(1).strip() if hasattr(tid, "group") else ""
+    tname = (re.search(r'^name:\s*"?(.+?)"?\s*$', fm_text, re.MULTILINE) or [None, ""])
+    name = tname.group(1).strip() if hasattr(tname, "group") else ""
+    # Age
+    age_days = 0
+    for field in ("date_finished", "last_update", "created"):
+        m = re.search(rf"^{field}:\s*(\S+)", fm_text, re.MULTILINE)
+        if m:
+            try:
+                dt = datetime.fromisoformat(m.group(1).replace("Z", "+00:00"))
+                age_days = int((now - dt.timestamp()) / 86400)
+                break
+            except (ValueError, OSError):
+                pass
+    verdict = extract_recommendation_verdict(text)
+    rows.append((verdict, age_days, tid_v, name, unchecked))
+
+if not rows:
+    print("No tasks awaiting human review.")
+    sys.exit(0)
+
+# Sort: verdict priority then age desc (oldest first)
+order = {"GO": 0, "DEFER": 1, "NO-GO": 2, "?": 3}
+rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
+
+# Render
+NAME_W = 60
+print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
+for verdict, age_days, tid_v, name, _unchecked in rows:
+    truncated = (name[:NAME_W] + "...") if len(name) > NAME_W else name
+    if verdict == "GO":
+        col = "\033[32m"  # green
+    elif verdict == "DEFER":
+        col = "\033[33m"  # amber
+    elif verdict == "NO-GO":
+        col = "\033[31m"  # red
+    else:
+        col = "\033[90m"  # grey
+    print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
+port = os.environ.get("FW_PORT", "3000")
+go = sum(1 for r in rows if r[0] == "GO")
+defer = sum(1 for r in rows if r[0] == "DEFER")
+nogo = sum(1 for r in rows if r[0] == "NO-GO")
+unk = sum(1 for r in rows if r[0] == "?")
+parts = []
+if go: parts.append(f"\033[32m{go} GO\033[0m")
+if defer: parts.append(f"\033[33m{defer} DEFER\033[0m")
+if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
+if unk: parts.append(f"\033[90m{unk} ?\033[0m")
+print(f"\n\033[2m{len(rows)} task(s) awaiting human review\033[0m  ({' / '.join(parts)})")
+print(f"\033[2mOpen in Watchtower: http://localhost:{port}/approvals\033[0m")
+PYREVQ
         ;;
     work-on)
         # Single-step gate: create/resume task + set focus + start work

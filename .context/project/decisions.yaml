@@ -226,3 +226,10 @@ decisions:
     date: 2026-04-27
     task: T-1533
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-035
+    decision: "Top-level `fw review-queue` (sibling to `fw approvals`)"
+    scope: project
+    date: 2026-04-27
+    task: T-1536
+    rationale: "Auto-captured from task file on completion"
