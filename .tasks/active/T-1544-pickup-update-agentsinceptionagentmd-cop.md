@@ -4,15 +4,15 @@ name: "Pickup: Update agents/inception/AGENT.md copy-paste guidance for review-f
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-202. Type: feature-proposal.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-27T15:06:01Z
-last_update: 2026-04-27T15:06:01Z
+last_update: 2026-04-27T18:33:15Z
 date_finished: null
 source_task_id_in_origin: T-202
 source_project_in_origin: "003-NTB-ATC-Plugin"
@@ -22,27 +22,63 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+NTB-ATC pickup P-042 (origin T-202) reports the framework's inception-decide
+copy-paste guidance still leads with the legacy CLI form (`fw inception decide
+T-XXX go --rationale "..."`) even though structural enforcement (T-1259/T-1260)
+already refuses that path when CLAUDECODE=1 and points agents at Watchtower.
+Concrete repro: NTB-ATC's Watchtower runs on :3039 (its :3000 is taken by
+termlink); agent-side guidance hard-coding :3000 produces wrong copy-paste.
+The framework already has the resolution infrastructure (`bin/fw watchtower url`
+reads the triple-file) — what's missing is documentation that leads with the
+Watchtower path so a fresh agent sees it before reaching the CLI examples.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- **A1:** The pickup's proposed target (`agents/inception/AGENT.md`) does not
+  exist; the actual guidance lives in CLAUDE.md + two task templates.
+- **A2:** CLAUDE.md still emits `fw inception decide ... --rationale ...`
+  examples that read as guidance even though §Presenting Work for Human Review
+  forbids it for human approvals.
+- **A3:** `--rationale` is REQUIRED at the CLI surface (lib/inception.sh:292-293).
+  Removing it from copy-paste blocks (per pickup AC1 verbatim) would emit
+  broken commands for the human.
+- **A4:** `bin/fw watchtower url` already resolves the project URL via the
+  triple-file → fw config get PORT → :3000 fallback. No new helper needed.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+- Validate A1 by checking the framework directory tree.
+- Validate A2 by grepping CLAUDE.md for `inception decide.*--rationale`.
+- Validate A3 by reading lib/inception.sh argument parsing.
+- Validate A4 by reading CLAUDE.md §Watchtower Port + bin/fw watchtower url.
+- If all four hold, the realistic delta is: CLAUDE.md doc edits (2 sections,
+  ~6 lines) + template footer rewrites (2 templates).
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- CLAUDE.md is auto-loaded into every Claude Code session — edits affect next
+  invocation, no consumer sync required.
+- Template edits affect new inception tasks created after the change; existing
+  active tasks (T-1538/T-1544/T-1546) keep their old footers (non-functional
+  HTML comments).
+- The CLI surface (lib/inception.sh do_inception_decide) is OUT of scope for
+  this inception — touching argument parsing is a separate inception.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN scope:**
+- CLAUDE.md §Copy-Pasteable Commands examples (lines 528, 533, 545): rework to
+  lead with `fw task review T-XXX`, label CLI as fallback.
+- CLAUDE.md §Inception Discipline: one line referencing `bin/fw watchtower url`.
+- `.tasks/templates/inception.md` and `.tasks/templates/path-c-deep-dive.md`
+  Decision-section footer comment: rewrite Watchtower-first with CLI fallback.
+
+**OUT of scope:**
+- Changes to lib/inception.sh do_inception_decide argument parsing (separate
+  inception — pickup AC1 verbatim requires this but is deferred).
+- Changes to bin/fw watchtower url (already correct).
+- Backfill of historical task footers (HTML comments, non-functional).
+
 
 ## Acceptance Criteria
 
@@ -88,15 +124,33 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO (with reduced scope)
+
+**Rationale:** Spike (`docs/reports/T-1544-inception-doc-update-spike.md`) validated
+all four assumptions. The achievable delta is bounded and reversible: CLAUDE.md doc
+edits in two sections (~6 lines) and footer rewrites in two task templates. No code
+changes; no CLI semantics change. The pickup's AC1 verbatim ("no `--rationale` in
+any decide-step copy-paste block") cannot be satisfied because `--rationale` is
+required at the CLI surface (lib/inception.sh:292) and dropping it would emit
+broken commands for the human. The right interpretation is Watchtower-first lead
+with CLI as labeled fallback (CLI retains `--rationale`); a separate inception
+should track loosening the CLI requirement if desired.
+
+**Evidence:**
+- Spike artifact `docs/reports/T-1544-inception-doc-update-spike.md` — full
+  assumption-by-assumption findings, line-level CLAUDE.md citations, achievable-
+  delta plan, risk surface.
+- A1 confirmed: `agents/inception/` does not exist (`ls agents/`).
+- A2 confirmed: 3 sites in CLAUDE.md (lines 528, 533, 545) emit the legacy form.
+- A3 confirmed: lib/inception.sh:266,292-293 mandates `--rationale`.
+- A4 confirmed: CLAUDE.md §Watchtower Port + `bin/fw watchtower url` already
+  resolve project URLs via triple-file.
+
+**Open question for human (non-blocker):** Should the framework also propose a
+follow-up inception for loosening the CLI `--rationale` requirement (interactive
+prompt or Watchtower-form-only path)? That would let pickup AC1 land verbatim.
+Recommendation: capture as a separate inception, not bundled here.
+
 
 ## Decisions
 
@@ -117,3 +171,7 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-27T18:33:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now

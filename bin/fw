@@ -1549,6 +1549,25 @@ else:
             echo -e "  ${YELLOW}WARN${NC}  Cron registry present but not generated — run: fw cron install"
             warnings=$((warnings + 1))
         fi
+
+        # T-1558: flock parity (T-1556 prevention #5). The file-diff above catches
+        # post-generate drift, but if the registry is regenerated WITHOUT flock
+        # wrappers (the T-1556 regression) and immediately deployed, the diff
+        # check stays green while orphan-prevention is silently disabled. Compare
+        # the count of `flock -n` directly between registry command fields and
+        # the deployed crontab; warn on parity violation.
+        if [ -f "$cron_target" ]; then
+            local _reg_flock_count _dep_flock_count
+            _reg_flock_count=$(grep -cE "command:.*flock -n " "$cron_registry" 2>/dev/null || true)
+            _dep_flock_count=$(grep -cE "flock -n " "$cron_target" 2>/dev/null || true)
+            _reg_flock_count="${_reg_flock_count:-0}"
+            _dep_flock_count="${_dep_flock_count:-0}"
+            if [ "$_reg_flock_count" -gt "$_dep_flock_count" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Cron flock parity: registry declares $_reg_flock_count wrapped jobs, deployed crontab has $_dep_flock_count"
+                echo -e "        T-1331 orphan-prevention may be partially disabled. Run: fw cron install"
+                warnings=$((warnings + 1))
+            fi
+        fi
     fi
 
     # Doc-drift check: fw subcommands vs CLAUDE.md Quick Reference (T-1147/T-1104/T-1421)
