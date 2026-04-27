@@ -4,7 +4,7 @@ name: "Restore flock wrappers in cron registry (T-1331 prevention undone by T-15
 description: >
   Restore flock wrappers in cron registry (T-1331 prevention undone by T-1555 install)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-27T17:43:10Z
-last_update: 2026-04-27T17:43:10Z
-date_finished: null
+last_update: 2026-04-27T17:47:31Z
+date_finished: 2026-04-27T17:47:31Z
 ---
 
 # T-1556: Restore flock wrappers in cron registry (T-1331 prevention undone by T-1555 install)
@@ -110,3 +110,27 @@ grep -cE "flock -n /var/lock/agentic-cron-" .context/cron/agentic-audit.crontab 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1556-restore-flock-wrappers-in-cron-registry-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a66dda26
+- **Timestamp:** 2026-04-27T17:47:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (ACs)** — All cron registry entries that had flock wrappers in the prior /etc/cron.d/ get a flock prefix in their `command:` field. Lock-file names use `agentic-cron-<job_id>.lock` (no `fw-` prefix to avoid the
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: All cron registry entries that had flock wrappers in the prior /etc/cron.d/ get a flock prefix in their `command:` field. Lock-file names use `agentic`
+- **AC#4 (ACs)** — Diff between previous /etc/cron.d/ snapshot (with flock) and newly-generated crontab is functionally equivalent for the formerly-wrapped entries (lockfile renamed, command preserved).
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: Diff between previous /etc/cron.d/ snapshot (with flock) and newly-generated crontab is functionally equivalent for the formerly-wrapped entries (lock`
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw cron generate >/dev/null`
+
+### 2026-04-27T17:47:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
