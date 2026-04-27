@@ -4489,9 +4489,21 @@ PYPREDICT
                     exit 1
                 fi
                 ;;
+            api-usage)
+                # T-1304: Reads $TERMLINK_RUNTIME_DIR/rpc-audit.jsonl, tallies
+                # per-method calls over a time window, reports legacy-primitive
+                # percentage. Used as the T-1166 entry gate.
+                shift
+                api_usage_script="$FRAMEWORK_ROOT/agents/metrics/api-usage.sh"
+                if [ ! -f "$api_usage_script" ]; then
+                    echo -e "${RED}ERROR: api-usage.sh not found at $api_usage_script${NC}" >&2
+                    exit 1
+                fi
+                exec bash "$api_usage_script" "$@"
+                ;;
             *)
                 echo -e "${RED}Unknown metrics subcommand: $metrics_subcmd${NC}" >&2
-                echo "Subcommands: dashboard, predict" >&2
+                echo "Subcommands: dashboard, predict, api-usage" >&2
                 exit 1
                 ;;
         esac
