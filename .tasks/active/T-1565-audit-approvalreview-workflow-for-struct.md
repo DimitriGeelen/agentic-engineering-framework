@@ -86,15 +86,24 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Audit deliverable shipped (`docs/reports/T-1565-approval-arc-gaps-audit.md` — 9 findings, 2 HIGH / 4 MEDIUM / 3 LOW with file:line evidence and fix sketches). 7/9 findings closed across two sessions; 2/9 deferred with documented justification.
+
+**Evidence — closed (7):**
+- F1 (HIGH) — T-1567: Fix dead-code regex in approvals.py inception-decide auto-exec (raw-string `\\d` was literal backslash + d, never matching)
+- F2 (HIGH) — T-1568: Replace `--force` with narrow flags in Watchtower complete-task endpoints (closed silent RCA + Recommendation bypass)
+- F3 (MEDIUM) — T-1569: Surface Reviewer Verdict on /approvals cards (helper + both loaders + badge; 8 unit tests)
+- F4 (MEDIUM) — T-1570: Stop dropping started-work inceptions without Recommendation
+- F5 (MEDIUM) — T-1571: Add DECISIONS section to `fw review-queue` (CLI/web parity)
+- F6 (MEDIUM) — T-1572: Extend Recommendation gate to fire on reviewer.needs_human signals (frontmatter + reviewer verdict; 8 bats tests)
+- F8 (LOW) — T-1573: Surface `.gate-bypass-log.yaml` in `fw audit` (live signal: 27 bypasses in last 7d)
+
+**Evidence — deferred (2):**
+- F7 (LOW) — Cross-project /approvals federation: explicitly out of scope per audit ("~1 day of work"). Defer to dedicated inception when consumer count or operator burden makes it material.
+- F9 (LOW) — Resolved Tier-0 approvals accumulate without bound: zero signal currently (6 files total, 0 older than 30 days). Re-evaluate when count exceeds 50 or any file is older than 30 days.
+
+**Captured learning:** L-309 — cross-component "needs human" decoupling pattern (originated in F6).
 
 ## Decisions
 
