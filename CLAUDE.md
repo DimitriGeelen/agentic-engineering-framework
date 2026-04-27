@@ -782,6 +782,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 - `fw task update T-XXX --add-tag "ui"` / `--horizon later`
 - `fw task stale [--days N]` — list stale tasks
 - `fw task review T-XXX` — hand a task to the human via Watchtower (T-679, MANDATORY for human approvals)
+- `fw review-queue` — list active tasks awaiting human review, sorted GO-first (T-1536, CLI companion to /approvals)
 - `fw verify-acs [T-XXX] [--auto-check|--execute]` — check Human ACs
 
 **Inceptions and decisions:**

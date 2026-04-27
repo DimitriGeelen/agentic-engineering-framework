@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1561: Add fw review-queue to CLAUDE.md Quick Reference (doctor doc-drift WARN)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T20:27:17Z
+# ============================================================================
+
+task_id: T-1561
+task_name: "Add fw review-queue to CLAUDE.md Quick Reference (doctor doc-drift WARN)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T20:25:11Z
+completed: 2026-04-27T20:26:48Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md §Quick Reference under \"Starting and managing work\" lists `fw review-queue` between `fw task review` and `fw verify-acs` with one-line description (T-1536, GO-first sort, /approvals companion)."
+  - "`fw doctor` no longer reports \"Doc drift: review-queue\" warning."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1561-add-fw-review-queue-to-claudemd-quick-re.md
+generated_by: context-agent-hybrid

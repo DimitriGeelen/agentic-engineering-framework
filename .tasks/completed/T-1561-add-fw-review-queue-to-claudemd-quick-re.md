@@ -1,0 +1,83 @@
+---
+id: T-1561
+name: "Add fw review-queue to CLAUDE.md Quick Reference (doctor doc-drift WARN)"
+description: >
+  Add fw review-queue to CLAUDE.md Quick Reference (doctor doc-drift WARN)
+
+status: work-completed
+workflow_type: refactor
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-27T20:25:11Z
+last_update: 2026-04-27T20:26:48Z
+date_finished: 2026-04-27T20:26:48Z
+---
+
+# T-1561: Add fw review-queue to CLAUDE.md Quick Reference (doctor doc-drift WARN)
+
+## Context
+
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+
+## Acceptance Criteria
+
+### Agent
+- [x] CLAUDE.md §Quick Reference under "Starting and managing work" lists `fw review-queue` between `fw task review` and `fw verify-acs` with one-line description (T-1536, GO-first sort, /approvals companion).
+- [x] `fw doctor` no longer reports "Doc drift: review-queue" warning.
+
+### Human
+<!-- All ACs are agent-verifiable. -->
+
+## Verification
+
+bin/fw doctor 2>&1 | grep -E "Doc drift" && exit 1 || exit 0
+grep -q "fw review-queue" CLAUDE.md
+
+## RCA
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-27T20:25:11Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1561-add-fw-review-queue-to-claudemd-quick-re.md
+- **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-5d6cf695
+- **Timestamp:** 2026-04-27T20:27:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-27T20:26:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
