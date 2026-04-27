@@ -67,6 +67,19 @@ grep -q 'seeds/tasks' lib/init.sh
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 6 Agent ACs verified — both seed directories exist with 6+/5+ template files, all use placeholder substitution, `init.sh` selects + substitutes correctly. The Human AC asks whether the onboarding content is genuinely useful for a new user — a content-quality judgment best made by a human who can mentally walk through the experience.
+
+**Evidence:**
+- `lib/seeds/tasks/existing-project/` — 6+ template files
+- `lib/seeds/tasks/greenfield/` — 5+ template files
+- All have valid YAML frontmatter (id, name, status, workflow_type, owner)
+- `__PROJECT_NAME__` placeholder used (no hardcoding)
+- `init.sh` performs `__PROJECT_NAME__` and `__DATE__` substitution at copy time
+
 ## Updates
 
 ### 2026-03-12T17:00:54Z — task-created [task-create-agent]

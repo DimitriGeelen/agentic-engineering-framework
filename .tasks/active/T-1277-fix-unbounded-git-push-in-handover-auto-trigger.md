@@ -75,6 +75,18 @@ grep -q 'FW_HANDOVER_PUSH_TIMEOUT' CLAUDE.md
 
 <!-- Record when choosing between alternatives -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 6 Agent ACs verified — both push timeout (15s) and total auto-handover timeout (60s) are wrapped, env var fallbacks are correct, and an 8-test bats suite covers source invariants + a deadhost behavioural case. CLAUDE.md Configuration table updated. The Human AC is a forward-looking observation ("verify on next real session that auto-handover at critical doesn't reintroduce the stall") — it cannot be checked at completion time, only after a real critical-budget event.
+
+**Evidence:**
+- agents/handover/handover.sh wraps `git push` with `timeout $FW_HANDOVER_PUSH_TIMEOUT`
+- agents/context/checkpoint.sh wraps the auto-handover call with `timeout $FW_HANDOVER_TOTAL_TIMEOUT`
+- tests/unit/handover_push_timeout.bats — 8 tests including deadhost (192.0.2.1) returns within bound
+- CLAUDE.md Configuration section lists both env vars
+
 ## Updates
 
 ### 2026-04-17T09:40:00Z — task-created [manual]

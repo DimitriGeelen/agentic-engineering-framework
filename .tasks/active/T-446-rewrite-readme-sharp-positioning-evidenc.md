@@ -71,6 +71,20 @@ python3 -c "import re; t=open('README.md').read(); clean=re.sub(r'```.*?```','',
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:** All 8 Agent ACs are mechanically verifiable and check out (line count, sections, screenshots), but the Human AC is asking exactly the question only a human can answer: "does the positioning land in the first 3 seconds?" Voice-and-positioning is a marketing judgment, not a code judgment — agent should not GO this without the human reading it. This is the canonical [REVIEW] case from CLAUDE.md AC Classification Guidance ("subjective judgment — quality, tone, UX feel").
+
+**Evidence:**
+- README.md is 316 lines (≤400 ✓)
+- "What this has actually stopped" section present
+- 5-minute demo section present
+- Honest enforcement gradient documented
+- 6 screenshots inside collapsibles with width sizing
+- Voice/tone matches author style — but THIS is the human's call, not the agent's
+
 ## Updates
 
 ### 2026-03-12T00:36:10Z — task-created [task-create-agent]

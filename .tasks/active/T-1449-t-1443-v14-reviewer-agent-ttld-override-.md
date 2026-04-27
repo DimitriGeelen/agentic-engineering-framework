@@ -125,6 +125,21 @@ Antifragile properties verified:
 
 L-268 captured. Foundation ready for v1.5 (Pass A drift re-verification + Watchtower override UI).
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 12 Agent ACs verified — override module + dataclass + 4 CLI verbs + suppression rendering + audit integration all land. 15 new unit tests, 83 total passing (no regression). Self-dogfood completed: real T-1020 override produced expected delta (PASS 1177→1178, CONCERN 158→157). Decisions documented (storage tier, default 90-day TTL). The Human AC is a "safe to leave running" sanity check — TTL is precisely the antifragile property the design adds.
+
+**Evidence:**
+- lib/reviewer/overrides.py — Override dataclass + 5 functions
+- bin/fw reviewer override {add,list,prune,remove} — all 4 verbs working
+- Verdict `suppressed` + `expired_overrides` populated in `scan_task`
+- 15/15 new tests in tests/unit/test_reviewer_overrides.py + 68 v1.3 = 83 total
+- L-268 captured (T-1020 dogfood)
+- `bin/fw reviewer audit` reports `suppressed_total` + `active_overrides` in YAML output
+- Decisions: storage in `.context/working/` (not policy/), 90-day TTL default — both rationaled
+
 ## Updates
 
 ### 2026-04-25T11:14:00Z — task-created [task-create-agent]
