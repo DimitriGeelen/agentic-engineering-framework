@@ -233,3 +233,17 @@ decisions:
     date: 2026-04-27
     task: T-1536
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-036
+    decision: "Run iter1 + iter2 with identical prompt; only prepend L-296 reviewer guidance (grep template for conditional branches before declaring absence a bug) to iter3."
+    scope: project
+    date: 2026-04-27
+    task: T-1540
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-037
+    decision: "Document as L-298 candidate; do not factor a shared count-helper this iteration."
+    scope: project
+    date: 2026-04-27
+    task: T-1540
+    rationale: "Auto-captured from task file on completion"
