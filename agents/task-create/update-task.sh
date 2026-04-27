@@ -45,7 +45,7 @@ log_gate_bypass() {
 # Block agent from completing human-owned tasks without human interaction.
 check_human_sovereignty() {
     local current_owner
-    current_owner=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
+    current_owner=$({ grep "^owner:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
     if [ "$current_owner" = "human" ]; then
         if [ "$SKIP_SOVEREIGNTY" = true ]; then
             echo -e "${YELLOW}WARNING: Completing human-owned task (--skip-sovereignty bypass)${NC}"
@@ -497,8 +497,8 @@ if type keylock_acquire &>/dev/null; then
 fi
 
 # Read current state
-OLD_STATUS=$(grep "^status:" "$TASK_FILE" | head -1 | sed 's/status:[[:space:]]*//')
-TASK_NAME=$(grep "^name:" "$TASK_FILE" | head -1 | sed 's/name:[[:space:]]*//')
+OLD_STATUS=$({ grep "^status:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
+TASK_NAME=$({ grep "^name:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//')
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 echo -e "${CYAN}=== Task Update ===${NC}"
@@ -611,7 +611,7 @@ if [ -n "$NEW_STATUS" ]; then
                 if grep -q "^status: started-work" "$_tf" 2>/dev/null; then
                     _other_count=$((_other_count + 1))
                     if [ "$_other_count" -le 5 ]; then
-                        _tid=$(grep "^id:" "$_tf" | head -1 | awk '{print $2}')
+                        _tid=$({ grep "^id:" "$_tf" 2>/dev/null || true; } | head -1 | awk '{print $2}')
                         _other_started="${_other_started}  ${_tid}\n"
                     fi
                 fi
@@ -681,7 +681,7 @@ if [ -n "$NEW_STATUS" ]; then
         # === Invariant: started-work → horizon: now (T-1068) ===
         # Starting work means it's active NOW. Auto-promote horizon.
         if [ "$NEW_STATUS" = "started-work" ] && [ -z "$NEW_HORIZON" ]; then
-            _current_horizon=$(grep "^horizon:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/horizon:[[:space:]]*//' || true)
+            _current_horizon=$({ grep "^horizon:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/horizon:[[:space:]]*//' || true)
             if [ -n "$_current_horizon" ] && [ "$_current_horizon" != "now" ]; then
                 _sed_i "s/^horizon:.*/horizon: now/" "$TASK_FILE"
                 echo -e "${CYAN}Horizon: $_current_horizon → now (auto-sync: started-work implies now)${NC}"
@@ -693,7 +693,7 @@ fi
 
 # Update owner
 if [ -n "$NEW_OWNER" ]; then
-    OLD_OWNER=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
+    OLD_OWNER=$({ grep "^owner:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
     # T-198/R-033: Owner protection — owner: human is sticky
     if [ "$OLD_OWNER" = "human" ] && [ "$NEW_OWNER" != "human" ]; then
         if [ "$SKIP_HUMAN_OWNERSHIP" = true ]; then
@@ -718,7 +718,7 @@ if [ -n "$NEW_TYPE" ]; then
         echo "Valid types: $VALID_TYPES" >&2
         exit 1
     fi
-    OLD_TYPE=$(grep "^workflow_type:" "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//')
+    OLD_TYPE=$({ grep "^workflow_type:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/workflow_type:[[:space:]]*//')
     _sed_i "s/^workflow_type:.*/workflow_type: $NEW_TYPE/" "$TASK_FILE"
     echo "Type:    ${OLD_TYPE:-unset} → $NEW_TYPE"
     CHANGES+=("workflow_type: ${OLD_TYPE:-unset} → $NEW_TYPE")
@@ -731,7 +731,7 @@ if [ -n "$NEW_HORIZON" ]; then
         echo "Valid horizons: $VALID_HORIZONS" >&2
         exit 1
     fi
-    OLD_HORIZON=$(grep "^horizon:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/horizon:[[:space:]]*//' || true)
+    OLD_HORIZON=$({ grep "^horizon:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/horizon:[[:space:]]*//' || true)
     if [ -n "$OLD_HORIZON" ]; then
         _sed_i "s/^horizon:.*/horizon: $NEW_HORIZON/" "$TASK_FILE"
     else
@@ -745,7 +745,7 @@ horizon: $NEW_HORIZON" "$TASK_FILE"
     # === Invariant: horizon next/later + started-work → captured (T-1068) ===
     # Shelving a task means you stopped working on it. Auto-demote status.
     if [ "$NEW_HORIZON" != "now" ] && [ -z "$NEW_STATUS" ]; then
-        _current_status=$(grep "^status:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//' || true)
+        _current_status=$({ grep "^status:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//' || true)
         if [ "$_current_status" = "started-work" ]; then
             _sed_i "s/^status:.*/status: captured/" "$TASK_FILE"
             echo -e "${CYAN}Status:  started-work → captured (auto-sync: horizon $NEW_HORIZON implies not active)${NC}"
@@ -932,7 +932,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             for otf in "$TASKS_DIR/active"/T-*.md; do
                 [ -f "$otf" ] || continue
                 if head -20 "$otf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
-                    otf_status=$(grep "^status:" "$otf" | head -1 | sed 's/status:[[:space:]]*//')
+                    otf_status=$({ grep "^status:" "$otf" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
                     if [ "$otf_status" != "work-completed" ]; then
                         all_done=false
                         break
@@ -1101,8 +1101,8 @@ with open(path, 'w') as f:
     # === Learning capture check for bugfix tasks (T-692, G-016, T-1192) ===
     # 0% of bugfix tasks captured learnings (G-016 threshold: 35%).
     # Enhanced prompt: pre-filled command, guidance questions, visual box.
-    TASK_NAME_RAW=$(grep "^name:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
-    TASK_TYPE_RAW=$(grep "^workflow_type:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/^workflow_type:[[:space:]]*//')
+    TASK_NAME_RAW=$({ grep "^name:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
+    TASK_TYPE_RAW=$({ grep "^workflow_type:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/^workflow_type:[[:space:]]*//')
     _is_bugfix=false
     # Detect by name pattern (fix/bugfix/hotfix anywhere, or "RCA" or "G-0" gap reference)
     if echo "$TASK_NAME_RAW" | grep -qiE '\bfix\b|\bbugfix\b|\bhotfix\b|\bRCA\b|\bG-[0-9]'; then
