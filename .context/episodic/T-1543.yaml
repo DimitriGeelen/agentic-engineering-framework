@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1543: Sanitize YAML escapes in fw context add-decision (and add-learning) auto-capture
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T14:58:35Z
+# ============================================================================
+
+task_id: T-1543
+task_name: "Sanitize YAML escapes in fw context add-decision (and add-learning) auto-capture"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T14:51:49Z
+completed: 2026-04-27T14:58:31Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`agents/context/lib/decision.sh` exposes `_yaml_escape_dquoted` and uses it for `decision`, `rationale`, `source`, `recommendation_type`, and rejected-list items"
+  - "`agents/context/lib/learning.sh` uses `_yaml_escape_dquoted` for `learning` (replaces the partial awk-gsub-only escape; passes via ENVIRON to avoid awk -v's escape interpretation)"
+  - "Bats regression: `fw context add-decision` with text containing `\s`, `\``, `\"`, and `\` produces a YAML file that `python3 -c \"import yaml; yaml.safe_load(...)\"` parses cleanly"
+  - "Bats regression: `fw context add-learning` same input set, same parse-clean assertion"
+  - "Round-trip: written content matches input verbatim after YAML load (no double-escape, no character loss)"
+  - "Existing decisions.yaml + learnings.yaml still parse after the change (no regression on already-stored entries)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "In `learning.sh`, pass the escaped string through environment variable (`L_ESC=...`) and read it inside awk via `ENVIRON[\"L_ESC\"]`, rather than `-v learning=...`."
+    rationale: "awk's `-v var=value` flag interprets backslash escape sequences in the value before assignment, so `\\backslash` collapses to `\backslash` and `\\"quote\\"` to `\"quote\"` — undoing the YAML escape. ENVIRON skips that interpretation and passes the raw string. Tested empirically: round-trip mismatch was masked by this exact behavior."
+    alternatives_rejected: ["Restructure the awk pipeline to a python helper (more invasive; also changes file-rewrite semantics); double-escape (\\\\\\\\) before passing to -v (fragile, hard to reason about)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1543-sanitize-yaml-escapes-in-fw-context-add-.md
+generated_by: context-agent-hybrid

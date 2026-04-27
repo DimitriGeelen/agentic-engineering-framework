@@ -254,3 +254,10 @@ decisions:
     date: 2026-04-27
     task: T-1541
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-039
+    decision: "In `learning.sh`, pass the escaped string through environment variable (`L_ESC=...`) and read it inside awk via `ENVIRON[\"L_ESC\"]`, rather than `-v learning=...`."
+    scope: project
+    date: 2026-04-27
+    task: T-1543
+    rationale: "Auto-captured from task file on completion"

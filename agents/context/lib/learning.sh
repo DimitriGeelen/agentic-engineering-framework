@@ -2,6 +2,16 @@
 # Context Agent - add-learning command
 # Add a learning to project memory
 
+# Escape a string for safe interpolation into a YAML double-quoted scalar.
+# Doubles backslashes and escapes double-quotes — YAML 1.2 rejects any
+# `\` followed by an unrecognised character. T-1543 / OBS-033.
+_yaml_escape_dquoted() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    printf '%s' "$s"
+}
+
 do_add_learning() {
     ensure_context_dirs
 
@@ -67,13 +77,20 @@ EOF
         _sed_i 's/^learnings: \[\]/learnings:/' "$learnings_file"
     fi
 
-    # Insert new learning before the candidates section
+    # Insert new learning before the candidates section.
+    # T-1543: escape via shell helper, then pass through environment instead
+    # of `-v`. awk's `-v` flag interprets backslash escapes in the value
+    # (so `\\` collapses back to `\`), undoing the YAML escape. ENVIRON
+    # passes the raw value untouched.
+    local esc_learning
+    esc_learning="$(_yaml_escape_dquoted "$learning")"
     local temp_file=$(mktemp)
-    awk -v id="$id" -v learning="$learning" -v source="${source:-unknown}" -v task="${task:-unknown}" -v date="$date" '
+    L_ESC="$esc_learning" \
+    awk -v id="$id" -v src="${source:-unknown}" -v task="${task:-unknown}" -v date="$date" '
         /^# Candidate learnings/ || /^candidates:/ {
             print "- id: " id
-            gsub("\"", "\\\"", learning); print "  learning: \"" learning "\""
-            print "  source: " source
+            print "  learning: \"" ENVIRON["L_ESC"] "\""
+            print "  source: " src
             print "  task: " task
             print "  date: " date
             print "  context: Added via context agent"
@@ -84,8 +101,8 @@ EOF
         END {
             if (!found) {
                 print "- id: " id
-                gsub("\"", "\\\"", learning); print "  learning: \"" learning "\""
-                print "  source: " source
+                print "  learning: \"" ENVIRON["L_ESC"] "\""
+                print "  source: " src
                 print "  task: " task
                 print "  date: " date
                 print "  context: Added via context agent"
