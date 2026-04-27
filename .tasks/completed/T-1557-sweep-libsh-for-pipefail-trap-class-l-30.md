@@ -4,16 +4,16 @@ name: "Sweep lib/*.sh for pipefail-trap class (L-302 systemic check)"
 description: >
   Sweep lib/*.sh for pipefail-trap class (L-302 systemic check)
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/config.sh, lib/inception.sh, lib/yaml.sh, tests/unit/yaml_pipefail.bats]
 related_tasks: []
 created: 2026-04-27T18:24:42Z
-last_update: 2026-04-27T18:24:42Z
-date_finished: null
+last_update: 2026-04-27T18:30:40Z
+date_finished: 2026-04-27T18:30:40Z
 ---
 
 # T-1557: Sweep lib/*.sh for pipefail-trap class (L-302 systemic check)
@@ -25,11 +25,11 @@ L-302 (pipefail trap, captured T-1545) fixed one site (`lib/review.sh`) but the 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Foundation `get_yaml_field` in lib/yaml.sh returns 0 (not 1) when the requested field is absent, even under `set -e -o pipefail`
-- [ ] Foundation `_fw_config_file_val` in lib/config.sh does not silent-kill the parent shell when the requested key is absent
-- [ ] Three bare-assignment sites in lib/inception.sh (decide path + sweep path) are pipefail-safe (refactored to call the foundation helper or guarded directly)
-- [ ] New regression bats `tests/unit/yaml_pipefail.bats` covers the foundation invariant under set -e -o pipefail
-- [ ] All pre-existing bats suites still pass (no regression)
+- [x] Foundation `get_yaml_field` in lib/yaml.sh returns 0 (not 1) when the requested field is absent, even under `set -e -o pipefail`
+- [x] Foundation `_fw_config_file_val` in lib/config.sh does not silent-kill the parent shell when the requested key is absent
+- [x] Three bare-assignment sites in lib/inception.sh (decide path + sweep path) are pipefail-safe (refactored to call the foundation helper or guarded directly)
+- [x] New regression bats `tests/unit/yaml_pipefail.bats` covers the foundation invariant under set -e -o pipefail
+- [x] All pre-existing bats suites still pass (no regression)
 
 
 ## Verification
@@ -81,3 +81,15 @@ bash -c "set -e -o pipefail; source lib/yaml.sh; v=\$(get_yaml_field /etc/hostna
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1557-sweep-libsh-for-pipefail-trap-class-l-30.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-bf1beb5b
+- **Timestamp:** 2026-04-27T18:30:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-27T18:30:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

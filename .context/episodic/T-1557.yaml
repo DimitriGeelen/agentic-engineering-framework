@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1557: Sweep lib/*.sh for pipefail-trap class (L-302 systemic check)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T18:30:46Z
+# ============================================================================
+
+task_id: T-1557
+task_name: "Sweep lib/*.sh for pipefail-trap class (L-302 systemic check)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T18:24:42Z
+completed: 2026-04-27T18:30:40Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T20:30:14+02:00
+last_commit: 2026-04-27T20:30:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Pipefail-trap sweep — make foundation YAML/config helpers pipefail-safe (L-302)
+
+# Key outcomes
+outcomes:
+  - "Foundation `get_yaml_field` in lib/yaml.sh returns 0 (not 1) when the requested field is absent, even under `set -e -o pipefail`"
+  - "Foundation `_fw_config_file_val` in lib/config.sh does not silent-kill the parent shell when the requested key is absent"
+  - "Three bare-assignment sites in lib/inception.sh (decide path + sweep path) are pipefail-safe (refactored to call the foundation helper or guarded directly)"
+  - "New regression bats `tests/unit/yaml_pipefail.bats` covers the foundation invariant under set -e -o pipefail"
+  - "All pre-existing bats suites still pass (no regression)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - "lib/config.sh"
+  - "lib/inception.sh"
+  - "lib/yaml.sh"
+  - ".tasks/active/T-1557-sweep-libsh-for-pipefail-trap-class-l-30.md"
+  - "tests/unit/yaml_pipefail.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T20:30:14"
+    action: "T-1557: Pipefail-trap sweep — make foundation YAML/config helpers pipefail-safe (L-302)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 6
+  lines_added: 220
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1557-sweep-libsh-for-pipefail-trap-class-l-30.md
+generated_by: context-agent-hybrid
