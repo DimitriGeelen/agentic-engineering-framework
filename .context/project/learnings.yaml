@@ -2339,3 +2339,17 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-302
+  learning: "Under set -e -o pipefail, regular variable assignments (NOT 'local var=...') propagate pipeline failures. A pipeline like 'sed | grep -v | grep -v | head -1' that filters all input has every grep -v exit 1; the assignment then aborts the calling function silently. Two fixes: (a) terminate with '|| true' to mask, (b) replace fragile pipelines with awk-based logic for empty-section detection. Pattern: any 'grep -v | grep -v | head -1' chain inside set -e -o pipefail scope is suspect and should be reviewed."
+  source: P-001
+  task: T-1545
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
+- id: L-303
+  learning: "Audit functions that catch placeholder text must match the ACTUAL strings the templates ship, not the patterns engineers expect. T-1554: audit caught [Criterion N] (numeric) but default.md ships [First criterion] / [Second criterion] (ordinal). Cross-check audit regex against template literals before declaring coverage complete."
+  source: P-001
+  task: T-1554
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
