@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1530: Inline recommendation verdict in handover Awaiting-Human-Review
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T10:14:10Z
+# ============================================================================
+
+task_id: T-1530
+task_name: "Inline recommendation verdict in handover Awaiting-Human-Review"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T10:07:42Z
+completed: 2026-04-27T10:14:07Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`agents/handover/handover.sh` extracts the verdict from each partial-complete task's `## Recommendation` section using H2+ terminator (L-293)"
+  - "Verdict prefix is rendered inline in \"Awaiting Your Action (Human)\" listing as `[GO]`/`[DEFER]`/`[NO-GO]`/`[?]` (last for missing/unparseable)"
+  - "Same verdict prefix appears in the per-horizon \"Awaiting Human Review\" subsections (lines 530–536 and 565–572)"
+  - "Tasks without a parseable verdict render with `[?]` prefix instead of crashing the generator"
+  - "Generated handover for current state contains expected verdicts for the 22 awaiting-review tasks"
+  - "No regression: handover.sh exits 0 and produces a valid markdown file"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Compute verdict in the original file-reading loop (where `content` is already loaded) and stash it in the tasks tuple. Use `\$(.*?)` regex escape to survive bash command substitution."
+    rationale: "Avoids a second disk round-trip per task, keeps the change tight to the loop that already handles per-task metadata."
+    alternatives_rejected: ["Re-reading via glob inside the work-completed branch — works but doubles file I/O. Switching the heredoc to quoted (`<< 'PYEOF'`) — would break the existing `$TASKS_DIR`/`$WT_URL` interpolations."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1530-inline-recommendation-verdict-in-handove.md
+generated_by: context-agent-hybrid
