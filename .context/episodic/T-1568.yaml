@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1568: F2: Replace --force with narrow flags in Watchtower complete-task endpoints (RCA + Recommendation gate bypass fix)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T21:04:27Z
+# ============================================================================
+
+task_id: T-1568
+task_name: "F2: Replace --force with narrow flags in Watchtower complete-task endpoints (RCA + Recommendation gate bypass fix)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T21:02:49Z
+completed: 2026-04-27T21:04:23Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/tasks.py:676` (`/api/task/<id>/complete`): replace `--force` with `--skip-sovereignty --skip-verification`. Rationale: human clicked from /tasks page → sovereignty bypass justified; UI has no shell context for verification commands. Recommendation + RCA gates MUST fire (they enforce missing artefacts, not authorization)."
+  - "`web/blueprints/approvals.py:529` (`/api/approvals/complete-batch`): same replacement plus `--skip-acceptance-criteria` (the batch endpoint operates on partial-complete tasks where the human is explicitly authorising closure regardless of unchecked Human ACs — same auth-flag pattern T-1559 fixed)."
+  - "No remaining `\"--force\"` literal strings in web/ source. (grep audit.)"
+  - "python3 syntax-check both files parse."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1568-f2-replace---force-with-narrow-flags-in-.md
+generated_by: context-agent-hybrid

@@ -524,9 +524,16 @@ def complete_batch():
 
     for task_id in ready_tasks:
         try:
+            # T-1568 / F2: narrow flags instead of --force. Batch operates on
+            # partial-complete tasks (already work-completed in active/) where
+            # the human is authorising closure regardless of unchecked Human
+            # ACs — same auth-flag semantics T-1559 fixed for the recheck
+            # branch. Recommendation + RCA gates do not re-fire on the
+            # partial-complete recheck path so no skip needed for those.
             result = subprocess.run(
                 [fw_path, "task", "update", task_id, "--status", "work-completed",
-                 "--force", "--reason", "Batch completed via Watchtower UI (human action)"],
+                 "--skip-sovereignty", "--skip-verification", "--skip-acceptance-criteria",
+                 "--reason", "Batch completed via Watchtower UI (human action)"],
                 capture_output=True, text=True, timeout=30,
                 cwd=str(PROJECT_ROOT)
             )

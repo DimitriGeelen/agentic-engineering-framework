@@ -667,13 +667,18 @@ def update_task_type(task_id):
 
 @bp.route("/api/task/<task_id>/complete", methods=["POST"])
 def complete_task(task_id):
-    """Complete a task from the browser — passes --force since human clicked it (T-640)."""
+    """Complete a task from the browser. T-1568 / F2: replaced legacy --force
+    with narrow auth flags. Human clicking from UI authorises sovereignty
+    bypass and skips shell-context verification, but Recommendation + RCA
+    gates still fire — those represent unwritten artefacts, not authorisation.
+    """
     if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     stdout, stderr, ok = run_fw_command([
         "task", "update", task_id, "--status", "work-completed",
-        "--force", "--reason", "Completed via Watchtower UI (human action)",
+        "--skip-sovereignty", "--skip-verification",
+        "--reason", "Completed via Watchtower UI (human action)",
     ])
     if ok:
         return (

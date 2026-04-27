@@ -2388,3 +2388,10 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-308
+  learning: "When deprecating an aggregate auth flag like --force (which sets every --skip-* at once), audit ALL callers — UI/API/cron — for narrow-flag replacements. Aggregate flags hide gate semantics from later gates added independently. T-1568 / F2: --force in Watchtower complete-task endpoints (added pre-T-679/T-1529/T-1550) silently bypassed the Recommendation + RCA gates the framework was hardened to enforce. The bypass log entry shows only the aggregate flag, not the implicit list of gates skipped — invisible until audited."
+  source: P-001
+  task: T-1568
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
