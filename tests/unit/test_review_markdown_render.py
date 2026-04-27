@@ -11,7 +11,52 @@ from web.blueprints.tasks import (
     _render_md_inline,
     _render_md_block,
     _auto_link_task_refs,
+    _auto_link_watchtower_paths,
 )
+
+
+# ---- T-1553: Watchtower URL auto-linking ------------------------------------
+
+def test_bare_approvals_path_linkified():
+    out = _auto_link_watchtower_paths("Open /approvals to triage.")
+    assert out == "Open [/approvals](/approvals) to triage."
+
+
+def test_review_with_task_ref_linkified_as_full_path():
+    out = _auto_link_watchtower_paths("See /review/T-1448 next.")
+    assert out == "See [/review/T-1448](/review/T-1448) next."
+
+
+def test_already_linked_path_unchanged():
+    out = _auto_link_watchtower_paths("[/approvals](xyz) link.")
+    assert out == "[/approvals](xyz) link."
+
+
+def test_path_inside_inline_code_unchanged():
+    out = _auto_link_watchtower_paths("Run `curl /approvals` to test.")
+    assert out == "Run `curl /approvals` to test."
+
+
+def test_unknown_path_unchanged():
+    out = _auto_link_watchtower_paths("/foobar is not a route.")
+    assert out == "/foobar is not a route."
+
+
+def test_partial_word_match_excluded():
+    # "/approvals_old" — should not match because of \w lookahead
+    out = _auto_link_watchtower_paths("Old /approvals_old endpoint.")
+    assert "[/approvals]" not in out
+
+
+def test_render_step_with_review_path_and_task_ref_no_collision():
+    # Verifies T-1553 + T-1552 ordering: watchtower-path runs first,
+    # T-NNNN linker sees the full /review/T-1448 inside a markdown link
+    # and leaves the embedded T-1448 alone.
+    html = _render_md_inline("See /review/T-1448 next.")
+    assert '<a href="/review/T-1448">/review/T-1448</a>' in html
+    # The T-1448 inside should NOT be double-wrapped
+    assert html.count('href="/review/T-1448"') == 1
+    assert 'href="/tasks/T-1448"' not in html
 
 
 # ---- T-1552: bare T-NNNN auto-linking ---------------------------------------

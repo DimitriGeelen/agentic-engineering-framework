@@ -114,30 +114,36 @@ def _normalize_md_relative_links(text):
 _TASK_REF_RE = re_mod.compile(r'(?<![\w/-])T-\d{1,5}(?![\w/-])')
 
 
-def _auto_link_task_refs(text):
-    """Rewrite bare `T-NNNN` to `[T-NNNN](/tasks/T-NNNN)` so /review surface
-    AC steps become click-traversable across tasks (T-1552). Skips:
-      - tokens inside backticks (preserve developer intent for code-style refs)
-      - tokens already part of a Markdown link (avoid double-linking)
-      - already-linked tokens like `[T-1448](xyz)` because the regex's
-        negative lookbehind `[/-]` excludes the leading `[`-bracketed form
-        AND the URL form (since the inside of the URL ends with `/T-NNNN`)
-    """
+# T-1553: known Watchtower blueprint routes — auto-linked when bare in AC text.
+# Whitelist (not arbitrary /<word>) so we never generate broken links.
+_WATCHTOWER_BLUEPRINTS = (
+    'approvals', 'review', 'tasks', 'inception', 'cron', 'fabric',
+    'discoveries', 'metrics', 'costs', 'gaps', 'reviewer', 'sessions',
+    'docs', 'audit', 'audits', 'fleet', 'enforcement', 'pending',
+    'prompts', 'quality', 'risks', 'settings', 'terminal', 'timeline',
+    'config', 'cockpit',
+)
+_WT_PATH_RE = re_mod.compile(
+    r'(?<![\w])(/(?:' + '|'.join(_WATCHTOWER_BLUEPRINTS) + r')'
+    r'(?:/[\w-]+)?)(?!\w)'
+)
+
+
+def _walk_skipping_existing_links(text, replacer):
+    """Iterate `text`, applying `replacer(match_obj) -> str` only outside
+    inline-code spans and already-linked Markdown ranges. T-1552 + T-1553
+    share this scaffolding; replacer is the regex/sub callback."""
     if not text:
         return text
     parts = re_mod.split(r'(`[^`]*`)', text)
     out = []
     for i, part in enumerate(parts):
         if i % 2 == 1:
-            # inline code span — pass through untouched
             out.append(part)
             continue
-        # In the prose chunk, skip linkification inside existing [...](...)
-        # by walking the string; markdown link syntax has matching [].
         rewritten = []
         j = 0
         while j < len(part):
-            # If we're inside a markdown link label or URL, find its end and skip
             if part[j] == '[':
                 close = part.find(']', j)
                 if close != -1 and close + 1 < len(part) and part[close + 1] == '(':
@@ -146,17 +152,43 @@ def _auto_link_task_refs(text):
                         rewritten.append(part[j:paren_close + 1])
                         j = paren_close + 1
                         continue
-            # Try to match T-NNNN here
-            m = _TASK_REF_RE.match(part, j)
-            if m:
-                tid = m.group(0)
-                rewritten.append(f'[{tid}](/tasks/{tid})')
-                j = m.end()
+            replaced, advance = replacer(part, j)
+            if replaced is not None:
+                rewritten.append(replaced)
+                j += advance
             else:
                 rewritten.append(part[j])
                 j += 1
         out.append(''.join(rewritten))
     return ''.join(out)
+
+
+def _auto_link_watchtower_paths(text):
+    """Rewrite bare Watchtower URL paths (`/approvals`, `/review/T-1448`)
+    to Markdown links so they're click-traversable from /review/T-XXX
+    surfaces (T-1553). Companion to T-1552's T-NNNN linker. Whitelist
+    based — only known blueprint routes are touched."""
+    def replacer(s, j):
+        m = _WT_PATH_RE.match(s, j)
+        if m:
+            url = m.group(0)
+            return f'[{url}]({url})', m.end() - j
+        return None, 0
+    return _walk_skipping_existing_links(text, replacer)
+
+
+def _auto_link_task_refs(text):
+    """Rewrite bare `T-NNNN` to `[T-NNNN](/tasks/T-NNNN)` so /review surface
+    AC steps become click-traversable across tasks (T-1552). Skips inline
+    code and already-linked references (see _walk_skipping_existing_links).
+    """
+    def replacer(s, j):
+        m = _TASK_REF_RE.match(s, j)
+        if m:
+            tid = m.group(0)
+            return f'[{tid}](/tasks/{tid})', m.end() - j
+        return None, 0
+    return _walk_skipping_existing_links(text, replacer)
 
 
 def _render_md_inline(text):
@@ -167,6 +199,7 @@ def _render_md_inline(text):
     """
     if not text:
         return ''
+    text = _auto_link_watchtower_paths(text)
     text = _auto_link_task_refs(text)
     text = _normalize_md_relative_links(text)
     html = markdown2.markdown(text, safe_mode='escape').strip()
@@ -180,6 +213,7 @@ def _render_md_block(text):
     (Expected, If-not). T-1551."""
     if not text:
         return ''
+    text = _auto_link_watchtower_paths(text)
     text = _auto_link_task_refs(text)
     text = _normalize_md_relative_links(text)
     return markdown2.markdown(text, safe_mode='escape').strip()

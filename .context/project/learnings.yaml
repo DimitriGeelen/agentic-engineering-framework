@@ -2332,3 +2332,10 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-301
+  learning: "When a recurring friction is named in a [high]-severity gap register entry but stays unfixed for >30 days, the remediation is structural (template + completion gate + bypass log triple), not better CLAUDE.md text. Diagnostic: scan corpus for the prescribed behavior — if non-compliance is >90%, the template/gate never asked for it (T-1548-T-1552 arc: G-019 was advisory text for months; T-1549 spike showed 99% baseline; T-1550 added template + check_rca_for_bugfix gate + skip-rca log; T-1551/T-1552 made the consumer surface usable)."
+  source: P-001
+  task: T-1552
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
