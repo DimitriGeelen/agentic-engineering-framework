@@ -180,16 +180,43 @@
 </div>
 {% endif %}
 
-<!-- Filter buttons (T-839) -->
+<!-- Filter buttons (T-839, T-1532) -->
 {% set rubber_stamp_count = pending_acs | selectattr('sort_priority', 'equalto', 2) | list | length %}
 {% set review_count = pending_acs | selectattr('sort_priority', 'equalto', 0) | list | length %}
 {% set stale_count = pending_acs | selectattr('is_stale') | list | length %}
+{% set go_count = pending_acs | selectattr('verdict', 'equalto', 'GO') | list | length %}
+{% set defer_count = pending_acs | selectattr('verdict', 'equalto', 'DEFER') | list | length %}
+{% set nogo_count = pending_acs | selectattr('verdict', 'equalto', 'NO-GO') | list | length %}
 <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
     <button class="ac-filter-btn outline" data-filter="all"
             style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;"
             onclick="filterACs('all')">
         All ({{ ac_task_count }})
     </button>
+    {% if go_count %}
+    <button class="ac-filter-btn outline" data-filter="go"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#1b5e20; color:#1b5e20;"
+            onclick="filterACs('go')"
+            title="Tasks the agent recommends GO — likely rubber-stamp">
+        GO ({{ go_count }})
+    </button>
+    {% endif %}
+    {% if defer_count %}
+    <button class="ac-filter-btn outline" data-filter="defer"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#e65100; color:#e65100;"
+            onclick="filterACs('defer')"
+            title="Tasks the agent recommends DEFER — needs strategic decision">
+        DEFER ({{ defer_count }})
+    </button>
+    {% endif %}
+    {% if nogo_count %}
+    <button class="ac-filter-btn outline" data-filter="nogo"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#b71c1c; color:#b71c1c;"
+            onclick="filterACs('nogo')"
+            title="Tasks the agent recommends NO-GO">
+        NO-GO ({{ nogo_count }})
+    </button>
+    {% endif %}
     <button class="ac-filter-btn outline" data-filter="review"
             style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#b45309; color:#b45309;"
             onclick="filterACs('review')">
@@ -213,10 +240,14 @@ function filterACs(filter) {
     document.querySelectorAll('.human-ac-group').forEach(function(card) {
         var priority = card.dataset.priority;
         var stale = card.dataset.stale === 'true';
+        var verdict = card.dataset.verdict;
         var show = filter === 'all'
             || (filter === 'review' && priority === '0')
             || (filter === 'rubber-stamp' && priority === '2')
-            || (filter === 'stale' && stale);
+            || (filter === 'stale' && stale)
+            || (filter === 'go' && verdict === 'GO')
+            || (filter === 'defer' && verdict === 'DEFER')
+            || (filter === 'nogo' && verdict === 'NO-GO');
         card.style.display = show ? '' : 'none';
     });
     document.querySelectorAll('.ac-filter-btn').forEach(function(btn) {
