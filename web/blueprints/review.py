@@ -155,6 +155,11 @@ def review(task_id):
 
     artifacts = _find_research_artifacts(task_id)
     recommendation = _parse_recommendation(body)  # T-1195
+    # T-1539 (blind-reviewer finding): block colour was hardcoded amber regardless
+    # of verdict — confusing for GO/NO-GO. Surface the normalized verdict so the
+    # template can apply per-verdict styling (green=GO, amber=DEFER, red=NO-GO).
+    from web.shared import extract_recommendation_verdict
+    verdict = extract_recommendation_verdict(body)
 
     return render_template(
         "review.html",
@@ -166,6 +171,7 @@ def review(task_id):
         checked_count=checked_count,
         total_count=total_count,
         all_checked=all_checked,
+        verdict=verdict,
         pending_tier0=active_tier0,
         artifacts=artifacts,
         recommendation=recommendation,

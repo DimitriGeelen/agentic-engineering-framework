@@ -234,7 +234,7 @@
         .badge-startedwork { background: #3b82f622; color: #1d4ed8; border: 1px solid #3b82f655; }
         .badge-workcompleted { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
 
-        /* T-1195: Recommendation block */
+        /* T-1195: Recommendation block (T-1539: per-verdict colour) */
         .recommendation-block {
             background: #fefce8;
             border: 1px solid #eab308;
@@ -243,6 +243,24 @@
             padding: 1rem;
             margin: 1rem 0;
         }
+        .recommendation-block[data-verdict="GO"] {
+            background: #ecfdf5;
+            border-color: #10b981;
+            border-left-color: #047857;
+        }
+        .recommendation-block[data-verdict="GO"] h3 { color: #065f46; }
+        .recommendation-block[data-verdict="DEFER"] {
+            background: #fff7ed;
+            border-color: #fb923c;
+            border-left-color: #ea580c;
+        }
+        .recommendation-block[data-verdict="DEFER"] h3 { color: #9a3412; }
+        .recommendation-block[data-verdict="NO-GO"] {
+            background: #fef2f2;
+            border-color: #ef4444;
+            border-left-color: #b91c1c;
+        }
+        .recommendation-block[data-verdict="NO-GO"] h3 { color: #991b1b; }
         .recommendation-block h3 {
             margin: 0 0 0.5rem;
             font-size: 0.9rem;
@@ -283,9 +301,10 @@
     </div>
 
     <!-- T-1195: Recommendation block — shown above Tier 0 so reviewer sees what they're approving -->
+    {# T-1539: data-verdict drives per-verdict colour (CSS attribute selectors above) #}
     {% if recommendation %}
-    <section class="recommendation-block">
-        <h3>Recommendation</h3>
+    <section class="recommendation-block" data-verdict="{{ verdict|default('?') }}">
+        <h3>Recommendation{% if verdict and verdict != '?' %} — {{ verdict }}{% endif %}</h3>
         <pre>{{ recommendation }}</pre>
     </section>
     {% elif artifacts %}

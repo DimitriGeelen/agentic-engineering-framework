@@ -2290,3 +2290,17 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-295
+  learning: "Blind-reviewer agent dispatch is high-leverage UX validation: a fresh claude -p worker with no session-context bias caught 2 real bugs in T-1530-T-1537 work that synthetic tests missed (hardcoded localhost in fw review-queue footer; uniform amber colour on /review regardless of GO/DEFER/NO-GO verdict). Cost: ~3 min wall + bounded token budget via fw termlink dispatch. Pattern: ship UX, then dispatch a TermLink reviewer with read-only walkthrough prompt; harvest findings into concrete fixes. Antifragility-by-construction: false success in UX is structurally worse than acknowledged friction."
+  source: P-001
+  task: T-1539
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
+- id: L-296
+  learning: "When blind-reviewer agents flag 'missing X' in HTML/UI, distinguish 'absent because conditionally hidden' from 'absent because broken'. T-1539 reviewer flagged 'no NO-GO filter button on /approvals' as a bug — but the button is conditionally rendered on {% if nogo_count %} (same pattern as GO and DEFER). Reviewer didn't notice the conditional and the empty count caused the absence. Mitigation in prompts: ask the reviewer to grep the template for the rendering branch before declaring absence a bug; or include 'check if rendering is gated on data presence' as an explicit check."
+  source: P-001
+  task: T-1539
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD

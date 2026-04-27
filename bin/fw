@@ -3422,7 +3422,6 @@ for verdict, age_days, tid_v, name, _unchecked in rows:
     else:
         col = "\033[90m"  # grey
     print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
-port = os.environ.get("FW_PORT", "3000")
 go = sum(1 for r in rows if r[0] == "GO")
 defer = sum(1 for r in rows if r[0] == "DEFER")
 nogo = sum(1 for r in rows if r[0] == "NO-GO")
@@ -3433,7 +3432,10 @@ if defer: parts.append(f"\033[33m{defer} DEFER\033[0m")
 if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
 if unk: parts.append(f"\033[90m{unk} ?\033[0m")
 print(f"\n\033[2m{len(rows)} task(s) awaiting human review\033[0m  ({' / '.join(parts)})")
-print(f"\033[2mOpen in Watchtower: http://localhost:{port}/approvals\033[0m")
+# T-1539 (blind-reviewer finding): never hardcode localhost — read triple-file → fw_config → 3000 fallback
+url_file = ROOT / ".context" / "working" / "watchtower.url"
+wt_url = url_file.read_text().strip() if url_file.exists() else f"http://localhost:{os.environ.get('FW_PORT', '3000')}"
+print(f"\033[2mOpen in Watchtower: {wt_url}/approvals\033[0m")
 PYREVQ
         ;;
     work-on)
