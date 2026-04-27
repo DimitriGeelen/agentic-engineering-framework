@@ -163,6 +163,63 @@ check_acceptance_criteria() {
     fi
 }
 
+# Recommendation Gate (T-679 / T-1529)
+# Fires only when PARTIAL_COMPLETE=true (Human ACs remain — task is going to
+# the human-review queue). Requires a substantive `## Recommendation` block
+# with a `**Recommendation:**` line so reviewers see an agent advisory.
+# OBS-031: 19/22 awaiting-review tasks were blank because T-679 was advisory only.
+# L-293: uses H2+ terminator to avoid false-positives from appended Updates entries.
+check_recommendation_for_review() {
+    [ "${PARTIAL_COMPLETE:-false}" = true ] || return 0
+
+    local rec_state
+    rec_state=$(python3 - "$TASK_FILE" <<'PYREC' 2>/dev/null || echo "error"
+import sys, re
+try:
+    text = open(sys.argv[1]).read()
+except OSError:
+    print("error"); sys.exit(0)
+m = re.search(r'^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL)
+if not m:
+    print("missing"); sys.exit(0)
+body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
+if re.search(r'^\s*[-*]?\s*\*\*Recommendation:\*\*\s*\S', body, re.MULTILINE):
+    print("ok")
+else:
+    print("empty")
+PYREC
+)
+
+    case "$rec_state" in
+        ok)
+            echo -e "${GREEN}Recommendation: substantive ✓${NC}"
+            return 0 ;;
+        error)
+            return 0 ;;
+        missing|empty)
+            if [ "$SKIP_RECOMMENDATION" = true ]; then
+                echo -e "${YELLOW}WARNING: Recommendation $rec_state (--skip-recommendation bypass)${NC}"
+                log_gate_bypass "--skip-recommendation" "check_recommendation_for_review"
+                return 0
+            fi
+            echo -e "${RED}ERROR: Cannot complete — Human ACs remain but ## Recommendation is $rec_state.${NC}" >&2
+            echo "" >&2
+            echo "T-679 (CLAUDE.md): never present a blank decision to the human." >&2
+            echo "Reviewers will see /review/$(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') with no agent advisory." >&2
+            echo "" >&2
+            echo "Add a ## Recommendation block to $TASK_FILE with:" >&2
+            echo "  **Recommendation:** GO / NO-GO / DEFER" >&2
+            echo "  **Rationale:** <why — cite evidence>" >&2
+            echo "  **Evidence:** <bullets — file paths, test results, metrics>" >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  1. Add the Recommendation block, then retry" >&2
+            echo "  2. Use --skip-recommendation to bypass (logged)" >&2
+            exit 1
+            ;;
+    esac
+}
+
 # T-679: Auto-emit review on partial-complete transition
 # Called after work-completed transition when human ACs remain.
 # Also available standalone: fw task review T-XXX
@@ -280,6 +337,7 @@ SKIP_SOVEREIGNTY=false
 SKIP_AC=false
 SKIP_VERIFICATION=false
 SKIP_HUMAN_OWNERSHIP=false
+SKIP_RECOMMENDATION=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -294,13 +352,15 @@ while [[ $# -gt 0 ]]; do
         --skip-acceptance-criteria) SKIP_AC=true; shift ;;
         --skip-verification) SKIP_VERIFICATION=true; shift ;;
         --skip-human-ownership) SKIP_HUMAN_OWNERSHIP=true; shift ;;
+        --skip-recommendation) SKIP_RECOMMENDATION=true; shift ;;
         --force|-f)
             echo -e "${YELLOW}DEPRECATED: --force will be removed. Use narrow flags instead:${NC}" >&2
             echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)" >&2
             echo "  --skip-acceptance-criteria   Bypass AC gate (P-010)" >&2
             echo "  --skip-verification          Bypass verification gate (P-011)" >&2
+            echo "  --skip-recommendation        Bypass recommendation gate (T-679)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -316,6 +376,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)"
             echo "  --skip-acceptance-criteria   Bypass AC gate (P-010)"
             echo "  --skip-verification          Bypass verification gate (P-011)"
+            echo "  --skip-recommendation        Bypass recommendation gate (T-679)"
             echo "  --skip-human-ownership       Bypass human ownership reassignment"
             echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
             echo "  -h, --help    Show this help"
@@ -491,6 +552,13 @@ if [ -n "$NEW_STATUS" ]; then
         # === Verification Gate (P-011) ===
         if [ "$NEW_STATUS" = "work-completed" ]; then
             run_verification_commands
+        fi
+
+        # === Recommendation Gate (T-679 / T-1529) ===
+        # Only fires when PARTIAL_COMPLETE=true (Human ACs remain).
+        # Reviewers see /review/T-XXX — it must surface an agent advisory.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_recommendation_for_review
         fi
 
         # === Reviewer Static-Scan (T-1443 v1.0) ===
