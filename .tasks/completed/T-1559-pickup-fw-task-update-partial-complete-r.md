@@ -4,16 +4,16 @@ name: "Pickup: fw task update partial-complete recheck does not honor --skip-acc
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-225. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [pickup, bug-report]
-components: []
+components: [agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-04-27T18:38:01Z
-last_update: 2026-04-27T20:11:39Z
-date_finished: null
+last_update: 2026-04-27T20:16:34Z
+date_finished: 2026-04-27T20:16:34Z
 source_task_id_in_origin: T-225
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -36,8 +36,8 @@ tasks today via the workaround of editing AC checkboxes by hand.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `update-task.sh` partial-complete recheck branch honors `SKIP_AC`: when true, warn + `log_gate_bypass` + proceed with archival (move + episodic), mirroring the initial-transition branch logic.
-- [ ] Regression test `tests/unit/skip_ac_partial_complete.bats` covers: (a) partial-complete with no flag → blocked, stays in active/; (b) partial-complete + `--skip-acceptance-criteria` → archived to completed/; (c) bypass logged.
+- [x] `update-task.sh` partial-complete recheck branch honors `SKIP_AC`: when true, warn + `log_gate_bypass` + proceed with archival (move + episodic), mirroring the initial-transition branch logic.
+- [x] Regression test `tests/unit/skip_ac_partial_complete.bats` covers: (a) partial-complete with no flag → blocked, stays in active/; (b) partial-complete + `--skip-acceptance-criteria` → archived to completed/; (c) bypass logged.
 
 ### Human
 <!-- All ACs are agent-verifiable. -->
@@ -98,3 +98,15 @@ workflow exercised it.
 ### 2026-04-27T20:11:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-9f44d87e
+- **Timestamp:** 2026-04-27T20:16:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-27T20:16:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

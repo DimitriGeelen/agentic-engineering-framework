@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1559: Pickup: fw task update partial-complete recheck does not honor --skip-acceptance-criteria (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T20:16:38Z
+# ============================================================================
+
+task_id: T-1559
+task_name: "Pickup: fw task update partial-complete recheck does not honor --skip-acceptance-criteria (from 003-NTB-ATC-Plugin)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T18:38:01Z
+completed: 2026-04-27T20:16:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-27T22:16:16+02:00
+last_commit: 2026-04-27T22:16:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Honor --skip-acceptance-criteria on partial-complete recheck branch
+
+# Key outcomes
+outcomes:
+  - "`update-task.sh` partial-complete recheck branch honors `SKIP_AC`: when true, warn + `log_gate_bypass` + proceed with archival (move + episodic), mirroring the initial-transition branch logic."
+  - "Regression test `tests/unit/skip_ac_partial_complete.bats` covers: (a) partial-complete with no flag → blocked, stays in active/; (b) partial-complete + `--skip-acceptance-criteria` → archived to completed/; (c) bypass logged."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - ".context/pickup/processed/P-016-bug-report-from-ntb-atc.yaml"
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1559-pickup-fw-task-update-partial-complete-r.md"
+  - "tests/unit/skip_ac_partial_complete.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T22:16:16"
+    action: "T-1559: Honor --skip-acceptance-criteria on partial-complete recheck branch"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 98 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 98
+  commits: 1
+  files_changed: 5
+  lines_added: 307
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1559-pickup-fw-task-update-partial-complete-r.md
+generated_by: context-agent-hybrid
