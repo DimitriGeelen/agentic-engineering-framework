@@ -1,0 +1,93 @@
+# T-1549 — Layer B v0 Heuristic Scan Results
+
+**Run:** 2026-04-27T15:53:59.137450+00:00
+**Corpus:** 1462 completed tasks
+**Bug-class identified:** 317 (21%)
+
+## H1 — Bug-class tasks with no `## RCA` section
+
+**Flagged:** 315 / 317 bug-class tasks (99%)
+
+**Last 30 days sample (FP triage candidates):**
+
+- `T-1014-fix-playwright-navigation-test-timeout--` — Fix Playwright navigation test timeout — batch contention
+- `T-1026-playwright-tests--docs-detail-review-acs` — Playwright tests — docs detail, review ACs, POST error handling
+- `T-1027-fix-graduation-page-playwright-test-time` — Fix graduation page Playwright test timeout
+- `T-1040-playwright-networkidle-migration--replac` — Playwright networkidle migration — replace networkidle with domcontentloaded acr
+- `T-1045-fix-playwright-test-server--enable-flask` — Fix Playwright test server — enable Flask threaded mode to prevent sequential re
+- `T-1051-playwright-response-time-regression-test` — Playwright response time regression test — verify no route takes >5s
+- `T-1053-version-bump-to-1586--332-playwright-tes` — Version bump to 1.5.86 — 332 Playwright tests, timing report, performance regres
+- `T-1069-one-time-horizon-status-data-cleanup--fi` — One-time horizon-status data cleanup — fix 52 inconsistent tasks
+- `T-1073-fix-playwright-test-suite--mass-failures` — Fix Playwright test suite — mass failures across API and UI tests
+- `T-1075-fix-project-boundary-false-positive--ter` — Fix project boundary false positive — TermLink commands inside loops/pipes
+- `T-1076-fix-shellcheck-sc2034-false-positive-in-` — Fix shellcheck SC2034 false positive in healing diagnose.sh
+- `T-1078-fix-pre-push-hook--missing-agentic-frame` — Fix pre-push hook — missing .agentic-framework audit path for consumer projects
+- `T-1079-fix-hook-version-drift--gitsh-shows-14-b` — Fix hook VERSION drift — git.sh shows 1.4 but templates write 1.5 causing instal
+- `T-1081-fix-fw-gaps--missed-t-397-rename-from-ga` — Fix fw gaps — missed T-397 rename from gaps.yaml to concerns.yaml
+- `T-1083-fix-post-compact-resume-fabric-lookup--u` — Fix post-compact-resume fabric lookup — uses PROJECT_ROOT path, fails silently o
+- `T-1086-fix-hookssh-bypass-messages--commit-msg-` — Fix hooks.sh bypass messages — commit-msg task-ref, inception gate, pre-push (T-
+- `T-1087-budget-gate-post-compact-stale-read--saf` — Budget gate post-compact stale read — safety net fix
+- `T-1088-budget-gate-timestamp-filter-post-compac` — Budget gate timestamp-filter post-compact JSONL read (real T-1087 fix)
+- `T-1119-pickup-approvals-page-never-displays-age` — Pickup: Approvals page never displays agent recommendation or argumentation — ra
+- `T-1120-pickup-review-marker-gate-blocks-watchto` — Pickup: Review marker gate blocks Watchtower GO/NO-GO decisions — human clicking
+- `T-1123-pickup-approvals-page-shows-inception-ta` — Pickup: Approvals page shows inception tasks without recommendations — creates n
+- `T-1127-pickup-u-003-send-file-reports-ok-on-hub` — Pickup: U-003: send-file reports ok on hub acceptance, not delivery — silent fil
+- `T-1133-pickup-gnu-date--d-in-framework-shell-sc` — Pickup: GNU date -d in framework shell scripts fails silently on macOS — causes 
+- `T-1143-t-1102-build-context-aware-fw-path-helpe` — T-1102 build: context-aware fw path helper (_fw_cmd) and fix 3 hardcoded bin/fw 
+- `T-1150-rca-recommendation-text-truncation-in-mu` — RCA: recommendation text truncation in multiple surfaces — fix + inception for r
+- ... +195 more in last 30 days
+
+## H2 — Learning IDs referenced across ≥3 tasks within 30 days
+
+- `P-010` — referenced by 99 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
+- `P-011` — referenced by 64 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
+- `L-006` — referenced by 54 tasks: T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou …
+- `L-001` — referenced by 38 tasks: T-011-define-practice-graduation-criteria, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le …
+- `PL-007` — referenced by 24 tasks: T-1141-pickup-pl-007-never-dump-terminal-comman, T-1141-pickup-pl-007-never-dump-terminal-comman, T-1141-pickup-pl-007-never-dump-terminal-comman, T-1146-pickup-critical-rca-agent-command-amnesi, T-1146-pickup-critical-rca-agent-command-amnesi …
+- `L-293` — referenced by 16 tasks: T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1528-t-1528-defensive-h2-terminator-on-recomm …
+- `L-002` — referenced by 13 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
+- `P-001` — referenced by 12 tasks: T-001-define-success-metrics, T-014-improve-audit-agent-to-measure-quality-n, T-018-enrich-low-quality-episodic-summaries, T-044-backfill-episodic-tags-with-controlled-v, T-1258-rca-fw-context-add-learning-truncates-le …
+- `PL-003` — referenced by 12 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
+- `PL-005` — referenced by 12 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
+- `PL-006` — referenced by 12 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
+- `P-002` — referenced by 11 tasks: T-001-define-success-metrics, T-001-define-success-metrics, T-004-install-pre-commit-hook-for-task-enforce, T-011-define-practice-graduation-criteria, T-014-improve-audit-agent-to-measure-quality-n …
+- `PL-004` — referenced by 11 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
+- `L-237` — referenced by 10 tasks: T-1280-fix-inception-decide-on-consumer-project, T-1357-pickup-claudemd-template-instructs-use-b, T-1357-pickup-claudemd-template-instructs-use-b, T-1365-pickup-multi-agent-dispatch-safety-model, T-1365-pickup-multi-agent-dispatch-safety-model …
+- `P-040` — referenced by 10 tasks: T-1418-send-t-1332-go-pickup-to-termlink--fleet, T-1494-pickup-fw-pickup-send---remote-signature, T-1512-pickup-re-t-045-hosting-advice--relay-re, T-1512-pickup-re-t-045-hosting-advice--relay-re, T-1512-pickup-re-t-045-hosting-advice--relay-re …
+
+## H3 — Bug-class with no RCA AND no learning captured
+
+**Flagged:** 262 / 317 (82%)
+
+This is the strongest symptom-fix signal: fix shipped, no root cause stated, no learning captured for next time.
+
+## Self-application (Spike 3 — recursion test)
+
+T-1548 (the inception that birthed this scan): bug_class=False has_rca=False learning_captured=True → flagged_by_H1=False
+
+**Reading:** if T-1548 is flagged by H1, the heuristic correctly identifies even the meta-task itself as lacking an inline `## RCA` section — though its `docs/reports/T-1548-rca-escalation-structural.md` artifact carries the RCA. H1's blindness to artifact files is a known limitation, addressable in v1 by also scanning `docs/reports/T-XXX-*.md`.
+
+## Headline numbers
+
+| Metric | Value |
+|---|---|
+| Total completed tasks | 1462 |
+| Bug-class tasks | 317 (21%) |
+| H1 flagged | 315 |
+| H2 repeat-learning patterns | 49 |
+| H3 flagged (strongest signal) | 262 |
+| Last-30-days bug-class | 220 |
+
+## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
+
+**GO Layer B v1** if (manual triage on a 20-task sample of H1):
+- Recall ≥ 70%: the scanner finds the symptom-fix instances we *know* exist
+- FP rate < 30%: most flagged tasks really are bug-fixes-without-RCA, not docs/refactors miscategorised
+- H2 produces actionable repeat-class signal (not just generic L-IDs everyone cites)
+
+**NO-GO / iterate** if:
+- FP > 30% on the sample → tighten `is_bug_class` filter (use commit-history + tags more strictly) before promotion
+- H1 misses obvious past instances → add commit-message scanning to recall
+- H2 noise dominates → require co-occurrence with H1 to count
+
+**DEFER** if the data shows the dominant pattern is something v0 doesn't model (e.g. corrections within a session, not across tasks) → re-scope before building v1.
