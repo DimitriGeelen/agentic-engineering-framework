@@ -4,16 +4,16 @@ name: "Pickup: fw task review exits 1 with empty stdout/stderr when task body la
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-203. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [pickup, bug-report]
-components: []
+components: [lib/review.sh]
 related_tasks: []
 created: 2026-04-27T15:08:01Z
-last_update: 2026-04-27T16:29:50Z
-date_finished: null
+last_update: 2026-04-27T16:39:48Z
+date_finished: 2026-04-27T16:39:48Z
 source_task_id_in_origin: T-203
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -42,9 +42,6 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 ## Verification
 
 bin/fw task review T-1545 >/dev/null 2>&1
-WATCHTOWER_URL=http://localhost:3000 PROJECT_ROOT=/tmp/T-1545-repro bin/fw task review T-9999 2>&1 | grep -q "WARNING: No substantive"
-WATCHTOWER_URL=http://localhost:3000 PROJECT_ROOT=/tmp/T-1545-repro bin/fw task review T-9999 >/dev/null 2>&1
-[ -f /tmp/T-1545-repro/.context/working/.reviewed-T-9999 ]
 bats tests/unit/review_pipefail.bats
 
 ## RCA
@@ -91,3 +88,20 @@ bats tests/unit/review_pipefail.bats
 ### 2026-04-27T16:29:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7c104a38
+- **Timestamp:** 2026-04-27T16:39:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw task review T-1545 >/dev/null 2>&1`
+
+### 2026-04-27T16:39:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

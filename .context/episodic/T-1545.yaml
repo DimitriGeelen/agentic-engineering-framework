@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1545: Pickup: fw task review exits 1 with empty stdout/stderr when task body lacks ## Recommendation section (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T16:39:54Z
+# ============================================================================
+
+task_id: T-1545
+task_name: "Pickup: fw task review exits 1 with empty stdout/stderr when task body lacks ## Recommendation section (from 003-NTB-ATC-Plugin)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T15:08:01Z
+completed: 2026-04-27T16:39:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-27T18:36:04+02:00
+last_commit: 2026-04-27T18:36:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix fw task review silent exit-1 on empty Recommendation (pipefail trap)
+
+# Key outcomes
+outcomes:
+  - "`lib/review.sh` no longer uses the fragile pipeline; replaced with `audit_inception_recommendation` (awk-based, pipefail-safe, also handles multi-line HTML-comment placeholders correctly — pickup templates trip the old line-anchored `grep -v '^<!--'` detector)."
+  - "Reproducer (`WATCHTOWER_URL=... PROJECT_ROOT=/tmp/T-1545-repro bin/fw task review T-9999`) exits 0, prints WARNING to stderr, prints URL/QR to stdout, creates `.context/working/.reviewed-T-9999`."
+  - "Regression test in `tests/unit/review_pipefail.bats` covers: (a) empty Recommendation → WARNING + exit 0; (b) template-only Recommendation → WARNING + exit 0; (c) substantive Recommendation → no WARNING + exit 0."
+  - "Smoke test: `bin/fw task review T-1538` (substantive Recommendation) and `bin/fw task review T-1544` (template-only) both exit 0; second emits WARNING."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix fw task review silent exit-1 on empty Recommendation (pipefail trap)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/review.sh"
+  - ".tasks/active/T-1545-pickup-fw-task-review-exits-1-with-empty.md"
+  - "tests/unit/review_pipefail.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T18:36:04"
+    action: "T-1545: Fix fw task review silent exit-1 on empty Recommendation (pipefail trap)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 91 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 91
+  commits: 1
+  files_changed: 3
+  lines_added: 184
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1545-pickup-fw-task-review-exits-1-with-empty.md
+generated_by: context-agent-hybrid
