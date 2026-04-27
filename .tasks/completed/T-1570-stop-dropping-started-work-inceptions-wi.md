@@ -4,16 +4,16 @@ name: "Stop dropping started-work inceptions without Recommendation on /approval
 description: >
   Stop dropping started-work inceptions without Recommendation on /approvals (F4)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/approvals.py]
 related_tasks: []
 created: 2026-04-27T21:35:15Z
-last_update: 2026-04-27T21:35:15Z
-date_finished: null
+last_update: 2026-04-27T21:37:39Z
+date_finished: 2026-04-27T21:37:39Z
 ---
 
 # T-1570: Stop dropping started-work inceptions without Recommendation on /approvals (F4)
@@ -47,20 +47,9 @@ display gate is wrong. Aligning them makes the agent's stuck state visible.
 
 ## Verification
 
-python3 -c "
-from web.blueprints.approvals import _load_pending_go_decisions
-from web.app import create_app
-app = create_app()
-with app.app_context():
-    rows = _load_pending_go_decisions()
-    have_rec = [r for r in rows if r.get('recommendation')]
-    no_rec = [r for r in rows if not r.get('recommendation')]
-    print(f'with-rec: {len(have_rec)}, no-rec: {len(no_rec)}')
-    assert len(rows) > 0, 'no inceptions returned'
-    assert len(no_rec) > 0, 'F4 not active — no started-work inceptions surfaced without Recommendation'
-"
-PORT=$(bin/fw watchtower port 2>/dev/null || echo 3000); curl -sf "http://localhost:$PORT/approvals" >/dev/null && echo "approvals 200 ok"
-PORT=$(bin/fw watchtower port 2>/dev/null || echo 3000); curl -s "http://localhost:$PORT/approvals" | grep -q "No agent recommendation written yet" && echo "fallback rendered"
+python3 -c "from web.app import create_app; from web.blueprints.approvals import _load_pending_go_decisions; app=create_app(); ctx=app.app_context(); ctx.push(); rows=_load_pending_go_decisions(); no_rec=[r for r in rows if not r.get('recommendation')]; assert len(rows) > 0 and len(no_rec) > 0; print(f'F4 ok: total={len(rows)} no-rec={len(no_rec)}')"
+PORT=$(bin/fw watchtower port 2>/dev/null || echo 3000); curl -sf "http://localhost:$PORT/approvals" >/dev/null && echo approvals-200-ok
+bash -c 'PORT=$(bin/fw watchtower port 2>/dev/null || echo 3000); curl -s "http://localhost:$PORT/approvals" | grep -q "No agent recommendation written yet" && echo fallback-rendered'
 
 ## RCA
 
@@ -113,3 +102,16 @@ correctly hidden.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1570-stop-dropping-started-work-inceptions-wi.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-9f0cde47
+- **Timestamp:** 2026-04-27T21:37:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-27T21:37:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** F4 implemented and verified live

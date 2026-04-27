@@ -11,4 +11,13 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3000
  * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
-127.0.0.1 - - [27/Apr/2026 18:18:42] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [27/Apr/2026 23:36:23] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [27/Apr/2026 23:36:34] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [27/Apr/2026 23:36:34] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [27/Apr/2026 23:37:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [27/Apr/2026 23:37:20] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [27/Apr/2026 23:37:20] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [27/Apr/2026 23:37:24] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [27/Apr/2026 23:37:24] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [27/Apr/2026 23:37:43] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [27/Apr/2026 23:37:43] "GET /approvals HTTP/1.1" 200 -

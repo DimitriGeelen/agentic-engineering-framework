@@ -1656,3 +1656,292 @@ scan_id: R-2f7564ac
 task_id: T-1553
 payload:
   task_file: .tasks/active/T-1553-auto-link-watchtower-url-paths-in-review.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T16:39:51Z'
+scan_id: R-7c104a38
+task_id: T-1545
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T16:39:51Z'
+scan_id: R-7c104a38
+task_id: T-1545
+payload:
+  task_file: .tasks/active/T-1545-pickup-fw-task-review-exits-1-with-empty.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T16:44:07Z'
+scan_id: R-e7ded5a5
+task_id: T-1554
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T16:44:07Z'
+scan_id: R-e7ded5a5
+task_id: T-1554
+payload:
+  task_file: .tasks/active/T-1554-extend-placeholder-audit-to-catch-pickup.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T16:49:30Z'
+scan_id: R-676fd4f3
+task_id: T-1555
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T16:49:30Z'
+scan_id: R-676fd4f3
+task_id: T-1555
+payload:
+  task_file: .tasks/active/T-1555-layer-b-v1--cron-escalation-drift-scanne.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T17:47:31Z'
+scan_id: R-a66dda26
+task_id: T-1556
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T17:47:31Z'
+scan_id: R-a66dda26
+task_id: T-1556
+payload:
+  task_file: .tasks/active/T-1556-restore-flock-wrappers-in-cron-registry-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T18:30:43Z'
+scan_id: R-bf1beb5b
+task_id: T-1557
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T18:30:43Z'
+scan_id: R-bf1beb5b
+task_id: T-1557
+payload:
+  task_file: .tasks/active/T-1557-sweep-libsh-for-pipefail-trap-class-l-30.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T18:43:38Z'
+scan_id: R-1a761782
+task_id: T-1558
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T18:43:38Z'
+scan_id: R-1a761782
+task_id: T-1558
+payload:
+  task_file: .tasks/active/T-1558-fw-doctor--bats-cron-registry-flock-pari.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T18:46:55Z'
+scan_id: R-4338d179
+task_id: T-1560
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T18:46:55Z'
+scan_id: R-4338d179
+task_id: T-1560
+payload:
+  task_file: .tasks/active/T-1560-pipefail-trap-sweep-follow-up-libupgrade.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T20:16:35Z'
+scan_id: R-9f44d87e
+task_id: T-1559
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T20:16:35Z'
+scan_id: R-9f44d87e
+task_id: T-1559
+payload:
+  task_file: .tasks/active/T-1559-pickup-fw-task-update-partial-complete-r.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T20:27:14Z'
+scan_id: R-5d6cf695
+task_id: T-1561
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T20:27:14Z'
+scan_id: R-5d6cf695
+task_id: T-1561
+payload:
+  task_file: .tasks/active/T-1561-add-fw-review-queue-to-claudemd-quick-re.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T20:33:05Z'
+scan_id: R-77040e9a
+task_id: T-1562
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T20:33:05Z'
+scan_id: R-77040e9a
+task_id: T-1562
+payload:
+  task_file: .tasks/active/T-1562-libpickupsh-l-302-pipefail-trap-sweep--g.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T20:37:16Z'
+scan_id: R-a5e790ea
+task_id: T-1563
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T20:37:16Z'
+scan_id: R-a5e790ea
+task_id: T-1563
+payload:
+  task_file: .tasks/active/T-1563-apply-l-302-guard-to-9-frontmatter-extra.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T20:48:39Z'
+scan_id: R-f0706488
+task_id: T-1564
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T20:48:39Z'
+scan_id: R-f0706488
+task_id: T-1564
+payload:
+  task_file: .tasks/active/T-1564-l-302-sweep-49-sites-across-13-agents-sc.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T20:56:18Z'
+scan_id: R-5d6a8bb6
+task_id: T-1566
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T20:56:18Z'
+scan_id: R-5d6a8bb6
+task_id: T-1566
+payload:
+  task_file: .tasks/active/T-1566-l-302-sweep-3-final-sites-in-binfw-close.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T21:01:51Z'
+scan_id: R-a8ec54b6
+task_id: T-1567
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T21:01:51Z'
+scan_id: R-a8ec54b6
+task_id: T-1567
+payload:
+  task_file: .tasks/active/T-1567-f1-fix-dead-code-regex-in-isinceptiondec.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T21:04:24Z'
+scan_id: R-4ba7ba0b
+task_id: T-1568
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T21:04:24Z'
+scan_id: R-4ba7ba0b
+task_id: T-1568
+payload:
+  task_file: .tasks/active/T-1568-f2-replace---force-with-narrow-flags-in-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T21:34:49Z'
+scan_id: R-ac6586bb
+task_id: T-1569
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T21:34:49Z'
+scan_id: R-ac6586bb
+task_id: T-1569
+payload:
+  task_file: .tasks/active/T-1569-surface-reviewer-verdict-on-watchtower-a.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T21:37:43Z'
+scan_id: R-9f0cde47
+task_id: T-1570
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T21:37:43Z'
+scan_id: R-9f0cde47
+task_id: T-1570
+payload:
+  task_file: .tasks/active/T-1570-stop-dropping-started-work-inceptions-wi.md

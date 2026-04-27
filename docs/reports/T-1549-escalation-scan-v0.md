@@ -1,6 +1,6 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-04-27T16:48:04.289049+00:00
+**Run:** 2026-04-27T16:49:29.851765+00:00
 **Corpus:** 1469 completed tasks
 **Bug-class identified:** 320 (21%)
 
