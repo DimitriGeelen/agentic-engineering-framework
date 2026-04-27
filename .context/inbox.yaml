@@ -229,5 +229,12 @@ observations:
     captured: 2026-04-27T10:05:45Z
     context_task: null
     tags: [bug]
+    status: promoted
+    promoted_to: task
+  - id: OBS-033
+    text: "Decision auto-capture (lib/decisions.sh or update-task.sh) writes decision text into YAML double-quoted strings without escape sanitization — backslash-anything (\\s, \\`, \\') breaks YAML parse. Recurrence: L-294, D-036 (T-1540), D-038 (T-1541) — three hand-fixes in 3 days, same class. Real fix: route auto-captured strings through yaml.safe_dump (or wrap in '|' literal block), or strip/escape backslashes before write. Sustained framework blindness > 7 days qualifies for G-019 escalation."
+    captured: 2026-04-27T13:33:51Z
+    context_task: null
+    tags: [bug]
     status: pending
     promoted_to: null
