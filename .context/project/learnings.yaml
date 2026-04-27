@@ -2395,3 +2395,10 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-309
+  learning: "Two systems with different definitions of 'needs human' is a cross-component decoupling bug — the artefact gate (T-679 Recommendation) was keyed off PARTIAL_COMPLETE while the reviewer agent (lib/reviewer/static_scan.py:668) used risk + human_signoff + escalations. A task with 'human_signoff: required' and no Human ACs could complete silently with no Recommendation. Fix: extend the gate trigger to OR over all needs-human signals so both systems agree."
+  source: P-001
+  task: T-1572
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
