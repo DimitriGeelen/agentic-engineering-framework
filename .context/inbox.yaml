@@ -221,6 +221,6 @@ observations:
     captured: 2026-04-26T22:36:42Z
     context_task: null
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
     urgent: true
