@@ -124,9 +124,14 @@ def _load_pending_go_decisions():
         if _extract_decision(body) != "pending":
             continue
 
-        # T-1123: Only show inception tasks with a recommendation (skip captured/unexplored)
+        # T-1123 / T-1570 (F4): Only drop captured/unexplored inceptions when the
+        # Recommendation is missing. Started-work inceptions without a Recommendation
+        # are exactly the cases where the human needs to see "agent is stuck — write
+        # recommendation or escalate" — keep them, the template fallback handles
+        # rendering (T-1214). Aligns display gate with the completion gate (T-1529).
         rec_section = _extract_section(body, "Recommendation")
-        if not rec_section or len(rec_section.strip()) < 20:
+        rec_substantive = bool(rec_section and len(rec_section.strip()) >= 20)
+        if not rec_substantive and fm.get("status", "") != "started-work":
             continue
 
         task_id = fm.get("id", "")
