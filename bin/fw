@@ -3346,8 +3346,12 @@ print('0')
         if [ "$rq_arg" = "--help" ] || [ "$rq_arg" = "-h" ] || [ "$rq_arg" = "help" ]; then
             echo -e "${BOLD}fw review-queue${NC} — list tasks awaiting human review (T-1536)"
             echo ""
-            echo "Shows active tasks with unchecked Human ACs, prefixed with the agent's"
-            echo "recommendation verdict (GO/DEFER/NO-GO/?). Companion to Watchtower /approvals."
+            echo "Shows two sections matching Watchtower /approvals:"
+            echo "  DECISIONS — pending inception GO/NO-GO/DEFER decisions (T-1571)"
+            echo "  VERDICT   — active tasks with unchecked Human ACs"
+            echo ""
+            echo "Each row is prefixed by the agent's recommendation verdict (GO/DEFER/"
+            echo "NO-GO/?). Companion to Watchtower /approvals."
             echo ""
             echo "Sort: GO first (rubber-stamp), then DEFER, then NO-GO, then unknown."
             echo "Within each verdict: oldest first (stale > fresh)."
@@ -3387,9 +3391,48 @@ if not ACTIVE.is_dir():
 
 now = time.time()
 rows = []
+decision_rows = []
+# T-1571 / F5: precompute pending-inception scan once, reuse below for both passes
+# Pattern matches the canonical block emitted by lib/inception.sh do_inception_decide.
+DECISION_RE = re.compile(r"^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b", re.M)
 for f in sorted(ACTIVE.glob("*.md")):
     text = f.read_text(errors="replace")
-    # Find ### Human section
+    # Frontmatter (used by both passes)
+    fm_m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+    fm_text = fm_m.group(1) if fm_m else ""
+    wf_m = re.search(r"^workflow_type:\s*(\S+)", fm_text, re.MULTILINE)
+    workflow_type = wf_m.group(1).strip() if wf_m else ""
+    status_m = re.search(r"^status:\s*(\S+)", fm_text, re.MULTILINE)
+    status = status_m.group(1).strip() if status_m else ""
+    tid_m = re.search(r"^id:\s*(\S+)", fm_text, re.MULTILINE)
+    tid_v = tid_m.group(1).strip() if tid_m else ""
+    tname_m = re.search(r'^name:\s*"?(.+?)"?\s*$', fm_text, re.MULTILINE)
+    name = tname_m.group(1).strip() if tname_m else ""
+
+    # T-1571 / F5: DECISIONS pass — pending inception decisions
+    if workflow_type == "inception" and not DECISION_RE.search(text):
+        # F4 inclusion: drop captured/unexplored without Recommendation, keep
+        # started-work even when Recommendation is empty (visibility for stuck agent).
+        rec_m = re.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)",
+                          text, re.MULTILINE | re.DOTALL)
+        rec_section = rec_m.group(1) if rec_m else ""
+        rec_clean = re.sub(r"<!--.*?-->", "", rec_section, flags=re.DOTALL).strip()
+        rec_substantive = len(rec_clean) >= 20
+        if rec_substantive or status == "started-work":
+            d_age_days = 0
+            for field in ("last_update", "created"):
+                m = re.search(rf"^{field}:\s*(\S+)", fm_text, re.MULTILINE)
+                if m:
+                    try:
+                        dt = datetime.fromisoformat(m.group(1).replace("Z", "+00:00"))
+                        d_age_days = int((now - dt.timestamp()) / 86400)
+                        break
+                    except (ValueError, OSError):
+                        pass
+            d_verdict = extract_recommendation_verdict(text)
+            decision_rows.append((d_verdict, d_age_days, tid_v, name))
+
+    # VERDICT pass — find ### Human section with unchecked ACs
     ac_m = re.search(r"^## Acceptance Criteria\s*\n(.*?)(?=\n## |\Z)", text,
                      re.MULTILINE | re.DOTALL)
     if not ac_m:
@@ -3400,22 +3443,13 @@ for f in sorted(ACTIVE.glob("*.md")):
     unchecked = len(re.findall(r"^\s*-\s*\[ \]", human_m.group(1), re.MULTILINE))
     if unchecked == 0:
         continue
-    # Frontmatter
-    fm_m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
-    fm_text = fm_m.group(1) if fm_m else ""
     # T-1540 iter1: filter to partial-complete tasks (owner=human OR status=work-completed).
     # Without this, every started-work task with template Human ACs appeared in the queue
     # (e.g., T-1540 itself appeared with verdict=? — spurious noise).
     owner_m = re.search(r"^owner:\s*(\S+)", fm_text, re.MULTILINE)
-    status_m = re.search(r"^status:\s*(\S+)", fm_text, re.MULTILINE)
     owner = owner_m.group(1).strip() if owner_m else ""
-    status = status_m.group(1).strip() if status_m else ""
     if owner != "human" and status != "work-completed":
         continue
-    tid = (re.search(r"^id:\s*(\S+)", fm_text, re.MULTILINE) or [None, ""])
-    tid_v = tid.group(1).strip() if hasattr(tid, "group") else ""
-    tname = (re.search(r'^name:\s*"?(.+?)"?\s*$', fm_text, re.MULTILINE) or [None, ""])
-    name = tname.group(1).strip() if hasattr(tname, "group") else ""
     # Age
     age_days = 0
     for field in ("date_finished", "last_update", "created"):
@@ -3430,28 +3464,38 @@ for f in sorted(ACTIVE.glob("*.md")):
     verdict = extract_recommendation_verdict(text)
     rows.append((verdict, age_days, tid_v, name, unchecked))
 
-if not rows:
+if not rows and not decision_rows:
     print("No tasks awaiting human review.")
     sys.exit(0)
 
 # Sort: verdict priority then age desc (oldest first)
 order = {"GO": 0, "DEFER": 1, "NO-GO": 2, "?": 3}
 rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
+decision_rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
 
-# Render
 NAME_W = 60
-print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
-for verdict, age_days, tid_v, name, _unchecked in rows:
-    truncated = (name[:NAME_W] + "...") if len(name) > NAME_W else name
-    if verdict == "GO":
-        col = "\033[32m"  # green
-    elif verdict == "DEFER":
-        col = "\033[33m"  # amber
-    elif verdict == "NO-GO":
-        col = "\033[31m"  # red
-    else:
-        col = "\033[90m"  # grey
-    print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
+
+def _verdict_color(v):
+    return {"GO": "\033[32m", "DEFER": "\033[33m", "NO-GO": "\033[31m"}.get(v, "\033[90m")
+
+# T-1571 / F5: DECISIONS section — pending inception GO/NO-GO/DEFER decisions.
+# Mirrors /approvals' Decisions group; same urgency tier as Tier-0/Human-ACs.
+if decision_rows:
+    print(f"\033[1mDECISIONS — pending inception GO/NO-GO ({len(decision_rows)})\033[0m")
+    print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
+    for verdict, age_days, tid_v, name in decision_rows:
+        truncated = (name[:NAME_W] + "...") if len(name) > NAME_W else name
+        col = _verdict_color(verdict)
+        print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
+    print()
+
+if rows:
+    print(f"\033[1mVERDICT — Human ACs awaiting verification ({len(rows)})\033[0m")
+    print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
+    for verdict, age_days, tid_v, name, _unchecked in rows:
+        truncated = (name[:NAME_W] + "...") if len(name) > NAME_W else name
+        col = _verdict_color(verdict)
+        print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
 go = sum(1 for r in rows if r[0] == "GO")
 defer = sum(1 for r in rows if r[0] == "DEFER")
 nogo = sum(1 for r in rows if r[0] == "NO-GO")
@@ -3461,7 +3505,14 @@ if go: parts.append(f"\033[32m{go} GO\033[0m")
 if defer: parts.append(f"\033[33m{defer} DEFER\033[0m")
 if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
 if unk: parts.append(f"\033[90m{unk} ?\033[0m")
-print(f"\n\033[2m{len(rows)} task(s) awaiting human review\033[0m  ({' / '.join(parts)})")
+total = len(rows) + len(decision_rows)
+verif_only = f"{len(rows)} task(s) awaiting human review" if rows else ""
+dec_only = f"{len(decision_rows)} pending decision(s)" if decision_rows else ""
+summary = " · ".join(s for s in (dec_only, verif_only) if s)
+if parts:
+    print(f"\n\033[2m{summary}\033[0m  ({' / '.join(parts)})")
+elif summary:
+    print(f"\n\033[2m{summary}\033[0m")
 # T-1539 (blind-reviewer finding): never hardcode localhost — read triple-file → fw_config → 3000 fallback
 url_file = ROOT / ".context" / "working" / "watchtower.url"
 wt_url = url_file.read_text().strip() if url_file.exists() else f"http://localhost:{os.environ.get('FW_PORT', '3000')}"
