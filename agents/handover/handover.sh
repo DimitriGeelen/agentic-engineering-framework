@@ -107,10 +107,10 @@ if [ "$CHECKPOINT_MODE" = true ]; then
     shopt -s nullglob
     for f in "$TASKS_DIR/active"/*.md; do
         [ -f "$f" ] || continue
-        task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
-        task_name=$(grep "^name:" "$f" | head -1 | cut -d: -f2- | sed 's/^ *//')
-        task_status=$(grep "^status:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
-        task_wftype=$(grep "^workflow_type:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+        task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
+        task_name=$({ grep "^name:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2- | sed 's/^ *//')
+        task_status=$({ grep "^status:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
+        task_wftype=$({ grep "^workflow_type:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
         [ -n "$task_id" ] && ACTIVE_TASKS="$ACTIVE_TASKS$task_id, "
         # T-1461: render task as a Watchtower link when WT_URL is available.
         # Inception → /inception/T-XXX, otherwise → /review/T-XXX. Plain bold ID when WT_URL empty.
@@ -212,7 +212,7 @@ ACTIVE_TASKS=""
 shopt -s nullglob
 for f in "$TASKS_DIR/active"/*.md; do
     [ -f "$f" ] || continue
-    task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+    task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
     if [ -n "$task_id" ]; then
         ACTIVE_TASKS="$ACTIVE_TASKS$task_id, "
     fi
@@ -227,7 +227,7 @@ RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log -5 --pretty=format:"- %h %s" 2>/dev/
 # Get tasks touched recently (modified in last day)
 TASKS_TOUCHED=""
 while IFS= read -r f; do
-    task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+    task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
     if [ -n "$task_id" ]; then
         TASKS_TOUCHED="$TASKS_TOUCHED$task_id, "
     fi
@@ -250,7 +250,7 @@ for f in "$TASKS_DIR/completed"/*.md; do
         continue
     fi
 
-    task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+    task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
     [ -z "$task_id" ] && continue
 
     episodic_file="$EPISODIC_DIR/${task_id}.yaml"

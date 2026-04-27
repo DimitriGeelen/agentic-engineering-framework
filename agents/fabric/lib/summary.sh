@@ -133,7 +133,7 @@ do_stats() {
         [ -z "$deps" ] && deps=0
         edge_count=$((edge_count + deps))
         local t
-        t=$(grep "^type:" "$card" | head -1 | sed 's/^type: //')
+        t=$({ grep "^type:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^type: //')
         types="$types $t"
     done
 

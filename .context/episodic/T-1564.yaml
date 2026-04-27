@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1564: L-302 sweep: 49 sites across 13 agents/ scripts (handover, audit, context, fabric)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T20:48:42Z
+# ============================================================================
+
+task_id: T-1564
+task_name: "L-302 sweep: 49 sites across 13 agents/ scripts (handover, audit, context, fabric)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T20:45:54Z
+completed: 2026-04-27T20:48:01Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "49 grep|head sites across 13 agents/ scripts wrapped with `{ grep ... 2>/dev/null || true; }` — same recipe as T-1562 / T-1563 / T-1560. Files touched: handover.sh (7), audit.sh (8), git/lib/{hooks,status}.sh (3), context/{check-active-task,post-compact-resume,lib/focus}.sh (15), task-create/update-task.sh (1 stragglers), resume.sh (1), fabric/lib/{drift,traverse,query,summary}.sh (14)."
+  - "Smoke test: `bin/fw doctor` + `bin/fw audit --section structure` both succeed end-to-end (no silent pipefail death from sweep)."
+  - "Targeted bats green: skip_ac_partial_complete, create_task, yaml_pipefail (29), context_focus + check_active_task_memory_exempt (8+), handover_push_no_origin (8), fabric (10)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1564-l-302-sweep-49-sites-across-13-agents-sc.md
+generated_by: context-agent-hybrid

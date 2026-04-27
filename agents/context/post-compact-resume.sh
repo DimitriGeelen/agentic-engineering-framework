@@ -90,10 +90,10 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
     for tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
         [ -f "$tf" ] || continue
         if head -20 "$tf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
-            tf_status=$(grep "^status:" "$tf" | head -1 | sed 's/status:[[:space:]]*//')
+            tf_status=$({ grep "^status:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
             if [ "$tf_status" != "work-completed" ]; then
-                tf_id=$(grep "^id:" "$tf" | head -1 | sed 's/id:[[:space:]]*//')
-                tf_name=$(grep "^name:" "$tf" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+                tf_id=$({ grep "^id:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/id:[[:space:]]*//')
+                tf_name=$({ grep "^name:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
                 ONBOARDING_LIST="${ONBOARDING_LIST}
 - ${tf_id}: ${tf_name} (${tf_status})"
             fi
@@ -127,10 +127,10 @@ fi
 TASK_SUMMARY=""
 for f in "$PROJECT_ROOT/.tasks/active"/*.md; do
     [ -f "$f" ] || continue
-    tid=$(grep "^id:" "$f" | head -1 | sed 's/id:[[:space:]]*//')
-    tname=$(grep "^name:" "$f" | head -1 | sed 's/name:[[:space:]]*//')
-    tstatus=$(grep "^status:" "$f" | head -1 | sed 's/status:[[:space:]]*//')
-    thoriz=$(grep "^horizon:" "$f" | head -1 | sed 's/horizon:[[:space:]]*//' || echo "now")
+    tid=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | sed 's/id:[[:space:]]*//')
+    tname=$({ grep "^name:" "$f" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//')
+    tstatus=$({ grep "^status:" "$f" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
+    thoriz=$({ grep "^horizon:" "$f" 2>/dev/null || true; } | head -1 | sed 's/horizon:[[:space:]]*//' || echo "now")
     TASK_SUMMARY="${TASK_SUMMARY}
 - ${tid}: ${tname} (${tstatus}, horizon: ${thoriz})"
 done

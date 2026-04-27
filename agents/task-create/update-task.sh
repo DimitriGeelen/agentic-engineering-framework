@@ -978,7 +978,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 # T-1374 (G-054 root cause): `|| true` prevents the pipeline's grep-no-match
                 # exit 1 (under pipefail) from killing the script via set -e, which otherwise
                 # aborted before the Episodic Generation block ran.
-                comp_id=$(grep "^${path}=" "$LOC_TO_ID_FILE" 2>/dev/null | head -1 | cut -d= -f2- || true)
+                comp_id=$({ grep "^${path}=" "$LOC_TO_ID_FILE" 2>/dev/null || true; } | head -1 | cut -d= -f2- || true)
                 if [ -n "$comp_id" ]; then
                     RESOLVED_COMPONENTS="${RESOLVED_COMPONENTS:+$RESOLVED_COMPONENTS, }${comp_id}"
                 fi

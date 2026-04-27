@@ -42,7 +42,7 @@ do_focus() {
         local session_file="$CONTEXT_DIR/working/session.yaml"
         local current_session_id=""
         if [ -f "$session_file" ]; then
-            current_session_id=$(grep "^session_id:" "$session_file" | head -1 | awk '{print $2}')
+            current_session_id=$({ grep "^session_id:" "$session_file" 2>/dev/null || true; } | head -1 | awk '{print $2}')
         fi
 
         # Update focus.yaml with task + session stamp (T-560)

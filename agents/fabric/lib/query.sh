@@ -20,11 +20,11 @@ do_search() {
         [ -f "$card" ] || continue
         if grep -qi "$keyword" "$card" 2>/dev/null; then
             local name loc purpose comp_type subsystem
-            name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
-            loc=$(grep "^location:" "$card" | head -1 | sed 's/^location: //')
-            purpose=$(grep "^purpose:" "$card" | head -1 | sed 's/^purpose: //' | tr -d '"')
-            comp_type=$(grep "^type:" "$card" | head -1 | sed 's/^type: //')
-            subsystem=$(grep "^subsystem:" "$card" | head -1 | sed 's/^subsystem: //')
+            name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
+            loc=$({ grep "^location:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^location: //')
+            purpose=$({ grep "^purpose:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^purpose: //' | tr -d '"')
+            comp_type=$({ grep "^type:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^type: //')
+            subsystem=$({ grep "^subsystem:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^subsystem: //')
             echo -e "  ${GREEN}$name${NC} ($comp_type, $subsystem)"
             echo "    $loc"
             echo "    $purpose"
@@ -95,7 +95,7 @@ do_deps() {
         if grep -q "^location: $rel_path" "$card" 2>/dev/null || \
            grep -q "^id: $rel_path" "$card" 2>/dev/null; then
             card_file="$card"
-            comp_name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
+            comp_name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
             break
         fi
     done
@@ -131,7 +131,7 @@ else:
     # Reverse deps (what depends on this component)
     echo -e "${CYAN}Depended by:${NC}"
     local comp_id
-    comp_id=$(grep "^id:" "$card_file" | head -1 | sed 's/^id: //')
+    comp_id=$({ grep "^id:" "$card_file" 2>/dev/null || true; } | head -1 | sed 's/^id: //')
 
     local reverse_found=0
     for card in "$COMPONENTS_DIR"/*.yaml; do
@@ -139,7 +139,7 @@ else:
         [ "$card" = "$card_file" ] && continue
         if grep -q "target:.*$comp_id\|target:.*$comp_name\|target:.*$rel_path" "$card" 2>/dev/null; then
             local dep_name dep_type
-            dep_name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
+            dep_name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
             dep_type=$(grep -A1 "target:.*$comp_id\|target:.*$comp_name\|target:.*$rel_path" "$card" | grep "type:" | head -1 | sed 's/.*type: //')
             echo "  ${dep_type:-uses} ← $dep_name"
             reverse_found=$((reverse_found + 1))

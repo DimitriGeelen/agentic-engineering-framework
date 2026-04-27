@@ -51,10 +51,10 @@ for p in data.get('patterns', []):
     for card in "$COMPONENTS_DIR"/*.yaml; do
         [ -f "$card" ] || continue
         local loc
-        loc=$(grep "^location:" "$card" | head -1 | sed 's/^location: //')
+        loc=$({ grep "^location:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^location: //')
         if [ -n "$loc" ] && [ ! -f "$PROJECT_ROOT/$loc" ]; then
             local name
-            name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
+            name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
             echo "  ! $name → $loc (file missing)"
             orphaned=$((orphaned + 1))
         fi
@@ -68,7 +68,7 @@ for p in data.get('patterns', []):
     for card in "$COMPONENTS_DIR"/*.yaml; do
         [ -f "$card" ] || continue
         local card_name
-        card_name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
+        card_name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
 
         python3 -c "
 import yaml, glob, os
@@ -131,7 +131,7 @@ do_validate() {
         for card in "$COMPONENTS_DIR"/*.yaml; do
             [ -f "$card" ] || continue
             local name
-            name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
+            name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
             echo -e "${CYAN}$name${NC}: checking..."
             # TODO: deep validation per card
         done

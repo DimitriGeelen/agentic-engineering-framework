@@ -25,8 +25,8 @@ do_status() {
     shopt -u nullglob
 
     if [ -n "$latest_task" ]; then
-        active_task=$(grep "^id:" "$latest_task" | head -1 | cut -d: -f2 | tr -d ' ')
-        active_task_name=$(grep "^name:" "$latest_task" | head -1 | cut -d: -f2- | sed 's/^ *//')
+        active_task=$({ grep "^id:" "$latest_task" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
+        active_task_name=$({ grep "^name:" "$latest_task" 2>/dev/null || true; } | head -1 | cut -d: -f2- | sed 's/^ *//')
         echo -e "Active task context: ${GREEN}$active_task${NC} ($active_task_name)"
         echo ""
     fi
