@@ -72,9 +72,21 @@
     <small>{{ go_count }} pending GO/NO-GO</small>
 </div>
 {% for t in pending_go %}
-<div class="approval-card go-decision">
+<div class="approval-card go-decision" data-verdict="{{ t.verdict|default('?') }}">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            {# T-1537: agent recommendation verdict badge — parity with partial-complete cards (T-1531) #}
+            {% if t.verdict is defined %}
+            {% set _v = t.verdict %}
+            <span class="verdict-badge" data-verdict="{{ _v }}"
+                  style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em;
+                  {% if _v == 'GO' %}background:#1b5e20; color:#fff;
+                  {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
+                  {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
+                  {% else %}background:#616161; color:#fff;
+                  {% endif %}"
+                  title="Agent recommendation: {{ _v }}">{{ _v }}</span>
+            {% endif %}
             <a href="/inception/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
             {{ t.name }}
         </div>

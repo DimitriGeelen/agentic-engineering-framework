@@ -151,15 +151,14 @@ def _load_pending_go_decisions():
         # Extract recommendation for display (T-1119: show full recommendation)
         rec_raw = _extract_section(body, "Recommendation")
         rec_display = ""  # Full recommendation for visible display
-        rec_decision = ""  # GO/NO-GO/DEFER extracted
         if rec_raw and len(rec_raw) > 10:
             rec_display = rec_raw.strip()
-            # Extract the recommendation decision
-            for line in rec_raw.split("\n"):
-                stripped = line.strip().replace("**", "").replace("*", "")
-                if stripped.lower().startswith("recommendation:"):
-                    rec_decision = stripped.split(":", 1)[1].strip().split()[0].upper()
-                    break
+        # T-1537: use canonical helper for the verdict so inception + partial-complete
+        # sections share extraction logic. Returns "GO"/"DEFER"/"NO-GO"/"?".
+        verdict = extract_recommendation_verdict(body)
+        # rec_decision retained for backward compat with the existing collapsible
+        # summary (T-1119 contract); blank string preserved when no recommendation.
+        rec_decision = verdict if verdict in ("GO", "DEFER", "NO-GO") else ""
 
         # Fallback to GO criteria for rationale hint
         # T-1150: NO truncation — the textarea pre-fill becomes the permanent decision
@@ -213,6 +212,7 @@ def _load_pending_go_decisions():
             "rationale_hint": rationale_hint,
             "recommendation": rec_display,
             "rec_decision": rec_decision,
+            "verdict": verdict,
             "go_nogo_criteria": go_nogo_raw,
         })
 
