@@ -451,7 +451,10 @@ def decide_approval():
 
 def _is_inception_decide(command_preview: str) -> bool:
     """Detect `fw inception decide T-XXX go|no-go --rationale ...` shape."""
-    return bool(re.search(r"(?:^|/|\\s)fw inception decide T-\\d+ (?:go|no-go)\\b", command_preview))
+    # T-1567 / F1: raw-string + double-escape produced literal `\d`/`\s`/`\b`
+    # that never matched. Auto-exec on Watchtower-approved Tier-0 inception
+    # decisions was dead code from T-1192 until this fix.
+    return bool(re.search(r"(?:^|/|\s)fw inception decide T-\d+ (?:go|no-go)\b", command_preview))
 
 
 def _execute_inception_decide(command_preview: str) -> dict:
@@ -460,11 +463,12 @@ def _execute_inception_decide(command_preview: str) -> dict:
     import subprocess
 
     cmd_str = " ".join(command_preview.split())
-    m = re.search(r"fw inception decide (T-\\d+) (go|no-go)", cmd_str)
+    # T-1567 / F1: same dead-code regex bug as _is_inception_decide above.
+    m = re.search(r"fw inception decide (T-\d+) (go|no-go)", cmd_str)
     if not m:
         return {"ok": False, "error": "could not parse command", "summary": "", "stdout_tail": ""}
     task_id, verdict = m.group(1), m.group(2)
-    rat_m = re.search(r'--rationale\\s+"(.*)"(?:\\s|$)', cmd_str, re.DOTALL)
+    rat_m = re.search(r'--rationale\s+"(.*)"(?:\s|$)', cmd_str, re.DOTALL)
     rationale = rat_m.group(1) if rat_m else "Approved via Watchtower (no rationale captured)"
 
     fw_bin = str(PROJECT_ROOT / ".agentic-framework" / "bin" / "fw")

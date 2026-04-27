@@ -2381,3 +2381,10 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-307
+  learning: "Python raw-string regex with double-escaped metas (r'\\\\d', r'\\\\s', r'\\\\b') matches a literal backslash followed by the letter — NOT the metacharacter. In r'...', backslash is already literal; double-escaping inverts the intended meaning. Always use r'\\d' / r'\\s' / r'\\b' inside raw strings. T-1567 / F1: this trap made T-1192's Tier-0 auto-exec dead code from inception until detected by T-1565 audit."
+  source: P-001
+  task: T-1567
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
