@@ -225,13 +225,24 @@ function filterACs(filter) {
 }
 </script>
 {% for t in pending_acs %}
-<div class="approval-card human-ac-group" data-priority="{{ t.sort_priority }}" data-stale="{{ 'true' if t.is_stale else 'false' }}">
+<div class="approval-card human-ac-group" data-priority="{{ t.sort_priority }}" data-stale="{{ 'true' if t.is_stale else 'false' }}" data-verdict="{{ t.verdict|default('?') }}">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
         <div>
             <a href="/tasks/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
             {{ t.name }}
         </div>
         <div style="display:flex; align-items:center; gap:0.5rem;">
+            {# T-1531: agent recommendation verdict badge — green=GO, amber=DEFER, red=NO-GO, grey=? #}
+            {% if t.verdict is defined %}
+            {% set _v = t.verdict %}
+            <span class="verdict-badge" data-verdict="{{ _v }}"
+                  style="font-size:0.65rem; font-weight:600; padding:0.1rem 0.35rem; border-radius:3px; white-space:nowrap;
+                         {% if _v == 'GO' %}background:#1b5e20; color:#fff;
+                         {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
+                         {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
+                         {% else %}background:var(--pico-muted-border-color); color:var(--pico-muted-color);{% endif %}"
+                  title="Agent recommendation: {{ _v }}">{{ _v }}</span>
+            {% endif %}
             {% if t.age_days is defined %}
             <span style="font-size:0.65rem; color:{% if t.is_stale %}#e65100{% else %}var(--pico-muted-color){% endif %}; white-space:nowrap;"
                   {% if t.is_stale %}title="Stale: waiting >7 days"{% endif %}>

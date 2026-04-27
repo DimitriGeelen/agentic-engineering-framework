@@ -26,6 +26,25 @@ APPROVAL_FILE = PROJECT_ROOT / ".context" / "working" / ".tier0-approval"
 EXPIRY_SECONDS = 3600  # 1 hour
 
 
+def _extract_recommendation_verdict(body: str) -> str:
+    """T-1531: Extract GO/DEFER/NO-GO from a task body's ## Recommendation section.
+
+    Uses H2+ terminator (L-293): stops at any H2-or-deeper heading so appended
+    Updates entries don't pollute the keyword check. Returns '?' when missing
+    or unparseable so callers never crash.
+    """
+    if not body:
+        return "?"
+    m = re.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)",
+                  body, re.MULTILINE | re.DOTALL)
+    if not m:
+        return "?"
+    section = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.DOTALL)
+    v = re.search(r"\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b",
+                  section, re.IGNORECASE)
+    return v.group(1).upper() if v else "?"
+
+
 def _load_pending_approvals():
     """Load all pending approval YAML files. Returns list of dicts."""
     approvals = []
@@ -277,6 +296,9 @@ def _load_pending_human_acs():
                         for ac in human_acs)
         sort_priority = 0 if has_review else (1 if is_stale else 2)
 
+        # T-1531: extract agent recommendation verdict (GO/DEFER/NO-GO/?)
+        verdict = _extract_recommendation_verdict(body)
+
         results.append({
             "task_id": fm.get("id", ""),
             "name": fm.get("name", ""),
@@ -285,6 +307,7 @@ def _load_pending_human_acs():
             "age_days": age_days,
             "is_stale": is_stale,
             "sort_priority": sort_priority,
+            "verdict": verdict,
         })
 
     # Sort: priority ascending, then age descending (oldest first within group)

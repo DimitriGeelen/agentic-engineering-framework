@@ -213,7 +213,7 @@ observations:
     captured: 2026-04-26T21:51:25Z
     context_task: null
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
     urgent: true
   - id: OBS-031
@@ -224,3 +224,10 @@ observations:
     status: dismissed
     promoted_to: null
     urgent: true
+  - id: OBS-032
+    text: "fw upgrade run from inside a consumer project (no target arg) crashes at step 4b/9 with 'Source and target resolve to the same directory'. Reproduced in S-2026-0427-0908 against /opt/050-email-archive: framework_root resolves to consumer's vendored copy and target defaults to cwd, both being the same path. Workaround: always run upgrade from framework repo with explicit target ('fw upgrade /path/to/consumer'). Real fix: detect bare-from-consumer case and re-exec upgrade with the upstream framework repo as source."
+    captured: 2026-04-27T10:05:45Z
+    context_task: null
+    tags: [bug]
+    status: pending
+    promoted_to: null
