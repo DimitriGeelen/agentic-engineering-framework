@@ -70,7 +70,13 @@ audit_task_placeholders() {
         # Placeholder patterns — literal template stubs that should have been
         # replaced. Each pattern here is explicitly chosen because it NEVER
         # appears in legitimate authored content, only in unfilled templates.
-        if echo "$cleaned" | grep -qE '\[Criterion [0-9]+\]|\[TODO\]|\[PLACEHOLDER\]|\[Your recommendation here\]|\[REQUIRED before'; then
+        #
+        # T-1554: extend with the ordinal-criterion stubs the default template
+        # actually ships (.tasks/templates/default.md). Without these, T-1545
+        # itself reached the human review queue with literal placeholder ACs
+        # visible — same silent-quality-decay class as T-1545 origin (an audit
+        # exists, but doesn't match the real placeholder text the template ships).
+        if echo "$cleaned" | grep -qE '\[Criterion [0-9]+\]|\[(First|Second|Third|Fourth|Fifth) criterion\]|\[TODO\]|\[PLACEHOLDER\]|\[Your recommendation here\]|\[REQUIRED before'; then
             issues="${issues}
   Line ${line_num}: $(echo "$line" | sed 's/^[[:space:]]*//')"
             found=1
