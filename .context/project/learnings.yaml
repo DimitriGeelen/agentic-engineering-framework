@@ -2304,3 +2304,17 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-297
+  learning: "Blind-reviewer dispatch convergence pattern: 3 sequential iterations is the sweet spot when iter prompts incorporate lessons from prior false-positive classes. Iter1 catches obvious bugs (~4 real). Iter2 (identical prompt) exposes false-positive classes (~67% FP rate, reviewer keeps re-flagging conditional rendering as missing UI). Iter3 (with FP-class guidance prepended) catches edge cases (~1 real, 0 FP). Diminishing returns past iter3. Pattern: dispatch → harvest → categorize findings (real / FP) → improve next iter's prompt with FP-class guidance → repeat. Origin: T-1540."
+  source: P-001
+  task: T-1540
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
+- id: L-298
+  learning: "Count divergence across multiple UI surfaces (Watchtower /approvals badges, fw review-queue CLI, landing-page pills) is a recurring smell — each surface tends to grow its own filter logic (different glob roots, different status/owner filters, different verdict extraction). Without a single-source-of-truth aggregator, 1-2 task drift between surfaces is normal noise but creates reviewer confusion. Either accept the noise (document as known limitation), or factor a shared count-helper. Origin: T-1540 iter2 (?-bucket diverged 14/15/16 across 3 surfaces)."
+  source: P-001
+  task: T-1540
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD

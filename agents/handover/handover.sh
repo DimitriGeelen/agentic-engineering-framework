@@ -693,7 +693,10 @@ if partial:
     print("## Awaiting Your Action (Human)")
     print()
     print(f"**{len(partial)} task(s) with unchecked Human ACs.** These are waiting for you — not for agent cleanup.")
-    print("Review each when ready. No urgency implied. Prefix is the agent's recommendation: `[GO]` confirm, `[DEFER]`/`[NO-GO]` decide, `[?]` missing.")
+    # T-1540 iter3: clarify the [?] doc-promise. Partial-complete state requires a
+    # Recommendation block (T-1529 structural gate), so [?] is rare and not expected
+    # in this queue. The [?] is defensive only.
+    print("Review each when ready. No urgency implied. Prefix is the agent's recommendation: `[GO]` confirm, `[DEFER]`/`[NO-GO]` decide. (`[?]` would mean a partial-complete task slipped past the T-1529 recommendation gate — should not occur in normal flow.)")
     print()
     for tid, tname, count, preview, verdict in partial:
         # T-1461: render review URL inline if Watchtower is reachable
