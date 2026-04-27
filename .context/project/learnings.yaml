@@ -2374,3 +2374,10 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-306
+  learning: "When implementing the same gate on two code paths in update-task.sh (initial transition vs partial-complete recheck), reuse the same gate function — don't reinvent it inline. Asymmetric bypass handling is invisible until the auth flag flows through both paths. T-1559: SKIP_AC was honored on initial transition but not on partial-complete recheck for years; pickup P-016 batched-closure workflow finally exposed it."
+  source: P-001
+  task: T-1559
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD

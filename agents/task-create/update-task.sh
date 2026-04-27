@@ -527,8 +527,18 @@ if [ -n "$NEW_STATUS" ]; then
             ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
             ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED))
 
-            if [ "$ALL_UNCHECKED" -eq 0 ]; then
-                echo -e "${GREEN}All ACs checked (including human) ✓${NC}"
+            # T-1559: SKIP_AC must bypass the recheck too. The auth flag is the
+            # marker of authorization — semantically equivalent on both branches.
+            # Without this guard, partial-complete tasks become un-archivable
+            # except by hand-editing checkboxes (P-016 evidence: 20 tasks closed
+            # via that workaround in a single session).
+            if [ "$ALL_UNCHECKED" -eq 0 ] || [ "$SKIP_AC" = true ]; then
+                if [ "$ALL_UNCHECKED" -eq 0 ]; then
+                    echo -e "${GREEN}All ACs checked (including human) ✓${NC}"
+                else
+                    echo -e "${YELLOW}WARNING: $ALL_UNCHECKED/$ALL_TOTAL ACs unchecked (--skip-acceptance-criteria bypass)${NC}"
+                    log_gate_bypass "--skip-acceptance-criteria" "partial_complete_recheck"
+                fi
                 DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
                 # T-1523: use `git mv` when tracked so both rename sides land
                 # in the index together — avoids leaving the active/* deletion
