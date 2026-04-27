@@ -106,6 +106,59 @@ def _normalize_md_relative_links(text):
     return re_mod.sub(r'\]\(\.(?!/)', '](./.', text)
 
 
+# Match bare T-NNNN (1-5 digits) NOT inside backticks and NOT already
+# part of a Markdown link [...]. Lookbehind/lookahead handle adjacency.
+# Two-pass implementation: split on inline-code spans, then linkify the
+# non-code parts. Avoids regex-only approaches that mishandle nested
+# brackets.
+_TASK_REF_RE = re_mod.compile(r'(?<![\w/-])T-\d{1,5}(?![\w/-])')
+
+
+def _auto_link_task_refs(text):
+    """Rewrite bare `T-NNNN` to `[T-NNNN](/tasks/T-NNNN)` so /review surface
+    AC steps become click-traversable across tasks (T-1552). Skips:
+      - tokens inside backticks (preserve developer intent for code-style refs)
+      - tokens already part of a Markdown link (avoid double-linking)
+      - already-linked tokens like `[T-1448](xyz)` because the regex's
+        negative lookbehind `[/-]` excludes the leading `[`-bracketed form
+        AND the URL form (since the inside of the URL ends with `/T-NNNN`)
+    """
+    if not text:
+        return text
+    parts = re_mod.split(r'(`[^`]*`)', text)
+    out = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            # inline code span — pass through untouched
+            out.append(part)
+            continue
+        # In the prose chunk, skip linkification inside existing [...](...)
+        # by walking the string; markdown link syntax has matching [].
+        rewritten = []
+        j = 0
+        while j < len(part):
+            # If we're inside a markdown link label or URL, find its end and skip
+            if part[j] == '[':
+                close = part.find(']', j)
+                if close != -1 and close + 1 < len(part) and part[close + 1] == '(':
+                    paren_close = part.find(')', close + 2)
+                    if paren_close != -1:
+                        rewritten.append(part[j:paren_close + 1])
+                        j = paren_close + 1
+                        continue
+            # Try to match T-NNNN here
+            m = _TASK_REF_RE.match(part, j)
+            if m:
+                tid = m.group(0)
+                rewritten.append(f'[{tid}](/tasks/{tid})')
+                j = m.end()
+            else:
+                rewritten.append(part[j])
+                j += 1
+        out.append(''.join(rewritten))
+    return ''.join(out)
+
+
 def _render_md_inline(text):
     """Render text as Markdown HTML for inline display (T-1551).
     Strips <p> wrapper for use inside <li> contexts. safe_mode='escape'
@@ -114,6 +167,7 @@ def _render_md_inline(text):
     """
     if not text:
         return ''
+    text = _auto_link_task_refs(text)
     text = _normalize_md_relative_links(text)
     html = markdown2.markdown(text, safe_mode='escape').strip()
     if html.startswith('<p>') and html.endswith('</p>'):
@@ -126,6 +180,7 @@ def _render_md_block(text):
     (Expected, If-not). T-1551."""
     if not text:
         return ''
+    text = _auto_link_task_refs(text)
     text = _normalize_md_relative_links(text)
     return markdown2.markdown(text, safe_mode='escape').strip()
 

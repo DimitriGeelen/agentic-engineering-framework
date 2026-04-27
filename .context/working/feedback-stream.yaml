@@ -1622,3 +1622,20 @@ scan_id: R-ee350bf6
 task_id: T-1551
 payload:
   task_file: .tasks/active/T-1551-render-markdown-in-reviewt-xxx-ac-steps-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T16:12:40Z'
+scan_id: R-04f0b958
+task_id: T-1552
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T16:12:40Z'
+scan_id: R-04f0b958
+task_id: T-1552
+payload:
+  task_file: .tasks/active/T-1552-auto-link-t-nnnn-references-in-review-ac.md

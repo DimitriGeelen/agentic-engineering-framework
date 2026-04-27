@@ -10,7 +10,43 @@ from web.blueprints.tasks import (
     _parse_ac_body,
     _render_md_inline,
     _render_md_block,
+    _auto_link_task_refs,
 )
+
+
+# ---- T-1552: bare T-NNNN auto-linking ---------------------------------------
+
+def test_bare_task_ref_linkified():
+    out = _auto_link_task_refs("See T-1448 for context.")
+    assert out == "See [T-1448](/tasks/T-1448) for context."
+
+
+def test_already_linked_task_ref_unchanged():
+    out = _auto_link_task_refs("See [T-1448](other-url) for context.")
+    assert out == "See [T-1448](other-url) for context."
+
+
+def test_task_ref_inside_inline_code_unchanged():
+    out = _auto_link_task_refs("Run `bin/fw show T-1448` and check.")
+    assert "`bin/fw show T-1448`" in out
+    assert "[T-1448]" not in out
+
+
+def test_too_many_digits_not_linkified():
+    out = _auto_link_task_refs("Code T-9999999 should not link.")
+    assert "[T-9999999]" not in out
+
+
+def test_multiple_task_refs_in_one_step():
+    out = _auto_link_task_refs("T-1548 → T-1549 → T-1550")
+    assert "[T-1548](/tasks/T-1548)" in out
+    assert "[T-1549](/tasks/T-1549)" in out
+    assert "[T-1550](/tasks/T-1550)" in out
+
+
+def test_render_step_with_bare_task_ref():
+    html = _render_md_inline("See T-1448")
+    assert '<a href="/tasks/T-1448">T-1448</a>' in html
 
 
 def test_inline_markdown_link_rendered_to_anchor():
