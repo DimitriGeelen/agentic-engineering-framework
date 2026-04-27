@@ -22,10 +22,12 @@ _fw_config_file_val() {
     # Skip if no config file
     [ -f "$config_file" ] || return 1
 
-    # For simple (non-dotted) keys, use grep for speed (no Python startup)
+    # For simple (non-dotted) keys, use grep for speed (no Python startup).
+    # T-1557 / L-302: guard the inner grep with `|| true` so a missing key does
+    # not silent-exit the calling shell under set -e -o pipefail.
     if [[ "$key" != *.* ]]; then
         local val
-        val=$(grep "^${key}:" "$config_file" 2>/dev/null | head -1 | sed "s/^${key}:[[:space:]]*//;s/[[:space:]]*$//;s/^[\"']//;s/[\"']$//")
+        val=$( { grep "^${key}:" "$config_file" 2>/dev/null || true; } | head -1 | sed "s/^${key}:[[:space:]]*//;s/[[:space:]]*$//;s/^[\"']//;s/[\"']$//")
         [ -n "$val" ] && echo "$val" && return 0
         return 1
     fi

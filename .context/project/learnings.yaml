@@ -2353,3 +2353,10 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-304
+  learning: "Foundation utilities (yaml.sh:get_yaml_field, config.sh:_fw_config_file_val) using grep|head|sed pipelines must guard the head of the pipe with '|| true' when callers may use bare assignments under set -e -o pipefail. The pipefail trap (L-302) is contagious — a single foundation function without the guard makes every bare-assignment call site latent. Same fix recipe everywhere: '{ grep ... 2>/dev/null || true; } | head -1 | sed ...'."
+  source: P-001
+  task: T-1557
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
