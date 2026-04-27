@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1551: Render Markdown in /review/T-XXX AC steps so artifact links become clickable (closes original T-1548 surface friction)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T16:09:56Z
+# ============================================================================
+
+task_id: T-1551
+task_name: "Render Markdown in /review/T-XXX AC steps so artifact links become clickable (closes original T-1548 surface friction)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T16:05:38Z
+completed: 2026-04-27T16:09:53Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`_parse_ac_body` (or its consumer) renders each `step` string through `markdown2.markdown(...)` before reaching the template"
+  - "`expected` and `if_not` strings are also Markdown-rendered (same fix shape — links/code/emphasis work in all three fields)"
+  - "`web/templates/_review_acs.html` outputs the rendered HTML via `| safe` (Jinja's autoescape is the current cause)"
+  - "Markdown features that work after fix: `[label](url)`, inline `code`, `**bold**`, fenced code blocks (multi-line)"
+  - "XSS guard: only inline-Markdown features rendered safe; raw `<script>`/`<iframe>` from AC bodies do NOT execute (markdown2 default `safe_mode` or explicit `extras=['safe']` if needed)"
+  - "No regression in non-Markdown AC text — plain strings still render correctly"
+  - "Playwright/curl regression test in `tests/playwright/` or `tests/unit/`: AC with `[Open report](docs/reports/T-1548-*.md)` step renders an `<a href=...>` element (not literal `[Open report]...`)"
+  - "All existing review tests still pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1551-render-markdown-in-reviewt-xxx-ac-steps-.md
+generated_by: context-agent-hybrid

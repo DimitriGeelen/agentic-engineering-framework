@@ -1,0 +1,92 @@
+"""T-1551: Regression tests for Markdown rendering in /review/T-XXX AC steps.
+
+Origin: T-1548 surface friction — Human ACs that say "Open `docs/reports/T-XXX-*.md`"
+showed `[label](url)` as literal text because Jinja escaped Markdown. Fix renders
+through markdown2 with safe_mode='escape' before reaching the template.
+"""
+from __future__ import annotations
+
+from web.blueprints.tasks import (
+    _parse_ac_body,
+    _render_md_inline,
+    _render_md_block,
+)
+
+
+def test_inline_markdown_link_rendered_to_anchor():
+    html = _render_md_inline("Open [the report](docs/reports/T-1548.md)")
+    assert '<a href="docs/reports/T-1548.md">the report</a>' in html
+    # No <p> wrapper for inline use (will live inside <li>)
+    assert not html.startswith('<p>')
+
+
+def test_inline_markdown_strips_p_wrapper():
+    html = _render_md_inline("plain text")
+    assert html == "plain text"
+
+
+def test_inline_markdown_renders_inline_code():
+    html = _render_md_inline("Run `bin/fw doctor`")
+    assert "<code>bin/fw doctor</code>" in html
+
+
+def test_inline_markdown_renders_emphasis():
+    html = _render_md_inline("**bold** text")
+    assert "<strong>bold</strong>" in html
+
+
+def test_inline_markdown_xss_blocked():
+    html = _render_md_inline('<script>alert(1)</script>Hi')
+    # Raw HTML must be escaped, not executed
+    assert "<script>" not in html
+    assert "&lt;script&gt;" in html
+    assert "Hi" in html
+
+
+def test_inline_markdown_empty_returns_empty():
+    assert _render_md_inline("") == ""
+    assert _render_md_inline(None) == ""
+
+
+def test_block_markdown_keeps_p_wrapper():
+    html = _render_md_block("expected outcome")
+    assert html.startswith("<p>")
+    assert html.endswith("</p>")
+
+
+def test_parse_ac_body_renders_steps_as_html():
+    body = """**Steps:**
+1. Open [the report](docs/reports/X.md)
+2. Run `bin/fw doctor`
+**Expected:** Output shows `ok`
+**If not:** Capture in [feedback-stream](.context/working/feedback-stream.yaml)
+"""
+    steps, expected, if_not = _parse_ac_body(body)
+    assert len(steps) == 2
+    assert '<a href="docs/reports/X.md">the report</a>' in steps[0]
+    assert "<code>bin/fw doctor</code>" in steps[1]
+    assert "<code>ok</code>" in expected
+    assert 'feedback-stream' in if_not
+    # T-1551: leading-dot relative paths are normalized to ./ for safe_mode
+    assert 'href="./.context/working/feedback-stream.yaml"' in if_not
+
+
+def test_parse_ac_body_plain_text_unaffected():
+    body = """**Steps:**
+1. Do thing
+**Expected:** It works
+**If not:** Try again
+"""
+    steps, expected, if_not = _parse_ac_body(body)
+    assert steps == ["Do thing"]
+    assert "It works" in expected
+    assert "Try again" in if_not
+
+
+def test_parse_ac_body_xss_in_step_blocked():
+    body = """**Steps:**
+1. <script>alert(1)</script>
+"""
+    steps, expected, if_not = _parse_ac_body(body)
+    assert "<script>" not in steps[0]
+    assert "&lt;script&gt;" in steps[0]

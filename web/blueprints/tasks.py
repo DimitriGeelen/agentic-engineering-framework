@@ -3,6 +3,7 @@
 import re as re_mod
 from datetime import datetime, timezone
 
+import markdown2
 import yaml
 from flask import Blueprint, abort, request
 
@@ -95,8 +96,48 @@ def _update_frontmatter_field(file_path, field, value):
     return True, None
 
 
+def _normalize_md_relative_links(text):
+    """Pre-process Markdown text so leading-dot relative paths survive
+    markdown2's safe_mode URL filter (T-1551). `[x](.context/foo.yaml)`
+    becomes `[x](./.context/foo.yaml)`. AC bodies commonly link to
+    dotfile paths; without this they collapse to href="#"."""
+    if not text:
+        return text
+    return re_mod.sub(r'\]\(\.(?!/)', '](./.', text)
+
+
+def _render_md_inline(text):
+    """Render text as Markdown HTML for inline display (T-1551).
+    Strips <p> wrapper for use inside <li> contexts. safe_mode='escape'
+    blocks raw HTML — only Markdown syntax (links, code, emphasis) renders.
+    Returns '' for empty input. The caller must mark returned strings safe.
+    """
+    if not text:
+        return ''
+    text = _normalize_md_relative_links(text)
+    html = markdown2.markdown(text, safe_mode='escape').strip()
+    if html.startswith('<p>') and html.endswith('</p>'):
+        html = html[3:-4]
+    return html
+
+
+def _render_md_block(text):
+    """Same as _render_md_inline but keeps <p> wrapping for block contexts
+    (Expected, If-not). T-1551."""
+    if not text:
+        return ''
+    text = _normalize_md_relative_links(text)
+    return markdown2.markdown(text, safe_mode='escape').strip()
+
+
 def _parse_ac_body(body):
-    """Parse Steps/Expected/If-not from AC body text."""
+    """Parse Steps/Expected/If-not from AC body text.
+
+    T-1551: Steps/Expected/If-not are returned as Markdown-rendered HTML
+    so `[label](url)`, inline `code`, and `**emphasis**` work in the
+    /review/T-XXX surface (the original T-1548 friction). Templates must
+    use `| safe` on these values.
+    """
     steps = []
     expected = ''
     if_not = ''
@@ -141,6 +182,11 @@ def _parse_ac_body(body):
 
     # Strip numbered prefixes from steps (e.g., "1. Do thing" → "Do thing")
     steps = [re_mod.sub(r'^\d+\.\s*', '', s) for s in steps]
+
+    # T-1551: render Markdown so [label](url), `code`, **bold** work in /review/T-XXX
+    steps = [_render_md_inline(s) for s in steps]
+    expected = _render_md_block(expected)
+    if_not = _render_md_block(if_not)
 
     return steps, expected, if_not
 

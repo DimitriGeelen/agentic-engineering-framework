@@ -33,15 +33,15 @@
         <strong>Steps:</strong>
         <ol>
             {% for step in ac.steps %}
-            <li>{{ step }}</li>
+            <li>{{ step | safe }}</li>
             {% endfor %}
         </ol>
         {% endif %}
         {% if ac.expected %}
-        <strong>Expected:</strong> {{ ac.expected }}
+        <strong>Expected:</strong> {{ ac.expected | safe }}
         {% endif %}
         {% if ac.if_not %}
-        <div class="if-not"><strong>If not:</strong> {{ ac.if_not }}</div>
+        <div class="if-not"><strong>If not:</strong> {{ ac.if_not | safe }}</div>
         {% endif %}
     </div>
     {% endif %}
