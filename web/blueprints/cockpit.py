@@ -147,6 +147,8 @@ def get_action_summary() -> dict:
     go_ac_count = sum(1 for t in human_verify if t.get("verdict") == "GO")
     defer_ac_count = sum(1 for t in human_verify if t.get("verdict") == "DEFER")
     nogo_ac_count = sum(1 for t in human_verify if t.get("verdict") == "NO-GO")
+    # T-1540 iter1: ? verdict was unaccounted for in pill sum (handover/landing under-reported).
+    unknown_ac_count = sum(1 for t in human_verify if t.get("verdict") in ("?", None))
 
     return {
         "tier0_count": tier0_count,
@@ -158,6 +160,7 @@ def get_action_summary() -> dict:
         "go_ac_count": go_ac_count,
         "defer_ac_count": defer_ac_count,
         "nogo_ac_count": nogo_ac_count,
+        "unknown_ac_count": unknown_ac_count,
     }
 
 

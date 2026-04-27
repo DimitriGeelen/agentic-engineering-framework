@@ -165,6 +165,13 @@
                               background:#b71c1c; color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks the agent recommends NO-GO">{{ action_summary.nogo_ac_count }} NO-GO</small>
                 {% endif %}
+                {# T-1540 iter1: ? verdict was unaccounted for in pill sum (count vs pill mismatch). Surface it. #}
+                {% if action_summary.unknown_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="?"
+                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#616161; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks where the agent has not yet written a recommendation (T-679 gap)">{{ action_summary.unknown_ac_count }} ?</small>
+                {% endif %}
             </span>
             {% endif %}
         </div>

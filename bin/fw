@@ -3382,6 +3382,15 @@ for f in sorted(ACTIVE.glob("*.md")):
     # Frontmatter
     fm_m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
     fm_text = fm_m.group(1) if fm_m else ""
+    # T-1540 iter1: filter to partial-complete tasks (owner=human OR status=work-completed).
+    # Without this, every started-work task with template Human ACs appeared in the queue
+    # (e.g., T-1540 itself appeared with verdict=? — spurious noise).
+    owner_m = re.search(r"^owner:\s*(\S+)", fm_text, re.MULTILINE)
+    status_m = re.search(r"^status:\s*(\S+)", fm_text, re.MULTILINE)
+    owner = owner_m.group(1).strip() if owner_m else ""
+    status = status_m.group(1).strip() if status_m else ""
+    if owner != "human" and status != "work-completed":
+        continue
     tid = (re.search(r"^id:\s*(\S+)", fm_text, re.MULTILINE) or [None, ""])
     tid_v = tid.group(1).strip() if hasattr(tid, "group") else ""
     tname = (re.search(r'^name:\s*"?(.+?)"?\s*$', fm_text, re.MULTILINE) or [None, ""])

@@ -199,6 +199,8 @@
 {% set go_count = pending_acs | selectattr('verdict', 'equalto', 'GO') | list | length %}
 {% set defer_count = pending_acs | selectattr('verdict', 'equalto', 'DEFER') | list | length %}
 {% set nogo_count = pending_acs | selectattr('verdict', 'equalto', 'NO-GO') | list | length %}
+{# T-1540 iter1: ? verdict was invisible — no filter button. Add count + button. #}
+{% set unknown_count = pending_acs | selectattr('verdict', 'equalto', '?') | list | length %}
 <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
     <button class="ac-filter-btn outline" data-filter="all"
             style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;"
@@ -227,6 +229,14 @@
             onclick="filterACs('nogo')"
             title="Tasks the agent recommends NO-GO">
         NO-GO ({{ nogo_count }})
+    </button>
+    {% endif %}
+    {% if unknown_count %}
+    <button class="ac-filter-btn outline" data-filter="unknown"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#616161; color:#616161;"
+            onclick="filterACs('unknown')"
+            title="Tasks where the agent has not yet written a recommendation (T-679 gap)">
+        ? ({{ unknown_count }})
     </button>
     {% endif %}
     <button class="ac-filter-btn outline" data-filter="review"
@@ -259,7 +269,8 @@ function filterACs(filter) {
             || (filter === 'stale' && stale)
             || (filter === 'go' && verdict === 'GO')
             || (filter === 'defer' && verdict === 'DEFER')
-            || (filter === 'nogo' && verdict === 'NO-GO');
+            || (filter === 'nogo' && verdict === 'NO-GO')
+            || (filter === 'unknown' && (verdict === '?' || !verdict));
         card.style.display = show ? '' : 'none';
     });
     document.querySelectorAll('.ac-filter-btn').forEach(function(btn) {
