@@ -253,6 +253,27 @@ def parse_frontmatter(content):
     return fm, fm_match.group(2)
 
 
+def extract_recommendation_verdict(body: str) -> str:
+    """Extract GO/DEFER/NO-GO verdict from a task body's ## Recommendation section.
+
+    Uses H2+ terminator (L-293) so appended Updates entries don't pollute the
+    keyword check. Returns '?' when missing or unparseable so callers never crash.
+
+    Origin: T-1533 — third call site (handover.sh, approvals.py, cockpit.py)
+    triggered the factor-out per the framework's "no premature abstraction" rule.
+    """
+    if not body:
+        return "?"
+    m = re_mod.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)",
+                      body, re_mod.MULTILINE | re_mod.DOTALL)
+    if not m:
+        return "?"
+    section = re_mod.sub(r"<!--.*?-->", "", m.group(1), flags=re_mod.DOTALL)
+    v = re_mod.search(r"\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b",
+                      section, re_mod.IGNORECASE)
+    return v.group(1).upper() if v else "?"
+
+
 # ---------------------------------------------------------------------------
 # Task metadata cache (T-1233: avoid re-reading 1200+ files on every request)
 # ---------------------------------------------------------------------------

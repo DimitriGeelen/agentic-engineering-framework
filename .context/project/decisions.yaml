@@ -219,3 +219,10 @@ decisions:
     date: 2026-04-27
     task: T-1531
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-034
+    decision: "Promote `extract_recommendation_verdict()` to `web/shared.py`"
+    scope: project
+    date: 2026-04-27
+    task: T-1533
+    rationale: "Auto-captured from task file on completion"

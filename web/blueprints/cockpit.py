@@ -21,7 +21,7 @@ from flask import Blueprint, request, render_template
 
 logger = logging.getLogger(__name__)
 
-from web.shared import PROJECT_ROOT, render_page, load_scan
+from web.shared import PROJECT_ROOT, render_page, load_scan, extract_recommendation_verdict
 from web.subprocess_utils import run_fw_command
 
 bp = Blueprint("cockpit", __name__)
@@ -92,6 +92,8 @@ def get_human_verify_tasks() -> list:
         if total > 0 and checked < total:
             unchecked = [m.strip() for m in re_mod.findall(
                 r"^\s*-\s*\[ \]\s*(.*)", human_block, re_mod.MULTILINE)]
+            # T-1533: surface agent recommendation verdict for landing-page widget
+            verdict = extract_recommendation_verdict(text)
             results.append({
                 "task_id": fm.get("id", fn.stem),
                 "name": fm.get("name", ""),
@@ -99,6 +101,7 @@ def get_human_verify_tasks() -> list:
                 "total": total,
                 "checked": checked,
                 "unchecked_items": unchecked,
+                "verdict": verdict,
             })
     return results
 
@@ -140,6 +143,11 @@ def get_action_summary() -> dict:
 
     top_tasks = sorted(human_verify, key=lambda t: t["total"] - t["checked"], reverse=True)[:3]
 
+    # T-1533: aggregate verdict counts for the landing-page Action Required widget
+    go_ac_count = sum(1 for t in human_verify if t.get("verdict") == "GO")
+    defer_ac_count = sum(1 for t in human_verify if t.get("verdict") == "DEFER")
+    nogo_ac_count = sum(1 for t in human_verify if t.get("verdict") == "NO-GO")
+
     return {
         "tier0_count": tier0_count,
         "go_count": go_count,
@@ -147,6 +155,9 @@ def get_action_summary() -> dict:
         "human_ac_task_count": len(human_verify),
         "total": tier0_count + go_count + len(human_verify),
         "top_tasks": top_tasks,
+        "go_ac_count": go_ac_count,
+        "defer_ac_count": defer_ac_count,
+        "nogo_ac_count": nogo_ac_count,
     }
 
 

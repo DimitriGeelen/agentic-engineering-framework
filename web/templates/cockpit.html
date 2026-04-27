@@ -146,6 +146,25 @@
             {% if action_summary.human_ac_count %}
             <span><strong style="color:#7c3aed;">{{ action_summary.human_ac_count }}</strong> Human ACs
                 <small style="color:var(--pico-muted-color);">({{ action_summary.human_ac_task_count }} tasks)</small>
+                {# T-1533: per-verdict count pills next to the AC count #}
+                {% if action_summary.go_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="GO"
+                       style="margin-left:0.4rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#1b5e20; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks the agent recommends GO — likely rubber-stamp">{{ action_summary.go_ac_count }} GO</small>
+                {% endif %}
+                {% if action_summary.defer_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="DEFER"
+                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#e65100; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks the agent recommends DEFER — needs strategic decision">{{ action_summary.defer_ac_count }} DEFER</small>
+                {% endif %}
+                {% if action_summary.nogo_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="NO-GO"
+                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#b71c1c; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks the agent recommends NO-GO">{{ action_summary.nogo_ac_count }} NO-GO</small>
+                {% endif %}
             </span>
             {% endif %}
         </div>

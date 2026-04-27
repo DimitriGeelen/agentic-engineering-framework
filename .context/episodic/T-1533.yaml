@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1533: Surface verdict counts on landing-page Action Required widget + factor extractor to shared
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T10:25:55Z
+# ============================================================================
+
+task_id: T-1533
+task_name: "Surface verdict counts on landing-page Action Required widget + factor extractor to shared"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T10:23:16Z
+completed: 2026-04-27T10:25:50Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`web/shared.py` defines `extract_recommendation_verdict(body: str) -> str` returning GO/DEFER/NO-GO/?"
+  - "`web/blueprints/approvals.py` imports the helper from web.shared and removes its private `_extract_recommendation_verdict()`"
+  - "`web/blueprints/cockpit.py` `get_human_verify_tasks()` extracts verdict per task and exposes it on the result dict"
+  - "`get_action_summary()` aggregates verdict counts (`go_ac_count`, `defer_ac_count`, `nogo_ac_count`) from human_verify list"
+  - "`cockpit.html` \"Action Required\" widget renders verdict-count pills next to the \"Human ACs\" label when at least one verdict has count ≥ 1"
+  - "HTTP request to `/` returns 200 and contains the strings `verdict-pill` (the new pill class) and `data-verdict-pill=\"GO\"` for the count badge"
+  - "No regression on /approvals: existing verdict badges and filter buttons still render after the import refactor"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Promote `extract_recommendation_verdict()` to `web/shared.py`"
+    rationale: "Third call site arrived (handover.sh stays bash; approvals.py + cockpit.py share Python). Two Python use sites + a likely fourth (`/review` page rendering or `/tasks/<id>` summary) is the threshold per \"three is the limit\" of the no-premature-abstraction rule. shared.py already houses similar markdown utilities (`parse_frontmatter`, `task_id_sort_key`)."
+    alternatives_rejected: ["Keep duplicating — simpler now, more drift later. Promote to a new `web/recommendation.py` — premature; one function doesn't justify a new module."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1533-surface-verdict-counts-on-landing-page-a.md
+generated_by: context-agent-hybrid
