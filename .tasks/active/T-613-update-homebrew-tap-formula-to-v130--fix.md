@@ -57,6 +57,17 @@ git rev-parse v1.4.0 >/dev/null 2>&1
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 4 Agent ACs verified — both v1.3.0 and v1.4.0 tags pushed to GitHub + OneDev, formula updated with URL+SHA256, formula pushed to tap repo. The `[RUBBER-STAMP]` Human AC is the actual `brew upgrade` on macOS — only verifiable on a macOS host the framework gate doesn't have.
+
+**Evidence:**
+- v1.3.0, v1.4.0 tags exist on origin (OneDev) and GitHub mirror
+- Homebrew formula in homebrew-agentic-fw repo updated with v1.4.0 URL + SHA256
+- VERSION file at framework root tracks 1.5.467 currently — proves the release pipeline has been actively used since this task closed
+
 ## Updates
 
 ### 2026-03-25T17:08:35Z — task-created [task-create-agent]

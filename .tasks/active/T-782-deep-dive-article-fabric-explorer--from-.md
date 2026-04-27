@@ -54,6 +54,17 @@ test -s docs/articles/deep-dives/19-fabric-explorer.md
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:** Article exists at the right path, covers required topics, committed (3 mechanical Agent ACs check). Note: Human AC steps reference `docs/deep-dives/18-fabric-explorer.md` while Agent AC writes to `docs/articles/deep-dives/19-fabric-explorer.md` — minor path drift in the AC text but both numbers exist in the article series. Voice/tone match remains the Human's call (same class as T-446/T-470/T-505/T-706).
+
+**Evidence:**
+- docs/articles/deep-dives/19-fabric-explorer.md committed
+- Covers problem, old vs new, architecture, key interactions, integration story
+- Path discrepancy in Human AC steps (docs/deep-dives/18 vs docs/articles/deep-dives/19) — non-blocking, noted for human pass
+
 ## Updates
 
 ### 2026-03-30T13:32:46Z — task-created [task-create-agent]

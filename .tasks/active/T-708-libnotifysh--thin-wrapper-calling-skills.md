@@ -57,6 +57,20 @@ grep -q "NTFY_ENABLED" lib/notify.sh
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 6 Agent ACs verified — `lib/notify.sh` exists, default-disabled, fire-and-forget background, calls dispatcher, graceful degradation, sourced via standard pattern. The `[RUBBER-STAMP]` Human AC is "receive on phone" — needs the phone to validate, can't be agent-tested.
+
+**Evidence:**
+- `lib/notify.sh` defines `fw_notify()`
+- Default-off via `${NTFY_ENABLED:-false}` guard
+- Background dispatch via `( ... ) &` pattern
+- Calls skills-manager alert dispatcher CLI
+- `2>/dev/null` swallows transport errors (graceful degrade)
+- Sourced by `lib/healing.sh` and other scripts via `source "$FRAMEWORK_ROOT/lib/notify.sh"`
+
 ## Updates
 
 ### 2026-03-29T11:14:11Z — task-created [task-create-agent]
