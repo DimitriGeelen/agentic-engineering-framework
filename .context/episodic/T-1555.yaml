@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1555: Layer B v1 — cron escalation drift scanner (writes machine-readable LATEST.yaml + human-readable .md)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T16:49:33Z
+# ============================================================================
+
+task_id: T-1555
+task_name: "Layer B v1 — cron escalation drift scanner (writes machine-readable LATEST.yaml + human-readable .md)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T16:46:06Z
+completed: 2026-04-27T16:49:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T18:49:24+02:00
+last_commit: 2026-04-27T18:49:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Layer B v1 — cron escalation-drift scan + machine-readable LATEST.yaml
+
+# Key outcomes
+outcomes:
+  - "Scanner emits a stable machine-readable summary at `.context/working/escalation-drift-LATEST.yaml` (counts, headline metrics, sample task IDs) on every run."
+  - "Existing human-readable .md output preserved (no regression for current consumers)."
+  - "New entry in `.context/cron-registry.yaml` registers the scanner as a daily job (`escalation-drift-daily`), with clear name/description/origin_task fields."
+  - "`fw cron list` shows the new job; `fw cron generate` produces a crontab fragment containing it."
+  - "Running the scanner manually (`python3 tools/escalation-scan-v0.py`) produces both outputs without errors and the YAML parses cleanly."
+  - "No changes to scanner behavior (heuristics) — only output extension. v0 results unchanged."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/cron-registry.yaml"
+  - ".context/working/escalation-drift-LATEST.yaml"
+  - "docs/reports/T-1549-escalation-scan-v0.md"
+  - ".tasks/active/T-1555-layer-b-v1--cron-escalation-drift-scanne.md"
+  - "tools/escalation-scan-v0.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T18:49:24"
+    action: "T-1555: Layer B v1 — cron escalation-drift scan + machine-readable LATEST.yaml"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 6
+  lines_added: 218
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1555-layer-b-v1--cron-escalation-drift-scanne.md
+generated_by: context-agent-hybrid
