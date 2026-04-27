@@ -4,16 +4,16 @@ name: "fw doctor + bats: cron-registry flock parity check (T-1556 prevention #3 
 description: >
   fw doctor + bats: cron-registry flock parity check (T-1556 prevention #3 + #5)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, tests/unit/cron_flock_parity.bats]
 related_tasks: []
 created: 2026-04-27T18:36:53Z
-last_update: 2026-04-27T18:36:53Z
-date_finished: null
+last_update: 2026-04-27T18:42:22Z
+date_finished: 2026-04-27T18:42:22Z
 ---
 
 # T-1558: fw doctor + bats: cron-registry flock parity check (T-1556 prevention #3 + #5)
@@ -50,7 +50,7 @@ cron section with a flock count comparison, plus a regression bats.
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
 bats tests/unit/cron_flock_parity.bats
-bin/fw doctor 2>&1 | grep -qE "Cron registry"
+bin/fw doctor > /tmp/.t1558-doctor 2>&1 && grep -E "Cron registry" /tmp/.t1558-doctor > /dev/null && rm -f /tmp/.t1558-doctor
 
 ## RCA
 
@@ -85,3 +85,19 @@ bin/fw doctor 2>&1 | grep -qE "Cron registry"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1558-fw-doctor--bats-cron-registry-flock-pari.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1a761782
+- **Timestamp:** 2026-04-27T18:43:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -f`
+
+### 2026-04-27T18:42:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
