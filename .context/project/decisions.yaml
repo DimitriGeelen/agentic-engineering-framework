@@ -247,3 +247,10 @@ decisions:
     date: 2026-04-27
     task: T-1540
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-038
+    decision: "Replace the 4 separate `grep -v` filters with a single `grep -vE '^##|^\s*```|^\s*#|^\s*$' || true`, mirroring the canonical pattern in `agents/task-create/update-task.sh:254`."
+    scope: project
+    date: 2026-04-27
+    task: T-1541
+    rationale: "Auto-captured from task file on completion"

@@ -1932,13 +1932,15 @@ PYTASK_SHOW
                 fi
 
                 # Extract ## Verification block
+                # T-1541: collapsed 4 greps into one ERE + `|| true` to mirror
+                # update-task.sh:197 — the prior BRE pattern `^\`\`\`` is parsed
+                # by GNU grep 3.11 as start-of-line + three start-of-buffer
+                # assertions, matching every line; under `set -euo pipefail` the
+                # empty-result exit 1 aborted the script before the diagnostic
+                # branch could run. ERE has no special meaning for backtick.
                 local verification
-                # shellcheck disable=SC2016 # backtick pattern is literal
                 verification=$(sed -n '/^## Verification/,/^##/p' "$task_file" | \
-                              grep -v "^##" | \
-                              grep -v '^\`\`\`' | \
-                              grep -v "^#" | \
-                              grep -v "^$")
+                              grep -vE '^##|^\s*```|^\s*#|^\s*$' || true)
 
                 if [ -z "$verification" ]; then
                     echo -e "${YELLOW}No verification commands found in task $task_id${NC}"

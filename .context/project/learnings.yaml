@@ -2318,3 +2318,10 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-299
+  learning: "GNU grep BRE treats backslash-backtick (```) as start-of-buffer assertion, not literal backtick — pattern '^```' under 'grep -v' matches every line and strips all input. Under 'set -euo pipefail' the empty-result exit 1 propagates and aborts the script before its diagnostic branch runs. Fix: use ERE ('grep -vE') where backtick is literal, OR use raw backticks with '|| true' guard. Canonical pattern lives in agents/task-create/update-task.sh:254. Field-discovered via 003-NTB-ATC-Plugin pickup P-041 (T-214); same class as T-203 (silent-exit-1 in fw task review)."
+  source: P-001
+  task: T-1541
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD

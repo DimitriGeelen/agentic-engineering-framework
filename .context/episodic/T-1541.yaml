@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1541: Pickup: fw task verify T-XXX silently exits 1 on every task — BRE backtick metachar in pattern strips entire verification block (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T13:31:31Z
+# ============================================================================
+
+task_id: T-1541
+task_name: "Pickup: fw task verify T-XXX silently exits 1 on every task — BRE backtick metachar in pattern strips entire verification block (from 003-NTB-ATC-Plugin)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T12:50:02Z
+completed: 2026-04-27T13:31:28Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`bin/fw` line 1937 fixed: replace fragile pattern with `grep -vE '^\s*\`\`\`'` or align with `update-task.sh:254` (collapsed `grep -vE` + `|| true`)"
+  - "`|| true` guards the verification extraction pipeline against future regex tweaks under `set -euo pipefail`"
+  - "Sweep `bin/fw` and `agents/*/*.sh` for sibling pattern (`var=$(... | grep -v ... | grep -v ...)` under `set -e + pipefail` without `|| true`); document findings even if no other instance is fixed in this task"
+  - "Bats regression test: task with populated `## Verification` block → `fw task verify T-XXX` exits 0 with PASS lines printed"
+  - "Bats regression test: task with no `## Verification` block → `fw task verify T-XXX` exits 0 with \"No verification commands found\""
+  - "Bats regression test: task with one failing verification command → `fw task verify T-XXX` exits 1 with FAIL line"
+  - "Bug-fix learning captured (per CLAUDE.md Bug-Fix Learning Checkpoint): same class as T-203; field-discovered via consumer pickup"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Replace the 4 separate `grep -v` filters with a single `grep -vE '^##|^\s*```|^\s*#|^\s*$' || true`, mirroring the canonical pattern in `agents/task-create/update-task.sh:254`."
+    rationale: "The minimal one-line fix (just replace `grep -v '^\`\`\`'` with `grep -vE '^\s*\`\`\`'`) leaves three sibling pipelines without `|| true` — any future regex tweak could re-introduce the silent-exit-1 hazard. Collapsing into one ERE with the guard kills the whole class of failure on this code path. Plus: alignment with `update-task.sh` removes the asymmetry that allowed only one of the two extractors to be broken."
+    alternatives_rejected: ["Minimal one-line fix — leaves the sibling-fragility hazard."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 41
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1541-pickup-fw-task-verify-t-xxx-silently-exi.md
+generated_by: context-agent-hybrid
