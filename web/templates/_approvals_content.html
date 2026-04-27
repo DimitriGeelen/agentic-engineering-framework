@@ -87,6 +87,17 @@
                   {% endif %}"
                   title="Agent recommendation: {{ _v }}">{{ _v }}</span>
             {% endif %}
+            {# T-1569 / F3: reviewer agent's mechanical verdict — green PASS, red findings/needs_human #}
+            {% if t.reviewer and t.reviewer.overall %}
+            {% set _r = t.reviewer %}
+            {% set _bad = (_r.findings and _r.findings > 0) or _r.needs_human or _r.overall in ('FAIL', 'WARN') %}
+            <span class="reviewer-badge" data-overall="{{ _r.overall }}"
+                  style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.65rem; font-weight:600;
+                  {% if _bad %}background:#7f1d1d; color:#fff;{% else %}background:#14532d; color:#fff;{% endif %}"
+                  title="Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }} findings{% endif %}{% if _r.needs_human %} · needs human{% endif %}">
+                Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }}{% endif %}{% if _r.needs_human %} ⚠{% endif %}
+            </span>
+            {% endif %}
             <a href="/inception/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
             {{ t.name }}
         </div>
@@ -296,6 +307,17 @@ function filterACs(filter) {
                          {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
                          {% else %}background:var(--pico-muted-border-color); color:var(--pico-muted-color);{% endif %}"
                   title="Agent recommendation: {{ _v }}">{{ _v }}</span>
+            {% endif %}
+            {# T-1569 / F3: reviewer mechanical verdict — parity with inception cards #}
+            {% if t.reviewer and t.reviewer.overall %}
+            {% set _r = t.reviewer %}
+            {% set _bad = (_r.findings and _r.findings > 0) or _r.needs_human or _r.overall in ('FAIL', 'WARN') %}
+            <span class="reviewer-badge" data-overall="{{ _r.overall }}"
+                  style="font-size:0.6rem; font-weight:600; padding:0.1rem 0.3rem; border-radius:3px; white-space:nowrap;
+                         {% if _bad %}background:#7f1d1d; color:#fff;{% else %}background:#14532d; color:#fff;{% endif %}"
+                  title="Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }} findings{% endif %}{% if _r.needs_human %} · needs human{% endif %}">
+                R:{{ _r.overall }}{% if _r.findings %}·{{ _r.findings }}{% endif %}{% if _r.needs_human %}⚠{% endif %}
+            </span>
             {% endif %}
             {% if t.age_days is defined %}
             <span style="font-size:0.65rem; color:{% if t.is_stale %}#e65100{% else %}var(--pico-muted-color){% endif %}; white-space:nowrap;"

@@ -15,7 +15,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_reviewer_verdict
 
 bp = Blueprint("approvals", __name__)
 
@@ -201,6 +201,9 @@ def _load_pending_go_decisions():
                 "source": "body" if body_count else "ledger",
             }
 
+        # T-1569 / F3: surface reviewer agent's mechanical verdict at decision time.
+        reviewer = extract_reviewer_verdict(body)
+
         results.append({
             "task_id": task_id,
             "name": fm.get("name", ""),
@@ -214,6 +217,7 @@ def _load_pending_go_decisions():
             "rec_decision": rec_decision,
             "verdict": verdict,
             "go_nogo_criteria": go_nogo_raw,
+            "reviewer": reviewer,
         })
 
     return results
@@ -280,6 +284,8 @@ def _load_pending_human_acs():
         # T-1531: extract agent recommendation verdict (GO/DEFER/NO-GO/?)
         # T-1533: helper now lives in web.shared (third call site arrived)
         verdict = extract_recommendation_verdict(body)
+        # T-1569 / F3: parallel surface for the reviewer's mechanical scan.
+        reviewer = extract_reviewer_verdict(body)
 
         results.append({
             "task_id": fm.get("id", ""),
@@ -290,6 +296,7 @@ def _load_pending_human_acs():
             "is_stale": is_stale,
             "sort_priority": sort_priority,
             "verdict": verdict,
+            "reviewer": reviewer,
         })
 
     # Sort: priority ascending, then age descending (oldest first within group)

@@ -274,6 +274,40 @@ def extract_recommendation_verdict(body: str) -> str:
     return v.group(1).upper() if v else "?"
 
 
+def extract_reviewer_verdict(body: str) -> dict:
+    """Extract the reviewer agent's verdict from `## Reviewer Verdict (vX.Y)`.
+
+    Returns dict with `overall` (str|None — e.g. "PASS"/"FAIL"/"WARN"),
+    `findings` (int — 0 for "none"), and `needs_human` (bool|None).
+    All keys present; `overall is None` means no verdict block exists.
+
+    Origin: T-1569 / F3 from T-1565 audit. The reviewer (lib/reviewer/static_scan.py)
+    is the only mechanical advisor in the approval arc, but /approvals never surfaced
+    its findings at decision time.
+    """
+    out = {"overall": None, "findings": 0, "needs_human": None}
+    if not body:
+        return out
+    m = re_mod.search(
+        r"^## Reviewer Verdict \(v[0-9.]+\)[^\n]*\n(.*?)(?=^#{2,} |\Z)",
+        body, re_mod.MULTILINE | re_mod.DOTALL,
+    )
+    if not m:
+        return out
+    section = m.group(1)
+    overall_m = re_mod.search(r"^- \*\*Overall:\*\*\s*([A-Z][A-Z_-]*)", section, re_mod.MULTILINE)
+    if overall_m:
+        out["overall"] = overall_m.group(1).strip()
+    nh_m = re_mod.search(r"^- \*\*Needs Human:\*\*\s*(yes|no)\b", section, re_mod.MULTILINE | re_mod.IGNORECASE)
+    if nh_m:
+        out["needs_human"] = nh_m.group(1).lower() == "yes"
+    f_m = re_mod.search(r"^- \*\*Findings:\*\*\s*(\d+|none)\b", section, re_mod.MULTILINE | re_mod.IGNORECASE)
+    if f_m:
+        v = f_m.group(1).lower()
+        out["findings"] = 0 if v == "none" else int(v)
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Task metadata cache (T-1233: avoid re-reading 1200+ files on every request)
 # ---------------------------------------------------------------------------
