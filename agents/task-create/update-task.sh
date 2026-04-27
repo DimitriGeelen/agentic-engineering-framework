@@ -236,6 +236,83 @@ auto_emit_review_if_partial() {
     fi
 }
 
+# RCA Gate (T-1550, structural remediation for G-019)
+# Fires on --status work-completed for bug-class tasks. Requires non-empty
+# `## RCA` body content so root cause is captured at the source, not lost.
+# Bug-class = workflow_type ∉ {inception, specification, design} AND
+#             (tags match bug|bugfix|hotfix|rca|incident OR title matches
+#              fix|bug|rca|broken|crash|error|regression|fail|hotfix).
+# Origin: T-1549 spike showed 99% (315/317) of bug-class tasks lacked RCA —
+# template + gate gap, not behavior. CLAUDE.md §"Post-Fix Root Cause Escalation"
+# previously advisory only.
+check_rca_for_bugfix() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    local task_title task_type task_tags is_bug
+    task_title=$(grep '^name:' "$TASK_FILE" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//')
+
+    case "$task_type" in
+        inception|specification|design) return 0 ;;
+    esac
+
+    is_bug=false
+    if echo "$task_tags" | grep -qiE '\b(bug|bugfix|hotfix|rca|incident)\b'; then
+        is_bug=true
+    elif echo "$task_title" | grep -qiE '\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b'; then
+        is_bug=true
+    fi
+    [ "$is_bug" = true ] || return 0
+
+    local rca_state
+    rca_state=$(python3 - "$TASK_FILE" <<'PYRCA' 2>/dev/null || echo "error"
+import sys, re
+try:
+    text = open(sys.argv[1]).read()
+except OSError:
+    print("error"); sys.exit(0)
+m = re.search(r'^## RCA\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL)
+if not m:
+    print("missing"); sys.exit(0)
+body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
+real = [l for l in body.splitlines() if l.strip() and not l.strip().startswith('#')]
+substantive = [l for l in real if len(l) > 30]
+print("ok" if substantive else "empty")
+PYRCA
+)
+
+    case "$rca_state" in
+        ok)
+            echo -e "${GREEN}RCA: substantive ✓${NC}"
+            return 0 ;;
+        error)
+            return 0 ;;
+        missing|empty)
+            if [ "$SKIP_RCA" = true ]; then
+                echo -e "${YELLOW}WARNING: RCA $rca_state (--skip-rca bypass)${NC}"
+                log_gate_bypass "--skip-rca" "check_rca_for_bugfix"
+                return 0
+            fi
+            echo -e "${RED}ERROR: Cannot complete bug-class task — ## RCA section is $rca_state.${NC}" >&2
+            echo "" >&2
+            echo "G-019 (CLAUDE.md): bug-fixes must capture root cause, not just the patch." >&2
+            echo "T-1549 spike showed 99% of bug-class tasks shipped without RCA capture." >&2
+            echo "" >&2
+            echo "Add a ## RCA block to $TASK_FILE with:" >&2
+            echo "  **Symptom:** what was observed" >&2
+            echo "  **Root cause:** why it happened (specific structural/logical gap)" >&2
+            echo "  **Why structurally allowed:** what let this go undetected" >&2
+            echo "  **Prevention:** what catches the next instance (test/lint/gate/doc/learning)" >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  1. Add the RCA block, then retry" >&2
+            echo "  2. Use --skip-rca to bypass (logged, T-1550)" >&2
+            exit 1
+            ;;
+    esac
+}
+
 # Verification Gate (P-011)
 # Runs shell commands from ## Verification section before allowing work-completed.
 run_verification_commands() {
@@ -338,6 +415,7 @@ SKIP_AC=false
 SKIP_VERIFICATION=false
 SKIP_HUMAN_OWNERSHIP=false
 SKIP_RECOMMENDATION=false
+SKIP_RCA=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -353,14 +431,16 @@ while [[ $# -gt 0 ]]; do
         --skip-verification) SKIP_VERIFICATION=true; shift ;;
         --skip-human-ownership) SKIP_HUMAN_OWNERSHIP=true; shift ;;
         --skip-recommendation) SKIP_RECOMMENDATION=true; shift ;;
+        --skip-rca) SKIP_RCA=true; shift ;;
         --force|-f)
             echo -e "${YELLOW}DEPRECATED: --force will be removed. Use narrow flags instead:${NC}" >&2
             echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)" >&2
             echo "  --skip-acceptance-criteria   Bypass AC gate (P-010)" >&2
             echo "  --skip-verification          Bypass verification gate (P-011)" >&2
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)" >&2
+            echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -377,6 +457,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-acceptance-criteria   Bypass AC gate (P-010)"
             echo "  --skip-verification          Bypass verification gate (P-011)"
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)"
+            echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)"
             echo "  --skip-human-ownership       Bypass human ownership reassignment"
             echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
             echo "  -h, --help    Show this help"
@@ -559,6 +640,12 @@ if [ -n "$NEW_STATUS" ]; then
         # Reviewers see /review/T-XXX — it must surface an agent advisory.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_recommendation_for_review
+        fi
+
+        # === RCA Gate (T-1550, G-019 structural remediation) ===
+        # Bug-class tasks must capture root cause before completion.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_rca_for_bugfix
         fi
 
         # === Reviewer Static-Scan (T-1443 v1.0) ===

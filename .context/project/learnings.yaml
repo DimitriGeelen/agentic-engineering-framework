@@ -2325,3 +2325,10 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-300
+  learning: "Behavioral rules in CLAUDE.md (advisory text) fail to fix recurring patterns under task pressure. When a gap is registered for >30 days without remediation, the fix is structural (gate + template), not stronger text. T-1549 spike showed 99% non-compliance with G-019; T-1550 added template + completion gate; both shipped same session."
+  source: P-001
+  task: T-1550
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD

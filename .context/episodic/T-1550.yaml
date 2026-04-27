@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1550: Layer A: ## RCA template + completion gate for bug-class tasks (T-1548 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T16:03:42Z
+# ============================================================================
+
+task_id: T-1550
+task_name: "Layer A: ## RCA template + completion gate for bug-class tasks (T-1548 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T15:58:34Z
+completed: 2026-04-27T16:03:36Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`.tasks/templates/default.md` contains `## RCA` section with prompt explaining required content (symptom / root cause / why structurally allowed / prevention)"
+  - "`agents/task-create/update-task.sh` defines `check_rca_for_bugfix` function: classifies task as bug-class via workflow_type + tags + title heuristic; if bug-class, requires non-empty `## RCA` body content for completion"
+  - "Gate fires only on `--status work-completed` and only for bug-class tasks (workflow_type≠inception/specification/design AND (tag matches `bug|bugfix|hotfix|rca|incident` OR title matches `fix|bug|rca|broken|crash|error|regression|fail|hotfix`))"
+  - "`--skip-rca` flag bypasses with mandatory `log_gate_bypass` entry; `--skip-rca` documented in `--help` output alongside other skip flags"
+  - "bats test `tests/unit/rca_gate.bats` covers 6 cases: bug-class no-RCA → blocks; bug-class empty-RCA (comments only) → blocks; bug-class substantive-RCA → passes; inception no-RCA → passes; non-bug-class build no-RCA → passes; `--skip-rca` bypass → passes + logs"
+  - "All bats tests pass (`bats tests/unit/rca_gate.bats`)"
+  - "CLAUDE.md §\"Post-Fix Root Cause Escalation\" updated to point at the new gate (one-line addition, not rewrite)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1550-layer-a--rca-template--completion-gate-f.md
+generated_by: context-agent-hybrid

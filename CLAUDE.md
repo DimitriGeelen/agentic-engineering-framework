@@ -708,6 +708,8 @@ After fixing any problem discovered by the human (not found during development):
 
 **Evidence:** G-018 required 3 human corrections to escalate from symptom (handover TODOs) to root cause (no guard against silent quality decay). See G-019.
 
+**Structural enforcement (T-1550):** Bug-class tasks (workflow_type ∉ {inception, specification, design} AND tag/title matches bug/fix/error/regression/etc.) cannot reach `--status work-completed` without a substantive `## RCA` section. `--skip-rca` bypasses with logged Tier-2 entry. Origin: T-1549 spike showed 99% of bug-class tasks (315/317) shipped without RCA capture — this rule was advisory text for months while the template never asked.
+
 ## Plan Mode Prohibition
 
 **NEVER use the built-in `EnterPlanMode` tool.** It bypasses all framework governance:

@@ -1,0 +1,4 @@
+reason: triple-dedup
+blocking_task: T-1541
+deferred_at: 2026-04-27T12:51:01Z
+envelope: P-041-bugfix-fw-task-verify-from-ntb-atc.yaml

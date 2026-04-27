@@ -1,0 +1,29 @@
+scan_date: '2026-04-27'
+scan_timestamp: '2026-04-27T15:19:29Z'
+mode: pass-b
+tasks_scanned: 2
+limit: 2
+timeout_per_line: 30
+totals:
+  PASS: 2
+  FAIL: 0
+  NO-VERIFICATION: 0
+  ERROR: 0
+errors: []
+per_task:
+- task_id: T-1543
+  sha: 5c9d28ae34348cc3941f35549b5cdce31b5eb6f3
+  overall: PASS
+  n_pass: 3
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null
+- task_id: T-1541
+  sha: 018e67f7215e675181e270aafa6f503ae8e85ec2
+  overall: PASS
+  n_pass: 3
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null

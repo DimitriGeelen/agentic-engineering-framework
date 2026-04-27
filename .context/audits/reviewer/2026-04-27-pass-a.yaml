@@ -1,0 +1,26 @@
+scan_date: '2026-04-27'
+scan_timestamp: '2026-04-27T15:19:29Z'
+mode: pass-a
+tasks_scanned: 2
+limit: 2
+totals:
+  STABLE: 0
+  DRIFTED: 0
+  NO-BASELINE: 2
+  NO-VERIFICATION: 0
+errors: []
+per_task:
+- task_id: T-1543
+  verdict: NO-BASELINE
+  has_drift: false
+  n_unchanged: 0
+  n_changed: 0
+  n_missing: 0
+  n_no_baseline: 0
+- task_id: T-1541
+  verdict: NO-BASELINE
+  has_drift: false
+  n_unchanged: 0
+  n_changed: 0
+  n_missing: 0
+  n_no_baseline: 0

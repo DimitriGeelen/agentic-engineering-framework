@@ -1,0 +1,168 @@
+pickup_id: P-041
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-214"
+  agent: "claude-code"
+  timestamp: "2026-04-27T12:50:00Z"
+
+payload:
+  summary: "fw task verify T-XXX silently exits 1 on every task — BRE backtick metachar in pattern strips entire verification block"
+
+  detail: |
+    ## Symptom
+    `fw task verify T-XXX` returns exit 1 with NO stdout/stderr output for every
+    task in the project, regardless of whether the task has a populated
+    `## Verification` block. The user (and agent) get a non-zero return with
+    no diagnostic, so the verify command is effectively unusable as a manual
+    pre-completion check.
+
+    Discovered 2026-04-27 in 003-NTB-ATC-Plugin during T-213 (fixture pull).
+    Verification block had 8 valid commands, all of which pass when run
+    directly. `fw task verify T-213` silently returned exit 1.
+
+    ## Root cause
+    `.agentic-framework/bin/fw:1890-1894` extracts the verification block:
+
+        verification=$(sed -n '/^## Verification/,/^##/p' "$task_file" | \
+                      grep -v "^##" | \
+                      grep -v '^\`\`\`' | \
+                      grep -v "^#" | \
+                      grep -v "^$")
+
+    The second filter, `grep -v '^\`\`\`'`, has a fatal regex issue.
+
+    GNU grep's BRE engine treats `\`` as the **start-of-buffer anchor**
+    (mirror of `\'` for end-of-buffer; equivalent to PCRE `\A`/`\Z`). With
+    that interpretation, the pattern `^\`\`\`` reduces to:
+
+      - `^`     start of line (matches every line start)
+      - `\``    start of buffer (zero-width assertion)
+      - `\``    start of buffer (zero-width assertion)
+      - `\``    start of buffer (zero-width assertion)
+
+    Empirically, GNU grep 3.11 evaluates this such that EVERY line matches.
+    Net effect: `grep -v` strips ALL lines.
+
+    Because the script runs under `set -euo pipefail`:
+      1. The grep returns exit 1 (no lines selected after -v)
+      2. `pipefail` propagates the 1 up the pipeline
+      3. `set -e` aborts the command-substitution
+      4. `verification=` is left empty, but the script has already aborted
+
+    The verify code path's "if [ -z "$verification" ]; then echo 'No
+    verification commands found'; exit 0; fi" branch is never reached
+    because set -e killed the script first.
+
+    ## Repro (5-second)
+
+        printf 'foo\nbar\nbaz\n' | grep -v '^\`\`\`'; echo "exit=$?"
+
+    Expected: prints foo/bar/baz, exit=0
+    Actual:   prints nothing,        exit=1
+
+    Confirmed on:
+      - GNU grep 3.11 (Ubuntu 24.04 noble)
+
+    ## Why the completion gate is unaffected
+    `update-task.sh:197` uses a different (correct) pattern:
+
+        verify_cmds=$(echo "$verify_section" | grep -vE '^\s*$|^\s*#|^\s*\`\`\`' || true)
+
+    Three differences:
+      1. `-E` (ERE) — backtick has no special meaning in ERE
+      2. Raw backticks (no backslash escape) — pattern matches literal three backticks
+      3. `|| true` — guards against pipefail+set-e abort even if grep exits 1
+
+    Any of these alone would have prevented the bug. All three together
+    is robust. The verify-T-XXX path got none of them.
+
+    That asymmetry is why `fw task update --status work-completed`
+    correctly runs verification commands, while `fw task verify T-XXX`
+    silently fails with no diagnostic — the SAME extraction problem
+    handled in TWO different implementations.
+
+    ## Class — sibling of T-203
+    Same failure shape as the framework-side bug being tracked under
+    T-203 (project-side, captured via T-199 GO): `fw task review` exits 1
+    silently when a task is missing `## Recommendation`. Both are
+    "silent-exit-1 in the verify family of fw subcommands". Both bypass
+    the script's own intended diagnostic branches due to set -euo pipefail
+    catching an upstream failure. A single sweep across the verify/review
+    surface for "set -e + grep-in-command-substitution" patterns would
+    fix both at once.
+
+    ## Proposed fix (minimal — one line)
+    Replace line 1892 of `.agentic-framework/bin/fw`:
+
+      OLD:  grep -v '^\`\`\`' | \
+      NEW:  grep -vE '^\s*\`\`\`' | \
+
+    Or align with `update-task.sh` and collapse all four greps into one:
+
+      verification=$(sed -n '/^## Verification/,/^##/p' "$task_file" | \
+                    grep -vE '^##|^\`\`\`|^\s*#|^\s*$' || true)
+
+    The `|| true` is recommended regardless — guards future regex tweaks.
+
+    ## Proposed fix (broader — same audit)
+    Sweep `.agentic-framework/bin/fw` and `agents/*/*.sh` for the pattern:
+
+      var=$(... | grep -v ... | grep -v ...)
+
+    under `set -e + pipefail` without a `|| true`. Each occurrence is a
+    silent-exit-1 hazard. T-203 will land a related fix for `fw task
+    review`'s `emit_review`; this should be coordinated.
+
+    ## Local remediation (already applied)
+    None — the project agent worked around by completing T-213 via
+    `fw task update --status work-completed` (which uses the correct
+    completion-gate path) instead of `fw task verify` first. No project-
+    local patch to `.agentic-framework/`.
+
+    ## Acceptance for upstream fix
+    - Fix line 1892 in `bin/fw` (or refactor to reuse update-task.sh's pattern)
+    - Add a regression test: a task with valid `## Verification` block makes
+      `fw task verify T-XXX` exit 0 with PASS lines printed
+    - Add a regression test: a task with NO `## Verification` block makes
+      `fw task verify T-XXX` print "No verification commands found" and exit 0
+    - Coordinate with T-203 fix for `fw task review` — same class
+
+  scope:
+    - 'Patch `.agentic-framework/bin/fw` line 1892 (BRE backslash-backtick → ERE or bracket class)'
+    - "Add `|| true` after the grep pipeline to make pipefail robust"
+    - "Add bats/shellspec regression tests covering: populated verify block (passes), no verify block (no-op exits 0), failing verify command (reports failure)"
+    - "Sweep for sibling silent-exit-1 patterns in fw and agents/ — coordinate with T-203"
+
+  out_of_scope:
+    - "Behaviour of the verification gate itself — `update-task.sh:197` works correctly today, only the manual `fw task verify` command is broken"
+    - "Changes to task template or `## Verification` syntax"
+
+  acceptance_criteria:
+    - "fw task verify T-XXX with populated block exits 0, prints PASS lines"
+    - "fw task verify T-XXX without verify block exits 0, prints 'No verification commands found'"
+    - "fw task verify on a task with a failing command exits 1, prints FAIL with command + exit code + stderr head"
+    - "Regression test in framework test suite locks behaviour"
+
+  evidence_today:
+    - |
+      5-second repro:
+        printf 'foo\nbar\nbaz\n' | grep -v '^\`\`\`'; echo "exit=$?"
+      No output, exit=1 on GNU grep 3.11.
+    - "Stepwise repro under set -euo pipefail (003-NTB-ATC-Plugin/T-214 task body)"
+    - "Strace confirms grep PID exits 1 inside the pipeline; pipefail propagates; verification= remains empty; set -e aborts before 'No verification commands' echo"
+    - "Concrete incident: T-213 (003-NTB-ATC-Plugin) had 8 valid verification commands, fw task verify T-213 returned exit 1 with no output. fw task update --status work-completed (which uses update-task.sh:197 instead) ran the same commands and reported 8/8 PASS."
+    - "Sibling: T-203 (project-side) tracking same-class silent-exit-1 in `fw task review` — coordinate fix"
+
+  estimate: "30 min framework-side. One-line regex fix + 2-3 regression tests + brief sweep for sibling patterns."
+
+  related:
+    - "T-213 (003-NTB-ATC-Plugin): root incident — fixture pull where bug surfaced"
+    - "T-203 (003-NTB-ATC-Plugin, captured): sibling silent-exit-1 in `fw task review`"
+    - "T-199 (003-NTB-ATC-Plugin, decided GO): cross-project friction inception that birthed T-203"
+    - "C-015 (003-NTB-ATC-Plugin/.context/project/concerns.yaml): project-side gap registration per G-019"
+
+  ntb_atc_followup:
+    task_id: "T-214"
+    note: "Project-side capture + dispatch task. Closes when P-041 is acknowledged in framework processed/ inbox; does NOT wait for the upstream fix to land."

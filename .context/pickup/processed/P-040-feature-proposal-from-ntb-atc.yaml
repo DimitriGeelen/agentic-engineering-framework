@@ -1,0 +1,64 @@
+pickup_id: P-040
+version: 1
+type: feature-proposal
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-210"
+  agent: "claude-code"
+  timestamp: "2026-04-27T11:35:00Z"
+
+payload:
+  summary: "Add canonical-doc approval surface to Watchtower /approvals page (4th category alongside Tier-0 / inception / human-AC)"
+
+  motivation: >
+    The canonical-doc edit gate (T-156/T-157, .claude/hooks/check-canonical-doc.sh)
+    blocks Write/Edit on Marc-facing source documents until a matching
+    `.context/proposals/<slug>.approved` marker exists. Today the only way
+    to set the marker is via shell `touch` — there is no Watchtower UI for
+    it. The /approvals page already aggregates Tier-0 destructive-command
+    approvals, inception GO/NO-GO decisions, and human-AC sign-offs, but
+    its three loaders (`_load_pending_approvals`, `_load_pending_go_decisions`,
+    `_load_pending_human_acs`) do not include canonical-doc proposals.
+
+    Net friction: every canonical-doc edit cycle (release report, Marc's
+    rapport, Mermaid diagrams) requires the agent to print a copy-pasteable
+    `cd <project> && touch .context/proposals/...approved` command and the
+    human to context-switch to a terminal. With the Watchtower UI surface
+    in place, the human stays in the browser, sees the proposal preview,
+    and clicks "Approve" — same UX as inception GO and human-AC sign-off.
+
+  scope:
+    - "Add `_load_pending_canonical_proposals()` to .agentic-framework/web/blueprints/approvals.py — scans `.claude/canonical-docs.list` × `docs/proposals/*.md`, detects unmatched proposals (no `.approved` marker yet), returns dict per proposal with: target_path, proposal_path, slug, summary, intent, created_ts."
+    - "Add a 4th render section to `_build_approvals_context()` and web/templates/approvals.html for `pending_canonical_proposals`."
+    - "Add a new endpoint `POST /api/approvals/canonical-decide` accepting `{proposal_path, decision}` — on approve, `touch .context/proposals/<slug>.approved`; on reject, optionally write a `.rejected` marker for traceability."
+    - "Approval marker creation should be atomic and logged to .context/working/.canonical-approval.log."
+    - "No change to the existing canonical-doc hook — it already handles marker presence + consumption; this PR only adds the UI that creates the marker."
+
+  out_of_scope:
+    - "Changes to .claude/hooks/check-canonical-doc.sh (the marker mechanism is correct as-is; we're just adding a UI to write the marker)."
+    - "Changes to canonical-docs.list contents (still project-managed)."
+    - "Per-section / per-paragraph approval (whole-file approval only)."
+
+  acceptance_criteria:
+    - "Watchtower /approvals shows a 'Canonical-Doc Proposals' section when .context/proposals/*.md exist without matching .approved markers"
+    - "Each proposal card shows: target file path, proposal path, summary (first ~200 chars), 'Approve' button"
+    - "Clicking 'Approve' creates .context/proposals/<slug>.approved and removes the proposal from the pending list"
+    - "Subsequent agent Edit on the canonical doc passes the gate (marker consumed by check-canonical-doc.sh, then the agent edit lands)"
+    - "Rejection flow exists (optional, but useful for audit trail)"
+
+  evidence_today:
+    - "Verified Watchtower routes via grep — no /proposals or canonical-doc route exists; approvals.py has 3 loaders, none scan proposals dir"
+    - "Verified canonical-doc gate is purely file-marker based via .claude/hooks/check-canonical-doc.sh (T-157)"
+    - "Concrete repro: T-205 → T-206 (rev-1, 9-row matrix) → T-207 (rev-2, 14 rows) — both required a `touch` command to authorize the canonical edit, breaking the in-browser flow"
+
+  estimate: "1-2 hours framework-side. The pattern (loader + render + decide-endpoint) is already established by the 3 existing approval categories — this is mostly mirroring."
+
+  related:
+    - "T-156: canonical-doc edit gate inception"
+    - "T-157: canonical-doc edit gate build"
+    - "T-205, T-206, T-207: real-world incidents that exposed the friction"
+    - "Memory: feedback_release_report_ac_matrix.md (Marc-AC matrix workflow that benefits from this surface)"
+
+  ntb_atc_followup:
+    task_id: "T-211"
+    note: "Project-side task captured to add a CLAUDE.md callout once T-210 lands and Watchtower exposes the canonical-doc approval surface."

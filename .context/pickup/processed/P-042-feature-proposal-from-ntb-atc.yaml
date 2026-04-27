@@ -1,0 +1,66 @@
+pickup_id: P-042
+version: 1
+type: feature-proposal
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-202"
+  agent: "claude-code"
+  timestamp: "2026-04-27T17:10:00Z"
+
+payload:
+  summary: "Update agents/inception/AGENT.md copy-paste guidance for review-first Watchtower decide flow + project-port awareness"
+
+  motivation: >
+    T-199 Path B (project-side, T-201) just landed in NTB-ATC's CLAUDE.md:
+    inception decide is now review-first via Watchtower at
+    http://localhost:3039/inception/<task-id>, with the CLI as fallback.
+    The project ships its own Watchtower instance on a non-default port
+    (:3039) because :3000 is taken by termlink's watchtower; the URL is
+    discoverable via the triple-file `.context/working/watchtower.{pid,
+    port,url}`.
+
+    The framework's `agents/inception/AGENT.md` (or equivalent guidance
+    document) still emits agent-side copy-pasteable commands shaped around
+    the legacy `fw inception decide T-XXX go --rationale "..."` form.
+    Three problems with that:
+
+    1. CLI-first instead of review-first: the human can act in the
+       browser but the agent still tells them to open a terminal.
+    2. Hard-codes :3000 (or no URL) instead of reading the project's
+       `.context/working/watchtower.url` triple-file.
+    3. `--rationale` flag is now redundant — the Watchtower form captures
+       the rationale through its native textarea.
+
+  scope:
+    - "Audit agents/inception/AGENT.md (or whichever inception-discipline doc is shipped with the framework) for copy-paste guidance covering the decide step."
+    - "Replace the `fw inception decide T-XXX go --rationale '...'` snippet with: (a) a Watchtower URL (read from `.context/working/watchtower.url` if present, else fall back to `http://localhost:3000/inception/T-XXX`); (b) a CLI fallback line without `--rationale` (rationale captured via Watchtower form)."
+    - "If the agent emits commands while WATCHTOWER_URL is unset and the project's triple-file shows :3039 (or any non-default port), prepend `WATCHTOWER_URL=http://localhost:<port>` to the CLI fallback (workaround for T-141 silent-degrade until P-013 lands)."
+    - "Update any inline examples or check-lists in the same document that reference the deprecated form."
+
+  out_of_scope:
+    - "Changes to the underlying `fw inception decide` CLI semantics."
+    - "Changes to the Watchtower /inception page (already shipping)."
+    - "Removing the CLI form — it remains the fallback for headless / no-Watchtower environments."
+
+  acceptance_criteria:
+    - "agents/inception/AGENT.md (or equivalent) no longer emits `--rationale` in any decide-step copy-paste block"
+    - "The decide-step block leads with a Watchtower URL line; the CLI line is presented as fallback"
+    - "The agent's copy-paste output reads the project's `.context/working/watchtower.url` triple-file when emitting the URL (or falls back to localhost:3000 only if the triple-file is absent)"
+    - "WATCHTOWER_URL prefix is auto-added to the CLI form when the project port differs from :3000"
+
+  evidence_today:
+    - "Project-side: T-201 landed Inception Discipline step 8 in NTB-ATC's CLAUDE.md citing http://localhost:3039/inception/<task-id> and the WATCHTOWER_URL=:3039 workaround (T-141 / P-013)."
+    - "Concrete repro: this NTB-ATC project's Watchtower runs on :3039 because :3000 is taken; agent-side guidance that hard-codes :3000 produces wrong copy-paste."
+    - "Triple-file already exists: .context/working/watchtower.url resolves to http://localhost:3039 here."
+
+  estimate: "30-60 min framework-side. Mostly text + a small read-the-triple-file helper if it doesn't exist already."
+
+  related:
+    - "T-199 Path B: project-side CLAUDE.md update (closed via T-201, this project)"
+    - "T-141 / P-013: Watchtower discovery silent degrade (workaround until P-013 lands)"
+    - "T-200 (project-side): Watchtower /api/_identity endpoint (closes T-141)"
+    - "Memory: reference_watchtower_url_workaround.md"
+
+  ntb_atc_followup:
+    task_id: "T-202"
+    note: "This pickup envelope IS the deliverable for T-202; closing on dispatch per project convention."

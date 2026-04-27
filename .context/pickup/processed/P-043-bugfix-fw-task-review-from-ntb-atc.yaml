@@ -1,0 +1,70 @@
+pickup_id: P-043
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-203"
+  agent: "claude-code"
+  timestamp: "2026-04-27T17:15:00Z"
+
+payload:
+  summary: "fw task review exits 1 with empty stdout/stderr when task body lacks ## Recommendation section"
+
+  symptom: |
+    `fw task review T-XXX <claim> <artifact>` exits 1 with no output when
+    the target task's body file does not contain the unindented
+    `**Recommendation:**` (or `## Recommendation`) heading expected by the
+    T-1215 check in lib/review.sh::emit_review. From the operator's POV:
+    nothing happens — the command exits silently. This makes the cascade
+    look more broken than it is during T-199-style review attempts.
+
+  repro: |
+    1. Pick any task whose body lacks a `## Recommendation` heading
+       (T-203 is one — created from default template, no Recommendation).
+    2. Run: `fw task review T-203 "smoke" /dev/null` (or any artifact).
+    3. Observe: exit 1, no stdout, no stderr.
+
+    Expected: exit 1 with a clear ERROR line on stderr explaining what's
+    missing and where to add it.
+
+  root_cause_hypothesis: |
+    lib/review.sh::emit_review extracts a `_rec_content` block via a
+    grep / sed pipeline and exits non-zero when it's empty. The exit is
+    a bare `return 1` (or similar) without an `echo "ERROR: ..." >&2`
+    preceding it. Same shape as `fw task verify` silent-exit-1 (P-041)
+    and the project-side C-011 concern.
+
+    Sibling concern: P-041 root-caused a related class (BRE-backtick
+    metachar in `grep '^\`\`\`'` under set -e + pipefail without `|| true`).
+    T-203 may share that mechanism if the Recommendation extraction uses
+    the same idiom — worth checking during fix.
+
+  proposed_fix: |
+    In lib/review.sh::emit_review near the `_rec_content` extraction,
+    when the extraction is empty, print:
+
+      ERROR: task body lacks a `## Recommendation` section (required by
+      T-1215). Add a `## Recommendation` block to <task-file> describing
+      the proposed action / decision. Example:
+
+          ## Recommendation
+          Approve and merge — see T-203 evidence above.
+
+    Then return 1 as before. Optionally print the task file path so the
+    human can jump there.
+
+  acceptance_criteria:
+    - "fw task review on a task without ## Recommendation prints an ERROR explaining what's missing on stderr (or stdout) before exiting non-zero"
+    - "Exit code remains 1 (semantic: 'review precondition not met') — only the silence is fixed, not the rejection itself"
+    - "Pre-existing T-1215 contract still enforced — adding a Recommendation block is still required for fw task review to succeed"
+    - "Regression: a task WITH ## Recommendation still emits the review YAML and exits 0"
+
+  related:
+    - "T-1215: framework rule that fw task review requires ## Recommendation"
+    - "P-041 (NTB-ATC dispatch 2026-04-27): sibling silent-exit-1 in fw task verify (BRE-backtick + set -e/pipefail). Class-fix may be possible if review.sh shares the idiom."
+    - "C-011 (NTB-ATC concerns.yaml): fw task review silent exit 1 (this same bug, project-side gap)"
+    - "T-199 Path D: this is the 4th friction point catalogued during the inception RCA"
+
+  ntb_atc_followup:
+    task_id: "T-203"
+    note: "This pickup envelope IS the deliverable for T-203; closing on dispatch per project convention. C-011 stays open until prevention exists in the framework."

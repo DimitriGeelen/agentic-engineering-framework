@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1501: Pickup: Extend verification-gate.sh: when task touches .vbproj/.xaml, require dotnet build (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T10:06:35Z
+# ============================================================================
+
+task_id: T-1501
+task_name: "Pickup: Extend verification-gate.sh: when task touches .vbproj/.xaml, require dotnet build (from 003-NTB-ATC-Plugin)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-26T11:13:21Z
+completed: 2026-04-27T10:06:32Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-04-26T22:53:52+02:00
+last_commit: 2026-04-26T22:58:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Land DEFER mitigations — toolchain build hint in templates + CLAUDE.md + L-291. Close G-057 (resolved by T-1389) + fill missing episodics + research artifact
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".context/episodic/T-1283.yaml"
+  - ".context/episodic/T-1284.yaml"
+  - ".context/episodic/T-1388.yaml"
+  - ".context/project/concerns.yaml"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-1501-toolchain-build-verification.md"
+  - ".tasks/templates/default.md"
+  - ".tasks/templates/inception.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T22:53:52"
+    action: "T-1501: Land DEFER mitigations — toolchain build hint in templates + CLAUDE.md + L-291"
+  - time: "2026-04-26T22:58:40"
+    action: "T-1501: Close G-057 (resolved by T-1389) + fill missing episodics + research artifact"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1373 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, feature-proposal]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1373
+  commits: 2
+  files_changed: 9
+  lines_added: 351
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1501-pickup-extend-verification-gatesh-when-t.md
+generated_by: context-agent-hybrid

@@ -1435,3 +1435,173 @@ payload:
     Bound the verdict-block replacement to the next '## ' or '### 2026-' /
     similar update entry, OR enforce that the verdict block is always
     the LAST block and disallow updates after it.
+---
+kind: scan_emitted
+timestamp: '2026-04-27T13:03:56Z'
+scan_id: R-66ac463c
+task_id: T-1540
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T13:03:56Z'
+scan_id: R-66ac463c
+task_id: T-1540
+payload:
+  task_file: .tasks/active/T-1540-three-sequential-blind-reviewer-validati.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T13:31:29Z'
+scan_id: R-ea4a5ca6
+task_id: T-1541
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T13:31:29Z'
+scan_id: R-ea4a5ca6
+task_id: T-1541
+payload:
+  task_file: .tasks/active/T-1541-pickup-fw-task-verify-t-xxx-silently-exi.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T14:58:32Z'
+scan_id: R-65a3ebe8
+task_id: T-1543
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T14:58:32Z'
+scan_id: R-65a3ebe8
+task_id: T-1543
+payload:
+  task_file: .tasks/active/T-1543-sanitize-yaml-escapes-in-fw-context-add-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T15:15:59Z'
+scan_id: R-a00e4300
+task_id: T-1483
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T15:15:59Z'
+scan_id: R-a00e4300
+task_id: T-1483
+payload:
+  task_file: .tasks/active/T-1483-reviewer-v15-build--pass-a-diff-detectio.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T15:16:00Z'
+scan_id: R-1c6c6ed9
+task_id: T-1484
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T15:16:00Z'
+scan_id: R-1c6c6ed9
+task_id: T-1484
+payload:
+  task_file: .tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T15:16:01Z'
+scan_id: R-acc5a186
+task_id: T-1485
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T15:16:01Z'
+scan_id: R-acc5a186
+task_id: T-1485
+payload:
+  task_file: .tasks/active/T-1485-reviewer-v15c--fw-reviewer-audit---pass-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T15:19:30Z'
+scan_id: R-98981713
+task_id: T-1547
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T15:19:30Z'
+scan_id: R-98981713
+task_id: T-1547
+payload:
+  task_file: .tasks/active/T-1547-batch-validation-bucket-a-rubber-stamp--.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T15:48:36Z'
+scan_id: R-b7c8b33c
+task_id: T-1548
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T15:48:36Z'
+scan_id: R-b7c8b33c
+task_id: T-1548
+payload:
+  task_file: .tasks/active/T-1548-rca--structural-fix-reviewt-xxx-page-sen.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T15:53:59Z'
+scan_id: R-82c56763
+task_id: T-1549
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T15:53:59Z'
+scan_id: R-82c56763
+task_id: T-1549
+payload:
+  task_file: .tasks/active/T-1549-layer-b-v0-scan-completed-tasks-for-symp.md
+---
+kind: scan_emitted
+timestamp: '2026-04-27T16:03:39Z'
+scan_id: R-0849b07f
+task_id: T-1550
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-27T16:03:39Z'
+scan_id: R-0849b07f
+task_id: T-1550
+payload:
+  task_file: .tasks/active/T-1550-layer-a--rca-template--completion-gate-f.md

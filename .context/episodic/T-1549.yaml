@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1549: Layer B v0: scan completed tasks for symptom-fix candidates (T-1548 spike 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T15:54:02Z
+# ============================================================================
+
+task_id: T-1549
+task_name: "Layer B v0: scan completed tasks for symptom-fix candidates (T-1548 spike 1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T15:50:05Z
+completed: 2026-04-27T15:53:58Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`tools/escalation-scan-v0.py` exists and runs to completion against the live `.tasks/completed/` corpus without errors"
+  - "Scanner implements all 3 heuristics (H1, H2, H3) with code matching the inception artifact spec"
+  - "Scanner writes structured report to `docs/reports/T-1549-escalation-scan-v0.md` containing: corpus size, bug-class count, per-heuristic counts, last-30-days sample, self-application result for T-1548"
+  - "Scanner is read-only (no writes outside `docs/reports/` and stdout)"
+  - "Self-application (Spike 3): scanner reports T-1548's H1 status — pass criterion is that it produces a deterministic verdict (flagged or not), not that any specific outcome is required"
+  - "Report's \"Read-out\" section names explicit GO/NO-GO thresholds for promoting Layer B from v0 to v1 (cron + register)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1549-layer-b-v0-scan-completed-tasks-for-symp.md
+generated_by: context-agent-hybrid

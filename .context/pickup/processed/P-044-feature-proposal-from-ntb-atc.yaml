@@ -1,0 +1,68 @@
+pickup_id: P-044
+version: 1
+type: feature-proposal
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-200"
+  agent: "claude-code"
+  timestamp: "2026-04-27T17:25:00Z"
+
+payload:
+  summary: "Add GET /api/_identity to Watchtower — closes T-141 (silent-degrade discovery)"
+
+  motivation: >
+    `fw lib/watchtower.sh::_watchtower_url` Layer-1 discovery probes a
+    candidate URL by curl-ing `/api/_identity` and reading the JSON to
+    confirm the responder is in fact the project's Watchtower (not some
+    other service on the same port). When the endpoint returns 404 (as
+    Watchtower currently does), the probe silently fails and the
+    discovery falls through to default `:3000`.
+
+    On NTB-ATC the default :3000 is taken by termlink's watchtower (a
+    different service), so falling through means `fw` either pings the
+    wrong service or reports "no Watchtower reachable" while Watchtower
+    is in fact running on :3039. Operators have to prefix every fw
+    command with `WATCHTOWER_URL=http://localhost:3039` — captured as
+    a project memory and now in CLAUDE.md (T-201 just landed).
+
+    Once /api/_identity responds, the discovery probe can authoritatively
+    confirm the responder + cache the URL in the triple-file (the project
+    already maintains `.context/working/watchtower.{pid,port,url}` —
+    see T-201 prep), and the workaround disappears.
+
+  scope:
+    - "Add GET /api/_identity to Watchtower web/server-routes returning JSON: {\"service\": \"watchtower\", \"project_root\": \"<absolute path>\"}"
+    - "Optional richer payload: pid, port, started_ts (epoch), version. Useful for fw doctor / fw resume status."
+    - "Endpoint must be unauthenticated (it's used by the client lib's discovery probe before any auth context exists)."
+    - "Response Content-Type: application/json."
+    - "Should respond quickly (< 50 ms) — Layer-1 discovery probes 3+ candidates in sequence."
+
+  out_of_scope:
+    - "Changes to fw lib/watchtower.sh (the client lib already curls /api/_identity; once the endpoint exists, no client change needed)."
+    - "Auth on the identity endpoint (intentionally open)."
+    - "Discovery cache invalidation (pid in the response could enable smarter caching later, but that's a follow-up)."
+
+  acceptance_criteria:
+    - "curl http://<host>:<port>/api/_identity returns 200 with a JSON body containing at least {service, project_root}"
+    - "The 'service' field is the literal string 'watchtower'"
+    - "The 'project_root' field is the absolute path of the project Watchtower is serving"
+    - "fw doctor / fw discovery on the project (port :3039 here) finds the Watchtower without WATCHTOWER_URL env override"
+    - "Existing /approvals, /inception, /review pages continue to work"
+
+  evidence_today:
+    - "Verified 2026-04-27 17:25 UTC: curl http://localhost:3039/api/_identity → HTTP 404 bytes=0"
+    - "Project's Watchtower is responding on :3039 (curl :3039/ returns the index, /approvals returns 200, /inception returns 200) — the server is fine, just missing this one endpoint"
+    - "fw silent-degrade visible in any session that doesn't have WATCHTOWER_URL exported — captured in project memory `reference_watchtower_url_workaround.md`"
+    - "T-141 captures the original project-side bug; T-199 RCA Path A points at this endpoint as the prevention"
+
+  estimate: "30 min framework-side. The Watchtower app already knows its project_root + pid + port — wiring those into a JSON handler is mechanical."
+
+  related:
+    - "T-141 (project): Watchtower discovery silent degrade on /api/_identity 404 + partial triple-file"
+    - "T-199 (project): RCA inception that catalogued 4 friction points; this is Path A"
+    - "T-201 (project, just closed): CLAUDE.md callout pointing humans at the WATCHTOWER_URL workaround until P-044 lands"
+    - "P-013 (sibling/predecessor envelope?): the workaround citation in CLAUDE.md references P-013 — check whether P-013 already attempted this and was deferred"
+
+  ntb_atc_followup:
+    task_id: "T-200"
+    note: "This pickup envelope IS the deliverable for T-200; closing on dispatch per project convention. After P-044 lands, NTB-ATC will: (a) remove the WATCHTOWER_URL workaround callout from CLAUDE.md (revert T-201's Step 8 trailer), (b) remove the project memory entry, (c) close T-141 with verification evidence."

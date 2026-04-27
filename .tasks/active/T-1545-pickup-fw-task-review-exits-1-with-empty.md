@@ -1,21 +1,24 @@
 ---
-id: T-XXX
-name:
+id: T-1545
+name: "Pickup: fw task review exits 1 with empty stdout/stderr when task body lacks ## Recommendation section (from 003-NTB-ATC-Plugin)"
 description: >
+  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-203. Type: bug-report.
 
 status: captured
-workflow_type:
-owner:
-horizon: now
-tags: []
+workflow_type: build
+owner: agent
+horizon: next
+tags: [pickup, bug-report]
 components: []
 related_tasks: []
-created:
-last_update:
+created: 2026-04-27T15:08:01Z
+last_update: 2026-04-27T15:08:01Z
 date_finished: null
+source_task_id_in_origin: T-203
+source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
 
-# T-XXX: [Task Name]
+# T-1545: Pickup: fw task review exits 1 with empty stdout/stderr when task body lacks ## Recommendation section (from 003-NTB-ATC-Plugin)
 
 ## Context
 
@@ -54,22 +57,6 @@ date_finished: null
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -83,5 +70,7 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-04-27T15:08:01Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1545-pickup-fw-task-review-exits-1-with-empty.md
+- **Context:** Initial task creation
