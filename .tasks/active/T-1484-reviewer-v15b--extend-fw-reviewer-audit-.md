@@ -121,8 +121,8 @@ grep -q "pass-b" bin/fw
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-7efa8340
-- **Timestamp:** 2026-04-26T07:16:21Z
+- **Scan ID:** R-1c6c6ed9
+- **Timestamp:** 2026-04-27T15:16:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -130,8 +130,7 @@ grep -q "pass-b" bin/fw
 
 **Per-AC findings:**
 
-- **AC#6 (Agent)** — Output YAML written to `.context/audits/reviewer/YYYY-MM-DD-pass-b.yaml` with: scan_date, scan_timestamp, mode=pass-b, tasks_scanned, totals (PASS/FAIL/NO-VERIFICATION/ERROR), per_task list (task_id, 
+- **AC#6 (ACs)** — Output YAML written to `.context/audits/reviewer/YYYY-MM-DD-pass-b.yaml` with: scan_date, scan_timestamp, mode=pass-b, tasks_scanned, totals (PASS/FAIL/NO-VERIFICATION/ERROR), per_task list (task_id, 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/reviewer/YYYY-MM-DD-pass-b.yaml in: Output YAML written to `.context/audits/reviewer/YYYY-MM-DD-pass-b.yaml` with: scan_date, scan_timestamp, mode=pass-b, tasks_scanned, totals (PASS/FAI`
-
 ### 2026-04-26T07:16:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

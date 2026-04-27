@@ -117,13 +117,12 @@ grep -q "reviewer reverify" bin/fw
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-98822de1
-- **Timestamp:** 2026-04-25T22:31:29Z
+- **Scan ID:** R-a00e4300
+- **Timestamp:** 2026-04-27T15:15:59Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-25T22:31:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** v1.5 Pass A + Pass B + classifier shipped; v1.5b corpus-audit deferred to T-1484

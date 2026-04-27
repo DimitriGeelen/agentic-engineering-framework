@@ -104,8 +104,8 @@ grep -q "pass-a" bin/fw
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-e92a8ad1
-- **Timestamp:** 2026-04-26T07:22:03Z
+- **Scan ID:** R-acc5a186
+- **Timestamp:** 2026-04-27T15:16:01Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -113,8 +113,7 @@ grep -q "pass-a" bin/fw
 
 **Per-AC findings:**
 
-- **AC#5 (Agent)** — Output YAML to `.context/audits/reviewer/YYYY-MM-DD-pass-a.yaml` with: scan_date, scan_timestamp, mode, tasks_scanned, totals (STABLE/DRIFTED/NO-BASELINE/NO-VERIFICATION), per_task list (task_id, verd
+- **AC#5 (ACs)** — Output YAML to `.context/audits/reviewer/YYYY-MM-DD-pass-a.yaml` with: scan_date, scan_timestamp, mode, tasks_scanned, totals (STABLE/DRIFTED/NO-BASELINE/NO-VERIFICATION), per_task list (task_id, verd
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/reviewer/YYYY-MM-DD-pass-a.yaml in: Output YAML to `.context/audits/reviewer/YYYY-MM-DD-pass-a.yaml` with: scan_date, scan_timestamp, mode, tasks_scanned, totals (STABLE/DRIFTED/NO-BASEL`
-
 ### 2026-04-26T07:22:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

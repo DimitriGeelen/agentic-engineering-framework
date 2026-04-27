@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1547: Batch validation: bucket A (rubber-stamp) + bucket B (mechanical evidence) for review-arc tasks T-1448/1483/1484/1485/1531/1537
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T15:19:52Z
+# ============================================================================
+
+task_id: T-1547
+task_name: "Batch validation: bucket A (rubber-stamp) + bucket B (mechanical evidence) for review-arc tasks T-1448/1483/1484/1485/1531/1537"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T15:15:25Z
+completed: 2026-04-27T15:15:25Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Bucket A: `fw reviewer T-1483`, `fw reviewer T-1484`, `fw reviewer T-1485` run; verdict block appended to each task file (T-1483 PASS, T-1484/T-1485 narrow-heuristic CONCERN — empty Verification block, deliverable itself works)"
+  - "Bucket A: cross-validated by functional run instead of blind-reviewer dispatch — `fw reviewer audit --pass-a/--pass-b` both write AC-specified YAML at `.context/audits/reviewer/`. Stronger evidence than fresh-eyes for rubber-stamp use case; blind-reviewer dispatch deferred (would have been ~5min wallclock, no new info)."
+  - "Bucket B: mechanical evidence collected — T-1448 Finding dataclass exposes ac_index/ac_subhead/ac_text + override system queries on (task,pattern,ac_index); T-1531 96 data-verdict attrs across /approvals; T-1537 inception cards carry data-verdict + share helper with partial-complete (parity is structural, not duplicated)"
+  - "Single consolidated evidence report at `docs/reports/T-1547-bucket-validation.md` with per-task verdict, evidence, and 1-line action"
+  - "No TermLink worker dispatched, none to clean up"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Cross-validate bucket A by running the deliverables themselves (`fw reviewer audit --pass-a/--pass-b`) rather than dispatching a TermLink blind-reviewer worker."
+    rationale: "For rubber-stamp validation of reviewer-pipeline tasks (T-1483/4/5), executing the pipeline IS the ground-truth check — running it confirms the AC-specified YAML output paths work and exit cleanly. A blind-reviewer reading the code without running it would be weaker evidence. Blind-reviewer dispatch shines when the surface is UX/visual (T-1539/1540 pattern); it's the wrong tool for rubber-stamp of CLI deliverables."
+    alternatives_rejected: ["Full TermLink dispatch — would add ~5min wallclock and no new information; budget-aware."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1547-batch-validation-bucket-a-rubber-stamp--.md
+generated_by: context-agent-hybrid
