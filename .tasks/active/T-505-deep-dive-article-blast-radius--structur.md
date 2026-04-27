@@ -54,6 +54,17 @@ test -f docs/articles/deep-dives/18-blast-radius.md
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:** All 4 mechanical Agent ACs check (article exists, style markers present, real evidence cited, platform notes included). The Human `[REVIEW]` AC is voice/tone match against linkedin.com/in/dimitrigeelen — same class as T-446, T-470. Subjective writing-style judgment is human-only.
+
+**Evidence:**
+- docs/articles/deep-dives/18-blast-radius.md exists
+- 154 components / 422 edges, T-206 incident, T-236 integration cited
+- Platform notes for LinkedIn, Reddit, Dev.to present
+
 ## Updates
 
 ### 2026-03-16T05:38:21Z — task-created [task-create-agent]

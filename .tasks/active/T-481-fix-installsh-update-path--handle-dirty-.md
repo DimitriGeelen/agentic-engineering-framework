@@ -58,6 +58,18 @@ grep -q 'reset --hard' install.sh
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 5 Agent ACs verified — install path resets to origin (not pull), `core.fileMode` handled on fresh+existing installs, version delta surfaced, syntax clean. The `[RUBBER-STAMP]` Human AC is a deterministic two-curl-runs check on macOS — could honestly be an Agent AC if a macOS gate-host were available; per AC Classification it's RUBBER-STAMP because the framework's gate doesn't run on macOS.
+
+**Evidence:**
+- `do_install()` uses `git fetch + git reset --hard origin/master` (no pull)
+- `git config core.fileMode false` on both fresh and update paths
+- Update output shows old→new commit hash
+- `bash -n install.sh` passes
+
 ## Updates
 
 ### 2026-03-14T14:48:51Z — task-created [task-create-agent]

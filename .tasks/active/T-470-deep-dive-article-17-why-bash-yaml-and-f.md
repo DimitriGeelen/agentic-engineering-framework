@@ -55,6 +55,18 @@ grep -q "17" docs/articles/deep-dives/README.md
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:** Article exists and references the right decision IDs (3 mechanical Agent ACs all checked), but the Human AC is a voice/tone match — exactly the [REVIEW] case where the agent should not GO. Same shape as T-446. Article needs a human read before it can be considered complete.
+
+**Evidence:**
+- docs/articles/deep-dives/17-why-bash-yaml-files.md exists
+- References D-002, D-005, D-012, D-013, D-040, AD-004, AD-008, P-006
+- README tracker updated
+- Voice match is the human's call
+
 ## Updates
 
 ### 2026-03-12T20:34:15Z — task-created [task-create-agent]
