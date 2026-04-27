@@ -22,14 +22,15 @@ set -euo pipefail
 LAST_N=""
 RUNTIME_DIR="${TERMLINK_RUNTIME_DIR:-/var/lib/termlink}"
 GATE_PCT="1.0"
+JSON_OUT="0"
 
 usage() {
     cat <<EOF
 fw metrics api-usage — T-1166 entry-gate telemetry (with incremental trend)
 
 Usage:
-  fw metrics api-usage [--runtime-dir PATH] [--gate-pct N]
-  fw metrics api-usage --last-Nd N [--runtime-dir PATH] [--gate-pct N]
+  fw metrics api-usage [--runtime-dir PATH] [--gate-pct N] [--json]
+  fw metrics api-usage --last-Nd N [--runtime-dir PATH] [--gate-pct N] [--json]
 
 Options:
   --last-Nd N          Window in days. If omitted, prints trend across
@@ -37,6 +38,8 @@ Options:
   --runtime-dir PATH   Hub runtime directory (default: \$TERMLINK_RUNTIME_DIR or /var/lib/termlink)
   --gate-pct N         Threshold % below which legacy traffic passes the
                        T-1166 entry gate (default: 1.0)
+  --json               Emit structured JSON to stdout (T-1312). Stable shape
+                       for dashboards, watchtower pages, cron aggregators.
   -h, --help           This message
 
 Reads:  <runtime_dir>/rpc-audit.jsonl
@@ -53,6 +56,7 @@ while [ $# -gt 0 ]; do
         --last-Nd) LAST_N="$2"; shift 2 ;;
         --runtime-dir) RUNTIME_DIR="$2"; shift 2 ;;
         --gate-pct) GATE_PCT="$2"; shift 2 ;;
+        --json) JSON_OUT="1"; shift ;;
         -h|--help) usage; exit 0 ;;
         *) echo "Unknown arg: $1" >&2; usage >&2; exit 2 ;;
     esac
@@ -61,16 +65,22 @@ done
 AUDIT_FILE="$RUNTIME_DIR/rpc-audit.jsonl"
 
 if [ ! -f "$AUDIT_FILE" ]; then
-    echo "ERROR: audit file not found: $AUDIT_FILE" >&2
-    echo "  Hub may not have started since T-1304 deployed, or runtime_dir is wrong." >&2
+    if [ "$JSON_OUT" = "1" ]; then
+        # T-1312: JSON-mode error envelope on stdout.
+        printf '{"error":"audit file not found","audit_file":"%s"}\n' "$AUDIT_FILE"
+    else
+        echo "ERROR: audit file not found: $AUDIT_FILE" >&2
+        echo "  Hub may not have started since T-1304 deployed, or runtime_dir is wrong." >&2
+    fi
     exit 1
 fi
 
-python3 - "$AUDIT_FILE" "$LAST_N" "$GATE_PCT" <<'PY'
+python3 - "$AUDIT_FILE" "$LAST_N" "$GATE_PCT" "$JSON_OUT" <<'PY'
 import sys, json, time
 from collections import Counter
 
 audit_path, last_n_s, gate_pct_s = sys.argv[1], sys.argv[2], float(sys.argv[3])
+json_out = (sys.argv[4] == "1") if len(sys.argv) > 4 else False
 
 LEGACY = {
     "event.broadcast",
@@ -126,6 +136,82 @@ def stats_for_window(days: int):
             legacy_total += 1
             legacy_callers[(method, from_ or UNKNOWN)] += 1
     return counts, total, legacy_total, legacy_callers
+
+def build_top_methods(counts, total):
+    """T-1312: shared helper for top-10 methods JSON shape."""
+    out = []
+    for method, count in counts.most_common(10):
+        pct = (count / total) * 100 if total else 0.0
+        out.append({
+            "method": method,
+            "count": count,
+            "pct": round(pct, 2),
+            "is_legacy": is_legacy(method),
+        })
+    return out
+
+def build_legacy_callers(legacy_callers):
+    """T-1312: shared helper for legacy callers JSON shape."""
+    return [
+        {"method": method, "from": from_, "count": count}
+        for (method, from_), count in legacy_callers.most_common(15)
+    ]
+
+# T-1312: JSON output path. Stable shape — see docs/operations/api-usage-metrics.md.
+if json_out:
+    if last_n_s == "":
+        # Trend mode JSON
+        windows_out = []
+        gate_passing = True
+        for d in [1, 7, 30, 60]:
+            _, total, legacy_total, _ = stats_for_window(d)
+            pct = (legacy_total / total) * 100 if total else 0.0
+            passing = (pct <= gate_pct_s) if total > 0 else True
+            windows_out.append({
+                "days": d,
+                "total": total,
+                "legacy": legacy_total,
+                "legacy_pct": round(pct, 4),
+                "passing": passing,
+            })
+            if d == 60:
+                gate_passing = passing if total > 0 else True
+        counts_60, total_60, _, legacy_callers_60 = stats_for_window(60)
+        out = {
+            "audit_file": audit_path,
+            "mode": "trend",
+            "gate_pct": gate_pct_s,
+            "malformed_lines": malformed,
+            "windows": windows_out,
+            "top_methods": build_top_methods(counts_60, total_60),
+            "legacy_callers": build_legacy_callers(legacy_callers_60),
+            "gate": {"window_days": 60, "passing": gate_passing},
+        }
+        print(json.dumps(out))
+        sys.exit(0 if gate_passing else 1)
+    else:
+        last_n = int(last_n_s)
+        counts, total, legacy_total, legacy_callers = stats_for_window(last_n)
+        pct = (legacy_total / total) * 100 if total else 0.0
+        passing = (pct <= gate_pct_s) if total > 0 else True
+        out = {
+            "audit_file": audit_path,
+            "mode": "single-window",
+            "gate_pct": gate_pct_s,
+            "malformed_lines": malformed,
+            "windows": [{
+                "days": last_n,
+                "total": total,
+                "legacy": legacy_total,
+                "legacy_pct": round(pct, 4),
+                "passing": passing,
+            }],
+            "top_methods": build_top_methods(counts, total),
+            "legacy_callers": build_legacy_callers(legacy_callers),
+            "gate": {"window_days": last_n, "passing": passing},
+        }
+        print(json.dumps(out))
+        sys.exit(0 if passing else 1)
 
 print(f"== fw metrics api-usage ==")
 print(f"  Audit file: {audit_path}")
