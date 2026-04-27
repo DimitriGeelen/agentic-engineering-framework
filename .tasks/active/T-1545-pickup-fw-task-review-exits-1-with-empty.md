@@ -4,15 +4,15 @@ name: "Pickup: fw task review exits 1 with empty stdout/stderr when task body la
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-203. Type: bug-report.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-27T15:08:01Z
-last_update: 2026-04-27T15:08:01Z
+last_update: 2026-04-27T16:29:50Z
 date_finished: null
 source_task_id_in_origin: T-203
 source_project_in_origin: "003-NTB-ATC-Plugin"
@@ -22,40 +22,53 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw task review T-XXX` exits 1 silently (no stdout, no stderr, no marker file) when an inception task has an empty `## Recommendation` section. Reproduced locally: `WATCHTOWER_URL=http://localhost:3000 PROJECT_ROOT=/tmp/repro bin/fw task review T-9999` → EXIT=1, zero output. Root cause: `lib/review.sh:80-81` uses a `sed|grep -v|grep -v|grep -v|grep -v|head` pipeline. On an empty section every `grep -v` filters every line and exits 1; under `set -e -o pipefail` the regular (non-`local`) assignment then aborts `emit_review` before the WARNING echo can fire and before the review marker is created — so the inception-decide gate also stays locked.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/review.sh` no longer uses the fragile pipeline; replaced with `audit_inception_recommendation` (awk-based, pipefail-safe, also handles multi-line HTML-comment placeholders correctly — pickup templates trip the old line-anchored `grep -v '^<!--'` detector).
+- [x] Reproducer (`WATCHTOWER_URL=... PROJECT_ROOT=/tmp/T-1545-repro bin/fw task review T-9999`) exits 0, prints WARNING to stderr, prints URL/QR to stdout, creates `.context/working/.reviewed-T-9999`.
+- [x] Regression test in `tests/unit/review_pipefail.bats` covers: (a) empty Recommendation → WARNING + exit 0; (b) template-only Recommendation → WARNING + exit 0; (c) substantive Recommendation → no WARNING + exit 0.
+- [x] Smoke test: `bin/fw task review T-1538` (substantive Recommendation) and `bin/fw task review T-1544` (template-only) both exit 0; second emits WARNING.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Confirm fix works on a real task
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1545`
+  **Expected:** URL, QR, and "Review marker created" all appear; exit 0
+  **If not:** Inspect `lib/review.sh` — `audit_inception_recommendation` should be called instead of the old sed/grep pipeline
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+bin/fw task review T-1545 >/dev/null 2>&1
+WATCHTOWER_URL=http://localhost:3000 PROJECT_ROOT=/tmp/T-1545-repro bin/fw task review T-9999 2>&1 | grep -q "WARNING: No substantive"
+WATCHTOWER_URL=http://localhost:3000 PROJECT_ROOT=/tmp/T-1545-repro bin/fw task review T-9999 >/dev/null 2>&1
+[ -f /tmp/T-1545-repro/.context/working/.reviewed-T-9999 ]
+bats tests/unit/review_pipefail.bats
+
+## RCA
+
+**Symptom:** `fw task review` exits 1 with empty stdout/stderr on inception tasks lacking a substantive `## Recommendation` section. Human sees no error, no URL, no QR, and the T-973 review marker is never created — so `fw inception decide` also stays locked. Originally reported on consumer 003-NTB-ATC-Plugin T-203.
+
+**Root cause:** `lib/review.sh:80-81` used `sed -n '/^## Recommendation/,/^## /p' | grep -v '^## ' | grep -v '^<!--' | grep -v '^-->' | grep -v '^$' | head -1`. When the section is empty every `grep -v` filters every line and exits 1. `bin/fw` runs under `set -e -o pipefail`, so the pipeline failure propagated through the regular (non-`local`) variable assignment, aborting `emit_review` before the WARNING echo at line 84 (and before the marker write at line 163).
+
+**Why structurally allowed:** A prior fix in the same file (line 139-140, T-1492) hardened an *adjacent* `grep -m1` extractor against this exact pipefail-trap class — but the line-79 detector predated that fix and was never re-audited even though it has the identical shape. Worse: T-1497 added the awk-based `audit_inception_recommendation` to `lib/task-audit.sh` specifically because line-anchored `grep -v '^<!--'` doesn't recognise multi-line HTML-comment placeholders (template skeletons trip it), but `fw task review` was never retrofitted to call it. So the framework shipped a correct detector and a buggy detector side-by-side, and the buggy one was on the human-visible path.
+
+**Prevention:** (1) Replace fragile pipeline with the awk-based audit helper (this fix). (2) Add regression bats covering empty / template-only / substantive Recommendation cases so any future re-introduction of the pattern fails the suite immediately. (3) Pattern noted: any `grep -v | grep -v | head -1` chain inside `set -e -o pipefail` scope is suspect — should be reviewed across remaining lib/*.sh in a follow-up sweep.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Bug reproduced from a clean test fixture (`PROJECT_ROOT=/tmp/T-1545-repro` + `WATCHTOWER_URL=…` + empty Recommendation → exit 1, zero output, no marker). Root cause traced to a `sed|grep -v|grep -v|grep -v|grep -v|head` pipeline that exits non-zero when every filter eats every line, which under `set -e -o pipefail` aborts `emit_review` mid-flight. Fix delegates to the existing awk-based `audit_inception_recommendation` helper (added in T-1497, never wired into this path). 4 regression bats added covering empty / template-only / substantive / silent-failure invariants. All 33 review-arc tests green (6 RCA + 4 pipefail + 23 markdown). Smoke tests on real tasks (T-1538 substantive, T-1544 template-only) confirm both behaviors render correctly.
+
+**Evidence:**
+- `lib/review.sh:77-101` — old fragile pipeline replaced with `audit_inception_recommendation` call
+- `tests/unit/review_pipefail.bats` — 4 new regression cases, 4/4 green
+- Smoke: `bin/fw task review T-1538` (substantive) → no warning; `bin/fw task review T-1544` (template-only) → warning + full surface; both exit 0
+- Cross-arc check: `tests/unit/rca_gate.bats` 6/6, `tests/unit/test_review_markdown_render.py` 23/23 — no regressions in adjacent T-1550/T-1551/T-1552/T-1553 surfaces
+- Pattern noted in RCA → follow-up sweep candidate for `grep -v | grep -v | head -1` chains elsewhere in `lib/*.sh`
 
 ## Decisions
 
@@ -74,3 +87,7 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1545-pickup-fw-task-review-exits-1-with-empty.md
 - **Context:** Initial task creation
+
+### 2026-04-27T16:29:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
