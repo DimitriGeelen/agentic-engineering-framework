@@ -207,7 +207,7 @@ decisions:
     rationale: "Auto-captured from task file on completion"
 
   - id: D-032
-    decision: "Compute verdict in the original file-reading loop (where `content` is already loaded) and stash it in the tasks tuple. Use `\$(.*?)` regex escape to survive bash command substitution."
+    decision: "Compute verdict in the original file-reading loop (where `content` is already loaded) and stash it in the tasks tuple. Use `$(.*?)` regex escape to survive bash command substitution."
     scope: project
     date: 2026-04-27
     task: T-1530

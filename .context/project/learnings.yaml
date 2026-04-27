@@ -2281,3 +2281,12 @@ learnings:
   date: 2026-04-27
   context: Refined via T-1527 codebase audit
   application: TBD
+- id: L-294
+  learning: "Bash unquoted heredoc (`<<EOF` without quoting EOF) command-substitutes $(.*?) inside Python regex strings, silently mangling the regex. Hit in handover.sh while adding extract_recommendation_verdict (T-1530): bash evaluated $(.*?) → empty, so the H2+ terminator regex became broken. Two fixes: (a) quote the delimiter (`<<'EOF'`) but that breaks intentional $VAR substitution, or (b) escape $ in the regex. When you need bash interpolation alongside a regex, use option (b): write the regex with $ escapes so bash leaves it alone. Discoverable via: `bash -c 'cat <<X
+print(repr(r\"$(.*?)\"))
+X'` returning empty group."
+  source: P-002
+  task: T-1530
+  date: 2026-04-27
+  context: Added via context agent
+  application: TBD
