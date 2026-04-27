@@ -85,8 +85,10 @@ def is_legacy(method: str) -> bool:
     return method in LEGACY or method.startswith("file.send.") or method.startswith("file.receive.")
 
 # One pass over the file, bucketing per (largest) window we'll need.
-# We compute (ts_ms, method) tuples and filter per-window in memory — this is
+# We compute (ts_ms, method, from) tuples and filter per-window in memory — this is
 # fine at single-hub scale (millions of lines = tens of MB).
+# T-1309: from is None for entries written before T-1309 (or by callers that
+# didn't supply the field). Surfaces as "(unknown)" in the breakdown.
 now_ms = time.time() * 1000
 entries = []
 malformed = 0
@@ -102,23 +104,28 @@ with open(audit_path, "r") as f:
             if ts is None or method is None:
                 malformed += 1
                 continue
-            entries.append((ts, method))
+            from_ = entry.get("from")
+            entries.append((ts, method, from_))
         except json.JSONDecodeError:
             malformed += 1
+
+UNKNOWN = "(unknown)"
 
 def stats_for_window(days: int):
     cutoff = now_ms - days * 86400 * 1000
     counts = Counter()
+    legacy_callers = Counter()  # (method, from) -> count
     total = 0
     legacy_total = 0
-    for ts, method in entries:
+    for ts, method, from_ in entries:
         if ts < cutoff:
             continue
         counts[method] += 1
         total += 1
         if is_legacy(method):
             legacy_total += 1
-    return counts, total, legacy_total
+            legacy_callers[(method, from_ or UNKNOWN)] += 1
+    return counts, total, legacy_total, legacy_callers
 
 print(f"== fw metrics api-usage ==")
 print(f"  Audit file: {audit_path}")
@@ -135,7 +142,7 @@ if last_n_s == "":
     final_pass = True
     final_total = 0
     for d in windows:
-        _, total, legacy_total = stats_for_window(d)
+        _, total, legacy_total, _ = stats_for_window(d)
         if total == 0:
             print(f"  {d:>5d}d    {total:>8d}  {legacy_total:>8d}  {'  N/A':>9s}  --")
             continue
@@ -150,7 +157,7 @@ if last_n_s == "":
             final_legacy = legacy_total
 
     # Top-10 methods using the 60d window (canonical T-1166 gate window)
-    counts_60, total_60, legacy_60 = stats_for_window(60)
+    counts_60, total_60, legacy_60, legacy_callers_60 = stats_for_window(60)
     print()
     if total_60 > 0:
         print(f"  Top 10 methods (last 60d):")
@@ -158,6 +165,14 @@ if last_n_s == "":
             pct = (count / total_60) * 100
             marker = " ←legacy" if is_legacy(method) else ""
             print(f"    {count:>8d}  {pct:5.1f}%  {method}{marker}")
+
+    # T-1309: who is calling legacy primitives? Operators driving T-1166 use
+    # this to know which session to migrate next.
+    if legacy_callers_60:
+        print()
+        print(f"  Legacy callers (last 60d):")
+        for (method, from_), count in legacy_callers_60.most_common(15):
+            print(f"    {count:>8d}  {method:<20s}  {from_}")
 
     print()
     print(f"  Gate threshold: {gate_pct_s:.2f}% (over 60-day window — T-1166)")
@@ -173,7 +188,7 @@ if last_n_s == "":
 
 # Single-window mode: original CI-gate behavior.
 last_n = int(last_n_s)
-counts, total, legacy_total = stats_for_window(last_n)
+counts, total, legacy_total, legacy_callers = stats_for_window(last_n)
 print(f"  Window:     last {last_n} days")
 print(f"  Total RPCs: {total}")
 print()
@@ -188,6 +203,15 @@ for method, count in counts.most_common(10):
     print(f"    {count:>8d}  {pct:5.1f}%  {method}")
 print()
 
+# T-1309: legacy caller breakdown (always shown when any legacy traffic
+# exists in window, not just on FAIL — operators want this for tracking
+# steady downward progress, not only when the gate trips).
+if legacy_callers:
+    print(f"  Legacy callers (last {last_n}d):")
+    for (method, from_), count in legacy_callers.most_common(15):
+        print(f"    {count:>8d}  {method:<20s}  {from_}")
+    print()
+
 legacy_pct = (legacy_total / total) * 100 if total > 0 else 0.0
 gate_pass = legacy_pct <= gate_pct_s
 
@@ -198,13 +222,7 @@ print(f"  Gate threshold:    {gate_pct_s:.2f}%  →  {status}")
 if not gate_pass:
     print()
     print(f"  Legacy traffic exceeds T-1166 entry threshold.")
-    print(f"  Hunt down the remaining callers before retiring legacy primitives.")
-    print()
-    print(f"  Live callers in window:")
-    for m in sorted(LEGACY):
-        c = counts.get(m, 0)
-        if c > 0:
-            print(f"    {c:>8d}  {m}")
+    print(f"  Hunt down the remaining callers — see breakdown above.")
     sys.exit(1)
 
 sys.exit(0)
