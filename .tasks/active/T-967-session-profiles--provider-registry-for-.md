@@ -99,3 +99,19 @@ grep -q '/api/sessions' web/blueprints/terminal.py
 ### 2026-04-28T17:35:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0f2f352d
+- **Timestamp:** 2026-04-28T18:13:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `web/terminal/adapters/local_shell.py` — `LocalShellAdapter` using pty.fork (migrated from `web/terminal.py`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/terminal.py in: `web/terminal/adapters/local_shell.py` — `LocalShellAdapter` using pty.fork (migrated from `web/terminal.py`)`
+- **AC#9 (Agent)** — `web/terminal.py` refactored to use `LocalShellAdapter` instead of direct pty calls
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/terminal.py in: `web/terminal.py` refactored to use `LocalShellAdapter` instead of direct pty calls`

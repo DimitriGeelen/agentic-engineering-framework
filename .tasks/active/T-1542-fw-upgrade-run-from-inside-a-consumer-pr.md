@@ -106,3 +106,17 @@ bin/fw upgrade --help >/dev/null
 - `tests/unit/test_upgrade_self_target_guard.bats`: 4/4 pass — fail-fast + paths reported + zero-mutation md5 check + normal-path no-false-positive
 - `tests/unit/lib_upgrade.bats`: 12/12 still pass (no regression)
 - `bin/fw upgrade --help` still works (existing verification command)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-8c6abf6c
+- **Timestamp:** 2026-04-28T18:13:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 8
+     - evidence: `bin/fw upgrade --help >/dev/null`
