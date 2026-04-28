@@ -144,6 +144,11 @@ def review(task_id):
     rec_rationale_html = render_markdown_safe(rec["rationale"])
     rec_evidence_html = render_markdown_safe(rec["evidence"])
 
+    # T-1575: detect already-recorded decision so we don't re-prompt the human.
+    from web.blueprints.inception import _extract_decision
+    decision_state = _extract_decision(body)
+    decision_recorded = decision_state.lower() not in ("pending", "")
+
     return render_template(
         "review.html",
         task_id=task_id,
@@ -158,8 +163,10 @@ def review(task_id):
         verdict=rec["verdict"],
         rec_rationale_html=rec_rationale_html,
         rec_evidence_html=rec_evidence_html,
-        rec_rationale_text=rec["rationale"],  # T-1575: pre-fill the Record Decision textarea
+        rec_rationale_text=rec["rationale"],
         rec_complete=rec_complete,
+        decision_recorded=decision_recorded,
+        decision_value=decision_state,
         pending_tier0=active_tier0,
         artifacts=artifacts,
     )
@@ -191,6 +198,14 @@ def review_acs_fragment(task_id):
     from web.shared import extract_recommendation
     rec = extract_recommendation(body)
 
+    # T-1575: don't re-render the decide form after a decision was recorded.
+    # The page polls /review/<id>/acs every 5s; without this guard, the success
+    # message ("Decision recorded — GO") flashes for 5s then gets wiped by the
+    # poll re-rendering the form. Detect recorded decisions and surface them.
+    from web.blueprints.inception import _extract_decision
+    decision_state = _extract_decision(body)
+    decision_recorded = decision_state.lower() not in ("pending", "")
+
     return render_template(
         "_review_acs.html",
         task_id=task_id,
@@ -201,4 +216,6 @@ def review_acs_fragment(task_id):
         all_checked=all_checked,
         verdict=rec["verdict"],
         rec_rationale_text=rec["rationale"],
+        decision_recorded=decision_recorded,
+        decision_value=decision_state,
     )

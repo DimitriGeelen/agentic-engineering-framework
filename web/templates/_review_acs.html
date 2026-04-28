@@ -59,7 +59,20 @@
      fw task update --status work-completed. The generic Complete button used
      to fail silently for inceptions because /api/task/<id>/complete returned
      500 (auto-tick-on-decide ACs unchecked) and htmx ignores non-200. -->
-{% if all_checked and total_count > 0 %}
+{% if decision_recorded %}
+{# T-1575: decision already recorded — surface it instead of re-prompting.
+   Without this, the 5-second htmx poll on #ac-container wipes the success
+   message and re-renders the GO/NO-GO/DEFER form, making it look like the
+   decision didn't take. #}
+<div class="decide-section" id="inception-decide-form">
+    {% set _dec_upper = (decision_value or '')|upper %}
+    {% set _dec_color = '#10b981' if _dec_upper == 'GO' else ('#ef4444' if _dec_upper in ('NO-GO', 'NO_GO') else '#6b7280') %}
+    <div style="border-left: 4px solid {{ _dec_color }}; padding: 0.75rem 1rem; background: rgba(0,0,0,0.02); border-radius: 4px;">
+        <strong>Decision recorded:</strong>
+        <span style="color: {{ _dec_color }}; font-weight: 700;">{{ _dec_upper }}</span>
+    </div>
+</div>
+{% elif all_checked and total_count > 0 %}
 {% if workflow_type == 'inception' %}
 <div class="decide-section" id="inception-decide-form">
     <h3>Record Decision</h3>
