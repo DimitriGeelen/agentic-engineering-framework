@@ -10,6 +10,7 @@ from flask import Blueprint, abort, request
 from web.shared import (
     FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter,
     get_all_task_metadata, get_episodic_tags, task_id_sort_key,
+    extract_recommendation, extract_reviewer_verdict, render_markdown_safe,
 )
 from web.subprocess_utils import run_fw_command
 
@@ -599,6 +600,16 @@ def task_detail(task_id):
         all_checked = all(ac["checked"] for ac in ac_items)
         can_complete = all_checked
 
+    # T-1584: Surface Recommendation + Reviewer Verdict cards (cross-surface parity
+    # with /review T-1575/T-1583 and /approvals T-1531/T-1569). Same drift class as
+    # L-316 — three surfaces consume task body, /tasks was the missed third.
+    rec = extract_recommendation(task_content)
+    reviewer = extract_reviewer_verdict(task_content)
+    rec_complete = rec["verdict"] != "?" and bool(rec["rationale"].strip())
+    rec_state = "NO-REC" if not rec["raw"].strip() else rec["verdict"]
+    rec_rationale_html = render_markdown_safe(rec["rationale"])
+    rec_evidence_html = render_markdown_safe(rec["evidence"])
+
     return render_page(
         "task_detail.html",
         page_title=f"Task {task_id}",
@@ -610,6 +621,12 @@ def task_detail(task_id):
         ac_items=ac_items,
         artifacts=artifacts,
         can_complete=can_complete,
+        verdict=rec["verdict"],
+        rec_state=rec_state,
+        rec_complete=rec_complete,
+        rec_rationale_html=rec_rationale_html,
+        rec_evidence_html=rec_evidence_html,
+        reviewer=reviewer,
     )
 
 
