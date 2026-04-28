@@ -2451,3 +2451,10 @@ X'` returning empty group."
   date: 2026-04-28
   context: Added via context agent
   application: TBD
+- id: L-317
+  learning: "Cross-surface structural-feature parity drift (broader than L-316): when N surfaces (≥3) consume the same body content and a new structural feature is added (Recommendation cards, Reviewer Verdict cards, htmx error handlers, ...), per-surface fixes ship one-at-a-time as drift is discovered — typically 3-4 fix-once-per-surface tasks before the drift class is closed. Origin arc: T-1531/T-1569 → T-1575/T-1583 → T-1584 → T-1585 (4 surfaces, 4 fix tasks for Recommendation+Reviewer Verdict cards). Prevention: ship a Playwright invariant test pinning all surfaces (T-1586 model — assertions match opening <section class=\"...\" tag, not bare class=\"...\", to avoid CSS-rule false positives). Trigger: any time you add a structural feature (extract helper + render block) to one surface and the body has ≥3 consumers, write the multi-surface test BEFORE the second surface fix lands."
+  source: P-001
+  task: T-1586
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
