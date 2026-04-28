@@ -195,6 +195,25 @@ def test_decorated_evidence_labels_dont_leak_into_rationale():
     assert "L-309" not in out["evidence"]
 
 
+def test_render_markdown_safe_makes_backticked_urls_clickable():
+    """T-1575 codification: any URL anywhere in rendered task content is
+    clickable, regardless of whether the agent wrote it bare, in a [md](link),
+    or wrapped in `backticks`. The rendering layer is the contract — agent
+    need not remember to avoid backticks around URLs.
+
+    Example: Step 1 of T-1574 was written as `Open \\`http://...\\`` which
+    renders as <code>http://...</code> — without this codification, that's
+    not clickable, and the human has to copy-paste the URL into the address
+    bar to act on the AC."""
+    from web.shared import render_markdown_safe
+    out = render_markdown_safe("Open `http://192.168.10.107:3000/review/T-1565` in the browser.")
+    assert '<a href="http://192.168.10.107:3000/review/T-1565">' in out
+    assert "<code>http://192.168.10.107:3000/review/T-1565</code>" in out
+    # Bare URLs also clickable
+    out2 = render_markdown_safe("Open http://example.com here.")
+    assert '<a href="http://example.com">' in out2
+
+
 def test_real_t1565_file_renders_cleanly():
     """End-to-end: read the actual T-1565 task file and verify the rationale
     block contains ONLY the rationale paragraph (not evidence text), and the

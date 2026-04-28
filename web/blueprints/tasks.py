@@ -210,6 +210,26 @@ def _auto_link_bare_urls(text):
     return _walk_skipping_existing_links(text, replacer)
 
 
+# T-1575 codification: any URL inside a `<code>` block (because the agent
+# wrapped it in backticks) must still be clickable. Post-process the rendered
+# HTML to wrap `<code>http(s)://...</code>` in an anchor while preserving the
+# code-span styling. This guarantees URLs are clickable regardless of how the
+# agent wrote them — the rendering layer is the contract, not agent discipline.
+_CODE_URL_HTML_RE = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
+
+
+def _linkify_code_urls(html):
+    """Wrap <code>http(s)://...</code> in an anchor so backticked URLs in AC
+    Steps are clickable. Idempotent (won't double-wrap because we only match
+    the bare <code>...</code> shape, not <a>...<code>...</code>...</a>)."""
+    if not html or "<code>" not in html:
+        return html
+    return _CODE_URL_HTML_RE.sub(
+        lambda m: f'<a href="{m.group(1)}"><code>{m.group(1)}</code></a>',
+        html,
+    )
+
+
 def _render_md_inline(text):
     """Render text as Markdown HTML for inline display (T-1551).
     Strips <p> wrapper for use inside <li> contexts. safe_mode='escape'
@@ -225,7 +245,7 @@ def _render_md_inline(text):
     html = markdown2.markdown(text, safe_mode='escape').strip()
     if html.startswith('<p>') and html.endswith('</p>'):
         html = html[3:-4]
-    return html
+    return _linkify_code_urls(html)
 
 
 def _render_md_block(text):
@@ -237,7 +257,8 @@ def _render_md_block(text):
     text = _auto_link_task_refs(text)
     text = _auto_link_bare_urls(text)
     text = _normalize_md_relative_links(text)
-    return markdown2.markdown(text, safe_mode='escape').strip()
+    html = markdown2.markdown(text, safe_mode='escape').strip()
+    return _linkify_code_urls(html)
 
 
 def _parse_ac_body(body):

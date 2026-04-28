@@ -643,6 +643,8 @@ Optionally prefix the criterion with a confidence marker:
 
 If a human AC cannot be made specific (e.g., "code quality is acceptable"), replace it with a measurable proxy or remove it. Vague ACs that nobody acts on are worse than no AC.
 
+**Rendered-content guarantees (T-1575):** the framework's Markdown renderer (`web/blueprints/tasks.py:_render_md_inline` / `_render_md_block`, `web/shared.py:render_markdown_safe`) emits clickable anchors for *every* URL — bare, in `[md](url)` syntax, OR wrapped in `\`backticks\``. Rule: **any URL appearing in rendered task content (AC Steps, Expected, If-not, Recommendation, Rationale, Evidence) is clickable, regardless of how the agent wrote it.** This is the rendering contract — agent need not remember to avoid backticks around URLs. Pinned by `tests/unit/test_extract_recommendation.py:test_render_markdown_safe_makes_backticked_urls_clickable`. Same guarantee applies to bare `T-NNNN` references → `/tasks/T-NNNN`.
+
 ### Verification Before Completion
 Before setting any task to `work-completed`:
 1. Run all commands in the task's `## Verification` section

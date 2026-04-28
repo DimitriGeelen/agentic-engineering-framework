@@ -254,7 +254,8 @@ def parse_frontmatter(content):
 
 
 _TASK_REF_RE_SHARED = re_mod.compile(r"(?<![\w/-])(T-\d{3,5})(?![\w/-])")
-_BARE_URL_RE_SHARED = re_mod.compile(r"(?<![\(\[\"'])(https?://[^\s<>'\"`)\]]+)")
+_BARE_URL_RE_SHARED = re_mod.compile(r"(?<![\(\[\"'`])(https?://[^\s<>'\"`)\]]+)")
+_CODE_URL_HTML_RE_SHARED = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
 
 
 def render_markdown_safe(text: str) -> str:
@@ -278,7 +279,15 @@ def render_markdown_safe(text: str) -> str:
         return text  # graceful degradation
     text = _TASK_REF_RE_SHARED.sub(r"[\1](/tasks/\1)", text)
     text = _BARE_URL_RE_SHARED.sub(lambda m: f"[{m.group(1).rstrip('.,;:!?')}]({m.group(1).rstrip('.,;:!?')})", text)
-    return markdown2.markdown(text, safe_mode="escape").strip()
+    html = markdown2.markdown(text, safe_mode="escape").strip()
+    # T-1575 codification: backticked URLs (`<code>http://...</code>`) are also
+    # clickable. Rendering layer is the contract — agent need not remember to
+    # avoid backticks around URLs.
+    html = _CODE_URL_HTML_RE_SHARED.sub(
+        lambda m: f'<a href="{m.group(1)}"><code>{m.group(1)}</code></a>',
+        html,
+    )
+    return html
 
 
 _REC_MARKER_RE = re_mod.compile(
