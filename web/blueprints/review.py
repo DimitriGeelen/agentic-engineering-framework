@@ -72,28 +72,10 @@ def _load_pending_approvals():
     return results
 
 
-def _parse_recommendation(body_text):
-    """Extract the ## Recommendation section content (T-1195).
-
-    Returns stripped content between `## Recommendation` and the next `## ` header.
-    HTML comments (template boilerplate) are removed. Empty/whitespace-only returns "".
-    """
-    lines = body_text.split("\n")
-    in_section = False
-    collected = []
-    for line in lines:
-        stripped = line.strip()
-        if stripped == "## Recommendation":
-            in_section = True
-            continue
-        if in_section and line.startswith("## "):
-            break
-        if in_section:
-            collected.append(line)
-    content = "\n".join(collected)
-    # Strip HTML comments (template placeholders)
-    content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
-    return content.strip()
+# T-1575: _parse_recommendation removed — see web.shared.extract_recommendation
+# (returns structured {verdict, rationale, evidence, raw} dict). Three parsers
+# drifted apart and /review surface ended up dumping `raw` into a `<pre>` block,
+# showing literal markdown to humans. Now unified.
 
 
 def _find_research_artifacts(task_id):
@@ -154,12 +136,13 @@ def review(task_id):
     active_tier0 = [a for a in pending_tier0 if a.get("status") == "pending"]
 
     artifacts = _find_research_artifacts(task_id)
-    recommendation = _parse_recommendation(body)  # T-1195
-    # T-1539 (blind-reviewer finding): block colour was hardcoded amber regardless
-    # of verdict — confusing for GO/NO-GO. Surface the normalized verdict so the
-    # template can apply per-verdict styling (green=GO, amber=DEFER, red=NO-GO).
-    from web.shared import extract_recommendation_verdict
-    verdict = extract_recommendation_verdict(body)
+    # T-1575: structured extraction (verdict, rationale, evidence) — replaces
+    # the verdict-only path + raw-pre-dump that ate the markdown formatting.
+    from web.shared import extract_recommendation, render_markdown_safe
+    rec = extract_recommendation(body)
+    rec_complete = rec["verdict"] != "?" and bool(rec["rationale"].strip())
+    rec_rationale_html = render_markdown_safe(rec["rationale"])
+    rec_evidence_html = render_markdown_safe(rec["evidence"])
 
     return render_template(
         "review.html",
@@ -172,10 +155,12 @@ def review(task_id):
         checked_count=checked_count,
         total_count=total_count,
         all_checked=all_checked,
-        verdict=verdict,
+        verdict=rec["verdict"],
+        rec_rationale_html=rec_rationale_html,
+        rec_evidence_html=rec_evidence_html,
+        rec_complete=rec_complete,
         pending_tier0=active_tier0,
         artifacts=artifacts,
-        recommendation=recommendation,
     )
 
 

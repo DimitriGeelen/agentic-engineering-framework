@@ -253,25 +253,93 @@ def parse_frontmatter(content):
     return fm, fm_match.group(2)
 
 
-def extract_recommendation_verdict(body: str) -> str:
-    """Extract GO/DEFER/NO-GO verdict from a task body's ## Recommendation section.
+_TASK_REF_RE_SHARED = re_mod.compile(r"(?<![\w/-])(T-\d{3,5})(?![\w/-])")
+_BARE_URL_RE_SHARED = re_mod.compile(r"(?<![\(\[\"'])(https?://[^\s<>'\"`)\]]+)")
+
+
+def render_markdown_safe(text: str) -> str:
+    """Render Markdown to HTML with safe_mode='escape', auto-link T-XXX refs
+    and bare http(s) URLs.
+
+    Used by /review and any blueprint that needs to render an arbitrary chunk
+    of task-body markdown (rationale, evidence, etc.) without piping through
+    tasks.py's AC-specific helpers. Returns '' for empty input. Caller must
+    mark returned string `| safe` in templates.
+
+    Origin: T-1575 — /review surface dumped raw markdown into a `<pre>` block.
+    Promoted here (rather than reused from tasks.py) to break the blueprint-
+    private parser pattern called out in the T-1575 RCA.
+    """
+    if not text:
+        return ""
+    try:
+        import markdown2
+    except ImportError:
+        return text  # graceful degradation
+    text = _TASK_REF_RE_SHARED.sub(r"[\1](/tasks/\1)", text)
+    text = _BARE_URL_RE_SHARED.sub(lambda m: f"[{m.group(1).rstrip('.,;:!?')}]({m.group(1).rstrip('.,;:!?')})", text)
+    return markdown2.markdown(text, safe_mode="escape").strip()
+
+
+def extract_recommendation(body: str) -> dict:
+    """Extract structured fields from a task body's ## Recommendation section.
+
+    Returns dict with `verdict` (GO/NO-GO/DEFER/'?'), `rationale` (str — the
+    body of **Rationale:** up to the next top-level marker), `evidence` (str —
+    the body of **Evidence:** up to the next top-level marker, including any
+    trailing learning/captured notes), and `raw` (str — the full section text
+    after stripping HTML comments). Empty strings when a field is absent.
 
     Uses H2+ terminator (L-293) so appended Updates entries don't pollute the
-    keyword check. Returns '?' when missing or unparseable so callers never crash.
+    extraction. All keys always present.
 
-    Origin: T-1533 — third call site (handover.sh, approvals.py, cockpit.py)
-    triggered the factor-out per the framework's "no premature abstraction" rule.
+    Origin: T-1575 — consolidates three parsers (shared.py:extract_recommendation_verdict,
+    inception.py:_extract_rationale_from_recommendation, review.py:_parse_recommendation)
+    that drifted apart. /review showed raw markdown (literal `**Rationale:**`)
+    because it dumped `raw` into a `<pre>` instead of using the structured fields.
     """
+    out = {"verdict": "?", "rationale": "", "evidence": "", "raw": ""}
     if not body:
-        return "?"
+        return out
     m = re_mod.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)",
                       body, re_mod.MULTILINE | re_mod.DOTALL)
     if not m:
-        return "?"
-    section = re_mod.sub(r"<!--.*?-->", "", m.group(1), flags=re_mod.DOTALL)
+        return out
+    section = re_mod.sub(r"<!--.*?-->", "", m.group(1), flags=re_mod.DOTALL).strip()
+    out["raw"] = section
+
     v = re_mod.search(r"\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b",
                       section, re_mod.IGNORECASE)
-    return v.group(1).upper() if v else "?"
+    if v:
+        out["verdict"] = v.group(1).upper()
+
+    plain = re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", section)
+    rat_m = re_mod.search(
+        r"(?ms)^Rationale:\s*(.*?)(?=^(?:Evidence|Recommendation|Build|Reversibility|Alternative|See|Captured learning|Once human verifies):|\Z)",
+        plain,
+    )
+    if rat_m:
+        out["rationale"] = rat_m.group(1).strip()
+
+    ev_m = re_mod.search(
+        r"(?ms)^Evidence(?:\s*[—\-:][^\n]*)?:?\s*\n(.*?)(?=^(?:Rationale|Recommendation|Build|Reversibility|Alternative|See):|\Z)",
+        plain,
+    )
+    if ev_m:
+        out["evidence"] = ev_m.group(1).strip()
+
+    return out
+
+
+def extract_recommendation_verdict(body: str) -> str:
+    """Compatibility shim — see extract_recommendation. Returns just the verdict
+    string ('GO'/'NO-GO'/'DEFER'/'?'). Kept for handover.sh and existing call
+    sites. New code should call extract_recommendation() directly.
+
+    Origin: T-1533 — third call site triggered the factor-out per the framework's
+    "no premature abstraction" rule. T-1575 consolidated to extract_recommendation.
+    """
+    return extract_recommendation(body)["verdict"]
 
 
 def extract_reviewer_verdict(body: str) -> dict:

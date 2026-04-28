@@ -25,56 +25,34 @@ def _md(text):
     return Markup(html)
 
 
+# T-1575: rationale/stance extraction consolidated into web.shared.extract_recommendation.
+# These shims accept the section body (already extracted by _extract_section) — the canonical
+# helper expects a full task body, so we wrap with a synthetic `## Recommendation` header.
+# Fallback (return body when no `**Rationale:**` marker) preserves T-1390 free-form behavior.
+
 def _extract_rationale_from_recommendation(rec_body):
-    """T-1390 (F4 fix): Extract only the rationale body from a structured
-    ## Recommendation block, not the whole section.
-
-    The structured format is:
-        **Recommendation:** GO / NO-GO / DEFER
-        **Rationale:** <text that may span paragraphs>
-        **Evidence:**
-        - bullet 1
-        - bullet 2
-
-    Without this filter, pre-filling the decision textarea with the whole
-    block produced rationale values like "Recommendation: GO\\n\\nRationale:
-    ... Evidence: - ..." — the human's recorded decision then contained the
-    self-referential prefix plus full evidence bullets (observed on T-1284
-    and 60 other decided inceptions, see T-1388 F4).
-
-    Fallback: when no `**Rationale:**` marker exists, return the full body
-    stripped of ** formatting (preserves behavior for free-form recommendations).
-    """
+    """T-1390 / T-1575: rationale body of a `## Recommendation` block. Falls
+    back to the **-stripped raw body when no structured `**Rationale:**` marker
+    exists (preserves free-form recommendation handling)."""
     if not rec_body:
         return ""
-    # Strip **bold** markers first so we work with plain text
-    plain = re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", rec_body).strip()
-    # Look for "Rationale:" marker and slice to next top-level marker
-    m = re_mod.search(r"(?m)^Rationale:\s*(.*?)(?=^(?:Evidence|Recommendation|Build|Reversibility|Alternative|See):|\Z)",
-                      plain, re_mod.DOTALL)
-    if m:
-        return m.group(1).strip()
-    # Fallback — no structured markers
-    return plain
+    from web.shared import extract_recommendation
+    rec = extract_recommendation(f"## Recommendation\n{rec_body}\n\n## End\n")
+    if rec["rationale"]:
+        return rec["rationale"]
+    return re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", rec_body).strip()
 
 
 def _extract_recommendation_stance(rec_body):
-    """T-1391 (F3 fix): Extract the Recommendation stance (GO/NO-GO/DEFER) from
-    the `**Recommendation:**` header line of a structured ## Recommendation
-    section. Returns the stance lowercased ('go', 'no-go', 'defer') or None
-    when the section is unstructured/empty.
-
-    Enables the template to compare agent's recommendation vs human's decision
-    and collapse duplicate UI when the human adopted the recommendation as-is.
-    """
+    """T-1391 / T-1575: stance ('go'/'no-go'/'defer'/None) from `**Recommendation:**`
+    header line. None when section is unstructured/empty."""
     if not rec_body:
         return None
-    plain = re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", rec_body)
-    m = re_mod.search(r"(?mi)^Recommendation:\s*(GO|NO-GO|NO_GO|DEFER)\b", plain)
-    if not m:
+    from web.shared import extract_recommendation
+    rec = extract_recommendation(f"## Recommendation\n{rec_body}\n\n## End\n")
+    if rec["verdict"] == "?":
         return None
-    stance = m.group(1).lower().replace("_", "-")
-    return stance
+    return rec["verdict"].lower()
 
 bp = Blueprint("inception", __name__)
 

@@ -1,0 +1,93 @@
+---
+id: T-1575
+name: "Structural Recommendation rendering — unified extractor returns verdict+rationale+evidence; /review renders structured"
+description: >
+  Structural Recommendation rendering — unified extractor returns verdict+rationale+evidence; /review renders structured
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-28T06:53:04Z
+last_update: 2026-04-28T06:53:04Z
+date_finished: null
+---
+
+# T-1575: Structural Recommendation rendering — unified extractor returns verdict+rationale+evidence; /review renders structured
+
+## Context
+
+The /review/T-XXX page renders the `## Recommendation` section as a `<pre>` block, showing literal markdown (`**Recommendation:** GO`, `**Rationale:** ...`) instead of rendered HTML. User flagged this as a recurring failure ("time-over-time pointed out"). Three call sites parse recommendations with three different shapes — `web/shared.py:extract_recommendation_verdict` (string), `web/blueprints/inception.py:_extract_rationale_from_recommendation` (rationale-only, blueprint-private), `web/blueprints/review.py:_parse_recommendation` (raw dump). Same class as F5 (CLI/web parity, T-1571) but at the parser layer.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `web/shared.py` exposes `extract_recommendation(body) -> {verdict, rationale, evidence, raw}` returning a structured dict (parallel shape to `extract_reviewer_verdict`)
+- [x] `extract_recommendation_verdict` retained as compatibility shim (delegates to new helper) so existing call sites in approvals.py / cockpit.py / handover.sh keep working
+- [x] `web/blueprints/inception.py` uses the unified helper — `_extract_rationale_from_recommendation` and `_extract_recommendation_stance` removed (or 1-line shims) so there's one source of truth
+- [x] `web/blueprints/review.py:_parse_recommendation` removed; /review template renders `verdict`, `rationale` (markdown→HTML), and `evidence` (markdown→HTML) as separate labeled sections
+- [x] When `rationale` is empty/placeholder/missing, /review renders an "Incomplete recommendation" warning instead of a verdict badge
+- [x] Unit tests in `tests/unit/test_extract_recommendation.py` covering: full block, verdict-only, empty section, evidence missing, H2+ terminator regression, real-world T-1565 sample
+- [x] `bin/fw test unit -- tests/unit/test_extract_recommendation.py` passes
+- [x] Live verification: T-1565 review page shows separate Rationale and Evidence sections with rendered markdown
+
+### Human
+- [ ] [REVIEW] T-1565 review page renders the recommendation cleanly — no literal `**` characters visible, evidence bullets rendered as a list, GO badge prominent
+  **Steps:**
+  1. Open the review page: http://192.168.10.107:3000/review/T-1565
+  2. Look at the Recommendation block at the top
+  3. Verify: GO verdict prominent, Rationale labeled section with paragraph (no asterisks visible), Evidence labeled section with formatted bullets
+  **Expected:** Clean structured rendering, not a wall of raw markdown
+  **If not:** Screenshot what you see, note which markers are still raw
+
+## Verification
+
+curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'class="rec-rationale"'
+curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'class="rec-evidence"'
+bin/fw test unit -- tests/unit/test_extract_recommendation.py
+
+## RCA
+
+**Symptom:** /review/T-1565 displays the recommendation as raw markdown (`**Recommendation:** GO`, `**Rationale:** ...`, bullet points as `- text`) inside a `<pre>` block. Reads as "no recommendation, no rationale" to the human even though the data is present.
+
+**Root cause:** Three parsers, three shapes. `web/shared.py:extract_recommendation_verdict` returns only the verdict string. `web/blueprints/inception.py` has `_extract_rationale_from_recommendation` and `_extract_recommendation_stance` (private). `web/blueprints/review.py:_parse_recommendation` is a third implementation that dumps the entire section into `<pre>`. The /review surface uses verdict-only + raw-dump and never reaches for the structured rationale extractor that exists nine modules away.
+
+**Why structurally allowed:** When T-1195 added the recommendation block to /review, the extractor that already existed in inception.py wasn't promoted to shared.py. T-1390 and T-1391 added more structured extractors but left them blueprint-private. Same class as F5 (CLI vs web parity asymmetry, T-1571) and L-293 (multiple section parsers, none consolidated). The framework allowed N parsers with overlapping but inconsistent behaviour to ship.
+
+**Prevention:** Consolidate to one helper in `web/shared.py`. Any future "parse recommendation" need imports from there. Unit tests pin the contract. Removing the duplicates physically deletes alternative paths.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Three parsers consolidated into one `web.shared.extract_recommendation(body) -> {verdict, rationale, evidence, raw}` helper. /review surface now renders structured fields with proper markdown (no more `<pre>` raw-dump showing literal `**` characters). Verdict-without-rationale renders an "incomplete recommendation" warning instead of a green badge — a recommendation without a rationale cannot be acted on. T-XXX refs and bare URLs auto-link in both /review and AC steps.
+
+**Evidence:**
+- `web/shared.py` — `extract_recommendation()` returns `{verdict, rationale, evidence, raw}`; `extract_recommendation_verdict()` retained as compatibility shim. New `render_markdown_safe()` does markdown2 + auto-link T-XXX + auto-link bare URLs.
+- `web/blueprints/review.py` — `_parse_recommendation` removed; route passes structured `rec_rationale_html` / `rec_evidence_html` to template; `rec_complete` flag drives "incomplete" warning rendering.
+- `web/blueprints/inception.py` — `_extract_rationale_from_recommendation` and `_extract_recommendation_stance` consolidated to 3-line shims that delegate to `extract_recommendation` (one source of truth).
+- `web/blueprints/tasks.py` — added `_auto_link_bare_urls` to AC step rendering so URLs in Steps blocks become clickable (closes the original "link in step 1 not clickable" complaint).
+- `web/templates/review.html` — replaced `<pre>{{ recommendation }}</pre>` with structured Rationale/Evidence sections; added `.rec-rationale`, `.rec-evidence`, `.rec-incomplete-warning` styles.
+- `tests/unit/test_extract_recommendation.py` — 10 tests covering full block, verdict-only, empty section, evidence missing, H2+ terminator regression, real-world T-1565 sample, compat shim. All 28 tests across the three extractor suites pass.
+- Live verification: T-1565 review now shows rendered `<p>` rationale + `<ul>` evidence with auto-linked T-XXX refs (T-1567, T-1568, etc. as `<a href="/tasks/T-XXX">`), code spans rendered, bold rendered. T-1575's own Step 1 URL is clickable.
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-28T06:53:04Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1575-structural-recommendation-rendering--uni.md
+- **Context:** Initial task creation

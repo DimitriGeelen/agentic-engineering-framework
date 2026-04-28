@@ -191,6 +191,25 @@ def _auto_link_task_refs(text):
     return _walk_skipping_existing_links(text, replacer)
 
 
+# T-1575: bare URLs in AC steps (e.g. "Open http://192.168.10.107:3000/review/T-1565")
+# rendered as plain text — markdown2's default doesn't auto-link. Without this, the
+# human can't click the link the agent wrote into the Steps. Same _walk_skipping
+# scaffolding so we don't double-wrap already-linked URLs.
+_BARE_URL_RE = re_mod.compile(r"https?://[^\s<>'\"`)\]]+")
+
+
+def _auto_link_bare_urls(text):
+    """Wrap bare http(s) URLs in markdown link syntax so markdown2 emits <a>.
+    Skips inline code and already-linked URLs (T-1575)."""
+    def replacer(s, j):
+        m = _BARE_URL_RE.match(s, j)
+        if m:
+            url = m.group(0).rstrip(".,;:!?")  # strip trailing punctuation
+            return f"[{url}]({url})", len(url)
+        return None, 0
+    return _walk_skipping_existing_links(text, replacer)
+
+
 def _render_md_inline(text):
     """Render text as Markdown HTML for inline display (T-1551).
     Strips <p> wrapper for use inside <li> contexts. safe_mode='escape'
@@ -201,6 +220,7 @@ def _render_md_inline(text):
         return ''
     text = _auto_link_watchtower_paths(text)
     text = _auto_link_task_refs(text)
+    text = _auto_link_bare_urls(text)
     text = _normalize_md_relative_links(text)
     html = markdown2.markdown(text, safe_mode='escape').strip()
     if html.startswith('<p>') and html.endswith('</p>'):
@@ -215,6 +235,7 @@ def _render_md_block(text):
         return ''
     text = _auto_link_watchtower_paths(text)
     text = _auto_link_task_refs(text)
+    text = _auto_link_bare_urls(text)
     text = _normalize_md_relative_links(text)
     return markdown2.markdown(text, safe_mode='escape').strip()
 

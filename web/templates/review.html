@@ -299,6 +299,25 @@
             line-height: 1.4;
             color: #1f2937;
         }
+        /* T-1575: structured rendering — Rationale + Evidence as separate labeled sections */
+        .rec-rationale, .rec-evidence { margin-top: 0.5rem; font-size: 0.92rem; line-height: 1.5; color: #1f2937; }
+        .rec-rationale h4, .rec-evidence h4 {
+            margin: 0 0 0.25rem; font-size: 0.78rem;
+            text-transform: uppercase; letter-spacing: 0.05em; color: #4b5563;
+        }
+        .rec-rationale p, .rec-evidence p { margin: 0 0 0.4rem; }
+        .rec-evidence ul { margin: 0 0 0.4rem; padding-left: 1.25rem; }
+        .rec-evidence li { margin-bottom: 0.2rem; }
+        .rec-rationale a, .rec-evidence a { color: #2563eb; text-decoration: underline; }
+        .rec-rationale code, .rec-evidence code {
+            background: rgba(0,0,0,0.06); padding: 0.05rem 0.3rem; border-radius: 3px;
+            font-size: 0.88rem;
+        }
+        .rec-incomplete-warning {
+            background: #fffbeb; border-left: 4px solid #f59e0b;
+            padding: 0.5rem 0.75rem; margin-top: 0.5rem; border-radius: 4px;
+            font-size: 0.85rem; color: #92400e;
+        }
         .recommendation-empty {
             background: #f3f4f6;
             border: 1px dashed #9ca3af;
@@ -322,12 +341,35 @@
         </div>
     </div>
 
-    <!-- T-1195: Recommendation block — shown above Tier 0 so reviewer sees what they're approving -->
+    <!-- T-1195/T-1575: Recommendation block — structured rendering (verdict + rationale + evidence) -->
     {# T-1539: data-verdict drives per-verdict colour (CSS attribute selectors above) #}
-    {% if recommendation %}
+    {# T-1575: rec_complete=true only when verdict AND rationale present. Verdict-only blocks
+       render the warning instead of the green GO badge — can't claim a recommendation exists
+       if the rationale is missing. #}
+    {% if rec_complete %}
     <section class="recommendation-block" data-verdict="{{ verdict|default('?') }}">
         <h3>Recommendation{% if verdict and verdict != '?' %} — {{ verdict }}{% endif %}</h3>
-        <pre>{{ recommendation }}</pre>
+        {% if rec_rationale_html %}
+        <div class="rec-rationale">
+            <h4>Rationale</h4>
+            {{ rec_rationale_html | safe }}
+        </div>
+        {% endif %}
+        {% if rec_evidence_html %}
+        <div class="rec-evidence">
+            <h4>Evidence</h4>
+            {{ rec_evidence_html | safe }}
+        </div>
+        {% endif %}
+    </section>
+    {% elif verdict and verdict != '?' %}
+    <section class="recommendation-block" data-verdict="{{ verdict }}">
+        <h3>Recommendation{% if verdict %} — {{ verdict }}{% endif %}</h3>
+        <div class="rec-incomplete-warning">
+            ⚠ Verdict recorded as <strong>{{ verdict }}</strong> but the rationale is missing.
+            A recommendation without a rationale cannot be acted on — ask the agent to fill the
+            <code>**Rationale:**</code> line in the <code>## Recommendation</code> section.
+        </div>
     </section>
     {% elif artifacts %}
     <section class="recommendation-empty">
