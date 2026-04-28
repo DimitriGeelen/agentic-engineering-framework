@@ -408,8 +408,27 @@ concerns:
     hint: Review completed gaps — did the resolution address prevention or just mitigation?
   status: watching
   created: 2026-03-09
-  last_reviewed: 2026-03-09
+  last_reviewed: 2026-04-29
   related_task: T-393
+  what_works_now: 'Layer A (T-1550): RCA section gate blocks bug-class --status work-completed
+    when ## RCA is empty/template-only (--skip-rca bypass logged). Layer B (T-1555): daily
+    escalation-drift cron scans completed tasks for H1 (no RCA), H2 (repeat learning IDs
+    across 3+ tasks in 30d), H3 (no RCA AND no learning) and writes machine-readable
+    summary. Recent T-1591 → T-1592 → T-1593 → T-1594 cascade demonstrates the flow
+    end-to-end: symptom (github mirror lag) escalated to RCA (annotated-vs-lightweight
+    SHA mismatch) escalated to structural prevention #1 (fw doctor divergence check),
+    #2 (pre-push hook lightweight-tag rejection), #3 (mirror cascade auto-recovery).
+    Each task carried a real ## RCA section. The T-1550 gate correctly blocked T-1592
+    on first attempt until RCA was filled.
+
+    '
+  what_remains: 'Layer C (operator-side surfacing): drift findings live in
+    .context/working/escalation-drift-LATEST.yaml but are not surfaced in Watchtower.
+    Layer D (real-time prompt): no in-flight nudge before the agent declares completion
+    asking "did you address why the framework allowed this?" — currently only enforced
+    via the post-hoc RCA gate.
+
+    '
 - id: R-018
   type: risk
   title: Invalid YAML data disappears without error
