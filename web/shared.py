@@ -391,6 +391,26 @@ def extract_recommendation_verdict(body: str) -> str:
     return extract_recommendation(body)["verdict"]
 
 
+def extract_recommendation_state(body: str) -> str:
+    """Return review-queue state: 'GO'|'NO-GO'|'DEFER'|'NO-REC'|'?'.
+
+    Distinguishes 'agent owes a recommendation' (NO-REC — no `## Recommendation`
+    section at all, or section is empty/whitespace/HTML-comments-only) from
+    'verdict missing or unparseable' (?). Both look the same to
+    `extract_recommendation_verdict`, so review-queue / handover / /approvals
+    rendered them identically — blending 'not ready for review' with 'agent
+    deferred without saying GO/NO-GO'.
+
+    Origin: T-1576 — parallel to T-1570 (which surfaced the same gap on the
+    inception side of /approvals). Build tasks with all Agent ACs done +
+    Human ACs pending + no Recommendation polluted the queue with bare '?'.
+    """
+    rec = extract_recommendation(body)
+    if not rec["raw"].strip():
+        return "NO-REC"
+    return rec["verdict"]
+
+
 def extract_reviewer_verdict(body: str) -> dict:
     """Extract the reviewer agent's verdict from `## Reviewer Verdict (vX.Y)`.
 

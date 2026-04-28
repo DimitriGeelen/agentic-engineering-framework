@@ -12,7 +12,7 @@ to humans — this helper enables structured rendering instead.
 
 from __future__ import annotations
 
-from web.shared import extract_recommendation, extract_recommendation_verdict
+from web.shared import extract_recommendation, extract_recommendation_state, extract_recommendation_verdict
 
 
 def test_full_block_all_fields():
@@ -249,3 +249,64 @@ def test_real_t1565_file_renders_cleanly():
     assert "L-309" not in out["evidence"], (
         f"evidence leaked captured_learning: {out['evidence'][-300:]}"
     )
+
+
+# ============================================================
+# T-1576: extract_recommendation_state — distinguishes NO-REC from ?
+# ============================================================
+
+
+def test_state_no_section_returns_no_rec():
+    """No `## Recommendation` section at all → NO-REC ('agent owes recommendation')."""
+    body = "## Context\nA task with no recommendation section.\n\n## Updates\n"
+    assert extract_recommendation_state(body) == "NO-REC"
+    # Compat shim still returns '?' for backward compatibility.
+    assert extract_recommendation_verdict(body) == "?"
+
+
+def test_state_empty_section_returns_no_rec():
+    """Section header present but body is empty/whitespace → NO-REC."""
+    body = "## Recommendation\n\n\n## Updates\n"
+    assert extract_recommendation_state(body) == "NO-REC"
+
+
+def test_state_html_comment_only_section_returns_no_rec():
+    """Section contains only HTML-comment placeholder → NO-REC."""
+    body = (
+        "## Recommendation\n\n"
+        "<!-- REQUIRED before fw inception decide. Format:\n"
+        "     **Recommendation:** GO / NO-GO / DEFER\n"
+        "-->\n\n"
+        "## Updates\n"
+    )
+    assert extract_recommendation_state(body) == "NO-REC"
+
+
+def test_state_section_present_no_verdict_returns_question_mark():
+    """Section has substantive prose but no `**Recommendation:** GO/NO-GO/DEFER` line → ?"""
+    body = (
+        "## Recommendation\n\n"
+        "Some prose without the canonical verdict marker. The agent typed something\n"
+        "but never put a structured **Recommendation:** GO line.\n\n"
+        "## Updates\n"
+    )
+    assert extract_recommendation_state(body) == "?"
+    # Compat shim mirrors this — '?' is the historical return.
+    assert extract_recommendation_verdict(body) == "?"
+
+
+def test_state_full_block_returns_verdict():
+    """Full block with verdict → GO/NO-GO/DEFER (passthrough)."""
+    for v in ("GO", "NO-GO", "DEFER"):
+        body = (
+            "## Recommendation\n\n"
+            f"**Recommendation:** {v}\n\n"
+            "**Rationale:** because.\n\n"
+            "## Updates\n"
+        )
+        assert extract_recommendation_state(body) == v, f"failed on verdict={v}"
+
+
+def test_state_empty_body_returns_no_rec():
+    """Empty body → NO-REC (no section to find)."""
+    assert extract_recommendation_state("") == "NO-REC"

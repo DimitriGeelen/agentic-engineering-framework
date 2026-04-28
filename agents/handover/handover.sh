@@ -503,12 +503,15 @@ def inception_link(tid, name):
 
 def extract_verdict(content):
     """T-1530: Extract GO/DEFER/NO-GO from ## Recommendation. H2+ terminator (L-293).
+    T-1576: emit NO-REC when section is missing/empty (agent owes a recommendation).
     NOTE: \$ escapes because this heredoc is unquoted; bash would otherwise eat \$(...)."""
     m = re.search(r'^## Recommendation\s*\$(.*?)(?=^#{2,} |\Z)',
                   content, re.MULTILINE | re.DOTALL)
     if not m:
-        return '?'
-    body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
+        return 'NO-REC'
+    body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL).strip()
+    if not body:
+        return 'NO-REC'
     v = re.search(r'\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b',
                   body, re.IGNORECASE)
     return v.group(1).upper() if v else '?'
@@ -656,12 +659,18 @@ tasks_dir = os.environ.get("TASKS_DIR", ".tasks")
 WT_URL = os.environ.get("WT_URL_FOR_PYTHON", "")
 
 def extract_verdict(content):
-    """T-1530: Extract GO/DEFER/NO-GO from ## Recommendation. H2+ terminator (L-293)."""
+    """T-1530: Extract GO/DEFER/NO-GO from ## Recommendation. H2+ terminator (L-293).
+    T-1576: emit NO-REC when section is missing/empty so the human knows the
+    agent owes a recommendation (rather than seeing a bare '?' that conflates
+    'no section' with 'verdict unparseable').
+    """
     m = re.search(r'^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)',
                   content, re.MULTILINE | re.DOTALL)
     if not m:
-        return '?'
-    body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
+        return 'NO-REC'
+    body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL).strip()
+    if not body:
+        return 'NO-REC'
     v = re.search(r'\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b',
                   body, re.IGNORECASE)
     return v.group(1).upper() if v else '?'
@@ -696,7 +705,7 @@ if partial:
     # T-1540 iter3: clarify the [?] doc-promise. Partial-complete state requires a
     # Recommendation block (T-1529 structural gate), so [?] is rare and not expected
     # in this queue. The [?] is defensive only.
-    print("Review each when ready. No urgency implied. Prefix is the agent's recommendation: `[GO]` confirm, `[DEFER]`/`[NO-GO]` decide. (`[?]` would mean a partial-complete task slipped past the T-1529 recommendation gate — should not occur in normal flow.)")
+    print("Review each when ready. No urgency implied. Prefix is the agent's recommendation: `[GO]` confirm, `[DEFER]`/`[NO-GO]` decide. `[NO-REC]` means the agent never wrote a Recommendation block — task isn't ready for review yet (T-1576). (`[?]` would mean a partial-complete task slipped past the T-1529 recommendation gate — should not occur in normal flow.)")
     print()
     for tid, tname, count, preview, verdict in partial:
         # T-1461: render review URL inline if Watchtower is reachable

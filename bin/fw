@@ -3369,17 +3369,21 @@ from datetime import datetime
 # T-1533: shared helper. Robust to running from /opt/999-... where web/ is on the path.
 sys.path.insert(0, os.environ.get("PROJECT_ROOT", "."))
 try:
-    from web.shared import extract_recommendation_verdict
+    from web.shared import extract_recommendation_state
 except ImportError:
-    # Inline fallback if web/ isn't importable (e.g. consumer project)
-    def extract_recommendation_verdict(body):
+    # Inline fallback if web/ isn't importable (e.g. consumer project).
+    # T-1576: emit NO-REC when section is missing/empty so callers can
+    # distinguish 'agent owes a recommendation' from 'verdict unparseable'.
+    def extract_recommendation_state(body):
         if not body:
-            return "?"
+            return "NO-REC"
         m = re.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)", body,
                       re.MULTILINE | re.DOTALL)
         if not m:
-            return "?"
-        body2 = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.DOTALL)
+            return "NO-REC"
+        body2 = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.DOTALL).strip()
+        if not body2:
+            return "NO-REC"
         v = re.search(r"\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b", body2, re.IGNORECASE)
         return v.group(1).upper() if v else "?"
 
@@ -3429,7 +3433,7 @@ for f in sorted(ACTIVE.glob("*.md")):
                         break
                     except (ValueError, OSError):
                         pass
-            d_verdict = extract_recommendation_verdict(text)
+            d_verdict = extract_recommendation_state(text)
             decision_rows.append((d_verdict, d_age_days, tid_v, name))
 
     # VERDICT pass — find ### Human section with unchecked ACs
@@ -3461,7 +3465,7 @@ for f in sorted(ACTIVE.glob("*.md")):
                 break
             except (ValueError, OSError):
                 pass
-    verdict = extract_recommendation_verdict(text)
+    verdict = extract_recommendation_state(text)
     rows.append((verdict, age_days, tid_v, name, unchecked))
 
 if not rows and not decision_rows:
@@ -3469,14 +3473,18 @@ if not rows and not decision_rows:
     sys.exit(0)
 
 # Sort: verdict priority then age desc (oldest first)
-order = {"GO": 0, "DEFER": 1, "NO-GO": 2, "?": 3}
+# T-1576: NO-REC sorts after ? (truly unactionable — agent owes a recommendation).
+order = {"GO": 0, "DEFER": 1, "NO-GO": 2, "?": 3, "NO-REC": 4}
 rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
 decision_rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
 
 NAME_W = 60
 
 def _verdict_color(v):
-    return {"GO": "\033[32m", "DEFER": "\033[33m", "NO-GO": "\033[31m"}.get(v, "\033[90m")
+    # T-1576: NO-REC in cyan (call-to-action — agent should write a recommendation),
+    # distinct from grey '?' (deferred/unknown verdict in an existing block).
+    return {"GO": "\033[32m", "DEFER": "\033[33m", "NO-GO": "\033[31m",
+            "NO-REC": "\033[36m"}.get(v, "\033[90m")
 
 # T-1571 / F5: DECISIONS section — pending inception GO/NO-GO/DEFER decisions.
 # Mirrors /approvals' Decisions group; same urgency tier as Tier-0/Human-ACs.
@@ -3500,11 +3508,13 @@ go = sum(1 for r in rows if r[0] == "GO")
 defer = sum(1 for r in rows if r[0] == "DEFER")
 nogo = sum(1 for r in rows if r[0] == "NO-GO")
 unk = sum(1 for r in rows if r[0] == "?")
+no_rec = sum(1 for r in rows if r[0] == "NO-REC")
 parts = []
 if go: parts.append(f"\033[32m{go} GO\033[0m")
 if defer: parts.append(f"\033[33m{defer} DEFER\033[0m")
 if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
 if unk: parts.append(f"\033[90m{unk} ?\033[0m")
+if no_rec: parts.append(f"\033[36m{no_rec} NO-REC\033[0m")
 total = len(rows) + len(decision_rows)
 verif_only = f"{len(rows)} task(s) awaiting human review" if rows else ""
 dec_only = f"{len(decision_rows)} pending decision(s)" if decision_rows else ""
