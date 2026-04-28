@@ -4665,8 +4665,15 @@ PYPREDICT
                     echo -e "${RED}ERROR: bats is not installed${NC}" >&2
                     exit 1
                 fi
+                shift
+                [ "${1:-}" = "--" ] && shift
                 echo -e "${BOLD}=== Bats Unit Tests ===${NC}"
-                bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                # T-1588: extra args (file paths, glob patterns) are passed through.
+                if [ "$#" -gt 0 ]; then
+                    bats "$@" || _test_exit=1
+                else
+                    bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                fi
                 ;;
             --integration|integration)
                 # Bats integration tests only
@@ -4674,8 +4681,12 @@ PYPREDICT
                     echo -e "${RED}ERROR: bats is not installed${NC}" >&2
                     exit 1
                 fi
+                shift
+                [ "${1:-}" = "--" ] && shift
                 echo -e "${BOLD}=== Bats Integration Tests ===${NC}"
-                if [ -d "$FRAMEWORK_ROOT/tests/integration/" ] && ls "$FRAMEWORK_ROOT/tests/integration/"*.bats >/dev/null 2>&1; then
+                if [ "$#" -gt 0 ]; then
+                    bats "$@" || _test_exit=1
+                elif [ -d "$FRAMEWORK_ROOT/tests/integration/" ] && ls "$FRAMEWORK_ROOT/tests/integration/"*.bats >/dev/null 2>&1; then
                     bats "$FRAMEWORK_ROOT/tests/integration/" || _test_exit=1
                 else
                     echo "  No integration tests found."
@@ -4687,8 +4698,14 @@ PYPREDICT
                     echo -e "${RED}ERROR: pytest is not installed${NC}" >&2
                     exit 1
                 fi
+                shift
+                [ "${1:-}" = "--" ] && shift
                 echo -e "${BOLD}=== Web Tests (pytest) ===${NC}"
-                cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
+                if [ "$#" -gt 0 ]; then
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest "$@" -v || _test_exit=1
+                else
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
+                fi
                 ;;
             --playwright|playwright|ui)
                 # Playwright UI tests (T-969)
@@ -4705,8 +4722,14 @@ PYPREDICT
                     echo -e "${YELLOW}No Playwright tests found (tests/playwright/ missing)${NC}"
                     exit 0
                 fi
+                shift
+                [ "${1:-}" = "--" ] && shift
                 echo -e "${BOLD}=== Playwright UI Tests ===${NC}"
-                cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
+                if [ "$#" -gt 0 ]; then
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest "$@" -v || _test_exit=1
+                else
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
+                fi
                 ;;
             all)
                 # Run everything
