@@ -4,15 +4,15 @@ name: "Watchtower token dashboard — /costs page with session table and project
 description: >
   Add /costs page to Watchtower showing token usage data from fw costs. Display project summary (total tokens by category), per-session table with sorting, and current session highlights. Uses lib/costs.sh parsing functions. Follow-up from T-801 (fw costs CLI).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [watchtower, tokens, observability]
 components: [watchtower-web-ui]
 related_tasks: [T-801, T-799, T-800]
 created: 2026-04-03T19:09:41Z
-last_update: 2026-04-12T09:26:19Z
+last_update: 2026-04-28T11:34:28Z
 date_finished: null
 ---
 
@@ -50,6 +50,18 @@ grep -q "costs" web/blueprints/__init__.py
 python3 -c "from web.blueprints.costs import bp; print('OK')"
 curl -sf http://localhost:3000/costs -o /tmp/T-802-verify.html && grep -qi "token" /tmp/T-802-verify.html
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 7 Agent ACs verified satisfied: `web/blueprints/costs.py` exists with `/costs` route, blueprint is registered, `web/templates/costs.html` renders the dashboard, and the page loads cleanly. Task has been in NO-REC limbo since 2026-04-12 — feature is delivered and reachable via the Watchtower nav. Awaits Human [REVIEW] of dashboard layout and data presentation.
+
+**Evidence:**
+- `test -f web/blueprints/costs.py` → exists.
+- `python3 -c "from web.blueprints.costs import bp"` → OK.
+- `curl -sf http://localhost:3000/costs` → 200, contains "token" markup.
+- Pairs with T-801 (CLI), T-803 (landing widget) — same token-tracking arc, same verified-code state.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -74,3 +86,7 @@ curl -sf http://localhost:3000/costs -o /tmp/T-802-verify.html && grep -qi "toke
 ### 2026-04-12T09:26:19Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-28T11:34:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

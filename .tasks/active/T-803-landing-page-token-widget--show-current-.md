@@ -4,15 +4,15 @@ name: "Landing page token widget — show current session tokens on Watchtower d
 description: >
   Add a token usage summary widget to the Watchtower landing page (/). Show current session token count, cache hit rate, and link to /costs. Quick integration using the costs blueprint parsing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [watchtower, tokens, observability]
 components: [watchtower-web-ui]
 related_tasks: [T-802, T-801, T-799]
 created: 2026-04-03T19:17:34Z
-last_update: 2026-04-12T09:26:19Z
+last_update: 2026-04-28T11:34:56Z
 date_finished: null
 ---
 
@@ -45,6 +45,18 @@ Follow-up from T-802 (Watchtower /costs page). Adds a compact token usage widget
 curl -sf http://localhost:3000/ -o /tmp/T-803-verify.html && grep -qi "token" /tmp/T-803-verify.html
 python3 -c "from web.blueprints.core import _get_token_usage; print('OK')"
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 5 Agent ACs verified satisfied: `_get_token_usage()` lives in `web/blueprints/core.py`, token data is passed to the cockpit context, the widget renders on the landing page (visible during this session as "TOKENS 13.1B this session — 13.2B project total · 98% cache · 19 sessions"), and links to `/costs`. Task has been in NO-REC limbo since 2026-04-12 — code shipped and observable. Awaits Human [REVIEW] of widget aesthetic.
+
+**Evidence:**
+- `python3 -c "from web.blueprints.core import _get_token_usage"` → OK.
+- `curl -sf http://localhost:3000/ | grep -i token` → matches "tokens", "session", and renders the count strings live.
+- Confirmed visually during this session via Playwright DOM eval on the cockpit page.
+- Closes the T-801 → T-802 → T-803 token-tracking arc.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -66,3 +78,7 @@ python3 -c "from web.blueprints.core import _get_token_usage; print('OK')"
 ### 2026-04-12T09:26:19Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-28T11:34:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
