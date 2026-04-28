@@ -50,6 +50,21 @@ grep -q "C-002" CLAUDE.md
 test -f .fabric/components/capture-reader.yaml
 test -f .fabric/components/capture-skill.yaml
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 5 Agent ACs verified satisfied against live repo state: C-002 rule present in CLAUDE.md (Inception Discipline section), `/capture` skill at `.claude/commands/capture.md`, `agents/capture/read-transcript.py` parses cleanly, both fabric component cards exist, feature branch deleted from remotes. PR #6 cherry-pick is fully integrated — only the [RUBBER-STAMP] live-session test remains for the human.
+
+**Evidence:**
+- `test -f .claude/commands/capture.md` → exists.
+- `test -f agents/capture/read-transcript.py` → exists.
+- `python3 -c "import ast; ast.parse(open('agents/capture/read-transcript.py').read())"` → parses.
+- `grep -q "C-002" CLAUDE.md` → matches.
+- `test -f .fabric/components/capture-reader.yaml` → exists.
+- `test -f .fabric/components/capture-skill.yaml` → exists.
+- All 6 verification commands pass.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
