@@ -4,16 +4,16 @@ name: "Surface Recommendation + Reviewer Verdict cards on /tasks/T-XXX page (cro
 description: >
   Surface Recommendation + Reviewer Verdict cards on /tasks/T-XXX page (cross-surface parity with /review T-1575/T-1583 and /approvals T-1531/T-1569)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-04-28T15:24:55Z
-last_update: 2026-04-28T15:24:55Z
-date_finished: null
+last_update: 2026-04-28T15:30:38Z
+date_finished: 2026-04-28T15:30:38Z
 ---
 
 # T-1584: Surface Recommendation + Reviewer Verdict cards on /tasks/T-XXX page (cross-surface parity with /review T-1575/T-1583 and /approvals T-1531/T-1569)
@@ -94,3 +94,24 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1584-surface-recommendation--reviewer-verdict.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-4539f1ed
+- **Timestamp:** 2026-04-28T15:30:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/blueprints/tasks.py:task_detail` imports `extract_recommendation` and `extract_reviewer_verdict`, calls them on `task_content`, passes structured `recommendation` (verdict + rationale_html + evid
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: `web/blueprints/tasks.py:task_detail` imports `extract_recommendation` and `extract_reviewer_verdict`, calls them on `task_content`, passes structured`
+- **AC#2 (Agent)** — `web/templates/task_detail.html` renders a `.recommendation-block` (with `data-verdict` attribute) immediately after the metadata table, mirroring `review.html` palette (GO green / DEFER orange / NO-G
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/task_detail.html in: `web/templates/task_detail.html` renders a `.recommendation-block` (with `data-verdict` attribute) immediately after the metadata table, mirroring `re`
+- **AC#3 (Agent)** — `web/templates/task_detail.html` renders a `.reviewer-verdict-block` (with `data-reviewer-overall` attribute) immediately after the recommendation block when the task body has a `## Reviewer Verdict (
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/task_detail.html in: `web/templates/task_detail.html` renders a `.reviewer-verdict-block` (with `data-reviewer-overall` attribute) immediately after the recommendation blo`
+
+### 2026-04-28T15:30:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
