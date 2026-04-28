@@ -496,7 +496,8 @@ EOF
         # T-1223: If task is in captured status, transition to started-work first.
         # The lifecycle requires captured → started-work → work-completed (no skip).
         local _current_status
-        _current_status=$(grep '^status:' "$task_file" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//')
+        # T-1557 / L-302: pipefail guard — if frontmatter lacks status: line, do not silent-exit
+        _current_status=$( { grep '^status:' "$task_file" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
         if [ "$_current_status" = "captured" ]; then
             "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status started-work --skip-sovereignty --reason "Inception decision in progress" 2>&1
             _uts_rc=$?
@@ -594,7 +595,8 @@ do_inception_sweep() {
         # DEFER on a started-work task is the legitimate "keep exploring" state and
         # is left untouched — only closing decisions (GO/NO-GO) trigger promotion.
         local current_status
-        current_status=$(grep '^status:' "$f" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//')
+        # T-1557 / L-302: pipefail guard
+        current_status=$( { grep '^status:' "$f" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
         case "$current_status" in
             work-completed) ;;
             started-work)
@@ -612,7 +614,8 @@ do_inception_sweep() {
 
         if [ "$dry_run" = true ]; then
             local dec
-            dec=$(grep -E "^\*\*Decision\*\*:" "$f" | head -1 | sed 's/^\*\*Decision\*\*: //; s/ .*//')
+            # T-1557 / L-302: pipefail guard
+            dec=$( { grep -E "^\*\*Decision\*\*:" "$f" 2>/dev/null || true; } | head -1 | sed 's/^\*\*Decision\*\*: //; s/ .*//')
             echo "  $tid: status=$current_status decision=$dec"
             continue
         fi

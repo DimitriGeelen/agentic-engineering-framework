@@ -530,6 +530,7 @@ show_help() {
     echo -e "  ${GREEN}promote${NC} <cmd>         Graduation pipeline (suggest, status, L-XXX)"
     echo -e "  ${GREEN}tier0${NC} <cmd>          Tier 0 enforcement (approve, status)"
     echo -e "  ${GREEN}approvals${NC} <cmd>      Approval queue (pending, status, expire)"
+    echo -e "  ${GREEN}review-queue${NC}         List tasks awaiting human review (with verdicts)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
     echo -e "  ${GREEN}dispatch${NC} <cmd>       SSH-based cross-machine communication (send, hosts)"
@@ -1548,6 +1549,25 @@ else:
             echo -e "  ${YELLOW}WARN${NC}  Cron registry present but not generated — run: fw cron install"
             warnings=$((warnings + 1))
         fi
+
+        # T-1558: flock parity (T-1556 prevention #5). The file-diff above catches
+        # post-generate drift, but if the registry is regenerated WITHOUT flock
+        # wrappers (the T-1556 regression) and immediately deployed, the diff
+        # check stays green while orphan-prevention is silently disabled. Compare
+        # the count of `flock -n` directly between registry command fields and
+        # the deployed crontab; warn on parity violation.
+        if [ -f "$cron_target" ]; then
+            local _reg_flock_count _dep_flock_count
+            _reg_flock_count=$(grep -cE "command:.*flock -n " "$cron_registry" 2>/dev/null || true)
+            _dep_flock_count=$(grep -cE "flock -n " "$cron_target" 2>/dev/null || true)
+            _reg_flock_count="${_reg_flock_count:-0}"
+            _dep_flock_count="${_dep_flock_count:-0}"
+            if [ "$_reg_flock_count" -gt "$_dep_flock_count" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Cron flock parity: registry declares $_reg_flock_count wrapped jobs, deployed crontab has $_dep_flock_count"
+                echo -e "        T-1331 orphan-prevention may be partially disabled. Run: fw cron install"
+                warnings=$((warnings + 1))
+            fi
+        fi
     fi
 
     # Doc-drift check: fw subcommands vs CLAUDE.md Quick Reference (T-1147/T-1104/T-1421)
@@ -1931,13 +1951,15 @@ PYTASK_SHOW
                 fi
 
                 # Extract ## Verification block
+                # T-1541: collapsed 4 greps into one ERE + `|| true` to mirror
+                # update-task.sh:197 — the prior BRE pattern `^\`\`\`` is parsed
+                # by GNU grep 3.11 as start-of-line + three start-of-buffer
+                # assertions, matching every line; under `set -euo pipefail` the
+                # empty-result exit 1 aborted the script before the diagnostic
+                # branch could run. ERE has no special meaning for backtick.
                 local verification
-                # shellcheck disable=SC2016 # backtick pattern is literal
                 verification=$(sed -n '/^## Verification/,/^##/p' "$task_file" | \
-                              grep -v "^##" | \
-                              grep -v '^\`\`\`' | \
-                              grep -v "^#" | \
-                              grep -v "^$")
+                              grep -vE '^##|^\s*```|^\s*#|^\s*$' || true)
 
                 if [ -z "$verification" ]; then
                     echo -e "${YELLOW}No verification commands found in task $task_id${NC}"
@@ -3317,6 +3339,205 @@ print('0')
                 ;;
         esac
         ;;
+    review-queue)
+        # T-1536: terminal mirror of Watchtower /approvals "Awaiting Human ACs"
+        # Lists active tasks with unchecked Human ACs, prefixed by agent verdict.
+        rq_arg="${1:-}"
+        if [ "$rq_arg" = "--help" ] || [ "$rq_arg" = "-h" ] || [ "$rq_arg" = "help" ]; then
+            echo -e "${BOLD}fw review-queue${NC} — list tasks awaiting human review (T-1536)"
+            echo ""
+            echo "Shows two sections matching Watchtower /approvals:"
+            echo "  DECISIONS — pending inception GO/NO-GO/DEFER decisions (T-1571)"
+            echo "  VERDICT   — active tasks with unchecked Human ACs"
+            echo ""
+            echo "Each row is prefixed by the agent's recommendation verdict (GO/DEFER/"
+            echo "NO-GO/?). Companion to Watchtower /approvals."
+            echo ""
+            echo "Sort: GO first (rubber-stamp), then DEFER, then NO-GO, then unknown."
+            echo "Within each verdict: oldest first (stale > fresh)."
+            echo ""
+            echo "Usage:"
+            echo "  fw review-queue           Show queue"
+            echo "  fw review-queue --help    This message"
+            exit 0
+        fi
+        PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PYREVQ'
+import os, re, sys, time
+from pathlib import Path
+from datetime import datetime
+
+# T-1533: shared helper. Robust to running from /opt/999-... where web/ is on the path.
+sys.path.insert(0, os.environ.get("PROJECT_ROOT", "."))
+try:
+    from web.shared import extract_recommendation_state
+except ImportError:
+    # Inline fallback if web/ isn't importable (e.g. consumer project).
+    # T-1576: emit NO-REC when section is missing/empty so callers can
+    # distinguish 'agent owes a recommendation' from 'verdict unparseable'.
+    def extract_recommendation_state(body):
+        if not body:
+            return "NO-REC"
+        m = re.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)", body,
+                      re.MULTILINE | re.DOTALL)
+        if not m:
+            return "NO-REC"
+        body2 = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.DOTALL).strip()
+        if not body2:
+            return "NO-REC"
+        v = re.search(r"\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b", body2, re.IGNORECASE)
+        return v.group(1).upper() if v else "?"
+
+ROOT = Path(os.environ.get("PROJECT_ROOT", ".")).resolve()
+ACTIVE = ROOT / ".tasks" / "active"
+if not ACTIVE.is_dir():
+    print("No .tasks/active directory.", file=sys.stderr)
+    sys.exit(0)
+
+now = time.time()
+rows = []
+decision_rows = []
+# T-1571 / F5: precompute pending-inception scan once, reuse below for both passes
+# Pattern matches the canonical block emitted by lib/inception.sh do_inception_decide.
+DECISION_RE = re.compile(r"^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b", re.M)
+for f in sorted(ACTIVE.glob("*.md")):
+    text = f.read_text(errors="replace")
+    # Frontmatter (used by both passes)
+    fm_m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+    fm_text = fm_m.group(1) if fm_m else ""
+    wf_m = re.search(r"^workflow_type:\s*(\S+)", fm_text, re.MULTILINE)
+    workflow_type = wf_m.group(1).strip() if wf_m else ""
+    status_m = re.search(r"^status:\s*(\S+)", fm_text, re.MULTILINE)
+    status = status_m.group(1).strip() if status_m else ""
+    tid_m = re.search(r"^id:\s*(\S+)", fm_text, re.MULTILINE)
+    tid_v = tid_m.group(1).strip() if tid_m else ""
+    tname_m = re.search(r'^name:\s*"?(.+?)"?\s*$', fm_text, re.MULTILINE)
+    name = tname_m.group(1).strip() if tname_m else ""
+
+    # T-1571 / F5: DECISIONS pass — pending inception decisions
+    if workflow_type == "inception" and not DECISION_RE.search(text):
+        # F4 inclusion: drop captured/unexplored without Recommendation, keep
+        # started-work even when Recommendation is empty (visibility for stuck agent).
+        rec_m = re.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)",
+                          text, re.MULTILINE | re.DOTALL)
+        rec_section = rec_m.group(1) if rec_m else ""
+        rec_clean = re.sub(r"<!--.*?-->", "", rec_section, flags=re.DOTALL).strip()
+        rec_substantive = len(rec_clean) >= 20
+        if rec_substantive or status == "started-work":
+            d_age_days = 0
+            for field in ("last_update", "created"):
+                m = re.search(rf"^{field}:\s*(\S+)", fm_text, re.MULTILINE)
+                if m:
+                    try:
+                        dt = datetime.fromisoformat(m.group(1).replace("Z", "+00:00"))
+                        d_age_days = int((now - dt.timestamp()) / 86400)
+                        break
+                    except (ValueError, OSError):
+                        pass
+            d_verdict = extract_recommendation_state(text)
+            decision_rows.append((d_verdict, d_age_days, tid_v, name))
+
+    # VERDICT pass — find ### Human section with unchecked ACs
+    ac_m = re.search(r"^## Acceptance Criteria\s*\n(.*?)(?=\n## |\Z)", text,
+                     re.MULTILINE | re.DOTALL)
+    if not ac_m:
+        continue
+    human_m = re.search(r"### Human\s*\n(.*?)(?=\n### |\Z)", ac_m.group(1), re.DOTALL)
+    if not human_m:
+        continue
+    # T-1581: strip HTML comments before the unchecked-AC count, otherwise the
+    # template's example AC (`- [ ] [REVIEW] Dashboard renders correctly` inside
+    # the placeholder `<!-- -->`) is counted as a real unchecked AC, falsely
+    # admitting template-only Human sections (T-1274, T-1542) into the queue.
+    # Mirror of L-298 — same class as the cockpit fix, different surface.
+    human_text = re.sub(r"<!--.*?-->", "", human_m.group(1), flags=re.DOTALL)
+    unchecked = len(re.findall(r"^\s*-\s*\[ \]", human_text, re.MULTILINE))
+    if unchecked == 0:
+        continue
+    # T-1540 iter1 originally filtered to (owner=human OR status=work-completed) so
+    # tasks with template-only Human ACs (the placeholder example AC inside the
+    # `<!-- ... -->` block) wouldn't surface as spurious entries with verdict=?.
+    # T-1581 fixed the root cause by stripping HTML comments before the unchecked-AC
+    # count above. With the comment fix in place, the owner/status filter is both
+    # redundant (template-only sections now drop out at unchecked==0) AND harmful
+    # (it excludes started-work tasks with real Human ACs + agent recommendation,
+    # e.g. T-1574/T-1575 — agent has handed off, awaiting human verification).
+    # Removed; cockpit's `get_human_verify_tasks` uses the same canonical-parse
+    # behavior — surfaces stay aligned.
+    # Age
+    age_days = 0
+    for field in ("date_finished", "last_update", "created"):
+        m = re.search(rf"^{field}:\s*(\S+)", fm_text, re.MULTILINE)
+        if m:
+            try:
+                dt = datetime.fromisoformat(m.group(1).replace("Z", "+00:00"))
+                age_days = int((now - dt.timestamp()) / 86400)
+                break
+            except (ValueError, OSError):
+                pass
+    verdict = extract_recommendation_state(text)
+    rows.append((verdict, age_days, tid_v, name, unchecked))
+
+if not rows and not decision_rows:
+    print("No tasks awaiting human review.")
+    sys.exit(0)
+
+# Sort: verdict priority then age desc (oldest first)
+# T-1576: NO-REC sorts after ? (truly unactionable — agent owes a recommendation).
+order = {"GO": 0, "DEFER": 1, "NO-GO": 2, "?": 3, "NO-REC": 4}
+rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
+decision_rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
+
+NAME_W = 60
+
+def _verdict_color(v):
+    # T-1576: NO-REC in cyan (call-to-action — agent should write a recommendation),
+    # distinct from grey '?' (deferred/unknown verdict in an existing block).
+    return {"GO": "\033[32m", "DEFER": "\033[33m", "NO-GO": "\033[31m",
+            "NO-REC": "\033[36m"}.get(v, "\033[90m")
+
+# T-1571 / F5: DECISIONS section — pending inception GO/NO-GO/DEFER decisions.
+# Mirrors /approvals' Decisions group; same urgency tier as Tier-0/Human-ACs.
+if decision_rows:
+    print(f"\033[1mDECISIONS — pending inception GO/NO-GO ({len(decision_rows)})\033[0m")
+    print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
+    for verdict, age_days, tid_v, name in decision_rows:
+        truncated = (name[:NAME_W] + "...") if len(name) > NAME_W else name
+        col = _verdict_color(verdict)
+        print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
+    print()
+
+if rows:
+    print(f"\033[1mVERDICT — Human ACs awaiting verification ({len(rows)})\033[0m")
+    print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
+    for verdict, age_days, tid_v, name, _unchecked in rows:
+        truncated = (name[:NAME_W] + "...") if len(name) > NAME_W else name
+        col = _verdict_color(verdict)
+        print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
+go = sum(1 for r in rows if r[0] == "GO")
+defer = sum(1 for r in rows if r[0] == "DEFER")
+nogo = sum(1 for r in rows if r[0] == "NO-GO")
+unk = sum(1 for r in rows if r[0] == "?")
+no_rec = sum(1 for r in rows if r[0] == "NO-REC")
+parts = []
+if go: parts.append(f"\033[32m{go} GO\033[0m")
+if defer: parts.append(f"\033[33m{defer} DEFER\033[0m")
+if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
+if unk: parts.append(f"\033[90m{unk} ?\033[0m")
+if no_rec: parts.append(f"\033[36m{no_rec} NO-REC\033[0m")
+total = len(rows) + len(decision_rows)
+verif_only = f"{len(rows)} task(s) awaiting human review" if rows else ""
+dec_only = f"{len(decision_rows)} pending decision(s)" if decision_rows else ""
+summary = " · ".join(s for s in (dec_only, verif_only) if s)
+if parts:
+    print(f"\n\033[2m{summary}\033[0m  ({' / '.join(parts)})")
+elif summary:
+    print(f"\n\033[2m{summary}\033[0m")
+# T-1539 (blind-reviewer finding): never hardcode localhost — read triple-file → fw_config → 3000 fallback
+url_file = ROOT / ".context" / "working" / "watchtower.url"
+wt_url = url_file.read_text().strip() if url_file.exists() else f"http://localhost:{os.environ.get('FW_PORT', '3000')}"
+print(f"\033[2mOpen in Watchtower: {wt_url}/approvals\033[0m")
+PYREVQ
+        ;;
     work-on)
         # Single-step gate: create/resume task + set focus + start work
         wo_target="${1:-}"
@@ -3424,9 +3645,9 @@ print('0')
                 for tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
                     [ -f "$tf" ] || continue
                     if head -20 "$tf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
-                        tf_id=$(grep "^id:" "$tf" | head -1 | sed 's/id:[[:space:]]*//')
-                        tf_name=$(grep "^name:" "$tf" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
-                        tf_status=$(grep "^status:" "$tf" | head -1 | sed 's/status:[[:space:]]*//')
+                        tf_id=$({ grep "^id:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/id:[[:space:]]*//')
+                        tf_name=$({ grep "^name:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+                        tf_status=$({ grep "^status:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
                         if [ "$tf_status" = "work-completed" ]; then
                             echo -e "  ${GREEN}✓${NC}  ${tf_id}: ${tf_name}"
                         else
@@ -4370,9 +4591,21 @@ PYPREDICT
                     exit 1
                 fi
                 ;;
+            api-usage)
+                # T-1304: Reads $TERMLINK_RUNTIME_DIR/rpc-audit.jsonl, tallies
+                # per-method calls over a time window, reports legacy-primitive
+                # percentage. Used as the T-1166 entry gate.
+                shift
+                api_usage_script="$FRAMEWORK_ROOT/agents/metrics/api-usage.sh"
+                if [ ! -f "$api_usage_script" ]; then
+                    echo -e "${RED}ERROR: api-usage.sh not found at $api_usage_script${NC}" >&2
+                    exit 1
+                fi
+                exec bash "$api_usage_script" "$@"
+                ;;
             *)
                 echo -e "${RED}Unknown metrics subcommand: $metrics_subcmd${NC}" >&2
-                echo "Subcommands: dashboard, predict" >&2
+                echo "Subcommands: dashboard, predict, api-usage" >&2
                 exit 1
                 ;;
         esac

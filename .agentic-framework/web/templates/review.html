@@ -174,6 +174,22 @@
         .ac-detail .if-not {
             color: var(--pico-muted-color);
         }
+        /* T-1575 codification: backticked URLs render as <a><code></code></a>.
+           Without explicit styling, the <code> background obscures the link
+           affordance — make the link colour and underline visible across the
+           whole code box so the human can see it's clickable. */
+        .ac-detail a > code,
+        .rec-rationale a > code,
+        .rec-evidence a > code {
+            color: #2563eb;
+            text-decoration: underline;
+            background: #eff6ff;
+        }
+        .ac-detail a:hover > code,
+        .rec-rationale a:hover > code,
+        .rec-evidence a:hover > code {
+            background: #dbeafe;
+        }
 
         /* Action button (check/uncheck) */
         .ac-action-btn {
@@ -205,6 +221,28 @@
         }
         .complete-btn:hover { background: #059669; border-color: #059669; }
 
+        /* T-1574: Inception decide UI (replaces Complete button on inception tasks) */
+        .decide-section { margin-top: 1.25rem; padding-top: 1rem; border-top: 2px solid #10b981; }
+        .decide-section h3 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+        .decide-section textarea {
+            width: 100%; min-height: 80px; font-size: 0.95rem;
+            padding: 0.5rem; margin-bottom: 0.75rem;
+            border: 1px solid var(--pico-muted-border-color); border-radius: 4px;
+            font-family: inherit;
+        }
+        .decide-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+        .decide-btn {
+            min-height: 56px; font-size: 1rem; font-weight: 700;
+            border-radius: 4px; cursor: pointer; color: white;
+        }
+        .decide-btn-go { background: #10b981; border: 2px solid #10b981; }
+        .decide-btn-go:hover { background: #059669; }
+        .decide-btn-nogo { background: #ef4444; border: 2px solid #ef4444; }
+        .decide-btn-nogo:hover { background: #dc2626; }
+        .decide-btn-defer { background: #6b7280; border: 2px solid #6b7280; }
+        .decide-btn-defer:hover { background: #4b5563; }
+        .decide-error { color: var(--pico-del-color); margin-top: 0.5rem; min-height: 1.25rem; }
+
         /* Artifacts */
         .artifacts-section {
             margin-top: 1.25rem;
@@ -234,7 +272,7 @@
         .badge-startedwork { background: #3b82f622; color: #1d4ed8; border: 1px solid #3b82f655; }
         .badge-workcompleted { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
 
-        /* T-1195: Recommendation block */
+        /* T-1195: Recommendation block (T-1539: per-verdict colour) */
         .recommendation-block {
             background: #fefce8;
             border: 1px solid #eab308;
@@ -243,6 +281,32 @@
             padding: 1rem;
             margin: 1rem 0;
         }
+        .recommendation-block[data-verdict="GO"] {
+            background: #ecfdf5;
+            border-color: #10b981;
+            border-left-color: #047857;
+        }
+        .recommendation-block[data-verdict="GO"] h3 { color: #065f46; }
+        .recommendation-block[data-verdict="DEFER"] {
+            background: #fff7ed;
+            border-color: #fb923c;
+            border-left-color: #ea580c;
+        }
+        .recommendation-block[data-verdict="DEFER"] h3 { color: #9a3412; }
+        .recommendation-block[data-verdict="NO-GO"] {
+            background: #fef2f2;
+            border-color: #ef4444;
+            border-left-color: #b91c1c;
+        }
+        .recommendation-block[data-verdict="NO-GO"] h3 { color: #991b1b; }
+        /* T-1578: NO-REC banner — agent owes a recommendation. Cyan theme parity
+           with cockpit pill / approvals filter button. */
+        .recommendation-block[data-verdict="NO-REC"] {
+            background: #0e74901a;
+            border-color: #0e7490;
+            border-left-color: #0e7490;
+        }
+        .recommendation-block[data-verdict="NO-REC"] h3 { color: #155e75; }
         .recommendation-block h3 {
             margin: 0 0 0.5rem;
             font-size: 0.9rem;
@@ -259,6 +323,25 @@
             line-height: 1.4;
             color: #1f2937;
         }
+        /* T-1575: structured rendering — Rationale + Evidence as separate labeled sections */
+        .rec-rationale, .rec-evidence { margin-top: 0.5rem; font-size: 0.92rem; line-height: 1.5; color: #1f2937; }
+        .rec-rationale h4, .rec-evidence h4 {
+            margin: 0 0 0.25rem; font-size: 0.78rem;
+            text-transform: uppercase; letter-spacing: 0.05em; color: #4b5563;
+        }
+        .rec-rationale p, .rec-evidence p { margin: 0 0 0.4rem; }
+        .rec-evidence ul { margin: 0 0 0.4rem; padding-left: 1.25rem; }
+        .rec-evidence li { margin-bottom: 0.2rem; }
+        .rec-rationale a, .rec-evidence a { color: #2563eb; text-decoration: underline; }
+        .rec-rationale code, .rec-evidence code {
+            background: rgba(0,0,0,0.06); padding: 0.05rem 0.3rem; border-radius: 3px;
+            font-size: 0.88rem;
+        }
+        .rec-incomplete-warning {
+            background: #fffbeb; border-left: 4px solid #f59e0b;
+            padding: 0.5rem 0.75rem; margin-top: 0.5rem; border-radius: 4px;
+            font-size: 0.85rem; color: #92400e;
+        }
         .recommendation-empty {
             background: #f3f4f6;
             border: 1px dashed #9ca3af;
@@ -269,6 +352,72 @@
             color: #6b7280;
         }
         .recommendation-empty a { color: #2563eb; text-decoration: underline; }
+
+        /* T-1583: Reviewer Verdict block — independent mechanical second opinion.
+           Cross-surface parity with /approvals card (F3 / T-1569). Distinct from
+           the agent's Recommendation: the reviewer is a static-scan agent, not
+           the same agent that authored the task. */
+        .reviewer-verdict-block {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 0.75rem 0 1rem 0;
+            border: 1px solid var(--pico-muted-border-color);
+            background: var(--pico-card-background-color);
+        }
+        .reviewer-verdict-block h4 {
+            margin: 0 0 0.4rem 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: none;
+        }
+        .reviewer-verdict-block .reviewer-meta {
+            font-size: 0.8rem;
+            color: var(--pico-muted-color);
+        }
+        .reviewer-verdict-block[data-reviewer-overall="PASS"] {
+            background: #ecfdf5;
+            border-color: #10b981;
+        }
+        .reviewer-verdict-block[data-reviewer-overall="PASS"] h4 { color: #065f46; }
+        .reviewer-verdict-block[data-reviewer-overall="FAIL"] {
+            background: #fef2f2;
+            border-color: #dc2626;
+        }
+        .reviewer-verdict-block[data-reviewer-overall="FAIL"] h4 { color: #991b1b; }
+        .reviewer-verdict-block[data-reviewer-overall="WARN"] {
+            background: #fffbeb;
+            border-color: #f59e0b;
+        }
+        .reviewer-verdict-block[data-reviewer-overall="WARN"] h4 { color: #92400e; }
+        .reviewer-verdict-block .needs-human-flag {
+            display: inline-block;
+            margin-left: 0.4rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            background: #fde68a;
+            color: #78350f;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* ── Toast notifications (T-1582) ─────────────────────── */
+        /* /review is a standalone template (T-1453) so it does not inherit
+           base.html's htmx-error→toast handler. Mirror it locally so 4xx/5xx
+           responses do not silently disappear (T-1574 follow-up). */
+        .wt-toast {
+            pointer-events: auto;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            max-width: 22rem;
+            animation: toast-in 0.2s ease-out;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .wt-toast.success { background: #1b5e20; color: #fff; }
+        .wt-toast.error   { background: #c62828; color: #fff; }
+        .wt-toast.info    { background: #2563eb; color: #fff; }
+        @keyframes toast-in  { from { opacity: 0; transform: translateX(1rem); } to { opacity: 1; transform: none; } }
+        @keyframes toast-out { from { opacity: 1; } to { opacity: 0; transform: translateX(1rem); } }
     </style>
 </head>
 <body class="review-page">
@@ -282,11 +431,49 @@
         </div>
     </div>
 
-    <!-- T-1195: Recommendation block — shown above Tier 0 so reviewer sees what they're approving -->
-    {% if recommendation %}
-    <section class="recommendation-block">
-        <h3>Recommendation</h3>
-        <pre>{{ recommendation }}</pre>
+    <!-- T-1195/T-1575: Recommendation block — structured rendering (verdict + rationale + evidence) -->
+    {# T-1539: data-verdict drives per-verdict colour (CSS attribute selectors above) #}
+    {# T-1575: rec_complete=true only when verdict AND rationale present. Verdict-only blocks
+       render the warning instead of the green GO badge — can't claim a recommendation exists
+       if the rationale is missing. #}
+    {% if rec_complete %}
+    <section class="recommendation-block" data-verdict="{{ verdict|default('?') }}">
+        <h3>Recommendation{% if verdict and verdict != '?' %} — {{ verdict }}{% endif %}</h3>
+        {% if rec_rationale_html %}
+        <div class="rec-rationale">
+            <h4>Rationale</h4>
+            {{ rec_rationale_html | safe }}
+        </div>
+        {% endif %}
+        {% if rec_evidence_html %}
+        <div class="rec-evidence">
+            <h4>Evidence</h4>
+            {{ rec_evidence_html | safe }}
+        </div>
+        {% endif %}
+    </section>
+    {% elif verdict and verdict != '?' %}
+    <section class="recommendation-block" data-verdict="{{ verdict }}">
+        <h3>Recommendation{% if verdict %} — {{ verdict }}{% endif %}</h3>
+        <div class="rec-incomplete-warning">
+            ⚠ Verdict recorded as <strong>{{ verdict }}</strong> but the rationale is missing.
+            A recommendation without a rationale cannot be acted on — ask the agent to fill the
+            <code>**Rationale:**</code> line in the <code>## Recommendation</code> section.
+        </div>
+    </section>
+    {# T-1578: NO-REC banner — agent has not yet written a `## Recommendation` block.
+       Same cyan theme (#0e7490) as cockpit pill and /approvals filter button. Ranks
+       above the artifacts-only fallback so "this isn't ready for review" is the
+       primary signal, even when research artifacts exist. #}
+    {% elif state == 'NO-REC' %}
+    <section class="recommendation-block recommendation-norec" data-verdict="NO-REC" data-state="NO-REC">
+        <h3>Recommendation — NO-REC</h3>
+        <div>
+            The agent has not yet written a <code>## Recommendation</code> block for this task.
+            The task isn't ready for review — ask the agent to add a recommendation
+            (<strong>GO</strong> / <strong>NO-GO</strong> / <strong>DEFER</strong>) with rationale and evidence
+            before deciding.
+        </div>
     </section>
     {% elif artifacts %}
     <section class="recommendation-empty">
@@ -294,6 +481,19 @@
         {% for art in artifacts %}
         <a href="/file/{{ art.path }}">{{ art.name }}</a>{% if not loop.last %},{% endif %}
         {% endfor %}
+    </section>
+    {% endif %}
+
+    {# T-1583: Reviewer Verdict — cross-surface parity with /approvals F3 (T-1569).
+       Silently absent when no `## Reviewer Verdict` block exists in the body
+       (pre-v1.4 tasks). Distinct CSS class so the visual separation between
+       agent's recommendation and reviewer's mechanical verdict is clear. #}
+    {% if reviewer and reviewer.overall %}
+    <section class="reviewer-verdict-block" data-reviewer-overall="{{ reviewer.overall }}">
+        <h4>Reviewer — {{ reviewer.overall }}{% if reviewer.needs_human %}<span class="needs-human-flag">needs human</span>{% endif %}</h4>
+        <div class="reviewer-meta">
+            {% if reviewer.findings == 0 %}No findings.{% else %}{{ reviewer.findings }} finding{{ 's' if reviewer.findings != 1 else '' }} — see <a href="/tasks/{{ task_id }}#reviewer-verdict">full Reviewer block</a>.{% endif %}
+        </div>
     </section>
     {% endif %}
 
@@ -332,6 +532,32 @@
         {% endfor %}
     </div>
     {% endif %}
+
+    <!-- Toast container + htmx error handler (T-1582, T-1574 follow-up) -->
+    <div id="toast-container" style="position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;pointer-events:none;"></div>
+    <script>
+        function showToast(msg, type) {
+            type = type || 'info';
+            var container = document.getElementById('toast-container');
+            if (!container) return;
+            var toast = document.createElement('div');
+            toast.className = 'wt-toast ' + type;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(function() {
+                toast.style.animation = 'toast-out 0.3s ease-in forwards';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 3000);
+        }
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            var msg = 'Save failed';
+            try { msg = evt.detail.xhr.responseText.replace(/<[^>]*>/g, '').trim().substring(0, 100) || msg; } catch(e) {}
+            showToast(msg, 'error');
+        });
+        document.body.addEventListener('htmx:sendError', function() {
+            showToast('Network error — check server', 'error');
+        });
+    </script>
 
 </body>
 </html>

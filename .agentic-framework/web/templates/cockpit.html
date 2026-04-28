@@ -146,6 +146,42 @@
             {% if action_summary.human_ac_count %}
             <span><strong style="color:#7c3aed;">{{ action_summary.human_ac_count }}</strong> Human ACs
                 <small style="color:var(--pico-muted-color);">({{ action_summary.human_ac_task_count }} tasks)</small>
+                {# T-1533: per-verdict count pills next to the AC count #}
+                {% if action_summary.go_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="GO"
+                       style="margin-left:0.4rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#1b5e20; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks the agent recommends GO — likely rubber-stamp">{{ action_summary.go_ac_count }} GO</small>
+                {% endif %}
+                {% if action_summary.defer_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="DEFER"
+                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#e65100; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks the agent recommends DEFER — needs strategic decision">{{ action_summary.defer_ac_count }} DEFER</small>
+                {% endif %}
+                {% if action_summary.nogo_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="NO-GO"
+                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#b71c1c; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks the agent recommends NO-GO">{{ action_summary.nogo_ac_count }} NO-GO</small>
+                {% endif %}
+                {# T-1577: NO-REC distinguishes 'agent owes a recommendation' (no Recommendation
+                   block) from `?` (block exists but verdict unparseable). Same convention as
+                   /approvals filter buttons (T-1576). #}
+                {% if action_summary.no_rec_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="NO-REC"
+                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#0e7490; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks where the agent has not written a Recommendation block — not yet ready for review (T-1576/T-1577)">{{ action_summary.no_rec_ac_count }} NO-REC</small>
+                {% endif %}
+                {# T-1540 iter1: ? verdict was unaccounted for in pill sum (count vs pill mismatch). Surface it.
+                   T-1577: now means 'Recommendation block present but verdict unparseable' — NO-REC is split out above. #}
+                {% if action_summary.unknown_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="?"
+                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#616161; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks with a Recommendation block whose verdict line is missing or unparseable">{{ action_summary.unknown_ac_count }} ?</small>
+                {% endif %}
             </span>
             {% endif %}
         </div>

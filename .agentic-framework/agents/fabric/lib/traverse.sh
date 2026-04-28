@@ -186,7 +186,7 @@ do_blast_radius() {
             if grep -q "^location: $file" "$card" 2>/dev/null; then
                 has_card=true
                 local name
-                name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
+                name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
                 echo -e "${GREEN}$file${NC} ($name)"
 
                 # Quick impact lookup

@@ -74,17 +74,29 @@ emit_review() {
         fi
     done < "$task_file"
 
-    # T-1215: Warn if inception task has no substantive ## Recommendation
+    # T-1215 / T-1545: Warn if inception task has no substantive ## Recommendation.
+    #
+    # T-1545 origin: prior implementation used sed|grep -v|...|head -1 which,
+    # on a fully-empty Recommendation section, exited non-zero (every grep -v
+    # filtered every line). Under `set -e -o pipefail` (set in bin/fw) the
+    # regular variable assignment propagated that failure and aborted
+    # emit_review silently — exit 1, empty stdout/stderr, no review marker.
+    #
+    # Fix: delegate to audit_inception_recommendation (awk-based, pipefail-safe,
+    # handles multi-line HTML-comment placeholders that the old line-anchored
+    # `^<!--` detector missed in pickup-template skeletons).
     if [ "$workflow_type" = "inception" ]; then
-        local _rec_content=""
-        _rec_content=$(sed -n '/^## Recommendation/,/^## /p' "$task_file" 2>/dev/null \
-            | grep -v '^## ' | grep -v '^<!--' | grep -v '^\-\->' | grep -v '^$' | head -1)
-        if [ -z "$_rec_content" ]; then
-            echo "" >&2
-            echo -e "  ${YELLOW}WARNING: No ## Recommendation written yet${NC}" >&2
-            echo -e "  ${YELLOW}The human will see a bare decision card on /approvals.${NC}" >&2
-            echo -e "  ${YELLOW}Write a recommendation before presenting for review.${NC}" >&2
-            echo "" >&2
+        if ! declare -F audit_inception_recommendation >/dev/null 2>&1; then
+            source "${FRAMEWORK_ROOT:-.}/lib/task-audit.sh" 2>/dev/null || true
+        fi
+        if declare -F audit_inception_recommendation >/dev/null 2>&1; then
+            if ! audit_inception_recommendation "$task_file" 2>/dev/null; then
+                echo "" >&2
+                echo -e "  ${YELLOW}WARNING: No substantive ## Recommendation written yet${NC}" >&2
+                echo -e "  ${YELLOW}The human will see a bare decision card on /approvals.${NC}" >&2
+                echo -e "  ${YELLOW}Write a recommendation before presenting for review.${NC}" >&2
+                echo "" >&2
+            fi
         fi
     fi
 

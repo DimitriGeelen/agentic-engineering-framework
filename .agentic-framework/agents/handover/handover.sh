@@ -107,10 +107,10 @@ if [ "$CHECKPOINT_MODE" = true ]; then
     shopt -s nullglob
     for f in "$TASKS_DIR/active"/*.md; do
         [ -f "$f" ] || continue
-        task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
-        task_name=$(grep "^name:" "$f" | head -1 | cut -d: -f2- | sed 's/^ *//')
-        task_status=$(grep "^status:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
-        task_wftype=$(grep "^workflow_type:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+        task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
+        task_name=$({ grep "^name:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2- | sed 's/^ *//')
+        task_status=$({ grep "^status:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
+        task_wftype=$({ grep "^workflow_type:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
         [ -n "$task_id" ] && ACTIVE_TASKS="$ACTIVE_TASKS$task_id, "
         # T-1461: render task as a Watchtower link when WT_URL is available.
         # Inception → /inception/T-XXX, otherwise → /review/T-XXX. Plain bold ID when WT_URL empty.
@@ -212,7 +212,7 @@ ACTIVE_TASKS=""
 shopt -s nullglob
 for f in "$TASKS_DIR/active"/*.md; do
     [ -f "$f" ] || continue
-    task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+    task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
     if [ -n "$task_id" ]; then
         ACTIVE_TASKS="$ACTIVE_TASKS$task_id, "
     fi
@@ -227,7 +227,7 @@ RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log -5 --pretty=format:"- %h %s" 2>/dev/
 # Get tasks touched recently (modified in last day)
 TASKS_TOUCHED=""
 while IFS= read -r f; do
-    task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+    task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
     if [ -n "$task_id" ]; then
         TASKS_TOUCHED="$TASKS_TOUCHED$task_id, "
     fi
@@ -250,7 +250,7 @@ for f in "$TASKS_DIR/completed"/*.md; do
         continue
     fi
 
-    task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+    task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
     [ -z "$task_id" ] && continue
 
     episodic_file="$EPISODIC_DIR/${task_id}.yaml"
@@ -501,6 +501,21 @@ def inception_link(tid, name):
         return f'[{tid}]({WT_URL}/inception/{tid}): {name}'
     return f'**{tid}**: {name}'
 
+def extract_verdict(content):
+    """T-1530: Extract GO/DEFER/NO-GO from ## Recommendation. H2+ terminator (L-293).
+    T-1576: emit NO-REC when section is missing/empty (agent owes a recommendation).
+    NOTE: \$ escapes because this heredoc is unquoted; bash would otherwise eat \$(...)."""
+    m = re.search(r'^## Recommendation\s*\$(.*?)(?=^#{2,} |\Z)',
+                  content, re.MULTILINE | re.DOTALL)
+    if not m:
+        return 'NO-REC'
+    body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL).strip()
+    if not body:
+        return 'NO-REC'
+    v = re.search(r'\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b',
+                  body, re.IGNORECASE)
+    return v.group(1).upper() if v else '?'
+
 horizon_order = {'now': 0, 'next': 1, 'later': 2}
 tasks = []
 
@@ -514,16 +529,18 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
     if not tid:
         continue
     h = thoriz.group(1).strip() if thoriz else 'now'
+    # T-1530: capture verdict while content is still loaded
+    verdict = extract_verdict(content)
     tasks.append((horizon_order.get(h, 0), tid.group(1).strip(),
                   tname.group(1).strip() if tname else '',
                   tstatus.group(1).strip() if tstatus else '',
-                  h))
+                  h, verdict))
 
 tasks.sort(key=lambda t: (t[0], t[1]))
 current_horizon = None
 # Collect work-completed tasks to summarize at end of each horizon group
 pending_completed = []
-for _, tid, tname, tstatus, h in tasks:
+for _, tid, tname, tstatus, h, verdict in tasks:
     if h != current_horizon:
         # Flush any accumulated work-completed tasks from previous horizon
         if pending_completed:
@@ -531,8 +548,8 @@ for _, tid, tname, tstatus, h in tasks:
             print()
             print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
             print()
-            for pc_tid, pc_name in pending_completed:
-                print(f'- {review_link(pc_tid, pc_name)}')
+            for pc_tid, pc_name, pc_verdict in pending_completed:
+                print(f'- [{pc_verdict}] {review_link(pc_tid, pc_name)}')
             print()
             pending_completed = []
         current_horizon = h
@@ -540,7 +557,7 @@ for _, tid, tname, tstatus, h in tasks:
         print()
     # Work-completed tasks: just list them (no [TODO] blocks)
     if tstatus == 'work-completed':
-        pending_completed.append((tid, tname))
+        pending_completed.append((tid, tname, verdict))
         continue
     # Auto-fill from git log for this task
     import subprocess
@@ -567,8 +584,8 @@ if pending_completed:
     print()
     print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
     print()
-    for pc_tid, pc_name in pending_completed:
-        print(f'- {review_link(pc_tid, pc_name)}')
+    for pc_tid, pc_name, pc_verdict in pending_completed:
+        print(f'- [{pc_verdict}] {review_link(pc_tid, pc_name)}')
     print()
 
 # T-1461: render inception tasks awaiting decision with /inception/T-XXX links
@@ -640,6 +657,24 @@ import glob, re, os
 
 tasks_dir = os.environ.get("TASKS_DIR", ".tasks")
 WT_URL = os.environ.get("WT_URL_FOR_PYTHON", "")
+
+def extract_verdict(content):
+    """T-1530: Extract GO/DEFER/NO-GO from ## Recommendation. H2+ terminator (L-293).
+    T-1576: emit NO-REC when section is missing/empty so the human knows the
+    agent owes a recommendation (rather than seeing a bare '?' that conflates
+    'no section' with 'verdict unparseable').
+    """
+    m = re.search(r'^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)',
+                  content, re.MULTILINE | re.DOTALL)
+    if not m:
+        return 'NO-REC'
+    body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL).strip()
+    if not body:
+        return 'NO-REC'
+    v = re.search(r'\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b',
+                  body, re.IGNORECASE)
+    return v.group(1).upper() if v else '?'
+
 partial = []
 for f in sorted(glob.glob(os.path.join(tasks_dir, "active", "*.md"))):
     with open(f) as fh:
@@ -660,20 +695,25 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, "active", "*.md"))):
         # Extract first unchecked AC text (truncated)
         first_ac = re.search(r'^\s*-\s*\[ \]\s*(.+)', human_section, re.M)
         ac_preview = first_ac.group(1)[:60] if first_ac else "?"
-        partial.append((tid.group(1), tname.group(1) if tname else "?", unchecked, ac_preview))
+        verdict = extract_verdict(content)
+        partial.append((tid.group(1), tname.group(1) if tname else "?", unchecked, ac_preview, verdict))
 
 if partial:
     print("## Awaiting Your Action (Human)")
     print()
     print(f"**{len(partial)} task(s) with unchecked Human ACs.** These are waiting for you — not for agent cleanup.")
-    print("Review each when ready. No urgency implied.")
+    # T-1540 iter3: clarify the [?] doc-promise. Partial-complete state requires a
+    # Recommendation block (T-1529 structural gate), so [?] is rare and not expected
+    # in this queue. The [?] is defensive only.
+    print("Review each when ready. No urgency implied. Prefix is the agent's recommendation: `[GO]` confirm, `[DEFER]`/`[NO-GO]` decide. `[NO-REC]` means the agent never wrote a Recommendation block — task isn't ready for review yet (T-1576). (`[?]` would mean a partial-complete task slipped past the T-1529 recommendation gate — should not occur in normal flow.)")
     print()
-    for tid, tname, count, preview in partial:
+    for tid, tname, count, preview, verdict in partial:
         # T-1461: render review URL inline if Watchtower is reachable
+        # T-1530: prefix with agent recommendation verdict
         if WT_URL:
-            print(f"- [{tid}]({WT_URL}/review/{tid}): {tname} ({count} unchecked)")
+            print(f"- [{verdict}] [{tid}]({WT_URL}/review/{tid}): {tname} ({count} unchecked)")
         else:
-            print(f"- **{tid}**: {tname} ({count} unchecked)")
+            print(f"- [{verdict}] **{tid}**: {tname} ({count} unchecked)")
         print(f"  - e.g.: {preview}")
     print()
 PCEOF

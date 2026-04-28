@@ -87,7 +87,10 @@ print('JSON_END')
     fi
 
     local removed_list
-    removed_list=$(echo "$result" | grep '^REMOVED|' | head -1 | sed 's/^REMOVED|//')
+    # T-1560 / L-302: pipefail guard. If $result has no REMOVED| line, line 92's
+    # `[ -z "$removed_list" ]` branch is the intended path — without the guard,
+    # set -e -o pipefail kills the function before line 92 runs.
+    removed_list=$( { echo "$result" | grep '^REMOVED|' || true; } | head -1 | sed 's/^REMOVED|//')
 
     if [ -z "$removed_list" ]; then
         echo -e "  ${GREEN}OK${NC}  --dedupe-user-hooks: no duplicates in $user_settings"

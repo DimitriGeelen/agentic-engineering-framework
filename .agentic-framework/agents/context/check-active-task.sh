@@ -169,7 +169,7 @@ except:
 CURRENT_SESSION=""
 SESSION_FILE="$PROJECT_ROOT/.context/working/session.yaml"
 if [ -f "$SESSION_FILE" ]; then
-    CURRENT_SESSION=$(grep "^session_id:" "$SESSION_FILE" 2>/dev/null | head -1 | awk '{print $2}')
+    CURRENT_SESSION=$({ grep "^session_id:" "$SESSION_FILE" 2>/dev/null || true; } | head -1 | awk '{print $2}')
 fi
 
 if [ -z "$CURRENT_TASK" ]; then
@@ -193,7 +193,7 @@ if [ -n "$CURRENT_SESSION" ] && [ -n "$FOCUS_SESSION" ] && [ "$FOCUS_SESSION" !=
     STALE_TASK_NAME=""
     STALE_FILE=$(find_task_file "$CURRENT_TASK" active 2>/dev/null)
     if [ -n "$STALE_FILE" ]; then
-        STALE_TASK_NAME=$(grep "^name:" "$STALE_FILE" 2>/dev/null | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+        STALE_TASK_NAME=$({ grep "^name:" "$STALE_FILE" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
     fi
 
     echo "" >&2
@@ -237,7 +237,7 @@ fi
 # --- Status validation (T-354) ---
 # Task file exists in active/ but may be captured (not started) or work-completed
 # (partial-complete). Only started-work and issues are workable statuses.
-TASK_STATUS=$(grep "^status:" "$ACTIVE_FILE" | head -1 | sed 's/status:[[:space:]]*//')
+TASK_STATUS=$({ grep "^status:" "$ACTIVE_FILE" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
 case "$TASK_STATUS" in
     started-work|issues)
         # Workable statuses — allow
@@ -282,10 +282,10 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
     for tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
         [ -f "$tf" ] || continue
         if head -20 "$tf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
-            tf_status=$(grep "^status:" "$tf" | head -1 | sed 's/status:[[:space:]]*//')
+            tf_status=$({ grep "^status:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
             if [ "$tf_status" != "work-completed" ]; then
-                tf_id=$(grep "^id:" "$tf" | head -1 | sed 's/id:[[:space:]]*//')
-                tf_name=$(grep "^name:" "$tf" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+                tf_id=$({ grep "^id:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/id:[[:space:]]*//')
+                tf_name=$({ grep "^name:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
                 INCOMPLETE_ONBOARDING="${INCOMPLETE_ONBOARDING}  ${tf_id}: ${tf_name} (${tf_status})\n"
             fi
         fi
@@ -337,7 +337,7 @@ fi
 # but never scoped. This prevents building without acceptance criteria.
 # Inception tasks have their own gate above; skip them here.
 if [ -n "$ACTIVE_FILE" ]; then
-    WORKFLOW_TYPE=$(grep "^workflow_type:" "$ACTIVE_FILE" 2>/dev/null | head -1 | sed 's/workflow_type:[[:space:]]*//')
+    WORKFLOW_TYPE=$({ grep "^workflow_type:" "$ACTIVE_FILE" 2>/dev/null || true; } | head -1 | sed 's/workflow_type:[[:space:]]*//')
     case "$WORKFLOW_TYPE" in
         build|refactor|test|decommission)
             AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## [^A]/p' "$ACTIVE_FILE" 2>/dev/null | sed '$d')

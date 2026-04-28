@@ -21,7 +21,7 @@ from flask import Blueprint, request, render_template
 
 logger = logging.getLogger(__name__)
 
-from web.shared import PROJECT_ROOT, render_page, load_scan
+from web.shared import PROJECT_ROOT, render_page, load_scan, extract_recommendation_verdict, extract_recommendation_state
 from web.subprocess_utils import run_fw_command
 
 bp = Blueprint("cockpit", __name__)
@@ -50,7 +50,15 @@ def get_scan_age(scan_data: dict) -> str:
 
 
 def get_human_verify_tasks() -> list:
-    """Find active tasks with unchecked ### Human ACs (T-193)."""
+    """Find active tasks with unchecked ### Human ACs (T-193).
+
+    T-1577: Use canonical `_parse_acceptance_criteria` (web/blueprints/tasks.py)
+    instead of a local regex. The local regex matched checkboxes inside HTML
+    template comments, over-counting against /approvals' canonical parser
+    (L-298 cross-surface count divergence). One parser, one source of truth.
+    """
+    from web.blueprints.tasks import _parse_acceptance_criteria
+
     active_dir = PROJECT_ROOT / ".tasks" / "active"
     results = []
     if not active_dir.is_dir():
@@ -70,28 +78,28 @@ def get_human_verify_tasks() -> list:
             except Exception as e:
                 logger.warning("Failed to parse frontmatter in %s: %s", fn, e)
 
-        # Find AC section
-        ac_match = re_mod.search(
-            r"^## Acceptance Criteria\s*\n(.*?)(?=\n## |\Z)", text,
-            re_mod.MULTILINE | re_mod.DOTALL)
-        if not ac_match:
+        # Body = text minus frontmatter (canonical parser expects body only)
+        body = text
+        if text.startswith("---"):
+            try:
+                end = text.index("---", 3)
+                body = text[end + 3:]
+            except ValueError:
+                pass
+
+        all_acs = _parse_acceptance_criteria(body)
+        human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
+        if not human_acs:
             continue
 
-        ac_section = ac_match.group(1)
-        if "### Human" not in ac_section:
-            continue
-
-        human_match = re_mod.search(
-            r"### Human\s*\n(.*?)(?=\n### |\Z)", ac_section, re_mod.DOTALL)
-        if not human_match:
-            continue
-
-        human_block = human_match.group(1)
-        total = len(re_mod.findall(r"^\s*-\s*\[[ x]\]", human_block, re_mod.MULTILINE))
-        checked = len(re_mod.findall(r"^\s*-\s*\[x\]", human_block, re_mod.MULTILINE))
+        total = len(human_acs)
+        checked = sum(1 for ac in human_acs if ac["checked"])
         if total > 0 and checked < total:
-            unchecked = [m.strip() for m in re_mod.findall(
-                r"^\s*-\s*\[ \]\s*(.*)", human_block, re_mod.MULTILINE)]
+            unchecked = [ac["text"] for ac in human_acs if not ac["checked"]]
+            # T-1533: surface agent recommendation verdict for landing-page widget
+            # T-1577: also surface state to distinguish NO-REC from unparseable `?`
+            verdict = extract_recommendation_verdict(text)
+            state = extract_recommendation_state(text)
             results.append({
                 "task_id": fm.get("id", fn.stem),
                 "name": fm.get("name", ""),
@@ -99,6 +107,8 @@ def get_human_verify_tasks() -> list:
                 "total": total,
                 "checked": checked,
                 "unchecked_items": unchecked,
+                "verdict": verdict,
+                "state": state,
             })
     return results
 
@@ -140,6 +150,15 @@ def get_action_summary() -> dict:
 
     top_tasks = sorted(human_verify, key=lambda t: t["total"] - t["checked"], reverse=True)[:3]
 
+    # T-1533: aggregate verdict counts for the landing-page Action Required widget
+    go_ac_count = sum(1 for t in human_verify if t.get("verdict") == "GO")
+    defer_ac_count = sum(1 for t in human_verify if t.get("verdict") == "DEFER")
+    nogo_ac_count = sum(1 for t in human_verify if t.get("verdict") == "NO-GO")
+    # T-1577: split NO-REC (no Recommendation block) from `?` (block exists, verdict unparseable).
+    # State is authoritative; verdict alone collapses both into `?` (compat shim).
+    no_rec_ac_count = sum(1 for t in human_verify if t.get("state") == "NO-REC")
+    unknown_ac_count = sum(1 for t in human_verify if t.get("state") == "?")
+
     return {
         "tier0_count": tier0_count,
         "go_count": go_count,
@@ -147,6 +166,11 @@ def get_action_summary() -> dict:
         "human_ac_task_count": len(human_verify),
         "total": tier0_count + go_count + len(human_verify),
         "top_tasks": top_tasks,
+        "go_ac_count": go_ac_count,
+        "defer_ac_count": defer_ac_count,
+        "nogo_ac_count": nogo_ac_count,
+        "no_rec_ac_count": no_rec_ac_count,
+        "unknown_ac_count": unknown_ac_count,
     }
 
 

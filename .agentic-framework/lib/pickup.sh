@@ -37,8 +37,8 @@ pickup_ensure_dirs() {
 pickup_is_self_completed() {
     local file="$1"
     local source_project source_task local_project
-    source_project=$(grep "^  project:" "$file" | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    source_task=$(grep "^  task_id:" "$file" 2>/dev/null | head -1 | sed 's/^  task_id:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    source_project=$({ grep "^  project:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    source_task=$({ grep "^  task_id:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  task_id:[[:space:]]*//' | tr -d '"' | tr -d "'")
     local_project=$(basename "${PROJECT_ROOT:-.}")
 
     [ "$source_project" = "$local_project" ] || return 1
@@ -87,7 +87,7 @@ pickup_validate_envelope() {
 
     # Validate type value
     local pickup_type
-    pickup_type=$(grep "^type:" "$file" | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    pickup_type=$({ grep "^type:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
     case "$pickup_type" in
         bug-report|learning|feature-proposal|pattern) ;;
         *)
@@ -105,9 +105,9 @@ pickup_dedup_hash() {
     local file="$1"
 
     local pickup_type source_project summary
-    pickup_type=$(grep "^type:" "$file" | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    source_project=$(grep "^  project:" "$file" | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    summary=$(grep "^  summary:" "$file" | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    pickup_type=$({ grep "^type:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    source_project=$({ grep "^  project:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    summary=$({ grep "^  summary:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"' | tr -d "'")
 
     # Normalize: lowercase, collapse whitespace
     local normalized
@@ -167,10 +167,10 @@ pickup_dedup_triple_check() {
     local file="$1"
 
     local source_project source_task pickup_type supersedes
-    source_project=$(grep "^  project:" "$file" | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    source_task=$(grep "^  task_id:" "$file" 2>/dev/null | head -1 | sed 's/^  task_id:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    pickup_type=$(grep "^type:" "$file" | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    supersedes=$(grep "^supersedes:" "$file" 2>/dev/null | head -1 | sed 's/^supersedes:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    source_project=$({ grep "^  project:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    source_task=$({ grep "^  task_id:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  task_id:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    pickup_type=$({ grep "^type:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    supersedes=$({ grep "^supersedes:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^supersedes:[[:space:]]*//' | tr -d '"' | tr -d "'")
 
     # Empty source_task → triple key is unreliable → fall through to hash-only
     [ -z "$source_task" ] && return 1
@@ -192,7 +192,7 @@ pickup_dedup_triple_check() {
         grep -qE "^tags: \[.*\b${pickup_type}\b.*\]" "$task_file" 2>/dev/null || continue
         # Match — emit the T-XXX id and return collision
         local blocking_id
-        blocking_id=$(grep "^id:" "$task_file" | head -1 | sed 's/^id:[[:space:]]*//' | tr -d '"' | tr -d "'")
+        blocking_id=$({ grep "^id:" "$task_file" 2>/dev/null || true; } | head -1 | sed 's/^id:[[:space:]]*//' | tr -d '"' | tr -d "'")
         echo "$blocking_id"
         return 0
     done
@@ -230,7 +230,7 @@ pickup_next_id() {
         for f in "$dir"/*.yaml "$dir"/*.yml; do
             [ -f "$f" ] || continue
             local pid
-            pid=$(grep "^pickup_id:" "$f" 2>/dev/null | head -1 | sed 's/.*P-0*//' | tr -d '"' | tr -d "'" | tr -d '[:space:]')
+            pid=$({ grep "^pickup_id:" "$f" 2>/dev/null || true; } | head -1 | sed 's/.*P-0*//' | tr -d '"' | tr -d "'" | tr -d '[:space:]')
             if [ -n "$pid" ] && [ "$pid" -gt "$max_id" ] 2>/dev/null; then
                 max_id=$pid
             fi
@@ -247,10 +247,10 @@ pickup_create_inception() {
     local file="$1"
 
     local summary source_project pickup_type source_task
-    pickup_type=$(grep "^type:" "$file" | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    source_project=$(grep "^  project:" "$file" | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    summary=$(grep "^  summary:" "$file" | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    source_task=$(grep "^  task_id:" "$file" 2>/dev/null | head -1 | sed 's/^  task_id:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    pickup_type=$({ grep "^type:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    source_project=$({ grep "^  project:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    summary=$({ grep "^  summary:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    source_task=$({ grep "^  task_id:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  task_id:[[:space:]]*//' | tr -d '"' | tr -d "'")
 
     local task_name="Pickup: ${summary} (from ${source_project})"
 
@@ -362,7 +362,7 @@ pickup_process_one() {
 
     # Process
     local summary
-    summary=$(grep "^  summary:" "$file" | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    summary=$({ grep "^  summary:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"' | tr -d "'")
 
     if [ "$dry_run" = true ]; then
         echo -e "${CYAN}WOULD PROCESS${NC}  $basename_f — $summary"
@@ -377,7 +377,7 @@ pickup_process_one() {
     # Notify human
     if type fw_notify >/dev/null 2>&1; then
         local source_project
-        source_project=$(grep "^  project:" "$file" | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
+        source_project=$({ grep "^  project:" "$file" 2>/dev/null || true; } | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
         fw_notify "Pickup: $summary" "From $source_project — inception task created" 2>/dev/null || true
     fi
 
@@ -594,9 +594,9 @@ do_pickup() {
                 [ -f "$f" ] || continue
                 found=true
                 local summary pickup_type source_project
-                pickup_type=$(grep "^type:" "$f" 2>/dev/null | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"')
-                summary=$(grep "^  summary:" "$f" 2>/dev/null | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"')
-                source_project=$(grep "^  project:" "$f" 2>/dev/null | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"')
+                pickup_type=$({ grep "^type:" "$f" 2>/dev/null || true; } | head -1 | sed 's/^type:[[:space:]]*//' | tr -d '"')
+                summary=$({ grep "^  summary:" "$f" 2>/dev/null || true; } | head -1 | sed 's/^  summary:[[:space:]]*//' | tr -d '"')
+                source_project=$({ grep "^  project:" "$f" 2>/dev/null || true; } | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"')
                 echo "  $(basename "$f")  [$pickup_type]  $summary  (from $source_project)"
             done
             if [ "$found" = false ]; then
@@ -618,9 +618,9 @@ do_pickup() {
                         local crumb="${f}.breadcrumb.yaml"
                         local blocking reason deferred_at
                         if [ -f "$crumb" ]; then
-                            blocking=$(grep "^blocking_task:" "$crumb" | head -1 | sed 's/^blocking_task:[[:space:]]*//')
-                            reason=$(grep "^reason:" "$crumb" | head -1 | sed 's/^reason:[[:space:]]*//')
-                            deferred_at=$(grep "^deferred_at:" "$crumb" | head -1 | sed 's/^deferred_at:[[:space:]]*//')
+                            blocking=$({ grep "^blocking_task:" "$crumb" 2>/dev/null || true; } | head -1 | sed 's/^blocking_task:[[:space:]]*//')
+                            reason=$({ grep "^reason:" "$crumb" 2>/dev/null || true; } | head -1 | sed 's/^reason:[[:space:]]*//')
+                            deferred_at=$({ grep "^deferred_at:" "$crumb" 2>/dev/null || true; } | head -1 | sed 's/^deferred_at:[[:space:]]*//')
                         fi
                         printf "  %-40s  blocked-by=%-8s  reason=%-14s  at=%s\n" \
                             "$(basename "$f")" \

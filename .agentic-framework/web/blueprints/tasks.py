@@ -3,12 +3,14 @@
 import re as re_mod
 from datetime import datetime, timezone
 
+import markdown2
 import yaml
 from flask import Blueprint, abort, request
 
 from web.shared import (
     FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter,
     get_all_task_metadata, get_episodic_tags, task_id_sort_key,
+    extract_recommendation, extract_reviewer_verdict, render_markdown_safe,
 )
 from web.subprocess_utils import run_fw_command
 
@@ -95,8 +97,179 @@ def _update_frontmatter_field(file_path, field, value):
     return True, None
 
 
+def _normalize_md_relative_links(text):
+    """Pre-process Markdown text so leading-dot relative paths survive
+    markdown2's safe_mode URL filter (T-1551). `[x](.context/foo.yaml)`
+    becomes `[x](./.context/foo.yaml)`. AC bodies commonly link to
+    dotfile paths; without this they collapse to href="#"."""
+    if not text:
+        return text
+    return re_mod.sub(r'\]\(\.(?!/)', '](./.', text)
+
+
+# Match bare T-NNNN (1-5 digits) NOT inside backticks and NOT already
+# part of a Markdown link [...]. Lookbehind/lookahead handle adjacency.
+# Two-pass implementation: split on inline-code spans, then linkify the
+# non-code parts. Avoids regex-only approaches that mishandle nested
+# brackets.
+_TASK_REF_RE = re_mod.compile(r'(?<![\w/-])T-\d{1,5}(?![\w/-])')
+
+
+# T-1553: known Watchtower blueprint routes — auto-linked when bare in AC text.
+# Whitelist (not arbitrary /<word>) so we never generate broken links.
+_WATCHTOWER_BLUEPRINTS = (
+    'approvals', 'review', 'tasks', 'inception', 'cron', 'fabric',
+    'discoveries', 'metrics', 'costs', 'gaps', 'reviewer', 'sessions',
+    'docs', 'audit', 'audits', 'fleet', 'enforcement', 'pending',
+    'prompts', 'quality', 'risks', 'settings', 'terminal', 'timeline',
+    'config', 'cockpit',
+)
+_WT_PATH_RE = re_mod.compile(
+    r'(?<![\w])(/(?:' + '|'.join(_WATCHTOWER_BLUEPRINTS) + r')'
+    r'(?:/[\w-]+)?)(?!\w)'
+)
+
+
+def _walk_skipping_existing_links(text, replacer):
+    """Iterate `text`, applying `replacer(match_obj) -> str` only outside
+    inline-code spans and already-linked Markdown ranges. T-1552 + T-1553
+    share this scaffolding; replacer is the regex/sub callback."""
+    if not text:
+        return text
+    parts = re_mod.split(r'(`[^`]*`)', text)
+    out = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            out.append(part)
+            continue
+        rewritten = []
+        j = 0
+        while j < len(part):
+            if part[j] == '[':
+                close = part.find(']', j)
+                if close != -1 and close + 1 < len(part) and part[close + 1] == '(':
+                    paren_close = part.find(')', close + 2)
+                    if paren_close != -1:
+                        rewritten.append(part[j:paren_close + 1])
+                        j = paren_close + 1
+                        continue
+            replaced, advance = replacer(part, j)
+            if replaced is not None:
+                rewritten.append(replaced)
+                j += advance
+            else:
+                rewritten.append(part[j])
+                j += 1
+        out.append(''.join(rewritten))
+    return ''.join(out)
+
+
+def _auto_link_watchtower_paths(text):
+    """Rewrite bare Watchtower URL paths (`/approvals`, `/review/T-1448`)
+    to Markdown links so they're click-traversable from /review/T-XXX
+    surfaces (T-1553). Companion to T-1552's T-NNNN linker. Whitelist
+    based — only known blueprint routes are touched."""
+    def replacer(s, j):
+        m = _WT_PATH_RE.match(s, j)
+        if m:
+            url = m.group(0)
+            return f'[{url}]({url})', m.end() - j
+        return None, 0
+    return _walk_skipping_existing_links(text, replacer)
+
+
+def _auto_link_task_refs(text):
+    """Rewrite bare `T-NNNN` to `[T-NNNN](/tasks/T-NNNN)` so /review surface
+    AC steps become click-traversable across tasks (T-1552). Skips inline
+    code and already-linked references (see _walk_skipping_existing_links).
+    """
+    def replacer(s, j):
+        m = _TASK_REF_RE.match(s, j)
+        if m:
+            tid = m.group(0)
+            return f'[{tid}](/tasks/{tid})', m.end() - j
+        return None, 0
+    return _walk_skipping_existing_links(text, replacer)
+
+
+# T-1575: bare URLs in AC steps (e.g. "Open http://192.168.10.107:3000/review/T-1565")
+# rendered as plain text — markdown2's default doesn't auto-link. Without this, the
+# human can't click the link the agent wrote into the Steps. Same _walk_skipping
+# scaffolding so we don't double-wrap already-linked URLs.
+_BARE_URL_RE = re_mod.compile(r"https?://[^\s<>'\"`)\]]+")
+
+
+def _auto_link_bare_urls(text):
+    """Wrap bare http(s) URLs in markdown link syntax so markdown2 emits <a>.
+    Skips inline code and already-linked URLs (T-1575)."""
+    def replacer(s, j):
+        m = _BARE_URL_RE.match(s, j)
+        if m:
+            url = m.group(0).rstrip(".,;:!?")  # strip trailing punctuation
+            return f"[{url}]({url})", len(url)
+        return None, 0
+    return _walk_skipping_existing_links(text, replacer)
+
+
+# T-1575 codification: any URL inside a `<code>` block (because the agent
+# wrapped it in backticks) must still be clickable. Post-process the rendered
+# HTML to wrap `<code>http(s)://...</code>` in an anchor while preserving the
+# code-span styling. This guarantees URLs are clickable regardless of how the
+# agent wrote them — the rendering layer is the contract, not agent discipline.
+_CODE_URL_HTML_RE = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
+
+
+def _linkify_code_urls(html):
+    """Wrap <code>http(s)://...</code> in an anchor so backticked URLs in AC
+    Steps are clickable. Idempotent (won't double-wrap because we only match
+    the bare <code>...</code> shape, not <a>...<code>...</code>...</a>)."""
+    if not html or "<code>" not in html:
+        return html
+    return _CODE_URL_HTML_RE.sub(
+        lambda m: f'<a href="{m.group(1)}"><code>{m.group(1)}</code></a>',
+        html,
+    )
+
+
+def _render_md_inline(text):
+    """Render text as Markdown HTML for inline display (T-1551).
+    Strips <p> wrapper for use inside <li> contexts. safe_mode='escape'
+    blocks raw HTML — only Markdown syntax (links, code, emphasis) renders.
+    Returns '' for empty input. The caller must mark returned strings safe.
+    """
+    if not text:
+        return ''
+    text = _auto_link_watchtower_paths(text)
+    text = _auto_link_task_refs(text)
+    text = _auto_link_bare_urls(text)
+    text = _normalize_md_relative_links(text)
+    html = markdown2.markdown(text, safe_mode='escape').strip()
+    if html.startswith('<p>') and html.endswith('</p>'):
+        html = html[3:-4]
+    return _linkify_code_urls(html)
+
+
+def _render_md_block(text):
+    """Same as _render_md_inline but keeps <p> wrapping for block contexts
+    (Expected, If-not). T-1551."""
+    if not text:
+        return ''
+    text = _auto_link_watchtower_paths(text)
+    text = _auto_link_task_refs(text)
+    text = _auto_link_bare_urls(text)
+    text = _normalize_md_relative_links(text)
+    html = markdown2.markdown(text, safe_mode='escape').strip()
+    return _linkify_code_urls(html)
+
+
 def _parse_ac_body(body):
-    """Parse Steps/Expected/If-not from AC body text."""
+    """Parse Steps/Expected/If-not from AC body text.
+
+    T-1551: Steps/Expected/If-not are returned as Markdown-rendered HTML
+    so `[label](url)`, inline `code`, and `**emphasis**` work in the
+    /review/T-XXX surface (the original T-1548 friction). Templates must
+    use `| safe` on these values.
+    """
     steps = []
     expected = ''
     if_not = ''
@@ -141,6 +314,11 @@ def _parse_ac_body(body):
 
     # Strip numbered prefixes from steps (e.g., "1. Do thing" → "Do thing")
     steps = [re_mod.sub(r'^\d+\.\s*', '', s) for s in steps]
+
+    # T-1551: render Markdown so [label](url), `code`, **bold** work in /review/T-XXX
+    steps = [_render_md_inline(s) for s in steps]
+    expected = _render_md_block(expected)
+    if_not = _render_md_block(if_not)
 
     return steps, expected, if_not
 
@@ -422,6 +600,16 @@ def task_detail(task_id):
         all_checked = all(ac["checked"] for ac in ac_items)
         can_complete = all_checked
 
+    # T-1584: Surface Recommendation + Reviewer Verdict cards (cross-surface parity
+    # with /review T-1575/T-1583 and /approvals T-1531/T-1569). Same drift class as
+    # L-316 — three surfaces consume task body, /tasks was the missed third.
+    rec = extract_recommendation(task_content)
+    reviewer = extract_reviewer_verdict(task_content)
+    rec_complete = rec["verdict"] != "?" and bool(rec["rationale"].strip())
+    rec_state = "NO-REC" if not rec["raw"].strip() else rec["verdict"]
+    rec_rationale_html = render_markdown_safe(rec["rationale"])
+    rec_evidence_html = render_markdown_safe(rec["evidence"])
+
     return render_page(
         "task_detail.html",
         page_title=f"Task {task_id}",
@@ -433,6 +621,12 @@ def task_detail(task_id):
         ac_items=ac_items,
         artifacts=artifacts,
         can_complete=can_complete,
+        verdict=rec["verdict"],
+        rec_state=rec_state,
+        rec_complete=rec_complete,
+        rec_rationale_html=rec_rationale_html,
+        rec_evidence_html=rec_evidence_html,
+        reviewer=reviewer,
     )
 
 
@@ -532,13 +726,18 @@ def update_task_type(task_id):
 
 @bp.route("/api/task/<task_id>/complete", methods=["POST"])
 def complete_task(task_id):
-    """Complete a task from the browser — passes --force since human clicked it (T-640)."""
+    """Complete a task from the browser. T-1568 / F2: replaced legacy --force
+    with narrow auth flags. Human clicking from UI authorises sovereignty
+    bypass and skips shell-context verification, but Recommendation + RCA
+    gates still fire — those represent unwritten artefacts, not authorisation.
+    """
     if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     stdout, stderr, ok = run_fw_command([
         "task", "update", task_id, "--status", "work-completed",
-        "--force", "--reason", "Completed via Watchtower UI (human action)",
+        "--skip-sovereignty", "--skip-verification",
+        "--reason", "Completed via Watchtower UI (human action)",
     ])
     if ok:
         return (

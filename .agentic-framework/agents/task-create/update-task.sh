@@ -45,7 +45,7 @@ log_gate_bypass() {
 # Block agent from completing human-owned tasks without human interaction.
 check_human_sovereignty() {
     local current_owner
-    current_owner=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
+    current_owner=$({ grep "^owner:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
     if [ "$current_owner" = "human" ]; then
         if [ "$SKIP_SOVEREIGNTY" = true ]; then
             echo -e "${YELLOW}WARNING: Completing human-owned task (--skip-sovereignty bypass)${NC}"
@@ -163,6 +163,96 @@ check_acceptance_criteria() {
     fi
 }
 
+# Recommendation Gate (T-679 / T-1529 / T-1572 F6)
+# Fires when ANY needs-human signal is true:
+#   1. PARTIAL_COMPLETE=true (Human ACs remain — original T-679 trigger)
+#   2. Frontmatter `human_signoff: required`
+#   3. Frontmatter `risk: high` or `risk: medium`
+#   4. Prior `## Reviewer Verdict` block declares `Needs Human: yes`
+# This aligns the artefact gate with the reviewer's classification
+# (lib/reviewer/static_scan.py:668). T-1565 audit F6: a task with
+# `human_signoff: required` and no Human ACs in body could complete silently
+# with no Recommendation written — the reviewer flagged it; the gate didn't.
+# OBS-031: 19/22 awaiting-review tasks were blank because T-679 was advisory only.
+# L-293: uses H2+ terminator to avoid false-positives from appended Updates entries.
+check_recommendation_for_review() {
+    # T-1572 F6: compute unified needs_human flag (PARTIAL_COMPLETE OR
+    # frontmatter signals OR prior reviewer verdict).
+    local needs_human="false"
+    if [ "${PARTIAL_COMPLETE:-false}" = true ]; then
+        needs_human="true"
+    else
+        needs_human=$(python3 - "$TASK_FILE" <<'PYNH' 2>/dev/null || echo false
+import sys, re
+try:
+    text = open(sys.argv[1]).read()
+except OSError:
+    print("false"); sys.exit(0)
+fm_m = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+fm = fm_m.group(1) if fm_m else ""
+if re.search(r"^human_signoff:\s*[\"']?required\b", fm, re.MULTILINE):
+    print("true"); sys.exit(0)
+if re.search(r"^risk:\s*[\"']?(high|medium)\b", fm, re.MULTILINE | re.IGNORECASE):
+    print("true"); sys.exit(0)
+v_m = re.search(r"^## Reviewer Verdict \(v[0-9.]+\)[^\n]*\n(.*?)(?=^#{2,} |\Z)",
+                text, re.MULTILINE | re.DOTALL)
+if v_m and re.search(r"^- \*\*Needs Human:\*\*\s*yes\b",
+                     v_m.group(1), re.MULTILINE | re.IGNORECASE):
+    print("true"); sys.exit(0)
+print("false")
+PYNH
+)
+    fi
+    [ "$needs_human" = "true" ] || return 0
+
+    local rec_state
+    rec_state=$(python3 - "$TASK_FILE" <<'PYREC' 2>/dev/null || echo "error"
+import sys, re
+try:
+    text = open(sys.argv[1]).read()
+except OSError:
+    print("error"); sys.exit(0)
+m = re.search(r'^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL)
+if not m:
+    print("missing"); sys.exit(0)
+body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
+if re.search(r'^\s*[-*]?\s*\*\*Recommendation:\*\*\s*\S', body, re.MULTILINE):
+    print("ok")
+else:
+    print("empty")
+PYREC
+)
+
+    case "$rec_state" in
+        ok)
+            echo -e "${GREEN}Recommendation: substantive ✓${NC}"
+            return 0 ;;
+        error)
+            return 0 ;;
+        missing|empty)
+            if [ "$SKIP_RECOMMENDATION" = true ]; then
+                echo -e "${YELLOW}WARNING: Recommendation $rec_state (--skip-recommendation bypass)${NC}"
+                log_gate_bypass "--skip-recommendation" "check_recommendation_for_review"
+                return 0
+            fi
+            echo -e "${RED}ERROR: Cannot complete — task needs human review but ## Recommendation is $rec_state.${NC}" >&2
+            echo "" >&2
+            echo "T-679 (CLAUDE.md): never present a blank decision to the human." >&2
+            echo "Reviewers will see /review/$(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') with no agent advisory." >&2
+            echo "" >&2
+            echo "Add a ## Recommendation block to $TASK_FILE with:" >&2
+            echo "  **Recommendation:** GO / NO-GO / DEFER" >&2
+            echo "  **Rationale:** <why — cite evidence>" >&2
+            echo "  **Evidence:** <bullets — file paths, test results, metrics>" >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  1. Add the Recommendation block, then retry" >&2
+            echo "  2. Use --skip-recommendation to bypass (logged)" >&2
+            exit 1
+            ;;
+    esac
+}
+
 # T-679: Auto-emit review on partial-complete transition
 # Called after work-completed transition when human ACs remain.
 # Also available standalone: fw task review T-XXX
@@ -177,6 +267,83 @@ auto_emit_review_if_partial() {
             echo "  $(_emit_user_command "task review $TASK_ID")"
         fi
     fi
+}
+
+# RCA Gate (T-1550, structural remediation for G-019)
+# Fires on --status work-completed for bug-class tasks. Requires non-empty
+# `## RCA` body content so root cause is captured at the source, not lost.
+# Bug-class = workflow_type ∉ {inception, specification, design} AND
+#             (tags match bug|bugfix|hotfix|rca|incident OR title matches
+#              fix|bug|rca|broken|crash|error|regression|fail|hotfix).
+# Origin: T-1549 spike showed 99% (315/317) of bug-class tasks lacked RCA —
+# template + gate gap, not behavior. CLAUDE.md §"Post-Fix Root Cause Escalation"
+# previously advisory only.
+check_rca_for_bugfix() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    local task_title task_type task_tags is_bug
+    task_title=$(grep '^name:' "$TASK_FILE" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//')
+
+    case "$task_type" in
+        inception|specification|design) return 0 ;;
+    esac
+
+    is_bug=false
+    if echo "$task_tags" | grep -qiE '\b(bug|bugfix|hotfix|rca|incident)\b'; then
+        is_bug=true
+    elif echo "$task_title" | grep -qiE '\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b'; then
+        is_bug=true
+    fi
+    [ "$is_bug" = true ] || return 0
+
+    local rca_state
+    rca_state=$(python3 - "$TASK_FILE" <<'PYRCA' 2>/dev/null || echo "error"
+import sys, re
+try:
+    text = open(sys.argv[1]).read()
+except OSError:
+    print("error"); sys.exit(0)
+m = re.search(r'^## RCA\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL)
+if not m:
+    print("missing"); sys.exit(0)
+body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
+real = [l for l in body.splitlines() if l.strip() and not l.strip().startswith('#')]
+substantive = [l for l in real if len(l) > 30]
+print("ok" if substantive else "empty")
+PYRCA
+)
+
+    case "$rca_state" in
+        ok)
+            echo -e "${GREEN}RCA: substantive ✓${NC}"
+            return 0 ;;
+        error)
+            return 0 ;;
+        missing|empty)
+            if [ "$SKIP_RCA" = true ]; then
+                echo -e "${YELLOW}WARNING: RCA $rca_state (--skip-rca bypass)${NC}"
+                log_gate_bypass "--skip-rca" "check_rca_for_bugfix"
+                return 0
+            fi
+            echo -e "${RED}ERROR: Cannot complete bug-class task — ## RCA section is $rca_state.${NC}" >&2
+            echo "" >&2
+            echo "G-019 (CLAUDE.md): bug-fixes must capture root cause, not just the patch." >&2
+            echo "T-1549 spike showed 99% of bug-class tasks shipped without RCA capture." >&2
+            echo "" >&2
+            echo "Add a ## RCA block to $TASK_FILE with:" >&2
+            echo "  **Symptom:** what was observed" >&2
+            echo "  **Root cause:** why it happened (specific structural/logical gap)" >&2
+            echo "  **Why structurally allowed:** what let this go undetected" >&2
+            echo "  **Prevention:** what catches the next instance (test/lint/gate/doc/learning)" >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  1. Add the RCA block, then retry" >&2
+            echo "  2. Use --skip-rca to bypass (logged, T-1550)" >&2
+            exit 1
+            ;;
+    esac
 }
 
 # Verification Gate (P-011)
@@ -280,6 +447,8 @@ SKIP_SOVEREIGNTY=false
 SKIP_AC=false
 SKIP_VERIFICATION=false
 SKIP_HUMAN_OWNERSHIP=false
+SKIP_RECOMMENDATION=false
+SKIP_RCA=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -294,13 +463,17 @@ while [[ $# -gt 0 ]]; do
         --skip-acceptance-criteria) SKIP_AC=true; shift ;;
         --skip-verification) SKIP_VERIFICATION=true; shift ;;
         --skip-human-ownership) SKIP_HUMAN_OWNERSHIP=true; shift ;;
+        --skip-recommendation) SKIP_RECOMMENDATION=true; shift ;;
+        --skip-rca) SKIP_RCA=true; shift ;;
         --force|-f)
             echo -e "${YELLOW}DEPRECATED: --force will be removed. Use narrow flags instead:${NC}" >&2
             echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)" >&2
             echo "  --skip-acceptance-criteria   Bypass AC gate (P-010)" >&2
             echo "  --skip-verification          Bypass verification gate (P-011)" >&2
+            echo "  --skip-recommendation        Bypass recommendation gate (T-679)" >&2
+            echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -316,6 +489,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)"
             echo "  --skip-acceptance-criteria   Bypass AC gate (P-010)"
             echo "  --skip-verification          Bypass verification gate (P-011)"
+            echo "  --skip-recommendation        Bypass recommendation gate (T-679)"
+            echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)"
             echo "  --skip-human-ownership       Bypass human ownership reassignment"
             echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
             echo "  -h, --help    Show this help"
@@ -355,8 +530,8 @@ if type keylock_acquire &>/dev/null; then
 fi
 
 # Read current state
-OLD_STATUS=$(grep "^status:" "$TASK_FILE" | head -1 | sed 's/status:[[:space:]]*//')
-TASK_NAME=$(grep "^name:" "$TASK_FILE" | head -1 | sed 's/name:[[:space:]]*//')
+OLD_STATUS=$({ grep "^status:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
+TASK_NAME=$({ grep "^name:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//')
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 echo -e "${CYAN}=== Task Update ===${NC}"
@@ -385,8 +560,18 @@ if [ -n "$NEW_STATUS" ]; then
             ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
             ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED))
 
-            if [ "$ALL_UNCHECKED" -eq 0 ]; then
-                echo -e "${GREEN}All ACs checked (including human) ✓${NC}"
+            # T-1559: SKIP_AC must bypass the recheck too. The auth flag is the
+            # marker of authorization — semantically equivalent on both branches.
+            # Without this guard, partial-complete tasks become un-archivable
+            # except by hand-editing checkboxes (P-016 evidence: 20 tasks closed
+            # via that workaround in a single session).
+            if [ "$ALL_UNCHECKED" -eq 0 ] || [ "$SKIP_AC" = true ]; then
+                if [ "$ALL_UNCHECKED" -eq 0 ]; then
+                    echo -e "${GREEN}All ACs checked (including human) ✓${NC}"
+                else
+                    echo -e "${YELLOW}WARNING: $ALL_UNCHECKED/$ALL_TOTAL ACs unchecked (--skip-acceptance-criteria bypass)${NC}"
+                    log_gate_bypass "--skip-acceptance-criteria" "partial_complete_recheck"
+                fi
                 DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
                 # T-1523: use `git mv` when tracked so both rename sides land
                 # in the index together — avoids leaving the active/* deletion
@@ -459,7 +644,7 @@ if [ -n "$NEW_STATUS" ]; then
                 if grep -q "^status: started-work" "$_tf" 2>/dev/null; then
                     _other_count=$((_other_count + 1))
                     if [ "$_other_count" -le 5 ]; then
-                        _tid=$(grep "^id:" "$_tf" | head -1 | awk '{print $2}')
+                        _tid=$({ grep "^id:" "$_tf" 2>/dev/null || true; } | head -1 | awk '{print $2}')
                         _other_started="${_other_started}  ${_tid}\n"
                     fi
                 fi
@@ -493,6 +678,19 @@ if [ -n "$NEW_STATUS" ]; then
             run_verification_commands
         fi
 
+        # === Recommendation Gate (T-679 / T-1529) ===
+        # Only fires when PARTIAL_COMPLETE=true (Human ACs remain).
+        # Reviewers see /review/T-XXX — it must surface an agent advisory.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_recommendation_for_review
+        fi
+
+        # === RCA Gate (T-1550, G-019 structural remediation) ===
+        # Bug-class tasks must capture root cause before completion.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_rca_for_bugfix
+        fi
+
         # === Reviewer Static-Scan (T-1443 v1.0) ===
         # Non-blocking measurement pass: catalogues anti-patterns and writes
         # verdict to task body. Skipped if FW_REVIEWER_DISABLED=1 or python3
@@ -516,7 +714,7 @@ if [ -n "$NEW_STATUS" ]; then
         # === Invariant: started-work → horizon: now (T-1068) ===
         # Starting work means it's active NOW. Auto-promote horizon.
         if [ "$NEW_STATUS" = "started-work" ] && [ -z "$NEW_HORIZON" ]; then
-            _current_horizon=$(grep "^horizon:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/horizon:[[:space:]]*//' || true)
+            _current_horizon=$({ grep "^horizon:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/horizon:[[:space:]]*//' || true)
             if [ -n "$_current_horizon" ] && [ "$_current_horizon" != "now" ]; then
                 _sed_i "s/^horizon:.*/horizon: now/" "$TASK_FILE"
                 echo -e "${CYAN}Horizon: $_current_horizon → now (auto-sync: started-work implies now)${NC}"
@@ -528,7 +726,7 @@ fi
 
 # Update owner
 if [ -n "$NEW_OWNER" ]; then
-    OLD_OWNER=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
+    OLD_OWNER=$({ grep "^owner:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
     # T-198/R-033: Owner protection — owner: human is sticky
     if [ "$OLD_OWNER" = "human" ] && [ "$NEW_OWNER" != "human" ]; then
         if [ "$SKIP_HUMAN_OWNERSHIP" = true ]; then
@@ -553,7 +751,7 @@ if [ -n "$NEW_TYPE" ]; then
         echo "Valid types: $VALID_TYPES" >&2
         exit 1
     fi
-    OLD_TYPE=$(grep "^workflow_type:" "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//')
+    OLD_TYPE=$({ grep "^workflow_type:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/workflow_type:[[:space:]]*//')
     _sed_i "s/^workflow_type:.*/workflow_type: $NEW_TYPE/" "$TASK_FILE"
     echo "Type:    ${OLD_TYPE:-unset} → $NEW_TYPE"
     CHANGES+=("workflow_type: ${OLD_TYPE:-unset} → $NEW_TYPE")
@@ -566,7 +764,7 @@ if [ -n "$NEW_HORIZON" ]; then
         echo "Valid horizons: $VALID_HORIZONS" >&2
         exit 1
     fi
-    OLD_HORIZON=$(grep "^horizon:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/horizon:[[:space:]]*//' || true)
+    OLD_HORIZON=$({ grep "^horizon:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/horizon:[[:space:]]*//' || true)
     if [ -n "$OLD_HORIZON" ]; then
         _sed_i "s/^horizon:.*/horizon: $NEW_HORIZON/" "$TASK_FILE"
     else
@@ -580,7 +778,7 @@ horizon: $NEW_HORIZON" "$TASK_FILE"
     # === Invariant: horizon next/later + started-work → captured (T-1068) ===
     # Shelving a task means you stopped working on it. Auto-demote status.
     if [ "$NEW_HORIZON" != "now" ] && [ -z "$NEW_STATUS" ]; then
-        _current_status=$(grep "^status:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//' || true)
+        _current_status=$({ grep "^status:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//' || true)
         if [ "$_current_status" = "started-work" ]; then
             _sed_i "s/^status:.*/status: captured/" "$TASK_FILE"
             echo -e "${CYAN}Status:  started-work → captured (auto-sync: horizon $NEW_HORIZON implies not active)${NC}"
@@ -767,7 +965,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             for otf in "$TASKS_DIR/active"/T-*.md; do
                 [ -f "$otf" ] || continue
                 if head -20 "$otf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
-                    otf_status=$(grep "^status:" "$otf" | head -1 | sed 's/status:[[:space:]]*//')
+                    otf_status=$({ grep "^status:" "$otf" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
                     if [ "$otf_status" != "work-completed" ]; then
                         all_done=false
                         break
@@ -813,7 +1011,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 # T-1374 (G-054 root cause): `|| true` prevents the pipeline's grep-no-match
                 # exit 1 (under pipefail) from killing the script via set -e, which otherwise
                 # aborted before the Episodic Generation block ran.
-                comp_id=$(grep "^${path}=" "$LOC_TO_ID_FILE" 2>/dev/null | head -1 | cut -d= -f2- || true)
+                comp_id=$({ grep "^${path}=" "$LOC_TO_ID_FILE" 2>/dev/null || true; } | head -1 | cut -d= -f2- || true)
                 if [ -n "$comp_id" ]; then
                     RESOLVED_COMPONENTS="${RESOLVED_COMPONENTS:+$RESOLVED_COMPONENTS, }${comp_id}"
                 fi
@@ -936,8 +1134,8 @@ with open(path, 'w') as f:
     # === Learning capture check for bugfix tasks (T-692, G-016, T-1192) ===
     # 0% of bugfix tasks captured learnings (G-016 threshold: 35%).
     # Enhanced prompt: pre-filled command, guidance questions, visual box.
-    TASK_NAME_RAW=$(grep "^name:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
-    TASK_TYPE_RAW=$(grep "^workflow_type:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/^workflow_type:[[:space:]]*//')
+    TASK_NAME_RAW=$({ grep "^name:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
+    TASK_TYPE_RAW=$({ grep "^workflow_type:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/^workflow_type:[[:space:]]*//')
     _is_bugfix=false
     # Detect by name pattern (fix/bugfix/hotfix anywhere, or "RCA" or "G-0" gap reference)
     if echo "$TASK_NAME_RAW" | grep -qiE '\bfix\b|\bbugfix\b|\bhotfix\b|\bRCA\b|\bG-[0-9]'; then

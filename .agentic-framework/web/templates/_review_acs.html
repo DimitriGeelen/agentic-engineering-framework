@@ -33,15 +33,15 @@
         <strong>Steps:</strong>
         <ol>
             {% for step in ac.steps %}
-            <li>{{ step }}</li>
+            <li>{{ step | safe }}</li>
             {% endfor %}
         </ol>
         {% endif %}
         {% if ac.expected %}
-        <strong>Expected:</strong> {{ ac.expected }}
+        <strong>Expected:</strong> {{ ac.expected | safe }}
         {% endif %}
         {% if ac.if_not %}
-        <div class="if-not"><strong>If not:</strong> {{ ac.if_not }}</div>
+        <div class="if-not"><strong>If not:</strong> {{ ac.if_not | safe }}</div>
         {% endif %}
     </div>
     {% endif %}
@@ -54,11 +54,54 @@
 </div>
 {% endif %}
 
-<!-- Complete Task button (when all checked) -->
-{% if all_checked and total_count > 0 %}
+<!-- Decision / completion section (when all human ACs checked).
+     T-1574: inception tasks need fw inception decide (with rationale), NOT
+     fw task update --status work-completed. The generic Complete button used
+     to fail silently for inceptions because /api/task/<id>/complete returned
+     500 (auto-tick-on-decide ACs unchecked) and htmx ignores non-200. -->
+{% if decision_recorded %}
+{# T-1575: decision already recorded — surface it instead of re-prompting.
+   Without this, the 5-second htmx poll on #ac-container wipes the success
+   message and re-renders the GO/NO-GO/DEFER form, making it look like the
+   decision didn't take. #}
+<div class="decide-section" id="inception-decide-form">
+    {% set _dec_upper = (decision_value or '')|upper %}
+    {% set _dec_color = '#10b981' if _dec_upper == 'GO' else ('#ef4444' if _dec_upper in ('NO-GO', 'NO_GO') else '#6b7280') %}
+    <div style="border-left: 4px solid {{ _dec_color }}; padding: 0.75rem 1rem; background: rgba(0,0,0,0.02); border-radius: 4px;">
+        <strong>Decision recorded:</strong>
+        <span style="color: {{ _dec_color }}; font-weight: 700;">{{ _dec_upper }}</span>
+    </div>
+</div>
+{% elif all_checked and total_count > 0 %}
+{% if workflow_type == 'inception' %}
+<div class="decide-section" id="inception-decide-form">
+    <h3>Record Decision</h3>
+    {# T-1575: pre-fill rationale from the agent's ## Recommendation block. The
+       human acts on agent's recommendation — they should see and edit it, not
+       re-type from scratch. Mirrors inception_detail.html's `rationale_hint`
+       pattern. #}
+    {% if verdict and verdict != '?' %}
+    <p style="font-size:0.85rem; color:#4b5563; margin:0 0 0.5rem;">
+        Agent recommends <strong style="
+            color: {% if verdict == 'GO' %}#065f46{% elif verdict == 'NO-GO' %}#991b1b{% else %}#9a3412{% endif %};
+        ">{{ verdict }}</strong> — edit the rationale or pick a different decision.
+    </p>
+    {% endif %}
+    <form hx-post="/inception/{{ task_id }}/decide"
+          hx-target="#ac-container" hx-swap="innerHTML">
+        <textarea name="rationale" placeholder="Rationale (required)" required>{{ rec_rationale_text or '' }}</textarea>
+        <div class="decide-buttons">
+            <button type="submit" name="decision" value="go" class="decide-btn decide-btn-go">GO</button>
+            <button type="submit" name="decision" value="no-go" class="decide-btn decide-btn-nogo">NO-GO</button>
+            <button type="submit" name="decision" value="defer" class="decide-btn decide-btn-defer">DEFER</button>
+        </div>
+    </form>
+</div>
+{% else %}
 <div class="complete-section">
     <form hx-post="/api/task/{{ task_id }}/complete" hx-target="#ac-container" hx-swap="innerHTML">
         <button type="submit" class="complete-btn">Complete Task</button>
     </form>
 </div>
+{% endif %}
 {% endif %}

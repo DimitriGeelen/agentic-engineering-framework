@@ -2,6 +2,18 @@
 # Context Agent - add-decision command
 # Add a decision to project memory
 
+# Escape a string for safe interpolation into a YAML double-quoted scalar.
+# YAML 1.2 only permits a fixed set of escape sequences after `\`; anything
+# else (e.g. `\s`, `\``, `\'`) causes a parse error. This helper doubles
+# every backslash and escapes every double-quote, leaving the result safe
+# inside `"..."`. Origin: T-1543 / OBS-033 (recurrence of L-294, D-036, D-038).
+_yaml_escape_dquoted() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    printf '%s' "$s"
+}
+
 do_add_decision() {
     ensure_context_dirs
 
@@ -79,28 +91,50 @@ EOF
         _sed_i 's/^decisions: \[\]/decisions:/' "$decisions_file"
     fi
 
-    # Build YAML entry
+    # Build YAML entry — every interpolated value passes through
+    # _yaml_escape_dquoted so backslashes and quotes inside the input cannot
+    # break the YAML parse (T-1543).
+    local esc_decision esc_rationale
+    esc_decision="$(_yaml_escape_dquoted "$decision")"
+    esc_rationale="$(_yaml_escape_dquoted "${rationale:-Not specified}")"
     local entry="
   - id: $id
-    decision: \"$decision\"
+    decision: \"$esc_decision\"
     scope: project
     date: $date
     task: ${task:-unknown}
-    rationale: \"${rationale:-Not specified}\""
+    rationale: \"$esc_rationale\""
 
     if [ -n "$source" ]; then
+        local esc_source
+        esc_source="$(_yaml_escape_dquoted "$source")"
         entry="$entry
-    source: \"$source\""
+    source: \"$esc_source\""
     fi
 
     if [ -n "$recommendation_type" ]; then
+        local esc_rec
+        esc_rec="$(_yaml_escape_dquoted "$recommendation_type")"
         entry="$entry
-    recommendation_type: \"$recommendation_type\""
+    recommendation_type: \"$esc_rec\""
     fi
 
     if [ -n "$rejected" ]; then
-        # Convert comma-separated to YAML array
-        local rejected_yaml=$(echo "$rejected" | sed 's/,/\n      - "/g' | sed 's/^/      - "/' | sed 's/$/"/')
+        # Convert comma-separated to YAML array — escape each item.
+        local rejected_yaml=""
+        local IFS_ORIG="$IFS"
+        IFS=','
+        for item in $rejected; do
+            # Trim leading/trailing whitespace
+            item="${item#"${item%%[![:space:]]*}"}"
+            item="${item%"${item##*[![:space:]]}"}"
+            local esc_item
+            esc_item="$(_yaml_escape_dquoted "$item")"
+            rejected_yaml="${rejected_yaml}      - \"$esc_item\""$'\n'
+        done
+        IFS="$IFS_ORIG"
+        # Strip final newline
+        rejected_yaml="${rejected_yaml%$'\n'}"
         entry="$entry
     alternatives_rejected:
 $rejected_yaml"

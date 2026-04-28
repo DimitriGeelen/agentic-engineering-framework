@@ -72,9 +72,32 @@
     <small>{{ go_count }} pending GO/NO-GO</small>
 </div>
 {% for t in pending_go %}
-<div class="approval-card go-decision">
+<div class="approval-card go-decision" data-verdict="{{ t.verdict|default('?') }}">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            {# T-1537: agent recommendation verdict badge — parity with partial-complete cards (T-1531) #}
+            {% if t.verdict is defined %}
+            {% set _v = t.verdict %}
+            <span class="verdict-badge" data-verdict="{{ _v }}"
+                  style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em;
+                  {% if _v == 'GO' %}background:#1b5e20; color:#fff;
+                  {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
+                  {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
+                  {% else %}background:#616161; color:#fff;
+                  {% endif %}"
+                  title="Agent recommendation: {{ _v }}">{{ _v }}</span>
+            {% endif %}
+            {# T-1569 / F3: reviewer agent's mechanical verdict — green PASS, red findings/needs_human #}
+            {% if t.reviewer and t.reviewer.overall %}
+            {% set _r = t.reviewer %}
+            {% set _bad = (_r.findings and _r.findings > 0) or _r.needs_human or _r.overall in ('FAIL', 'WARN') %}
+            <span class="reviewer-badge" data-overall="{{ _r.overall }}"
+                  style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.65rem; font-weight:600;
+                  {% if _bad %}background:#7f1d1d; color:#fff;{% else %}background:#14532d; color:#fff;{% endif %}"
+                  title="Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }} findings{% endif %}{% if _r.needs_human %} · needs human{% endif %}">
+                Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }}{% endif %}{% if _r.needs_human %} ⚠{% endif %}
+            </span>
+            {% endif %}
             <a href="/inception/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
             {{ t.name }}
         </div>
@@ -180,16 +203,64 @@
 </div>
 {% endif %}
 
-<!-- Filter buttons (T-839) -->
+<!-- Filter buttons (T-839, T-1532) -->
 {% set rubber_stamp_count = pending_acs | selectattr('sort_priority', 'equalto', 2) | list | length %}
 {% set review_count = pending_acs | selectattr('sort_priority', 'equalto', 0) | list | length %}
 {% set stale_count = pending_acs | selectattr('is_stale') | list | length %}
+{% set go_count = pending_acs | selectattr('verdict', 'equalto', 'GO') | list | length %}
+{% set defer_count = pending_acs | selectattr('verdict', 'equalto', 'DEFER') | list | length %}
+{% set nogo_count = pending_acs | selectattr('verdict', 'equalto', 'NO-GO') | list | length %}
+{# T-1540 iter1: ? verdict was invisible — no filter button. Add count + button. #}
+{# T-1576: split NO-REC ('agent owes a recommendation') from ? ('verdict unparseable'). #}
+{% set norec_count = pending_acs | selectattr('state', 'equalto', 'NO-REC') | list | length %}
+{% set unknown_count = (pending_acs | selectattr('verdict', 'equalto', '?') | list | length) - norec_count %}
 <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
     <button class="ac-filter-btn outline" data-filter="all"
             style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;"
             onclick="filterACs('all')">
         All ({{ ac_task_count }})
     </button>
+    {% if go_count %}
+    <button class="ac-filter-btn outline" data-filter="go"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#1b5e20; color:#1b5e20;"
+            onclick="filterACs('go')"
+            title="Tasks the agent recommends GO — likely rubber-stamp">
+        GO ({{ go_count }})
+    </button>
+    {% endif %}
+    {% if defer_count %}
+    <button class="ac-filter-btn outline" data-filter="defer"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#e65100; color:#e65100;"
+            onclick="filterACs('defer')"
+            title="Tasks the agent recommends DEFER — needs strategic decision">
+        DEFER ({{ defer_count }})
+    </button>
+    {% endif %}
+    {% if nogo_count %}
+    <button class="ac-filter-btn outline" data-filter="nogo"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#b71c1c; color:#b71c1c;"
+            onclick="filterACs('nogo')"
+            title="Tasks the agent recommends NO-GO">
+        NO-GO ({{ nogo_count }})
+    </button>
+    {% endif %}
+    {% if norec_count %}
+    {# T-1576: NO-REC = agent owes a recommendation (no `## Recommendation` section). #}
+    <button class="ac-filter-btn outline" data-filter="norec"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#0e7490; color:#0e7490;"
+            onclick="filterACs('norec')"
+            title="Agent has not written a Recommendation block — task not ready for review yet (T-679/T-1576).">
+        NO-REC ({{ norec_count }})
+    </button>
+    {% endif %}
+    {% if unknown_count %}
+    <button class="ac-filter-btn outline" data-filter="unknown"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#616161; color:#616161;"
+            onclick="filterACs('unknown')"
+            title="Recommendation section exists but verdict line is missing/unparseable.">
+        ? ({{ unknown_count }})
+    </button>
+    {% endif %}
     <button class="ac-filter-btn outline" data-filter="review"
             style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#b45309; color:#b45309;"
             onclick="filterACs('review')">
@@ -213,10 +284,18 @@ function filterACs(filter) {
     document.querySelectorAll('.human-ac-group').forEach(function(card) {
         var priority = card.dataset.priority;
         var stale = card.dataset.stale === 'true';
+        var verdict = card.dataset.verdict;
+        var state = card.dataset.state;
         var show = filter === 'all'
             || (filter === 'review' && priority === '0')
             || (filter === 'rubber-stamp' && priority === '2')
-            || (filter === 'stale' && stale);
+            || (filter === 'stale' && stale)
+            || (filter === 'go' && verdict === 'GO')
+            || (filter === 'defer' && verdict === 'DEFER')
+            || (filter === 'nogo' && verdict === 'NO-GO')
+            // T-1576: norec and unknown are distinct.
+            || (filter === 'norec' && state === 'NO-REC')
+            || (filter === 'unknown' && (verdict === '?' || !verdict) && state !== 'NO-REC');
         card.style.display = show ? '' : 'none';
     });
     document.querySelectorAll('.ac-filter-btn').forEach(function(btn) {
@@ -225,13 +304,35 @@ function filterACs(filter) {
 }
 </script>
 {% for t in pending_acs %}
-<div class="approval-card human-ac-group" data-priority="{{ t.sort_priority }}" data-stale="{{ 'true' if t.is_stale else 'false' }}">
+<div class="approval-card human-ac-group" data-priority="{{ t.sort_priority }}" data-stale="{{ 'true' if t.is_stale else 'false' }}" data-verdict="{{ t.verdict|default('?') }}" data-state="{{ t.state|default('?') }}">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
         <div>
             <a href="/tasks/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
             {{ t.name }}
         </div>
         <div style="display:flex; align-items:center; gap:0.5rem;">
+            {# T-1531: agent recommendation verdict badge — green=GO, amber=DEFER, red=NO-GO, grey=?
+               T-1576: prefer state so NO-REC ('agent owes a recommendation') reads distinctly from ? ('verdict unparseable'). #}
+            {% set _v = t.state if (t.state is defined and t.state == 'NO-REC') else (t.verdict if t.verdict is defined else '?') %}
+            <span class="verdict-badge" data-verdict="{{ _v }}"
+                  style="font-size:0.65rem; font-weight:600; padding:0.1rem 0.35rem; border-radius:3px; white-space:nowrap;
+                         {% if _v == 'GO' %}background:#1b5e20; color:#fff;
+                         {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
+                         {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
+                         {% elif _v == 'NO-REC' %}background:#0e7490; color:#fff;
+                         {% else %}background:var(--pico-muted-border-color); color:var(--pico-muted-color);{% endif %}"
+                  title="{% if _v == 'NO-REC' %}Agent has not written a Recommendation block — task not ready for review yet (T-1576).{% else %}Agent recommendation: {{ _v }}{% endif %}">{{ _v }}</span>
+            {# T-1569 / F3: reviewer mechanical verdict — parity with inception cards #}
+            {% if t.reviewer and t.reviewer.overall %}
+            {% set _r = t.reviewer %}
+            {% set _bad = (_r.findings and _r.findings > 0) or _r.needs_human or _r.overall in ('FAIL', 'WARN') %}
+            <span class="reviewer-badge" data-overall="{{ _r.overall }}"
+                  style="font-size:0.6rem; font-weight:600; padding:0.1rem 0.3rem; border-radius:3px; white-space:nowrap;
+                         {% if _bad %}background:#7f1d1d; color:#fff;{% else %}background:#14532d; color:#fff;{% endif %}"
+                  title="Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }} findings{% endif %}{% if _r.needs_human %} · needs human{% endif %}">
+                R:{{ _r.overall }}{% if _r.findings %}·{{ _r.findings }}{% endif %}{% if _r.needs_human %}⚠{% endif %}
+            </span>
+            {% endif %}
             {% if t.age_days is defined %}
             <span style="font-size:0.65rem; color:{% if t.is_stale %}#e65100{% else %}var(--pico-muted-color){% endif %}; white-space:nowrap;"
                   {% if t.is_stale %}title="Stale: waiting >7 days"{% endif %}>

@@ -253,6 +253,200 @@ def parse_frontmatter(content):
     return fm, fm_match.group(2)
 
 
+_TASK_REF_RE_SHARED = re_mod.compile(r"(?<![\w/-])(T-\d{3,5})(?![\w/-])")
+_BARE_URL_RE_SHARED = re_mod.compile(r"(?<![\(\[\"'`])(https?://[^\s<>'\"`)\]]+)")
+_CODE_URL_HTML_RE_SHARED = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
+
+
+def render_markdown_safe(text: str) -> str:
+    """Render Markdown to HTML with safe_mode='escape', auto-link T-XXX refs
+    and bare http(s) URLs.
+
+    Used by /review and any blueprint that needs to render an arbitrary chunk
+    of task-body markdown (rationale, evidence, etc.) without piping through
+    tasks.py's AC-specific helpers. Returns '' for empty input. Caller must
+    mark returned string `| safe` in templates.
+
+    Origin: T-1575 — /review surface dumped raw markdown into a `<pre>` block.
+    Promoted here (rather than reused from tasks.py) to break the blueprint-
+    private parser pattern called out in the T-1575 RCA.
+    """
+    if not text:
+        return ""
+    try:
+        import markdown2
+    except ImportError:
+        return text  # graceful degradation
+    text = _TASK_REF_RE_SHARED.sub(r"[\1](/tasks/\1)", text)
+    text = _BARE_URL_RE_SHARED.sub(lambda m: f"[{m.group(1).rstrip('.,;:!?')}]({m.group(1).rstrip('.,;:!?')})", text)
+    html = markdown2.markdown(text, safe_mode="escape").strip()
+    # T-1575 codification: backticked URLs (`<code>http://...</code>`) are also
+    # clickable. Rendering layer is the contract — agent need not remember to
+    # avoid backticks around URLs.
+    html = _CODE_URL_HTML_RE_SHARED.sub(
+        lambda m: f'<a href="{m.group(1)}"><code>{m.group(1)}</code></a>',
+        html,
+    )
+    return html
+
+
+_REC_MARKER_RE = re_mod.compile(
+    # Captures the bold marker text (e.g. "Recommendation:", "Evidence — closed (7):", "Captured learning:").
+    # Optional leading `- ` / `* ` bullet (T-1580): authors sometimes nest the markers as a Markdown list.
+    r"^[ \t]*(?:[-*][ \t]+)?\*\*([^*]+?)\*\*\s*",
+    re_mod.MULTILINE,
+)
+
+
+def _classify_rec_marker(label: str) -> str:
+    """Map a bold marker label to a canonical bucket: 'recommendation',
+    'rationale', 'evidence', 'captured_learning', or 'other'. Tolerates
+    decorations like 'Evidence — closed (7):', 'Evidence — deferred (2):'."""
+    s = label.strip().rstrip(":").strip().lower()
+    # Strip trailing parenthetical / em-dash decorations
+    s = re_mod.split(r"\s*[—–\-]\s*|\s*\(", s, maxsplit=1)[0].strip()
+    if s == "recommendation":
+        return "recommendation"
+    if s == "rationale":
+        return "rationale"
+    if s == "evidence":
+        return "evidence"
+    if s in ("captured learning", "learning"):
+        return "captured_learning"
+    return "other"
+
+
+def extract_recommendation(body: str) -> dict:
+    """Extract structured fields from a task body's ## Recommendation section.
+
+    Returns dict with `verdict` (GO/NO-GO/DEFER/'?'), `rationale` (str), `evidence`
+    (str — concatenation of all Evidence-* sub-blocks), and `raw` (full section
+    text after HTML-comment strip). All keys always present.
+
+    Tokenises the section by bold markers (`**Recommendation:**`, `**Rationale:**`,
+    `**Evidence — closed (7):**`, `**Captured learning:** ...`) and buckets each
+    span into its canonical field. Tolerates decorated labels (em-dash + qualifier
+    + parenthetical), so multi-block evidence and captured-learning trailers don't
+    leak into the rationale.
+
+    Uses H2+ terminator (L-293) so appended Updates entries don't pollute the
+    extraction.
+
+    Origin: T-1575 — consolidates three parsers. First implementation (commit
+    6d4a44fbd) had a hardcoded marker alternation that missed `**Evidence —
+    closed (7):**` and similar real-world labels, dumping evidence + captured
+    learning back into the rationale block. This second implementation replaces
+    the alternation with a generic marker tokenizer.
+    """
+    out = {"verdict": "?", "rationale": "", "evidence": "", "raw": ""}
+    if not body:
+        return out
+    m = re_mod.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)",
+                      body, re_mod.MULTILINE | re_mod.DOTALL)
+    if not m:
+        return out
+    section = re_mod.sub(r"<!--.*?-->", "", m.group(1), flags=re_mod.DOTALL).strip()
+    out["raw"] = section
+
+    # Walk all bold markers and slice the section into labeled spans.
+    matches = list(_REC_MARKER_RE.finditer(section))
+    buckets: dict[str, list[str]] = {"rationale": [], "evidence": []}
+    for idx, mk in enumerate(matches):
+        label = mk.group(1)
+        bucket = _classify_rec_marker(label)
+        # Span from end of this marker line to start of next marker (or section end).
+        start = mk.end()
+        end = matches[idx + 1].start() if idx + 1 < len(matches) else len(section)
+        body_span = section[start:end].strip()
+        if bucket == "recommendation":
+            v = re_mod.match(r"\s*(NO-GO|GO|DEFER)\b", body_span, re_mod.IGNORECASE)
+            if v:
+                out["verdict"] = v.group(1).upper()
+        elif bucket == "rationale":
+            buckets["rationale"].append(body_span)
+        elif bucket == "evidence":
+            # Preserve the decorated label (e.g. "Evidence — closed (7):") so
+            # readers can distinguish closed vs deferred groupings. Blank line
+            # between heading and body is required for markdown2 to render the
+            # following `-` lines as a <ul> list, not a continuation paragraph.
+            heading = label.strip().rstrip(":").strip()
+            if heading.lower() != "evidence":
+                buckets["evidence"].append(f"**{heading}**\n\n{body_span}")
+            else:
+                buckets["evidence"].append(body_span)
+        # 'captured_learning' and 'other' intentionally dropped — they belong in
+        # neither rationale nor evidence; raw is preserved for full-text needs.
+
+    out["rationale"] = "\n\n".join(b for b in buckets["rationale"] if b).strip()
+    out["evidence"] = "\n\n".join(b for b in buckets["evidence"] if b).strip()
+    return out
+
+
+def extract_recommendation_verdict(body: str) -> str:
+    """Compatibility shim — see extract_recommendation. Returns just the verdict
+    string ('GO'/'NO-GO'/'DEFER'/'?'). Kept for handover.sh and existing call
+    sites. New code should call extract_recommendation() directly.
+
+    Origin: T-1533 — third call site triggered the factor-out per the framework's
+    "no premature abstraction" rule. T-1575 consolidated to extract_recommendation.
+    """
+    return extract_recommendation(body)["verdict"]
+
+
+def extract_recommendation_state(body: str) -> str:
+    """Return review-queue state: 'GO'|'NO-GO'|'DEFER'|'NO-REC'|'?'.
+
+    Distinguishes 'agent owes a recommendation' (NO-REC — no `## Recommendation`
+    section at all, or section is empty/whitespace/HTML-comments-only) from
+    'verdict missing or unparseable' (?). Both look the same to
+    `extract_recommendation_verdict`, so review-queue / handover / /approvals
+    rendered them identically — blending 'not ready for review' with 'agent
+    deferred without saying GO/NO-GO'.
+
+    Origin: T-1576 — parallel to T-1570 (which surfaced the same gap on the
+    inception side of /approvals). Build tasks with all Agent ACs done +
+    Human ACs pending + no Recommendation polluted the queue with bare '?'.
+    """
+    rec = extract_recommendation(body)
+    if not rec["raw"].strip():
+        return "NO-REC"
+    return rec["verdict"]
+
+
+def extract_reviewer_verdict(body: str) -> dict:
+    """Extract the reviewer agent's verdict from `## Reviewer Verdict (vX.Y)`.
+
+    Returns dict with `overall` (str|None — e.g. "PASS"/"FAIL"/"WARN"),
+    `findings` (int — 0 for "none"), and `needs_human` (bool|None).
+    All keys present; `overall is None` means no verdict block exists.
+
+    Origin: T-1569 / F3 from T-1565 audit. The reviewer (lib/reviewer/static_scan.py)
+    is the only mechanical advisor in the approval arc, but /approvals never surfaced
+    its findings at decision time.
+    """
+    out = {"overall": None, "findings": 0, "needs_human": None}
+    if not body:
+        return out
+    m = re_mod.search(
+        r"^## Reviewer Verdict \(v[0-9.]+\)[^\n]*\n(.*?)(?=^#{2,} |\Z)",
+        body, re_mod.MULTILINE | re_mod.DOTALL,
+    )
+    if not m:
+        return out
+    section = m.group(1)
+    overall_m = re_mod.search(r"^- \*\*Overall:\*\*\s*([A-Z][A-Z_-]*)", section, re_mod.MULTILINE)
+    if overall_m:
+        out["overall"] = overall_m.group(1).strip()
+    nh_m = re_mod.search(r"^- \*\*Needs Human:\*\*\s*(yes|no)\b", section, re_mod.MULTILINE | re_mod.IGNORECASE)
+    if nh_m:
+        out["needs_human"] = nh_m.group(1).lower() == "yes"
+    f_m = re_mod.search(r"^- \*\*Findings:\*\*\s*(\d+|none)\b", section, re_mod.MULTILINE | re_mod.IGNORECASE)
+    if f_m:
+        v = f_m.group(1).lower()
+        out["findings"] = 0 if v == "none" else int(v)
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Task metadata cache (T-1233: avoid re-reading 1200+ files on every request)
 # ---------------------------------------------------------------------------

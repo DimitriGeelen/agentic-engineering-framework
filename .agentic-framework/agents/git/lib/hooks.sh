@@ -289,7 +289,7 @@ if [ -d "$FABRIC_DIR" ]; then
             [ -f "$card" ] || continue
             if grep -q "^location: $file" "$card" 2>/dev/null; then
                 COMP_COUNT=$((COMP_COUNT + 1))
-                name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
+                name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
                 COMP_NAMES="${COMP_NAMES:+$COMP_NAMES, }$name"
                 # Count dependents (depended_by entries)
                 deps=$(grep -c "target:" "$card" 2>/dev/null || true)

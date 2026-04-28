@@ -267,7 +267,7 @@ cmd_sync() {
     shopt -s nullglob
     for f in "$TASKS_DIR/active"/*.md; do
         [ -f "$f" ] || continue
-        task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+        task_id=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
         if [ -n "$task_id" ]; then
             if [ -n "$active_tasks" ]; then
                 active_tasks="$active_tasks, $task_id"

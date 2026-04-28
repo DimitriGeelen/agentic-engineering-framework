@@ -15,7 +15,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict
 
 bp = Blueprint("approvals", __name__)
 
@@ -124,9 +124,14 @@ def _load_pending_go_decisions():
         if _extract_decision(body) != "pending":
             continue
 
-        # T-1123: Only show inception tasks with a recommendation (skip captured/unexplored)
+        # T-1123 / T-1570 (F4): Only drop captured/unexplored inceptions when the
+        # Recommendation is missing. Started-work inceptions without a Recommendation
+        # are exactly the cases where the human needs to see "agent is stuck — write
+        # recommendation or escalate" — keep them, the template fallback handles
+        # rendering (T-1214). Aligns display gate with the completion gate (T-1529).
         rec_section = _extract_section(body, "Recommendation")
-        if not rec_section or len(rec_section.strip()) < 20:
+        rec_substantive = bool(rec_section and len(rec_section.strip()) >= 20)
+        if not rec_substantive and fm.get("status", "") != "started-work":
             continue
 
         task_id = fm.get("id", "")
@@ -151,15 +156,14 @@ def _load_pending_go_decisions():
         # Extract recommendation for display (T-1119: show full recommendation)
         rec_raw = _extract_section(body, "Recommendation")
         rec_display = ""  # Full recommendation for visible display
-        rec_decision = ""  # GO/NO-GO/DEFER extracted
         if rec_raw and len(rec_raw) > 10:
             rec_display = rec_raw.strip()
-            # Extract the recommendation decision
-            for line in rec_raw.split("\n"):
-                stripped = line.strip().replace("**", "").replace("*", "")
-                if stripped.lower().startswith("recommendation:"):
-                    rec_decision = stripped.split(":", 1)[1].strip().split()[0].upper()
-                    break
+        # T-1537: use canonical helper for the verdict so inception + partial-complete
+        # sections share extraction logic. Returns "GO"/"DEFER"/"NO-GO"/"?".
+        verdict = extract_recommendation_verdict(body)
+        # rec_decision retained for backward compat with the existing collapsible
+        # summary (T-1119 contract); blank string preserved when no recommendation.
+        rec_decision = verdict if verdict in ("GO", "DEFER", "NO-GO") else ""
 
         # Fallback to GO criteria for rationale hint
         # T-1150: NO truncation — the textarea pre-fill becomes the permanent decision
@@ -202,6 +206,9 @@ def _load_pending_go_decisions():
                 "source": "body" if body_count else "ledger",
             }
 
+        # T-1569 / F3: surface reviewer agent's mechanical verdict at decision time.
+        reviewer = extract_reviewer_verdict(body)
+
         results.append({
             "task_id": task_id,
             "name": fm.get("name", ""),
@@ -213,7 +220,9 @@ def _load_pending_go_decisions():
             "rationale_hint": rationale_hint,
             "recommendation": rec_display,
             "rec_decision": rec_decision,
+            "verdict": verdict,
             "go_nogo_criteria": go_nogo_raw,
+            "reviewer": reviewer,
         })
 
     return results
@@ -277,6 +286,15 @@ def _load_pending_human_acs():
                         for ac in human_acs)
         sort_priority = 0 if has_review else (1 if is_stale else 2)
 
+        # T-1531: extract agent recommendation verdict (GO/DEFER/NO-GO/?)
+        # T-1533: helper now lives in web.shared (third call site arrived)
+        # T-1576: also expose `state` so template can distinguish NO-REC
+        # (agent owes a recommendation) from '?' (verdict unparseable).
+        verdict = extract_recommendation_verdict(body)
+        state = extract_recommendation_state(body)
+        # T-1569 / F3: parallel surface for the reviewer's mechanical scan.
+        reviewer = extract_reviewer_verdict(body)
+
         results.append({
             "task_id": fm.get("id", ""),
             "name": fm.get("name", ""),
@@ -285,6 +303,9 @@ def _load_pending_human_acs():
             "age_days": age_days,
             "is_stale": is_stale,
             "sort_priority": sort_priority,
+            "verdict": verdict,
+            "state": state,
+            "reviewer": reviewer,
         })
 
     # Sort: priority ascending, then age descending (oldest first within group)
@@ -446,7 +467,10 @@ def decide_approval():
 
 def _is_inception_decide(command_preview: str) -> bool:
     """Detect `fw inception decide T-XXX go|no-go --rationale ...` shape."""
-    return bool(re.search(r"(?:^|/|\\s)fw inception decide T-\\d+ (?:go|no-go)\\b", command_preview))
+    # T-1567 / F1: raw-string + double-escape produced literal `\d`/`\s`/`\b`
+    # that never matched. Auto-exec on Watchtower-approved Tier-0 inception
+    # decisions was dead code from T-1192 until this fix.
+    return bool(re.search(r"(?:^|/|\s)fw inception decide T-\d+ (?:go|no-go)\b", command_preview))
 
 
 def _execute_inception_decide(command_preview: str) -> dict:
@@ -455,11 +479,12 @@ def _execute_inception_decide(command_preview: str) -> dict:
     import subprocess
 
     cmd_str = " ".join(command_preview.split())
-    m = re.search(r"fw inception decide (T-\\d+) (go|no-go)", cmd_str)
+    # T-1567 / F1: same dead-code regex bug as _is_inception_decide above.
+    m = re.search(r"fw inception decide (T-\d+) (go|no-go)", cmd_str)
     if not m:
         return {"ok": False, "error": "could not parse command", "summary": "", "stdout_tail": ""}
     task_id, verdict = m.group(1), m.group(2)
-    rat_m = re.search(r'--rationale\\s+"(.*)"(?:\\s|$)', cmd_str, re.DOTALL)
+    rat_m = re.search(r'--rationale\s+"(.*)"(?:\s|$)', cmd_str, re.DOTALL)
     rationale = rat_m.group(1) if rat_m else "Approved via Watchtower (no rationale captured)"
 
     fw_bin = str(PROJECT_ROOT / ".agentic-framework" / "bin" / "fw")
@@ -515,9 +540,16 @@ def complete_batch():
 
     for task_id in ready_tasks:
         try:
+            # T-1568 / F2: narrow flags instead of --force. Batch operates on
+            # partial-complete tasks (already work-completed in active/) where
+            # the human is authorising closure regardless of unchecked Human
+            # ACs — same auth-flag semantics T-1559 fixed for the recheck
+            # branch. Recommendation + RCA gates do not re-fire on the
+            # partial-complete recheck path so no skip needed for those.
             result = subprocess.run(
                 [fw_path, "task", "update", task_id, "--status", "work-completed",
-                 "--force", "--reason", "Batch completed via Watchtower UI (human action)"],
+                 "--skip-sovereignty", "--skip-verification", "--skip-acceptance-criteria",
+                 "--reason", "Batch completed via Watchtower UI (human action)"],
                 capture_output=True, text=True, timeout=30,
                 cwd=str(PROJECT_ROOT)
             )

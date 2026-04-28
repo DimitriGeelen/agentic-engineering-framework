@@ -72,28 +72,10 @@ def _load_pending_approvals():
     return results
 
 
-def _parse_recommendation(body_text):
-    """Extract the ## Recommendation section content (T-1195).
-
-    Returns stripped content between `## Recommendation` and the next `## ` header.
-    HTML comments (template boilerplate) are removed. Empty/whitespace-only returns "".
-    """
-    lines = body_text.split("\n")
-    in_section = False
-    collected = []
-    for line in lines:
-        stripped = line.strip()
-        if stripped == "## Recommendation":
-            in_section = True
-            continue
-        if in_section and line.startswith("## "):
-            break
-        if in_section:
-            collected.append(line)
-    content = "\n".join(collected)
-    # Strip HTML comments (template placeholders)
-    content = re.sub(r"<!--.*?-->", "", content, flags=re.DOTALL)
-    return content.strip()
+# T-1575: _parse_recommendation removed — see web.shared.extract_recommendation
+# (returns structured {verdict, rationale, evidence, raw} dict). Three parsers
+# drifted apart and /review surface ended up dumping `raw` into a `<pre>` block,
+# showing literal markdown to humans. Now unified.
 
 
 def _find_research_artifacts(task_id):
@@ -154,7 +136,25 @@ def review(task_id):
     active_tier0 = [a for a in pending_tier0 if a.get("status") == "pending"]
 
     artifacts = _find_research_artifacts(task_id)
-    recommendation = _parse_recommendation(body)  # T-1195
+    # T-1575: structured extraction (verdict, rationale, evidence) — replaces
+    # the verdict-only path + raw-pre-dump that ate the markdown formatting.
+    # T-1583: also surface the reviewer agent's mechanical verdict (cross-surface
+    # parity with /approvals F3 / T-1569).
+    from web.shared import extract_recommendation, render_markdown_safe, extract_reviewer_verdict
+    rec = extract_recommendation(body)
+    reviewer = extract_reviewer_verdict(body)
+    rec_complete = rec["verdict"] != "?" and bool(rec["rationale"].strip())
+    rec_rationale_html = render_markdown_safe(rec["rationale"])
+    rec_evidence_html = render_markdown_safe(rec["evidence"])
+    # T-1578: state distinguishes "no Recommendation block at all" (NO-REC)
+    # from "block exists but verdict unparseable" (?). Same convention as
+    # cockpit / approvals / review-queue / handover (T-1576, T-1577).
+    rec_state = "NO-REC" if not rec["raw"].strip() else rec["verdict"]
+
+    # T-1575: detect already-recorded decision so we don't re-prompt the human.
+    from web.blueprints.inception import _extract_decision
+    decision_state = _extract_decision(body)
+    decision_recorded = decision_state.lower() not in ("pending", "")
 
     return render_template(
         "review.html",
@@ -162,13 +162,22 @@ def review(task_id):
         task_name=fm.get("name", ""),
         task_status=fm.get("status", ""),
         task_owner=fm.get("owner", ""),
+        workflow_type=fm.get("workflow_type", ""),
         human_acs=human_acs,
         checked_count=checked_count,
         total_count=total_count,
         all_checked=all_checked,
+        verdict=rec["verdict"],
+        state=rec_state,
+        rec_rationale_html=rec_rationale_html,
+        rec_evidence_html=rec_evidence_html,
+        rec_rationale_text=rec["rationale"],
+        rec_complete=rec_complete,
+        decision_recorded=decision_recorded,
+        decision_value=decision_state,
         pending_tier0=active_tier0,
         artifacts=artifacts,
-        recommendation=recommendation,
+        reviewer=reviewer,
     )
 
 
@@ -192,11 +201,30 @@ def review_acs_fragment(task_id):
     total_count = len(human_acs)
     all_checked = total_count > 0 and checked_count == total_count
 
+    # T-1575: htmx polling fragment must also pre-fill the rationale textarea —
+    # otherwise the 5-second poll wipes the user's not-yet-submitted rationale OR
+    # replaces the pre-filled one with an empty box.
+    from web.shared import extract_recommendation
+    rec = extract_recommendation(body)
+
+    # T-1575: don't re-render the decide form after a decision was recorded.
+    # The page polls /review/<id>/acs every 5s; without this guard, the success
+    # message ("Decision recorded — GO") flashes for 5s then gets wiped by the
+    # poll re-rendering the form. Detect recorded decisions and surface them.
+    from web.blueprints.inception import _extract_decision
+    decision_state = _extract_decision(body)
+    decision_recorded = decision_state.lower() not in ("pending", "")
+
     return render_template(
         "_review_acs.html",
         task_id=task_id,
+        workflow_type=fm.get("workflow_type", ""),
         human_acs=human_acs,
         checked_count=checked_count,
         total_count=total_count,
         all_checked=all_checked,
+        verdict=rec["verdict"],
+        rec_rationale_text=rec["rationale"],
+        decision_recorded=decision_recorded,
+        decision_value=decision_state,
     )

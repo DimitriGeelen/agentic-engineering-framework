@@ -70,7 +70,7 @@ When run from inside the framework repo itself, it auto-detects.
 | `lib/task-audit.sh` | calls |
 | `lib/watchtower.sh` | calls |
 
-## Used By (89)
+## Used By (92)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -162,6 +162,9 @@ When run from inside the framework repo itself, it auto-detects.
 | `tests/integration/fw_version.bats` | called_by |
 | `tests/integration/fw_work_on.bats` | called_by |
 | `lib/release.sh` | called_by_by |
+| `agents/context/pl007-scanner.sh` | called_by |
+| `agents/context/subagent-stop.sh` | called_by |
+| `tests/unit/task_reid.bats` | called_by |
 
 ## Documentation
 

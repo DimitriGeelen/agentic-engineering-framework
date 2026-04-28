@@ -12,12 +12,13 @@ Time-series metrics history
 Auto-appended by audit.sh on each run
 30-day rolling retention
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/audit/audit.sh` | read_by |
 | `metrics.sh` | read_by |
+| `tests/unit/audit_null_timestamp.bats` | read_by |
 
 ## Related
 

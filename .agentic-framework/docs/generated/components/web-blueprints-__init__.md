@@ -10,7 +10,7 @@ Flask blueprints for the Agentic Engineering Framework web UI
 Centralizes blueprint registration (T-431/A2).
 Adding a new blueprint: import it here and append to _BLUEPRINTS.
 
-## Dependencies (54)
+## Dependencies (56)
 
 | Target | Relationship |
 |--------|-------------|
@@ -68,6 +68,8 @@ Adding a new blueprint: import it here and append to _BLUEPRINTS.
 | `web/blueprints/pending.py` | registers |
 | `web/blueprints/fleet.py` | calls |
 | `web/blueprints/fleet.py` | registers |
+| `web/blueprints/reviewer.py` | calls |
+| `web/blueprints/reviewer.py` | registers |
 
 ## Used By (2)
 

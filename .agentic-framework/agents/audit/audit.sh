@@ -912,6 +912,33 @@ else
     fi
 fi
 
+# T-1573 / F8: Surface .gate-bypass-log.yaml — auth-flag bypasses
+# (--skip-sovereignty, --skip-acceptance-criteria, --skip-rca, etc.) are
+# logged by update-task.sh:32-42 but nothing read the file before now.
+GATE_BYPASS_LOG="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+if [ -f "$GATE_BYPASS_LOG" ]; then
+    gb_total=$(grep -c "^- timestamp:" "$GATE_BYPASS_LOG" 2>/dev/null || echo 0)
+    # Count entries with timestamp in last 7 days
+    cutoff=$(date -u -d "7 days ago" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || \
+             date -u -v-7d +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "1970-01-01T00:00:00Z")
+    gb_recent=$(awk -v cutoff="$cutoff" '
+        /^- timestamp:/ {
+            ts=$0; gsub(/.*timestamp: ['"'"'"]?/, "", ts); gsub(/['"'"'"]?$/, "", ts);
+            if (ts >= cutoff) c++
+        }
+        END { print c+0 }
+    ' "$GATE_BYPASS_LOG" 2>/dev/null || echo 0)
+    if [ "$gb_recent" -gt 10 ]; then
+        warn "Gate-bypass log: $gb_recent bypasses in last 7 days" \
+             "$gb_total total entries; bypass-as-pattern signal" \
+             "Review .context/working/.gate-bypass-log.yaml — investigate caller distribution"
+    else
+        pass "Gate-bypass log: $gb_recent in last 7 days ($gb_total total)"
+    fi
+else
+    pass "Gate-bypass log: clean (no bypasses recorded)"
+fi
+
 # Check for commit-msg hook (validates task references)
 if [ -f "$PROJECT_ROOT/.git/hooks/commit-msg" ]; then
     pass "Commit-msg hook installed"
@@ -1042,10 +1069,10 @@ if [ -d "$TASKS_DIR/completed" ]; then
     # Find completed tasks matching bugfix patterns (T-1192: broadened from anchored match)
     while IFS= read -r task_file; do
         [ -z "$task_file" ] && continue
-        task_name=$(grep "^name:" "$task_file" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
+        task_name=$({ grep "^name:" "$task_file" 2>/dev/null || true; } | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
         # Match: Fix/Bugfix/Hotfix anywhere, or RCA, or G-0XX gap reference
         echo "$task_name" | grep -qiE '\bfix\b|\bbugfix\b|\bhotfix\b|\bRCA\b|\bG-[0-9]' || continue
-        task_id=$(grep "^id:" "$task_file" 2>/dev/null | head -1 | sed 's/^id:[[:space:]]*//')
+        task_id=$({ grep "^id:" "$task_file" 2>/dev/null || true; } | head -1 | sed 's/^id:[[:space:]]*//')
         [ -z "$task_id" ] && continue
         bugfix_total=$((bugfix_total + 1))
         # Check if any learning references this task
@@ -1565,7 +1592,7 @@ echo "=== OE-FAST: 30-MINUTE CONTROL CHECKS ==="
 # CTL-001 OE: Task-First Gate — focus file exists when source commits happen
 FOCUS_FILE="$CONTEXT_DIR/working/focus.yaml"
 if [ -f "$FOCUS_FILE" ]; then
-    focus_task=$(grep "^current_task:" "$FOCUS_FILE" 2>/dev/null | head -1 | sed 's/current_task: *//' | tr -d ' "')
+    focus_task=$({ grep "^current_task:" "$FOCUS_FILE" 2>/dev/null || true; } | head -1 | sed 's/current_task: *//' | tr -d ' "')
     if [ -n "$focus_task" ] && [ "$focus_task" != "null" ] && [ "$focus_task" != "~" ]; then
         pass "CTL-001: Focus file has active task ($focus_task)"
     else
@@ -1772,9 +1799,9 @@ fi
 shopt -s nullglob
 for task_file in "$TASKS_DIR/active"/*.md "$TASKS_DIR/completed"/*.md; do
     [ -f "$task_file" ] || continue
-    task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+    task_workflow=$({ grep "^workflow_type:" "$task_file" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
     [ "$task_workflow" != "inception" ] && continue
-    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+    task_id=$({ grep "^id:" "$task_file" 2>/dev/null || true; } | head -1 | sed 's/id: //' | tr -d ' ')
     [ -z "$task_id" ] && continue
 
     # Count commits for this task
@@ -1805,9 +1832,9 @@ shopt -u nullglob
 shopt -s nullglob
 for task_file in "$TASKS_DIR/active"/*.md; do
     [ -f "$task_file" ] || continue
-    task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+    task_workflow=$({ grep "^workflow_type:" "$task_file" 2>/dev/null || true; } | head -1 | cut -d: -f2 | tr -d ' ')
     [ "$task_workflow" != "inception" ] && continue
-    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+    task_id=$({ grep "^id:" "$task_file" 2>/dev/null || true; } | head -1 | sed 's/id: //' | tr -d ' ')
     [ -z "$task_id" ] && continue
 
     _missing=""
@@ -1883,7 +1910,7 @@ shopt -s nullglob
 recent_completed=$(find "$TASKS_DIR/completed" -maxdepth 1 -name '*.md' -type f -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -3)
 for task_file in $recent_completed; do
     [ -f "$task_file" ] || continue
-    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+    task_id=$({ grep "^id:" "$task_file" 2>/dev/null || true; } | head -1 | sed 's/id: //' | tr -d ' ')
 
     # Extract verification commands (skip HTML comment blocks)
     in_verify=false
@@ -2916,7 +2943,9 @@ ACTIVE_DIR = os.path.join(PROJECT_ROOT, ".tasks", "active")
 
 def has_substantive_recommendation(text):
     # Locate ## Recommendation section body (until next ## heading)
-    m = re.search(r'^## Recommendation\s*$(.*?)(?=^## |\Z)', text, re.MULTILINE | re.DOTALL)
+    # T-1528: H2+ terminator (L-293) — prevents Updates entries with literal
+    # `**Recommendation:**` text from false-positiving the substantive check.
+    m = re.search(r'^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL)
     if not m:
         return True  # no section = different audit concern, not ours
     body = m.group(1)
