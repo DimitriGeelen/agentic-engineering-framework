@@ -62,10 +62,13 @@ Origin: OBS-032 (S-2026-0427-0908 against `/opt/050-email-archive`).
 # — no partial mutation of consumer state when source==target. Specific assertions filled in
 # by the implementer based on (a) re-exec or (b) fail-fast choice.
 #
-# Bats regression test exists and passes.
-test -f tests/unit/test_upgrade_self_target_guard.bats && bats tests/unit/test_upgrade_self_target_guard.bats || echo "regression test expected once AC done"
-# Existing upgrade-from-framework-repo path still works.
-bin/fw upgrade --help >/dev/null
+# Bats regression test exists and passes (assertion, not optional) — content-asserted
+test -f tests/unit/test_upgrade_self_target_guard.bats
+bats tests/unit/test_upgrade_self_target_guard.bats 2>&1 | grep -q "^ok 4 "
+# Existing upgrade-from-framework-repo path still works — content-asserted, not exit-only
+bin/fw upgrade --help 2>&1 | grep -q "Sync framework improvements to consumer project"
+# Guard-line presence in lib/upgrade.sh (T-1542 fix landed)
+grep -q "FRAMEWORK_ROOT.*resolves\|self-target check\|bare-from-consumer" lib/upgrade.sh
 
 ## Decisions
 
@@ -109,14 +112,9 @@ bin/fw upgrade --help >/dev/null
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-8c6abf6c
-- **Timestamp:** 2026-04-28T18:13:49Z
+- **Scan ID:** R-ad02c9c8
+- **Timestamp:** 2026-04-28T20:12:24Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
-
-**Verification-level findings:**
-
-  1. **empty-output-success** (partial, heuristic) @ Verification:line 8
-     - evidence: `bin/fw upgrade --help >/dev/null`
+- **Findings:** none
