@@ -4,7 +4,7 @@ name: "RCA: AEF GitHub mirror job failing for 50+ builds — annotated-vs-lightw
 description: >
   GitHub master is 68 commits behind OneDev master (last GitHub master commit eb18c73c5 from 2026-04-27 23:13). Investigation found tag mismatches: OneDev has annotated tag objects for v1.2.0-v1.2.4, v1.5.743, v1.5.746 while GitHub has lightweight tags pointing directly at the commits. Annotated tag objects have different SHAs than the lightweight versions, so OneDev's mirror push is not a fast-forward update for these refs and GitHub rejects without --force. GitHub also has v1.1.0 that OneDev doesn't have. Action options: (a) convert OneDev annotated tags to lightweight, (b) force-push tags from OneDev to GitHub, (c) delete divergent tags on GitHub then re-push, (d) reconfigure OneDev mirror to push branches only. All options require human decision — destructive or require OneDev/GitHub admin access. Origin: user-reported observation 2026-04-28.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-28T19:29:33Z
-last_update: 2026-04-28T19:29:33Z
-date_finished: null
+last_update: 2026-04-28T20:23:37Z
+date_finished: 2026-04-28T20:23:37Z
 ---
 
 # T-1591: RCA: AEF GitHub mirror job failing for 50+ builds — annotated-vs-lightweight tag mismatch on v1.2.0-v1.2.4, v1.5.743, v1.5.746 (plus missing v1.1.0)
@@ -35,7 +35,7 @@ Local investigation confirmed master divergence (`git ls-remote`): GitHub stops 
 - [x] List concrete action options for human decision — see Recommendation block
 
 ### Human
-- [ ] [REVIEW] Decide on action option (a) / (b) / (c) / (d) below — see Recommendation
+- [x] [REVIEW] Decide on action option (a) / (b) / (c) / (d) below — see Recommendation
   **Steps:**
   1. Read the Recommendation section for the four options + tradeoffs
   2. Pick one (or instruct agent to investigate further before picking)
@@ -132,3 +132,16 @@ Additionally: GitHub has tag `v1.1.0` (`fc227a2a`) that OneDev does not have at 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1591-rca-aef-github-mirror-job-failing-for-50.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-aac5b065
+- **Timestamp:** 2026-04-28T20:23:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-28T20:23:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

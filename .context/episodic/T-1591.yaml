@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1591: RCA: AEF GitHub mirror job failing for 50+ builds — annotated-vs-lightweight tag mismatch on v1.2.0-v1.2.4, v1.5.743, v1.5.746 (plus missing v1.1.0)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-28T20:23:43Z
+# ============================================================================
+
+task_id: T-1591
+task_name: "RCA: AEF GitHub mirror job failing for 50+ builds — annotated-vs-lightweight tag mismatch on v1.2.0-v1.2.4, v1.5.743, v1.5.746 (plus missing v1.1.0)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-28T19:29:33Z
+completed: 2026-04-28T20:23:37Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T21:32:18+02:00
+last_commit: 2026-04-28T21:32:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — AEF GitHub mirror failing 50+ builds (annotated-vs-lightweight tag mismatch)
+
+# Key outcomes
+outcomes:
+  - "Confirm GitHub vs OneDev master divergence and count commits behind — 68 commits (eb18c73c5 → 2b9413655)"
+  - "Scan diverged commit range for GitHub-detectable secret patterns (`ghp_*`, `github_pat_`, `sk-*`, `AKIA*`, OneDev token leak) — zero hits"
+  - "Scan diverged commit range for files >50MB (GitHub push protection limit) — largest object 2.1MB"
+  - "Compare branch and tag refs between remotes — see RCA section, 7 tag mismatches + 1 GitHub-only tag identified"
+  - "Identify root cause — annotated-vs-lightweight tag SHA mismatch on v1.2.0–v1.2.4, v1.5.743, v1.5.746"
+  - "List concrete action options for human decision — see Recommendation block"
+  - "[REVIEW] Decide on action option (a) / (b) / (c) / (d) below — see Recommendation"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-1591-rca-aef-github-mirror-job-failing-for-50.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T21:32:18"
+    action: "T-1591: RCA — AEF GitHub mirror failing 50+ builds (annotated-vs-lightweight tag mismatch)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 54 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 54
+  commits: 1
+  files_changed: 2
+  lines_added: 135
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1591-rca-aef-github-mirror-job-failing-for-50.md
+generated_by: context-agent-hybrid

@@ -2486,3 +2486,31 @@ X'` returning empty group."
   date: 2026-04-28
   context: Added via context agent
   application: TBD
+- id: PL-009
+  learning: "Fleet doctor observed auth-mismatch on hub 'ring20-dashboard' (192.168.10.121:9100). date_observed=2026-04-28T20:09:16Z hub_fingerprint=sha256:53de15ec8b33b4e87abd57d6e9700553d68382d66a105cf0c14690bf452b6fe4. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-28
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-321
+  learning: "Orchestrator arc (T-1061 inception) all 5 phases agent-shipped: T-1062 WezTerm chrome (Phase 1), T-1063 MCP governance (Phase 2 — already integrated, see CLAUDE.md), T-1064 orchestrator.route task-type routing (Phase 3), T-1065 Multi-LLM routing + T-1590 Phase 4b route-cache + circuit-breaker (Phase 4), T-1066 data plane governance subscriber (Phase 5). Blocking surface is now exclusively Human [REVIEW] across all 5; agent has no further autonomous work in this arc until reviews land."
+  source: P-001
+  task: T-1065
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
+- id: L-322
+  learning: "Reviewer AC-verify-mismatch heuristic flags any AC text that mentions a path not covered by a verification command — including YYYY-MM-DD date placeholders treated as literal. Two fixes: (1) add 'test -f <path>' or 'grep -q <pattern> <path>' lines that name the AC's path explicitly; (2) for placeholder-vs-literal collisions (e.g. YYYY-MM-DD in date-named output files), use 'fw reviewer override add' with TTL — the heuristic-vs-honest-verification gap is exactly what overrides were designed for. Cleared 12 CONCERN tasks in S-2026-0428-2138 sweep."
+  source: P-001
+  task: T-1443
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
+- id: L-323
+  learning: "Annotated-vs-lightweight tag mismatch breaks GitHub mirror pushes silently — OneDev creates annotated tag objects (different SHA from lightweight) that GitHub rejects as non-fast-forward. Detection: fw doctor mirror divergence check (T-1592). Fix: force-push annotated tags, content-safe when tag^{} dereferences match. Prevention: standardise on one tag style at release time."
+  source: P-002
+  task: T-1592
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
