@@ -806,6 +806,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 - `fw handover [--commit]` / `fw handover --checkpoint` (mid-session)
 - `fw push` — push to all remotes
 - `fw costs [session|current]` — token usage
+- `fw mirror sync|status` — auto-recover lagging github mirror (T-1594, runs every 15 min via cron)
 
 **Fabric (before modifying source):**
 - `fw fabric deps <path>` / `fw fabric impact <path>` / `fw fabric blast-radius [ref]`

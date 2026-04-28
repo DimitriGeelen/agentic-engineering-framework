@@ -154,7 +154,7 @@ jobs:
   - id: mirror-sync-15m
     name: "Mirror cascade auto-recovery (15 min)"
     schedule: "*/15 * * * *"
-    command: "flock -n /var/lock/agentic-cron-mirror-sync-15m.lock -c 'cd /opt/999-Agentic-Engineering-Framework && bin/fw mirror sync --quiet'"
+    command: "flock -n /var/lock/agentic-cron-mirror-sync-15m.lock -c 'fw mirror sync --quiet'"
     source_file: agentic-audit.crontab
     origin_task: T-1594
     status: active
