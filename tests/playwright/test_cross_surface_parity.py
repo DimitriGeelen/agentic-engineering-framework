@@ -32,6 +32,7 @@ from playwright.sync_api import Page
 TASK_WITH_BOTH_BLOCKS = "T-1582"   # has ## Recommendation (GO) + ## Reviewer Verdict
 TASK_WITHOUT_REVIEWER = "T-967"    # no ## Reviewer Verdict block
 INCEPTION_WITH_REVIEWER = "T-1346"  # inception task with ## Reviewer Verdict
+TASK_WITH_NO_REC = "T-449"         # build task without ## Recommendation block (NO-REC)
 
 # Match opening tag, not bare class — CSS rules in inline <style> share names.
 SEC_RECOMMENDATION = '<section class="recommendation-block"'
@@ -130,4 +131,50 @@ class TestCrossSurfaceRecommendationParity:
         assert 'data-verdict="GO"' in content, (
             f"/review/{TASK_WITH_BOTH_BLOCKS} recommendation should carry "
             f"data-verdict=\"GO\"."
+        )
+
+
+class TestCrossSurfaceNoRecBanner:
+    """NO-REC banner structural rendering — per-task surfaces.
+
+    A task without a `## Recommendation` block (the NO-REC state, T-1576)
+    MUST render `<section class="recommendation-block" data-verdict="NO-REC"`
+    on every per-task surface — telling the human "the agent has not yet
+    written a verdict, this task is not ready for review yet". T-1576/T-1577/
+    T-1578 shipped this banner across queue + landing + /review surfaces;
+    `task_detail.html` carries the parallel `rec_state == 'NO-REC'` branch.
+    No invariant pins it, so a future refactor that drops `rec_state`
+    plumbing could silently regress the banner.
+    """
+
+    def test_no_rec_banner_renders_on_tasks_surface(self, page: Page, base_url):
+        """`/tasks/T-XXX` for a task without `## Recommendation` shows NO-REC banner."""
+        page.goto(_url(base_url, f"/tasks/{TASK_WITH_NO_REC}"))
+        page.wait_for_load_state("domcontentloaded")
+        content = page.content()
+        # NO-REC banner uses compound class: `recommendation-block recommendation-norec`
+        # Match on opening `<section class="recommendation-block` (prefix) — still
+        # excludes CSS rules in <style> which use bare `.recommendation-block`.
+        assert '<section class="recommendation-block' in content, (
+            f"/tasks/{TASK_WITH_NO_REC} should render the recommendation "
+            f"section even in NO-REC state (T-1584 + T-1576/T-1578 parity)."
+        )
+        assert 'data-verdict="NO-REC"' in content, (
+            f"/tasks/{TASK_WITH_NO_REC} should carry data-verdict=\"NO-REC\" "
+            f"on the recommendation section — the body has no '## Recommendation' "
+            f"block, so rec_state should resolve to NO-REC."
+        )
+
+    def test_no_rec_banner_renders_on_review_surface(self, page: Page, base_url):
+        """`/review/T-XXX` for a task without `## Recommendation` shows NO-REC banner (T-1578)."""
+        page.goto(_url(base_url, f"/review/{TASK_WITH_NO_REC}"))
+        page.wait_for_load_state("domcontentloaded")
+        content = page.content()
+        assert '<section class="recommendation-block' in content, (
+            f"/review/{TASK_WITH_NO_REC} should render the recommendation "
+            f"section even in NO-REC state (T-1578 banner)."
+        )
+        assert 'data-verdict="NO-REC"' in content, (
+            f"/review/{TASK_WITH_NO_REC} should carry data-verdict=\"NO-REC\" "
+            f"on the recommendation section."
         )
