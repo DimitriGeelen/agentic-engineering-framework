@@ -53,3 +53,32 @@ class TestReviewPage:
         """Nonexistent task review should return 404 or error."""
         resp = page.goto(_url("/review/T-99999"))
         assert resp.status in (404, 200)
+
+    def test_review_has_toast_container(self, page: Page):
+        """T-1582: /review must install the htmx error→toast machinery
+        (review.html is standalone — does not inherit base.html's handler)."""
+        task_id = _find_reviewable_task(page)
+        page.goto(_url(f"/review/{task_id}"))
+        page.wait_for_load_state("domcontentloaded")
+        assert page.locator("#toast-container").count() == 1
+        assert page.evaluate("typeof window.showToast") == "function"
+
+    def test_review_renders_recommendation_structured(self, page: Page):
+        """T-1575: when a task has a Recommendation block, /review renders
+        it as structured rec-rationale / rec-evidence sections — NOT raw
+        markdown in a <pre>. Guards against the shipped-twice-broken regression."""
+        task_id = _find_reviewable_task(page)
+        page.goto(_url(f"/review/{task_id}"))
+        page.wait_for_load_state("domcontentloaded")
+        body_html = page.content()
+        has_structured = (
+            ".rec-rationale" in body_html
+            or 'class="rec-rationale"' in body_html
+            or 'class="rec-incomplete-warning"' in body_html
+            or 'class="recommendation-empty"' in body_html
+        )
+        if "**Recommendation:**" in body_html:
+            assert has_structured, (
+                "Raw '**Recommendation:**' markers found in /review HTML — "
+                "the structured rec-rationale/rec-evidence renderer regressed."
+            )
