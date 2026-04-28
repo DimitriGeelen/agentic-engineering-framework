@@ -4,15 +4,15 @@ name: "Session profiles + provider registry for orchestrator readiness (T-962 Ph
 description: >
   Phase 4: Add provider registry pattern (shell, claude-code, future providers), session profiles (named presets with shell/env/icon/color), per-session token tracking. The v1-to-v2 bridge — ensures multi-provider orchestrator expansion is structural, not rewrite. Depends on T-966.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T18:25:41Z
-last_update: 2026-04-12T09:26:25Z
+last_update: 2026-04-28T17:35:34Z
 date_finished: null
 ---
 
@@ -95,3 +95,7 @@ grep -q '/api/sessions' web/blueprints/terminal.py
 ### 2026-04-12T09:26:25Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-28T17:35:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

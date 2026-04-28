@@ -5,15 +5,15 @@ description: >
   OneDev PR #6 (branch: feature/conversation-guard-capture-skill).
   C-002 rule + /capture skill for conversation persistence.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [onedev, pr]
 components: []
 related_tasks: []
 created: 2026-03-12T18:00:01Z
-last_update: 2026-03-12T18:00:01Z
+last_update: 2026-04-28T17:35:14Z
 date_finished: null
 ---
 
@@ -82,3 +82,7 @@ test -f .fabric/components/capture-skill.yaml
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md
 - **Context:** Initial task creation
+
+### 2026-04-28T17:35:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

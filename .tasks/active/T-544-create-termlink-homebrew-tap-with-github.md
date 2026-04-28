@@ -4,15 +4,15 @@ name: "Create TermLink Homebrew tap with GitHub Actions builds"
 description: >
   Create TermLink Homebrew tap with GitHub Actions builds
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-21T16:02:14Z
-last_update: 2026-03-27T17:34:07Z
+last_update: 2026-04-28T17:35:24Z
 date_finished:
 ---
 
@@ -161,3 +161,7 @@ Setting up TermLink distribution via Homebrew with GitHub Actions automated buil
 
 ### 2026-03-27T17:34:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-04-28T17:35:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -2465,3 +2465,10 @@ X'` returning empty group."
   date: 2026-04-28
   context: Added via context agent
   application: TBD
+- id: L-319
+  learning: "Captured-but-done drift: tasks with all Agent ACs checked + Recommendation written can sit at status=captured (invisible to review queue) when T-1068's horizon-update auto-demote fires on a started-work task moved later/next. The body shows shipped work, the status field shows shelved. Detection: scan for status=captured + zero unchecked Agent ACs + Recommendation block. Found 7 stuck tasks in one sweep (T-1064/1065/1066 + T-334/T-464/T-544/T-967). Resolution: re-promote captured→started-work→work-completed (sovereignty gate places review marker). Structural fix: T-1068 invariant should preserve started-work when shipping evidence (checked ACs + Recommendation) is present."
+  source: P-009
+  task: T-1542
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD

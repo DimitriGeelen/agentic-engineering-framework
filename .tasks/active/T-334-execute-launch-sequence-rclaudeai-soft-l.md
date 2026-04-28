@@ -4,15 +4,15 @@ name: "Execute launch sequence: r/ClaudeAI soft launch → Show HN → amplifica
 description: >
   Launch sequence: Week -1: Post to r/ClaudeAI with 'here is what I built' framing + submit to Console.dev and TLDR newsletters. Week 0: Show HN Tuesday 9 AM PT with 200-word intro comment. Week +1: Product Hunt + r/programming + pitch Latent Space. Requires: demo video, all GitHub quick wins done, CONTRIBUTING.md ready. Ref: docs/reports/T-327-visibility-strategy.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:46Z
-last_update: 2026-03-12T15:51:31Z
+last_update: 2026-04-28T17:35:04Z
 date_finished: null
 ---
 
@@ -99,3 +99,7 @@ test -f AGENTS.md
 
 ### 2026-03-09T06:52:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-28T17:35:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
