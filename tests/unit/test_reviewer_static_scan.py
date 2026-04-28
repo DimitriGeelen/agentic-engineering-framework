@@ -552,6 +552,42 @@ def test_ac_verify_mismatch_no_runner_no_exemption():
     assert len(f) == 1
 
 
+# ───────────────── T-1579: Python-import path coverage ─────────────────
+
+
+def test_ac_verify_mismatch_python_import_from_exempts_module_path():
+    """`from a.b.c import X` directly exercises a/b/c.py — exemption applies."""
+    ac = "### Agent\n- [x] web/blueprints/cockpit.py wires NO-REC pill\n"
+    verif = 'python3 -c "from web.blueprints.cockpit import get_action_summary; assert True"\n'
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert f == []
+
+
+def test_ac_verify_mismatch_python_import_bare_exempts_module_path():
+    """`import a.b.c` directly exercises a/b/c.py — exemption applies."""
+    ac = "### Agent\n- [x] web/blueprints/cockpit.py wires NO-REC pill\n"
+    verif = 'python3 -c "import web.blueprints.cockpit; print(\\"ok\\")"\n'
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert f == []
+
+
+def test_ac_verify_mismatch_python_import_exempts_package_init():
+    """`from a.b.c import X` covers a/b/c/__init__.py too (package init)."""
+    ac = "### Agent\n- [x] web/blueprints/__init__.py exports the new helper\n"
+    verif = 'python3 -c "from web.blueprints import cockpit"\n'
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert f == []
+
+
+def test_ac_verify_mismatch_python_import_no_match_still_fires():
+    """Wrong module imported → AC's path is genuinely not exercised → finding."""
+    ac = "### Agent\n- [x] web/blueprints/cockpit.py is wired up\n"
+    verif = 'python3 -c "from web.shared import extract_recommendation_state"\n'
+    f = ss.detect_ac_verify_mismatch(ac, verif)
+    assert len(f) == 1
+    assert f[0].pattern_id == "AC-verify-mismatch"
+
+
 # ───────────────── v1.2: Layer 3 audit ─────────────────
 
 

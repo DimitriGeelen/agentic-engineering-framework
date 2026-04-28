@@ -497,6 +497,30 @@ def _path_transitively_covered(path: str, verif_text: str) -> bool:
     return False
 
 
+# T-1579: dotted Python imports (from a.b.c import X / import a.b.c) directly
+# exercise a/b/c.py (or a/b/c/__init__.py). Substring match in verif_text
+# misses these because slashes ≠ dots — eight FPs across the T-1576/77/78 arc.
+_PYTHON_IMPORT_RE = re.compile(
+    r"\b(?:from|import)\s+([a-z_][a-z0-9_]*(?:\.[a-z_][a-z0-9_]*)+)",
+    re.IGNORECASE,
+)
+
+
+def _path_python_import_covered(path: str, verif_text: str) -> bool:
+    """Return True if `path` corresponds to a Python module imported in verif_text.
+
+    Handles both module files (`a/b/c.py`) and package markers (`a/b/c/__init__.py`).
+    """
+    for m in _PYTHON_IMPORT_RE.finditer(verif_text):
+        dotted = m.group(1)
+        parts = dotted.split(".")
+        as_module = "/".join(parts) + ".py"
+        as_package = "/".join(parts) + "/__init__.py"
+        if path == as_module or path == as_package:
+            return True
+    return False
+
+
 def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> list[Finding]:
     """AC checked AND mentions a specific file path, but no verification line touches it.
 
@@ -539,6 +563,10 @@ def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> lis
             if path not in verif_text:
                 # v1.2: transitive-coverage exemption per L-265
                 if _path_transitively_covered(path, verif_text):
+                    continue
+                # T-1579: Python-import exemption — `from a.b.c import X` directly
+                # exercises a/b/c.py (verbatim path doesn't appear in verif text).
+                if _path_python_import_covered(path, verif_text):
                     continue
                 findings.append(
                     Finding(
