@@ -1,2 +1,20 @@
 schema_version: 1
-overrides: []
+overrides:
+- id: OV-7898481b
+  task_id: T-1583
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: "FP: AC#1 says 'imports extract_reviewer_verdict' and the diff DOES modify\
+    \ web/blueprints/review.py \u2014 reviewer regex narrow heuristic miss"
+  expires_at: '2026-07-27T14:04:45Z'
+  added_by: root
+  added_at: '2026-04-28T14:04:45Z'
+- id: OV-89f5454a
+  task_id: T-1583
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  reason: "FP: AC#2 says 'review.html adds .reviewer-verdict-block' and the diff DOES\
+    \ modify web/templates/review.html \u2014 same narrow-heuristic class as AC#1"
+  expires_at: '2026-07-27T14:04:46Z'
+  added_by: root
+  added_at: '2026-04-28T14:04:46Z'

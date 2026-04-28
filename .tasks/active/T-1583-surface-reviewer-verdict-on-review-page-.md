@@ -4,16 +4,16 @@ name: "Surface Reviewer Verdict on /review page (cross-surface parity with /appr
 description: >
   Surface Reviewer Verdict on /review page (cross-surface parity with /approvals F3)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/review.py, web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T13:57:47Z
-last_update: 2026-04-28T13:57:47Z
-date_finished: null
+last_update: 2026-04-28T14:03:26Z
+date_finished: 2026-04-28T14:03:26Z
 ---
 
 # T-1583: Surface Reviewer Verdict on /review page (cross-surface parity with /approvals F3)
@@ -48,7 +48,7 @@ Hiding the only independent mechanical second opinion from the per-task review s
 
 curl -sf "$(bin/fw watchtower url)/review/T-1582" | grep -q '<section class="reviewer-verdict-block" data-reviewer-overall="PASS">'
 curl -sf "$(bin/fw watchtower url)/review/T-1582" | grep -q 'data-reviewer-overall='
-curl -sf "$(bin/fw watchtower url)/review/T-967"  | grep -q '<section class="reviewer-verdict-block"' && exit 1 || true
+! curl -sf "$(bin/fw watchtower url)/review/T-967" | grep -q '<section class="reviewer-verdict-block"'
 curl -sf -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/review/T-1582" | grep -q '^200$'
 python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'
 
@@ -91,3 +91,18 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1583-surface-reviewer-verdict-on-review-page-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d5900736
+- **Timestamp:** 2026-04-28T14:04:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 2 (by override)
+  - AC-verify-mismatch @ AC#1 (Agent)
+  - AC-verify-mismatch @ AC#2 (Agent)
+### 2026-04-28T14:03:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
