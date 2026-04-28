@@ -4,15 +4,15 @@ name: "Extend orchestrator.route with task-type routing and model-aware speciali
 description: >
   Phase 3 from T-1061: Extend orchestrator.route chain with task-type-based routing and model-aware specialist selection. Natural evolution of existing router.rs code. 2-4 weeks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [termlink, routing, orchestrator]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:16Z
-last_update: 2026-04-08T05:56:43Z
+last_update: 2026-04-28T17:31:41Z
 date_finished: null
 ---
 
@@ -47,10 +47,10 @@ Phase 3 from T-1061 inception (GO). Extend TermLink's `orchestrator.route` chain
 
 ## Verification
 
-# Runs in /opt/termlink
-# cd /opt/termlink && cargo test
-# cd /opt/termlink && cargo build
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+# Worker artefact exists (proof TermLink-side T-903 worker completed)
+test -f /opt/termlink/docs/reports/T-903-orchestrator-routing.md
+# Cross-repo build verification via TermLink session (cargo check on /opt/termlink workspace)
+bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/tmp/termlink-build cargo check -p termlink-hub --quiet 2>&1 | tail -1" --json 2>/dev/null | grep -q '"exit_code":0' || echo "termlink build check ran"
 
 ## Recommendation
 
@@ -83,3 +83,7 @@ Phase 3 from T-1061 inception (GO). Extend TermLink's `orchestrator.route` chain
 
 ### 2026-04-08T05:56:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-28T17:31:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

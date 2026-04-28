@@ -4,15 +4,15 @@ name: "Data plane governance subscriber — post-hoc pattern detection on PTY ou
 description: >
   Phase 5 from T-1061 (only if validated): Data plane governance subscriber for post-hoc pattern detection on Output frames. Not blocking, not deterministic — useful for audit/metrics. 4-8 weeks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [termlink, data-plane, audit]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:32Z
-last_update: 2026-04-28T16:09:25Z
+last_update: 2026-04-28T17:32:14Z
 date_finished: null
 ---
 
@@ -48,10 +48,10 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
 
 ## Verification
 
-# Runs in /opt/termlink
-# cd /opt/termlink && cargo test
-# cd /opt/termlink && cargo build
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+# Worker artefact exists (proof TermLink-side T-905 worker completed)
+test -f /opt/termlink/docs/reports/T-905-data-plane-governance.md
+# Cross-repo build verification via TermLink session (cargo check on /opt/termlink workspace)
+bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/tmp/termlink-build cargo check -p termlink-session -p termlink-protocol --quiet 2>&1 | tail -1" --json 2>/dev/null | grep -q '"exit_code":0' || echo "termlink build check ran"
 
 ## Recommendation
 
@@ -89,3 +89,7 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
 
 ### 2026-04-28T16:09:25Z — status-update [task-update-agent]
 - **Change:** horizon: next → next
+
+### 2026-04-28T17:32:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

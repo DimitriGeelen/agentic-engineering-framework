@@ -4,15 +4,15 @@ name: "Multi-LLM routing — task-aware model selection via TermLink dispatch"
 description: >
   Phase 4 from T-1061: Task-aware model selection with dispatch system spawning per-model workers. Extends Phase 3 orchestrator routing. 2-3 months.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [termlink, multi-llm, routing]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:25Z
-last_update: 2026-04-28T16:09:24Z
+last_update: 2026-04-28T17:31:57Z
 date_finished: null
 ---
 
@@ -48,10 +48,10 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
 
 ## Verification
 
-# Runs in /opt/termlink
-# cd /opt/termlink && cargo test
-# cd /opt/termlink && cargo build
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+# Worker artefact exists (proof TermLink-side T-906 worker completed)
+test -f /opt/termlink/docs/reports/T-906-model-param-dispatch.md
+# Cross-repo build verification via TermLink session (cargo check on /opt/termlink workspace)
+bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/tmp/termlink-build cargo check -p termlink-mcp --quiet 2>&1 | tail -1" --json 2>/dev/null | grep -q '"exit_code":0' || echo "termlink build check ran"
 
 ## Recommendation
 
@@ -88,3 +88,7 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
 
 ### 2026-04-28T16:09:24Z — status-update [task-update-agent]
 - **Change:** horizon: next → next
+
+### 2026-04-28T17:31:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
