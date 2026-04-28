@@ -2409,3 +2409,45 @@ X'` returning empty group."
   date: 2026-04-28
   context: Added via context agent
   application: TBD
+- id: L-311
+  learning: "When extending a state distinction across UI surfaces, the canonical parser must be the single source of truth — local regex duplicates accumulate drift. T-1577 fix swept cockpit's local AC regex (which matched checkboxes inside HTML template comments) for web.blueprints.tasks._parse_acceptance_criteria, eliminating 2-task count divergence vs /approvals. Pattern: when L-298/L-309 'count diverges across surfaces' triggers, look for parallel parsers — one parser is right number; two definitions of the same concept is the structural gap."
+  source: P-001
+  task: T-1577
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
+- id: L-312
+  learning: "When adding a new state classification that propagates across N UI surfaces (T-1576/T-1577/T-1578 NO-REC distinction across review-queue / handover / approvals / cockpit / review pages): each surface keeps its own decision (verdict-driven badge color vs state-driven banner) but draws from a shared parser (extract_recommendation/extract_recommendation_state). Wire the helper into shared/, expose state alongside verdict, then update each surface in a separate task — visual continuity (same cyan #0e7490) ties them together. Multi-surface arcs benefit from one task per surface (T-1576/77/78) rather than one omnibus task: each surface has its own gate, its own evidence, its own visual verification (Playwright per L-310)."
+  source: P-001
+  task: T-1578
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
+- id: L-313
+  learning: "After NO-REC distinction is structurally in place (T-1576/T-1577/T-1578), sweep the NO-REC pile for two high-yield categories: (a) tasks whose Agent ACs are silently satisfied — code shipped but Recommendation block never written (T-801/T-802/T-803 token-tracking arc); (b) tasks where the proposed feature already exists, often via cross-project pickup staleness (T-1546 /api/_identity already shipped via T-1286). Both classes can be cleared with fact-grounded Recommendations in minutes — five tasks moved from NO-REC to GO/NO-GO this session via this sweep. Pattern: NO-REC distinction is not just a UI improvement; it makes the queue mineable for already-completed work."
+  source: P-001
+  task: T-1546
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
+- id: L-314
+  learning: "_REC_MARKER_RE was anchored as ^** which silently rejected bullet-list authoring style (- **Marker:** value). Real-world authors (T-705, T-844) had used bullet style, producing ? verdicts that hid as 'unparseable'. Lesson: when relaxing/tightening a parser regex, write tests for both alternations of valid Markdown variants — a non-canonical-but-valid input that produces a wrong-but-plausible output is harder to detect than one that crashes."
+  source: P-001
+  task: T-1580
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
+- id: L-315
+  learning: "Cross-surface count divergence (CLI vs cockpit vs Watchtower /approvals) often resolves to two paired bugs: a parser bug producing noise, plus a compensating downstream filter that hides the noise. Removing only the parser bug exposes the filter; removing only the filter re-exposes the noise. Diagnostic pattern: when CLI and cockpit show different task counts, compute the symmetric difference (set in CLI not cockpit AND set in cockpit not CLI) — non-empty in both directions reveals two distinct bugs at once, not a single asymmetric error. Applies anywhere two parsers/scanners look at the same source: keep the canonical parser the single source of truth, never paper over with downstream filters."
+  source: P-001
+  task: T-1581
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
+- id: L-316
+  learning: "Standalone HTML templates (those NOT extending base.html) do not inherit base.html's global event handlers or shared affordances — each must replicate them locally. T-1582 origin: review.html (T-1453 deliberately standalone for mobile UX) lacked the htmx-error→toast handler that base.html:407-414 installs for cockpit, so 4xx/5xx responses on /review silently disappeared (T-1574 symptom class). When adding a new global affordance to base.html, audit non-extending templates for the same need. Trigger: any change touching base.html's shared event-handler block. Three standalone templates currently exist (base.html, review.html, _review_error.html) — _review_error.html has no htmx so is fine. Same drift class as L-298/L-309 but at the template-inheritance layer rather than the parser layer."
+  source: P-001
+  task: T-1582
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
