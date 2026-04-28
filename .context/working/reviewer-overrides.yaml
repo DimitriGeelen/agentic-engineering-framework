@@ -18,3 +18,23 @@ overrides:
   expires_at: '2026-07-27T14:04:46Z'
   added_by: root
   added_at: '2026-04-28T14:04:46Z'
+- id: OV-cd2fb21b
+  task_id: T-1484
+  pattern_id: AC-verify-mismatch
+  ac_index: 6
+  reason: "AC #6 references YYYY-MM-DD-pass-b.yaml as date placeholder pattern. Verification\
+    \ asserts ls .context/audits/reviewer/*-pass-b.yaml exists. Heuristic treats date\
+    \ placeholder as literal \u2014 false positive."
+  expires_at: '2027-04-28T20:18:53Z'
+  added_by: root
+  added_at: '2026-04-28T20:18:53Z'
+- id: OV-c17e6ba4
+  task_id: T-1485
+  pattern_id: AC-verify-mismatch
+  ac_index: 5
+  reason: "AC #5 references YYYY-MM-DD-pass-a.yaml as date placeholder pattern. Verification\
+    \ asserts ls .context/audits/reviewer/*-pass-a.yaml exists. Heuristic treats date\
+    \ placeholder as literal \u2014 false positive."
+  expires_at: '2027-04-28T20:18:53Z'
+  added_by: root
+  added_at: '2026-04-28T20:18:53Z'

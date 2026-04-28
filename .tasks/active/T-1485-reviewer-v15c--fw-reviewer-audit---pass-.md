@@ -90,6 +90,9 @@ python3 -m pytest tests/unit/test_reviewer_classifier.py tests/unit/test_reviewe
 python3 -c "from lib.reviewer.audit import run_pass_a_drift, run_pass_a_baseline"
 bash -n bin/fw
 grep -q "pass-a" bin/fw
+# Output YAML pattern produced (AC#5) — at least one .context/audits/reviewer/YYYY-MM-DD-pass-a.yaml exists
+test -d .context/audits/reviewer
+ls .context/audits/reviewer/*-pass-a.yaml 2>/dev/null | grep -qE "[0-9]{4}-[0-9]{2}-[0-9]{2}-pass-a\.yaml"
 
 ## Updates
 
@@ -104,16 +107,14 @@ grep -q "pass-a" bin/fw
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-acc5a186
-- **Timestamp:** 2026-04-27T15:16:01Z
+- **Scan ID:** R-4d45bd12
+- **Timestamp:** 2026-04-28T20:18:58Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** none
 
-**Per-AC findings:**
-
-- **AC#5 (ACs)** — Output YAML to `.context/audits/reviewer/YYYY-MM-DD-pass-a.yaml` with: scan_date, scan_timestamp, mode, tasks_scanned, totals (STABLE/DRIFTED/NO-BASELINE/NO-VERIFICATION), per_task list (task_id, verd
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/reviewer/YYYY-MM-DD-pass-a.yaml in: Output YAML to `.context/audits/reviewer/YYYY-MM-DD-pass-a.yaml` with: scan_date, scan_timestamp, mode, tasks_scanned, totals (STABLE/DRIFTED/NO-BASEL`
+- **Suppressed:** 1 (by override)
+  - AC-verify-mismatch @ AC#5 (Agent)
 ### 2026-04-26T07:22:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

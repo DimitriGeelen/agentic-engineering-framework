@@ -45,11 +45,13 @@ This task closes the parity gap: surface the same verdict at the top of inceptio
 
 ## Verification
 
-# /approvals served (queue may be empty — see Decisions for queue-state caveat)
-bin/fw watchtower restart >/dev/null 2>&1
-sleep 3
+# Helper present in web/shared.py (AC#1)
+test -f web/shared.py
+grep -q "extract_recommendation_verdict" web/shared.py
+# /approvals served — content asserted, not exit-only
 curl -sf "$(bin/fw watchtower url)/approvals" >/tmp/T-1537-approvals.html
 test -s /tmp/T-1537-approvals.html
+grep -q "<html" /tmp/T-1537-approvals.html
 # Synthetic test proves template wiring (data-verdict + verdict-badge) renders correctly
 python3 -m pytest tests/web/test_inception_verdict_render.py -q
 # Cache filter test proves loader returns the verdict field
@@ -99,22 +101,11 @@ python3 -c "from web.shared import extract_recommendation_verdict; assert extrac
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-c1e1117a
-- **Timestamp:** 2026-04-27T11:34:40Z
+- **Scan ID:** R-f0f4a6af
+- **Timestamp:** 2026-04-28T20:17:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 2
-
-**Per-AC findings:**
-
-- **AC#1 (ACs)** — `_load_pending_go_decisions()` calls `extract_recommendation_verdict()` from `web/shared.py` and returns a `verdict` field per card (mirrors `_load_pending_human_acs()` shape)
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: `_load_pending_go_decisions()` calls `extract_recommendation_verdict()` from `web/shared.py` and returns a `verdict` field per card (mirrors `_load_pe`
-
-**Verification-level findings:**
-
-  1. **empty-output-success** (partial, heuristic) @ Verification:line 2
-     - evidence: `bin/fw watchtower restart >/dev/null 2>&1`
-
+- **Findings:** none
 ### 2026-04-27T11:34:25Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

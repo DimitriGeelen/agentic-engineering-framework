@@ -45,6 +45,14 @@ The /review/T-XXX page renders the `## Recommendation` section as a `<pre>` bloc
 
 ## Verification
 
+# Implementation files exist and reference unified helper (ACs)
+test -f web/shared.py
+grep -q "extract_recommendation\b" web/shared.py
+test -f web/blueprints/inception.py
+grep -q "extract_recommendation\b" web/blueprints/inception.py
+test -f web/blueprints/review.py
+grep -q "extract_recommendation\b" web/blueprints/review.py
+# Rendered /review surfaces structured rationale/evidence
 curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'class="rec-rationale"'
 curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'class="rec-evidence"'
 python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'
@@ -105,21 +113,11 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-3d1dc627
-- **Timestamp:** 2026-04-28T15:23:43Z
+- **Scan ID:** R-088107c2
+- **Timestamp:** 2026-04-28T20:17:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 3
-
-**Per-AC findings:**
-
-- **AC#1 (Agent)** — `web/shared.py` exposes `extract_recommendation(body) -> {verdict, rationale, evidence, raw}` returning a structured dict (parallel shape to `extract_reviewer_verdict`)
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: `web/shared.py` exposes `extract_recommendation(body) -> {verdict, rationale, evidence, raw}` returning a structured dict (parallel shape to `extract_`
-- **AC#3 (Agent)** — `web/blueprints/inception.py` uses the unified helper — `_extract_rationale_from_recommendation` and `_extract_recommendation_stance` removed (or 1-line shims) so there's one source of truth
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: `web/blueprints/inception.py` uses the unified helper — `_extract_rationale_from_recommendation` and `_extract_recommendation_stance` removed (or 1-li`
-- **AC#4 (Agent)** — `web/blueprints/review.py:_parse_recommendation` removed; /review template renders `verdict`, `rationale` (markdown→HTML), and `evidence` (markdown→HTML) as separate labeled sections
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/review.py in: `web/blueprints/review.py:_parse_recommendation` removed; /review template renders `verdict`, `rationale` (markdown→HTML), and `evidence` (markdown→HT`
-
+- **Findings:** none
 ### 2026-04-28T15:23:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

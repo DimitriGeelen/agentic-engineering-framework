@@ -46,6 +46,12 @@ The review blueprint already calls `extract_recommendation(body)` (`web/blueprin
 ## Verification
 
 python3 -m pytest tests/unit/test_extract_recommendation.py -q
+# Implementation files exist (ACs)
+test -f web/blueprints/review.py
+grep -qE "state\b" web/blueprints/review.py
+test -f web/templates/review.html
+grep -q "NO-REC" web/templates/review.html
+# End-to-end: rendered /review page on a NO-REC task emits the banner
 curl -sf "$(bin/fw watchtower url)/review/T-1062" | grep -qE 'NO-REC' && echo "NO-REC banner present" || echo "NO-REC banner missing"
 
 ## Recommendation
@@ -85,18 +91,11 @@ curl -sf "$(bin/fw watchtower url)/review/T-1062" | grep -qE 'NO-REC' && echo "N
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-dd726f88
-- **Timestamp:** 2026-04-28T11:27:02Z
+- **Scan ID:** R-0ad01a6d
+- **Timestamp:** 2026-04-28T20:15:04Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 2
-
-**Per-AC findings:**
-
-- **AC#1 (ACs)** — `web/blueprints/review.py` passes `state` to both `render_review_page` template renders (alongside existing `verdict`)
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/review.py in: `web/blueprints/review.py` passes `state` to both `render_review_page` template renders (alongside existing `verdict`)`
-- **AC#2 (ACs)** — `web/templates/review.html` adds a `{% elif state == 'NO-REC' %}` branch that renders a cyan banner: heading "Recommendation — NO-REC" + body "The agent has not yet written a `## Recommendation` block
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/review.html in: `web/templates/review.html` adds a `{% elif state == 'NO-REC' %}` branch that renders a cyan banner: heading "Recommendation — NO-REC" + body "The age`
+- **Findings:** none
 ### 2026-04-28T11:20:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

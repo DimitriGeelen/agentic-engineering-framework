@@ -45,6 +45,12 @@ Decision-time on inceptions is exactly where the reviewer's mechanical second op
 
 ## Verification
 
+# Implementation files exist and reference the reviewer block (ACs)
+test -f web/blueprints/inception.py
+grep -q "extract_reviewer_verdict" web/blueprints/inception.py
+test -f web/templates/inception_detail.html
+grep -q "reviewer-verdict-block" web/templates/inception_detail.html
+# Rendered /inception page emits the block
 curl -sf "$(bin/fw watchtower url)/inception/T-1346" | grep -q '<section class="reviewer-verdict-block" data-reviewer-overall='
 curl -sf -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/inception/T-1346" | grep -q '^200$'
 # Double-render check: the Reviewer Verdict heading should NOT appear as a generic
@@ -90,19 +96,11 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-ceaf0e9a
-- **Timestamp:** 2026-04-28T15:42:43Z
+- **Scan ID:** R-6035777c
+- **Timestamp:** 2026-04-28T20:17:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 2
-
-**Per-AC findings:**
-
-- **AC#1 (Agent)** — `web/blueprints/inception.py` imports `extract_reviewer_verdict` from `web.shared`, calls it on `task_body`, passes result as `reviewer` kwarg to `render_template("inception_detail.html", ...)`
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: `web/blueprints/inception.py` imports `extract_reviewer_verdict` from `web.shared`, calls it on `task_body`, passes result as `reviewer` kwarg to `ren`
-- **AC#3 (Agent)** — `web/templates/inception_detail.html` renders a `.reviewer-verdict-block` (with `data-reviewer-overall` attribute, PASS/FAIL/WARN palette) — placed immediately after the Agent Recommendation card, onl
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/inception_detail.html in: `web/templates/inception_detail.html` renders a `.reviewer-verdict-block` (with `data-reviewer-overall` attribute, PASS/FAIL/WARN palette) — placed im`
-
+- **Findings:** none
 ### 2026-04-28T15:42:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

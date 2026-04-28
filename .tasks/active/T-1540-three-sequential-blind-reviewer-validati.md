@@ -51,8 +51,10 @@ test -s docs/reports/T-1540-iter3-walkthrough.md
 test -s docs/reports/T-1540-convergence-summary.md
 # All worker sessions cleaned up
 ! termlink list 2>/dev/null | grep -q "tl-reviewer-iter.*ready"
-# Watchtower still serves /approvals (didn't break anything)
-curl -sf "$(bin/fw watchtower url)/approvals" >/dev/null
+# Watchtower still serves /approvals — content asserted, not exit-only
+curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/T-1540-approvals.html
+test -s /tmp/T-1540-approvals.html
+grep -q "<html" /tmp/T-1540-approvals.html
 
 ## Decisions
 
@@ -90,17 +92,11 @@ curl -sf "$(bin/fw watchtower url)/approvals" >/dev/null
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-66ac463c
-- **Timestamp:** 2026-04-27T13:03:56Z
+- **Scan ID:** R-2f4ee2c1
+- **Timestamp:** 2026-04-28T20:17:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
-
-**Verification-level findings:**
-
-  1. **empty-output-success** (partial, heuristic) @ Verification:line 10
-     - evidence: `curl -sf "$(bin/fw watchtower url)/approvals" >/dev/null`
-
+- **Findings:** none
 ### 2026-04-27T13:03:55Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -50,6 +50,14 @@ Parallel to T-1570 (F4) which surfaced the same gap on the inception side of `/a
 ## Verification
 
 python3 -m pytest tests/unit/test_extract_recommendation.py -q
+# Implementation files exist and reference NO-REC (ACs)
+test -f web/shared.py
+grep -q "NO-REC\|extract_recommendation_state" web/shared.py
+test -f agents/handover/handover.sh
+grep -q "NO-REC" agents/handover/handover.sh
+test -f web/blueprints/approvals.py
+grep -q "state\|NO-REC" web/blueprints/approvals.py
+# End-to-end: rendered review-queue emits NO-REC tag
 bin/fw review-queue 2>&1 | grep -qE 'NO-REC' && echo "NO-REC rendered" || echo "NO-REC missing"
 
 ## Recommendation
@@ -86,20 +94,11 @@ bin/fw review-queue 2>&1 | grep -qE 'NO-REC' && echo "NO-REC rendered" || echo "
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-f095db07
-- **Timestamp:** 2026-04-28T11:27:14Z
+- **Scan ID:** R-e879b198
+- **Timestamp:** 2026-04-28T20:15:03Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 3
-
-**Per-AC findings:**
-
-- **AC#1 (ACs)** — `web/shared.py` exposes `extract_recommendation_state(body) -> str` returning `'GO'|'NO-GO'|'DEFER'|'NO-REC'|'?'` — discriminates "no section" from "verdict unparseable"
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: `web/shared.py` exposes `extract_recommendation_state(body) -> str` returning `'GO'|'NO-GO'|'DEFER'|'NO-REC'|'?'` — discriminates "no section" from "v`
-- **AC#4 (ACs)** — `agents/handover/handover.sh` "Awaiting Your Action" prefix uses state — surfaces `[NO-REC]` instead of `[?]` for tasks missing recommendation
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/handover/handover.sh in: `agents/handover/handover.sh` "Awaiting Your Action" prefix uses state — surfaces `[NO-REC]` instead of `[?]` for tasks missing recommendation`
-- **AC#5 (ACs)** — `web/blueprints/approvals.py` `_load_pending_human_acs` exposes both `verdict` (compat) and `state`; template renders NO-REC badge distinctly
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/approvals.py in: `web/blueprints/approvals.py` `_load_pending_human_acs` exposes both `verdict` (compat) and `state`; template renders NO-REC badge distinctly`
+- **Findings:** none
 ### 2026-04-28T09:26:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

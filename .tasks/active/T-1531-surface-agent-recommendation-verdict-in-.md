@@ -42,6 +42,10 @@ T-1530 surfaced agent recommendation verdicts in the handover markdown. The same
 ## Verification
 
 python3 -c "import ast; ast.parse(open('web/blueprints/approvals.py').read())"
+# Template file exists and renders verdict badges (AC#3)
+test -f web/templates/_approvals_content.html
+grep -q "data-verdict" web/templates/_approvals_content.html
+# End-to-end: rendered /approvals emits verdict badges
 curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/T-1531-approvals.html
 grep -qE 'data-verdict="(GO|DEFER|NO-GO|\?)"' /tmp/T-1531-approvals.html
 test $(grep -cE 'data-verdict="GO"' /tmp/T-1531-approvals.html) -ge 5
@@ -76,17 +80,11 @@ test $(grep -cE 'data-verdict="GO"' /tmp/T-1531-approvals.html) -ge 5
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-265d015f
-- **Timestamp:** 2026-04-27T10:18:37Z
+- **Scan ID:** R-972e758f
+- **Timestamp:** 2026-04-28T20:13:40Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
-
-**Per-AC findings:**
-
-- **AC#3 (ACs)** — `web/templates/_approvals_content.html` renders the verdict as a colour-coded badge in each task card
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/_approvals_content.html in: `web/templates/_approvals_content.html` renders the verdict as a colour-coded badge in each task card`
-
+- **Findings:** none
 ### 2026-04-27T10:18:35Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -48,6 +48,13 @@ Helpers already exist: `web/shared.py:extract_recommendation` and `web/shared.py
 
 ## Verification
 
+# Implementation files exist and call extractors (ACs)
+test -f web/blueprints/tasks.py
+grep -q "extract_recommendation\|extract_reviewer_verdict" web/blueprints/tasks.py
+test -f web/templates/task_detail.html
+grep -q "recommendation-block" web/templates/task_detail.html
+grep -q "reviewer-verdict-block" web/templates/task_detail.html
+# Rendered /tasks page emits both blocks
 curl -sf "$(bin/fw watchtower url)/tasks/T-1582" | grep -q '<section class="recommendation-block" data-verdict="GO">'
 curl -sf "$(bin/fw watchtower url)/tasks/T-1582" | grep -q '<section class="reviewer-verdict-block" data-reviewer-overall="PASS">'
 ! curl -sf "$(bin/fw watchtower url)/tasks/T-967" | grep -q '<section class="reviewer-verdict-block"'
@@ -97,21 +104,11 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-4539f1ed
-- **Timestamp:** 2026-04-28T15:30:40Z
+- **Scan ID:** R-f45cf222
+- **Timestamp:** 2026-04-28T20:17:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 3
-
-**Per-AC findings:**
-
-- **AC#1 (Agent)** — `web/blueprints/tasks.py:task_detail` imports `extract_recommendation` and `extract_reviewer_verdict`, calls them on `task_content`, passes structured `recommendation` (verdict + rationale_html + evid
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: `web/blueprints/tasks.py:task_detail` imports `extract_recommendation` and `extract_reviewer_verdict`, calls them on `task_content`, passes structured`
-- **AC#2 (Agent)** — `web/templates/task_detail.html` renders a `.recommendation-block` (with `data-verdict` attribute) immediately after the metadata table, mirroring `review.html` palette (GO green / DEFER orange / NO-G
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/task_detail.html in: `web/templates/task_detail.html` renders a `.recommendation-block` (with `data-verdict` attribute) immediately after the metadata table, mirroring `re`
-- **AC#3 (Agent)** — `web/templates/task_detail.html` renders a `.reviewer-verdict-block` (with `data-reviewer-overall` attribute) immediately after the recommendation block when the task body has a `## Reviewer Verdict (
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/task_detail.html in: `web/templates/task_detail.html` renders a `.reviewer-verdict-block` (with `data-reviewer-overall` attribute) immediately after the recommendation blo`
-
+- **Findings:** none
 ### 2026-04-28T15:30:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

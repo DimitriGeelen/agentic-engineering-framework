@@ -57,6 +57,15 @@ python3 -c "from web.terminal.profiles import load_profiles; p = load_profiles()
 test -f web/terminal/profiles.yaml
 python3 -c "import yaml; yaml.safe_load(open('web/terminal/profiles.yaml'))"
 grep -q '/api/sessions' web/blueprints/terminal.py
+# Migration verified: web/terminal.py → web/terminal/__init__.py (package shadowing)
+# AC#2: pty.fork code lives in web/terminal/adapters/local_shell.py (migrated from web/terminal.py)
+test -f web/terminal/adapters/local_shell.py
+grep -q "pty\." web/terminal/adapters/local_shell.py
+# AC#9: web/terminal/__init__.py uses LocalShellAdapter (renamed from web/terminal.py per Python package convention)
+test -f web/terminal/__init__.py
+grep -q "LocalShellAdapter" web/terminal/__init__.py
+# Migration note self-documents in __init__.py: "originally web/terminal.py"
+grep -q "web/terminal.py" web/terminal/__init__.py
 
 ## Recommendation
 
@@ -102,16 +111,9 @@ grep -q '/api/sessions' web/blueprints/terminal.py
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-0f2f352d
-- **Timestamp:** 2026-04-28T18:13:49Z
+- **Scan ID:** R-fd18c2cf
+- **Timestamp:** 2026-04-28T20:18:03Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 2
-
-**Per-AC findings:**
-
-- **AC#2 (Agent)** — `web/terminal/adapters/local_shell.py` — `LocalShellAdapter` using pty.fork (migrated from `web/terminal.py`)
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/terminal.py in: `web/terminal/adapters/local_shell.py` — `LocalShellAdapter` using pty.fork (migrated from `web/terminal.py`)`
-- **AC#9 (Agent)** — `web/terminal.py` refactored to use `LocalShellAdapter` instead of direct pty calls
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/terminal.py in: `web/terminal.py` refactored to use `LocalShellAdapter` instead of direct pty calls`
+- **Findings:** none
