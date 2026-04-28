@@ -4,16 +4,16 @@ name: "Mirror cascade auto-recovery — fw mirror sync command + cron (T-1591 Pr
 description: >
   Mirror cascade auto-recovery — fw mirror sync command + cron (T-1591 Prevention #3)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/mirror.sh, tests/unit/test_mirror_sync.bats]
 related_tasks: []
 created: 2026-04-28T22:13:11Z
-last_update: 2026-04-28T22:13:11Z
-date_finished: null
+last_update: 2026-04-28T22:18:24Z
+date_finished: 2026-04-28T22:18:24Z
 ---
 
 # T-1594: Mirror cascade auto-recovery — fw mirror sync command + cron (T-1591 Prevention #3)
@@ -50,8 +50,8 @@ grep -qE 'FW_LIB_DIR/mirror\.sh|lib/mirror\.sh' bin/fw
 grep -q "mirror-sync-15m" .context/cron-registry.yaml
 # Dry-run on current state succeeds (parity already restored)
 bin/fw mirror sync --dry-run --quiet
-# Bats test passes
-bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1 | grep -qE "ok [0-9]+ tests, 0 failures"
+# Bats test passes (TAP format — fail if any "not ok" line, ensure 8 "ok" lines)
+bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! echo "$out" | grep -q "^not ok" && [ "$(echo "$out" | grep -cE "^ok ")" -eq 8 ]'
 
 ## RCA
 
@@ -101,3 +101,27 @@ bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1 | grep -qE "ok [0-9]+ 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1594-mirror-cascade-auto-recovery--fw-mirror-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-5ae95374
+- **Timestamp:** 2026-04-28T22:18:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — Implementation lives in `lib/mirror.sh`, sourced from `bin/fw` — `bin/fw:4682 source "$FW_LIB_DIR/mirror.sh"`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=FW_LIB_DIR/mirror.sh in: Implementation lives in `lib/mirror.sh`, sourced from `bin/fw` — `bin/fw:4682 source "$FW_LIB_DIR/mirror.sh"``
+- **AC#10 (Agent)** — Component fabric registered for `lib/mirror.sh` — `.fabric/components/lib-mirror.yaml` created
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/lib-mirror.yaml in: Component fabric registered for `lib/mirror.sh` — `.fabric/components/lib-mirror.yaml` created`
+
+**Verification-level findings:**
+
+  1. **skip-as-pass** (severe, deterministic) @ Verification:line 9
+     - evidence: `bin/fw mirror sync --dry-run --quiet`
+
+### 2026-04-28T22:18:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

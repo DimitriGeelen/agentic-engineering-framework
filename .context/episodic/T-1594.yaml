@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1594: Mirror cascade auto-recovery — fw mirror sync command + cron (T-1591 Prevention #3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-28T22:18:30Z
+# ============================================================================
+
+task_id: T-1594
+task_name: "Mirror cascade auto-recovery — fw mirror sync command + cron (T-1591 Prevention #3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T22:13:11Z
+completed: 2026-04-28T22:18:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-29T00:17:59+02:00
+last_commit: 2026-04-29T00:17:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw mirror sync — auto-recover lagging github mirror (T-1591 Prevention #3)
+
+# Key outcomes
+outcomes:
+  - "`fw mirror sync` command exists with subcommand dispatcher (`sync`, `status`, `help`) — verified `fw mirror help` shows all three"
+  - "`fw mirror sync` detects each non-origin remote's master HEAD vs origin HEAD; if mirror is ancestor of origin → fast-forward push; if diverged → log + skip (no auto-recover); if in-sync → log + skip — bats covers all four outcomes"
+  - "`--dry-run` flag previews the push without executing — bats `mirror_sync --dry-run: behind remote not actually pushed`"
+  - "`--quiet` flag suppresses non-error output (cron-friendly) — implemented, used in cron registry entry"
+  - "Per-event log written to `.context/working/.mirror-sync.log` (TSV: timestamp, remote, outcome, mirror_sha, origin_sha) — bats grep verifies log entries"
+  - "Implementation lives in `lib/mirror.sh`, sourced from `bin/fw` — `bin/fw:4682 source \"$FW_LIB_DIR/mirror.sh\"`"
+  - "Cron entry `mirror-sync-15m` registered in `.context/cron-registry.yaml` running `fw mirror sync --quiet` every 15 min"
+  - "Bats regression test in `tests/unit/test_mirror_sync.bats` covers: in-sync (no push), ancestor (fast-forward push), diverged (refuse), unreachable remote (log + non-zero exit) — 8 tests"
+  - "All bats tests pass — 8/8"
+  - "Component fabric registered for `lib/mirror.sh` — `.fabric/components/lib-mirror.yaml` created"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/cron-registry.yaml"
+  - ".fabric/components/lib-mirror.yaml"
+  - "lib/mirror.sh"
+  - ".tasks/active/T-1594-mirror-cascade-auto-recovery--fw-mirror-.md"
+  - "tests/unit/test_mirror_sync.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-29T00:17:59"
+    action: "T-1594: fw mirror sync — auto-recover lagging github mirror (T-1591 Prevention #3)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 7
+  lines_added: 506
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1594-mirror-cascade-auto-recovery--fw-mirror-.md
+generated_by: context-agent-hybrid
