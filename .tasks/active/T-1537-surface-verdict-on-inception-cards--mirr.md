@@ -90,6 +90,13 @@ python3 -c "from web.shared import extract_recommendation_verdict; assert extrac
 - `tests/unit/test_extract_recommendation_verdict.py` still 10/10 pass (no helper regression)
 - All P-011 verification commands pass
 
+## Updates
+
+### 2026-04-27 — task created and shipped
+- **Action:** Surfaced verdict badge on /approvals inception cards (T-1531 mirror)
+- **Output:** `web/blueprints/approvals.py`, `web/templates/approvals.html`, `tests/web/test_inception_verdict_render.py`
+- **Context:** Mirrors the T-1531 treatment for inception approval cards — build cards already had the verdict badge, inception cards were the missing surface.
+
 ## Reviewer Verdict (v1.4)
 
 - **Scan ID:** R-c1e1117a
