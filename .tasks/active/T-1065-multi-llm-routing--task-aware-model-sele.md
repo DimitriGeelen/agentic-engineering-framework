@@ -55,14 +55,16 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
 
 ## Recommendation
 
-**Recommendation:** Partial complete — model passthrough done, routing intelligence deferred
-**Rationale:** The model parameter was already implemented in TermLink's dispatch system (CLI --model flag, MCP model param, TERMLINK_MODEL env var, manifest recording). Route cache model tracking and circuit breaker model fallback remain as future work.
+**Recommendation:** DEFER
+
+**Rationale:** Model passthrough is shipped (5/7 Agent ACs satisfied — MCP param, env var, CLI flag, CLI env, manifest, 3 tests pass), but the two remaining ACs (route-cache model→task-type success-rate tracking, circuit-breaker fallback) are explicitly recorded as scope-split future work in this task's `## Decisions` block. Honest framing per the recorded scope decision: defer this task and split the remaining intelligence into a separate task. Closing as GO would understate that two checkboxes remain genuinely unsatisfied; treating it as a single delivery would re-bundle the explicit split. DEFER captures both the partial shipment and the pending follow-up.
+
 **Evidence:**
-- Worker exit code: 0
-- Report: `/opt/termlink/docs/reports/T-906-model-param-dispatch.md`
-- 5 integration points verified: MCP param, MCP env, CLI flag, CLI env, manifest
-- 3 tests pass: dispatch with opus, dispatch with sonnet, dispatch without model
-- Route cache + circuit breaker model intelligence not yet implemented (separate task)
+- Worker exit code: 0; report: `/opt/termlink/docs/reports/T-906-model-param-dispatch.md`.
+- 5 integration points verified: MCP param, MCP env, CLI flag, CLI env, manifest recording.
+- 3 tests pass: dispatch with opus, dispatch with sonnet, dispatch without model.
+- Recorded `## Decisions` (2026-04-08): "Model passthrough first, routing intelligence later" — confirms 2 unchecked ACs are out of scope by explicit decision.
+- Recommended follow-up task title: "Multi-LLM routing — route-cache model tracking + circuit-breaker fallback" (Phase 4b).
 
 ## Decisions
 

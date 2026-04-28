@@ -54,8 +54,10 @@ Phase 3 from T-1061 inception (GO). Extend TermLink's `orchestrator.route` chain
 
 ## Recommendation
 
-**Recommendation:** Agent ACs complete — ready for human design review
-**Rationale:** TermLink worker (T-903 in /opt/termlink) added task_type to orchestrator.route. Preference-based routing (not exclusion), composite routing key, backward compatible. 3 new tests, 155 total pass.
+**Recommendation:** GO
+
+**Rationale:** All 6 Agent ACs verified satisfied via TermLink-side T-903 worker. `orchestrator.route` accepts optional `task_type`, route cache learns task-type → specialist mappings, bypass registry considers task_type, existing method-based routing unchanged when type is absent. 3 new tests, 155 hub tests pass. Backward-compatible additive extension — exactly the shape called for in the AC. Awaits Human [REVIEW] of routing-design quality (subjective architectural judgement).
+
 **Evidence:**
 - Worker exit code: 0
 - Tests: 155 hub tests pass (3 new)
