@@ -4,15 +4,15 @@ name: "fw costs CLI — token usage tracking from JSONL transcripts"
 description: >
   Build task following T-799 (GO) and T-800 (GO) inception decisions. Implement fw costs CLI that parses Claude Code JSONL session transcripts to report token usage per-session and project totals. Subscription model — cost measured in tokens consumed, not dollars. Data source: ~/.claude/projects/ JSONL files with per-turn usage objects containing input_tokens, cache_creation_input_tokens, cache_read_input_tokens, output_tokens. Key deliverables: (1) JSONL parser extracting token usage, (2) fw costs command with session/project/summary views, (3) Watchtower integration for token dashboard.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [cost, tokens, observability, cli]
 components: [bin-fw, budget-gate]
 related_tasks: [T-799, T-800, T-596, T-699]
 created: 2026-04-03T19:01:09Z
-last_update: 2026-04-13T07:11:07Z
+last_update: 2026-04-28T11:33:36Z
 date_finished: null
 ---
 
@@ -60,6 +60,19 @@ bin/fw costs help >/dev/null
 # Component card registered
 test -f .fabric/components/lib-costs.yaml
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 9 Agent ACs verified satisfied against the live codebase: `lib/costs.sh` ships with `costs_main` / `_costs_parse_all`; `bin/fw costs` is wired with sub-routes (default summary, `session`, `session <id>`, `help`); fabric card registered. Output is human-readable with K/M token suffixes and per-session breakdown. Task has been in NO-REC limbo since 2026-04-13 — feature is delivered and used (handover S-2026-0428-1129 frontmatter cites `13.1B tokens, 79381 turns` extracted by this same code path). Awaits Human [REVIEW] of output format clarity.
+
+**Evidence:**
+- `test -f lib/costs.sh` → exists.
+- `test -f .fabric/components/lib-costs.yaml` → exists.
+- `bin/fw costs help` → emits usage block (Token usage tracking / fw costs subcommands).
+- `bin/fw costs` → renders summary: 19 sessions, 80,065 total turns, per-category breakdown.
+- Dogfood: this session's handover frontmatter reads tokens via the same code path (`13.1B` in S-2026-0428-1129).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -89,3 +102,7 @@ test -f .fabric/components/lib-costs.yaml
 ### 2026-04-13T07:11:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-28T11:33:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
