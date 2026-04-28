@@ -2402,3 +2402,10 @@ X'` returning empty group."
   date: 2026-04-27
   context: Added via context agent
   application: TBD
+- id: L-310
+  learning: "UI/template verification by element-presence grep is forbidden — required: Playwright screenshot OR DOM-content assertion. T-1575 shipped twice with grep-only checks and twice the rendering was visibly broken (evidence/captured-learning leaking into rationale; backticked URL not clickable). Behavioral promise decays; the rendering layer + visual verification is the contract."
+  source: P-001
+  task: T-1575
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD

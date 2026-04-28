@@ -74,6 +74,17 @@ bin/fw test unit -- tests/unit/test_extract_recommendation.py
 - `tests/unit/test_extract_recommendation.py` — 10 tests covering full block, verdict-only, empty section, evidence missing, H2+ terminator regression, real-world T-1565 sample, compat shim. All 28 tests across the three extractor suites pass.
 - Live verification: T-1565 review now shows rendered `<p>` rationale + `<ul>` evidence with auto-linked T-XXX refs (T-1567, T-1568, etc. as `<a href="/tasks/T-XXX">`), code spans rendered, bold rendered. T-1575's own Step 1 URL is clickable.
 
+**Subsequent fixes layered on top of the consolidation (this arc accumulated 5 commits):**
+- `6d4a44fbd` — Initial consolidation (`extract_recommendation`, render structured fields).
+- `7f64f82cd` — Generic marker tokenizer (replaced hardcoded `Evidence|Rationale|...:` alternation that missed `**Evidence — closed (7):**` and `**Captured learning:** L-309`). Real-T-1565-file regression test added — this is what should have caught the bug the first time.
+- `c326be7b2` — Record Decision rationale pre-fill (mirrors `inception_detail.html` `rationale_hint`). Caption "Agent recommends GO — edit the rationale or pick a different decision."
+- `4704f12a4` — `_linkify_code_urls` post-processor: backticked URLs become `<a><code>...</code></a>` everywhere. CSS makes link affordance visible. CLAUDE.md §"Human AC Format Requirements" documents the rendering guarantee.
+- `22100ca96` — Don't re-prompt after decision: htmx polling was reverting the success state to the GO/NO-GO/DEFER form every 5s. `_extract_decision` short-circuits to a persistent "Decision recorded: <verdict>" card.
+
+**Captured learnings:**
+- L-309 — cross-component "needs human" decoupling pattern (origin: T-1572).
+- (Pending) Verification of UI/template changes by element-presence grep is forbidden — required: Playwright screenshot OR DOM-content assertion. T-1575 shipped twice with grep-only checks and twice the rendering was visibly broken.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
