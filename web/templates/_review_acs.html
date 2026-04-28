@@ -63,9 +63,20 @@
 {% if workflow_type == 'inception' %}
 <div class="decide-section" id="inception-decide-form">
     <h3>Record Decision</h3>
+    {# T-1575: pre-fill rationale from the agent's ## Recommendation block. The
+       human acts on agent's recommendation — they should see and edit it, not
+       re-type from scratch. Mirrors inception_detail.html's `rationale_hint`
+       pattern. #}
+    {% if verdict and verdict != '?' %}
+    <p style="font-size:0.85rem; color:#4b5563; margin:0 0 0.5rem;">
+        Agent recommends <strong style="
+            color: {% if verdict == 'GO' %}#065f46{% elif verdict == 'NO-GO' %}#991b1b{% else %}#9a3412{% endif %};
+        ">{{ verdict }}</strong> — edit the rationale or pick a different decision.
+    </p>
+    {% endif %}
     <form hx-post="/inception/{{ task_id }}/decide"
           hx-target="#ac-container" hx-swap="innerHTML">
-        <textarea name="rationale" placeholder="Rationale (required)" required></textarea>
+        <textarea name="rationale" placeholder="Rationale (required)" required>{{ rec_rationale_text or '' }}</textarea>
         <div class="decide-buttons">
             <button type="submit" name="decision" value="go" class="decide-btn decide-btn-go">GO</button>
             <button type="submit" name="decision" value="no-go" class="decide-btn decide-btn-nogo">NO-GO</button>

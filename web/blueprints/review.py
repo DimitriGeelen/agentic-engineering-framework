@@ -158,6 +158,7 @@ def review(task_id):
         verdict=rec["verdict"],
         rec_rationale_html=rec_rationale_html,
         rec_evidence_html=rec_evidence_html,
+        rec_rationale_text=rec["rationale"],  # T-1575: pre-fill the Record Decision textarea
         rec_complete=rec_complete,
         pending_tier0=active_tier0,
         artifacts=artifacts,
@@ -184,6 +185,12 @@ def review_acs_fragment(task_id):
     total_count = len(human_acs)
     all_checked = total_count > 0 and checked_count == total_count
 
+    # T-1575: htmx polling fragment must also pre-fill the rationale textarea —
+    # otherwise the 5-second poll wipes the user's not-yet-submitted rationale OR
+    # replaces the pre-filled one with an empty box.
+    from web.shared import extract_recommendation
+    rec = extract_recommendation(body)
+
     return render_template(
         "_review_acs.html",
         task_id=task_id,
@@ -192,4 +199,6 @@ def review_acs_fragment(task_id):
         checked_count=checked_count,
         total_count=total_count,
         all_checked=all_checked,
+        verdict=rec["verdict"],
+        rec_rationale_text=rec["rationale"],
     )
