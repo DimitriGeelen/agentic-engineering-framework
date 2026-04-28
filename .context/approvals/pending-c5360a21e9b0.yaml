@@ -1,0 +1,8 @@
+command_hash: c5360a21e9b0c2893df44d0610b27d50c61a4200be9615e1adf0596874ec0e69
+command_preview: git push --force github refs/tags/v1.2.0 refs/tags/v1.2.1 refs/tags/v1.2.2
+  refs/tags/v1.2.3 refs/tags/v1.2.4 refs/tags/v1.5.743 refs/tags/v1.5.746 2>&1 | tail
+  -15
+risk: 'FORCE PUSH: Can overwrite remote commit history'
+status: pending
+timestamp: '2026-04-28T20:28:17Z'
+type: tier0

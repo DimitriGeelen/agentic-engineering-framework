@@ -2592,3 +2592,395 @@ scan_id: R-0c035872
 task_id: T-1590
 payload:
   task_file: .tasks/active/T-1590-multi-llm-routing-phase-4b--route-cache-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:12:11Z'
+scan_id: R-7cd6d6ea
+task_id: T-1542
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:12:11Z'
+scan_id: R-7cd6d6ea
+task_id: T-1542
+payload:
+  task_file: .tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:12:24Z'
+scan_id: R-ad02c9c8
+task_id: T-1542
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:12:24Z'
+scan_id: R-ad02c9c8
+task_id: T-1542
+payload:
+  task_file: .tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:13:40Z'
+scan_id: R-972e758f
+task_id: T-1531
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:13:40Z'
+scan_id: R-972e758f
+task_id: T-1531
+payload:
+  task_file: .tasks/active/T-1531-surface-agent-recommendation-verdict-in-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:15:03Z'
+scan_id: R-e840a786
+task_id: T-1577
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:15:03Z'
+scan_id: R-e840a786
+task_id: T-1577
+payload:
+  task_file: .tasks/active/T-1577-f10--extend-no-rec-distinction-to-landin.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:15:03Z'
+scan_id: R-e879b198
+task_id: T-1576
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:15:03Z'
+scan_id: R-e879b198
+task_id: T-1576
+payload:
+  task_file: .tasks/active/T-1576-f9--distinguish-no-rec-from-defer-in-rev.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:15:04Z'
+scan_id: R-0ad01a6d
+task_id: T-1578
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:15:04Z'
+scan_id: R-0ad01a6d
+task_id: T-1578
+payload:
+  task_file: .tasks/active/T-1578-f11--add-no-rec-banner-to-review-page-t-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-f0f4a6af
+task_id: T-1537
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-f0f4a6af
+task_id: T-1537
+payload:
+  task_file: .tasks/active/T-1537-surface-verdict-on-inception-cards--mirr.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-2f4ee2c1
+task_id: T-1540
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-2f4ee2c1
+task_id: T-1540
+payload:
+  task_file: .tasks/active/T-1540-three-sequential-blind-reviewer-validati.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-088107c2
+task_id: T-1575
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-088107c2
+task_id: T-1575
+payload:
+  task_file: .tasks/active/T-1575-structural-recommendation-rendering--uni.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-f45cf222
+task_id: T-1584
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-f45cf222
+task_id: T-1584
+payload:
+  task_file: .tasks/active/T-1584-surface-recommendation--reviewer-verdict.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-6035777c
+task_id: T-1585
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-6035777c
+task_id: T-1585
+payload:
+  task_file: .tasks/active/T-1585-surface-reviewer-verdict-on-inceptiont-x.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-6b5b8037
+task_id: T-967
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-6b5b8037
+task_id: T-967
+payload:
+  task_file: .tasks/active/T-967-session-profiles--provider-registry-for-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-3951aa95
+task_id: T-1484
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:17:25Z'
+scan_id: R-3951aa95
+task_id: T-1484
+payload:
+  task_file: .tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:17:26Z'
+scan_id: R-b42d56c5
+task_id: T-1485
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:17:26Z'
+scan_id: R-b42d56c5
+task_id: T-1485
+payload:
+  task_file: .tasks/active/T-1485-reviewer-v15c--fw-reviewer-audit---pass-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:18:03Z'
+scan_id: R-fd18c2cf
+task_id: T-967
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:18:03Z'
+scan_id: R-fd18c2cf
+task_id: T-967
+payload:
+  task_file: .tasks/active/T-967-session-profiles--provider-registry-for-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:18:10Z'
+scan_id: R-ec83998d
+task_id: T-1484
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:18:10Z'
+scan_id: R-ec83998d
+task_id: T-1484
+payload:
+  task_file: .tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:18:44Z'
+scan_id: R-037cebef
+task_id: T-1484
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:18:44Z'
+scan_id: R-037cebef
+task_id: T-1484
+payload:
+  task_file: .tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:18:44Z'
+scan_id: R-aade9488
+task_id: T-1485
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:18:44Z'
+scan_id: R-aade9488
+task_id: T-1485
+payload:
+  task_file: .tasks/active/T-1485-reviewer-v15c--fw-reviewer-audit---pass-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:18:58Z'
+scan_id: R-b0941192
+task_id: T-1484
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:18:58Z'
+scan_id: R-b0941192
+task_id: T-1484
+payload:
+  task_file: .tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md
+---
+kind: override_applied
+timestamp: '2026-04-28T20:18:58Z'
+scan_id: R-b0941192
+task_id: T-1484
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 6
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:18:58Z'
+scan_id: R-4d45bd12
+task_id: T-1485
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:18:58Z'
+scan_id: R-4d45bd12
+task_id: T-1485
+payload:
+  task_file: .tasks/active/T-1485-reviewer-v15c--fw-reviewer-audit---pass-.md
+---
+kind: override_applied
+timestamp: '2026-04-28T20:18:58Z'
+scan_id: R-4d45bd12
+task_id: T-1485
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 5
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-04-28T20:23:39Z'
+scan_id: R-aac5b065
+task_id: T-1591
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T20:23:39Z'
+scan_id: R-aac5b065
+task_id: T-1591
+payload:
+  task_file: .tasks/active/T-1591-rca-aef-github-mirror-job-failing-for-50.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T21:37:38Z'
+scan_id: R-fafd40d7
+task_id: T-1592
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T21:37:38Z'
+scan_id: R-fafd40d7
+task_id: T-1592
+payload:
+  task_file: .tasks/active/T-1592-execute-t-1591-pipeline-fix--force-push-.md

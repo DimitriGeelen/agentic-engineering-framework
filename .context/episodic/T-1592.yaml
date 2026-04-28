@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1592: Execute T-1591 pipeline fix — force-push 6 safe annotated tags to GitHub + investigate v1.5.743 divergence + add fw doctor mirror check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-28T21:37:42Z
+# ============================================================================
+
+task_id: T-1592
+task_name: "Execute T-1591 pipeline fix — force-push 6 safe annotated tags to GitHub + investigate v1.5.743 divergence + add fw doctor mirror check"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T21:07:30Z
+completed: 2026-04-28T21:36:09Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T23:20:23+02:00
+last_commit: 2026-04-28T23:20:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  execute T-1591 pipeline fix + add fw doctor mirror divergence check
+
+# Key outcomes
+outcomes:
+  - "Force-push 7 annotated tags from OneDev to GitHub (v1.2.0–v1.2.4, v1.5.743, v1.5.746) — completed via Tier 0 approval c5360a21e9b0"
+  - "Verify all 7 tag SHAs now match between origin and github (`git ls-remote` diff)"
+  - "Confirm master HEAD parity across local, origin, github (all at 6fa61ce54)"
+  - "Add mirror divergence check to `fw doctor` (T-1591 RCA Prevention #1) — bin/fw lines 1625-1681, compares ref-by-ref between origin and other remotes, warns on SHA mismatch"
+  - "Capture learning: L-323 captured (`fw context add-learning … --task T-1592 --source P-002`)"
+  - "`fw doctor` runs cleanly with the new check on this repo: emits \"INFO Mirror asymmetry with github: origin-only=2, github-only=1 (no SHA conflicts)\" — no false-positive WARN"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "execute T-1591 pipeline fix + add fw doctor mirror divergence check"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/episodic/T-1591.yaml"
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1277-fix-unbounded-git-push-in-handover-auto-trigger.md"
+  - ".tasks/active/T-1592-execute-t-1591-pipeline-fix--force-push-.md"
+  - ".tasks/completed/T-1591-rca-aef-github-mirror-job-failing-for-50.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T23:20:23"
+    action: "T-1592: execute T-1591 pipeline fix + add fw doctor mirror divergence check"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28
+  commits: 1
+  files_changed: 7
+  lines_added: 259
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1592-execute-t-1591-pipeline-fix--force-push-.md
+generated_by: context-agent-hybrid

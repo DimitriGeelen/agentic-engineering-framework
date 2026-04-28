@@ -787,3 +787,11 @@ bypasses:
   command_hash: fe11955acebcb13a8c6c7a8d8ad4cf4044dab789fe9c43af0cd36fc87752862b
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-04-28T21:08:51Z'
+  tier: 0
+  risk: 'FORCE PUSH: Can overwrite remote commit history'
+  command_preview: git push --force github refs/tags/v1.2.0 refs/tags/v1.2.1 refs/tags/v1.2.2
+    refs/tags/v1.2.3 refs/tags/v1.2.4 refs/tags/v
+  command_hash: c5360a21e9b0c2893df44d0610b27d50c61a4200be9615e1adf0596874ec0e69
+  authorized_by: human
+  mechanism: fw tier0 approve
