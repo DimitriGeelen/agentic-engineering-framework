@@ -4,16 +4,16 @@ name: "Pickup: Add GET /api/_identity to Watchtower — closes T-141 (silent-deg
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-200. Type: feature-proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: [pickup, feature-proposal]
-components: []
+components: [web/blueprints/approvals.py]
 related_tasks: []
 created: 2026-04-27T15:10:01Z
-last_update: 2026-04-28T11:37:18Z
-date_finished: null
+last_update: 2026-04-28T11:56:33Z
+date_finished: 2026-04-28T11:56:33Z
 source_task_id_in_origin: T-200
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -48,15 +48,15 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -113,7 +113,21 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Recommendation: NO-GO
+
+Rationale: Pickup is obsolete — the proposed `GET /api/_identity` endpoint already exists in this Watchtower. Shipped via T-1286 (referenced in commit `5c6b4b8d T-1286: Close (B1 identity endpoint)`). The pickup envelope was created on 2026-04-27 from 003-NTB-ATC-Plugin's T-200; this Watchtower had already shipped the endpoint by then. Recommendation: NO-GO (already done) — close as "implemented earlier" rather than rebuild. Verify the consumer (003-NTB-ATC-Plugin) is hitting the real endpoint and not silently degrading; if so, the silent-degrade gap T-141 referenced is also closed.
+
+Evidence:
+- `web/app.py:326 — @app.route("/api/_identity")` exists.
+- `curl -sf http://localhost:3000/api/_identity` → 200 with `{"project_root":"/opt/999-Agentic-Engineering-Framework","service":"watchtower","started_at":"2026-04-28T11:32:12.806053+00:00","version":"v1.5.746-96-g0a9f27d2a"}`.
+- Git log: `5c6b4b8d T-1286: Close (B1 identity endpoint) + update T-1287 verification commands for sandbox compatibility`.
+- The pickup envelope was generated from a stale assumption that the endpoint was missing — not a failure of the feature itself.
+
+Alternative: If the human wants the framework to actively notify consumers that the endpoint shipped (so cross-project pickups don't propose already-built work), that's a separate inception task on the pickup-staleness mechanism (G-020-class concern about pickup-as-instruction). Not in scope here.
+
+**Date**: 2026-04-28T11:56:32Z
 
 ## Updates
 
@@ -123,3 +137,31 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 ### 2026-04-28T11:37:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-28T11:56:32Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+
+Rationale: Pickup is obsolete — the proposed `GET /api/_identity` endpoint already exists in this Watchtower. Shipped via T-1286 (referenced in commit `5c6b4b8d T-1286: Close (B1 identity endpoint)`). The pickup envelope was created on 2026-04-27 from 003-NTB-ATC-Plugin's T-200; this Watchtower had already shipped the endpoint by then. Recommendation: NO-GO (already done) — close as "implemented earlier" rather than rebuild. Verify the consumer (003-NTB-ATC-Plugin) is hitting the real endpoint and not silently degrading; if so, the silent-degrade gap T-141 referenced is also closed.
+
+Evidence:
+- `web/app.py:326 — @app.route("/api/_identity")` exists.
+- `curl -sf http://localhost:3000/api/_identity` → 200 with `{"project_root":"/opt/999-Agentic-Engineering-Framework","service":"watchtower","started_at":"2026-04-28T11:32:12.806053+00:00","version":"v1.5.746-96-g0a9f27d2a"}`.
+- Git log: `5c6b4b8d T-1286: Close (B1 identity endpoint) + update T-1287 verification commands for sandbox compatibility`.
+- The pickup envelope was generated from a stale assumption that the endpoint was missing — not a failure of the feature itself.
+
+Alternative: If the human wants the framework to actively notify consumers that the endpoint shipped (so cross-project pickups don't propose already-built work), that's a separate inception task on the pickup-staleness mechanism (G-020-class concern about pickup-as-instruction). Not in scope here.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-8b3f43c7
+- **Timestamp:** 2026-04-28T11:56:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-28T11:56:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO

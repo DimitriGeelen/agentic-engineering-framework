@@ -86,8 +86,8 @@ bin/fw review-queue 2>&1 | grep -qE 'NO-REC' && echo "NO-REC rendered" || echo "
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-af3d7168
-- **Timestamp:** 2026-04-28T09:26:35Z
+- **Scan ID:** R-f095db07
+- **Timestamp:** 2026-04-28T11:27:14Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -101,6 +101,5 @@ bin/fw review-queue 2>&1 | grep -qE 'NO-REC' && echo "NO-REC rendered" || echo "
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/handover/handover.sh in: `agents/handover/handover.sh` "Awaiting Your Action" prefix uses state — surfaces `[NO-REC]` instead of `[?]` for tasks missing recommendation`
 - **AC#5 (ACs)** — `web/blueprints/approvals.py` `_load_pending_human_acs` exposes both `verdict` (compat) and `state`; template renders NO-REC badge distinctly
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/approvals.py in: `web/blueprints/approvals.py` `_load_pending_human_acs` exposes both `verdict` (compat) and `state`; template renders NO-REC badge distinctly`
-
 ### 2026-04-28T09:26:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

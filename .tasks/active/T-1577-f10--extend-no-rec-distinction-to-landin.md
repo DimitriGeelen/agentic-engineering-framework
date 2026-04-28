@@ -90,21 +90,16 @@ python3 -c "from web.blueprints.cockpit import get_action_summary; s = get_actio
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-dc40f119
-- **Timestamp:** 2026-04-28T11:07:47Z
+- **Scan ID:** R-b851c93d
+- **Timestamp:** 2026-04-28T11:26:50Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** 1
 
 **Per-AC findings:**
 
-- **AC#1 (ACs)** — `web/blueprints/cockpit.py:get_human_verify_tasks` adds a `state` field per task using `extract_recommendation_state` (alongside existing `verdict` for backwards compat)
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/cockpit.py in: `web/blueprints/cockpit.py:get_human_verify_tasks` adds a `state` field per task using `extract_recommendation_state` (alongside existing `verdict` fo`
-- **AC#2 (ACs)** — `web/blueprints/cockpit.py:get_action_summary` adds `no_rec_ac_count` (state == NO-REC) and updates `unknown_ac_count` to exclude NO-REC (state == "?" only)
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/cockpit.py in: `web/blueprints/cockpit.py:get_action_summary` adds `no_rec_ac_count` (state == NO-REC) and updates `unknown_ac_count` to exclude NO-REC (state == "?"`
 - **AC#3 (ACs)** — `web/templates/cockpit.html` renders a NO-REC pill (cyan #0e7490, distinct from `?`) when `no_rec_ac_count > 0`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/cockpit.html in: `web/templates/cockpit.html` renders a NO-REC pill (cyan #0e7490, distinct from `?`) when `no_rec_ac_count > 0``
-
 ### 2026-04-28T11:07:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

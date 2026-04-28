@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-549]
 created: 2026-03-23T15:49:01Z
-last_update: 2026-04-23T16:46:49Z
+last_update: 2026-04-28T16:09:25Z
 date_finished: null
 ---
 
@@ -171,3 +171,6 @@ Evidence:
 - No current multi-adapter problem (single provider = no abstraction pressure)
 - TermLink owns its backend diversity (framework just calls `termlink`)
 - Building abstraction for one consumer is premature (true)
+
+### 2026-04-28T16:09:25Z — status-update [task-update-agent]
+- **Change:** horizon: next → next

@@ -85,8 +85,8 @@ curl -sf "$(bin/fw watchtower url)/review/T-1062" | grep -qE 'NO-REC' && echo "N
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-231961c9
-- **Timestamp:** 2026-04-28T11:20:14Z
+- **Scan ID:** R-dd726f88
+- **Timestamp:** 2026-04-28T11:27:02Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -98,6 +98,5 @@ curl -sf "$(bin/fw watchtower url)/review/T-1062" | grep -qE 'NO-REC' && echo "N
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/review.py in: `web/blueprints/review.py` passes `state` to both `render_review_page` template renders (alongside existing `verdict`)`
 - **AC#2 (ACs)** — `web/templates/review.html` adds a `{% elif state == 'NO-REC' %}` branch that renders a cyan banner: heading "Recommendation — NO-REC" + body "The agent has not yet written a `## Recommendation` block
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/review.html in: `web/templates/review.html` adds a `{% elif state == 'NO-REC' %}` branch that renders a cyan banner: heading "Recommendation — NO-REC" + body "The age`
-
 ### 2026-04-28T11:20:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

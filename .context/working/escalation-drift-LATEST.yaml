@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-04-27T16:49:29.852025+00:00
-corpus_total: 1469
-bug_class_total: 320
+generated: 2026-04-28T03:23:02.108383+00:00
+corpus_total: 1487
+bug_class_total: 323
 bug_class_pct: 21
 h1_flagged: 316
-h1_pct_of_bug_class: 98
-h2_repeat_patterns: 49
+h1_pct_of_bug_class: 97
+h2_repeat_patterns: 50
 h3_flagged: 262
 h3_pct_of_bug_class: 81
-recent_30d_flagged: 218
+recent_30d_flagged: 206
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-1014-fix-playwright-navigation-test-timeout--"
@@ -36,7 +36,7 @@ h2_top:
   - learning: "P-010"
     task_count: 99
   - learning: "P-011"
-    task_count: 69
+    task_count: 75
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"
@@ -44,10 +44,10 @@ h2_top:
   - learning: "PL-007"
     task_count: 24
   - learning: "L-293"
+    task_count: 18
+  - learning: "L-291"
     task_count: 16
   - learning: "L-002"
-    task_count: 13
-  - learning: "L-291"
     task_count: 13
   - learning: "P-001"
     task_count: 12

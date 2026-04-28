@@ -4,7 +4,7 @@ name: "Cross-surface NO-REC banner invariant — pin recommendation-block[data-v
 description: >
   Extend T-1586's cross-surface parity test with NO-REC banner assertions. T-1576/T-1577/T-1578 shipped NO-REC distinction across queue+landing+review; this pins the per-task structural rendering on /tasks and /review for any task without a Recommendation block.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [test, invariant, regression, cross-surface, no-rec]
 components: [tests/playwright/test_cross_surface_parity.py]
 related_tasks: [T-1576, T-1577, T-1578, T-1586]
 created: 2026-04-28T16:24:05Z
-last_update: 2026-04-28T16:24:05Z
-date_finished: null
+last_update: 2026-04-28T16:27:51Z
+date_finished: 2026-04-28T16:27:51Z
 ---
 
 # T-1587: Cross-surface NO-REC banner invariant — pin recommendation-block[data-verdict=NO-REC] on /tasks and /review (T-1586 follow-up)
@@ -102,3 +102,15 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1587-cross-surface-no-rec-banner-invariant--p.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ee0ad5d2
+- **Timestamp:** 2026-04-28T16:28:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-28T16:27:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

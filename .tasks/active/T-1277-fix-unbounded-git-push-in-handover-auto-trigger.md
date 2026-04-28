@@ -18,7 +18,7 @@ components:
   - agents/context/pre-compact.sh
 related_tasks: [T-136, T-1144]
 created: 2026-04-17T09:40:00Z
-last_update: 2026-04-27T21:13:55Z
+last_update: 2026-04-28T15:43:43Z
 date_finished: 2026-04-18T23:37:45Z
 ---
 

@@ -30,7 +30,7 @@ Launch sequence per `docs/reports/T-327-visibility-strategy.md` Tier 3 actions (
 - [x] Prerequisite gap documented (demo video missing — human-produced)
 
 ### Human
-- [x] [REVIEW] Review and post r/ClaudeAI draft (`docs/articles/reddit-claudeai-post.md`)
+- [ ] [REVIEW] Review and post r/ClaudeAI draft (`docs/articles/reddit-claudeai-post.md`)
   **Steps:**
   1. Read `docs/articles/reddit-claudeai-post.md`
   2. Edit tone/content as needed

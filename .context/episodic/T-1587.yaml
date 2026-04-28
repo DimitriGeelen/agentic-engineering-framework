@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1587: Cross-surface NO-REC banner invariant — pin recommendation-block[data-verdict=NO-REC] on /tasks and /review (T-1586 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-28T16:28:14Z
+# ============================================================================
+
+task_id: T-1587
+task_name: "Cross-surface NO-REC banner invariant — pin recommendation-block[data-verdict=NO-REC] on /tasks and /review (T-1586 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T16:24:05Z
+completed: 2026-04-28T16:27:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T18:27:47+02:00
+last_commit: 2026-04-28T18:27:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cross-surface NO-REC banner invariant (T-1586 follow-up)
+
+# Key outcomes
+outcomes:
+  - "`tests/playwright/test_cross_surface_parity.py` extended with `TestCrossSurfaceNoRecBanner` class containing two assertions"
+  - "Test asserts T-449 (a build task with NO Recommendation block) renders `<section class=\"recommendation-block\" data-verdict=\"NO-REC\"` on `/tasks/T-449`"
+  - "Test asserts T-449 renders the same NO-REC section on `/review/T-449`"
+  - "Both assertions match against `<section class=\"recommendation-block\"` (opening tag, not bare class) — same T-1583 lesson encoded"
+  - "All tests in file still pass: `python3 -m pytest tests/playwright/test_cross_surface_parity.py -q --no-header 2>&1 | grep -qE '8 passed'`"
+  - "No regression in `tests/unit/test_extract_recommendation.py` — `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Prefix match on `<section class=\"recommendation-block` (no closing quote in the constant)"
+    rationale: "The NO-REC banner uses the compound class `recommendation-block recommendation-norec`, so the exact-match constant `'<section class=\"recommendation-block\"'` (with closing quote) doesn't fire on it. Prefix match catches both shapes (positive cards and NO-REC banners) without losing specificity — the prefix still excludes CSS rules in `<style>` blocks (which use bare `.recommendation-block`)."
+    alternatives_rejected: ["Adding `<section class=\"recommendation-block recommendation-norec\"` as a second constant. Reason: doubles the maintenance surface (every future variant card needs a new constant) and hides the actual contract (the `<section>` must exist with that class as a token, regardless of compound modifiers)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1587-cross-surface-no-rec-banner-invariant--p.md"
+  - "tests/playwright/test_cross_surface_parity.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T18:27:47"
+    action: "T-1587: cross-surface NO-REC banner invariant (T-1586 follow-up)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, invariant, regression, cross-surface, no-rec]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 151
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1587-cross-surface-no-rec-banner-invariant--p.md
+generated_by: context-agent-hybrid

@@ -12,7 +12,7 @@ tags: [watchtower, cron]
 components: [bin/fw, lib/upgrade.sh, web/blueprints/cron.py, web/templates/cron.html]
 related_tasks: []
 created: 2026-03-12T06:14:02Z
-last_update: 2026-04-23T16:46:49Z
+last_update: 2026-04-28T16:09:25Z
 date_finished: 2026-03-28T15:22:13Z
 ---
 
@@ -101,3 +101,6 @@ grep -q "cron/jobs" web/blueprints/cron.py
 
 ### 2026-04-23T16:46:49Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-04-28T16:09:25Z — status-update [task-update-agent]
+- **Change:** horizon: next → next

@@ -275,3 +275,10 @@ decisions:
     date: 2026-04-28
     task: T-1586
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-042
+    decision: "Prefix match on `<section class=\"recommendation-block` (no closing quote in the constant)"
+    scope: project
+    date: 2026-04-28
+    task: T-1587
+    rationale: "Auto-captured from task file on completion"

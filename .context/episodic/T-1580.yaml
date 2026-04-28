@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1580: Fix recommendation extractor: accept bullet-prefixed marker lines (- ** RE)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-28T12:14:04Z
+# ============================================================================
+
+task_id: T-1580
+task_name: "Fix recommendation extractor: accept bullet-prefixed marker lines (- ** RE)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T12:09:49Z
+completed: 2026-04-28T12:13:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T14:13:53+02:00
+last_commit: 2026-04-28T14:13:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Recommendation extractor accepts bullet-prefixed marker lines (- **Marker:**)
+
+# Key outcomes
+outcomes:
+  - "`_REC_MARKER_RE` accepts optional `^[ \t]*[-*][ \t]+` prefix before `**Marker:**`"
+  - "`extract_recommendation_state()` returns `DEFER` for T-705 and T-844 (not `?`)"
+  - "`extract_recommendation_state()` still returns `?` for tasks with truly unparseable verdict (e.g. T-1062 prose `Recommendation: Agent ACs complete — ready...`)"
+  - "No regression on existing non-bullet style (T-1577/T-1578 still resolve to `GO`)"
+  - "Regression test added in `tests/unit/test_extract_recommendation.py` covering: bullet-prefixed DEFER, bullet-prefixed GO, mid-paragraph `**` not matched, non-bullet still works"
+  - "`bin/fw review-queue` shows T-705 and T-844 under DEFER (not `?`); `?` count drops from 6 to 4"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Recommendation extractor accepts bullet-prefixed marker lines (- **Marker:**)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1580-fix-recommendation-extractor-accept-bull.md"
+  - "tests/unit/test_extract_recommendation.py"
+  - "web/shared.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T14:13:53"
+    action: "T-1580: Recommendation extractor accepts bullet-prefixed marker lines (- **Marker:**)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 3
+  lines_added: 165
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1580-fix-recommendation-extractor-accept-bull.md
+generated_by: context-agent-hybrid

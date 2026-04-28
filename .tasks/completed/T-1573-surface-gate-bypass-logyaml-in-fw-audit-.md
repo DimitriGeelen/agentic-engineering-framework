@@ -4,16 +4,16 @@ name: "Surface .gate-bypass-log.yaml in fw audit (F8 from T-1565 audit)"
 description: >
   Surface .gate-bypass-log.yaml in fw audit (F8 from T-1565 audit)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 created: 2026-04-27T21:45:11Z
-last_update: 2026-04-27T21:45:11Z
-date_finished: null
+last_update: 2026-04-27T21:57:35Z
+date_finished: 2026-04-27T21:57:35Z
 ---
 
 # T-1573: Surface .gate-bypass-log.yaml in fw audit (F8 from T-1565 audit)
@@ -91,3 +91,16 @@ gate-bypass log is now read every audit run, with a graduated alert
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1573-surface-gate-bypass-logyaml-in-fw-audit-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-725628a5
+- **Timestamp:** 2026-04-27T21:57:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-27T21:57:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** F8 implemented and tested

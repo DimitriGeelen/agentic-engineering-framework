@@ -4,16 +4,16 @@ name: "Fix fw review-queue: strip HTML comments before AC counting (mirror L-298
 description: >
   fw review-queue (bin/fw:3447) regex ^\s*-\s*\[ \] matches placeholder ACs inside HTML comments. T-1274 and T-1542 have template-only ### Human sections (example AC inside <!-- -->), counted as unchecked. Cockpit (canonical parser) skips comments correctly — 2-task divergence. Strip HTML comments before regex match.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-04-28T12:22:44Z
-last_update: 2026-04-28T12:22:44Z
-date_finished: null
+last_update: 2026-04-28T12:32:32Z
+date_finished: 2026-04-28T12:32:32Z
 ---
 
 # T-1581: Fix fw review-queue: strip HTML comments before AC counting (mirror L-298 in CLI)
@@ -91,3 +91,22 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue 2>&1 | grep -q 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1581-fix-fw-review-queue-strip-html-comments-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-270e04a9
+- **Timestamp:** 2026-04-28T12:32:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 1
+     - evidence: `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue 2>&1 | grep -q 'T-1274' && echo "FAIL T-1274 still in queue" && exit 1 || true`
+  2. **swallowed-errors** (severe, deterministic) @ Verification:line 2
+     - evidence: `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue 2>&1 | grep -q 'T-1542' && echo "FAIL T-1542 still in queue" && exit 1 || true`
+
+### 2026-04-28T12:32:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

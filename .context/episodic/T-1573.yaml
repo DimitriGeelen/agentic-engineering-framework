@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1573: Surface .gate-bypass-log.yaml in fw audit (F8 from T-1565 audit)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-27T21:57:38Z
+# ============================================================================
+
+task_id: T-1573
+task_name: "Surface .gate-bypass-log.yaml in fw audit (F8 from T-1565 audit)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T21:45:11Z
+completed: 2026-04-27T21:57:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T23:57:27+02:00
+last_commit: 2026-04-27T23:57:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  F8 — Surface .gate-bypass-log.yaml in fw audit
+
+# Key outcomes
+outcomes:
+  - "`fw audit --section enforcement` checks `.context/working/.gate-bypass-log.yaml`."
+  - "Reports total bypass count and last-7-days count."
+  - "WARN when last-7-day count exceeds 10. Live: 27 in last 7d → WARN fired."
+  - "PASS when log absent or count low."
+  - "Bats test `tests/unit/audit_gate_bypass_log.bats` — 4/4 passing."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-1573-surface-gate-bypass-logyaml-in-fw-audit-.md"
+  - ".tasks/completed/T-1572-extend-recommendation-gate-to-fire-on-re.md"
+  - "tests/unit/audit_gate_bypass_log.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T23:57:27"
+    action: "T-1573: F8 — Surface .gate-bypass-log.yaml in fw audit"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 4
+  lines_added: 210
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1573-surface-gate-bypass-logyaml-in-fw-audit-.md
+generated_by: context-agent-hybrid

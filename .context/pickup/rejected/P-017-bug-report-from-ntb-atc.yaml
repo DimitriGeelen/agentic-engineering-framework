@@ -1,0 +1,13 @@
+pickup_id: P-017
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-225"
+  agent: "claude-code"
+  timestamp: "2026-04-27T22:02:23Z"
+payload:
+  summary: "fw task update partial-complete recheck does not honor --skip-acceptance-criteria"
+  detail: "When a task is already work-completed but stuck in active/ (partial-complete: Human ACs unchecked), re-running 'fw task update <id> --status work-completed --skip-acceptance-criteria' runs the partial-complete recheck branch which ignores the skip flag. Tasks stay in active/ with 'Still N/M ACs unchecked'. The skip flag is only honored on initial captured/started-work → work-completed. Repro on T-225 (2026-04-27) — authorized batched closure had rc=0 but tasks stayed put; workaround was to tick boxes via python rewrite. Project concerns.yaml C-018 has full repro + 3 prevention candidates. Suggested fix: partial-complete branch should respect --skip-acceptance-criteria as transition branch does."
+  priority: medium
+  tags: [framework, task-update, partial-complete, C-018]

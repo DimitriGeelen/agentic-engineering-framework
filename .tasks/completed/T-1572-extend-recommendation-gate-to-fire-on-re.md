@@ -4,16 +4,16 @@ name: "Extend Recommendation gate to fire on reviewer.needs_human signals (F6 fr
 description: >
   Extend Recommendation gate to fire on reviewer.needs_human signals (F6 from T-1565 audit)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-04-27T21:41:48Z
-last_update: 2026-04-27T21:41:48Z
-date_finished: null
+last_update: 2026-04-27T21:44:24Z
+date_finished: 2026-04-27T21:44:24Z
 ---
 
 # T-1572: Extend Recommendation gate to fire on reviewer.needs_human signals (F6 from T-1565 audit)
@@ -103,3 +103,16 @@ tasks without an explicit agent recommendation.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1572-extend-recommendation-gate-to-fire-on-re.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1c160012
+- **Timestamp:** 2026-04-27T21:44:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-27T21:44:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** F6 implemented and tested

@@ -4,16 +4,16 @@ name: "Pickup: Update agents/inception/AGENT.md copy-paste guidance for review-f
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-202. Type: feature-proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: [pickup, feature-proposal]
-components: []
+components: [bin/fw, lib/review.sh, tests/unit/cron_flock_parity.bats]
 related_tasks: []
 created: 2026-04-27T15:06:01Z
-last_update: 2026-04-27T18:33:15Z
-date_finished: null
+last_update: 2026-04-28T11:56:22Z
+date_finished: 2026-04-28T11:56:22Z
 source_task_id_in_origin: T-202
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -84,15 +84,15 @@ Watchtower path so a fresh agent sees it before reaching the CLI examples.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -165,7 +165,36 @@ Recommendation: capture as a separate inception, not bundled here.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO (with reduced scope)
+
+Rationale: Spike (`docs/reports/T-1544-inception-doc-update-spike.md`) validated
+all four assumptions. The achievable delta is bounded and reversible: CLAUDE.md doc
+edits in two sections (~6 lines) and footer rewrites in two task templates. No code
+changes; no CLI semantics change. The pickup's AC1 verbatim ("no `--rationale` in
+any decide-step copy-paste block") cannot be satisfied because `--rationale` is
+required at the CLI surface (lib/inception.sh:292) and dropping it would emit
+broken commands for the human. The right interpretation is Watchtower-first lead
+with CLI as labeled fallback (CLI retains `--rationale`); a separate inception
+should track loosening the CLI requirement if desired.
+
+Evidence:
+- Spike artifact `docs/reports/T-1544-inception-doc-update-spike.md` — full
+  assumption-by-assumption findings, line-level CLAUDE.md citations, achievable-
+  delta plan, risk surface.
+- A1 confirmed: `agents/inception/` does not exist (`ls agents/`).
+- A2 confirmed: 3 sites in CLAUDE.md (lines 528, 533, 545) emit the legacy form.
+- A3 confirmed: lib/inception.sh:266,292-293 mandates `--rationale`.
+- A4 confirmed: CLAUDE.md §Watchtower Port + `bin/fw watchtower url` already
+  resolve project URLs via triple-file.
+
+Open question for human (non-blocker): Should the framework also propose a
+follow-up inception for loosening the CLI `--rationale` requirement (interactive
+prompt or Watchtower-form-only path)? That would let pickup AC1 land verbatim.
+Recommendation: capture as a separate inception, not bundled here.
+
+**Date**: 2026-04-28T11:56:22Z
 
 ## Updates
 
@@ -175,3 +204,46 @@ Recommendation: capture as a separate inception, not bundled here.
 ### 2026-04-27T18:33:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
+
+### 2026-04-28T11:56:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO (with reduced scope)
+
+Rationale: Spike (`docs/reports/T-1544-inception-doc-update-spike.md`) validated
+all four assumptions. The achievable delta is bounded and reversible: CLAUDE.md doc
+edits in two sections (~6 lines) and footer rewrites in two task templates. No code
+changes; no CLI semantics change. The pickup's AC1 verbatim ("no `--rationale` in
+any decide-step copy-paste block") cannot be satisfied because `--rationale` is
+required at the CLI surface (lib/inception.sh:292) and dropping it would emit
+broken commands for the human. The right interpretation is Watchtower-first lead
+with CLI as labeled fallback (CLI retains `--rationale`); a separate inception
+should track loosening the CLI requirement if desired.
+
+Evidence:
+- Spike artifact `docs/reports/T-1544-inception-doc-update-spike.md` — full
+  assumption-by-assumption findings, line-level CLAUDE.md citations, achievable-
+  delta plan, risk surface.
+- A1 confirmed: `agents/inception/` does not exist (`ls agents/`).
+- A2 confirmed: 3 sites in CLAUDE.md (lines 528, 533, 545) emit the legacy form.
+- A3 confirmed: lib/inception.sh:266,292-293 mandates `--rationale`.
+- A4 confirmed: CLAUDE.md §Watchtower Port + `bin/fw watchtower url` already
+  resolve project URLs via triple-file.
+
+Open question for human (non-blocker): Should the framework also propose a
+follow-up inception for loosening the CLI `--rationale` requirement (interactive
+prompt or Watchtower-form-only path)? That would let pickup AC1 land verbatim.
+Recommendation: capture as a separate inception, not bundled here.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-e69cb122
+- **Timestamp:** 2026-04-28T11:56:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-28T11:56:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
