@@ -4,16 +4,16 @@ name: "Add htmx error handler on /review page — surface 4xx/5xx as visible toa
 description: >
   Add htmx error handler on /review page — surface 4xx/5xx as visible toast (T-1574 follow-up)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_review_page.py, web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T13:31:04Z
-last_update: 2026-04-28T13:31:04Z
-date_finished: null
+last_update: 2026-04-28T13:55:57Z
+date_finished: 2026-04-28T13:55:57Z
 ---
 
 # T-1582: Add htmx error handler on /review page — surface 4xx/5xx as visible toast (T-1574 follow-up)
@@ -54,7 +54,7 @@ curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'htmx:sendError'
 curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q '.wt-toast'
 curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'function showToast'
 curl -sf -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/review/T-1565" | grep -q '^200$'
-bin/fw test unit -- tests/unit/test_extract_recommendation.py
+python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'
 
 ## RCA
 
@@ -95,3 +95,15 @@ bin/fw test unit -- tests/unit/test_extract_recommendation.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1582-add-htmx-error-handler-on-review-page--s.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7a127451
+- **Timestamp:** 2026-04-28T13:55:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-28T13:55:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

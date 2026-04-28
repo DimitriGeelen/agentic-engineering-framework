@@ -4,7 +4,7 @@ name: "F12 — Reviewer AC-verify-mismatch: recognize Python imports as path cov
 description: >
   F12 — Reviewer AC-verify-mismatch: recognize Python imports as path coverage (3 FPs across T-1576/77/78 arc)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-28T11:24:19Z
-last_update: 2026-04-28T11:24:19Z
-date_finished: null
+last_update: 2026-04-28T11:31:01Z
+date_finished: 2026-04-28T11:31:01Z
 ---
 
 # T-1579: F12 — Reviewer AC-verify-mismatch: recognize Python imports as path coverage (3 FPs across T-1576/77/78 arc)
@@ -93,3 +93,24 @@ Fixed to `re.match(r"^#{2,}\s+\S", raw.strip())`. Both v13 tests pass after the 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1579-f12--reviewer-ac-verify-mismatch-recogni.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1bdfe6ef
+- **Timestamp:** 2026-04-28T11:31:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/reviewer/static_scan.py` adds `_path_python_import_covered(path, verif_text)` that returns True when verification text contains `from x.y.z import` or `import x.y.z` and `path == "x/y/z.py"` (or 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=x/y/z.py in: `lib/reviewer/static_scan.py` adds `_path_python_import_covered(path, verif_text)` that returns True when verification text contains `from x.y.z impor`
+- **AC#3 (Agent)** — Unit test in `tests/unit/test_reviewer_static_scan.py` covers: (a) `from a.b.c import X` exempts `a/b/c.py`, (b) `import a.b.c` exempts `a/b/c.py`, (c) `from a.b.c import X` exempts `a/b/c/__init__.py
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=a/b/c.py in: Unit test in `tests/unit/test_reviewer_static_scan.py` covers: (a) `from a.b.c import X` exempts `a/b/c.py`, (b) `import a.b.c` exempts `a/b/c.py`, (c`
+- **AC#4 (Agent)** — Re-run `bin/fw reviewer T-1577` → AC#1/AC#2 mentioning `web/blueprints/cockpit.py` no longer flagged (was 3 findings, now 1 — only `web/templates/cockpit.html` remains, a different class — Jinja templ
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/cockpit.py in: Re-run `bin/fw reviewer T-1577` → AC#1/AC#2 mentioning `web/blueprints/cockpit.py` no longer flagged (was 3 findings, now 1 — only `web/templates/cock`
+
+### 2026-04-28T11:31:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
