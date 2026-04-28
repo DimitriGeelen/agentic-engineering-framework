@@ -165,12 +165,22 @@
                               background:#b71c1c; color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks the agent recommends NO-GO">{{ action_summary.nogo_ac_count }} NO-GO</small>
                 {% endif %}
-                {# T-1540 iter1: ? verdict was unaccounted for in pill sum (count vs pill mismatch). Surface it. #}
+                {# T-1577: NO-REC distinguishes 'agent owes a recommendation' (no Recommendation
+                   block) from `?` (block exists but verdict unparseable). Same convention as
+                   /approvals filter buttons (T-1576). #}
+                {% if action_summary.no_rec_ac_count %}
+                <small class="verdict-pill" data-verdict-pill="NO-REC"
+                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
+                              background:#0e7490; color:#fff; font-size:0.65rem; font-weight:600;"
+                       title="Tasks where the agent has not written a Recommendation block — not yet ready for review (T-1576/T-1577)">{{ action_summary.no_rec_ac_count }} NO-REC</small>
+                {% endif %}
+                {# T-1540 iter1: ? verdict was unaccounted for in pill sum (count vs pill mismatch). Surface it.
+                   T-1577: now means 'Recommendation block present but verdict unparseable' — NO-REC is split out above. #}
                 {% if action_summary.unknown_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="?"
                        style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
                               background:#616161; color:#fff; font-size:0.65rem; font-weight:600;"
-                       title="Tasks where the agent has not yet written a recommendation (T-679 gap)">{{ action_summary.unknown_ac_count }} ?</small>
+                       title="Tasks with a Recommendation block whose verdict line is missing or unparseable">{{ action_summary.unknown_ac_count }} ?</small>
                 {% endif %}
             </span>
             {% endif %}
