@@ -4,16 +4,16 @@ name: "F10 — extend NO-REC distinction to landing-page Action Required widget 
 description: >
   F10 — extend NO-REC distinction to landing-page Action Required widget (T-1576 follow-up)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/cockpit.py, web/templates/cockpit.html]
 related_tasks: []
 created: 2026-04-28T10:42:51Z
-last_update: 2026-04-28T10:42:51Z
-date_finished: null
+last_update: 2026-04-28T11:07:42Z
+date_finished: 2026-04-28T11:07:42Z
 ---
 
 # T-1577: F10 — extend NO-REC distinction to landing-page Action Required widget (T-1576 follow-up)
@@ -29,13 +29,13 @@ L-298 (count divergence across UI surfaces) and L-309 (two systems with differen
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `web/blueprints/cockpit.py:get_human_verify_tasks` adds a `state` field per task using `extract_recommendation_state` (alongside existing `verdict` for backwards compat)
-- [ ] `web/blueprints/cockpit.py:get_action_summary` adds `no_rec_ac_count` (state == NO-REC) and updates `unknown_ac_count` to exclude NO-REC (state == "?" only)
-- [ ] `web/templates/cockpit.html` renders a NO-REC pill (cyan #0e7490, distinct from `?`) when `no_rec_ac_count > 0`
-- [ ] `?` pill tooltip clarifies it now means "verdict unparseable" — separate from "agent owes a recommendation"
-- [ ] Counts on cockpit landing page match `/approvals` (NO-REC count, `?` count) — no divergence (L-298)
-- [ ] Playwright/screenshot evidence captured per L-310: actual rendered DOM verified, not just template grep
-- [ ] `python3 -m pytest tests/unit/test_extract_recommendation.py -q` passes (no regression)
+- [x] `web/blueprints/cockpit.py:get_human_verify_tasks` adds a `state` field per task using `extract_recommendation_state` (alongside existing `verdict` for backwards compat)
+- [x] `web/blueprints/cockpit.py:get_action_summary` adds `no_rec_ac_count` (state == NO-REC) and updates `unknown_ac_count` to exclude NO-REC (state == "?" only)
+- [x] `web/templates/cockpit.html` renders a NO-REC pill (cyan #0e7490, distinct from `?`) when `no_rec_ac_count > 0`
+- [x] `?` pill tooltip clarifies it now means "verdict unparseable" — separate from "agent owes a recommendation"
+- [x] Counts on cockpit landing page match `/approvals` (NO-REC count, `?` count) — no divergence (L-298)
+- [x] Playwright/screenshot evidence captured per L-310: actual rendered DOM verified, not just template grep
+- [x] `python3 -m pytest tests/unit/test_extract_recommendation.py -q` passes (no regression)
 
 ### Human
 - [ ] [REVIEW] Cockpit landing-page Action Required pills visually match `/approvals` filter buttons
@@ -52,21 +52,23 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q
 curl -sf "$(bin/fw watchtower url)/" | grep -qE 'NO-REC' && echo "NO-REC pill present" || echo "NO-REC pill missing"
 python3 -c "from web.blueprints.cockpit import get_action_summary; s = get_action_summary(); assert 'no_rec_ac_count' in s, 'no_rec_ac_count missing from action_summary'; print('action_summary has no_rec_ac_count:', s['no_rec_ac_count'])"
 
-## RCA
+## Recommendation
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Recommendation:** GO
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Rationale:** Same class of fix as T-1576 — extend NO-REC vs `?` distinction to the one queue surface T-1576 didn't cover (the cockpit Action Required widget). Implementation is purely additive at the surface level: new pill, new aggregate count, retuned tooltip. While verifying parity with `/approvals` (the explicit AC), found a parallel bug — cockpit's local AC regex matched template HTML comments, over-counting by 2 against the canonical `_parse_acceptance_criteria` parser. Refactored cockpit to call the canonical parser instead of maintaining its own regex (eliminates parser drift, addresses L-298 / L-309 root cause). One parser is the right number; two definitions of "Human AC" was the actual structural gap. Visual verification per L-310 (Playwright screenshots, DOM eval) — counts agree exactly across both surfaces post-fix.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Evidence:**
+- `web/blueprints/cockpit.py:get_human_verify_tasks` — refactored to call `_parse_acceptance_criteria` from `web/blueprints/tasks.py`. Body extraction strips frontmatter before parsing. Adds `state` field per task.
+- `web/blueprints/cockpit.py:get_action_summary` — adds `no_rec_ac_count`, retunes `unknown_ac_count` to exclude NO-REC.
+- `web/templates/cockpit.html:168-184` — adds NO-REC pill (cyan `#0e7490`) before `?` pill; both tooltips disambiguated.
+- Playwright DOM eval (cockpit landing page): `[{verdict: "GO", text: "26 GO"}, {verdict: "DEFER", text: "8 DEFER"}, {verdict: "NO-REC", text: "11 NO-REC", bg: "rgb(14, 116, 144)"}, {verdict: "?", text: "6 ?"}]`
+- Cross-surface parity check (post-refactor): `cockpit NO-REC = 11, approvals NO-REC = 11, diff = empty set`. Same for `?` (6 == 6).
+- Total Human AC count corrected from 61/53-tasks → 59/51-tasks (T-1274 and T-1542 had only template-comment ACs; correctly excluded by canonical parser).
+- `python3 -m pytest tests/unit/test_extract_recommendation.py -q` → 19 passed in 0.21s.
+- Commit: `1d5ef506f T-1577: F10 — distinguish NO-REC from ? on cockpit Action Required widget`.
+
+**Reach:** Closes the artifact/inception approval review arc's last queue surface. T-1576 fixed CLI (`fw review-queue`), `/approvals`, and handover; T-1577 fixes the cockpit landing page. All four queue surfaces now agree on NO-REC vs `?`.
 
 ## Decisions
 
@@ -85,3 +87,24 @@ python3 -c "from web.blueprints.cockpit import get_action_summary; s = get_actio
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1577-f10--extend-no-rec-distinction-to-landin.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-dc40f119
+- **Timestamp:** 2026-04-28T11:07:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (ACs)** — `web/blueprints/cockpit.py:get_human_verify_tasks` adds a `state` field per task using `extract_recommendation_state` (alongside existing `verdict` for backwards compat)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/cockpit.py in: `web/blueprints/cockpit.py:get_human_verify_tasks` adds a `state` field per task using `extract_recommendation_state` (alongside existing `verdict` fo`
+- **AC#2 (ACs)** — `web/blueprints/cockpit.py:get_action_summary` adds `no_rec_ac_count` (state == NO-REC) and updates `unknown_ac_count` to exclude NO-REC (state == "?" only)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/cockpit.py in: `web/blueprints/cockpit.py:get_action_summary` adds `no_rec_ac_count` (state == NO-REC) and updates `unknown_ac_count` to exclude NO-REC (state == "?"`
+- **AC#3 (ACs)** — `web/templates/cockpit.html` renders a NO-REC pill (cyan #0e7490, distinct from `?`) when `no_rec_ac_count > 0`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/cockpit.html in: `web/templates/cockpit.html` renders a NO-REC pill (cyan #0e7490, distinct from `?`) when `no_rec_ac_count > 0``
+
+### 2026-04-28T11:07:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
