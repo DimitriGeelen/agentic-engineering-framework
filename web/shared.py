@@ -102,6 +102,7 @@ NAV_GROUPS = [
         ("Quality",       "quality.quality_gate",                  None),
         ("Reviewer Audit", "reviewer.reviewer_audit",              None),
         ("Reviewer Overrides", "reviewer.reviewer_overrides",      None),
+        ("Escalation Drift", "escalation.escalation_drift",        None),
         ("Metrics",       "metrics.project_metrics",               None),
         ("Costs",         "costs.costs_dashboard",                 None),
         ("Config",        "config.config_page",                    None),

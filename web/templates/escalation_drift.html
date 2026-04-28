@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>Escalation Drift</h2>
+    <p>
+      G-019 Layer C surface for the escalation-drift scanner (T-1555).
+      The daily <code>escalation-drift-daily</code> cron scans completed tasks
+      for symptom-fix candidates: <strong>H1</strong> (bug-class without
+      <code>## RCA</code>), <strong>H2</strong> (same learning ID repeated
+      across 3+ tasks in 30 days), <strong>H3</strong> (bug-class without
+      RCA AND no learning capture).
+    </p>
+    {% if source_path %}
+    <p><small><strong>Source:</strong> <code>{{ source_path }}</code></small></p>
+    {% endif %}
+  </header>
+
+  {% if not data %}
+    <div class="coming-soon">
+      <h3>No drift data yet</h3>
+      <p>
+        Run <code>fw cron run escalation-drift-daily</code> or wait for the
+        daily 5:23 UTC cron to populate
+        <code>.context/working/escalation-drift-LATEST.yaml</code>.
+      </p>
+    </div>
+  {% else %}
+
+  {# ───────────────── Corpus totals ───────────────── #}
+  <h3>Corpus</h3>
+  <p>
+    <strong>Generated:</strong> <small>{{ data.generated or 'unknown' }}</small><br>
+    <strong>Total tasks scanned:</strong> {{ data.corpus_total or 0 }} &nbsp;
+    <strong>Bug-class:</strong> {{ data.bug_class_total or 0 }}
+    {% if data.bug_class_pct is defined %}({{ data.bug_class_pct }}%){% endif %}
+  </p>
+
+  {# ───────────────── Heuristics ───────────────── #}
+  <h3>Heuristics</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Heuristic</th>
+        <th>What it catches</th>
+        <th class="text-center">Flagged</th>
+        <th class="text-center">% of bug-class</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>H1</strong></td>
+        <td>Bug-class task with no <code>## RCA</code> section</td>
+        <td class="text-center">{{ data.h1_flagged or 0 }}</td>
+        <td class="text-center">{{ data.h1_pct_of_bug_class or 0 }}%</td>
+      </tr>
+      <tr>
+        <td><strong>H2</strong></td>
+        <td>Repeat learning ID across 3+ tasks in 30 days</td>
+        <td class="text-center">{{ data.h2_repeat_patterns or 0 }}</td>
+        <td class="text-center">—</td>
+      </tr>
+      <tr>
+        <td><strong>H3</strong></td>
+        <td>Bug-class without RCA <em>and</em> no learning</td>
+        <td class="text-center">{{ data.h3_flagged or 0 }}</td>
+        <td class="text-center">{{ data.h3_pct_of_bug_class or 0 }}%</td>
+      </tr>
+      <tr>
+        <td><strong>Recent (30d)</strong></td>
+        <td>Any heuristic firing in the last 30 days</td>
+        <td class="text-center"><strong>{{ data.recent_30d_flagged or 0 }}</strong></td>
+        <td class="text-center">—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  {# ───────────────── H2: top repeating patterns ───────────────── #}
+  {% if data.h2_top %}
+  <h3>H2 — Top Repeating Learnings</h3>
+  <p><small>Same learning surfaced in N tasks within 30 days. High counts
+  often mean the underlying gap was never structurally fixed.</small></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Learning</th>
+        <th class="text-center">Task count</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data.h2_top[:15] %}
+      <tr>
+        <td><code>{{ row.learning }}</code></td>
+        <td class="text-center">{{ row.task_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {# ───────────────── Recent flagged sample ───────────────── #}
+  {% if data.recent_sample %}
+  <h3>Recent Flagged Tasks (sample)</h3>
+  <ul>
+    {% for entry in data.recent_sample %}
+      {% set tid = entry.tid.split('-')[0] ~ '-' ~ entry.tid.split('-')[1] %}
+      <li>
+        <a href="{{ url_for('tasks.task_detail', task_id=tid) }}">{{ tid }}</a>
+        — {{ entry.name }}
+      </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if data.report_md %}
+  <h3>Full Report</h3>
+  <p><small>Human-readable analysis: <code>{{ data.report_md }}</code></small></p>
+  {% endif %}
+
+  {% endif %}
+</article>
+{% endblock %}

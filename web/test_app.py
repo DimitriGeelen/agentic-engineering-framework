@@ -67,6 +67,7 @@ class TestRoutes:
             "/patterns",
             "/patterns?type=failure",
             "/costs",
+            "/escalation-drift",
         ],
     )
     def test_route_returns_200(self, client, path):
@@ -986,6 +987,23 @@ class TestMalformedYAML:
         monkeypatch.setattr("web.blueprints.discovery.PROJECT_ROOT", tmp_path)
         resp = client.get("/decisions")
         assert resp.status_code == 200
+
+    def test_escalation_drift_missing_yaml(self, client, tmp_path, monkeypatch):
+        """Escalation page renders the placeholder when the YAML file is missing."""
+        missing = tmp_path / "escalation-drift-LATEST.yaml"
+        monkeypatch.setattr("web.blueprints.escalation.LATEST_PATH", missing)
+        resp = client.get("/escalation-drift")
+        assert resp.status_code == 200
+        assert b"No drift data yet" in resp.data
+
+    def test_escalation_drift_corrupt_yaml(self, client, tmp_path, monkeypatch):
+        """Escalation page renders the placeholder when the YAML is malformed."""
+        corrupt = tmp_path / "escalation-drift-LATEST.yaml"
+        corrupt.write_text("{{{not: valid: [")
+        monkeypatch.setattr("web.blueprints.escalation.LATEST_PATH", corrupt)
+        resp = client.get("/escalation-drift")
+        assert resp.status_code == 200
+        assert b"No drift data yet" in resp.data
 
     def test_corrupt_task_file_in_list(self, client, tmp_path, monkeypatch):
         """Task list handles a task file with corrupt frontmatter."""
