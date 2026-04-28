@@ -4,7 +4,7 @@ name: "Export docs section as PDF/DOCX/other formats"
 description: >
   Inception: Export docs section as PDF/DOCX/other formats
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-15T17:53:15Z
-last_update: 2026-04-15T17:53:15Z
+last_update: 2026-04-28T20:02:46Z
 date_finished: null
 ---
 
@@ -150,3 +150,6 @@ Evidence:
 - Raw markdown download exists via `/file/docs/…` endpoints (served through `web/shared.py`) — archival use case is already served.
 - No spike executed: A (content-shape survey), B (tooling eval), C (styling fidelity), D (distribution model), E (scope audit) all in "planned" state.
 - Scope fence is crisp (IN: 3 doc types × PDF+DOCX; OUT: epub/bulk/task-files) so the work IS well-shaped — this is not a "needs more scoping" DEFER, it is a "needs demand" DEFER. Re-open when the first real request arrives.
+
+### 2026-04-28T20:02:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
