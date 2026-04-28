@@ -138,8 +138,11 @@ def review(task_id):
     artifacts = _find_research_artifacts(task_id)
     # T-1575: structured extraction (verdict, rationale, evidence) — replaces
     # the verdict-only path + raw-pre-dump that ate the markdown formatting.
-    from web.shared import extract_recommendation, render_markdown_safe
+    # T-1583: also surface the reviewer agent's mechanical verdict (cross-surface
+    # parity with /approvals F3 / T-1569).
+    from web.shared import extract_recommendation, render_markdown_safe, extract_reviewer_verdict
     rec = extract_recommendation(body)
+    reviewer = extract_reviewer_verdict(body)
     rec_complete = rec["verdict"] != "?" and bool(rec["rationale"].strip())
     rec_rationale_html = render_markdown_safe(rec["rationale"])
     rec_evidence_html = render_markdown_safe(rec["evidence"])
@@ -174,6 +177,7 @@ def review(task_id):
         decision_value=decision_state,
         pending_tier0=active_tier0,
         artifacts=artifacts,
+        reviewer=reviewer,
     )
 
 
