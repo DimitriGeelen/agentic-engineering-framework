@@ -158,3 +158,75 @@ def test_compat_shim_returns_just_verdict():
 def test_compat_shim_missing_returns_question_mark():
     assert extract_recommendation_verdict("") == "?"
     assert extract_recommendation_verdict("## Other\nNothing here.\n") == "?"
+
+
+def test_decorated_evidence_labels_dont_leak_into_rationale():
+    """Real-world bug from T-1575 v1: rationale captured all evidence text
+    because regex didn't recognise `**Evidence — closed (7):**`. Decorated
+    Evidence labels (em-dash + qualifier + parenthetical count) must be
+    classified as Evidence, not leak into Rationale."""
+    body = (
+        "## Recommendation\n\n"
+        "**Recommendation:** GO\n\n"
+        "**Rationale:** One paragraph of justification.\n\n"
+        "**Evidence — closed (7):**\n"
+        "- F1: thing\n"
+        "- F2: other thing\n\n"
+        "**Evidence — deferred (2):**\n"
+        "- F7: deferred reason\n"
+        "- F9: not now\n\n"
+        "**Captured learning:** L-309 — pattern\n\n"
+        "## Decisions\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "GO"
+    # Rationale must be ONLY the rationale paragraph
+    assert out["rationale"] == "One paragraph of justification."
+    assert "F1:" not in out["rationale"]
+    assert "F7:" not in out["rationale"]
+    assert "Captured learning" not in out["rationale"]
+    assert "Evidence" not in out["rationale"]
+    # Evidence must contain BOTH closed and deferred groups, with their headings
+    assert "F1: thing" in out["evidence"]
+    assert "F2: other thing" in out["evidence"]
+    assert "F7: deferred reason" in out["evidence"]
+    assert "F9: not now" in out["evidence"]
+    # Evidence must NOT contain the captured learning trailer
+    assert "L-309" not in out["evidence"]
+
+
+def test_real_t1565_file_renders_cleanly():
+    """End-to-end: read the actual T-1565 task file and verify the rationale
+    block contains ONLY the rationale paragraph (not evidence text), and the
+    evidence block contains evidence (not captured learning)."""
+    import os
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    task_file = None
+    for loc in ("active", "completed"):
+        candidate_dir = os.path.join(repo_root, ".tasks", loc)
+        if not os.path.isdir(candidate_dir):
+            continue
+        for fn in os.listdir(candidate_dir):
+            if fn.startswith("T-1565-") and fn.endswith(".md"):
+                task_file = os.path.join(candidate_dir, fn)
+                break
+        if task_file:
+            break
+    if not task_file:
+        # T-1565 may have been completed and archived; skip gracefully.
+        import pytest
+        pytest.skip("T-1565 task file not present in this checkout")
+
+    body = open(task_file).read()
+    out = extract_recommendation(body)
+    assert out["verdict"] == "GO"
+    # Rationale must NOT contain the literal evidence bullet markers
+    assert "F1 (HIGH)" not in out["rationale"], (
+        f"rationale leaked evidence: {out['rationale'][:300]}"
+    )
+    assert "Evidence —" not in out["rationale"]
+    assert "Captured learning" not in out["rationale"]
+    # Evidence must NOT contain the captured-learning trailer
+    assert "L-309" not in out["evidence"], (
+        f"evidence leaked captured_learning: {out['evidence'][-300:]}"
+    )

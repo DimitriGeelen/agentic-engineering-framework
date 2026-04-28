@@ -281,22 +281,51 @@ def render_markdown_safe(text: str) -> str:
     return markdown2.markdown(text, safe_mode="escape").strip()
 
 
+_REC_MARKER_RE = re_mod.compile(
+    r"^\*\*([^*]+?)\*\*\s*",  # captures the bold marker text (e.g. "Recommendation:", "Evidence — closed (7):", "Captured learning:")
+    re_mod.MULTILINE,
+)
+
+
+def _classify_rec_marker(label: str) -> str:
+    """Map a bold marker label to a canonical bucket: 'recommendation',
+    'rationale', 'evidence', 'captured_learning', or 'other'. Tolerates
+    decorations like 'Evidence — closed (7):', 'Evidence — deferred (2):'."""
+    s = label.strip().rstrip(":").strip().lower()
+    # Strip trailing parenthetical / em-dash decorations
+    s = re_mod.split(r"\s*[—–\-]\s*|\s*\(", s, maxsplit=1)[0].strip()
+    if s == "recommendation":
+        return "recommendation"
+    if s == "rationale":
+        return "rationale"
+    if s == "evidence":
+        return "evidence"
+    if s in ("captured learning", "learning"):
+        return "captured_learning"
+    return "other"
+
+
 def extract_recommendation(body: str) -> dict:
     """Extract structured fields from a task body's ## Recommendation section.
 
-    Returns dict with `verdict` (GO/NO-GO/DEFER/'?'), `rationale` (str — the
-    body of **Rationale:** up to the next top-level marker), `evidence` (str —
-    the body of **Evidence:** up to the next top-level marker, including any
-    trailing learning/captured notes), and `raw` (str — the full section text
-    after stripping HTML comments). Empty strings when a field is absent.
+    Returns dict with `verdict` (GO/NO-GO/DEFER/'?'), `rationale` (str), `evidence`
+    (str — concatenation of all Evidence-* sub-blocks), and `raw` (full section
+    text after HTML-comment strip). All keys always present.
+
+    Tokenises the section by bold markers (`**Recommendation:**`, `**Rationale:**`,
+    `**Evidence — closed (7):**`, `**Captured learning:** ...`) and buckets each
+    span into its canonical field. Tolerates decorated labels (em-dash + qualifier
+    + parenthetical), so multi-block evidence and captured-learning trailers don't
+    leak into the rationale.
 
     Uses H2+ terminator (L-293) so appended Updates entries don't pollute the
-    extraction. All keys always present.
+    extraction.
 
-    Origin: T-1575 — consolidates three parsers (shared.py:extract_recommendation_verdict,
-    inception.py:_extract_rationale_from_recommendation, review.py:_parse_recommendation)
-    that drifted apart. /review showed raw markdown (literal `**Rationale:**`)
-    because it dumped `raw` into a `<pre>` instead of using the structured fields.
+    Origin: T-1575 — consolidates three parsers. First implementation (commit
+    6d4a44fbd) had a hardcoded marker alternation that missed `**Evidence —
+    closed (7):**` and similar real-world labels, dumping evidence + captured
+    learning back into the rationale block. This second implementation replaces
+    the alternation with a generic marker tokenizer.
     """
     out = {"verdict": "?", "rationale": "", "evidence": "", "raw": ""}
     if not body:
@@ -308,26 +337,37 @@ def extract_recommendation(body: str) -> dict:
     section = re_mod.sub(r"<!--.*?-->", "", m.group(1), flags=re_mod.DOTALL).strip()
     out["raw"] = section
 
-    v = re_mod.search(r"\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b",
-                      section, re_mod.IGNORECASE)
-    if v:
-        out["verdict"] = v.group(1).upper()
+    # Walk all bold markers and slice the section into labeled spans.
+    matches = list(_REC_MARKER_RE.finditer(section))
+    buckets: dict[str, list[str]] = {"rationale": [], "evidence": []}
+    for idx, mk in enumerate(matches):
+        label = mk.group(1)
+        bucket = _classify_rec_marker(label)
+        # Span from end of this marker line to start of next marker (or section end).
+        start = mk.end()
+        end = matches[idx + 1].start() if idx + 1 < len(matches) else len(section)
+        body_span = section[start:end].strip()
+        if bucket == "recommendation":
+            v = re_mod.match(r"\s*(NO-GO|GO|DEFER)\b", body_span, re_mod.IGNORECASE)
+            if v:
+                out["verdict"] = v.group(1).upper()
+        elif bucket == "rationale":
+            buckets["rationale"].append(body_span)
+        elif bucket == "evidence":
+            # Preserve the decorated label (e.g. "Evidence — closed (7):") so
+            # readers can distinguish closed vs deferred groupings. Blank line
+            # between heading and body is required for markdown2 to render the
+            # following `-` lines as a <ul> list, not a continuation paragraph.
+            heading = label.strip().rstrip(":").strip()
+            if heading.lower() != "evidence":
+                buckets["evidence"].append(f"**{heading}**\n\n{body_span}")
+            else:
+                buckets["evidence"].append(body_span)
+        # 'captured_learning' and 'other' intentionally dropped — they belong in
+        # neither rationale nor evidence; raw is preserved for full-text needs.
 
-    plain = re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", section)
-    rat_m = re_mod.search(
-        r"(?ms)^Rationale:\s*(.*?)(?=^(?:Evidence|Recommendation|Build|Reversibility|Alternative|See|Captured learning|Once human verifies):|\Z)",
-        plain,
-    )
-    if rat_m:
-        out["rationale"] = rat_m.group(1).strip()
-
-    ev_m = re_mod.search(
-        r"(?ms)^Evidence(?:\s*[—\-:][^\n]*)?:?\s*\n(.*?)(?=^(?:Rationale|Recommendation|Build|Reversibility|Alternative|See):|\Z)",
-        plain,
-    )
-    if ev_m:
-        out["evidence"] = ev_m.group(1).strip()
-
+    out["rationale"] = "\n\n".join(b for b in buckets["rationale"] if b).strip()
+    out["evidence"] = "\n\n".join(b for b in buckets["evidence"] if b).strip()
     return out
 
 
