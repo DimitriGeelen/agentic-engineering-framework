@@ -360,10 +360,48 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement
+# pre-push hook - Audit Enforcement + lightweight-tag rejection (T-1593)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.1
+# VERSION=1.2
+
+# T-1593 (T-1591/T-1592 RCA Prevention #2): Reject lightweight tag pushes.
+# Annotated-vs-lightweight tag SHA mismatch caused 22h+ of broken AEF→GitHub
+# mirror builds (T-1591 RCA). Lightweight tags are commits; annotated tags are
+# tag objects with their own SHA. Mixing them across remotes guarantees mirror
+# failure on force=false, and silent SHA-drift even on force=true.
+# Read git's stdin format: "<local-ref> <local-sha> <remote-ref> <remote-sha>"
+_lw_tags=""
+while IFS=' ' read -r _local_ref _local_sha _remote_ref _remote_sha; do
+    [ -z "$_local_ref" ] && continue
+    case "$_local_ref" in
+        refs/tags/*)
+            # Skip deletions (local_sha is all zeros)
+            case "$_local_sha" in 0000000000000000000000000000000000000000) continue ;; esac
+            _tag_type=$(git cat-file -t "$_local_sha" 2>/dev/null || echo "")
+            if [ "$_tag_type" = "commit" ]; then
+                _lw_tags="${_lw_tags} ${_local_ref#refs/tags/}"
+            fi
+            ;;
+    esac
+done
+
+if [ -n "$_lw_tags" ]; then
+    echo "" >&2
+    echo "ERROR: Push blocked — lightweight tag(s) detected:" >&2
+    for _t in $_lw_tags; do
+        echo "  - $_t" >&2
+    done
+    echo "" >&2
+    echo "Lightweight tags break OneDev→GitHub mirror (T-1591/T-1592)." >&2
+    echo "Recreate as annotated:" >&2
+    for _t in $_lw_tags; do
+        echo "  git tag -d $_t && git tag -a $_t -m \"Release $_t\"" >&2
+    done
+    echo "" >&2
+    echo "Bypass: git push --no-verify (Tier 0 protected)" >&2
+    exit 1
+fi
 
 # Find project root (where .git is) and export for audit script
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"

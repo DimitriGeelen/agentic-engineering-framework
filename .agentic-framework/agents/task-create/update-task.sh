@@ -777,12 +777,28 @@ horizon: $NEW_HORIZON" "$TASK_FILE"
 
     # === Invariant: horizon next/later + started-work → captured (T-1068) ===
     # Shelving a task means you stopped working on it. Auto-demote status.
+    #
+    # T-1589 exception: if shipping evidence is present (all Agent ACs checked
+    # AND a `## Recommendation` block exists), the task is past started-work —
+    # it's awaiting human review, not shelved. Demoting to captured masks
+    # shipped work from the review queue (origin: T-1064/1065/1066 + T-334/
+    # T-464/T-544/T-967 — 7 tasks invisibly stuck in captured during one sweep).
     if [ "$NEW_HORIZON" != "now" ] && [ -z "$NEW_STATUS" ]; then
         _current_status=$({ grep "^status:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//' || true)
         if [ "$_current_status" = "started-work" ]; then
-            _sed_i "s/^status:.*/status: captured/" "$TASK_FILE"
-            echo -e "${CYAN}Status:  started-work → captured (auto-sync: horizon $NEW_HORIZON implies not active)${NC}"
-            CHANGES+=("status: started-work → captured (auto-sync)")
+            # grep -c prints count even when 0 (just with non-zero exit). The
+            # `|| echo 0` fallback caused a "0\n0" value when no matches existed,
+            # breaking the equality check. Use a single command, ignore exit.
+            _has_rec=$(grep -c "^\*\*Recommendation:\*\*" "$TASK_FILE" 2>/dev/null) || _has_rec=0
+            _agent_unchecked=$(awk '/^### Agent/,/^### Human|^## /' "$TASK_FILE" 2>/dev/null | grep -c '^- \[ \]') || _agent_unchecked=0
+            if [ "$_has_rec" -ge 1 ] && [ "$_agent_unchecked" = "0" ]; then
+                echo -e "${CYAN}Status:  preserved at started-work (T-1589: shipping evidence — Recommendation + all Agent ACs checked)${NC}"
+                CHANGES+=("status: preserved at started-work (T-1589 shipping evidence)")
+            else
+                _sed_i "s/^status:.*/status: captured/" "$TASK_FILE"
+                echo -e "${CYAN}Status:  started-work → captured (auto-sync: horizon $NEW_HORIZON implies not active)${NC}"
+                CHANGES+=("status: started-work → captured (auto-sync)")
+            fi
         fi
     fi
 fi

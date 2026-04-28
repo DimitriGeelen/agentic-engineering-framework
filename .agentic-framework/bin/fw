@@ -1622,6 +1622,63 @@ else:
         fi
     fi
 
+    # T-1592: Mirror divergence check — compare refs between origin and other
+    # remotes. The cascade is: local → origin → github (mirror via OneDev
+    # buildspec). If a tag/head SHA on origin doesn't match the mirror, the
+    # mirror push is rejected as non-fast-forward and AEF stops reaching GitHub
+    # silently. T-1591 root cause was annotated-vs-lightweight tag mismatch
+    # going undetected for 50+ failed mirror builds (~22h).
+    set +e  # tolerate ls-remote / comm / wc pipe failures (network, empty refs)
+    local _all_remotes _has_origin
+    _all_remotes=$(git -C "$PROJECT_ROOT" remote 2>/dev/null)
+    _has_origin=$(echo "$_all_remotes" | grep -cx 'origin' 2>/dev/null)
+    if [ "${_has_origin:-0}" -ge 1 ]; then
+        local _other_remotes _origin_refs _origin_dump
+        _other_remotes=$(echo "$_all_remotes" | grep -vx 'origin' 2>/dev/null)
+        _origin_dump=$(mktemp 2>/dev/null || echo "/tmp/fw-origin-refs.$$")
+        timeout 10 git -C "$PROJECT_ROOT" ls-remote origin 'refs/heads/*' 'refs/tags/*' 2>/dev/null | sort -k2 > "$_origin_dump" 2>/dev/null
+        _origin_refs=$(wc -l < "$_origin_dump" 2>/dev/null)
+        if [ -n "$_other_remotes" ] && [ "${_origin_refs:-0}" -gt 0 ]; then
+            local _other _other_dump _diverge _orig_only _mirr_only _orig_names _other_names
+            while IFS= read -r _other; do
+                [ -z "$_other" ] && continue
+                _other_dump=$(mktemp 2>/dev/null || echo "/tmp/fw-${_other}-refs.$$")
+                timeout 10 git -C "$PROJECT_ROOT" ls-remote "$_other" 'refs/heads/*' 'refs/tags/*' 2>/dev/null | sort -k2 > "$_other_dump" 2>/dev/null
+                if [ ! -s "$_other_dump" ]; then
+                    echo -e "  ${CYAN}SKIP${NC}  Mirror divergence ($_other unreachable)"
+                    rm -f "$_other_dump"
+                    continue
+                fi
+                _orig_names=$(awk '{print $2}' "$_origin_dump" | sort -u)
+                _other_names=$(awk '{print $2}' "$_other_dump"  | sort -u)
+                _diverge=0
+                while IFS= read -r _ref; do
+                    [ -z "$_ref" ] && continue
+                    local _o_sha _m_sha
+                    _o_sha=$(awk -v r="$_ref" '$2==r{print $1; exit}' "$_origin_dump")
+                    _m_sha=$(awk -v r="$_ref" '$2==r{print $1; exit}' "$_other_dump")
+                    if [ -n "$_o_sha" ] && [ -n "$_m_sha" ] && [ "$_o_sha" != "$_m_sha" ]; then
+                        _diverge=$((_diverge + 1))
+                    fi
+                done < <(comm -12 <(echo "$_orig_names") <(echo "$_other_names"))
+                _orig_only=$(comm -23 <(echo "$_orig_names") <(echo "$_other_names") | grep -c . 2>/dev/null)
+                _mirr_only=$(comm -13 <(echo "$_orig_names") <(echo "$_other_names") | grep -c . 2>/dev/null)
+                if [ "${_diverge:-0}" -gt 0 ]; then
+                    echo -e "  ${YELLOW}WARN${NC}  Mirror divergence: $_diverge ref(s) differ between origin and $_other (T-1591/T-1592)"
+                    echo -e "         Investigate: diff <(git ls-remote origin) <(git ls-remote $_other)"
+                    warnings=$((warnings + 1))
+                elif [ "${_orig_only:-0}" -gt 0 ] || [ "${_mirr_only:-0}" -gt 0 ]; then
+                    echo -e "  ${CYAN}INFO${NC}  Mirror asymmetry with $_other: origin-only=${_orig_only:-0}, $_other-only=${_mirr_only:-0} (no SHA conflicts)"
+                else
+                    echo -e "  ${GREEN}OK${NC}  Mirror parity with $_other (heads + tags aligned)"
+                fi
+                rm -f "$_other_dump"
+            done <<< "$_other_remotes"
+        fi
+        rm -f "$_origin_dump"
+    fi
+    set -e
+
     # Summary
     echo ""
     if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then
@@ -4665,8 +4722,15 @@ PYPREDICT
                     echo -e "${RED}ERROR: bats is not installed${NC}" >&2
                     exit 1
                 fi
+                shift
+                [ "${1:-}" = "--" ] && shift
                 echo -e "${BOLD}=== Bats Unit Tests ===${NC}"
-                bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                # T-1588: extra args (file paths, glob patterns) are passed through.
+                if [ "$#" -gt 0 ]; then
+                    bats "$@" || _test_exit=1
+                else
+                    bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                fi
                 ;;
             --integration|integration)
                 # Bats integration tests only
@@ -4674,8 +4738,12 @@ PYPREDICT
                     echo -e "${RED}ERROR: bats is not installed${NC}" >&2
                     exit 1
                 fi
+                shift
+                [ "${1:-}" = "--" ] && shift
                 echo -e "${BOLD}=== Bats Integration Tests ===${NC}"
-                if [ -d "$FRAMEWORK_ROOT/tests/integration/" ] && ls "$FRAMEWORK_ROOT/tests/integration/"*.bats >/dev/null 2>&1; then
+                if [ "$#" -gt 0 ]; then
+                    bats "$@" || _test_exit=1
+                elif [ -d "$FRAMEWORK_ROOT/tests/integration/" ] && ls "$FRAMEWORK_ROOT/tests/integration/"*.bats >/dev/null 2>&1; then
                     bats "$FRAMEWORK_ROOT/tests/integration/" || _test_exit=1
                 else
                     echo "  No integration tests found."
@@ -4687,8 +4755,14 @@ PYPREDICT
                     echo -e "${RED}ERROR: pytest is not installed${NC}" >&2
                     exit 1
                 fi
+                shift
+                [ "${1:-}" = "--" ] && shift
                 echo -e "${BOLD}=== Web Tests (pytest) ===${NC}"
-                cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
+                if [ "$#" -gt 0 ]; then
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest "$@" -v || _test_exit=1
+                else
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
+                fi
                 ;;
             --playwright|playwright|ui)
                 # Playwright UI tests (T-969)
@@ -4705,8 +4779,14 @@ PYPREDICT
                     echo -e "${YELLOW}No Playwright tests found (tests/playwright/ missing)${NC}"
                     exit 0
                 fi
+                shift
+                [ "${1:-}" = "--" ] && shift
                 echo -e "${BOLD}=== Playwright UI Tests ===${NC}"
-                cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
+                if [ "$#" -gt 0 ]; then
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest "$@" -v || _test_exit=1
+                else
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
+                fi
                 ;;
             all)
                 # Run everything

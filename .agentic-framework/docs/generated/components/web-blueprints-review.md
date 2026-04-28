@@ -18,13 +18,15 @@ When agent ACs are complete and human ACs remain:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (3)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/blueprints/tasks.py` | calls |
 | `web/blueprints/tasks.py` | registers |
+| `web/blueprints/inception.py` | calls |
+| `web/blueprints/inception.py` | registers |
 
 ## Used By (5)
 
