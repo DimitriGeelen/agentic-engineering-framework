@@ -53,5 +53,8 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Pending-updates reminder (daily)
 # PAUSED: 0 10 * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" NTFY_ENABLED=true /opt/999-Agentic-Engineering-Framework/bin/"/opt/999-Agentic-Engineering-Framework/bin/fw" pending remind 2>/dev/null
 
+# Mirror cascade auto-recovery (15 min)
+*/15 * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-mirror-sync-15m.lock -c 'cd /opt/999-Agentic-Engineering-Framework && bin/"/opt/999-Agentic-Engineering-Framework/bin/fw" mirror sync --quiet' 2>/dev/null
+
 # Escalation drift scan (G-019 Layer B v1)
 23 5 * * * root cd "/opt/999-Agentic-Engineering-Framework" && cd /opt/999-Agentic-Engineering-Framework && python3 tools/escalation-scan-v0.py 2>/dev/null

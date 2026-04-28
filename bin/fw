@@ -4677,6 +4677,11 @@ PYPREDICT
         source "$FW_LIB_DIR/release.sh"
         release_main "$@"
         ;;
+    mirror)
+        # T-1594 (T-1591 Prevention #3): Mirror cascade auto-recovery
+        source "$FW_LIB_DIR/mirror.sh"
+        mirror_main "$@"
+        ;;
     test)
         _test_exit=0
 

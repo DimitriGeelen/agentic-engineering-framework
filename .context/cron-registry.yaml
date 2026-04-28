@@ -151,6 +151,15 @@ jobs:
     status: paused
     description: "Pings human at 10:00 daily for pending-updates entries (blocked cross-project or cross-machine actions) older than 24h. Paused by default — activate via Watchtower /cron once a ntfy channel is configured."
 
+  - id: mirror-sync-15m
+    name: "Mirror cascade auto-recovery (15 min)"
+    schedule: "*/15 * * * *"
+    command: "flock -n /var/lock/agentic-cron-mirror-sync-15m.lock -c 'cd /opt/999-Agentic-Engineering-Framework && bin/fw mirror sync --quiet'"
+    source_file: agentic-audit.crontab
+    origin_task: T-1594
+    status: active
+    description: "T-1591 Prevention #3 — every 15 min, push lagging mirror remotes (e.g. github) up to origin's HEAD when fast-forward safe. Diverged state is logged but never auto-recovered. Closes the gap exposed by T-1591 (OneDev mirror lag) without requiring OneDev API access."
+
   - id: escalation-drift-daily
     name: "Escalation drift scan (G-019 Layer B v1)"
     schedule: "23 5 * * *"
