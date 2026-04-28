@@ -33,8 +33,9 @@ Approach: extend `_path_transitively_covered` (or add a sibling helper `_path_py
 - [x] `detect_ac_verify_mismatch` consults the new helper before emitting a finding (after the existing transitive-runner check)
 - [x] Unit test in `tests/unit/test_reviewer_static_scan.py` covers: (a) `from a.b.c import X` exempts `a/b/c.py`, (b) `import a.b.c` exempts `a/b/c.py`, (c) `from a.b.c import X` exempts `a/b/c/__init__.py`, (d) AC mentioning `a/b/c.py` with NO matching import still fires (no over-broadening) — 4 tests added
 - [x] Re-run `bin/fw reviewer T-1577` → AC#1/AC#2 mentioning `web/blueprints/cockpit.py` no longer flagged (was 3 findings, now 1 — only `web/templates/cockpit.html` remains, a different class — Jinja templates not exercised by Python imports)
-- [x] All existing reviewer tests still pass: `python3 -m pytest tests/unit/test_reviewer_static_scan.py -q` → 70 pass (4 new + 66 prev). 2 failures (`test_v13_*`) are pre-existing, confirmed via `git stash` parity check
+- [x] All existing reviewer tests still pass: `python3 -m pytest tests/unit/test_reviewer_static_scan.py -q` → 72 pass (4 new + 68 prev — 2 pre-existing v13 failures fixed as a coherent side-effect of the subhead-detection fix below)
 - [x] Net findings cannot increase — the change is purely additive (a new exemption branch; only previously-flagged tasks can be exempted, never new findings added)
+- [x] Side bug: subhead detection was literal `startswith("##{2,}")` (regex syntax used as literal string), so `current_subhead` was always "ACs" — Human ACs were never skipped by `detect_ac_verify_mismatch`'s "humans verify their own" branch. Fixed both occurrences (line 235, 543) to `re.match(r"^#{2,}\s+\S", ...)`
 
 ## Verification
 
@@ -63,6 +64,13 @@ python3 -c "from lib.reviewer.static_scan import detect_ac_verify_mismatch; ac =
 - Verification commands run inline:
   - `python3 -c "... ac=...verif='from web.foo.bar import X' ... assert len(findings) == 0"` → "Python-import exemption works"
   - `python3 -c "... ac=...verif='echo nothing' ... assert len(findings) == 1"` → "No-coverage still flagged"
+
+**Side fix (coherent scope — same function, same file):**
+The subhead-detection logic in both `detect_empty_body` (line 235) and `detect_ac_verify_mismatch` (line 543) used `raw.strip().startswith("##{2,}")` — that's literal string matching on the regex syntax, never matching `### Agent` or `### Human`. As a result `current_subhead` was always stuck at "ACs", which:
+1. Made `Finding.ac_subhead == "ACs"` everywhere (broke `test_v13_*_populates_ac_fields`)
+2. Made the "humans verify their own" skip branch never fire (Human ACs were processed by the matcher)
+
+Fixed to `re.match(r"^#{2,}\s+\S", raw.strip())`. Both v13 tests pass after the fix; total test count went from 70/72 → 72/72.
 
 **Followups not in scope (separate tasks if they recur):**
 - Jinja-template coverage: AC mentions `web/templates/X.html` and verification curls a route that renders X — three same-class FPs in this arc but no clean route→template mapping in the reviewer yet.

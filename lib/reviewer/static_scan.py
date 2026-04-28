@@ -232,7 +232,11 @@ def detect_empty_body(ac_section: str) -> list[Finding]:
     current_subhead = "ACs"
     counter = 0
     for raw in ac_section.splitlines():
-        if raw.strip().startswith("##{2,}"):
+        # T-1579: subhead detection — was `startswith("##{2,}")` (literal string,
+        # never matches `### Agent` / `### Human`). The bug left current_subhead
+        # stuck at "ACs", so Findings reported `ac_subhead="ACs"` and the
+        # "skip Human ACs" branch in detect_ac_verify_mismatch never fired.
+        if re.match(r"^#{2,}\s+\S", raw.strip()):
             current_subhead = raw.strip().lstrip("# ").strip()
             counter = 0
             continue
@@ -540,7 +544,11 @@ def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> lis
     counter = 0
     current_subhead = "ACs"
     for raw in ac_section.splitlines():
-        if raw.strip().startswith("##{2,}"):
+        # T-1579: subhead detection — was `startswith("##{2,}")` (literal string,
+        # never matches `### Agent` / `### Human`). The bug left current_subhead
+        # stuck at "ACs", so Findings reported `ac_subhead="ACs"` and the
+        # "skip Human ACs" branch in detect_ac_verify_mismatch never fired.
+        if re.match(r"^#{2,}\s+\S", raw.strip()):
             current_subhead = raw.strip().lstrip("# ").strip()
             counter = 0
             continue
