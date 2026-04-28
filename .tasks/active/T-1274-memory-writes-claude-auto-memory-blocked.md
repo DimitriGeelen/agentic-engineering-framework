@@ -4,7 +4,7 @@ name: "Memory writes (claude auto-memory) blocked by onboarding task gate — ag
 description: >
   Promoted from observation OBS-013
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-16T05:29:24Z
-last_update: 2026-04-16T05:29:24Z
+last_update: 2026-04-28T18:51:59Z
 date_finished: null
 ---
 
@@ -37,9 +37,11 @@ T-1431 is a proposal — this task (T-1274) remains human-owned. Review the fix 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `agents/context/check-active-task.sh` exempts `*/.claude/projects/*/memory/*` paths — verified at line 123-129 (T-1431 fix)
+- [x] Exemption matches any user prefix (`/root/`, `/home/<user>/`) and only the auto-memory directory, not arbitrary `.claude/` paths
+- [x] Bats regression coverage exists at `tests/unit/check_active_task_memory_exempt.bats` (6 tests)
+- [x] Regression tests pass: 6/6 in `bin/fw test unit -- tests/unit/check_active_task_memory_exempt.bats`
+- [x] Negative cases still blocked: non-memory `.claude/` writes blocked, arbitrary outside-project writes blocked
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -58,9 +60,23 @@ T-1431 is a proposal — this task (T-1274) remains human-owned. Review the fix 
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+# T-1431 fix landed — verify exempt clause exists
+grep -q "/.claude/projects/.*/memory/" agents/context/check-active-task.sh
+# Regression tests pass
+bin/fw test unit -- tests/unit/check_active_task_memory_exempt.bats >/tmp/T-1274-bats.log 2>&1
+! grep -qE "^not ok" /tmp/T-1274-bats.log
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Observation OBS-013 is already resolved by T-1431 (work-completed 2026-04-24, agent-owned). The exempt clause at `agents/context/check-active-task.sh:123-129` matches the pattern proposed in this task's body. All 6 bats regression tests pass; negative cases (non-memory `.claude/` writes, outside-project writes) remain blocked. No further work needed.
+
+**Evidence:**
+- `agents/context/check-active-task.sh:123-129` — `*/.claude/projects/*/memory/*)` exempt branch
+- `tests/unit/check_active_task_memory_exempt.bats` — 6/6 pass (auto-memory allowed for /root, /home/alice, MEMORY.md at root; non-memory blocks; outside-project blocks; project-root .context still allowed)
+- T-1431 in `.tasks/completed/` — `status: work-completed` with `date_finished: 2026-04-24T15:40:06Z`
+- Drift class: captured-but-done (same pattern as T-334/T-464/T-544/T-967 sweep)
 
 ## Decisions
 
@@ -79,3 +95,6 @@ T-1431 is a proposal — this task (T-1274) remains human-owned. Review the fix 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1274-memory-writes-claude-auto-memory-blocked.md
 - **Context:** Initial task creation
+
+### 2026-04-28T18:51:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
