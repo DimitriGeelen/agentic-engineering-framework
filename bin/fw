@@ -3444,16 +3444,25 @@ for f in sorted(ACTIVE.glob("*.md")):
     human_m = re.search(r"### Human\s*\n(.*?)(?=\n### |\Z)", ac_m.group(1), re.DOTALL)
     if not human_m:
         continue
-    unchecked = len(re.findall(r"^\s*-\s*\[ \]", human_m.group(1), re.MULTILINE))
+    # T-1581: strip HTML comments before the unchecked-AC count, otherwise the
+    # template's example AC (`- [ ] [REVIEW] Dashboard renders correctly` inside
+    # the placeholder `<!-- -->`) is counted as a real unchecked AC, falsely
+    # admitting template-only Human sections (T-1274, T-1542) into the queue.
+    # Mirror of L-298 — same class as the cockpit fix, different surface.
+    human_text = re.sub(r"<!--.*?-->", "", human_m.group(1), flags=re.DOTALL)
+    unchecked = len(re.findall(r"^\s*-\s*\[ \]", human_text, re.MULTILINE))
     if unchecked == 0:
         continue
-    # T-1540 iter1: filter to partial-complete tasks (owner=human OR status=work-completed).
-    # Without this, every started-work task with template Human ACs appeared in the queue
-    # (e.g., T-1540 itself appeared with verdict=? — spurious noise).
-    owner_m = re.search(r"^owner:\s*(\S+)", fm_text, re.MULTILINE)
-    owner = owner_m.group(1).strip() if owner_m else ""
-    if owner != "human" and status != "work-completed":
-        continue
+    # T-1540 iter1 originally filtered to (owner=human OR status=work-completed) so
+    # tasks with template-only Human ACs (the placeholder example AC inside the
+    # `<!-- ... -->` block) wouldn't surface as spurious entries with verdict=?.
+    # T-1581 fixed the root cause by stripping HTML comments before the unchecked-AC
+    # count above. With the comment fix in place, the owner/status filter is both
+    # redundant (template-only sections now drop out at unchecked==0) AND harmful
+    # (it excludes started-work tasks with real Human ACs + agent recommendation,
+    # e.g. T-1574/T-1575 — agent has handed off, awaiting human verification).
+    # Removed; cockpit's `get_human_verify_tasks` uses the same canonical-parse
+    # behavior — surfaces stay aligned.
     # Age
     age_days = 0
     for field in ("date_finished", "last_update", "created"):
