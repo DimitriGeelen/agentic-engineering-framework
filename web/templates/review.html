@@ -205,6 +205,28 @@
         }
         .complete-btn:hover { background: #059669; border-color: #059669; }
 
+        /* T-1574: Inception decide UI (replaces Complete button on inception tasks) */
+        .decide-section { margin-top: 1.25rem; padding-top: 1rem; border-top: 2px solid #10b981; }
+        .decide-section h3 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+        .decide-section textarea {
+            width: 100%; min-height: 80px; font-size: 0.95rem;
+            padding: 0.5rem; margin-bottom: 0.75rem;
+            border: 1px solid var(--pico-muted-border-color); border-radius: 4px;
+            font-family: inherit;
+        }
+        .decide-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+        .decide-btn {
+            min-height: 56px; font-size: 1rem; font-weight: 700;
+            border-radius: 4px; cursor: pointer; color: white;
+        }
+        .decide-btn-go { background: #10b981; border: 2px solid #10b981; }
+        .decide-btn-go:hover { background: #059669; }
+        .decide-btn-nogo { background: #ef4444; border: 2px solid #ef4444; }
+        .decide-btn-nogo:hover { background: #dc2626; }
+        .decide-btn-defer { background: #6b7280; border: 2px solid #6b7280; }
+        .decide-btn-defer:hover { background: #4b5563; }
+        .decide-error { color: var(--pico-del-color); margin-top: 0.5rem; min-height: 1.25rem; }
+
         /* Artifacts */
         .artifacts-section {
             margin-top: 1.25rem;

@@ -167,6 +167,7 @@ def review(task_id):
         task_name=fm.get("name", ""),
         task_status=fm.get("status", ""),
         task_owner=fm.get("owner", ""),
+        workflow_type=fm.get("workflow_type", ""),
         human_acs=human_acs,
         checked_count=checked_count,
         total_count=total_count,
@@ -201,6 +202,7 @@ def review_acs_fragment(task_id):
     return render_template(
         "_review_acs.html",
         task_id=task_id,
+        workflow_type=fm.get("workflow_type", ""),
         human_acs=human_acs,
         checked_count=checked_count,
         total_count=total_count,

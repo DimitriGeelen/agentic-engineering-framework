@@ -54,11 +54,30 @@
 </div>
 {% endif %}
 
-<!-- Complete Task button (when all checked) -->
+<!-- Decision / completion section (when all human ACs checked).
+     T-1574: inception tasks need fw inception decide (with rationale), NOT
+     fw task update --status work-completed. The generic Complete button used
+     to fail silently for inceptions because /api/task/<id>/complete returned
+     500 (auto-tick-on-decide ACs unchecked) and htmx ignores non-200. -->
 {% if all_checked and total_count > 0 %}
+{% if workflow_type == 'inception' %}
+<div class="decide-section" id="inception-decide-form">
+    <h3>Record Decision</h3>
+    <form hx-post="/inception/{{ task_id }}/decide"
+          hx-target="#ac-container" hx-swap="innerHTML">
+        <textarea name="rationale" placeholder="Rationale (required)" required></textarea>
+        <div class="decide-buttons">
+            <button type="submit" name="decision" value="go" class="decide-btn decide-btn-go">GO</button>
+            <button type="submit" name="decision" value="no-go" class="decide-btn decide-btn-nogo">NO-GO</button>
+            <button type="submit" name="decision" value="defer" class="decide-btn decide-btn-defer">DEFER</button>
+        </div>
+    </form>
+</div>
+{% else %}
 <div class="complete-section">
     <form hx-post="/api/task/{{ task_id }}/complete" hx-target="#ac-container" hx-swap="innerHTML">
         <button type="submit" class="complete-btn">Complete Task</button>
     </form>
 </div>
+{% endif %}
 {% endif %}
