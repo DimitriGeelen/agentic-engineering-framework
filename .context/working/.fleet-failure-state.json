@@ -9,19 +9,26 @@
     },
     "ring20-dashboard": {
       "concern_registered": true,
-      "consecutive_failures": 148,
+      "consecutive_failures": 149,
       "first_failure_at": "2026-04-27T18:38:31Z",
       "last_class": "auth-mismatch",
-      "last_failure_at": "2026-04-28T21:37:19Z"
+      "last_failure_at": "2026-04-28T21:39:35Z"
     },
     "ring20-management": {
       "concern_registered": false,
-      "consecutive_failures": 1,
-      "first_failure_at": "2026-04-26T11:42:37Z",
-      "last_class": "auth-mismatch",
-      "last_failure_at": "2026-04-26T11:42:37Z"
+      "consecutive_failures": 0,
+      "first_failure_at": null,
+      "last_class": null,
+      "last_failure_at": null
     },
     "testhub": {
+      "concern_registered": false,
+      "consecutive_failures": 0,
+      "first_failure_at": null,
+      "last_class": null,
+      "last_failure_at": null
+    },
+    "workstation-107-public": {
       "concern_registered": false,
       "consecutive_failures": 0,
       "first_failure_at": null,
