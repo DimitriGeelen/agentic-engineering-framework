@@ -332,7 +332,11 @@ def inception_detail(task_id):
         "Technical Constraints", "Scope Fence", "Go/No-Go Criteria",
         "Recommendation", "Structural Upgrade", "Decision", "Updates",
         "Acceptance Criteria", "Verification", "Decisions", "Context",
+        "RCA",
     }
+    # T-1585: also exclude versioned Reviewer Verdict headings (e.g.
+    # "Reviewer Verdict (v1.4)") from extra_sections — they're rendered
+    # structurally below via extract_reviewer_verdict, not as generic cards.
 
     # Build legacy sections dict for backward compatibility with template
     sections = {
@@ -349,9 +353,14 @@ def inception_detail(task_id):
     }
 
     # Extra sections not in the known set — rendered generically (G-036 fix)
+    # T-1585: also skip "Reviewer Verdict (vX.Y)" — surfaced structurally below.
     extra_sections = []
     for heading, content in all_raw_sections.items():
-        if heading not in KNOWN_SECTIONS and content:
+        if heading in KNOWN_SECTIONS:
+            continue
+        if heading.startswith("Reviewer Verdict"):
+            continue
+        if content:
             extra_sections.append({"heading": heading, "content": _md(content)})
 
     # T-679: Pre-populate rationale from ## Recommendation section
@@ -408,6 +417,11 @@ def inception_detail(task_id):
         except Exception as e:
             logger.warning("Failed to parse %s: %s", episodic_file, e)
 
+    # T-1585: surface reviewer's mechanical verdict structurally — cross-surface
+    # parity with /approvals (T-1569), /review (T-1583), /tasks (T-1584).
+    from web.shared import extract_reviewer_verdict
+    reviewer = extract_reviewer_verdict(task_body)
+
     return render_page(
         "inception_detail.html",
         page_title=f"Inception {task_id}",
@@ -421,6 +435,7 @@ def inception_detail(task_id):
         rationale_hint=rationale_hint,
         rec_stance=rec_stance,
         decision_matches_recommendation=decision_matches_recommendation,
+        reviewer=reviewer,
     )
 
 
