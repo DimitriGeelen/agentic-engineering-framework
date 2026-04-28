@@ -130,6 +130,83 @@ teardown() {
     grep -q "status: issues" "$TASK_FILE"
 }
 
+# --- T-1589: shipping-evidence preserves started-work on horizon demotion ---
+
+@test "T-1589: started-work + shipping evidence preserved on horizon next" {
+    # Task starts as started-work (from setup). Inject shipping evidence:
+    # all Agent ACs checked + ## Recommendation block.
+    # Replace the placeholder Agent block + add Recommendation
+    cat >> "$TASK_FILE" <<'EVIDENCE'
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Test fixture for T-1589.
+EVIDENCE
+    # Mark Agent ACs as checked (no `- [ ]` under ### Agent)
+    sed -i 's/^- \[ \]/- [x]/' "$TASK_FILE"
+
+    grep -q "status: started-work" "$TASK_FILE"
+    run "$UPDATE_TASK" "$TASK_ID" --horizon next
+    [ "$status" -eq 0 ]
+    grep -q "horizon: next" "$TASK_FILE"
+    # Status preserved (NOT demoted to captured)
+    grep -q "status: started-work" "$TASK_FILE"
+    [[ "$output" == *"preserved at started-work"* ]]
+    [[ "$output" == *"T-1589"* ]]
+}
+
+@test "T-1589: started-work + shipping evidence preserved on horizon later" {
+    cat >> "$TASK_FILE" <<'EVIDENCE'
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Test fixture for T-1589.
+EVIDENCE
+    sed -i 's/^- \[ \]/- [x]/' "$TASK_FILE"
+
+    run "$UPDATE_TASK" "$TASK_ID" --horizon later
+    [ "$status" -eq 0 ]
+    grep -q "horizon: later" "$TASK_FILE"
+    grep -q "status: started-work" "$TASK_FILE"
+}
+
+@test "T-1589: started-work WITHOUT recommendation still demotes (no evidence)" {
+    # Task starts as started-work. Mark Agent ACs as checked but DON'T add a
+    # Recommendation block. Without the recommendation, no shipping evidence —
+    # demote should still fire.
+    sed -i 's/^- \[ \]/- [x]/' "$TASK_FILE"
+    # Confirm no Recommendation marker exists
+    ! grep -q "^\*\*Recommendation:\*\*" "$TASK_FILE"
+
+    run "$UPDATE_TASK" "$TASK_ID" --horizon next
+    [ "$status" -eq 0 ]
+    grep -q "horizon: next" "$TASK_FILE"
+    grep -q "status: captured" "$TASK_FILE"
+}
+
+@test "T-1589: started-work WITH recommendation but unchecked Agent AC still demotes" {
+    # Add Recommendation but leave a `- [ ]` checkbox under ### Agent — partial
+    # work, not shipped. Demote should fire.
+    cat >> "$TASK_FILE" <<'PARTIAL'
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Test fixture — partial.
+PARTIAL
+    # Leave Agent ACs unchecked (default state from create-task)
+
+    run "$UPDATE_TASK" "$TASK_ID" --horizon next
+    [ "$status" -eq 0 ]
+    grep -q "horizon: next" "$TASK_FILE"
+    grep -q "status: captured" "$TASK_FILE"
+}
+
 # --- Invalid values ---
 
 @test "update-task rejects invalid status" {

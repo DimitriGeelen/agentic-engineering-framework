@@ -28,7 +28,7 @@ Usage:
 | `lib/review.sh` | calls |
 | `lib/notify.sh` | calls |
 
-## Used By (6)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -38,6 +38,7 @@ Usage:
 | `tests/unit/update_task.bats` | tested_by |
 | `tests/unit/update_task.bats` | called_by |
 | `docs/reports/T-1067-horizon-status-invariants.md` | references_by |
+| `tests/unit/update_task_episodic_gen.bats` | called_by |
 
 ## Documentation
 

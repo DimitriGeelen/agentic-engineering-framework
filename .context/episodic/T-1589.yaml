@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1589: T-1068 invariant: preserve started-work when shipping evidence present (skip auto-demote)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-28T18:08:45Z
+# ============================================================================
+
+task_id: T-1589
+task_name: "T-1068 invariant: preserve started-work when shipping evidence present (skip auto-demote)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T17:36:56Z
+completed: 2026-04-28T18:06:13Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`agents/task-create/update-task.sh` T-1068 auto-demote block (lines 778-787) skips the demotion when (a) `## Recommendation:` line exists in the task body AND (b) zero unchecked `- [ ]` ACs remain under `### Agent` section"
+  - "When skipped, prints a CYAN status line crediting T-1589 (\"preserved at started-work — shipping evidence\")"
+  - "When NOT skipped (no shipping evidence), behaviour unchanged — same demotion, same message"
+  - "Bats regression test: shipping-evidence task moved to horizon=next preserves started-work"
+  - "Bats regression test: empty-body task moved to horizon=next still demotes to captured"
+  - "Existing T-1068 tests continue to pass — 19/19 pass in `tests/unit/update_task.bats`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Use the presence of `**Recommendation:**` (case-sensitive marker line) AND zero `- [ ]` lines in the `### Agent ... ### Human|## ` block range as the shipping-evidence test."
+    rationale: "These two signals together prove the agent finished its side: `## Recommendation` is the structural \"I'm done, here's my call\" marker (mandated by CLAUDE.md presenting-work-for-review rules); zero unchecked Agent ACs proves all agent work passed. Either alone is too weak (Recommendation might exist as DEFER on a task with unchecked ACs; zero unchecked ACs might be a fresh task with no recommendation written yet)."
+    alternatives_rejected: ["Use `partial-complete` status as the trigger — but tasks at `started-work + horizon=next` aren't in partial-complete state, they're in shipped-but-unreviewed state. Different concept."]
+    alternatives_rejected: ["Auto-promote to `partial-complete` instead of preserving `started-work` — that would change established status semantics; preserving is the minimal-blast-radius fix."]
+    chose: "`_var=$(... | grep -c PATTERN) || _var=0` to handle grep's non-zero exit on zero matches."
+    rationale: "Initial implementation used `grep -c ... || echo 0` which produced `\"0\n0\"` (grep printed 0 + echo printed 0), making equality checks fail."
+    alternatives_rejected: ["`grep -c | head -1` — works but obscure."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 29 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 29
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1589-t-1068-invariant-preserve-started-work-w.md
+generated_by: context-agent-hybrid
