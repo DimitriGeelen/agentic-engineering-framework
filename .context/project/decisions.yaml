@@ -303,3 +303,17 @@ decisions:
     date: 2026-04-28
     task: T-1589
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-046
+    decision: "Wire-only — reuse T-906 (route-cache `ModelStats` + `record_model_*` + `best_model_for`) and T-903 (`ModelCircuitBreaker` + `resolve_model` + `DEFAULT_MODEL_FALLBACK`) primitives."
+    scope: project
+    date: 2026-04-28
+    task: T-1590
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-047
+    decision: "Surface `model_requested`/`model_used`/`fallback_used`/`task_type` in the dispatch result JSON the orchestrator consumes per-call."
+    scope: project
+    date: 2026-04-28
+    task: T-1590
+    rationale: "Auto-captured from task file on completion"

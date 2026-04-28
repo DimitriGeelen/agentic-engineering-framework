@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1590: Multi-LLM routing Phase 4b — route-cache model tracking + circuit-breaker fallback
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-28T18:57:31Z
+# ============================================================================
+
+task_id: T-1590
+task_name: "Multi-LLM routing Phase 4b — route-cache model tracking + circuit-breaker fallback"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T18:46:58Z
+completed: 2026-04-28T18:57:26Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T20:49:55+02:00
+last_commit: 2026-04-28T20:49:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  create Phase 4b follow-up — route-cache model tracking + circuit-breaker fallback
+
+# Key outcomes
+outcomes:
+  - "Route cache schema extended to track `(method, task_type, model)` → success/failure counters — `RouteCache::record_model_success/failure` + `ModelStats` (T-906 primitive, wired in via Phase 4b)"
+  - "On dispatch completion, route cache learns: increment success counter on exit-0, failure counter otherwise — wired in `termlink_dispatch` outcome attribution (event with `payload.ok != false` = success)"
+  - "Route lookup prefers the highest-success model for a given `(method, task_type)` when no explicit `model` is provided — `resolve_dispatch_model` consults `best_model_for(task_type)`"
+  - "Circuit-breaker tracks per-model availability: N consecutive failures → mark model unavailable for cooldown window — `ModelCircuitBreaker` (T-903 primitive) records failures, transitions closed→open after threshold"
+  - "On dispatch with explicit `model` param: if circuit is open, fall back to next model in fallback chain (default: opus → sonnet → haiku) and record fallback in dispatch manifest — `resolve_model` walks `DEFAULT_MODEL_FALLBACK`; result surfaces `model_requested`/`model_used`/`fallback_used` in dispatch JSON"
+  - "Backward-compat: route cache without model column still loads; existing tests in `cargo test -p termlink-hub` still pass — `task_type: Option<String>`, `#[serde(default)]` on `model_stats`; 278 hub tests pass"
+  - "New tests: 5 added in `termlink-mcp` (`dispatch_params_with_task_type`, `dispatch_params_default_task_type_none`, `resolve_dispatch_model_passthrough_when_breaker_closed`, `resolve_dispatch_model_uses_best_for_task_type`, `resolve_dispatch_model_no_inputs_returns_none`); pre-existing model-tracking + circuit-breaker tests verified passing (≥6 model tracking, ≥8 breaker transitions, ≥6 fallback chain)"
+  - "All existing TermLink tests pass — 480 total (278 hub + 103 mcp unit + 99 mcp integration), 0 fail, cargo exit 0"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Wire-only — reuse T-906 (route-cache `ModelStats` + `record_model_*` + `best_model_for`) and T-903 (`ModelCircuitBreaker` + `resolve_model` + `DEFAULT_MODEL_FALLBACK`) primitives."
+    rationale: "Phase 4a/T-906/T-903 already delivered all the storage and logic primitives needed for Phase 4b. Re-implementing would duplicate code and risk schema drift. The gap was that nothing called these primitives from the `termlink_dispatch` tool — pure wiring."
+    alternatives_rejected: ["Adding new schema (would have required migration) or new breaker abstraction (T-903's existing one already handles per-model state)."]
+    chose: "Surface `model_requested`/`model_used`/`fallback_used`/`task_type` in the dispatch result JSON the orchestrator consumes per-call."
+    rationale: "`dispatch-manifest.json` is owned by the `--isolate` worktree path in `termlink-cli`. The MCP dispatch path returns JSON directly — that's the manifest the orchestrator actually reads."
+    alternatives_rejected: ["Mutating `dispatch-manifest.json` from MCP — would couple two independent dispatch paths."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/decisions.yaml"
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-1590-multi-llm-routing-phase-4b--route-cache-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T20:49:55"
+    action: "T-1590: create Phase 4b follow-up — route-cache model tracking + circuit-breaker fallback"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, multi-llm, routing]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 3
+  lines_added: 112
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md
+generated_by: context-agent-hybrid
