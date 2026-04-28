@@ -189,6 +189,47 @@ do_upgrade() {
         return 1
     fi
 
+    # T-1542: Detect bare-from-consumer invocation (FRAMEWORK_ROOT is the
+    # consumer's vendored copy). Source and target collapse — do_vendor's late
+    # guard at step 4b would fire AFTER steps 1-4a have mutated state. Fail
+    # fast BEFORE any mutation with a copy-pasteable corrected command.
+    local _consumer_vendor_canon=""
+    if [ -d "$target_dir/.agentic-framework" ]; then
+        _consumer_vendor_canon=$(cd "$target_dir/.agentic-framework" 2>/dev/null && pwd -P) || _consumer_vendor_canon=""
+    fi
+    local _fw_root_canon
+    _fw_root_canon=$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P) || _fw_root_canon="$FRAMEWORK_ROOT"
+    if [ -n "$_consumer_vendor_canon" ] && [ "$_fw_root_canon" = "$_consumer_vendor_canon" ]; then
+        echo -e "${RED}ERROR: fw upgrade invoked from inside the consumer's vendored framework${NC}" >&2
+        echo "" >&2
+        echo "  FRAMEWORK_ROOT: $_fw_root_canon" >&2
+        echo "  target_dir:     $target_dir" >&2
+        echo "  Vendored copy:  $_consumer_vendor_canon" >&2
+        echo "" >&2
+        echo "  Source and target collapse — do_vendor would self-copy and corrupt state." >&2
+        echo "  No changes made." >&2
+        echo "" >&2
+        echo -e "${BOLD}Run from an upstream framework repo with explicit target:${NC}" >&2
+        echo "" >&2
+        # Best-effort upstream discovery: ~/.local/bin/fw symlink (legacy global install)
+        local _upstream=""
+        local _shim="$HOME/.local/bin/fw"
+        if [ -L "$_shim" ]; then
+            local _link_target
+            _link_target=$(readlink -f "$_shim" 2>/dev/null || echo "")
+            if [ -n "$_link_target" ] && [ -f "$(dirname "$_link_target")/../FRAMEWORK.md" ]; then
+                _upstream=$(cd "$(dirname "$_link_target")/.." 2>/dev/null && pwd -P) || _upstream=""
+            fi
+        fi
+        if [ -n "$_upstream" ] && [ "$_upstream" != "$_fw_root_canon" ]; then
+            echo "  cd $_upstream && bin/fw upgrade $target_dir" >&2
+        else
+            echo "  cd /path/to/agentic-engineering-framework && bin/fw upgrade $target_dir" >&2
+        fi
+        echo "" >&2
+        return 1
+    fi
+
     # T-1217: Self-vendor — refresh framework's own .agentic-framework/ before pushing to consumers.
     # Without this, new lib/*.sh files (e.g., watchtower.sh from T-1154) go stale in the vendored
     # copy, causing pre-push audit errors for the framework repo itself.
