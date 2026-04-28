@@ -4,16 +4,16 @@ name: "Cross-surface parity invariant — pin Recommendation + Reviewer Verdict 
 description: >
   Playwright invariant test that asserts every review surface (/approvals, /review, /tasks, /inception) renders Recommendation + Reviewer Verdict structurally for a known task with both blocks. Closes L-316 cross-surface drift class structurally — future regressions on any one surface fail this test.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [test, invariant, regression, cross-surface]
 components: [tests/playwright/test_cross_surface_parity.py]
 related_tasks: [T-1531, T-1569, T-1575, T-1583, T-1584, T-1585]
 created: 2026-04-28T16:10:14Z
-last_update: 2026-04-28T16:10:14Z
-date_finished: null
+last_update: 2026-04-28T16:16:01Z
+date_finished: 2026-04-28T16:16:01Z
 ---
 
 # T-1586: Cross-surface parity invariant — pin Recommendation + Reviewer Verdict on all 4 review surfaces (L-316 closure)
@@ -27,13 +27,13 @@ This task ships the contract: a Playwright invariant test that asserts, for a kn
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `tests/playwright/test_cross_surface_parity.py` created with `TestCrossSurfaceReviewerParity` and `TestCrossSurfaceRecommendationParity` classes
-- [ ] Reviewer-Verdict parity test asserts T-1582 (a build task with `## Reviewer Verdict (vX.Y)`) renders `<section class="reviewer-verdict-block"` on `/tasks/T-1582` AND `/review/T-1582` (both surfaces); and T-1346 (an inception task with reviewer block) renders the same section on `/inception/T-1346`
-- [ ] Reviewer-Verdict negative test asserts T-967 (no reviewer block) does NOT render `<section class="reviewer-verdict-block"` on either `/tasks/T-967` or `/review/T-967` — the Jinja guard must silence the section, not always render
-- [ ] Recommendation parity test asserts T-1582 (has `## Recommendation`) renders `<section class="recommendation-block" data-verdict="GO"` on both `/tasks/T-1582` and `/review/T-1582` (Recommendation card is per-task surface only — `/approvals` shows verdict pills, `/inception` doesn't surface Recommendation structurally)
-- [ ] All assertions match against `<section class="..."` (with the opening tag) — NOT bare `class="..."` — so CSS rule definitions in the inline `<style>` block don't trigger false positives (T-1583 lesson: 10 CSS rules vs 0–1 actual section elements)
-- [ ] `python3 -m pytest tests/playwright/test_cross_surface_parity.py -q --no-header 2>&1 | grep -qE 'passed|warning'` (test runs and passes — Playwright fixture from `conftest.py` provides server; existing pattern in `test_verdict_ui.py`)
-- [ ] No regression in `tests/unit/test_extract_recommendation.py` — `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
+- [x] `tests/playwright/test_cross_surface_parity.py` created with `TestCrossSurfaceReviewerParity` and `TestCrossSurfaceRecommendationParity` classes
+- [x] Reviewer-Verdict parity test asserts T-1582 (a build task with `## Reviewer Verdict (vX.Y)`) renders `<section class="reviewer-verdict-block"` on `/tasks/T-1582` AND `/review/T-1582` (both surfaces); and T-1346 (an inception task with reviewer block) renders the same section on `/inception/T-1346`
+- [x] Reviewer-Verdict negative test asserts T-967 (no reviewer block) does NOT render `<section class="reviewer-verdict-block"` on either `/tasks/T-967` or `/review/T-967` — the Jinja guard must silence the section, not always render
+- [x] Recommendation parity test asserts T-1582 (has `## Recommendation`) renders `<section class="recommendation-block" data-verdict="GO"` on both `/tasks/T-1582` and `/review/T-1582` (Recommendation card is per-task surface only — `/approvals` shows verdict pills, `/inception` doesn't surface Recommendation structurally)
+- [x] All assertions match against `<section class="..."` (with the opening tag) — NOT bare `class="..."` — so CSS rule definitions in the inline `<style>` block don't trigger false positives (T-1583 lesson: 10 CSS rules vs 0–1 actual section elements)
+- [x] `python3 -m pytest tests/playwright/test_cross_surface_parity.py -q --no-header 2>&1 | grep -qE 'passed|warning'` (test runs and passes — Playwright fixture from `conftest.py` provides server; existing pattern in `test_verdict_ui.py`)
+- [x] No regression in `tests/unit/test_extract_recommendation.py` — `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
 
 ### Human
 - [ ] [REVIEW] Test name + assertions read as a clear contract that future agents will recognize as cross-surface parity protection
@@ -88,3 +88,15 @@ Stale-template gotcha noted: Flask's default template cache means a previously-r
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1586-cross-surface-parity-invariant--pin-reco.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-f965ab16
+- **Timestamp:** 2026-04-28T16:16:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-28T16:16:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
