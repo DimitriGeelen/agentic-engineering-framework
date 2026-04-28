@@ -2472,3 +2472,17 @@ X'` returning empty group."
   date: 2026-04-28
   context: Added via context agent
   application: TBD
+- id: PL-008
+  learning: "Fleet doctor observed tofu-violation on hub 'ring20-dashboard' (192.168.10.121:9100). date_observed=2026-04-28T18:41:55Z hub_fingerprint=sha256:7f927cc0c6ee272caa06033c8964a952616da736b92b90f1fd7e1b5a4420d10e. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-28
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-320
+  learning: "Inception drift class: captured-status inceptions with Recommendation block AND all Human ACs checked are stuck pending fw inception decide. They're invisible to the review queue (queue requires unchecked Human ACs) and to stale-task triage (checked AC suggests human engaged). Requires human to run 'fw inception decide T-XXX <verdict>' to formally close. Examples: T-1265, T-1309, T-682, T-704. Detection: status=captured AND workflow_type=inception AND has Recommendation AND human_unchecked=0. Sweep heuristic: 'awk $1 ~ /^status:/ && $2 == captured' across active inceptions then check Human AC count."
+  source: P-001
+  task: T-1590
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD
