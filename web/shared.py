@@ -291,7 +291,9 @@ def render_markdown_safe(text: str) -> str:
 
 
 _REC_MARKER_RE = re_mod.compile(
-    r"^\*\*([^*]+?)\*\*\s*",  # captures the bold marker text (e.g. "Recommendation:", "Evidence — closed (7):", "Captured learning:")
+    # Captures the bold marker text (e.g. "Recommendation:", "Evidence — closed (7):", "Captured learning:").
+    # Optional leading `- ` / `* ` bullet (T-1580): authors sometimes nest the markers as a Markdown list.
+    r"^[ \t]*(?:[-*][ \t]+)?\*\*([^*]+?)\*\*\s*",
     re_mod.MULTILINE,
 )
 

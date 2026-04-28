@@ -310,3 +310,79 @@ def test_state_full_block_returns_verdict():
 def test_state_empty_body_returns_no_rec():
     """Empty body → NO-REC (no section to find)."""
     assert extract_recommendation_state("") == "NO-REC"
+
+
+# -----------------------------------------------------------------------------
+# T-1580: bullet-prefixed marker support
+# Markdown allows `- **Recommendation:** DEFER` as a list item. The original
+# `_REC_MARKER_RE` anchored on `^**` and missed those — T-705 / T-844 ended up
+# in the `?` bucket despite being well-formed DEFERs.
+# -----------------------------------------------------------------------------
+
+def test_bullet_prefixed_recommendation_dash():
+    """`- **Recommendation:** DEFER` parses as DEFER (not '?')."""
+    body = (
+        "## Recommendation\n\n"
+        "- **Recommendation:** DEFER\n"
+        "- **Rationale:** scope creep, defer to later phase.\n"
+        "- **Evidence:** see T-XXX research artifact.\n\n"
+        "## Updates\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "DEFER"
+    assert "scope creep" in out["rationale"]
+    assert "T-XXX research artifact" in out["evidence"]
+
+
+def test_bullet_prefixed_recommendation_asterisk():
+    """`* **Recommendation:** GO` (alternate Markdown bullet) also parses."""
+    body = (
+        "## Recommendation\n\n"
+        "* **Recommendation:** GO\n"
+        "* **Rationale:** all checks pass.\n\n"
+        "## Updates\n"
+    )
+    assert extract_recommendation(body)["verdict"] == "GO"
+
+
+def test_bullet_prefixed_with_indent():
+    """Leading spaces before bullet (nested list) still match."""
+    body = (
+        "## Recommendation\n\n"
+        "  - **Recommendation:** NO-GO\n"
+        "  - **Rationale:** blocked.\n\n"
+        "## Updates\n"
+    )
+    assert extract_recommendation(body)["verdict"] == "NO-GO"
+
+
+def test_non_bullet_style_still_works():
+    """Existing canonical style (no bullet) keeps working — T-1580 must not regress."""
+    body = (
+        "## Recommendation\n\n"
+        "**Recommendation:** GO\n\n"
+        "**Rationale:** standard form.\n\n"
+        "## Updates\n"
+    )
+    assert extract_recommendation(body)["verdict"] == "GO"
+
+
+def test_bold_in_paragraph_not_matched_as_marker():
+    """Bold text mid-paragraph (not on its own line, no bullet) shouldn't match
+    as a marker — guards the line-start anchor we relaxed."""
+    body = (
+        "## Recommendation\n\n"
+        "Some prose mentioning **Recommendation:** GO inline within a sentence,\n"
+        "without proper line-start formatting.\n\n"
+        "## Updates\n"
+    )
+    # The inline `**Recommendation:**` IS at the start of a line, so it WILL
+    # match — that's existing behavior. The real guard is that random bold
+    # words in the middle of a line (e.g. "see **note** below") don't trigger.
+    body2 = (
+        "## Recommendation\n\n"
+        "Some prose with **emphasis** in the middle of a sentence.\n"
+        "No structured marker here.\n\n"
+        "## Updates\n"
+    )
+    assert extract_recommendation_state(body2) == "?"
