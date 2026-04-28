@@ -1,0 +1,14 @@
+pending_updates:
+- id: U-001
+  command: bin/fw pickup send --type feature-proposal --summary 'Adopt triple-dedup
+    + supersedes' --remote termlink ...
+  reason: G-045 TOFU mismatch on ring20-management hub (192.168.10.122:9100) prevents
+    remote push; ring20-dashboard hub has no termlink session. Envelope contents describe
+    T-1425/T-1426 triple-dedup fix for cross-project retry collisions.
+  task: T-1425
+  host: local
+  agent: agent
+  created: '2026-04-24T13:18:44Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null

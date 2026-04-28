@@ -30,7 +30,7 @@ When the active task has `workflow_type: inception`:
 | `web/templates/assumptions.html` | renders |
 | `web/subprocess_utils.py` | calls |
 
-## Used By (7)
+## Used By (9)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -40,6 +40,8 @@ When the active task has `workflow_type: inception`:
 | `web/blueprints/__init__.py` | registered_by |
 | `web/blueprints/approvals.py` | called_by |
 | `web/blueprints/approvals.py` | registered_by |
+| `web/blueprints/review.py` | called_by |
+| `web/blueprints/review.py` | registered_by |
 
 ## Related
 

@@ -19,7 +19,7 @@ for a project to use the framework.
 | `lib/preflight.sh` | calls |
 | `C-001` | calls |
 
-## Used By (7)
+## Used By (8)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -30,6 +30,7 @@ for a project to use the framework.
 | `lib/validate-init.sh` | read_by |
 | `tests/unit/lib_init.bats` | called-by |
 | `tests/unit/lib_init.bats` | called_by |
+| `tests/unit/hook_absolute_paths.bats` | called_by |
 
 ## Related
 

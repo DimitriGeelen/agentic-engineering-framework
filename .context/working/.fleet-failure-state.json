@@ -8,11 +8,11 @@
       "last_failure_at": null
     },
     "ring20-dashboard": {
-      "concern_registered": false,
-      "consecutive_failures": 82,
+      "concern_registered": true,
+      "consecutive_failures": 129,
       "first_failure_at": "2026-04-27T18:38:31Z",
       "last_class": "tofu-violation",
-      "last_failure_at": "2026-04-28T16:08:44Z"
+      "last_failure_at": "2026-04-28T19:25:36Z"
     },
     "ring20-management": {
       "concern_registered": false,

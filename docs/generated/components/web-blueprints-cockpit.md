@@ -8,12 +8,14 @@
 
 web/blueprints/cockpit.py
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/subprocess_utils.py` | calls |
+| `web/blueprints/tasks.py` | calls |
+| `web/blueprints/tasks.py` | registers |
 
 ## Used By (6)
 

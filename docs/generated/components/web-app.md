@@ -51,7 +51,7 @@ When building a web application:
 | `web/blueprints/__init__.py` | calls |
 | `web/embeddings.py` | calls |
 
-## Used By (6)
+## Used By (8)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -59,6 +59,8 @@ When building a web application:
 | `web/templates/_partials/badge.html` | used-by |
 | `web/test_costs.py` | called_by |
 | `web/templates/_partials/badge.html` | used-by_by |
+| `tests/unit/test_reviewer_audit_blueprint.py` | called_by |
+| `tests/web/test_inception_decide_hardening.py` | called_by |
 
 ## Related
 

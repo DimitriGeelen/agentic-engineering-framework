@@ -1,0 +1,68 @@
+scan_date: '2026-04-28'
+scan_timestamp: '2026-04-28T18:41:29Z'
+pass: B
+catalogue_version: v1.3-seed
+escalation_version: v1.1-seed
+tasks_scanned: 1497
+errors: []
+totals:
+  PASS: 1288
+  CONCERN: 180
+  FAIL: 29
+  needs_human: 50
+pattern_fire_counts:
+  AC-verify-mismatch: 207
+  skip-as-pass: 13
+  empty-output-success: 62
+  tautology: 5
+  mock-only-integration: 6
+  swallowed-errors: 17
+suppressed_fire_counts: {}
+suppressed_total: 0
+active_overrides: 2
+escalation_fire_counts:
+  cross-project-blast: 32
+  destructive-action: 16
+  external-publish: 1
+  secret-handling: 1
+top_findings:
+- pattern_id: AC-verify-mismatch
+  count: 207
+  examples:
+  - T-1020
+  - T-1020
+  - T-1028
+  - T-1080
+  - T-1083
+- pattern_id: empty-output-success
+  count: 62
+  examples:
+  - T-1195
+  - T-1204
+  - T-1222
+  - T-1223
+  - T-1232
+- pattern_id: swallowed-errors
+  count: 17
+  examples:
+  - T-134
+  - T-134
+  - T-1341
+  - T-1356
+  - T-1360
+- pattern_id: skip-as-pass
+  count: 13
+  examples:
+  - T-1038
+  - T-1040
+  - T-1041
+  - T-1042
+  - T-1256
+- pattern_id: mock-only-integration
+  count: 6
+  examples:
+  - T-1320
+  - T-1446
+  - T-1480
+  - T-159
+  - T-474

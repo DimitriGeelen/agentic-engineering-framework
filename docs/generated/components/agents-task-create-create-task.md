@@ -17,7 +17,7 @@ Creates properly structured tasks following the framework specification
 | `lib/enums.sh` | calls |
 | `lib/keylock.sh` | calls |
 
-## Used By (6)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -27,6 +27,7 @@ Creates properly structured tasks following the framework specification
 | `lib/setup.sh` | called_by |
 | `tests/unit/create_task.bats` | tested_by |
 | `tests/unit/create_task.bats` | called_by |
+| `tests/unit/task_id_race.bats` | called_by |
 
 ## Documentation
 

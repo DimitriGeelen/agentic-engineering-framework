@@ -1490,3 +1490,20 @@ concerns:
   mitigated_at: 2026-04-24
   mitigated_by: T-1425
   related_tasks: [T-1311, T-1345, T-1319, T-1348, T-1302, T-1352, T-1305, T-1353, T-1314, T-1351, T-1321, T-1349, T-1339]
+
+- id: G-060
+  type: gap
+  title: "TermLink hub 'ring20-dashboard' (192.168.10.121:9100) has been failing fleet-doctor with tofu-violation for 98+ consecutive runs over >24h"
+  description: "Auto-registered by T-1053 under G-019 (framework-blind-to-persistent-failure guard). Hub has failed fleet-doctor with error class 'tofu-violation' for 98 consecutive runs since 2026-04-27T18:38:31Z (first observed). This indicates either a genuinely broken hub auth state OR stale client credentials that were not refreshed after a hub rotation. Per T-1051 Option D, the heal path is: 1) confirm the hub is intended to be up (termlink remote ping 192.168.10.121:9100 from a trusted anchor), 2) if yes, refresh the client secret (termlink fleet reauth ring20-dashboard when T-1054 lands, or manually copy /var/lib/termlink/hub.secret via an out-of-band channel for now)."
+  spec_reference: "T-1051 inception, T-1053 implementation, .context/working/.fleet-failure-state.json"
+  severity: high
+  trigger_fired: true
+  trigger_event: "2026-04-28T18:41:55Z: 98 consecutive fleet-doctor failures on ring20-dashboard (192.168.10.121:9100) with class tofu-violation, first observed 2026-04-27T18:38:31Z"
+  detection_lag_days: "1"
+  what_works_now: "Fleet doctor correctly classifies the error and emits a hint. T-1052 has already recorded an isolated learning. This concern escalates the sustained pattern to Watchtower visibility."
+  what_remains: "Operator must refresh the client's cached secret for this hub. Long-term fix: T-1054 (termlink fleet reauth) lands a one-command heal."
+  mitigation_candidate: "Ship T-1054 (fleet reauth Tier-1) and T-1055 (fleet reauth --bootstrap-from, Tier-2)."
+  status: watching
+  created: 2026-04-28
+  last_reviewed: 2026-04-28
+  related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055]

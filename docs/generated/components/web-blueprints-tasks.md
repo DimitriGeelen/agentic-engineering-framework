@@ -29,7 +29,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `web/templates/task_detail.html` | renders |
 | `web/subprocess_utils.py` | calls |
 
-## Used By (9)
+## Used By (11)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -41,6 +41,8 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `web/blueprints/approvals.py` | registered_by |
 | `web/blueprints/review.py` | called_by |
 | `web/blueprints/review.py` | registered_by |
+| `web/blueprints/cockpit.py` | called_by |
+| `web/blueprints/cockpit.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-tasks.yaml`*

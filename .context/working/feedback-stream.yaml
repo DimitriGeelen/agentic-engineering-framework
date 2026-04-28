@@ -2405,3 +2405,190 @@ scan_id: R-ee0ad5d2
 task_id: T-1587
 payload:
   task_file: .tasks/active/T-1587-cross-surface-no-rec-banner-invariant--p.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T16:39:02Z'
+scan_id: R-91cb4b3d
+task_id: T-1588
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T16:39:02Z'
+scan_id: R-91cb4b3d
+task_id: T-1588
+payload:
+  task_file: .tasks/active/T-1588-fix-fw-test-arg-passthrough--extra-args-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:08:42Z'
+scan_id: R-27fc6a6e
+task_id: T-1589
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:08:42Z'
+scan_id: R-27fc6a6e
+task_id: T-1589
+payload:
+  task_file: .tasks/active/T-1589-t-1068-invariant-preserve-started-work-w.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-2517635e
+task_id: T-1064
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-2517635e
+task_id: T-1064
+payload:
+  task_file: .tasks/active/T-1064-extend-orchestratorroute-with-task-type-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-d18730d9
+task_id: T-1065
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-d18730d9
+task_id: T-1065
+payload:
+  task_file: .tasks/active/T-1065-multi-llm-routing--task-aware-model-sele.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-2034e139
+task_id: T-1066
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-2034e139
+task_id: T-1066
+payload:
+  task_file: .tasks/active/T-1066-data-plane-governance-subscriber--post-h.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-a0e91a32
+task_id: T-334
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-a0e91a32
+task_id: T-334
+payload:
+  task_file: .tasks/active/T-334-execute-launch-sequence-rclaudeai-soft-l.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-8bada5ba
+task_id: T-464
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:13:48Z'
+scan_id: R-8bada5ba
+task_id: T-464
+payload:
+  task_file: .tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:13:49Z'
+scan_id: R-191ffc9b
+task_id: T-544
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:13:49Z'
+scan_id: R-191ffc9b
+task_id: T-544
+payload:
+  task_file: .tasks/active/T-544-create-termlink-homebrew-tap-with-github.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:13:49Z'
+scan_id: R-0f2f352d
+task_id: T-967
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:13:49Z'
+scan_id: R-0f2f352d
+task_id: T-967
+payload:
+  task_file: .tasks/active/T-967-session-profiles--provider-registry-for-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:13:49Z'
+scan_id: R-8c6abf6c
+task_id: T-1542
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:13:49Z'
+scan_id: R-8c6abf6c
+task_id: T-1542
+payload:
+  task_file: .tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T18:57:27Z'
+scan_id: R-0c035872
+task_id: T-1590
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T18:57:27Z'
+scan_id: R-0c035872
+task_id: T-1590
+payload:
+  task_file: .tasks/active/T-1590-multi-llm-routing-phase-4b--route-cache-.md

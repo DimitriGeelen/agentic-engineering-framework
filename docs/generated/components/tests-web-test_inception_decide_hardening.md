@@ -8,6 +8,12 @@
 
 {task_id}: hardening
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/app.py` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-web-test_inception_decide_hardening.yaml`*
 *Last verified: 2026-04-25*
