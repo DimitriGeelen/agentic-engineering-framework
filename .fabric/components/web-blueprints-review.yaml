@@ -4,14 +4,17 @@ type: route
 subsystem: watchtower
 location: web/blueprints/review.py
 tags: []
-purpose: 'Watchtower review blueprint: task review page — shows ACs, research artifacts,
-  recommendation, approval actions.'
+purpose: 'Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions.'
 depends_on:
 - target: web/shared.py
   type: calls
 - target: web/blueprints/tasks.py
   type: calls
 - target: web/blueprints/tasks.py
+  type: registers
+- target: web/blueprints/inception.py
+  type: calls
+- target: web/blueprints/inception.py
   type: registers
 depended_by:
 - target: web/blueprints/__init__.py
@@ -25,4 +28,4 @@ depended_by:
 - tests/playwright/test_review.py
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-04-28'
