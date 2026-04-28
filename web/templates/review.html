@@ -299,6 +299,14 @@
             border-left-color: #b91c1c;
         }
         .recommendation-block[data-verdict="NO-GO"] h3 { color: #991b1b; }
+        /* T-1578: NO-REC banner — agent owes a recommendation. Cyan theme parity
+           with cockpit pill / approvals filter button. */
+        .recommendation-block[data-verdict="NO-REC"] {
+            background: #0e74901a;
+            border-color: #0e7490;
+            border-left-color: #0e7490;
+        }
+        .recommendation-block[data-verdict="NO-REC"] h3 { color: #155e75; }
         .recommendation-block h3 {
             margin: 0 0 0.5rem;
             font-size: 0.9rem;
@@ -385,6 +393,20 @@
             ⚠ Verdict recorded as <strong>{{ verdict }}</strong> but the rationale is missing.
             A recommendation without a rationale cannot be acted on — ask the agent to fill the
             <code>**Rationale:**</code> line in the <code>## Recommendation</code> section.
+        </div>
+    </section>
+    {# T-1578: NO-REC banner — agent has not yet written a `## Recommendation` block.
+       Same cyan theme (#0e7490) as cockpit pill and /approvals filter button. Ranks
+       above the artifacts-only fallback so "this isn't ready for review" is the
+       primary signal, even when research artifacts exist. #}
+    {% elif state == 'NO-REC' %}
+    <section class="recommendation-block recommendation-norec" data-verdict="NO-REC" data-state="NO-REC">
+        <h3>Recommendation — NO-REC</h3>
+        <div>
+            The agent has not yet written a <code>## Recommendation</code> block for this task.
+            The task isn't ready for review — ask the agent to add a recommendation
+            (<strong>GO</strong> / <strong>NO-GO</strong> / <strong>DEFER</strong>) with rationale and evidence
+            before deciding.
         </div>
     </section>
     {% elif artifacts %}

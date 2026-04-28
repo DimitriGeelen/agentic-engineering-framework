@@ -143,6 +143,10 @@ def review(task_id):
     rec_complete = rec["verdict"] != "?" and bool(rec["rationale"].strip())
     rec_rationale_html = render_markdown_safe(rec["rationale"])
     rec_evidence_html = render_markdown_safe(rec["evidence"])
+    # T-1578: state distinguishes "no Recommendation block at all" (NO-REC)
+    # from "block exists but verdict unparseable" (?). Same convention as
+    # cockpit / approvals / review-queue / handover (T-1576, T-1577).
+    rec_state = "NO-REC" if not rec["raw"].strip() else rec["verdict"]
 
     # T-1575: detect already-recorded decision so we don't re-prompt the human.
     from web.blueprints.inception import _extract_decision
@@ -161,6 +165,7 @@ def review(task_id):
         total_count=total_count,
         all_checked=all_checked,
         verdict=rec["verdict"],
+        state=rec_state,
         rec_rationale_html=rec_rationale_html,
         rec_evidence_html=rec_evidence_html,
         rec_rationale_text=rec["rationale"],
