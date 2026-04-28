@@ -289,3 +289,17 @@ decisions:
     date: 2026-04-28
     task: T-1588
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-044
+    decision: "Use the presence of `**Recommendation:**` (case-sensitive marker line) AND zero `- [ ]` lines in the `### Agent ... ### Human|## ` block range as the shipping-evidence test."
+    scope: project
+    date: 2026-04-28
+    task: T-1589
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-045
+    decision: "`_var=$(... | grep -c PATTERN) || _var=0` to handle grep's non-zero exit on zero matches."
+    scope: project
+    date: 2026-04-28
+    task: T-1589
+    rationale: "Auto-captured from task file on completion"
