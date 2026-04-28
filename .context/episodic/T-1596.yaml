@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1596: Hygiene — vendor sync + cron install + CLAUDE.md mirror entry (T-1594/T-1595 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-28T22:39:55Z
+# ============================================================================
+
+task_id: T-1596
+task_name: "Hygiene — vendor sync + cron install + CLAUDE.md mirror entry (T-1594/T-1595 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T22:30:06Z
+completed: 2026-04-28T22:36:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-29T00:36:41+02:00
+last_commit: 2026-04-29T00:36:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  hygiene — vendor sync + cron install + CLAUDE.md mirror entry
+
+# Key outcomes
+outcomes:
+  - "`.agentic-framework/` synced with current source (`fw doctor` reports no vendored-source drift) — verified"
+  - "Cron registry installed to system crontab so `mirror-sync-15m` is active (no cron registry drift / flock parity warning) — `fw cron install` (not `fw audit schedule install` which uses a stale template) deployed 10 flock-wrapped entries including mirror-sync-15m"
+  - "CLAUDE.md Quick Reference lists `fw mirror sync|status` so consumers know about the new subcommand (no doc drift) — verified"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".agentic-framework/web/blueprints/escalation.py"
+  - ".agentic-framework/web/blueprints/__init__.py"
+  - ".agentic-framework/web/shared.py"
+  - ".agentic-framework/web/templates/escalation_drift.html"
+  - ".agentic-framework/web/test_app.py"
+  - "CLAUDE.md"
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/cron-registry.yaml"
+  - ".tasks/active/T-1596-hygiene--vendor-sync--cron-install--clau.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-29T00:36:41"
+    action: "T-1596: hygiene — vendor sync + cron install + CLAUDE.md mirror entry"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 10
+  lines_added: 303
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1596-hygiene--vendor-sync--cron-install--clau.md
+generated_by: context-agent-hybrid

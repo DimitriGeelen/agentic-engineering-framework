@@ -4,7 +4,7 @@ name: "Hygiene — vendor sync + cron install + CLAUDE.md mirror entry (T-1594/T
 description: >
   Hygiene — vendor sync + cron install + CLAUDE.md mirror entry (T-1594/T-1595 follow-up)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-28T22:30:06Z
-last_update: 2026-04-28T22:30:06Z
-date_finished: null
+last_update: 2026-04-28T22:36:51Z
+date_finished: 2026-04-28T22:36:51Z
 ---
 
 # T-1596: Hygiene — vendor sync + cron install + CLAUDE.md mirror entry (T-1594/T-1595 follow-up)
@@ -89,3 +89,26 @@ grep -q "fw mirror sync|status" CLAUDE.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1596-hygiene--vendor-sync--cron-install--clau.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ccb6de4e
+- **Timestamp:** 2026-04-28T22:39:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 4
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
+     - evidence: `bin/fw doctor 2>&1 | grep -qv "Vendored-source drift" || (bin/fw doctor 2>&1 | grep "Vendored-source drift" && exit 1) ; bin/fw doctor 2>&1 | grep -qE "Vendored-source drift" && exit 1 || true`
+  2. **swallowed-errors** (severe, deterministic) @ Verification:line 3
+     - evidence: `bin/fw doctor 2>&1 | grep -qE "Cron registry drift" && exit 1 || true`
+  3. **swallowed-errors** (severe, deterministic) @ Verification:line 4
+     - evidence: `bin/fw doctor 2>&1 | grep -qE "Cron flock parity" && exit 1 || true`
+  4. **swallowed-errors** (severe, deterministic) @ Verification:line 5
+     - evidence: `bin/fw doctor 2>&1 | grep -qE "Doc drift.*mirror" && exit 1 || true`
+
+### 2026-04-28T22:36:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
