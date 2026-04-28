@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1588: Fix fw test arg-passthrough — extra args ignored, runs entire suite (origin: T-1575 hung BATS, T-1586 hit again)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-28T16:39:06Z
+# ============================================================================
+
+task_id: T-1588
+task_name: "Fix fw test arg-passthrough — extra args ignored, runs entire suite (origin: T-1575 hung BATS, T-1586 hit again)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T16:34:35Z
+completed: 2026-04-28T16:38:33Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T18:38:29+02:00
+last_commit: 2026-04-28T18:38:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix fw test arg-passthrough — extra args now honoured
+
+# Key outcomes
+outcomes:
+  - "`bin/fw test unit [-- args]` — extra args are passed through to `bats`. Default behaviour (no extra args) still runs `tests/unit/` as before."
+  - "`bin/fw test integration [-- args]` — same shape, passes through to `bats`."
+  - "`bin/fw test web [-- args]` — passes through to `python3 -m pytest`. Default still runs `web/test_app.py`."
+  - "`bin/fw test playwright [-- args]` — passes through to `python3 -m pytest`. Default still runs `tests/playwright/`."
+  - "Leading `--` separator (Unix convention) is consumed if present, so `fw test playwright -- file` and `fw test playwright file` both work."
+  - "`bin/fw test playwright tests/playwright/test_cross_surface_parity.py` runs only that file (smoke verification — should complete in <30s, not several minutes for the whole suite)."
+  - "`bin/fw test playwright` (no args) still runs the whole suite — backward compatible."
+  - "`bin/fw test all` (which has its own loop) is NOT changed in this task — out of scope; targets ALL suites by definition."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix fw test arg-passthrough — extra args now honoured"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "`--` consumed if present, but not required. `fw test playwright -- file` and `fw test playwright file` both work."
+    rationale: "Unix tradition is to have `--` as an opt-in disambiguator (between options and positional args). Forcing `--` would break the natural reading `fw test playwright FILE.py` and add a footgun (forgot the `--` ⇒ silent full-suite run). Accepting both shapes costs one shell line per handler (`[ \"${1:-}\" = \"--\" ] && shift`)."
+    alternatives_rejected: ["Require `--` as a mandatory separator. Reason: too easy to forget; the bug we're fixing is *exactly* the silent-default-when-arg-ignored class — a `--`-only design would re-introduce it."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1588-fix-fw-test-arg-passthrough--extra-args-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T18:38:29"
+    action: "T-1588: fix fw test arg-passthrough — extra args now honoured"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, fix, fw-cli, test, arg-passthrough]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 134
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1588-fix-fw-test-arg-passthrough--extra-args-.md
+generated_by: context-agent-hybrid

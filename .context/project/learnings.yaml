@@ -2458,3 +2458,10 @@ X'` returning empty group."
   date: 2026-04-28
   context: Added via context agent
   application: TBD
+- id: L-318
+  learning: "fw test SUBCMD [-- file] arg-passthrough: when a task verification command appears as a workaround for a broken shared utility (e.g. `python3 -m pytest <file>` instead of `fw test playwright <file>`), file the source fix task immediately. T-1575 and T-1586 both shipped python3-bypass workarounds in their ## Verification blocks for the same bug class, never fixing bin/fw. Origin: T-1588 — bin/fw:4623-4751 hardcoded test target dirs, ignored extra args. Trigger: any task whose verification command bypasses the documented fw entry point. Prevention pattern: `shift; [ \"${1:-}\" = \"--\" ] && shift; if [ \"$#\" -gt 0 ]; then runner \"$@\"; else runner DEFAULT; fi`."
+  source: P-001
+  task: T-1588
+  date: 2026-04-28
+  context: Added via context agent
+  application: TBD

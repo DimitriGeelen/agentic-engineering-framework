@@ -4,7 +4,7 @@ name: "Fix fw test arg-passthrough — extra args ignored, runs entire suite (or
 description: >
   fw test [unit|integration|web|playwright|all] hardcodes the test target directory and ignores any extra args. `fw test playwright -- tests/playwright/test_cross_surface_parity.py` runs the entire playwright suite (~hundreds of tests) instead of filtering. Same bug T-1575 hit (BATS unit suite) — surfaces in two test domains, only acknowledged in task RCAs, never fixed in source.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [bug, fix, fw-cli, test, arg-passthrough]
 components: [bin/fw]
 related_tasks: [T-1575, T-1586, T-1587]
 created: 2026-04-28T16:34:35Z
-last_update: 2026-04-28T16:34:35Z
-date_finished: null
+last_update: 2026-04-28T16:38:33Z
+date_finished: 2026-04-28T16:38:33Z
 ---
 
 # T-1588: Fix fw test arg-passthrough — extra args ignored, runs entire suite (origin: T-1575 hung BATS, T-1586 hit again)
@@ -105,3 +105,20 @@ The deeper preventive lesson is captured in L-317: when a workaround appears in 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1588-fix-fw-test-arg-passthrough--extra-args-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-91cb4b3d
+- **Timestamp:** 2026-04-28T16:39:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `bin/fw test web [-- args]` — passes through to `python3 -m pytest`. Default still runs `web/test_app.py`.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/test_app.py in: `bin/fw test web [-- args]` — passes through to `python3 -m pytest`. Default still runs `web/test_app.py`.`
+
+### 2026-04-28T16:38:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
