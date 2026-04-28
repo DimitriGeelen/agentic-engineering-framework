@@ -4,16 +4,16 @@ name: "Structural Recommendation rendering — unified extractor returns verdict
 description: >
   Structural Recommendation rendering — unified extractor returns verdict+rationale+evidence; /review renders structured
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, tests/playwright/test_review_page.py, web/blueprints/inception.py, web/blueprints/review.py, web/blueprints/tasks.py, web/shared.py, web/templates/_review_acs.html, web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T06:53:04Z
-last_update: 2026-04-28T06:53:04Z
-date_finished: null
+last_update: 2026-04-28T15:23:42Z
+date_finished: 2026-04-28T15:23:42Z
 ---
 
 # T-1575: Structural Recommendation rendering — unified extractor returns verdict+rationale+evidence; /review renders structured
@@ -47,7 +47,7 @@ The /review/T-XXX page renders the `## Recommendation` section as a `<pre>` bloc
 
 curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'class="rec-rationale"'
 curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'class="rec-evidence"'
-bin/fw test unit -- tests/unit/test_extract_recommendation.py
+python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'
 
 ## RCA
 
@@ -102,3 +102,24 @@ bin/fw test unit -- tests/unit/test_extract_recommendation.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1575-structural-recommendation-rendering--uni.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-3d1dc627
+- **Timestamp:** 2026-04-28T15:23:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/shared.py` exposes `extract_recommendation(body) -> {verdict, rationale, evidence, raw}` returning a structured dict (parallel shape to `extract_reviewer_verdict`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: `web/shared.py` exposes `extract_recommendation(body) -> {verdict, rationale, evidence, raw}` returning a structured dict (parallel shape to `extract_`
+- **AC#3 (Agent)** — `web/blueprints/inception.py` uses the unified helper — `_extract_rationale_from_recommendation` and `_extract_recommendation_stance` removed (or 1-line shims) so there's one source of truth
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: `web/blueprints/inception.py` uses the unified helper — `_extract_rationale_from_recommendation` and `_extract_recommendation_stance` removed (or 1-li`
+- **AC#4 (Agent)** — `web/blueprints/review.py:_parse_recommendation` removed; /review template renders `verdict`, `rationale` (markdown→HTML), and `evidence` (markdown→HTML) as separate labeled sections
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/review.py in: `web/blueprints/review.py:_parse_recommendation` removed; /review template renders `verdict`, `rationale` (markdown→HTML), and `evidence` (markdown→HT`
+
+### 2026-04-28T15:23:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
