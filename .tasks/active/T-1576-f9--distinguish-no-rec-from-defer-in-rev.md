@@ -4,16 +4,16 @@ name: "F9 — Distinguish NO-REC from DEFER in review-queue and /approvals (buil
 description: >
   extract_recommendation_verdict returns '?' for both 'no ## Recommendation section' and 'section exists but verdict missing'. fw review-queue and /approvals render both as [?], blending 'agent owes a recommendation' with 'deferred verdict'. Surface as [NO-REC] (or similar) so agent knows to write one; human knows not to act yet. Parallel to T-1570 which fixed inception side.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/handover/handover.sh, bin/fw, web/blueprints/approvals.py, web/shared.py, web/templates/_approvals_content.html]
 related_tasks: []
 created: 2026-04-28T09:07:46Z
-last_update: 2026-04-28T09:07:46Z
-date_finished: null
+last_update: 2026-04-28T09:26:34Z
+date_finished: 2026-04-28T09:26:34Z
 ---
 
 # T-1576: F9 — Distinguish NO-REC from DEFER in review-queue and /approvals (build-task gap parallel to T-1570)
@@ -49,24 +49,22 @@ Parallel to T-1570 (F4) which surfaced the same gap on the inception side of `/a
 
 ## Verification
 
-bin/fw test unit -- tests/unit/test_extract_recommendation.py
+python3 -m pytest tests/unit/test_extract_recommendation.py -q
 bin/fw review-queue 2>&1 | grep -qE 'NO-REC' && echo "NO-REC rendered" || echo "NO-REC missing"
 
-## RCA
+## Recommendation
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Recommendation:** GO
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Rationale:** Same class of fix as T-1570 — surface a state the review queue was previously hiding. `extract_recommendation_state` discriminates "agent owes a recommendation" (NO-REC) from "verdict unparseable" (?), which the existing `extract_recommendation_verdict` collapsed into a single `?`. Wired into all three queue surfaces (`bin/fw review-queue`, `handover.sh`, Watchtower `/approvals`) so the agent (and human) sees the same distinction wherever the queue is consulted. Compat shim retained — no behaviour change for callers that don't yet care about the distinction. 6 new unit tests pin the contract; visual Playwright check confirms the filter buttons isolate cleanly (11 NO-REC, 6 `?`).
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Evidence:**
+- `web/shared.py` — new `extract_recommendation_state(body) -> str` returns `GO|NO-GO|DEFER|NO-REC|?`. Discriminates via `extract_recommendation()["raw"] == ""`.
+- `bin/fw` review-queue — switched to `extract_recommendation_state`, NO-REC rendered cyan, sorted after `?` (lowest priority — agent owes a recommendation, can't yet act on it).
+- `agents/handover/handover.sh` — both `extract_verdict()` instances updated; "Awaiting Your Action" prefix now reads `[NO-REC]` instead of bare `[?]` for the affected tasks.
+- `web/blueprints/approvals.py` — `_load_pending_human_acs` exposes `state` alongside `verdict`. Template `_approvals_content.html` adds NO-REC filter button (cyan), distinct verdict badge (cyan), and JS filter logic that splits norec from unknown.
+- `tests/unit/test_extract_recommendation.py` — 6 new tests covering: empty body, no section, empty section, HTML-comment-only section, section without verdict line, full block passthrough.
+- Verified live: `bin/fw review-queue` shows `21 GO / 8 DEFER / 6 ? / 11 NO-REC` (was `~21 GO / 8 DEFER / 17 ?` conflated). Playwright filter check: `filterACs('norec')` shows 11 cards all `data-state=NO-REC`; `filterACs('unknown')` shows 6 cards all `data-state="?"`, zero NO-REC leak.
 
 ## Decisions
 
@@ -85,3 +83,24 @@ bin/fw review-queue 2>&1 | grep -qE 'NO-REC' && echo "NO-REC rendered" || echo "
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1576-f9--distinguish-no-rec-from-defer-in-rev.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-af3d7168
+- **Timestamp:** 2026-04-28T09:26:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (ACs)** — `web/shared.py` exposes `extract_recommendation_state(body) -> str` returning `'GO'|'NO-GO'|'DEFER'|'NO-REC'|'?'` — discriminates "no section" from "verdict unparseable"
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: `web/shared.py` exposes `extract_recommendation_state(body) -> str` returning `'GO'|'NO-GO'|'DEFER'|'NO-REC'|'?'` — discriminates "no section" from "v`
+- **AC#4 (ACs)** — `agents/handover/handover.sh` "Awaiting Your Action" prefix uses state — surfaces `[NO-REC]` instead of `[?]` for tasks missing recommendation
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/handover/handover.sh in: `agents/handover/handover.sh` "Awaiting Your Action" prefix uses state — surfaces `[NO-REC]` instead of `[?]` for tasks missing recommendation`
+- **AC#5 (ACs)** — `web/blueprints/approvals.py` `_load_pending_human_acs` exposes both `verdict` (compat) and `state`; template renders NO-REC badge distinctly
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/approvals.py in: `web/blueprints/approvals.py` `_load_pending_human_acs` exposes both `verdict` (compat) and `state`; template renders NO-REC badge distinctly`
+
+### 2026-04-28T09:26:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
