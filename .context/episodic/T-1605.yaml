@@ -1,0 +1,68 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1605: Audit CTL-009 recognizes SUPERSEDED as terminal decision (clears 2 FAILs on T-570/T-578)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T20:01:26Z
+# ============================================================================
+
+task_id: T-1605
+task_name: "Audit CTL-009 recognizes SUPERSEDED as terminal decision (clears 2 FAILs on T-570/T-578)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-29T19:51:18Z
+completed: 2026-04-29T19:58:41Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`agents/audit/audit.sh` CTL-009 grep recognizes `Decision**: SUPERSEDED` and `Decision: SUPERSEDED`"
+  - "`bin/fw audit` no longer reports CTL-009 FAIL for T-570 and T-578"
+  - "No regression: GO/NO-GO/DEFER detection still works (verified — uses `inception-decision` keyword from decide pipeline, unchanged by this fix)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1605-audit-ctl-009-recognizes-superseded-as-t.md
+generated_by: context-agent-hybrid
