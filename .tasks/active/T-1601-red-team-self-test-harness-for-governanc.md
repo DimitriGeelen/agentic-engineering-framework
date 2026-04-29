@@ -4,15 +4,15 @@ name: "Red-team self-test harness for governance gates (inception)"
 description: >
   Inception: design a self-test harness that exercises the framework's PreToolUse hooks by attempting to violate them — Tier 0 hash mismatch, G-020 placeholder ACs, G-022 task-tool ban, task-gate without active task, lightweight-tag push, --no-verify bypass without Tier 2 logging. For each gate, the harness should attempt the action and verify exit code != 0 + the right error message. Open question: is this best as a bash test suite invoking hooks directly with simulated stdin, or a TermLink Claude worker red-teaming via real tool calls? Inception goal: pick the right shape, scope the smallest viable harness.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-29T07:47:45Z
-last_update: 2026-04-29T07:51:18Z
+last_update: 2026-04-29T19:40:30Z
 date_finished: null
 ---
 
@@ -107,15 +107,14 @@ Decision artifact: `docs/reports/T-1601-redteam-design.md` with: gate inventory,
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+- **Recommendation:** GO
+- **Rationale:** Spike 1 inventoried 15 governance gates (7 PreToolUse + 4 git hooks + 4 task lifecycle); Spike 2 shipped a 5-test bash prototype that exercises 3 representative gates with 100% pass; Spike 3 found zero bash-coverage gaps (every gate is a shell script invokable with constructed JSON stdin or CLI args). The harness shape is **bash-only** (`tests/governance/test_*.bats`), wired into `bin/fw test governance` and the existing audit cron. Sized 3-4 hours of build work covering all 15 gates with positive + negative cases each. Cost is bounded; benefit is silent-regression detection across the entire enforcement surface.
+- **Evidence:**
+  - Inventory: 15 gates tabled in [docs/reports/T-1601-redteam-design.md](../../docs/reports/T-1601-redteam-design.md)
+  - Prototype: `tests/governance/test_gates_prototype.bats` — 5 tests, all pass (`bats tests/governance/test_gates_prototype.bats` → `1..5 / ok 1..5`)
+  - Pattern proven: `echo '<json>' | bin/fw hook <name>` + assert exit 2 + stderr keyword
+  - State-dependent gates (e.g. check-active-task) use save/restore pattern — no collateral damage
+  - No TermLink-Claude worker needed — initial assumption was wrong; gates ARE shell scripts
 
 ## Decisions
 
@@ -140,3 +139,7 @@ Decision artifact: `docs/reports/T-1601-redteam-design.md` with: gate inventory,
 ### 2026-04-29T07:51:18Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-29T19:40:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
