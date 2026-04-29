@@ -92,17 +92,23 @@ class TestDecisionsVsVerificationsSplit:
         )
 
     def test_section_headings_present_when_items_exist(self, page: Page):
-        """Group headings render anchor IDs (so summary bar cells can link)."""
+        """Group headings render anchor IDs (so summary bar cells can link).
+
+        T-1604 fix: prior `if "<h2" in content and "Decisions" in content` guard
+        was always true (summary-bar `<a>Decisions</a>` link contaminates substring
+        matches; some other `<h2>` always exists). Use regex on the heading
+        opening tag — the precise rendering envelope, not bare keywords.
+        """
+        import re
+
         page.goto(_url("/approvals/content"))
         page.wait_for_load_state("domcontentloaded")
         content = page.content()
-        # Each group heading is conditional on items existing. Assert only the
-        # anchor-ID structural invariant — if the group has items, the heading
-        # has the expected id.
-        if "<h2" in content and "Decisions" in content:
-            # Decisions group present → must have the anchor
+        # Decisions group rendered → its <h2> heading must carry the anchor id
+        if re.search(r"<h2[^>]*>\s*Decisions\s*</h2>", content):
             assert 'id="section-decisions"' in content
-        if "<h2" in content and "Verifications" in content:
+        # Verifications group rendered → its <h2> heading must carry the anchor id
+        if re.search(r"<h2[^>]*>\s*Verifications\s*</h2>", content):
             assert 'id="section-verifications"' in content
 
     def test_summary_cells_are_anchor_links(self, page: Page):

@@ -2535,3 +2535,10 @@ X'` returning empty group."
   date: 2026-04-29
   context: Added via context agent
   application: TBD
+- id: L-327
+  learning: "Playwright fixtures iterating /inception or other state-listing endpoints MUST pin filters that match the assertion's preconditions. `_find_decided_inception` failed because it queried /inception?decision=go without ?location=active — picked completed tasks where the asserted form template gates on _location=='active'. Same class as L-324 (static-fixture decay) but for runtime fixtures: query parameters are part of the fixture contract. Pattern — when a test asserts 'state X exists in rendering envelope Y', the fixture must filter to that exact (X, Y) pair, not a superset. Same lesson for substring detection: 'Decisions' appearing in a summary-bar link is not the same as 'Decisions' appearing as an h2 heading; use regex on the rendering envelope (`<h2[^>]*>Decisions</h2>`)."
+  source: P-011
+  task: T-1604
+  date: 2026-04-29
+  context: Added via context agent
+  application: TBD

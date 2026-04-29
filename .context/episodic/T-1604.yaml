@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1604: Fix 4 pre-existing Playwright failures: test_approvals decisions-vs-verifications, test_inception redecide+dedupe (T-1600 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T19:40:11Z
+# ============================================================================
+
+task_id: T-1604
+task_name: "Fix 4 pre-existing Playwright failures: test_approvals decisions-vs-verifications, test_inception redecide+dedupe (T-1600 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-29T18:48:39Z
+completed: 2026-04-29T19:40:00Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`_find_decided_inception` fixture filters to active inceptions and accepts any decided state (go|no-go|defer)"
+  - "`_find_decided_adopted_inception` fixture filters to active inceptions and accepts any decided state with `adopted by human`"
+  - "`test_section_headings_present_when_items_exist` uses regex match on `<h2 ...>Decisions</h2>` instead of substring contamination"
+  - "All 4 previously-failing tests pass (or skip cleanly if state still unmet)"
+  - "Full Playwright suite runs without these 4 failures"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 51
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1604-fix-4-pre-existing-playwright-failures-t.md
+generated_by: context-agent-hybrid

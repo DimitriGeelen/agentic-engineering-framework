@@ -114,19 +114,29 @@ class TestRedecideAffordance:
     """
 
     def _find_decided_inception(self, page: Page) -> str | None:
-        """Find an active inception task_id that already has a decision."""
-        page.goto(_url("/inception?decision=go"))
-        page.wait_for_load_state("domcontentloaded")
-        links = page.locator("a[href*='/inception/T-']")
-        for i in range(min(links.count(), 10)):
-            href = links.nth(i).get_attribute("href")
-            if href and "/inception/T-" in href:
-                # Visit and check it's active + has a decision banner
-                page.goto(_url(href))
-                page.wait_for_load_state("domcontentloaded")
-                content = page.content()
-                if "decision-banner go" in content or "decision-banner no-go" in content:
-                    return href.replace("/inception/", "").strip("/")
+        """Find an active inception task_id that already has a decision.
+
+        T-1604 fix: filter to ?location=active (template gates `Record Superseding
+        Decision` form on `task._location == 'active'` — completed tasks render
+        no form). Accept any decided state (go|no-go|defer); a deferred decision
+        is still a decision and exposes the same superseding affordance.
+        """
+        for decision in ("go", "no-go", "defer"):
+            page.goto(_url(f"/inception?decision={decision}&location=active"))
+            page.wait_for_load_state("domcontentloaded")
+            links = page.locator("a[href*='/inception/T-']")
+            for i in range(min(links.count(), 10)):
+                href = links.nth(i).get_attribute("href")
+                if href and "/inception/T-" in href:
+                    page.goto(_url(href))
+                    page.wait_for_load_state("domcontentloaded")
+                    content = page.content()
+                    if (
+                        "decision-banner go" in content
+                        or "decision-banner no-go" in content
+                        or "decision-banner defer" in content
+                    ):
+                        return href.replace("/inception/", "").strip("/")
         return None
 
     def test_decided_inception_shows_superseding_form(self, page: Page):
@@ -195,18 +205,31 @@ class TestRecommendationDecisionDedupe:
     """
 
     def _find_decided_adopted_inception(self, page: Page) -> str | None:
-        """Find an active inception where decision matches recommendation stance."""
-        page.goto(_url("/inception?decision=go"))
-        page.wait_for_load_state("domcontentloaded")
-        links = page.locator("a[href*='/inception/T-']")
-        for i in range(min(links.count(), 10)):
-            href = links.nth(i).get_attribute("href")
-            if href and "/inception/T-" in href:
-                page.goto(_url(href))
-                page.wait_for_load_state("domcontentloaded")
-                content = page.content()
-                if "decision-banner go" in content and "adopted by human" in content:
-                    return href.replace("/inception/", "").strip("/")
+        """Find an active inception where decision matches recommendation stance.
+
+        T-1604 fix: filter to ?location=active (the dedupe rendering only matters
+        for tasks still being viewed in active state — completed tasks have a
+        different rendering envelope). Accept any decided state — the dedupe
+        invariant ("adopted-by-human collapses Recommendation into <details>")
+        applies regardless of whether the adopted decision was GO, NO-GO, or DEFER.
+        """
+        for decision in ("go", "no-go", "defer"):
+            page.goto(_url(f"/inception?decision={decision}&location=active"))
+            page.wait_for_load_state("domcontentloaded")
+            links = page.locator("a[href*='/inception/T-']")
+            for i in range(min(links.count(), 10)):
+                href = links.nth(i).get_attribute("href")
+                if href and "/inception/T-" in href:
+                    page.goto(_url(href))
+                    page.wait_for_load_state("domcontentloaded")
+                    content = page.content()
+                    has_banner = (
+                        "decision-banner go" in content
+                        or "decision-banner no-go" in content
+                        or "decision-banner defer" in content
+                    )
+                    if has_banner and "adopted by human" in content:
+                        return href.replace("/inception/", "").strip("/")
         return None
 
     def test_adopted_decision_collapses_recommendation(self, page: Page):
