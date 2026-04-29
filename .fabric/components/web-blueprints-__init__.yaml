@@ -118,6 +118,10 @@ depends_on:
   type: calls
 - target: web/blueprints/reviewer.py
   type: registers
+- target: web/blueprints/escalation.py
+  type: calls
+- target: web/blueprints/escalation.py
+  type: registers
 depended_by:
 - target: web/app.py
   type: imported_by
@@ -126,4 +130,4 @@ depended_by:
   type: called_by
 last_verified: 2026-03-01
 created_by: unknown
-last_enriched: '2026-04-26'
+last_enriched: '2026-04-29'

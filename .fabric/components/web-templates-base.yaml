@@ -19,4 +19,6 @@ depended_by:
   type: extended_by
 - target: web/templates/reviewer_overrides.html
   type: extended_by
-last_enriched: '2026-04-26'
+- target: web/templates/escalation_drift.html
+  type: extended_by
+last_enriched: '2026-04-29'
