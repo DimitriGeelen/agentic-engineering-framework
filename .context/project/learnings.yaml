@@ -2521,3 +2521,10 @@ X'` returning empty group."
   date: 2026-04-29
   context: Added via context agent
   application: TBD
+- id: L-325
+  learning: "VERSION rollback caught only after silent 4-day spread to 12 consumers. Pre-push monotonicity check (sort -V comparing local vs remote VERSION) blocks decreasing VERSION at the gateway to shared state — single-file invariants need their own gate, structure-only audits won't catch them."
+  source: P-001
+  task: T-1603
+  date: 2026-04-29
+  context: Added via context agent
+  application: TBD
