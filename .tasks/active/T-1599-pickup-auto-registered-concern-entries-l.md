@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: build
 owner: agent
-horizon: next
+horizon: later
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-29T07:45:01Z
-last_update: 2026-04-29T07:45:01Z
+last_update: 2026-04-29T18:32:48Z
 date_finished: null
 source_task_id_in_origin: T-057
 source_project_in_origin: "003-NTB-ATC-Plugin"
@@ -22,14 +22,26 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Pickup envelope (P-018-bug-report-from-ntb-atc.yaml) reports an auto-register writer in our framework appended `- id: G-001` at column 0, corrupting `concerns.yaml` block-mapping. Investigation 2026-04-29 (this session) found NO such writer in our framework codebase:
+
+- `grep -rln "concerns.yaml" agents/ lib/ bin/ web/` → only readers (`bin/fw gaps`, audit D11/D12 staleness, handover summaries, `fw context init` seed). No code path appends `- id: G-XXX` entries programmatically.
+- `lib/init.sh:339` seeds `concerns: []` only at fresh init.
+- The audit writer for `discoveries/LATEST.yaml` (`audit.sh:3265`) uses correct 2-space indent under `findings:`.
+- No `fw concerns add` or equivalent CLI exists.
+
+The bug as described is most likely in the consumer's local code (003-NTB-ATC-Plugin's own auto-register, citing their local T-1053). The framework has no analogous writer to fix.
+
+**However**, the *class* of bug is real and worth a structural prevention: any tracked YAML under `.context/project/` corrupted by string-append could similarly evade detection until a downstream YAML loader fails. The right framework-side fix is a pre-push (or post-commit warning) `yaml.safe_load` validation on staged `.context/project/*.yaml` files, catching corruption regardless of writer.
+
+Scope decision: convert this task to an inception (decide: pre-push block vs post-commit warn vs pre-commit block; what files to validate; relationship to existing audit YAML check).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Searched framework codebase for auto-register code matching the bug shape — none found
+- [x] Documented investigation finding in this task's Context
+- [x] Recommended structural prevention (yaml.safe_load gate on staged tracked YAMLs) as a separate inception scope
+- [ ] Convert this task to inception OR defer to later horizon
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -90,3 +102,6 @@ source_project_in_origin: "003-NTB-ATC-Plugin"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1599-pickup-auto-registered-concern-entries-l.md
 - **Context:** Initial task creation
+
+### 2026-04-29T18:32:48Z — status-update [task-update-agent]
+- **Change:** horizon: next → later
