@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1607: Red-team harness Phase 2 — git hooks coverage (commit-msg + pre-push audit + lightweight-tag)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T21:38:06Z
+# ============================================================================
+
+task_id: T-1607
+task_name: "Red-team harness Phase 2 — git hooks coverage (commit-msg + pre-push audit + lightweight-tag)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-29T21:35:42Z
+completed: 2026-04-29T21:38:00Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "New file `tests/governance/test_git_hooks.bats` exists with bats shebang"
+  - "Test: commit-msg blocks commit message missing `T-XXX` reference"
+  - "Test: commit-msg ALLOWS commit message containing `T-XXX:` prefix"
+  - "Test: pre-push blocks lightweight tag push (T-1593)"
+  - "Test: pre-push ALLOWS branch push when audit passes (or skip if env unavailable)"
+  - "All tests in the new file pass: `bats tests/governance/test_git_hooks.bats` (7/7)"
+  - "Existing harness still passes: `bats tests/governance/test_pretooluse_gates.bats` (13/13)"
+  - "No mutation of the framework repo's git state — tests use isolated temp repos with `mktemp -d` + cleanup trap"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1607-red-team-harness-phase-2--git-hooks-cove.md
+generated_by: context-agent-hybrid
