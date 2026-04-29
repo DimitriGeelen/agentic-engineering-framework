@@ -317,3 +317,17 @@ decisions:
     date: 2026-04-28
     task: T-1590
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-048
+    decision: "Synthesized form HTML loaded via `page.set_content()` for the decide/complete click-flow tests; navigation tests use real `/approvals` walk"
+    scope: project
+    date: 2026-04-29
+    task: T-1600
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-049
+    decision: "Verify success path via captured POST URL + payload, not toast presence"
+    scope: project
+    date: 2026-04-29
+    task: T-1600
+    rationale: "Auto-captured from task file on completion"

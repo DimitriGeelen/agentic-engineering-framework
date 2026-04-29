@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-27T10:15:06Z
-last_update: 2026-04-27T10:18:35Z
+last_update: 2026-04-29T08:40:15Z
 date_finished: 2026-04-27T10:18:35Z
 ---
 
@@ -31,7 +31,7 @@ T-1530 surfaced agent recommendation verdicts in the handover markdown. The same
 - [x] HTTP request to `/approvals` returns 200 and the page contains at least 5 `data-verdict="GO"` attributes (current state has 18 GO recommendations)
 
 ### Human
-- [ ] [REVIEW] Verdict badges read clearly at-a-glance and improve triage speed
+- [x] [REVIEW] Verdict badges read clearly at-a-glance and improve triage speed
   **Steps:**
   1. Open `http://192.168.10.107:3000/approvals` (or `http://localhost:3000/approvals` if local)
   2. Scroll to "Awaiting Human ACs" section

@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1449: T-1443-v1.4 Reviewer agent: TTL'd override mechanism (suppress known false-positive findings)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:39:49Z
+# ============================================================================
+
+task_id: T-1449
+task_name: "T-1443-v1.4 Reviewer agent: TTL'd override mechanism (suppress known false-positive findings)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T11:14:00Z
+completed: 2026-04-25T18:17:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T13:20:04+02:00
+last_commit: 2026-04-25T13:20:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.4 reviewer — TTL'd override mechanism (suppress known false positives)
+
+# Key outcomes
+outcomes:
+  - "`lib/reviewer/overrides.py` exists with `Override` dataclass + `load_overrides`, `is_overridden`, `prune_expired`, `add_override`, `remove_override` functions"
+  - "Override schema: `id`, `task_id`, `pattern_id`, `ac_index` (optional), `reason`, `expires_at` (ISO 8601 UTC), `added_by`, `added_at`"
+  - "`scan_task` filters findings through `is_overridden`; suppressed findings appear in `verdict.suppressed` and emit `override_applied` events"
+  - "Expired overrides are detected during scan, surfaced in `verdict.expired_overrides`, and emit `override_expired` events"
+  - "`bin/fw reviewer override add T-XXX --pattern X --reason \"...\"` creates entry with default TTL 90 days"
+  - "`bin/fw reviewer override list` prints table with override id, task, pattern, ac, expires_at, days_remaining"
+  - "`bin/fw reviewer override prune` removes expired entries; idempotent"
+  - "`bin/fw reviewer override remove <id>` removes specified entry"
+  - "Verdict rendering shows \"Suppressed: N (by override)\" when N > 0"
+  - "At least 6 new tests covering: empty file, multi-entry load, exact match, ac-wildcard match, TTL expiry, prune, suppression-event emission (15 new tests in `tests/unit/test_reviewer_overrides.py`)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "`.context/working/reviewer-overrides.yaml` (per-project, working memory)"
+    rationale: "Overrides describe project-local accepted exceptions, not framework policy. `.context/working/` is right tier (vs `policy/` which is framework-shipped and gets sync'd by `fw upgrade`)."
+    alternatives_rejected: ["`policy/reviewer-overrides.yaml` — `fw upgrade` would clobber consumer overrides"]
+    chose: "90 days default; per-entry --ttl override"
+    rationale: "Long enough to outlast a sprint, short enough to force quarterly re-review. TTL is the antifragile property — without it, overrides drift to permanent silent waivers."
+    alternatives_rejected: ["No default (forced explicit) — too much friction; users would set very long TTLs anyway"]
+    chose: "Override without `ac_index` matches ALL findings of (task, pattern); with ac_index matches only that AC"
+    rationale: "Verification-level findings have no AC; wildcard handles them naturally. Per-AC overrides still possible when needed."
+    alternatives_rejected: ["Mandatory ac_index with -1 sentinel — uglier API"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/reviewer/2026-04-25.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/reviewer-overrides.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "lib/reviewer/audit.py"
+  - "lib/reviewer/override_cli.py"
+  - "lib/reviewer/overrides.py"
+  - "lib/reviewer/static_scan.py"
+  - ".tasks/active/T-1449-t-1443-v14-reviewer-agent-ttld-override-.md"
+  - "tests/unit/test_reviewer_overrides.py"
+  - "tests/unit/test_reviewer_static_scan.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T13:20:04"
+    action: "T-1449: v1.4 reviewer — TTL'd override mechanism (suppress known false positives)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 423 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-agent, override-mechanism, ttl, antifragile, v1.4]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 423
+  commits: 2
+  files_changed: 21
+  lines_added: 1203
+  lines_removed: 50
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1449-t-1443-v14-reviewer-agent-ttld-override-.md
+generated_by: context-agent-hybrid

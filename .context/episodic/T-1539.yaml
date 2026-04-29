@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1539: Validate review-workflow arc via blind TermLink reviewer — independent E2E walkthrough
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:40:24Z
+# ============================================================================
+
+task_id: T-1539
+task_name: "Validate review-workflow arc via blind TermLink reviewer — independent E2E walkthrough"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T12:10:17Z
+completed: 2026-04-27T12:18:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T14:19:06+02:00
+last_commit: 2026-04-27T14:19:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Blind-reviewer dispatch validates review-workflow arc; 2 bug fixes
+
+# Key outcomes
+outcomes:
+  - "Dispatched a TermLink worker named `tl-blind-reviewer` with a self-contained prompt"
+  - "Worker visits all 4 surfaces: handover markdown, /approvals page, fw review-queue CLI, /review/T-XXX page for a real recently-completed task"
+  - "Worker writes findings to `docs/reports/T-1539-blind-reviewer-walkthrough.md` (NOT /tmp — T-818 rule)"
+  - "Worker exits with code 0 within timeout (3 min wall)"
+  - "Findings file exists (6.4KB) and contains a structured \"Worked / Didn't Work / Missing\" summary"
+  - "At least one concrete observation, learning, or follow-up task is captured back into the framework based on findings (2 bug fixes shipped + 2 learnings captured: L-295 blind-reviewer dispatch pattern, L-296 conditional-rendering false-positive heuristic)"
+  - "[REVIEW] The blind-reviewer findings reflect a credible independent walkthrough (not just template-completion)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Blind-reviewer dispatch validates review-workflow arc; 2 bug fixes"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "`fw termlink dispatch --task T-1539 --name tl-blind-reviewer --prompt-file .context/working/.t1539-prompt.md --timeout 600 --model claude-sonnet-4-6` — spawns a fresh `claude -p` worker in an isolated tmux session with zero parent-context cost."
+    rationale: "The blind reviewer must have NO context from this session to be useful. A Task-tool sub-agent would inherit the parent's context and bias. TermLink dispatch is the structurally-isolated alternative — independent process, observable, survives parent compaction. Per CLAUDE.md §Sub-Agent Dispatch Protocol: \"If the work is heavy parallel and benefits from isolation, use TermLink dispatch.\" Single agent + heavy isolation justifies dispatch over Task tool."
+    alternatives_rejected: ["Spawn via plain `claude -p` directly without TermLink: would lose observability + cleanup tracking. Task-tool sub-agent: would defeat the \"blind\" property."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-1539-blind-reviewer-walkthrough.md"
+  - ".tasks/active/T-1539-validate-review-workflow-arc-via-blind-t.md"
+  - "web/blueprints/review.py"
+  - "web/templates/review.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T14:19:06"
+    action: "T-1539: Blind-reviewer dispatch validates review-workflow arc; 2 bug fixes"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 6
+  lines_added: 268
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1539-validate-review-workflow-arc-via-blind-t.md
+generated_by: context-agent-hybrid

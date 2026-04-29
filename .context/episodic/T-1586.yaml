@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1586: Cross-surface parity invariant — pin Recommendation + Reviewer Verdict on all 4 review surfaces (L-316 closure)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:40:57Z
+# ============================================================================
+
+task_id: T-1586
+task_name: "Cross-surface parity invariant — pin Recommendation + Reviewer Verdict on all 4 review surfaces (L-316 closure)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T16:10:14Z
+completed: 2026-04-28T16:16:01Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T18:15:35+02:00
+last_commit: 2026-04-28T18:19:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cross-surface parity invariant test (L-316 closure). transition to work-completed (Reviewer ready, owner=human). capture L-317 — cross-surface structural-feature parity drift pattern
+
+# Key outcomes
+outcomes:
+  - "`tests/playwright/test_cross_surface_parity.py` created with `TestCrossSurfaceReviewerParity` and `TestCrossSurfaceRecommendationParity` classes"
+  - "Reviewer-Verdict parity test asserts T-1582 (a build task with `## Reviewer Verdict (vX.Y)`) renders `<section class=\"reviewer-verdict-block\"` on `/tasks/T-1582` AND `/review/T-1582` (both surfaces); and T-1346 (an inception task with reviewer block) renders the same section on `/inception/T-1346`"
+  - "Reviewer-Verdict negative test asserts T-967 (no reviewer block) does NOT render `<section class=\"reviewer-verdict-block\"` on either `/tasks/T-967` or `/review/T-967` — the Jinja guard must silence the section, not always render"
+  - "Recommendation parity test asserts T-1582 (has `## Recommendation`) renders `<section class=\"recommendation-block\" data-verdict=\"GO\"` on both `/tasks/T-1582` and `/review/T-1582` (Recommendation card is per-task surface only — `/approvals` shows verdict pills, `/inception` doesn't surface Recommendation structurally)"
+  - "All assertions match against `<section class=\"...\"` (with the opening tag) — NOT bare `class=\"...\"` — so CSS rule definitions in the inline `<style>` block don't trigger false positives (T-1583 lesson: 10 CSS rules vs 0–1 actual section elements)"
+  - "`python3 -m pytest tests/playwright/test_cross_surface_parity.py -q --no-header 2>&1 | grep -qE 'passed|warning'` (test runs and passes — Playwright fixture from `conftest.py` provides server; existing pattern in `test_verdict_ui.py`)"
+  - "No regression in `tests/unit/test_extract_recommendation.py` — `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`"
+  - "[REVIEW] Test name + assertions read as a clear contract that future agents will recognize as cross-surface parity protection"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Playwright integration test (real Watchtower on FW_TEST_PORT, real HTTP, real rendered HTML)"
+    rationale: "The contract is \"rendered HTML contains the section element\" — that's exactly what Playwright sees. A unit test would have to either (a) mock `render_template` and assert kwargs (brittle, doesn't cover Jinja guard regressions) or (b) call the Flask test client and assert response bodies (closer, but doesn't catch JS-driven late renders). Playwright lets the test see exactly what a human sees on the page."
+    alternatives_rejected: ["Pure pytest with Flask test client. Reason: the existing `test_verdict_ui.py` already established the Playwright pattern for review-surface UI assertions; consistency reduces cognitive load. Also: Playwright tests survive the addition of htmx-driven content if any surface starts loading the section asynchronously."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - ".fabric/components/tests-playwright-test_cross_surface_parity.yaml"
+  - ".tasks/active/T-1586-cross-surface-parity-invariant--pin-reco.md"
+  - "tests/playwright/test_cross_surface_parity.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T18:15:35"
+    action: "T-1586: cross-surface parity invariant test (L-316 closure)"
+  - time: "2026-04-28T18:16:46"
+    action: "T-1586: transition to work-completed (Reviewer ready, owner=human)"
+  - time: "2026-04-28T18:19:37"
+    action: "T-1586: capture L-317 — cross-surface structural-feature parity drift pattern"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test, invariant, regression, cross-surface]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 3
+  files_changed: 5
+  lines_added: 280
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1586-cross-surface-parity-invariant--pin-reco.md
+generated_by: context-agent-hybrid

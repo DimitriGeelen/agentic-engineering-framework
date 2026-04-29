@@ -3001,3 +3001,241 @@ scan_id: R-d1b1c3b9
 task_id: T-1593
 payload:
   task_file: .tasks/active/T-1593-fw-version-bump---tag-must-actually-crea.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T22:18:27Z'
+scan_id: R-5ae95374
+task_id: T-1594
+payload:
+  overall: FAIL
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T22:18:27Z'
+scan_id: R-5ae95374
+task_id: T-1594
+payload:
+  task_file: .tasks/active/T-1594-mirror-cascade-auto-recovery--fw-mirror-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T22:27:27Z'
+scan_id: R-817ec573
+task_id: T-1595
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T22:27:27Z'
+scan_id: R-817ec573
+task_id: T-1595
+payload:
+  task_file: .tasks/active/T-1595-g-019-layer-c--watchtower-surface-for-es.md
+---
+kind: scan_emitted
+timestamp: '2026-04-28T22:39:52Z'
+scan_id: R-ccb6de4e
+task_id: T-1596
+payload:
+  overall: FAIL
+  finding_count: 4
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-28T22:39:52Z'
+scan_id: R-ccb6de4e
+task_id: T-1596
+payload:
+  task_file: .tasks/active/T-1596-hygiene--vendor-sync--cron-install--clau.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T07:30:01Z'
+scan_id: R-82cec9e3
+task_id: T-1597
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T07:30:01Z'
+scan_id: R-82cec9e3
+task_id: T-1597
+payload:
+  task_file: .tasks/active/T-1597-blind-termlink-reviewer-sweep--22-go-awa.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T08:05:42Z'
+scan_id: R-515edd71
+task_id: T-1602
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T08:05:42Z'
+scan_id: R-515edd71
+task_id: T-1602
+payload:
+  task_file: .tasks/active/T-1602-consumer-project-health-sweep--termlink-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T18:21:22Z'
+scan_id: R-c79dcff8
+task_id: T-1598
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T18:21:22Z'
+scan_id: R-c79dcff8
+task_id: T-1598
+payload:
+  task_file: .tasks/active/T-1598-fix-playwright-cross-surface-parity-test.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T18:29:24Z'
+scan_id: R-6c9b005b
+task_id: T-1603
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T18:29:24Z'
+scan_id: R-6c9b005b
+task_id: T-1603
+payload:
+  task_file: .tasks/active/T-1603-version-monotonicity-gate--pre-commitpre.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T18:49:59Z'
+scan_id: R-045efd0a
+task_id: T-1600
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T18:49:59Z'
+scan_id: R-045efd0a
+task_id: T-1600
+payload:
+  task_file: .tasks/active/T-1600-playwright-interaction-suite-for-review-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T19:40:08Z'
+scan_id: R-d1b6364a
+task_id: T-1604
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T19:40:08Z'
+scan_id: R-d1b6364a
+task_id: T-1604
+payload:
+  task_file: .tasks/active/T-1604-fix-4-pre-existing-playwright-failures-t.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T20:01:23Z'
+scan_id: R-4515b213
+task_id: T-1605
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T20:01:23Z'
+scan_id: R-4515b213
+task_id: T-1605
+payload:
+  task_file: .tasks/active/T-1605-audit-ctl-009-recognizes-superseded-as-t.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T20:58:25Z'
+scan_id: R-0c21bae4
+task_id: T-1601
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T20:58:25Z'
+scan_id: R-0c21bae4
+task_id: T-1601
+payload:
+  task_file: .tasks/active/T-1601-red-team-self-test-harness-for-governanc.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T21:02:44Z'
+scan_id: R-33b8541f
+task_id: T-1606
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T21:02:44Z'
+scan_id: R-33b8541f
+task_id: T-1606
+payload:
+  task_file: .tasks/active/T-1606-build-red-team-harness-phase-1-cover-all.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T21:38:03Z'
+scan_id: R-e21d9069
+task_id: T-1607
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T21:38:03Z'
+scan_id: R-e21d9069
+task_id: T-1607
+payload:
+  task_file: .tasks/active/T-1607-red-team-harness-phase-2--git-hooks-cove.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T21:43:06Z'
+scan_id: R-a7ff879c
+task_id: T-1608
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T21:43:06Z'
+scan_id: R-a7ff879c
+task_id: T-1608
+payload:
+  task_file: .tasks/active/T-1608-red-team-harness-phase-3--task-lifecycle.md

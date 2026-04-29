@@ -12,7 +12,7 @@ tags: [reviewer-agent, override-mechanism, ttl, antifragile, v1.4]
 components: [bin/fw, lib/reviewer/override_cli.py, lib/reviewer/overrides.py, tests/unit/test_reviewer_overrides.py]
 related_tasks: [T-1443, T-1445, T-1446, T-1447, T-1448]
 created: 2026-04-25T11:14:00Z
-last_update: 2026-04-25T18:17:51Z
+last_update: 2026-04-29T08:39:48Z
 date_finished: 2026-04-25T18:17:51Z
 ---
 
@@ -67,7 +67,7 @@ Antifragile properties:
 - [x] Pass B audit (`bin/fw reviewer audit`) now applies overrides and reports `suppressed_total` + `active_overrides` in YAML output
 
 ### Human
-- [ ] [REVIEW] Override mechanism is safe to leave active without supervision
+- [x] [REVIEW] Override mechanism is safe to leave active without supervision
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer override list`
   2. Verify TTL on each entry is sensible (default 90 days)

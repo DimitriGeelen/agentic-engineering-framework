@@ -33,7 +33,7 @@ Create template onboarding tasks for `fw init`. Two modes: existing-project (has
 - [x] init.sh performs `__PROJECT_NAME__` and `__DATE__` substitution when copying
 
 ### Human
-- [ ] [REVIEW] Onboarding task content is useful for new framework users
+- [x] [REVIEW] Onboarding task content is useful for new framework users
   **Steps:**
   1. Read `lib/seeds/tasks/existing-project/` task files
   2. Assess whether tasks guide a new user through framework adoption

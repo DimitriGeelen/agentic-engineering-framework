@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1531: Surface agent recommendation verdict in Watchtower /approvals task list
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:40:16Z
+# ============================================================================
+
+task_id: T-1531
+task_name: "Surface agent recommendation verdict in Watchtower /approvals task list"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T10:15:06Z
+completed: 2026-04-27T10:18:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T12:19:21+02:00
+last_commit: 2026-04-27T12:19:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Surface agent recommendation verdict on Watchtower /approvals
+
+# Key outcomes
+outcomes:
+  - "`_load_pending_human_acs()` in `web/blueprints/approvals.py` extracts each task's verdict from `## Recommendation` (H2+ terminator per L-293) and exposes it on the result dict"
+  - "Tasks with no parseable recommendation expose `verdict='?'` rather than crashing the loader"
+  - "`web/templates/_approvals_content.html` renders the verdict as a colour-coded badge in each task card"
+  - "HTTP request to `/approvals` returns 200 and the page contains at least 5 `data-verdict=\"GO\"` attributes (current state has 18 GO recommendations)"
+  - "[REVIEW] Verdict badges read clearly at-a-glance and improve triage speed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Define `_extract_recommendation_verdict()` as a module-level helper in `web/blueprints/approvals.py`"
+    rationale: "Same approvals page is the only consumer right now; promoting to `web/shared.py` is premature without a second caller"
+    alternatives_rejected: ["Promote immediately to web/shared.py — speculative DRY without a second use site. If `/review/<id>` or another blueprint needs it, refactor then."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/inbox.yaml"
+  - ".context/project/decisions.yaml"
+  - ".tasks/active/T-1531-surface-agent-recommendation-verdict-in-.md"
+  - "web/blueprints/approvals.py"
+  - "web/templates/_approvals_content.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T12:19:21"
+    action: "T-1531: Surface agent recommendation verdict on Watchtower /approvals"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 5
+  lines_added: 149
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1531-surface-agent-recommendation-verdict-in-.md
+generated_by: context-agent-hybrid

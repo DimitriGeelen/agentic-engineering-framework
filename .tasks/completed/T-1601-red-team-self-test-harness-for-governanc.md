@@ -4,7 +4,7 @@ name: "Red-team self-test harness for governance gates (inception)"
 description: >
   Inception: design a self-test harness that exercises the framework's PreToolUse hooks by attempting to violate them — Tier 0 hash mismatch, G-020 placeholder ACs, G-022 task-tool ban, task-gate without active task, lightweight-tag push, --no-verify bypass without Tier 2 logging. For each gate, the harness should attempt the action and verify exit code != 0 + the right error message. Open question: is this best as a bash test suite invoking hooks directly with simulated stdin, or a TermLink Claude worker red-teaming via real tool calls? Inception goal: pick the right shape, scope the smallest viable harness.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-29T07:47:45Z
-last_update: 2026-04-29T19:40:30Z
-date_finished: null
+last_update: 2026-04-29T20:58:25Z
+date_finished: 2026-04-29T20:58:25Z
 ---
 
 # T-1601: Red-team self-test harness for governance gates (inception)
@@ -67,15 +67,15 @@ Decision artifact: `docs/reports/T-1601-redteam-design.md` with: gate inventory,
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -129,7 +129,11 @@ Decision artifact: `docs/reports/T-1601-redteam-design.md` with: gate inventory,
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Spike 1 inventoried 15 governance gates (7 PreToolUse + 4 git hooks + 4 task lifecycle); Spike 2 shipped a 5-test bash prototype that exercises 3 representative gates with 100% pass; Spike 3 found zero bash-coverage gaps (every gate is a shell script invokable with constructed JSON stdin or CLI args). The harness shape is **bash-only** (`tests/governance/test_*.bats`), wired into `bin/fw test governance` and the existing audit cron. Sized 3-4 hours of build work covering all 15 gates with positive + negative cases each. Cost is bounded; benefit is silent-regression detection across the entire enforcement surface.
+
+**Date**: 2026-04-29T20:58:25Z
 
 ## Updates
 
@@ -143,3 +147,21 @@ Decision artifact: `docs/reports/T-1601-redteam-design.md` with: gate inventory,
 ### 2026-04-29T19:40:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-29T20:58:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Spike 1 inventoried 15 governance gates (7 PreToolUse + 4 git hooks + 4 task lifecycle); Spike 2 shipped a 5-test bash prototype that exercises 3 representative gates with 100% pass; Spike 3 found zero bash-coverage gaps (every gate is a shell script invokable with constructed JSON stdin or CLI args). The harness shape is **bash-only** (`tests/governance/test_*.bats`), wired into `bin/fw test governance` and the existing audit cron. Sized 3-4 hours of build work covering all 15 gates with positive + negative cases each. Cost is bounded; benefit is silent-regression detection across the entire enforcement surface.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0c21bae4
+- **Timestamp:** 2026-04-29T20:58:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-29T20:58:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

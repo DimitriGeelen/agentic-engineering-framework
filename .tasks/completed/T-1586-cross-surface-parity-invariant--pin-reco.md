@@ -12,7 +12,7 @@ tags: [test, invariant, regression, cross-surface]
 components: [tests/playwright/test_cross_surface_parity.py]
 related_tasks: [T-1531, T-1569, T-1575, T-1583, T-1584, T-1585]
 created: 2026-04-28T16:10:14Z
-last_update: 2026-04-28T16:16:01Z
+last_update: 2026-04-29T08:40:56Z
 date_finished: 2026-04-28T16:16:01Z
 ---
 
@@ -36,7 +36,7 @@ This task ships the contract: a Playwright invariant test that asserts, for a kn
 - [x] No regression in `tests/unit/test_extract_recommendation.py` — `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
 
 ### Human
-- [ ] [REVIEW] Test name + assertions read as a clear contract that future agents will recognize as cross-surface parity protection
+- [x] [REVIEW] Test name + assertions read as a clear contract that future agents will recognize as cross-surface parity protection
   **Steps:**
   1. Open `tests/playwright/test_cross_surface_parity.py` in editor
   2. Read the module docstring + class docstrings + per-test docstrings

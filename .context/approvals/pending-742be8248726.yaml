@@ -1,0 +1,8 @@
+command_hash: 742be8248726fcb91e7cb7e8fda1d1e312f106a428a627392f76e54921d62d67
+command_preview: pgrep -af "T-1609|update-task" 2>&1 | grep -v pgrep | head; echo
+  "---"; pkill -9 -f "update-task.sh T-1609" 2>&1; sleep 2; pgrep -af "T-1609" 2>&1
+  | grep -v pgrep | head
+risk: 'PKILL -9: Force-kills processes by name (SIGKILL)'
+status: pending
+timestamp: '2026-04-29T22:07:00Z'
+type: tier0

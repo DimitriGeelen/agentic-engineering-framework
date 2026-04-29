@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1540: Three sequential blind-reviewer validation loops — convergence test for the verdict-workflow arc
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:40:31Z
+# ============================================================================
+
+task_id: T-1540
+task_name: "Three sequential blind-reviewer validation loops — convergence test for the verdict-workflow arc"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T12:23:33Z
+completed: 2026-04-27T13:03:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T15:07:21+02:00
+last_commit: 2026-04-27T15:07:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix YAML escape in D-036 (unquoted-quote, same class as L-294)
+
+# Key outcomes
+outcomes:
+  - "Iteration 1: dispatched fresh `tl-reviewer-iter1` worker, harvested findings to `docs/reports/T-1540-iter1-walkthrough.md`, applied fixes for all real (non-false-positive) bugs found, committed"
+  - "Iteration 2: dispatched fresh `tl-reviewer-iter2` worker, harvested findings to `docs/reports/T-1540-iter2-walkthrough.md`, applied fixes for any new real bugs (0 — convergence), committed"
+  - "Iteration 3: dispatched fresh `tl-reviewer-iter3` worker (with L-296 prompt prefix), harvested findings to `docs/reports/T-1540-iter3-walkthrough.md`, applied 1 fix (handover doc clarification), committed"
+  - "Convergence summary: total real-bug count per iteration documented in `docs/reports/T-1540-convergence-summary.md`; trend explained — iter1=4, iter2=0 (convergence), iter3=1 (new finding from refined prompt)"
+  - "All workers cleaned up at end"
+  - "All P-011 verification commands below pass"
+  - "[REVIEW] Convergence trend is plausible — fewer (or different but acknowledged) issues per iteration, not just shifting noise"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix YAML escape in D-036 (unquoted-quote, same class as L-294)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Run iter1 + iter2 with identical prompt; only prepend L-296 reviewer guidance (\"grep template for conditional branches before declaring absence a bug\") to iter3."
+    rationale: "Wanted to observe the false-positive class recurrence empirically — it's only convergence-evidence if you see it happen. Iter2 produced 67% FP rate (2/3 findings were L-296 class), confirming the pattern. Iter3 (with guidance) produced 0% FP rate. The contrast IS the lesson — captured as L-297."
+    alternatives_rejected: ["Apply L-296 guidance to all iterations from iter1 onwards — would have hidden the convergence signal."]
+    chose: "Document as L-298 candidate; do not factor a shared count-helper this iteration."
+    rationale: "Three different surfaces (`/approvals`, `fw review-queue`, landing pills) each have their own filter logic. Aligning them requires a shared count-aggregator helper that's bigger scope than this convergence test. The 1-2 task drift is bounded and structurally explainable."
+    alternatives_rejected: ["Build a `web/shared.py::aggregated_review_counts()` helper and refactor 3 call sites — too big for an iter-loop fix."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/decisions.yaml"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T15:07:21"
+    action: "T-1540: fix YAML escape in D-036 (unquoted-quote, same class as L-294)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 40 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 40
+  commits: 1
+  files_changed: 1
+  lines_added: 14
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1540-three-sequential-blind-reviewer-validati.md
+generated_by: context-agent-hybrid

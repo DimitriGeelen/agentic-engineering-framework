@@ -1,0 +1,265 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1277: Fix unbounded git push in handover auto-trigger (4h stall RCA)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:39:32Z
+# ============================================================================
+
+task_id: T-1277
+task_name: "Fix unbounded git push in handover auto-trigger (4h stall RCA)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-17T09:40:00Z
+completed: 2026-04-29T08:34:44Z
+duration_days: 12
+updates_count: 3
+first_commit: 2026-04-17T12:36:09+02:00
+last_commit: 2026-04-29T10:34:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  File RCA for 4h Claude Code stall — unbounded git push in handover auto-trigger. Bound git push in handover.sh + total auto-handover wall (4h-stall RCA). Session handover S-2026-0425-2307. Session handover S-2026-0425-2343. Session handover S-2026-0425-2350. Session handover S-2026-0426-0032. Session handover S-2026-0426-0933. Session handover S-2026-0426-1052. Session handover S-2026-0426-1252. Session handover S-2026-0426-1411. Session handover S-2026-0426-1558. Session handover S-2026-0426-1949. Session handover S-2026-0426-2044 + housekeeping. Session handover S-2026-0426-2243. Session handover S-2026-0426-2325. Session handover S-2026-0427-0013. Session handover S-2026-0427-0908. Session handover S-2026-0427-1209. Session handover S-2026-0427-1211. Session handover S-2026-0427-1212. Session handover S-2026-0427-1301. Session handover S-2026-0427-1304. Session handover S-2026-0427-1419. Session handover S-2026-0427-1504. Session handover S-2026-0427-1507. Session handover S-2026-0427-1721. Session handover S-2026-0427-1813. Session handover S-2026-0427-1819. Session handover S-2026-0427-1852. Session handover S-2026-0427-1947. Session handover S-2026-0427-2010. Session handover S-2026-0427-2059. Session handover S-2026-0427-2313. Session handover S-2026-0428-0800. Session handover S-2026-0428-1027. Session handover S-2026-0428-1129. Session handover S-2026-0428-1342. Session handover S-2026-0428-1356. Session handover S-2026-0428-1436. Session handover S-2026-0428-1449. Session handover S-2026-0428-1606. Session handover S-2026-0428-1743. Session handover S-2026-0428-1839. Session handover S-2026-0428-1910. Session handover S-2026-0428-2015. Session handover S-2026-0428-2138. Session handover S-2026-0428-2219. Session handover S-2026-0428-2352. Session handover S-2026-0429-0040. Session handover S-2026-0429-0846. Session handover S-2026-0429-1034
+
+# Key outcomes
+outcomes:
+  - "`agents/handover/handover.sh` wraps `git push` with `timeout` (FW_HANDOVER_PUSH_TIMEOUT, default 15s)"
+  - "FW_HANDOVER_PUSH_TIMEOUT env var read with `${FW_HANDOVER_PUSH_TIMEOUT:-15}` fallback"
+  - "Test: bats deadhost case proves push to 192.0.2.1 returns within bound (<8s incl. timeout=5)"
+  - "`checkpoint.sh` auto-handover path wraps the whole call in `timeout \"$_ah_total_timeout\"` (FW_HANDOVER_TOTAL_TIMEOUT, default 60s)"
+  - "Bats unit test: `tests/unit/handover_push_timeout.bats` — 8 tests cover source invariants + behavioural deadhost case"
+  - "CLAUDE.md `Configuration` table updated with `FW_HANDOVER_PUSH_TIMEOUT` AND `FW_HANDOVER_TOTAL_TIMEOUT`"
+  - "[REVIEW] Verify on next real session that auto-handover at critical doesn't reintroduce the stall"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/checkpoint.sh"
+  - "agents/handover/handover.sh"
+  - "CLAUDE.md"
+  - ".context/audits/2026-04-26.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-1512.yaml"
+  - ".context/handovers/LATEST.md"
+  - ".context/handovers/S-2026-0425-2307.md"
+  - ".context/handovers/S-2026-0425-2343.md"
+  - ".context/handovers/S-2026-0425-2350.md"
+  - ".context/handovers/S-2026-0426-0032.md"
+  - ".context/handovers/S-2026-0426-0933.md"
+  - ".context/handovers/S-2026-0426-1052.md"
+  - ".context/handovers/S-2026-0426-1252.md"
+  - ".context/handovers/S-2026-0426-1411.md"
+  - ".context/handovers/S-2026-0426-1558.md"
+  - ".context/handovers/S-2026-0426-1949.md"
+  - ".context/handovers/S-2026-0426-2044.md"
+  - ".context/handovers/S-2026-0426-2243.md"
+  - ".context/handovers/S-2026-0426-2325.md"
+  - ".context/handovers/S-2026-0427-0013.md"
+  - ".context/handovers/S-2026-0427-0908.md"
+  - ".context/handovers/S-2026-0427-1209.md"
+  - ".context/handovers/S-2026-0427-1211.md"
+  - ".context/handovers/S-2026-0427-1212.md"
+  - ".context/handovers/S-2026-0427-1301.md"
+  - ".context/handovers/S-2026-0427-1304.md"
+  - ".context/handovers/S-2026-0427-1419.md"
+  - ".context/handovers/S-2026-0427-1504.md"
+  - ".context/handovers/S-2026-0427-1507.md"
+  - ".context/handovers/S-2026-0427-1721.md"
+  - ".context/handovers/S-2026-0427-1813.md"
+  - ".context/handovers/S-2026-0427-1819.md"
+  - ".context/handovers/S-2026-0427-1852.md"
+  - ".context/handovers/S-2026-0427-1947.md"
+  - ".context/handovers/S-2026-0427-2010.md"
+  - ".context/handovers/S-2026-0427-2059.md"
+  - ".context/handovers/S-2026-0427-2313.md"
+  - ".context/handovers/S-2026-0428-0800.md"
+  - ".context/handovers/S-2026-0428-1027.md"
+  - ".context/handovers/S-2026-0428-1129.md"
+  - ".context/handovers/S-2026-0428-1342.md"
+  - ".context/handovers/S-2026-0428-1356.md"
+  - ".context/handovers/S-2026-0428-1436.md"
+  - ".context/handovers/S-2026-0428-1449.md"
+  - ".context/handovers/S-2026-0428-1606.md"
+  - ".context/handovers/S-2026-0428-1743.md"
+  - ".context/handovers/S-2026-0428-1839.md"
+  - ".context/handovers/S-2026-0428-1910.md"
+  - ".context/handovers/S-2026-0428-2015.md"
+  - ".context/handovers/S-2026-0428-2138.md"
+  - ".context/handovers/S-2026-0428-2219.md"
+  - ".context/handovers/S-2026-0428-2352.md"
+  - ".context/handovers/S-2026-0429-0040.md"
+  - ".context/handovers/S-2026-0429-0846.md"
+  - ".context/handovers/S-2026-0429-1034.md"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.approval-notified"
+  - ".context/working/.edit-counter"
+  - ".context/working/feedback-stream.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/observations/issue-report-4h-timeout.md"
+  - ".context/working/.pre-compact.last-run"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-1277-fix-unbounded-git-push-in-handover-auto-trigger.md"
+  - ".tasks/active/T-1495-pickup-watchtower-discovery-watchtowerur.md"
+  - ".tasks/active/T-1496-pickup-watchtower-inceptiondecide-fails-.md"
+  - ".tasks/active/T-1498-pickup-fw-hook-dispatcher-hard-blocks-al.md"
+  - ".tasks/active/T-1499-pickup-advies-gevraagd-ring20-hosting-pa.md"
+  - ".tasks/active/T-1501-pickup-extend-verification-gatesh-when-t.md"
+  - ".tasks/active/T-1507-inception-decide-cliwatchtower-output-tr.md"
+  - ".tasks/completed/T-1493-pickup-update-tasksh-flock-leaks-lock-fd.md"
+  - ".tasks/completed/T-1494-pickup-fw-pickup-send---remote-signature.md"
+  - ".tasks/completed/T-1501-pickup-extend-verification-gatesh-when-t.md"
+  - ".tasks/completed/T-1512-pickup-re-t-045-hosting-advice--relay-re.md"
+  - ".tasks/completed/T-1538-pickup-add-canonical-doc-approval-surfac.md"
+  - ".tasks/completed/T-1544-pickup-update-agentsinceptionagentmd-cop.md"
+  - ".tasks/completed/T-1546-pickup-add-get-apiidentity-to-watchtower.md"
+  - ".tasks/completed/T-1581-fix-fw-review-queue-strip-html-comments-.md"
+  - "tests/unit/handover_push_timeout.bats"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-17T12:36:09"
+    action: "T-1277: File RCA for 4h Claude Code stall — unbounded git push in handover auto-trigger"
+  - time: "2026-04-17T12:36:09"
+    action: "T-1277: File RCA for 4h Claude Code stall — unbounded git push in handover auto-trigger"
+  - time: "2026-04-19T01:38:41"
+    action: "T-1277: Bound git push in handover.sh + total auto-handover wall (4h-stall RCA)"
+  - time: "2026-04-19T01:38:41"
+    action: "T-1277: Bound git push in handover.sh + total auto-handover wall (4h-stall RCA)"
+  - time: "2026-04-25T23:07:52"
+    action: "T-1277: Session handover S-2026-0425-2307"
+  - time: "2026-04-25T23:43:24"
+    action: "T-1277: Session handover S-2026-0425-2343"
+  - time: "2026-04-25T23:50:21"
+    action: "T-1277: Session handover S-2026-0425-2350"
+  - time: "2026-04-26T00:32:12"
+    action: "T-1277: Session handover S-2026-0426-0032"
+  - time: "2026-04-26T09:33:51"
+    action: "T-1277: Session handover S-2026-0426-0933"
+  - time: "2026-04-26T10:52:21"
+    action: "T-1277: Session handover S-2026-0426-1052"
+  - time: "2026-04-26T12:52:54"
+    action: "T-1277: Session handover S-2026-0426-1252"
+  - time: "2026-04-26T14:11:42"
+    action: "T-1277: Session handover S-2026-0426-1411"
+  - time: "2026-04-26T15:59:04"
+    action: "T-1277: Session handover S-2026-0426-1558"
+  - time: "2026-04-26T19:49:54"
+    action: "T-1277: Session handover S-2026-0426-1949"
+  - time: "2026-04-26T20:56:22"
+    action: "T-1277: Session handover S-2026-0426-2044 + housekeeping"
+  - time: "2026-04-26T22:43:41"
+    action: "T-1277: Session handover S-2026-0426-2243"
+  - time: "2026-04-26T23:25:45"
+    action: "T-1277: Session handover S-2026-0426-2325"
+  - time: "2026-04-27T00:13:17"
+    action: "T-1277: Session handover S-2026-0427-0013"
+  - time: "2026-04-27T09:08:55"
+    action: "T-1277: Session handover S-2026-0427-0908"
+  - time: "2026-04-27T12:09:29"
+    action: "T-1277: Session handover S-2026-0427-1209"
+  - time: "2026-04-27T12:11:38"
+    action: "T-1277: Session handover S-2026-0427-1211"
+  - time: "2026-04-27T12:12:50"
+    action: "T-1277: Session handover S-2026-0427-1212"
+  - time: "2026-04-27T13:01:15"
+    action: "T-1277: Session handover S-2026-0427-1301"
+  - time: "2026-04-27T13:04:36"
+    action: "T-1277: Session handover S-2026-0427-1304"
+  - time: "2026-04-27T14:19:43"
+    action: "T-1277: Session handover S-2026-0427-1419"
+  - time: "2026-04-27T15:04:38"
+    action: "T-1277: Session handover S-2026-0427-1504"
+  - time: "2026-04-27T15:07:36"
+    action: "T-1277: Session handover S-2026-0427-1507"
+  - time: "2026-04-27T17:21:11"
+    action: "T-1277: Session handover S-2026-0427-1721"
+  - time: "2026-04-27T18:14:08"
+    action: "T-1277: Session handover S-2026-0427-1813"
+  - time: "2026-04-27T18:19:12"
+    action: "T-1277: Session handover S-2026-0427-1819"
+  - time: "2026-04-27T18:53:03"
+    action: "T-1277: Session handover S-2026-0427-1852"
+  - time: "2026-04-27T19:48:05"
+    action: "T-1277: Session handover S-2026-0427-1947"
+  - time: "2026-04-27T20:10:56"
+    action: "T-1277: Session handover S-2026-0427-2010"
+  - time: "2026-04-27T20:59:52"
+    action: "T-1277: Session handover S-2026-0427-2059"
+  - time: "2026-04-27T23:13:55"
+    action: "T-1277: Session handover S-2026-0427-2313"
+  - time: "2026-04-28T08:00:22"
+    action: "T-1277: Session handover S-2026-0428-0800"
+  - time: "2026-04-28T10:27:30"
+    action: "T-1277: Session handover S-2026-0428-1027"
+  - time: "2026-04-28T11:29:53"
+    action: "T-1277: Session handover S-2026-0428-1129"
+  - time: "2026-04-28T13:42:51"
+    action: "T-1277: Session handover S-2026-0428-1342"
+  - time: "2026-04-28T13:57:00"
+    action: "T-1277: Session handover S-2026-0428-1356"
+  - time: "2026-04-28T14:36:57"
+    action: "T-1277: Session handover S-2026-0428-1436"
+  - time: "2026-04-28T14:49:25"
+    action: "T-1277: Session handover S-2026-0428-1449"
+  - time: "2026-04-28T16:07:01"
+    action: "T-1277: Session handover S-2026-0428-1606"
+  - time: "2026-04-28T17:43:43"
+    action: "T-1277: Session handover S-2026-0428-1743"
+  - time: "2026-04-28T18:40:08"
+    action: "T-1277: Session handover S-2026-0428-1839"
+  - time: "2026-04-28T19:10:30"
+    action: "T-1277: Session handover S-2026-0428-1910"
+  - time: "2026-04-28T20:15:50"
+    action: "T-1277: Session handover S-2026-0428-2015"
+  - time: "2026-04-28T21:39:11"
+    action: "T-1277: Session handover S-2026-0428-2138"
+  - time: "2026-04-28T22:20:09"
+    action: "T-1277: Session handover S-2026-0428-2219"
+  - time: "2026-04-28T23:53:06"
+    action: "T-1277: Session handover S-2026-0428-2352"
+  - time: "2026-04-29T00:40:58"
+    action: "T-1277: Session handover S-2026-0429-0040"
+  - time: "2026-04-29T08:46:25"
+    action: "T-1277: Session handover S-2026-0429-0846"
+  - time: "2026-04-29T10:34:44"
+    action: "T-1277: Session handover S-2026-0429-1034"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 53 commit(s), 17214 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, hooks, handover, performance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17214
+  commits: 53
+  files_changed: 79
+  lines_added: 23150
+  lines_removed: 998
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1277-fix-unbounded-git-push-in-handover-auto-trigger.md
+generated_by: context-agent-hybrid

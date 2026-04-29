@@ -1,0 +1,58 @@
+pickup_id: P-018
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-057"
+  agent: "claude-code"
+  timestamp: "2026-04-29T07:45:00Z"
+payload:
+  summary: "Auto-registered concern entries land at column 0 (outside 'concerns:' mapping), corrupting concerns.yaml and silently blocking pre-push audit"
+  detail: |
+    Observed 2026-04-29 in 003-NTB-ATC-Plugin/.context/project/concerns.yaml.
+    The framework's auto-registration code (T-1053 — G-019 framework-blind-to-
+    persistent-failure guard) appended a new gap entry `- id: G-001` ... at
+    column 0 instead of column 2, breaking the `concerns:` block mapping. From
+    the writer's frame the file looked plausible; the corruption was only
+    surfaced ~24h later when `fw audit` ran during pre-push and reported
+    "YAML parse error: concerns.yaml — while parsing a block mapping". The
+    audit FAIL then blocked pushes to BOTH remotes (azure + onedev).
+
+    Specific failure shape (line numbers from the broken file):
+      line 4:   `concerns:` (top-level mapping key)
+      lines 5-998: properly indented `  - id: C-001` ... `  - id: C-018`
+      line 999: `- id: G-001` ← appended at column 0
+      yaml error:
+        ParserError: while parsing a block mapping
+        in concerns.yaml, line 4, column 1
+        expected <block end>, but found '-'
+        in concerns.yaml, line 999, column 1
+
+    Two compounding bugs:
+      1. The auto-register writer uses no-indent `- id: ...` instead of the
+         existing list shape (2-space indent under `concerns:`).
+      2. The writer doesn't run a `yaml.safe_load` round-trip on the result
+         before continuing, so a structurally broken file gets committed
+         (post-commit hook) and then trips the pre-push audit ~24h later.
+
+    Repro / one-shot fix on the project side:
+      - sed -i '999,$ s/^/  /' .context/project/concerns.yaml  # re-indent
+      - python3 -c "import yaml; yaml.safe_load(open('...'))"   # confirms
+      - landed in 003-NTB-ATC-Plugin commit e616a04.
+
+    Suggested fix (framework side):
+      a) The auto-register writer should detect the existing file structure
+         and append at the correct indentation (the same `2 + len(parent_indent)`
+         the YAML loader would expect), or use a YAML library round-trip
+         (load-modify-dump) rather than string append.
+      b) Add a post-write `yaml.safe_load` validation; abort + revert if it
+         fails — the writer-side validation is cheap and would have caught
+         this within milliseconds of the bad write, instead of ~24h later
+         at a remote-blocking pre-push gate.
+
+    Detection-lag implication: per G-019, sustained framework-side blindness
+    (writer didn't validate, audit only fired on push) is itself a structural
+    omission. Both halves of the fix together (correct write + validate-on-write)
+    close the blindness window.
+  priority: high
+  tags: [framework, auto-register, concerns, yaml-validation, G-019, T-1053]

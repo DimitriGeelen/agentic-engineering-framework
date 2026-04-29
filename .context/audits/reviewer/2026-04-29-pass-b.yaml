@@ -1,0 +1,21 @@
+scan_date: '2026-04-29'
+scan_timestamp: '2026-04-29T07:12:56Z'
+mode: pass-b
+tasks_scanned: 1
+limit: 1
+timeout_per_line: 30
+totals:
+  PASS: 1
+  FAIL: 0
+  NO-VERIFICATION: 0
+  ERROR: 0
+errors: []
+per_task:
+- task_id: T-1596
+  sha: b89a45aceff4289a5246a11c655fab29b184d096
+  overall: PASS
+  n_pass: 6
+  n_fail: 0
+  n_skipped: 0
+  n_error: 0
+  error: null

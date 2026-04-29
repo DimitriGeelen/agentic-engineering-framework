@@ -18,7 +18,7 @@ components:
   - agents/context/pre-compact.sh
 related_tasks: [T-136, T-1144]
 created: 2026-04-17T09:40:00Z
-last_update: 2026-04-29T06:46:26Z
+last_update: 2026-04-29T08:39:31Z
 date_finished: 2026-04-18T23:37:45Z
 ---
 
@@ -56,7 +56,7 @@ Evidence:
 
 ### Human
 
-- [ ] [REVIEW] Verify on next real session that auto-handover at critical doesn't reintroduce the stall
+- [x] [REVIEW] Verify on next real session that auto-handover at critical doesn't reintroduce the stall
   **Steps:**
   1. After fix deployed, run a session that crosses 285K tokens
   2. Observe that PostToolUse hook returns within ~20s even if `onedev` is down
