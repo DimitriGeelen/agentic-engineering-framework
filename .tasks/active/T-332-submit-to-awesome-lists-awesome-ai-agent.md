@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: build
 owner: human
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:40Z
-last_update: 2026-04-28T18:52:46Z
+last_update: 2026-04-29T07:50:08Z
 date_finished: null
 ---
 
@@ -101,3 +101,7 @@ test -f docs/reports/T-332-awesome-list-research.md
 
 ### 2026-04-28T18:52:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-29T07:50:08Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: preserved at started-work (T-1589 shipping evidence)
