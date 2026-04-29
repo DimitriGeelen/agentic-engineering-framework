@@ -1,8 +1,8 @@
 ---
-id: T-1600
-name: "Playwright interaction suite for review surfaces — click flows, forced-500 toast, mobile viewports"
+id: T-1604
+name: "Fix 4 pre-existing Playwright failures: test_approvals decisions-vs-verifications, test_inception redecide+dedupe (T-1600 follow-up)"
 description: >
-  Extends tests/playwright/ with real interaction tests that DOM-grep can't cover: click GO/DEFER buttons end-to-end, force a 500 to verify the htmx error toast (T-1582 closure), inception decide flow (open/fill rationale/submit/verify), mobile viewport snapshots for /cockpit /approvals /review. Surfaced by T-1597 sweep where W1-W5 used curl+grep — closes the [REVIEW] subjective gap that grep can't reach.
+  Fix 4 pre-existing Playwright failures: test_approvals decisions-vs-verifications, test_inception redecide+dedupe (T-1600 follow-up)
 
 status: captured
 workflow_type: build
@@ -11,12 +11,12 @@ horizon: next
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-29T07:47:05Z
-last_update: 2026-04-29T07:51:18Z
+created: 2026-04-29T18:48:39Z
+last_update: 2026-04-29T18:49:09Z
 date_finished: null
 ---
 
-# T-1600: Playwright interaction suite for review surfaces — click flows, forced-500 toast, mobile viewports
+# T-1604: Fix 4 pre-existing Playwright failures: test_approvals decisions-vs-verifications, test_inception redecide+dedupe (T-1600 follow-up)
 
 ## Context
 
@@ -26,12 +26,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `tests/playwright/test_review_interaction.py` exists with click-flow tests for `/review/<id>` GO/DEFER/NO-GO buttons — each clicks the button, verifies success toast appears, verifies task transitions to expected state via API readback
-- [ ] `tests/playwright/test_inception_decide_flow.py` exists covering the full inception decide journey: open `/approvals` → click inception card → fill rationale textarea → submit → assert success toast + decision recorded in task body
-- [ ] `tests/playwright/test_htmx_error_toast.py` exercises the forced-500 path that T-1582 Steps couldn't easily reproduce — uses `page.route()` to intercept and return 500, asserts red toast renders with `htmx:responseError` handler firing (closes the [REVIEW] gap that grep proved insufficient for)
-- [ ] `tests/playwright/test_mobile_viewport.py` runs `/cockpit`, `/approvals`, `/review/<id>` at 375x667 viewport — assertions: no horizontal overflow, Action Required card visible, verdict badges still distinguishable
-- [ ] All new tests pass: `fw test playwright -- tests/playwright/test_review_interaction.py tests/playwright/test_inception_decide_flow.py tests/playwright/test_htmx_error_toast.py tests/playwright/test_mobile_viewport.py` exits 0
-- [ ] No regression in existing playwright suite: `fw test playwright` exits 0
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -88,11 +84,11 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-29T07:47:05Z — task-created [task-create-agent]
+### 2026-04-29T18:48:39Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1600-playwright-interaction-suite-for-review-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1604-fix-4-pre-existing-playwright-failures-t.md
 - **Context:** Initial task creation
 
-### 2026-04-29T07:51:18Z — status-update [task-update-agent]
-- **Change:** horizon: now → next
-- **Change:** status: started-work → captured (auto-sync)
+### 2026-04-29T18:49:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: next → next

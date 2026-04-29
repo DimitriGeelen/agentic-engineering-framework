@@ -2528,3 +2528,10 @@ X'` returning empty group."
   date: 2026-04-29
   context: Added via context agent
   application: TBD
+- id: L-326
+  learning: "Click-flow tests via page.set_content() + page.route() interception decouple the test from real backend state. Pins click-to-form contract independent of which task is in which state — a synthetic form mirroring the template's HTML is enough to catch regressions in the form action, method, button values, or rationale wiring."
+  source: P-001
+  task: T-1600
+  date: 2026-04-29
+  context: Added via context agent
+  application: TBD

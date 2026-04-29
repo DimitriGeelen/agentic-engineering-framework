@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1600: Playwright interaction suite for review surfaces — click flows, forced-500 toast, mobile viewports
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T18:50:02Z
+# ============================================================================
+
+task_id: T-1600
+task_name: "Playwright interaction suite for review surfaces — click flows, forced-500 toast, mobile viewports"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-29T07:47:05Z
+completed: 2026-04-29T18:49:34Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`tests/playwright/test_review_interaction.py` exists with click-flow tests for `/review/<id>` GO/DEFER/NO-GO buttons — pins click-to-form contract via synthesized HTML + `page.route()` interception (5 tests: 1 AC checkbox, 3 decide buttons, 1 build complete). Note: real `showToast` only fires on errors, not success; success path is verified via captured POST URL + payload, which is the actual structural contract."
+  - "`tests/playwright/test_inception_decide_flow.py` exists covering the navigation journey `/approvals` → `/review/<id>` for inception tasks; fills rationale + clicks GO with route-intercepted POST (3 tests; 2 skip when no inception is in decide-ready state, which is the correct behaviour)"
+  - "`tests/playwright/test_htmx_error_toast.py` exercises forced-500 via `page.route()`, asserts `<div class=\"wt-toast error\">` renders + has non-empty text (2 tests). Closes the [REVIEW] gap that grep proved insufficient for (T-1582)."
+  - "`tests/playwright/test_mobile_viewport.py` covers `/cockpit`, `/approvals`, `/review/<id>` at 375x667 — asserts no horizontal overflow (`scrollWidth <= clientWidth + 1px`) plus verdict-pill / recommendation-block visibility (5 tests)"
+  - "All new tests pass: `fw test playwright -- tests/playwright/test_review_interaction.py tests/playwright/test_inception_decide_flow.py tests/playwright/test_htmx_error_toast.py tests/playwright/test_mobile_viewport.py` → 13 passed, 2 skipped (state-dependent)"
+  - "No regression caused by new tests: full `fw test playwright` produces 4 pre-existing failures (test_approvals.py::TestDecisionsVsVerificationsSplit, test_inception.py::TestRedecideAffordance ×2, test_inception.py::TestRecommendationDecisionDedupe). Verified pre-existing by running each on master with my new files stashed — same 4 failures, same shape. Captured as follow-up T-1604 (separate task; orthogonal to this ticket's scope)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Synthesized form HTML loaded via `page.set_content()` for the decide/complete click-flow tests; navigation tests use real `/approvals` walk"
+    rationale: "No inception task is currently in decide-ready state, and creating one mutates real `.tasks/` state. Synthesized HTML pins the click-to-form contract independent of which task is in which state. The navigation test (`test_inception_decide_flow.py::test_full_decide_journey_posts_to_correct_endpoint`) covers cross-surface integration when a fixture exists, otherwise skips."
+    alternatives_rejected: ["Creating a synthetic test task on disk in setup — risk of leaving stale `.tasks/active/T-9999` files if teardown fails; pollutes the real index that `fw task list` reads."]
+    chose: "Verify success path via captured POST URL + payload, not toast presence"
+    rationale: "The actual `showToast` JS only fires from the `htmx:responseError` and `htmx:sendError` handlers (review.html:553-559). On success, htmx swaps the target element in place — there is no success toast. The AC's \"verifies success toast appears\" was based on an inaccurate read of the template; the real structural contract is \"POST fires to the right endpoint with the right payload.\""
+    alternatives_rejected: ["Adding a success toast to make the original AC literal — unnecessary scope creep; the navigation chain already gives the human signal (the form replaces with the success state)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 662 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 662
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1600-playwright-interaction-suite-for-review-.md
+generated_by: context-agent-hybrid
