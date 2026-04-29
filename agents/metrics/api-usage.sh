@@ -104,7 +104,7 @@ def is_legacy(method: str) -> bool:
 # "Legacy callers by PID" section so anonymous (no-from) callers become
 # identifiable via `ps -p <pid>`.
 # T-1409: peer_addr is None for entries written before T-1409 and for Unix
-# connections (no TCP). Surfaces in "Legacy callers by addr" — the network
+# connections (no TCP). Surfaces in "Legacy callers by IP" — the network
 # analogue of peer_pid for callers without a `from` tag.
 now_ms = time.time() * 1000
 entries = []
@@ -130,12 +130,20 @@ with open(audit_path, "r") as f:
 
 UNKNOWN = "(unknown)"
 
+def addr_to_ip(addr: str) -> str:
+    """T-1410: strip ephemeral source port from peer_addr.
+    IPv4: '192.168.1.5:42820' -> '192.168.1.5'
+    IPv6: '[::1]:9100'         -> '[::1]'
+    rsplit(':', 1) handles both because IPv6 brackets keep the colons inside.
+    """
+    return addr.rsplit(":", 1)[0] if ":" in addr else addr
+
 def stats_for_window(days: int):
     cutoff = now_ms - days * 86400 * 1000
     counts = Counter()
     legacy_callers = Counter()  # (method, from) -> count
     legacy_pids = Counter()  # (method, peer_pid) -> count, peer_pid present only
-    legacy_addrs = Counter()  # (method, peer_addr) -> count, peer_addr present only
+    legacy_ips = Counter()   # (method, peer_ip) -> count, peer_addr present only
     total = 0
     legacy_total = 0
     for ts, method, from_, peer_pid, peer_addr in entries:
@@ -149,8 +157,10 @@ def stats_for_window(days: int):
             if peer_pid is not None:
                 legacy_pids[(method, peer_pid)] += 1
             if peer_addr:
-                legacy_addrs[(method, peer_addr)] += 1
-    return counts, total, legacy_total, legacy_callers, legacy_pids, legacy_addrs
+                # T-1410: rollup by IP — ephemeral source ports otherwise
+                # fragment a single host into N rows of count=1.
+                legacy_ips[(method, addr_to_ip(peer_addr))] += 1
+    return counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips
 
 def build_top_methods(counts, total):
     """T-1312: shared helper for top-10 methods JSON shape."""
@@ -179,11 +189,12 @@ def build_legacy_callers_by_pid(legacy_pids):
         for (method, pid), count in legacy_pids.most_common(15)
     ]
 
-def build_legacy_callers_by_addr(legacy_addrs):
-    """T-1409: parallel breakdown by peer_addr (TCP source) for entries that carry it."""
+def build_legacy_callers_by_ip(legacy_ips):
+    """T-1409/T-1410: parallel breakdown by peer_ip (TCP source IP).
+    Ports stripped via addr_to_ip — one row per host, not per connection."""
     return [
-        {"method": method, "peer_addr": addr, "count": count}
-        for (method, addr), count in legacy_addrs.most_common(15)
+        {"method": method, "peer_ip": ip, "count": count}
+        for (method, ip), count in legacy_ips.most_common(15)
     ]
 
 # T-1312: JSON output path. Stable shape — see docs/operations/api-usage-metrics.md.
@@ -205,7 +216,7 @@ if json_out:
             })
             if d == 60:
                 gate_passing = passing if total > 0 else True
-        counts_60, total_60, _, legacy_callers_60, legacy_pids_60, legacy_addrs_60 = stats_for_window(60)
+        counts_60, total_60, _, legacy_callers_60, legacy_pids_60, legacy_ips_60 = stats_for_window(60)
         out = {
             "audit_file": audit_path,
             "mode": "trend",
@@ -215,14 +226,14 @@ if json_out:
             "top_methods": build_top_methods(counts_60, total_60),
             "legacy_callers": build_legacy_callers(legacy_callers_60),
             "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids_60),
-            "legacy_callers_by_addr": build_legacy_callers_by_addr(legacy_addrs_60),
+            "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips_60),
             "gate": {"window_days": 60, "passing": gate_passing},
         }
         print(json.dumps(out))
         sys.exit(0 if gate_passing else 1)
     else:
         last_n = int(last_n_s)
-        counts, total, legacy_total, legacy_callers, legacy_pids, legacy_addrs = stats_for_window(last_n)
+        counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips = stats_for_window(last_n)
         pct = (legacy_total / total) * 100 if total else 0.0
         passing = (pct <= gate_pct_s) if total > 0 else True
         out = {
@@ -240,7 +251,7 @@ if json_out:
             "top_methods": build_top_methods(counts, total),
             "legacy_callers": build_legacy_callers(legacy_callers),
             "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids),
-            "legacy_callers_by_addr": build_legacy_callers_by_addr(legacy_addrs),
+            "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips),
             "gate": {"window_days": last_n, "passing": passing},
         }
         print(json.dumps(out))
@@ -276,7 +287,7 @@ if last_n_s == "":
             final_legacy = legacy_total
 
     # Top-10 methods using the 60d window (canonical T-1166 gate window)
-    counts_60, total_60, legacy_60, legacy_callers_60, legacy_pids_60, legacy_addrs_60 = stats_for_window(60)
+    counts_60, total_60, legacy_60, legacy_callers_60, legacy_pids_60, legacy_ips_60 = stats_for_window(60)
     print()
     if total_60 > 0:
         print(f"  Top 10 methods (last 60d):")
@@ -305,10 +316,10 @@ if last_n_s == "":
     # T-1409: parallel breakdown by peer_addr (TCP source) — closes the
     # anonymous-caller blind spot for network connections that have no
     # local PID. `getent hosts <ip>` or arp -n finishes the identification.
-    if legacy_addrs_60:
+    if legacy_ips_60:
         print()
-        print(f"  Legacy callers by addr (last 60d):")
-        for (method, addr), count in legacy_addrs_60.most_common(15):
+        print(f"  Legacy callers by IP (last 60d):")
+        for (method, addr), count in legacy_ips_60.most_common(15):
             print(f"    {count:>8d}  {method:<20s}  {addr}")
 
     print()
@@ -325,7 +336,7 @@ if last_n_s == "":
 
 # Single-window mode: original CI-gate behavior.
 last_n = int(last_n_s)
-counts, total, legacy_total, legacy_callers, legacy_pids, legacy_addrs = stats_for_window(last_n)
+counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips = stats_for_window(last_n)
 print(f"  Window:     last {last_n} days")
 print(f"  Total RPCs: {total}")
 print()
@@ -357,9 +368,9 @@ if legacy_pids:
     print()
 
 # T-1409: parallel by-addr breakdown for entries with peer_addr (TCP).
-if legacy_addrs:
-    print(f"  Legacy callers by addr (last {last_n}d):")
-    for (method, addr), count in legacy_addrs.most_common(15):
+if legacy_ips:
+    print(f"  Legacy callers by IP (last {last_n}d):")
+    for (method, addr), count in legacy_ips.most_common(15):
         print(f"    {count:>8d}  {method:<20s}  {addr}")
     print()
 
