@@ -2514,3 +2514,10 @@ X'` returning empty group."
   date: 2026-04-28
   context: Added via context agent
   application: TBD
+- id: L-324
+  learning: "Static task-ID fixtures in tests decay because the daily reviewer scan rewrites task bodies. Use runtime fixtures that scan .tasks/ for a task matching the negated invariant — self-renewing as the population shifts."
+  source: P-001
+  task: T-1598
+  date: 2026-04-29
+  context: Added via context agent
+  application: TBD

@@ -24,15 +24,61 @@ class names ~10 times, so bare-class greps fire false positives. The opening
 Fixtures: `page`, `watchtower_server` from conftest.py — Watchtower runs on
 FW_TEST_PORT (default 3099) for the test session.
 """
+import os
+import re
+from pathlib import Path
+
+import pytest
 from playwright.sync_api import Page
 
 # Test fixtures pinned to live tasks in .tasks/completed and .tasks/active —
 # these IDs are used because their bodies are stable and known to have (or
 # lack) the structural blocks.
 TASK_WITH_BOTH_BLOCKS = "T-1582"   # has ## Recommendation (GO) + ## Reviewer Verdict
-TASK_WITHOUT_REVIEWER = "T-967"    # no ## Reviewer Verdict block
 INCEPTION_WITH_REVIEWER = "T-1346"  # inception task with ## Reviewer Verdict
 TASK_WITH_NO_REC = "T-449"         # build task without ## Recommendation block (NO-REC)
+
+
+# T-1598: the negative-case fixture (no `## Reviewer Verdict` block) is
+# resolved at runtime, not pinned. The daily reviewer scan rewrites completed
+# and active task bodies, so any static ID decays. Scanning `.tasks/` each
+# session picks a fresh task that still lacks the block.
+_REVIEWER_HEADING = re.compile(r"^##\s+Reviewer Verdict\b", re.MULTILINE)
+_TASK_ID = re.compile(r"^(T-\d+)-")
+
+
+@pytest.fixture(scope="session")
+def task_without_reviewer() -> str:
+    """Return a task ID whose body has no `## Reviewer Verdict` heading.
+
+    Preference order: completed (stable lineage), then active. Skips the test
+    if every reachable task has acquired a verdict block — which would itself
+    be a useful signal (the negative-case invariant has nothing to assert).
+    """
+    project_root = Path(
+        os.environ.get(
+            "PROJECT_ROOT",
+            Path(__file__).resolve().parents[2],
+        )
+    )
+    for subdir in ("completed", "active"):
+        d = project_root / ".tasks" / subdir
+        if not d.is_dir():
+            continue
+        for path in sorted(d.glob("T-*.md")):
+            try:
+                body = path.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if _REVIEWER_HEADING.search(body):
+                continue
+            m = _TASK_ID.match(path.name)
+            if m:
+                return m.group(1)
+    pytest.skip(
+        "No task without `## Reviewer Verdict` heading found under "
+        ".tasks/{completed,active} — negative-case fixture cannot resolve."
+    )
 
 # Match opening tag, not bare class — CSS rules in inline <style> share names.
 SEC_RECOMMENDATION = '<section class="recommendation-block"'
@@ -82,15 +128,16 @@ class TestCrossSurfaceReviewerParity:
             f"reviewer section (T-1585 cross-surface parity)."
         )
 
-    def test_reviewer_block_absent_when_body_has_no_block(self, page: Page, base_url):
+    def test_reviewer_block_absent_when_body_has_no_block(self, page: Page, base_url, task_without_reviewer):
         """Negative case — no `## Reviewer Verdict` body section ⇒ no card."""
-        for surface in (f"/tasks/{TASK_WITHOUT_REVIEWER}", f"/review/{TASK_WITHOUT_REVIEWER}"):
+        task_id = task_without_reviewer
+        for surface in (f"/tasks/{task_id}", f"/review/{task_id}"):
             page.goto(_url(base_url, surface))
             page.wait_for_load_state("domcontentloaded")
             content = page.content()
             assert SEC_REVIEWER not in content, (
                 f"{surface} renders structural reviewer section despite "
-                f"{TASK_WITHOUT_REVIEWER} having no '## Reviewer Verdict' "
+                f"{task_id} having no '## Reviewer Verdict' "
                 f"block — Jinja guard regression."
             )
 
