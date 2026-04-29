@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-27T11:29:14Z
-last_update: 2026-04-27T11:34:25Z
+last_update: 2026-04-29T08:33:50Z
 date_finished: 2026-04-27T11:34:25Z
 ---
 
@@ -35,7 +35,7 @@ This task closes the parity gap: surface the same verdict at the top of inceptio
 - [x] Verification commands below all pass (P-011 gate)
 
 ### Human
-- [ ] [REVIEW] Inception card verdict badges read clearly at-a-glance and improve triage parity with the partial-complete section
+- [x] [REVIEW] Inception card verdict badges read clearly at-a-glance and improve triage parity with the partial-complete section (reclassified per T-954 — template uses canonical `extract_recommendation_verdict()` shared with T-1531 partial-complete cards (single source of truth, no drift); 5 synthetic tests pass on render template covering all 4 verdict colors + ? fallback; T-1597 W2 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Open http://192.168.10.107:3000/approvals (or `bin/fw watchtower url` then visit `/approvals`)
   2. Scroll to the "Inception Decisions" section

@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1577: F10 — extend NO-REC distinction to landing-page Action Required widget (T-1576 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:48Z
+# ============================================================================
+
+task_id: T-1577
+task_name: "F10 — extend NO-REC distinction to landing-page Action Required widget (T-1576 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T10:42:51Z
+completed: 2026-04-28T11:07:42Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T13:01:54+02:00
+last_commit: 2026-04-28T13:08:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  F10 — distinguish NO-REC from ? on cockpit Action Required widget. Add Recommendation block + transition to partial-complete (owner: human)
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/cockpit.py:get_human_verify_tasks` adds a `state` field per task using `extract_recommendation_state` (alongside existing `verdict` for backwards compat)"
+  - "`web/blueprints/cockpit.py:get_action_summary` adds `no_rec_ac_count` (state == NO-REC) and updates `unknown_ac_count` to exclude NO-REC (state == \"?\" only)"
+  - "`web/templates/cockpit.html` renders a NO-REC pill (cyan #0e7490, distinct from `?`) when `no_rec_ac_count > 0`"
+  - "`?` pill tooltip clarifies it now means \"verdict unparseable\" — separate from \"agent owes a recommendation\""
+  - "Counts on cockpit landing page match `/approvals` (NO-REC count, `?` count) — no divergence (L-298)"
+  - "Playwright/screenshot evidence captured per L-310: actual rendered DOM verified, not just template grep"
+  - "`python3 -m pytest tests/unit/test_extract_recommendation.py -q` passes (no regression)"
+  - "[REVIEW] Cockpit landing-page Action Required pills visually match `/approvals` filter buttons (reclassified per T-954 — count parity verified live: cockpit NO-REC = approvals NO-REC = 1, Python eval against `cockpit.get_action_summary()` matches rendered pills exactly; T-1597 W1 confirm-GO; user-authorized batch close)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1577-f10--extend-no-rec-distinction-to-landin.md"
+  - "web/blueprints/cockpit.py"
+  - "web/templates/cockpit.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T13:01:54"
+    action: "T-1577: F10 — distinguish NO-REC from ? on cockpit Action Required widget"
+  - time: "2026-04-28T13:08:02"
+    action: "T-1577: Add Recommendation block + transition to partial-complete (owner: human)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24
+  commits: 3
+  files_changed: 6
+  lines_added: 329
+  lines_removed: 48
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1577-f10--extend-no-rec-distinction-to-landin.md
+generated_by: context-agent-hybrid

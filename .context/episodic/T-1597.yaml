@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1597: Blind TermLink reviewer sweep — 22 GO awaiting-review tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T07:30:04Z
+# ============================================================================
+
+task_id: T-1597
+task_name: "Blind TermLink reviewer sweep — 22 GO awaiting-review tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-29T07:07:04Z
+completed: 2026-04-29T07:30:01Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-29T09:29:29+02:00
+last_commit: 2026-04-29T09:29:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  blind TermLink reviewer sweep — 22 GO awaiting-review tasks
+
+# Key outcomes
+outcomes:
+  - "5 TermLink blind-reviewer workers dispatched, one per surface group (W1 /review, W2 /approvals, W3 /tasks+/inception, W4 reviewer-CLI, W5 CLI/non-UI), covering all 22 GO `now` tasks"
+  - "Each worker writes `docs/reports/T-1597-blind-review-W{N}.md` with per-task evidence + blind verdict (confirm-GO / flag-concern / inconclusive) and a header summary line"
+  - "All 5 reports exist and parse: `for f in docs/reports/T-1597-blind-review-W*.md; do head -5 \"$f\"; done` shows 5 reports with summary lines"
+  - "No worker modified Human AC checkboxes, ran `--status work-completed`, or pushed to remotes (verify via git diff and `git log --since=\"$(date -d '1 hour ago' -Iseconds)\"`)"
+  - "Consolidated packet `docs/reports/T-1597-blind-review-SUMMARY.md` lists all 22 tasks with the strongest evidence per task, sorted by blind verdict"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1597-blind-review-SUMMARY.md"
+  - "docs/reports/T-1597-blind-review-W1.md"
+  - "docs/reports/T-1597-blind-review-W2.md"
+  - "docs/reports/T-1597-blind-review-W3.md"
+  - "docs/reports/T-1597-blind-review-W4.md"
+  - "docs/reports/T-1597-blind-review-W5.md"
+  - ".tasks/active/T-1597-blind-termlink-reviewer-sweep--22-go-awa.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-29T09:29:29"
+    action: "T-1597: blind TermLink reviewer sweep — 22 GO awaiting-review tasks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22
+  commits: 1
+  files_changed: 7
+  lines_added: 762
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1597-blind-termlink-reviewer-sweep--22-go-awa.md
+generated_by: context-agent-hybrid

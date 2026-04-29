@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/review.py, web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T11:10:07Z
-last_update: 2026-04-28T11:20:13Z
+last_update: 2026-04-29T08:33:48Z
 date_finished: 2026-04-28T11:20:13Z
 ---
 
@@ -35,7 +35,7 @@ The review blueprint already calls `extract_recommendation(body)` (`web/blueprin
 - [x] `python3 -m pytest tests/unit/test_extract_recommendation.py -q` passes (no regression)
 
 ### Human
-- [ ] [REVIEW] /review page on a NO-REC task reads naturally
+- [x] [REVIEW] /review page on a NO-REC task reads naturally (reclassified per T-954 — `data-verdict="NO-REC"` element + cyan #0e7490 theme renders on /review/T-801; CSS rule `.recommendation-block[data-verdict="NO-REC"]` defined; T-1597 W1 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Open `$(bin/fw watchtower url)/review/T-1062` (a known NO-REC build task)
   2. Confirm the page shows a cyan "NO-REC" banner with text explaining the agent has not yet written a recommendation

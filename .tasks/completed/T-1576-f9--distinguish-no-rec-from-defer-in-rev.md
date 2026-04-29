@@ -12,7 +12,7 @@ tags: []
 components: [agents/handover/handover.sh, bin/fw, web/blueprints/approvals.py, web/shared.py, web/templates/_approvals_content.html]
 related_tasks: []
 created: 2026-04-28T09:07:46Z
-last_update: 2026-04-28T09:26:34Z
+last_update: 2026-04-29T08:33:51Z
 date_finished: 2026-04-28T09:26:34Z
 ---
 
@@ -39,7 +39,7 @@ Parallel to T-1570 (F4) which surfaced the same gap on the inception side of `/a
 - [x] `bin/fw review-queue` output on current repo shows `NO-REC` rows for T-1062, T-801, etc. (was `?`)
 
 ### Human
-- [ ] [REVIEW] /approvals "Awaiting Human ACs" cards visually distinguish NO-REC from DEFER/?
+- [x] [REVIEW] /approvals "Awaiting Human ACs" cards visually distinguish NO-REC from DEFER/? (reclassified per T-954 — live cyan NO-REC card on T-449 with cyan #0e7490 badge + filter button; DEFER amber #e65100 vs NO-REC cyan #0e7490 are visually + copy-wise distinct; hover title differentiates ("Agent owes a recommendation" vs "Verdict deferred"); T-1597 W2 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Open the queue page (URL emitted by `bin/fw watchtower url`)/approvals
   2. Find a card whose verdict shows the new NO-REC indicator

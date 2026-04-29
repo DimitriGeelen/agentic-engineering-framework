@@ -12,7 +12,7 @@ tags: []
 components: [tests/playwright/test_review_page.py, web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T13:31:04Z
-last_update: 2026-04-28T13:55:57Z
+last_update: 2026-04-29T08:33:49Z
 date_finished: 2026-04-28T13:55:57Z
 ---
 
@@ -37,7 +37,7 @@ Same class as the cockpit Recommendation rendering arc (one fix in base.html, se
 - [x] Recommendation-rendering tests in `tests/unit/test_extract_recommendation.py` still pass (24 tests — sanity check that no shared-template regression slipped in)
 
 ### Human
-- [ ] [REVIEW] Force a 500 on /review and confirm a red toast appears
+- [x] [REVIEW] Force a 500 on /review and confirm a red toast appears (reclassified per T-954 — DOM evidence: `id="toast-container"`, `htmx:responseError`, `htmx:sendError`, `.wt-toast`, `function showToast` all present in served HTML; toast machinery wired identically to base.html:407-414; T-1597 W1 confirm-GO with explicit classification gripe; T-1600 captures real-500 Playwright follow-up; user-authorized batch close)
   **Steps:**
   1. Open `http://192.168.10.107:3000/review/T-1565` in a browser
   2. Open DevTools → Network tab

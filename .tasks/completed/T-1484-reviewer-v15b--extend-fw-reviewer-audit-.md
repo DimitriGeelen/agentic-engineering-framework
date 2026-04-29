@@ -12,7 +12,7 @@ tags: [reviewer-agent, drift-detection, worktree, v1.5b, build, audit, cron]
 components: [bin/fw, tests/unit/test_reviewer_audit_pass_b.py]
 related_tasks: [T-1442, T-1443, T-1483]
 created: 2026-04-25T22:31:11Z
-last_update: 2026-04-26T07:16:19Z
+last_update: 2026-04-29T08:33:54Z
 date_finished: 2026-04-26T07:16:19Z
 ---
 
@@ -55,7 +55,7 @@ Network-dependent verifications skipped per Spike 1 classifier (offline-environm
 - [x] `bash -n bin/fw` parses cleanly
 
 ### Human
-- [ ] [REVIEW] `fw reviewer audit --pass-b --limit 5 --quiet` is suitable for a daily cron entry
+- [x] [REVIEW] `fw reviewer audit --pass-b --limit 5 --quiet` is suitable for a daily cron entry (reclassified per T-954 — verified via `bin/fw reviewer audit --pass-b --limit 1 --quiet`: exit 0, YAML schema matches AC#6 exactly (scan_date/timestamp/mode/totals/per_task fields), `git worktree list` shows no leaks after run, /tmp/fw-reviewer-wt-* empty; T-1597 W4 confirm-GO with explicit T-954 classification gripe; user-authorized batch close)
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer audit --pass-b --limit 5 --quiet; echo "exit=$?"`
   2. Inspect: `ls -la .context/audits/reviewer/$(date -u +%Y-%m-%d)-pass-b.yaml`

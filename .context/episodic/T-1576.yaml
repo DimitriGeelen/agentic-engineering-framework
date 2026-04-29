@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1576: F9 — Distinguish NO-REC from DEFER in review-queue and /approvals (build-task gap parallel to T-1570)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:51Z
+# ============================================================================
+
+task_id: T-1576
+task_name: "F9 — Distinguish NO-REC from DEFER in review-queue and /approvals (build-task gap parallel to T-1570)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T09:07:46Z
+completed: 2026-04-28T09:26:34Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T11:18:43+02:00
+last_commit: 2026-04-28T11:26:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  F9 — Distinguish NO-REC from DEFER/? in review-queue and /approvals. Add Recommendation block + transition to partial-complete (owner: human)
+
+# Key outcomes
+outcomes:
+  - "`web/shared.py` exposes `extract_recommendation_state(body) -> str` returning `'GO'|'NO-GO'|'DEFER'|'NO-REC'|'?'` — discriminates \"no section\" from \"verdict unparseable\""
+  - "Existing `extract_recommendation_verdict` retained as compatibility shim (returns `?` for both NO-REC and unparseable, like before)"
+  - "`bin/fw review-queue` uses `extract_recommendation_state`; renders `NO-REC` distinct from `?` (own color, sort priority right after `?`)"
+  - "`agents/handover/handover.sh` \"Awaiting Your Action\" prefix uses state — surfaces `[NO-REC]` instead of `[?]` for tasks missing recommendation"
+  - "`web/blueprints/approvals.py` `_load_pending_human_acs` exposes both `verdict` (compat) and `state`; template renders NO-REC badge distinctly"
+  - "Unit test in `tests/unit/test_extract_recommendation.py` covers: empty body → NO-REC, no section → NO-REC, section with no verdict line → ?, full block → GO/NO-GO/DEFER"
+  - "`bin/fw test unit -- tests/unit/test_extract_recommendation.py` passes"
+  - "`bin/fw review-queue` output on current repo shows `NO-REC` rows for T-1062, T-801, etc. (was `?`)"
+  - "[REVIEW] /approvals \"Awaiting Human ACs\" cards visually distinguish NO-REC from DEFER/? (reclassified per T-954 — live cyan NO-REC card on T-449 with cyan #0e7490 badge + filter button; DEFER amber #e65100 vs NO-REC cyan #0e7490 are visually + copy-wise distinct; hover title differentiates (\"Agent owes a recommendation\" vs \"Verdict deferred\"); T-1597 W2 confirm-GO; user-authorized batch close)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/handover/handover.sh"
+  - "bin/fw"
+  - ".tasks/active/T-1576-f9--distinguish-no-rec-from-defer-in-rev.md"
+  - "tests/unit/test_extract_recommendation.py"
+  - "web/blueprints/approvals.py"
+  - "web/shared.py"
+  - "web/templates/_approvals_content.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T11:18:43"
+    action: "T-1576: F9 — Distinguish NO-REC from DEFER/? in review-queue and /approvals"
+  - time: "2026-04-28T11:26:51"
+    action: "T-1576: Add Recommendation block + transition to partial-complete (owner: human)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 2
+  files_changed: 7
+  lines_added: 269
+  lines_removed: 45
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1576-f9--distinguish-no-rec-from-defer-in-rev.md
+generated_by: context-agent-hybrid

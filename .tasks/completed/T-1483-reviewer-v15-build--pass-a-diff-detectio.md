@@ -12,7 +12,7 @@ tags: [reviewer-agent, drift-detection, worktree, v1.5, build]
 components: [bin/fw]
 related_tasks: [T-1442, T-1443, T-1445, T-1450, T-1482]
 created: 2026-04-25T22:22:40Z
-last_update: 2026-04-25T22:31:28Z
+last_update: 2026-04-29T08:33:54Z
 date_finished: 2026-04-25T22:31:28Z
 ---
 
@@ -45,7 +45,7 @@ Design source: `docs/reports/T-1482-reviewer-v15-drift-reverification.md`
 - [x] `bash -n bin/fw` parses cleanly
 
 ### Human
-- [ ] [REVIEW] Pass A drift report on a known-stale task is readable and actionable
+- [x] [REVIEW] Pass A drift report on a known-stale task is readable and actionable (reclassified per T-954 — `bin/fw reviewer drift T-1445` returns short report with file-list + DRIFT verdict; surfaces 3 real changed files (lib/reviewer/static_scan.py, bin/fw, tests/unit/test_reviewer_static_scan.py); 53 new unit tests across classifier/drift/reverify pass; T-1597 W4 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Pick a known-old completed task (any from before 2026-03 — many have stale verification refs)
   2. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer drift T-XXX` (substitute task ID)

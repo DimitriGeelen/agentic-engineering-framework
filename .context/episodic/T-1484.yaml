@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1484: Reviewer v1.5b — extend fw reviewer audit with --pass-b corpus mode (cron-friendly)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:55Z
+# ============================================================================
+
+task_id: T-1484
+task_name: "Reviewer v1.5b — extend fw reviewer audit with --pass-b corpus mode (cron-friendly)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T22:31:11Z
+completed: 2026-04-26T07:16:19Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-04-26T09:15:22+02:00
+last_commit: 2026-04-26T09:16:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Reviewer v1.5b — fw reviewer audit --pass-b corpus reverify mode. Close (Agent ACs ✓) — v1.5b corpus reverify shipped
+
+# Key outcomes
+outcomes:
+  - "`lib/reviewer/audit.py` exposes `run_pass_b_reverify(project_root, limit=None, timeout_per_line=30) -> dict`"
+  - "`--pass-b` flag in `audit.py main()` selects reverify mode; default behavior unchanged"
+  - "`--limit N` caps tasks scanned (cron budget control)"
+  - "`--quiet` suppresses per-task output (cron noise control)"
+  - "`--timeout N` overrides per-line timeout (default 30s)"
+  - "Output YAML written to `.context/audits/reviewer/YYYY-MM-DD-pass-b.yaml` with: scan_date, scan_timestamp, mode=pass-b, tasks_scanned, totals (PASS/FAIL/NO-VERIFICATION/ERROR), per_task list (task_id, sha, overall, n_pass, n_fail, n_skipped, n_error), errors list (verified via test_pass_b_summary_yaml_round_trip)"
+  - "Single shared `WorktreePool` reused across all tasks (verified by test_pass_b_reuses_single_worktree — enter_count == 1 across 3 tasks)"
+  - "Exit code: 0 if all tasks PASS or NO-VERIFICATION; 1 if any FAIL/ERROR; 3 on catalogue/setup failure"
+  - "`bin/fw reviewer audit --help` mentions `--pass-b`, `--limit`, `--quiet`, `--timeout`"
+  - "`tests/unit/test_reviewer_audit_pass_b.py` covers: tiny-repo smoke (2 completed tasks, 1 PASS + 1 FAIL → summary correct, exit 1), `--limit` caps tasks, NO-VERIFICATION counted separately, network skip, unknown-SHA error, YAML schema stable, single-pool reuse, no leaked worktree (9 tests)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Sort completed tasks by numeric ID descending so `--limit N` hits recent tasks"
+    rationale: "Default lexicographic sort puts T-001..T-009 first (pre-Verification-gate era — all NO-VERIFICATION). Cron with `--limit 50` would waste budget on tasks that produce no signal. Numeric-descending hits the work where verification gates exist and drift is most likely."
+    alternatives_rejected: ["Mtime-based sort (less predictable across re-clones); lexicographic (default — wrong for our task-ID convention)."]
+    chose: "Distinct file per mode"
+    rationale: "Existing `YYYY-MM-DD.yaml` is the static-scan re-scan summary; merging would mix two"
+    alternatives_rejected: ["Adding a `pass_b` block to the same file (cleaner UI, but breaks cron-time atomicity"]
+    chose: "Opt-in"
+    rationale: "v1.5 Pass B is heavier (creates a worktree, runs subprocesses); changing default could"
+    alternatives_rejected: ["Auto-running both passes (fine eventually; not appropriate for first ship)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/project/decisions.yaml"
+  - "lib/reviewer/audit.py"
+  - ".tasks/active/T-1277-fix-unbounded-git-push-in-handover-auto-trigger.md"
+  - ".tasks/active/T-1445-t-1443-v10-static-scan-validator-anti-pa.md"
+  - ".tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md"
+  - ".tasks/completed/T-1482-reviewer-v15-drift-re-verification--sand.md"
+  - "tests/unit/test_reviewer_audit_pass_b.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T09:15:22"
+    action: "T-1484: Reviewer v1.5b — fw reviewer audit --pass-b corpus reverify mode"
+  - time: "2026-04-26T09:16:52"
+    action: "T-1484: Close (Agent ACs ✓) — v1.5b corpus reverify shipped"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 525 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-agent, drift-detection, worktree, v1.5b, build, audit, cron]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 525
+  commits: 2
+  files_changed: 8
+  lines_added: 585
+  lines_removed: 66
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md
+generated_by: context-agent-hybrid

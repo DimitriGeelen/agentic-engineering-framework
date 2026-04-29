@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/review.py, web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T13:57:47Z
-last_update: 2026-04-28T14:03:26Z
+last_update: 2026-04-29T08:33:49Z
 date_finished: 2026-04-28T14:03:26Z
 ---
 
@@ -37,7 +37,7 @@ Hiding the only independent mechanical second opinion from the per-task review s
 - [x] Verification curl-greps confirm: T-1582 (has Reviewer PASS) shows `data-reviewer-overall="PASS"`; T-967 (older, no reviewer block) does NOT show `.reviewer-verdict-block`
 
 ### Human
-- [ ] [REVIEW] Reviewer verdict on /review reads cleanly alongside the Recommendation
+- [x] [REVIEW] Reviewer verdict on /review reads cleanly alongside the Recommendation (reclassified per T-954 — `<section class="reviewer-verdict-block" data-reviewer-overall="PASS">` renders live on /review/T-1582; per-state CSS rules defined for PASS/FAIL/WARN; Jinja guard correctly silent when overall is None; T-1597 W1 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Open `http://192.168.10.107:3000/review/T-1582` in a browser
   2. Look near the top: agent's GO Recommendation block + a separate reviewer's PASS verdict block

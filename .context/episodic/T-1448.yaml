@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1448: T-1443-v1.3 Reviewer agent: per-AC granular verdicts (split findings + AC linkage)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:53Z
+# ============================================================================
+
+task_id: T-1448
+task_name: "T-1443-v1.3 Reviewer agent: per-AC granular verdicts (split findings + AC linkage)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T11:07:41Z
+completed: 2026-04-25T18:17:42Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-25T13:12:51+02:00
+last_commit: 2026-04-25T13:12:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.3 reviewer — per-AC granular verdicts (Finding ac_index/subhead/text + grouped rendering)
+
+# Key outcomes
+outcomes:
+  - "`lib/reviewer/static_scan.py` defines `Finding.ac_index`, `Finding.ac_subhead`, `Finding.ac_text` with default `None`; `to_dict()` exports them"
+  - "`detect_empty_body` populates the three AC fields on every emitted finding"
+  - "`detect_ac_verify_mismatch` populates the three AC fields on every emitted finding"
+  - "`render_verdict_md` groups AC-bound findings under \"Per-AC findings\" subsection (only when any finding has `ac_index is not None`)"
+  - "`_VERDICT_SECTION_RE` matches `## Reviewer Verdict (v*)` so prior verdicts are cleanly replaced"
+  - "`policy/anti-patterns.yaml` `catalogue_version` is `v1.3-seed`"
+  - "At least 3 new tests in `tests/unit/test_reviewer_static_scan.py` assert per-AC linkage (one for empty-body fields, one for AC-verify-mismatch fields, one for grouped rendering)"
+  - "All existing pytest tests continue to pass (62 from v1.2 + 6 new = 68 total)"
+  - "Self-dogfood: `bin/fw reviewer T-1448 --no-write` succeeds and shows per-AC grouping when applicable"
+  - "L-267 captured with v1.3 dogfood deltas vs v1.2"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Add three optional fields directly to `Finding` (ac_index, ac_subhead, ac_text)"
+    rationale: "Backward compatible (defaults to None); verification-level findings just leave them None; no separate dataclass hierarchy needed"
+    alternatives_rejected: ["Separate `ACFinding` subclass — would force consumer code to type-switch; YAML serialisation gets uglier"]
+    chose: "Bump header to `## Reviewer Verdict (v1.3)`, widen `_VERDICT_SECTION_RE` to match any v*"
+    rationale: "Old verdicts in completed task files (v1.0/v1.1/v1.2 headers) get replaced cleanly on re-scan; no orphan sections accumulate"
+    alternatives_rejected: ["Keep header at `(v1.0)` for stability — would mask version drift in the file itself; reviewers reading historical tasks couldn't tell which catalogue ran"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".context/audits/2026-04-25.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/audits/reviewer/2026-04-25.yaml"
+  - ".context/handovers/LATEST.md"
+  - ".context/handovers/S-2026-0425-1301.md"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "lib/reviewer/static_scan.py"
+  - "policy/anti-patterns.yaml"
+  - ".tasks/active/T-1448-t-1443-v13-reviewer-agent-per-ac-granula.md"
+  - "tests/unit/test_reviewer_static_scan.py"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-25T13:12:51"
+    action: "T-1448: v1.3 reviewer — per-AC granular verdicts (Finding ac_index/subhead/text + grouped rendering)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 430 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-agent, ac-validation, granular-verdicts, v1.3]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 430
+  commits: 1
+  files_changed: 21
+  lines_added: 1350
+  lines_removed: 55
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1448-t-1443-v13-reviewer-agent-per-ac-granula.md
+generated_by: context-agent-hybrid

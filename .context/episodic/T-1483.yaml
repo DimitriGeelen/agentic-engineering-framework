@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1483: Reviewer v1.5 build — Pass A diff-detection + Pass B worktree-reuse re-execution
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:54Z
+# ============================================================================
+
+task_id: T-1483
+task_name: "Reviewer v1.5 build — Pass A diff-detection + Pass B worktree-reuse re-execution"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-25T22:22:40Z
+completed: 2026-04-25T22:31:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-26T00:30:36+02:00
+last_commit: 2026-04-26T00:31:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Reviewer v1.5 build — Pass A drift-detection + Pass B worktree-reuse. Close (Agent ACs ✓) + spawn T-1484 v1.5b corpus-audit follow-on
+
+# Key outcomes
+outcomes:
+  - "`lib/reviewer/classifier.py` exists with `classify(line) -> Category` and `classify_block(text) -> dict[Category, list[str]]`"
+  - "`lib/reviewer/drift.py` exists with `extract_file_refs(verification_text, repo_root) -> set[Path]` and `compute_hashes(refs, repo_root) -> dict[str, str]` and `detect_drift(task_path, repo_root) -> DriftReport`"
+  - "`lib/reviewer/reverify.py` exists with `WorktreePool` context-manager (acquire/checkout/release) and `reverify_task(task_path, worktree_pool) -> ReverifyReport`"
+  - "`bin/fw reviewer drift T-XXX` invokes Pass A, prints `DriftReport` to stdout (smoke-tested on T-1445: STABLE verdict with 4 files baselined+verified)"
+  - "`bin/fw reviewer reverify T-XXX` invokes Pass B (single task) (smoke-tested on T-1481: PASS with 4/4 lines re-executed in worktree)"
+  - "Pass B sets `FW_REVIEWER_REVERIFY=1` in subprocess env so framework hooks (commit-msg, PostToolUse) short-circuit (verified by `test_reverify_sets_FW_REVIEWER_REVERIFY_env`)"
+  - "Network-dependent verification lines are SKIPPED in Pass B (annotation `[SKIPPED: network]` in report) — no false-failures from offline environment (verified by `test_reverify_skips_network_lines`)"
+  - "`tests/unit/test_reviewer_classifier.py` — 25 test cases (5x more than minimum), all passing"
+  - "`tests/unit/test_reviewer_drift.py` — 17 test cases (4x more than minimum), all passing"
+  - "`tests/unit/test_reviewer_reverify.py` — 11 test cases (3x more than minimum), all passing"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Separate small CLI files matching the `override_cli.py` precedent"
+    rationale: "Keeps lib/ modules testable as pure libraries (no `if __name__ == \"__main__\"` boilerplate). Follows the established v1.4 pattern."
+    alternatives_rejected: ["Inline `__main__` blocks (would couple library and CLI surface; awkward to test)."]
+    chose: "`<!-- drift-baseline: {json} -->` marker inside the existing verdict section"
+    rationale: "Invisible in rendered Markdown (Watchtower) but recoverable on re-scan. Doesn't introduce a new section type. Survives task body edits because it's pinned to the section."
+    alternatives_rejected: ["Separate `.context/reviewer/baselines/` dir (creates discovery problem); frontmatter field (mutates contract for non-reviewer consumers)."]
+    chose: "WorktreePool context manager — one worktree per audit run, checkout per task"
+    rationale: "Spike 2 measured 78% latency saving (1506ms → 339ms per task). Fits 10-min budget with headroom."
+    alternatives_rejected: ["Fresh worktree per task (acceptable but wasteful)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "lib/reviewer/classifier.py"
+  - "lib/reviewer/drift_cli.py"
+  - "lib/reviewer/drift.py"
+  - "lib/reviewer/reverify_cli.py"
+  - "lib/reviewer/reverify.py"
+  - ".tasks/active/T-1483-reviewer-v15-build--pass-a-diff-detectio.md"
+  - ".tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md"
+  - "tests/unit/test_reviewer_classifier.py"
+  - "tests/unit/test_reviewer_drift.py"
+  - "tests/unit/test_reviewer_reverify.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T00:30:36"
+    action: "T-1483: Reviewer v1.5 build — Pass A drift-detection + Pass B worktree-reuse"
+  - time: "2026-04-26T00:31:47"
+    action: "T-1483: Close (Agent ACs ✓) + spawn T-1484 v1.5b corpus-audit follow-on"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-agent, drift-detection, worktree, v1.5, build]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 2
+  files_changed: 11
+  lines_added: 1530
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1483-reviewer-v15-build--pass-a-diff-detectio.md
+generated_by: context-agent-hybrid

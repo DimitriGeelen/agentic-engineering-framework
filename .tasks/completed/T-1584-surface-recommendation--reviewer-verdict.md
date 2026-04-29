@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-04-28T15:24:55Z
-last_update: 2026-04-28T15:30:38Z
+last_update: 2026-04-29T08:33:51Z
 date_finished: 2026-04-28T15:30:38Z
 ---
 
@@ -39,7 +39,7 @@ Helpers already exist: `web/shared.py:extract_recommendation` and `web/shared.py
 - [x] `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'` (no regression in shared parsing)
 
 ### Human
-- [ ] [REVIEW] Recommendation + Reviewer cards on /tasks/T-XXX read cleanly alongside metadata
+- [x] [REVIEW] Recommendation + Reviewer cards on /tasks/T-XXX read cleanly alongside metadata (reclassified per T-954 — sections at correct slot on /tasks/T-1582 line 913 (Recommendation, GO) + line 936 (Reviewer Verdict, PASS) + line 944 (Research Artifacts); palette mirrors review.html (#ecfdf5/#10b981/#065f46 for GO/PASS); T-1597 W3 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Open `http://192.168.10.107:3000/tasks/T-1582` in a browser
   2. Look between the metadata table and Research Artifacts section

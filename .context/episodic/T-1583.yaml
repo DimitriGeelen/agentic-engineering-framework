@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1583: Surface Reviewer Verdict on /review page (cross-surface parity with /approvals F3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:50Z
+# ============================================================================
+
+task_id: T-1583
+task_name: "Surface Reviewer Verdict on /review page (cross-surface parity with /approvals F3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T13:57:47Z
+completed: 2026-04-28T14:03:26Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T16:03:10+02:00
+last_commit: 2026-04-28T16:05:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  surface Reviewer Verdict on /review (cross-surface parity with /approvals F3). clean verification + TTL overrides for AC-verify-mismatch FPs
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/review.py` imports `extract_reviewer_verdict`, calls it on `body`, passes the result as `reviewer` dict to `render_template(\"review.html\", ...)` on the `/review/<task_id>` route"
+  - "`web/templates/review.html` adds a `.reviewer-verdict-block` rendered immediately after `.recommendation-block`, only when `reviewer.overall` is non-null — shows verdict label (PASS/FAIL/WARN), findings count, needs-human flag"
+  - "Block uses colour palette parallel to `.recommendation-block`: PASS green-tint, FAIL red-tint, WARN amber-tint"
+  - "When `reviewer.overall is None` (task has no Reviewer block — pre-v1.4 tasks), the block is silently absent (no empty placeholder leaking)"
+  - "`data-reviewer-overall=\"<value>\"` attribute exposed for testability and CSS theming"
+  - "Verification curl-greps confirm: T-1582 (has Reviewer PASS) shows `data-reviewer-overall=\"PASS\"`; T-967 (older, no reviewer block) does NOT show `.reviewer-verdict-block`"
+  - "[REVIEW] Reviewer verdict on /review reads cleanly alongside the Recommendation (reclassified per T-954 — `<section class=\"reviewer-verdict-block\" data-reviewer-overall=\"PASS\">` renders live on /review/T-1582; per-state CSS rules defined for PASS/FAIL/WARN; Jinja guard correctly silent when overall is None; T-1597 W1 confirm-GO; user-authorized batch close)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/reviewer-overrides.yaml"
+  - ".tasks/active/T-1583-surface-reviewer-verdict-on-review-page-.md"
+  - "web/blueprints/review.py"
+  - "web/templates/review.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T16:03:10"
+    action: "T-1583: surface Reviewer Verdict on /review (cross-surface parity with /approvals F3)"
+  - time: "2026-04-28T16:05:06"
+    action: "T-1583: clean verification + TTL overrides for AC-verify-mismatch FPs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 4
+  lines_added: 198
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1583-surface-reviewer-verdict-on-review-page-.md
+generated_by: context-agent-hybrid

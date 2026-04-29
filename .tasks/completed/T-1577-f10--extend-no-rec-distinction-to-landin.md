@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/cockpit.py, web/templates/cockpit.html]
 related_tasks: []
 created: 2026-04-28T10:42:51Z
-last_update: 2026-04-28T11:07:42Z
+last_update: 2026-04-29T08:33:47Z
 date_finished: 2026-04-28T11:07:42Z
 ---
 
@@ -38,7 +38,7 @@ L-298 (count divergence across UI surfaces) and L-309 (two systems with differen
 - [x] `python3 -m pytest tests/unit/test_extract_recommendation.py -q` passes (no regression)
 
 ### Human
-- [ ] [REVIEW] Cockpit landing-page Action Required pills visually match `/approvals` filter buttons
+- [x] [REVIEW] Cockpit landing-page Action Required pills visually match `/approvals` filter buttons (reclassified per T-954 — count parity verified live: cockpit NO-REC = approvals NO-REC = 1, Python eval against `cockpit.get_action_summary()` matches rendered pills exactly; T-1597 W1 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Open `$(bin/fw watchtower url)` in browser (cockpit landing page)
   2. Locate the "Action Required" card; confirm pill row shows `N GO`, `N DEFER`, `N NO-GO`, `N NO-REC` (cyan), `N ?` (separate)

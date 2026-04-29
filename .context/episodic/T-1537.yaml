@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1537: Surface verdict on inception cards — mirror T-1531 treatment for inception approval queue
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:51Z
+# ============================================================================
+
+task_id: T-1537
+task_name: "Surface verdict on inception cards — mirror T-1531 treatment for inception approval queue"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-27T11:29:14Z
+completed: 2026-04-27T11:34:25Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-27T13:35:03+02:00
+last_commit: 2026-04-28T18:29:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Surface verdict badge + data-verdict on inception cards (parity with T-1531). add missing ## Updates section (audit warn)
+
+# Key outcomes
+outcomes:
+  - "`_load_pending_go_decisions()` calls `extract_recommendation_verdict()` from `web/shared.py` and returns a `verdict` field per card (mirrors `_load_pending_human_acs()` shape)"
+  - "`data-verdict` attribute renders on every inception card's `.go-decision` wrapper div"
+  - "A `.verdict-badge` span renders in the inception card header, colour-coded GO/DEFER/NO-GO/? matching the partial-complete badge styles"
+  - "`tests/web/test_approvals_cache.py::test_pending_go_uses_cache_filter` still passes (no regression on existing `rec_decision` field)"
+  - "`pytest tests/unit/test_extract_recommendation_verdict.py` still passes (canonical helper unchanged)"
+  - "Verification commands below all pass (P-011 gate)"
+  - "[REVIEW] Inception card verdict badges read clearly at-a-glance and improve triage parity with the partial-complete section (reclassified per T-954 — template uses canonical `extract_recommendation_verdict()` shared with T-1531 partial-complete cards (single source of truth, no drift); 5 synthetic tests pass on render template covering all 4 verdict colors + ? fallback; T-1597 W2 confirm-GO; user-authorized batch close)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Use `extract_recommendation_verdict()` from `web/shared.py` (the helper promoted in T-1533) instead of the existing line-by-line extractor, while keeping the `rec_decision` field populated for backward compat with the existing collapsible summary block."
+    rationale: "Two parallel extractors would drift; the canonical helper carries the L-293 H2+ terminator fix. Single source of truth."
+    alternatives_rejected: ["Leave the inline extractor for \"if it ain't broke\" — but the L-293 regression risk is real (an Updates block with `**Action:** GO ahead` could pollute the inline extractor's output)."]
+    chose: "Add `tests/web/test_inception_verdict_render.py` with a synthetic Flask render to prove the template wiring (data-verdict attribute + verdict-badge span + colour mapping) without depending on live queue state."
+    rationale: "All 9 currently-captured inceptions have `## Decision: DEFER` already written into their bodies, so `_load_pending_go_decisions()` filters them out at the `_extract_decision != \"pending\"` gate (line 124 of `web/blueprints/approvals.py`). A live curl-grep verification would have flagged \"no inception cards rendered\" and looked like a failure when the wiring is actually correct. This is a separate filter-mismatch worth filing as an observation (not part of T-1537 scope)."
+    alternatives_rejected: ["Construct a fake task file in `.tasks/active/` for the test — would pollute the framework's real task tree; the in-process Flask render is cleaner."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1537-surface-verdict-on-inception-cards--mirr.md"
+  - "tests/web/test_approvals_cache.py"
+  - "tests/web/test_inception_verdict_render.py"
+  - "web/blueprints/approvals.py"
+  - "web/templates/_approvals_content.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-27T13:35:03"
+    action: "T-1537: Surface verdict badge + data-verdict on inception cards (parity with T-1531)"
+  - time: "2026-04-28T18:29:39"
+    action: "T-1537: add missing ## Updates section (audit warn)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 5
+  lines_added: 257
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1537-surface-verdict-on-inception-cards--mirr.md
+generated_by: context-agent-hybrid

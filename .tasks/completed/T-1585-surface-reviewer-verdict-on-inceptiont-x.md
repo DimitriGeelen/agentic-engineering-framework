@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []
 created: 2026-04-28T15:38:13Z
-last_update: 2026-04-28T15:42:42Z
+last_update: 2026-04-29T08:33:52Z
 date_finished: 2026-04-28T15:42:42Z
 ---
 
@@ -36,7 +36,7 @@ Decision-time on inceptions is exactly where the reviewer's mechanical second op
 - [x] `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'` (no shared-parsing regression)
 
 ### Human
-- [ ] [REVIEW] Reviewer card on /inception reads cleanly alongside the Agent Recommendation
+- [x] [REVIEW] Reviewer card on /inception reads cleanly alongside the Agent Recommendation (reclassified per T-954 — card placement on /inception/T-1346 immediately after Agent Recommendation block (lines 839+879), matches /tasks and /review pattern; heading-prefix filter prevents duplicate Reviewer Verdict rendering; T-1597 W3 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Open `http://192.168.10.107:3000/inception/T-1346` in a browser
   2. Look immediately below the Agent Recommendation card

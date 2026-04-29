@@ -12,7 +12,7 @@ tags: []
 components: [bin/fw, tests/playwright/test_review_page.py, web/blueprints/inception.py, web/blueprints/review.py, web/blueprints/tasks.py, web/shared.py, web/templates/_review_acs.html, web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T06:53:04Z
-last_update: 2026-04-28T15:23:42Z
+last_update: 2026-04-29T08:33:47Z
 date_finished: 2026-04-28T15:23:42Z
 ---
 
@@ -35,7 +35,7 @@ The /review/T-XXX page renders the `## Recommendation` section as a `<pre>` bloc
 - [x] Live verification: T-1565 review page shows separate Rationale and Evidence sections with rendered markdown
 
 ### Human
-- [ ] [REVIEW] T-1565 review page renders the recommendation cleanly — no literal `**` characters visible, evidence bullets rendered as a list, GO badge prominent
+- [x] [REVIEW] T-1565 review page renders the recommendation cleanly — no literal `**` characters visible, evidence bullets rendered as a list, GO badge prominent (reclassified per T-954 — `class="rec-rationale"` + `class="rec-evidence"` present in served HTML, no literal `**` markers; T-1597 W1 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Open the review page: http://192.168.10.107:3000/review/T-1565
   2. Look at the Recommendation block at the top

@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1485: Reviewer v1.5c — fw reviewer audit --pass-a corpus drift mode (baseline init + drift scan)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:55Z
+# ============================================================================
+
+task_id: T-1485
+task_name: "Reviewer v1.5c — fw reviewer audit --pass-a corpus drift mode (baseline init + drift scan)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-04-26T07:17:23Z
+completed: 2026-04-26T07:22:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-26T09:21:55+02:00
+last_commit: 2026-04-26T09:22:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Reviewer v1.5c — fw reviewer audit --pass-a corpus drift mode. Close (Agent ACs ✓) — v1.5c corpus drift mode shipped
+
+# Key outcomes
+outcomes:
+  - "`lib/reviewer/audit.py` exposes `run_pass_a_drift(project_root, limit=None) -> dict`"
+  - "`lib/reviewer/audit.py` exposes `run_pass_a_baseline(project_root, limit=None, force=False) -> dict` that writes baselines for completed tasks"
+  - "`--pass-a` flag in audit.py main() selects drift scan; `--baseline` modifier writes baselines instead of comparing"
+  - "`--force` overwrites existing baselines (default is idempotent)"
+  - "Output YAML to `.context/audits/reviewer/YYYY-MM-DD-pass-a.yaml` with: scan_date, scan_timestamp, mode, tasks_scanned, totals (STABLE/DRIFTED/NO-BASELINE/NO-VERIFICATION), per_task list (task_id, verdict, has_drift, n_unchanged, n_changed, n_missing, n_no_baseline, changed_files, missing_files)"
+  - "`--limit N` caps tasks (cron budget)"
+  - "`--quiet` suppresses per-task lines (cron noise control)"
+  - "Exit code: 0 if no DRIFTED tasks; 1 if any DRIFTED"
+  - "Baseline mode is idempotent — verified by `test_pass_a_baseline_idempotent_without_force` (file mutated, second run does NOT overwrite); `--force` overwrites verified by `test_pass_a_baseline_force_overwrites`"
+  - "`bin/fw reviewer audit --help` documents `--pass-a`, `--baseline`, `--force`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "lib/reviewer/audit.py"
+  - ".tasks/active/T-1485-reviewer-v15c--fw-reviewer-audit---pass-.md"
+  - ".tasks/completed/T-1473-resolve-handover-episodic-gaps--fw-push-.md"
+  - ".tasks/completed/T-1474-fw-push-skips-all-remotes-when-no-origin.md"
+  - ".tasks/completed/T-1475-ctl-013-audit-diagnostic--capture-stderr.md"
+  - ".tasks/completed/T-1476-add-flock-guard-to-pre-compactsh--mitiga.md"
+  - ".tasks/completed/T-1477-t-1477-stop-using-t-012-as-commit-task-w.md"
+  - ".tasks/completed/T-1478-t-1478-investigate-obs-023-dual-fire-flo.md"
+  - ".tasks/completed/T-1479-t-1479-fw-upgrade-detects-duplicate-fram.md"
+  - ".tasks/completed/T-1480-t-1480-fw-doctor-surfaces-duplicate-fram.md"
+  - ".tasks/completed/T-1481-t-1481-fw-upgrade---dedupe-user-hooks-op.md"
+  - ".tasks/completed/T-1482-reviewer-v15-drift-re-verification--sand.md"
+  - "tests/unit/test_reviewer_audit_pass_a.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-26T09:21:55"
+    action: "T-1485: Reviewer v1.5c — fw reviewer audit --pass-a corpus drift mode"
+  - time: "2026-04-26T09:22:19"
+    action: "T-1485: Close (Agent ACs ✓) — v1.5c corpus drift mode shipped"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-agent, drift-detection, v1.5c, build, audit, cron]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 14
+  lines_added: 558
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1485-reviewer-v15c--fw-reviewer-audit---pass-.md
+generated_by: context-agent-hybrid

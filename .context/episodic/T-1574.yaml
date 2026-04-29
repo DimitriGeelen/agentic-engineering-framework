@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1574: Fix /review page Complete button for inception tasks (route to inception decide)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:46Z
+# ============================================================================
+
+task_id: T-1574
+task_name: "Fix /review page Complete button for inception tasks (route to inception decide)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T06:32:41Z
+completed: 2026-04-28T15:11:14Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T08:46:33+02:00
+last_commit: 2026-04-28T08:46:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Route /review Complete button to inception decide for inception tasks
+
+# Key outcomes
+outcomes:
+  - "`_review_acs.html` renders GO / NO-GO / DEFER buttons + rationale textarea instead of generic Complete button when `workflow_type == 'inception'`"
+  - "Inception decision form posts to existing `/inception/<task_id>/decide` (reuses T-1262/T-1470 path with `--from-watchtower`)"
+  - "Generic Complete button still renders for non-inception tasks (no regression)"
+  - "`review.py` passes `workflow_type` to template on both `/review/<id>` and `/review/<id>/acs`"
+  - "Watchtower restarted; verification commands (rendered form present in both /review and /review/acs, generic Complete button absent for inception) all pass"
+  - "[REVIEW] /review page UX for inception tasks reads naturally — buttons are unambiguous, rationale required (reclassified per T-954 — DOM evidence: form + 3 decide buttons render on /review/T-1565 AND /review/T-1565/acs fragment; verification commands at lines 45-47 cover mechanical core; T-1597 W1 confirm-GO; user-authorized batch close)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1574-fix-review-page-complete-button-for-ince.md"
+  - "web/blueprints/review.py"
+  - "web/templates/_review_acs.html"
+  - "web/templates/review.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T08:46:33"
+    action: "T-1574: Route /review Complete button to inception decide for inception tasks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 518 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 518
+  commits: 1
+  files_changed: 4
+  lines_added: 136
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1574-fix-review-page-complete-button-for-ince.md
+generated_by: context-agent-hybrid

@@ -12,7 +12,7 @@ tags: [reviewer-agent, ac-validation, granular-verdicts, v1.3]
 components: []
 related_tasks: [T-1443, T-1445, T-1446, T-1447]
 created: 2026-04-25T11:07:41Z
-last_update: 2026-04-25T18:17:42Z
+last_update: 2026-04-29T08:33:53Z
 date_finished: 2026-04-25T18:17:42Z
 ---
 
@@ -53,7 +53,7 @@ This is the foundation for v1.4 override mechanism — per-pattern, per-AC waive
 - [x] L-267 captured with v1.3 dogfood deltas vs v1.2
 
 ### Human
-- [ ] [REVIEW] Per-AC grouping in the rendered verdict reads naturally — findings sit next to the AC they relate to
+- [x] [REVIEW] Per-AC grouping in the rendered verdict reads naturally — findings sit next to the AC they relate to (reclassified per T-954 — `bin/fw reviewer T-1020 --no-write` shows nested findings under their AC text; AC text inline; v1.4 (T-1449) shipped on top of this data model — empirical foundation proof; T-1597 W4 confirm-GO; user-authorized batch close)
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer T-1448`
   2. Open `.tasks/active/T-1448-*.md` and scroll to `## Reviewer Verdict (v1.3)`

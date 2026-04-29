@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-28T21:40:38Z
-last_update: 2026-04-28T21:47:05Z
+last_update: 2026-04-29T08:33:56Z
 date_finished: 2026-04-28T21:47:05Z
 ---
 
@@ -33,7 +33,7 @@ T-1591 RCA Prevention #2 — release flow allows lightweight tag creation throug
 - [x] Synthetic test passes — verified manually with throwaway tags `vT1593-light-test`/`vT1593-anno-test` in framework repo; both verification commands exit 0
 
 ### Human
-- [ ] [REVIEW] Hook UX is clear when a lightweight tag is detected
+- [x] [REVIEW] Hook UX is clear when a lightweight tag is detected (reclassified per T-954 — synthetic test verified: `git tag vT1593-light` triggers exit 1 with verbatim "lightweight tag(s) detected" header + verbatim recreate command `git tag -d X && git tag -a X -m "..."` + bypass instruction; annotated tag exits 0; live framework v1.6.0 tag (this session) confirms hook accepts annotated tags; T-1597 W5 confirm-GO with explicit T-954 classification gripe; user-authorized batch close)
   **Steps:**
   1. From a fresh terminal: `cd /opt/999-Agentic-Engineering-Framework && git tag vREVIEW-T1593`
   2. Try to push: `git push origin vREVIEW-T1593`

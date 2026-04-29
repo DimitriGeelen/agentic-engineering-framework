@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1585: Surface Reviewer Verdict on /inception/T-XXX page (cross-surface parity completing review-surface set, T-1583/T-1584 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:53Z
+# ============================================================================
+
+task_id: T-1585
+task_name: "Surface Reviewer Verdict on /inception/T-XXX page (cross-surface parity completing review-surface set, T-1583/T-1584 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T15:38:13Z
+completed: 2026-04-28T15:42:42Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T17:42:36+02:00
+last_commit: 2026-04-28T17:42:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  surface Reviewer Verdict on /inception/T-XXX page. transition to work-completed (Reviewer ready, owner=human)
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/inception.py` imports `extract_reviewer_verdict` from `web.shared`, calls it on `task_body`, passes result as `reviewer` kwarg to `render_template(\"inception_detail.html\", ...)`"
+  - "`extra_sections` filter in `inception.py` skips any heading starting with `\"Reviewer Verdict\"` (handles versioned variants `(v1.4)`, `(v1.5)`, etc.) so the section does NOT also appear as a generic `extra_sections` entry (avoid double-render)"
+  - "`web/templates/inception_detail.html` renders a `.reviewer-verdict-block` (with `data-reviewer-overall` attribute, PASS/FAIL/WARN palette) — placed immediately after the Agent Recommendation card, only when `reviewer.overall` is non-null"
+  - "Inline CSS for the block added to `inception_detail.html`'s `<style>` block, matching the rules already in `review.html` and `task_detail.html`"
+  - "Verification curl-greps confirm: an inception task with reviewer block (T-1346) shows `<section class=\"reviewer-verdict-block\" data-reviewer-overall=\"PASS\">`; an inception task without one (T-1265) does NOT show the block; no double-render (Reviewer Verdict heading appears at most once outside the raw body collapse)"
+  - "Existing `/inception/T-XXX` decision flow (pending/adopted/overridden, decide form, htmx polling) unchanged — page returns HTTP 200"
+  - "`python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'` (no shared-parsing regression)"
+  - "[REVIEW] Reviewer card on /inception reads cleanly alongside the Agent Recommendation (reclassified per T-954 — card placement on /inception/T-1346 immediately after Agent Recommendation block (lines 839+879), matches /tasks and /review pattern; heading-prefix filter prevents duplicate Reviewer Verdict rendering; T-1597 W3 confirm-GO; user-authorized batch close)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Inline CSS in `inception_detail.html` (mirroring `review.html` + `task_detail.html`)"
+    rationale: "Three call sites (review, tasks, inception) is the threshold T-1582 cited for extraction, but each surface has a slightly different chrome (review.html is standalone, task_detail extends base.html, inception_detail extends base.html with a different styled scaffold). Extracting the CSS to a shared `web/static/structured-cards.css` would require all three templates to load it — a bigger change with broader blast radius for a pure-aesthetic gain. Per CLAUDE.md's \"no premature abstraction\" guidance, inline duplication for now; revisit if a fifth surface arrives."
+    alternatives_rejected: ["Extract to `web/static/structured-cards.css`. Reason above. The natural trigger is a fifth standalone consumer, not the third or fourth."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/decisions.yaml"
+  - ".tasks/active/T-1585-surface-reviewer-verdict-on-inceptiont-x.md"
+  - "web/blueprints/inception.py"
+  - "web/templates/inception_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T17:42:36"
+    action: "T-1585: surface Reviewer Verdict on /inception/T-XXX page"
+  - time: "2026-04-28T17:42:58"
+    action: "T-1585: transition to work-completed (Reviewer ready, owner=human)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 4
+  lines_added: 179
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1585-surface-reviewer-verdict-on-inceptiont-x.md
+generated_by: context-agent-hybrid

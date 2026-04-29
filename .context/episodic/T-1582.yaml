@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1582: Add htmx error handler on /review page — surface 4xx/5xx as visible toast (T-1574 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:49Z
+# ============================================================================
+
+task_id: T-1582
+task_name: "Add htmx error handler on /review page — surface 4xx/5xx as visible toast (T-1574 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T13:31:04Z
+completed: 2026-04-28T13:55:57Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T15:38:06+02:00
+last_commit: 2026-04-28T16:06:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  htmx error handler on /review — surface 4xx/5xx as visible toast. Playwright tests pin /review toast machinery + structured rec rendering. transition to work-completed (Reviewer PASS, owner=human). capture L-316 — standalone-template inheritance drift pattern
+
+# Key outcomes
+outcomes:
+  - "`review.html` includes a `#toast-container` div before `</body>` matching `base.html:336` shape"
+  - "`review.html` `<style>` block contains `.wt-toast` rules + `toast-in` / `toast-out` keyframes mirroring `base.html:357-372`"
+  - "`review.html` `<script>` block contains `showToast(msg, type)` helper + `htmx:responseError` listener (extracts response text, max 100 chars, falls back to \"Save failed\") + `htmx:sendError` listener (\"Network error — check server\") matching `base.html:392-414` semantics"
+  - "Visible verification via `curl -sf \"$(bin/fw watchtower url)/review/T-1565\"` shows `id=\"toast-container\"`, `.wt-toast` CSS, `function showToast`, and both `htmx:responseError` / `htmx:sendError` listeners in the served HTML"
+  - "Existing /review polling, AC toggling, inception decide buttons still work (no regression — Watchtower restart + manual smoke check via curl that page returns 200 and contains expected form IDs)"
+  - "Recommendation-rendering tests in `tests/unit/test_extract_recommendation.py` still pass (24 tests — sanity check that no shared-template regression slipped in)"
+  - "[REVIEW] Force a 500 on /review and confirm a red toast appears (reclassified per T-954 — DOM evidence: `id=\"toast-container\"`, `htmx:responseError`, `htmx:sendError`, `.wt-toast`, `function showToast` all present in served HTML; toast machinery wired identically to base.html:407-414; T-1597 W1 confirm-GO with explicit classification gripe; T-1600 captures real-500 Playwright follow-up; user-authorized batch close)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "htmx error handler on /review — surface 4xx/5xx as visible toast"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - "docs/generated/components/web-blueprints-reviewer.md"
+  - "docs/generated/components/web-templates-reviewer_overrides.md"
+  - ".tasks/active/T-1582-add-htmx-error-handler-on-review-page--s.md"
+  - ".tasks/completed/T-1579-f12--reviewer-ac-verify-mismatch-recogni.md"
+  - "tests/playwright/test_review_page.py"
+  - "web/templates/review.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T15:38:06"
+    action: "T-1582: htmx error handler on /review — surface 4xx/5xx as visible toast"
+  - time: "2026-04-28T15:51:24"
+    action: "T-1582: Playwright tests pin /review toast machinery + structured rec rendering"
+  - time: "2026-04-28T15:56:27"
+    action: "T-1582: transition to work-completed (Reviewer PASS, owner=human)"
+  - time: "2026-04-28T16:06:16"
+    action: "T-1582: capture L-316 — standalone-template inheritance drift pattern"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24
+  commits: 4
+  files_changed: 7
+  lines_added: 276
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1582-add-htmx-error-handler-on-review-page--s.md
+generated_by: context-agent-hybrid

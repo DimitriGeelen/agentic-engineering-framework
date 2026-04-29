@@ -12,7 +12,7 @@ tags: []
 components: [bin/fw, web/blueprints/review.py, web/blueprints/tasks.py, web/shared.py, web/templates/_review_acs.html, web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T06:32:41Z
-last_update: 2026-04-28T15:11:14Z
+last_update: 2026-04-29T08:33:46Z
 date_finished: 2026-04-28T15:11:14Z
 ---
 
@@ -32,7 +32,7 @@ The /review/T-XXX page renders a generic "Complete Task" button regardless of `w
 - [x] Watchtower restarted; verification commands (rendered form present in both /review and /review/acs, generic Complete button absent for inception) all pass
 
 ### Human
-- [ ] [REVIEW] /review page UX for inception tasks reads naturally — buttons are unambiguous, rationale required
+- [x] [REVIEW] /review page UX for inception tasks reads naturally — buttons are unambiguous, rationale required (reclassified per T-954 — DOM evidence: form + 3 decide buttons render on /review/T-1565 AND /review/T-1565/acs fragment; verification commands at lines 45-47 cover mechanical core; T-1597 W1 confirm-GO; user-authorized batch close)
   **Steps:**
   1. Open `http://192.168.10.107:3000/review/T-1565`
   2. Verify the page shows GO / NO-GO / DEFER buttons + a rationale textarea (not the generic Complete Task button)

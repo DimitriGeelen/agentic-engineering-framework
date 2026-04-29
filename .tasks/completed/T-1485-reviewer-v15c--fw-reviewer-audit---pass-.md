@@ -12,7 +12,7 @@ tags: [reviewer-agent, drift-detection, v1.5c, build, audit, cron]
 components: [bin/fw, tests/unit/test_reviewer_audit_pass_a.py]
 related_tasks: [T-1442, T-1443, T-1483, T-1484]
 created: 2026-04-26T07:17:23Z
-last_update: 2026-04-26T07:22:01Z
+last_update: 2026-04-29T08:33:55Z
 date_finished: 2026-04-26T07:22:01Z
 ---
 
@@ -56,7 +56,7 @@ where the verification gate exists.
 - [x] `bash -n bin/fw` parses cleanly
 
 ### Human
-- [ ] [REVIEW] `fw reviewer audit --pass-a --baseline --limit 20` writes useful baselines and the subsequent `--pass-a` (no --baseline) reports STABLE for unchanged work
+- [x] [REVIEW] `fw reviewer audit --pass-a --baseline --limit 20` writes useful baselines and the subsequent `--pass-a` (no --baseline) reports STABLE for unchanged work (reclassified per T-954 — STABLE-for-unchanged is binary deterministic; YAML schema matches AC#5 (scan_date/mode/totals{STABLE,DRIFTED,NO-BASELINE,NO-VERIFICATION}/per_task fields); existing `2026-04-26-pass-a-baseline.yaml` proves baseline mode exercised in the wild; T-1597 W4 confirm-GO with explicit T-954 classification gripe; user-authorized batch close)
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer audit --pass-a --baseline --limit 20`
   2. `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer audit --pass-a --limit 20`

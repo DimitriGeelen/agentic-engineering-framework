@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1593: fw version bump --tag must actually create annotated tag (T-1591/T-1592 Prevention #2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-29T08:33:56Z
+# ============================================================================
+
+task_id: T-1593
+task_name: "fw version bump --tag must actually create annotated tag (T-1591/T-1592 Prevention #2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-28T21:40:38Z
+completed: 2026-04-28T21:47:05Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-28T23:47:25+02:00
+last_commit: 2026-04-28T23:50:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-push hook rejects lightweight tags (T-1591 Prevention #2). vendor sync — propagate hooks.sh + bin/fw + others to .agentic-framework/
+
+# Key outcomes
+outcomes:
+  - "Pre-push hook rejects pushes containing lightweight tags — verified: synthetic lightweight push → exit 1, \"lightweight tag(s) detected\""
+  - "Hook prints actionable fix per tag — emits `git tag -d X && git tag -a X -m \"Release X\"` per offending tag"
+  - "Hook bypassable via `git push --no-verify` (Tier 0) — message includes the bypass instruction"
+  - "Annotated-tag pushes still succeed (no false positive) — verified: synthetic annotated push → \"lightweight\" not in output, audit proceeds"
+  - "Hook template in `agents/git/lib/hooks.sh` and live `.git/hooks/pre-push` both updated; VERSION marker bumped 1.1 → 1.2 (forces `fw git install-hooks` re-deployment)"
+  - "Synthetic test passes — verified manually with throwaway tags `vT1593-light-test`/`vT1593-anno-test` in framework repo; both verification commands exit 0"
+  - "[REVIEW] Hook UX is clear when a lightweight tag is detected (reclassified per T-954 — synthetic test verified: `git tag vT1593-light` triggers exit 1 with verbatim \"lightweight tag(s) detected\" header + verbatim recreate command `git tag -d X && git tag -a X -m \"...\"` + bypass instruction; annotated tag exits 0; live framework v1.6.0 tag (this session) confirms hook accepts annotated tags; T-1597 W5 confirm-GO with explicit T-954 classification gripe; user-authorized batch close)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/git/lib/hooks.sh"
+  - ".agentic-framework/agents/task-create/update-task.sh"
+  - ".agentic-framework/bin/fw"
+  - ".agentic-framework/docs/generated/components/agents-metrics-api-usage.md"
+  - ".agentic-framework/docs/generated/components/tests-playwright-test_cross_surface_parity.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-cockpit.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-inception.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-review.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-tasks.md"
+  - ".agentic-framework/VERSION"
+  - "agents/git/lib/hooks.sh"
+  - ".context/audits/2026-04-28.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/feedback-stream.yaml"
+  - ".context/working/.fleet-failure-state.json"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".tasks/active/T-1593-fw-version-bump---tag-must-actually-crea.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-28T23:47:25"
+    action: "T-1593: pre-push hook rejects lightweight tags (T-1591 Prevention #2)"
+  - time: "2026-04-28T23:50:13"
+    action: "T-1593: vendor sync — propagate hooks.sh + bin/fw + others to .agentic-framework/"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 24
+  lines_added: 478
+  lines_removed: 40
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1593-fw-version-bump---tag-must-actually-crea.md
+generated_by: context-agent-hybrid
