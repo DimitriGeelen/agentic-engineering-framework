@@ -4754,6 +4754,23 @@ PYPREDICT
                     echo "  No integration tests found."
                 fi
                 ;;
+            --governance|governance)
+                # Red-team governance harness (T-1601 arc: T-1606/T-1607/T-1608)
+                if ! command -v bats >/dev/null 2>&1; then
+                    echo -e "${RED}ERROR: bats is not installed${NC}" >&2
+                    exit 1
+                fi
+                shift
+                [ "${1:-}" = "--" ] && shift
+                echo -e "${BOLD}=== Bats Governance Tests (red-team harness) ===${NC}"
+                if [ "$#" -gt 0 ]; then
+                    bats "$@" || _test_exit=1
+                elif [ -d "$FRAMEWORK_ROOT/tests/governance/" ] && ls "$FRAMEWORK_ROOT/tests/governance/"*.bats >/dev/null 2>&1; then
+                    bats "$FRAMEWORK_ROOT/tests/governance/" || _test_exit=1
+                else
+                    echo "  No governance tests found."
+                fi
+                ;;
             --web|web)
                 # Pytest web tests
                 if ! python3 -c "import pytest" 2>/dev/null; then
@@ -4816,6 +4833,15 @@ PYPREDICT
                     fi
                 fi
 
+                # 2b. Bats governance tests (T-1601 red-team harness)
+                if command -v bats >/dev/null 2>&1; then
+                    if [ -d "$FRAMEWORK_ROOT/tests/governance/" ] && ls "$FRAMEWORK_ROOT/tests/governance/"*.bats >/dev/null 2>&1; then
+                        echo -e "${BOLD}--- Bats Governance Tests (red-team harness) ---${NC}"
+                        bats "$FRAMEWORK_ROOT/tests/governance/" || _test_exit=1
+                        echo ""
+                    fi
+                fi
+
                 # 3. Pytest web tests
                 if python3 -c "import pytest" 2>/dev/null; then
                     echo -e "${BOLD}--- Web Tests (pytest) ---${NC}"
@@ -4835,11 +4861,12 @@ PYPREDICT
                 fi
                 ;;
             *)
-                echo -e "${BOLD}Usage:${NC} fw test [all|unit|integration|web|playwright|lint]"
+                echo -e "${BOLD}Usage:${NC} fw test [all|unit|integration|governance|web|playwright|lint]"
                 echo ""
                 echo "  all           Run all tests (default)"
                 echo "  unit          Bats unit tests only"
                 echo "  integration   Bats integration tests only"
+                echo "  governance    Bats red-team governance harness (T-1601 arc)"
                 echo "  web           Pytest web tests only"
                 echo "  playwright    Playwright UI tests (alias: ui)"
                 echo "  lint          ShellCheck linting on all .sh files"
