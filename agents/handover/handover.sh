@@ -686,6 +686,11 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, "active", "*.md"))):
     if not human_match:
         continue
     human_section = human_match.group(1)
+    # T-1618: strip <!-- ... --> blocks before counting. The default task template
+    # includes an Example AC inside a comment ("- [ ] [REVIEW] Dashboard renders
+    # correctly") that must not register as a real unchecked AC. Mirrors the same
+    # fix in bin/fw verify-acs (G-047).
+    human_section = re.sub(r'<!--.*?-->', '', human_section, flags=re.DOTALL)
     unchecked = len(re.findall(r'^\s*-\s*\[ \]', human_section, re.M))
     if unchecked == 0:
         continue
