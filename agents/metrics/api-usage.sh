@@ -169,6 +169,12 @@ def stats_for_window(days: int):
     # The split lets operators see "remaining holdouts" without the rolling
     # window blurring it via pre-deploy backlog.
     legacy_unattributable = 0
+    # T-1419: max(ts) per (method, attribution-key) for last_seen_iso surface.
+    # Lets operators distinguish "still calling" from "stale rolling-window
+    # residue" on a recent migration (e.g. post-T-1418 deploy verification).
+    last_seen_callers = {}
+    last_seen_pids = {}
+    last_seen_ips = {}
     for ts, method, from_, peer_pid, peer_addr in entries:
         if ts < cutoff:
             continue
@@ -176,16 +182,27 @@ def stats_for_window(days: int):
         total += 1
         if is_legacy(method):
             legacy_total += 1
-            legacy_callers[(method, from_ or UNKNOWN)] += 1
+            ck = (method, from_ or UNKNOWN)
+            legacy_callers[ck] += 1
+            if ts > last_seen_callers.get(ck, 0):
+                last_seen_callers[ck] = ts
             if peer_pid is not None:
-                legacy_pids[(method, peer_pid)] += 1
+                pk = (method, peer_pid)
+                legacy_pids[pk] += 1
+                if ts > last_seen_pids.get(pk, 0):
+                    last_seen_pids[pk] = ts
             if peer_addr:
                 # T-1410: rollup by IP — ephemeral source ports otherwise
                 # fragment a single host into N rows of count=1.
-                legacy_ips[(method, addr_to_ip(peer_addr))] += 1
+                ik = (method, addr_to_ip(peer_addr))
+                legacy_ips[ik] += 1
+                if ts > last_seen_ips.get(ik, 0):
+                    last_seen_ips[ik] = ts
             if from_ is None and peer_pid is None and not peer_addr:
                 legacy_unattributable += 1
-    return counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips, legacy_unattributable
+    return (counts, total, legacy_total, legacy_callers, legacy_pids,
+            legacy_ips, legacy_unattributable,
+            last_seen_callers, last_seen_pids, last_seen_ips)
 
 def build_top_methods(counts, total):
     """T-1312: shared helper for top-10 methods JSON shape."""
@@ -200,34 +217,60 @@ def build_top_methods(counts, total):
         })
     return out
 
-def build_legacy_callers(legacy_callers):
-    """T-1312: shared helper for legacy callers JSON shape."""
-    return [
-        {"method": method, "from": from_, "count": count}
-        for (method, from_), count in legacy_callers.most_common(15)
-    ]
+def _ts_to_iso(ts_ms: int) -> str:
+    """T-1419: ms-since-epoch → ISO 8601 UTC string with 'Z' suffix."""
+    import datetime as _dt
+    return _dt.datetime.fromtimestamp(ts_ms / 1000, _dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-def build_legacy_callers_by_pid(legacy_pids):
-    """T-1408: parallel breakdown by peer_pid for entries that carry it."""
-    return [
-        {"method": method, "peer_pid": pid, "count": count}
-        for (method, pid), count in legacy_pids.most_common(15)
-    ]
+def build_legacy_callers(legacy_callers, last_seen=None):
+    """T-1312: shared helper for legacy callers JSON shape.
+    T-1419: optional last_seen dict adds last_seen_ts_ms / last_seen_iso per row."""
+    last_seen = last_seen or {}
+    out = []
+    for (method, from_), count in legacy_callers.most_common(15):
+        row = {"method": method, "from": from_, "count": count}
+        ts = last_seen.get((method, from_))
+        if ts is not None:
+            row["last_seen_ts_ms"] = ts
+            row["last_seen_iso"] = _ts_to_iso(ts)
+        out.append(row)
+    return out
 
-def build_legacy_callers_by_ip(legacy_ips):
+def build_legacy_callers_by_pid(legacy_pids, last_seen=None):
+    """T-1408: parallel breakdown by peer_pid for entries that carry it.
+    T-1419: optional last_seen dict adds last_seen_ts_ms / last_seen_iso per row."""
+    last_seen = last_seen or {}
+    out = []
+    for (method, pid), count in legacy_pids.most_common(15):
+        row = {"method": method, "peer_pid": pid, "count": count}
+        ts = last_seen.get((method, pid))
+        if ts is not None:
+            row["last_seen_ts_ms"] = ts
+            row["last_seen_iso"] = _ts_to_iso(ts)
+        out.append(row)
+    return out
+
+def build_legacy_callers_by_ip(legacy_ips, last_seen=None):
     """T-1409/T-1410: parallel breakdown by peer_ip (TCP source IP).
-    Ports stripped via addr_to_ip — one row per host, not per connection."""
-    return [
-        {"method": method, "peer_ip": ip, "count": count}
-        for (method, ip), count in legacy_ips.most_common(15)
-    ]
+    Ports stripped via addr_to_ip — one row per host, not per connection.
+    T-1419: optional last_seen dict adds last_seen_ts_ms / last_seen_iso per row."""
+    last_seen = last_seen or {}
+    out = []
+    for (method, ip), count in legacy_ips.most_common(15):
+        row = {"method": method, "peer_ip": ip, "count": count}
+        ts = last_seen.get((method, ip))
+        if ts is not None:
+            row["last_seen_ts_ms"] = ts
+            row["last_seen_iso"] = _ts_to_iso(ts)
+        out.append(row)
+    return out
 
 # T-1416: cut-ready short-circuit. Binary gate on attributable-only legacy.
 # Composes with --json (compact CI shape) or human (one-line PASS/FAIL).
 # Exits before the trend/single-window paths so the output is unambiguous.
 if cut_ready:
     window_days = int(last_n_s) if last_n_s else 7
-    _, _, legacy_total, _, _, _, legacy_unattr = stats_for_window(window_days)
+    _, _, legacy_total, _, _, _, legacy_unattr, _, _, _ = stats_for_window(window_days)
     legacy_attr = legacy_total - legacy_unattr
     is_ready = (legacy_attr == 0)
     if json_out:
@@ -257,7 +300,7 @@ if json_out:
         windows_out = []
         gate_passing = True
         for d in [1, 7, 30, 60]:
-            _, total, legacy_total, _, _, _, legacy_unattr = stats_for_window(d)
+            _, total, legacy_total, _, _, _, legacy_unattr, _, _, _ = stats_for_window(d)
             pct = (legacy_total / total) * 100 if total else 0.0
             passing = (pct <= gate_pct_s) if total > 0 else True
             windows_out.append({
@@ -271,7 +314,7 @@ if json_out:
             })
             if d == 60:
                 gate_passing = passing if total > 0 else True
-        counts_60, total_60, legacy_60, legacy_callers_60, legacy_pids_60, legacy_ips_60, legacy_unattr_60 = stats_for_window(60)
+        counts_60, total_60, legacy_60, legacy_callers_60, legacy_pids_60, legacy_ips_60, legacy_unattr_60, last_seen_callers_60, last_seen_pids_60, last_seen_ips_60 = stats_for_window(60)
         out = {
             "audit_file": audit_path,
             "mode": "trend",
@@ -282,16 +325,16 @@ if json_out:
             "legacy_attributable": legacy_60 - legacy_unattr_60,
             "legacy_unattributable_pre_t1409": legacy_unattr_60,
             "top_methods": build_top_methods(counts_60, total_60),
-            "legacy_callers": build_legacy_callers(legacy_callers_60),
-            "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids_60),
-            "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips_60),
+            "legacy_callers": build_legacy_callers(legacy_callers_60, last_seen_callers_60),
+            "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids_60, last_seen_pids_60),
+            "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips_60, last_seen_ips_60),
             "gate": {"window_days": 60, "passing": gate_passing},
         }
         print(json.dumps(out))
         sys.exit(0 if gate_passing else 1)
     else:
         last_n = int(last_n_s)
-        counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips, legacy_unattr = stats_for_window(last_n)
+        counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips, legacy_unattr, last_seen_callers, last_seen_pids, last_seen_ips = stats_for_window(last_n)
         pct = (legacy_total / total) * 100 if total else 0.0
         passing = (pct <= gate_pct_s) if total > 0 else True
         out = {
@@ -312,9 +355,9 @@ if json_out:
             "legacy_attributable": legacy_total - legacy_unattr,
             "legacy_unattributable_pre_t1409": legacy_unattr,
             "top_methods": build_top_methods(counts, total),
-            "legacy_callers": build_legacy_callers(legacy_callers),
-            "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids),
-            "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips),
+            "legacy_callers": build_legacy_callers(legacy_callers, last_seen_callers),
+            "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids, last_seen_pids),
+            "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips, last_seen_ips),
             "gate": {"window_days": last_n, "passing": passing},
         }
         print(json.dumps(out))
@@ -352,7 +395,7 @@ if last_n_s == "":
             final_unattr = legacy_unattr
 
     # Top-10 methods using the 60d window (canonical T-1166 gate window)
-    counts_60, total_60, legacy_60, legacy_callers_60, legacy_pids_60, legacy_ips_60, legacy_unattr_60 = stats_for_window(60)
+    counts_60, total_60, legacy_60, legacy_callers_60, legacy_pids_60, legacy_ips_60, legacy_unattr_60, _, _, _ = stats_for_window(60)
     print()
     if total_60 > 0:
         print(f"  Top 10 methods (last 60d):")
@@ -406,7 +449,7 @@ if last_n_s == "":
 
 # Single-window mode: original CI-gate behavior.
 last_n = int(last_n_s)
-counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips, legacy_unattr = stats_for_window(last_n)
+counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips, legacy_unattr, _, _, _ = stats_for_window(last_n)
 print(f"  Window:     last {last_n} days")
 print(f"  Total RPCs: {total}")
 print()
