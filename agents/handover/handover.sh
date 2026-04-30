@@ -526,21 +526,33 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
     tname = re.search(r'^name:\s*(.+)', content, re.M)
     tstatus = re.search(r'^status:\s*(.+)', content, re.M)
     thoriz = re.search(r'^horizon:\s*(.+)', content, re.M)
+    twf = re.search(r'^workflow_type:\s*(.+)', content, re.M)
     if not tid:
         continue
     h = thoriz.group(1).strip() if thoriz else 'now'
     # T-1530: capture verdict while content is still loaded
     verdict = extract_verdict(content)
+    # T-1619: capture workflow_type + Decision to filter DEFER'd inceptions from WIP.
+    # Decision (recorded by fw inception decide) is the source of truth, not
+    # Recommendation. T-1517's Deferred-Inceptions section uses the same regex.
+    wf = twf.group(1).strip() if twf else ''
+    dec_m = re.search(r'^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b', content, re.M)
+    dec = dec_m.group(1) if dec_m else ''
     tasks.append((horizon_order.get(h, 0), tid.group(1).strip(),
                   tname.group(1).strip() if tname else '',
                   tstatus.group(1).strip() if tstatus else '',
-                  h, verdict))
+                  h, verdict, wf, dec))
 
 tasks.sort(key=lambda t: (t[0], t[1]))
 current_horizon = None
 # Collect work-completed tasks to summarize at end of each horizon group
 pending_completed = []
-for _, tid, tname, tstatus, h, verdict in tasks:
+for _, tid, tname, tstatus, h, verdict, wf, dec in tasks:
+    # T-1619: DEFER'd inceptions are parked (decision is final, not WIP).
+    # Skip from WIP — they are surfaced in the "Deferred Inceptions"
+    # section below (T-1517) which already covers visibility.
+    if wf == 'inception' and dec == 'DEFER':
+        continue
     if h != current_horizon:
         # Flush any accumulated work-completed tasks from previous horizon
         if pending_completed:
@@ -595,22 +607,18 @@ if pending_completed:
 #         correctly filters by `decision == 'pending'`.
 inception_pending = []
 inception_deferred = []
-decision_re = re.compile(r'^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b', re.M)
-for _, tid, tname, tstatus, h in tasks:
+# T-1619: tuple grew to 8 elements (verdict, wf, dec). Reuse the captured
+# values; no need to re-read each task file.
+for _, tid, tname, tstatus, h, _verdict, wf, dec in tasks:
     if tstatus == 'work-completed':
         continue
-    for f in glob.glob(os.path.join(tasks_dir, f'{tid}-*.md')):
-        with open(f) as fh:
-            body = fh.read()
-        if 'workflow_type: inception' not in body[:2048]:
-            break
-        m = decision_re.search(body)
-        if m is None:
-            inception_pending.append((tid, tname))
-        elif m.group(1) == 'DEFER':
-            inception_deferred.append((tid, tname))
-        # GO/NO-GO: in-flight close — sweep handles the move; skip both lists.
-        break
+    if wf != 'inception':
+        continue
+    if dec == '':
+        inception_pending.append((tid, tname))
+    elif dec == 'DEFER':
+        inception_deferred.append((tid, tname))
+    # GO/NO-GO: in-flight close — sweep handles the move; skip both lists.
 
 if inception_pending:
     print('### Inception Phases — Awaiting Decision')
