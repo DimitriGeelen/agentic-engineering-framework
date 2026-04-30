@@ -4,16 +4,16 @@ name: "Pickup: Auto-registered concern entries land at column 0 (outside concern
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-057. Type: bug-report.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-29T07:45:01Z
-last_update: 2026-04-29T18:32:48Z
-date_finished: null
+last_update: 2026-04-29T22:32:31Z
+date_finished: 2026-04-29T22:32:31Z
 source_task_id_in_origin: T-057
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -41,7 +41,17 @@ Scope decision: convert this task to an inception (decide: pre-push block vs pos
 - [x] Searched framework codebase for auto-register code matching the bug shape — none found
 - [x] Documented investigation finding in this task's Context
 - [x] Recommended structural prevention (yaml.safe_load gate on staged tracked YAMLs) as a separate inception scope
-- [ ] Convert this task to inception OR defer to later horizon
+- [x] Deferred to later horizon (2026-04-29) — separate inception will own the prevention work; no code change needed in this task
+
+## Recommendation
+
+- **Recommendation:** GO (close as investigation-only, no framework fix)
+- **Rationale:** Pickup arrived from 003-NTB-ATC-Plugin describing a writer that corrupts `concerns.yaml`. Codebase search found no analog in the framework — no agent or library appends to `concerns.yaml` programmatically; only readers exist. The originating bug lives in the consumer project's local code (their T-1053). This task captured the investigation; the structural prevention work (`yaml.safe_load` gate on staged .context/project/*.yaml) is deferred to a separate inception so it isn't conflated with this pickup's resolution.
+- **Evidence:**
+  - `grep -rln "concerns.yaml" agents/ lib/ bin/ web/` → only readers, no writers
+  - `lib/init.sh:339` seeds `concerns: []` at fresh init — no incremental append
+  - No `fw concerns add` CLI exists
+  - Framework's own `concerns.yaml` has consistent block-mapping indentation (verified 2026-04-29)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -71,19 +81,13 @@ Scope decision: convert this task to an inception (decide: pre-push block vs pos
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** Cross-project pickup envelope reported `concerns.yaml` corruption (a `- id: G-XXX` line landing at column 0 outside the `concerns:` mapping), silently breaking pre-push audit on the consumer project's side.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Not in the framework codebase. Investigation 2026-04-29 found no framework code path that programmatically appends to `concerns.yaml` — only readers (`bin/fw gaps`, audit D11/D12, handover summary, `fw context init` seed). The corrupting writer lives in the consumer project (003-NTB-ATC-Plugin's local T-1053 territory), not in framework-shared tooling.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed (framework-side):** The framework has no schema-validation gate on staged `.context/project/*.yaml` files. If a writer (consumer-local OR framework-local, in any future agent) ever emits malformed YAML, nothing catches it before push — pre-push audit reads the corrupted file but doesn't currently `yaml.safe_load` it as a structural check. The bug shape would have escaped detection in the framework too if the writer had been ours.
+
+**Prevention:** A separate inception is queued (deferred to `horizon: later`) to design the right gate: pre-push block vs post-commit warn vs pre-commit block, scope (just concerns.yaml? all .context/project/*.yaml? all tracked YAMLs?), and overlap with existing audit `D7` YAML-parse check. Not bundled here because the right shape is a decision-task, not a build-task — different sizing, different inception arc.
 
 ## Decisions
 
@@ -105,3 +109,19 @@ Scope decision: convert this task to an inception (decide: pre-push block vs pos
 
 ### 2026-04-29T18:32:48Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-29T22:32:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-3796024c
+- **Timestamp:** 2026-04-29T22:32:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-29T22:32:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

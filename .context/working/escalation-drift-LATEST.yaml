@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-04-29T03:23:01.792318+00:00
-corpus_total: 1503
-bug_class_total: 328
+generated: 2026-04-30T03:23:01.881085+00:00
+corpus_total: 1537
+bug_class_total: 335
 bug_class_pct: 21
-h1_flagged: 316
-h1_pct_of_bug_class: 96
-h2_repeat_patterns: 53
-h3_flagged: 262
-h3_pct_of_bug_class: 79
-recent_30d_flagged: 198
+h1_flagged: 317
+h1_pct_of_bug_class: 94
+h2_repeat_patterns: 60
+h3_flagged: 263
+h3_pct_of_bug_class: 78
+recent_30d_flagged: 192
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-1014-fix-playwright-navigation-test-timeout--"
@@ -34,22 +34,22 @@ recent_sample:
     name: "Fix project boundary false positive — TermLink commands inside loops/pipes"
 h2_top:
   - learning: "P-010"
-    task_count: 99
+    task_count: 106
   - learning: "P-011"
-    task_count: 82
+    task_count: 97
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"
     task_count: 38
+  - learning: "L-291"
+    task_count: 29
   - learning: "PL-007"
     task_count: 24
-  - learning: "L-291"
-    task_count: 24
   - learning: "L-293"
-    task_count: 18
+    task_count: 23
   - learning: "L-002"
     task_count: 13
-  - learning: "P-002"
-    task_count: 12
-  - learning: "P-001"
-    task_count: 12
+  - learning: "L-298"
+    task_count: 13
+  - learning: "L-316"
+    task_count: 13

@@ -3239,3 +3239,71 @@ scan_id: R-a7ff879c
 task_id: T-1608
 payload:
   task_file: .tasks/active/T-1608-red-team-harness-phase-3--task-lifecycle.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T22:09:01Z'
+scan_id: R-f4ad03a1
+task_id: T-1609
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T22:09:01Z'
+scan_id: R-f4ad03a1
+task_id: T-1609
+payload:
+  task_file: .tasks/active/T-1609-wire-binfw-test-governance-subcommand-fo.md
+---
+kind: scan_emitted
+timestamp: '2026-04-29T22:32:31Z'
+scan_id: R-3796024c
+task_id: T-1599
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-29T22:32:31Z'
+scan_id: R-3796024c
+task_id: T-1599
+payload:
+  task_file: .tasks/active/T-1599-pickup-auto-registered-concern-entries-l.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T07:24:58Z'
+scan_id: R-2200db3d
+task_id: T-1610
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T07:24:58Z'
+scan_id: R-2200db3d
+task_id: T-1610
+payload:
+  task_file: .tasks/active/T-1610-yaml-schema-validation-gate-for-staged-c.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T07:46:12Z'
+scan_id: R-feabe553
+task_id: T-1612
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T07:46:12Z'
+scan_id: R-feabe553
+task_id: T-1612
+payload:
+  task_file: .tasks/active/T-1612-watchtower-threadedtrue--werkzeug--socke.md

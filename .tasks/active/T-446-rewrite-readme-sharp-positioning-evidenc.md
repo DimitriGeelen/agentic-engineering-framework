@@ -35,7 +35,7 @@ Inception T-445 GO. See `docs/reports/T-445-readme-overhaul.md` for research (po
 - [x] Screenshots: 6 inside collapsibles with width sizing, none in main flow
 
 ### Human
-- [ ] [REVIEW] Positioning reads as "governance layer" not "assistant runtime"
+- [x] [REVIEW] Positioning reads as "governance layer" not "assistant runtime"
   **Steps:**
   1. Read the first 5 lines of README.md
   2. Ask: "Would a visitor immediately understand this is NOT another OpenClaw?"

@@ -30,7 +30,7 @@ date_finished: 2026-03-12T20:36:29Z
 - [x] README tracker updated with article 17
 
 ### Human
-- [ ] [REVIEW] Voice and tone match Dimitri's writing style
+- [x] [REVIEW] Voice and tone match Dimitri's writing style
   **Steps:**
   1. Read the article at `docs/articles/deep-dives/17-why-bash-yaml-files.md`
   2. Compare to published articles (01-task-gate, 16-honest-machines)

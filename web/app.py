@@ -431,7 +431,7 @@ def main():
         if socketio:
             socketio.run(app, host=host, port=port, debug=args.debug, allow_unsafe_werkzeug=True)
         else:
-            app.run(host=host, port=port, debug=args.debug)
+            app.run(host=host, port=port, debug=args.debug, threaded=True)
     except OSError as exc:
         if "Address already in use" in str(exc) or "address already in use" in str(exc):
             print(
