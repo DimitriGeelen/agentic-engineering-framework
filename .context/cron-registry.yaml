@@ -168,3 +168,12 @@ jobs:
     origin_task: T-1555
     status: active
     description: "Daily scan of completed tasks for symptom-fix candidates: bug-class without ## RCA (H1), repeated learning-IDs across 3+ tasks in 30 days (H2), bug-class without RCA AND no learning capture (H3). Writes machine-readable summary to .context/working/escalation-drift-LATEST.yaml + human-readable report to docs/reports/T-1549-escalation-scan-v0.md. Antifragile (no caching). Surfaces drift after Layer A (T-1550 RCA gate) baseline."
+
+  - id: watchtower-rss-5m
+    name: "Watchtower RSS observation (5 min, T-1611-B)"
+    schedule: "*/5 * * * *"
+    command: "/opt/999-Agentic-Engineering-Framework/agents/monitor/watchtower-rss-sample.sh"
+    source_file: agentic-audit.crontab
+    origin_task: T-1615
+    status: active
+    description: "T-1611-B passive observation. Samples Watchtower PID's RSS/VSZ/CPU/etime every 5 min. Distinguishes memory-leak re-saturation from request-rate queueing — if RSS climbs monotonically over many hours, T-1612's threaded=True fix is incomplete and T-1611-C (gunicorn swap) reopens. Outputs: .context/monitors/watchtower-rss.jsonl (10080-line retention) + watchtower-rss-latest.yaml."

@@ -3341,3 +3341,20 @@ scan_id: R-36882647
 task_id: T-1614
 payload:
   task_file: .tasks/active/T-1614-concurrent-request-smoke-test-for-watcht.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T08:11:59Z'
+scan_id: R-2352645e
+task_id: T-1615
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T08:11:59Z'
+scan_id: R-2352645e
+task_id: T-1615
+payload:
+  task_file: .tasks/active/T-1615-watchtower-rss-observation-cron--detect-.md

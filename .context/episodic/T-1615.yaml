@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1615: Watchtower RSS observation cron — detect memory growth over uptime (T-1611-B)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-30T08:12:02Z
+# ============================================================================
+
+task_id: T-1615
+task_name: "Watchtower RSS observation cron — detect memory growth over uptime (T-1611-B)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-30T08:09:11Z
+completed: 2026-04-30T08:11:58Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`agents/monitor/watchtower-rss-sample.sh` exists, follows liveness-check.sh pattern (set -euo pipefail, PROJECT_ROOT default, mkdir -p)"
+  - "Script discovers Watchtower PID via `.context/working/watchtower.pid` (triple-file source-of-truth, T-1376)"
+  - "Script appends JSONL line to `.context/monitors/watchtower-rss.jsonl` with: timestamp, pid, etime_sec, rss_kb, vsz_kb, pcpu (or \"down\" if PID file missing/process dead)"
+  - "Script writes latest snapshot to `.context/monitors/watchtower-rss-latest.yaml`"
+  - "Script enforces retention: keep last 10080 lines (matches liveness-check.sh — 7 days at 1/min, ~840 days at 1/5min)"
+  - "Cron job `watchtower-rss-5m` registered in `.context/cron-registry.yaml`, schedule `*/5 * * * *` (visible in `fw cron list`)"
+  - "`bash -n agents/monitor/watchtower-rss-sample.sh` succeeds"
+  - "First manual run produced valid JSONL entry: pid=1338191, rss_kb=65216, etime_sec=1554, pcpu=6.3 (current healthy baseline post-T-1612 restart)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1615-watchtower-rss-observation-cron--detect-.md
+generated_by: context-agent-hybrid
