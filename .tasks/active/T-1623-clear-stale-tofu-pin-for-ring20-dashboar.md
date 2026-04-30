@@ -84,6 +84,31 @@ grep -q '192.168.10.143' /root/.termlink/hubs.toml
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+## Recommendation
+
+**Recommendation:** GO (conditional on human confirmation that the hub move was intentional)
+
+**Rationale:** Evidence is consistent with a legitimate hub migration, not a MITM:
+- TermLink config (`/root/.termlink/hubs.toml`) was rewritten to point at `.143` — that's an authorised-side change, not a wire-level tamper.
+- `.121` is dead (`ping` 100% loss); `.143` is alive — the topology actually moved.
+- Cert fingerprint differs as expected (different host, different cert) — the doctor itself flags this with the standard rotation hint.
+- The framework-side mitigation candidate in G-060 names this exact heal command; T-1054 + T-1055 (TermLink reauth) shipped completed.
+
+The agent CANNOT autonomously authorise the TOFU clear because the trust decision is Tier 2: the only way to distinguish "legitimate migration" from "MITM with bonus config-rewrite" is human recall of "did I (or someone authorised) move this hub recently?". One yes/no question gates the entire fix.
+
+**Evidence:**
+- `/root/.termlink/hubs.toml`: `address = "192.168.10.143:9100"` for `ring20-dashboard` (was .121).
+- `ping 192.168.10.121`: 100% packet loss.
+- `ping 192.168.10.143`: 0.166ms RTT.
+- `termlink fleet doctor` (run 2026-04-30T19:51): TOFU VIOLATION reported with old fingerprint `sha256:53de15ec...`, new `sha256:2b0946f9...`; doctor's own `hint:` recommends `termlink tofu clear 192.168.10.143:9100`.
+- G-060 in `concerns.yaml`: `mitigation_candidate` names the same heal path; status was "watching" because the framework correctly registered the gap but had no actor to clear it.
+- TermLink: `/opt/termlink/.tasks/completed/T-1054-*` and `/opt/termlink/.tasks/completed/T-1055-*` confirm reauth tooling is mature on the upstream side.
+
+After human confirms + clears, agent will:
+1. Re-run `termlink fleet doctor` to confirm `[PASS] ring20-dashboard`.
+2. Wait for one fleet-doctor cron tick (`liveness-1m`) to refresh `.fleet-failure-state.json`.
+3. Update `concerns.yaml`: G-060 → resolved (with note: surface evolved .121 → .143; TOFU cleared; reauth verified).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
