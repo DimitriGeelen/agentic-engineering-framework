@@ -795,3 +795,10 @@ bypasses:
   command_hash: c5360a21e9b0c2893df44d0610b27d50c61a4200be9615e1adf0596874ec0e69
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-04-30T20:50:25Z'
+  tier: 0
+  risk: 'PKILL -9: Force-kills processes by name (SIGKILL)'
+  command_preview: pkill -9 nonexistent-claude-test-process-xyzzy123-T612
+  command_hash: 7dabd5c3459e0689f08286ac466c039da44b7899e4acf1530e7d267a790985dc
+  authorized_by: human
+  mechanism: watchtower

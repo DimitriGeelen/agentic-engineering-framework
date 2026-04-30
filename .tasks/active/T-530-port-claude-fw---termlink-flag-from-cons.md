@@ -46,6 +46,11 @@ Port of working implementation from consumer project (995_2021-kosten, commit b2
   **Expected:** Full bidirectional mirror of the Claude Code session
   **If not:** Check `termlink list` for session status, `termlink pty output <session>` for recent output
 
+  **Agent verification attempt 2026-04-30 (per human directive — "you try"):**
+  - **Primitives verified:** `termlink spawn --name X --tags "master,claude,framework" --backend auto --shell --wait` succeeds (matches `bin/claude-fw:56-64` exactly). `termlink pty output <s> --lines N --strip-ansi` returns shell prompt content (matches `claude-fw:139`). `termlink pty inject <s> "<cmd>" --enter` delivers input — confirmed bidirectional by injecting `echo TERMLINK_T530_MARKER` and reading the same marker back from `pty output`. `termlink clean` removes stale sessions.
+  - **NOT verified:** the full `claude-fw --termlink` invocation with a real second `claude` process under the TermLink PTY, observed via `termlink attach` from a separate terminal. Running this E2E would (a) spawn a parallel `claude` process under this anchor, conflicting with the active operator-side session, and (b) require a human at a second terminal to assert the TUI mirror "feels right." Both are out of agent capability without operator partnership.
+  - **Honest call:** the underlying mechanism is sound (every primitive `claude-fw` calls works as documented). The remaining gap is UX assertion ("does it FEEL like a mirror") which is genuinely subjective `[REVIEW]` work for a human operator with two terminals open. Recommend keeping this AC unchecked and validating during your next remote-access need (e.g., when wanting to attach from .107 to a session running here).
+
 ## Verification
 
 # Script parses without syntax errors

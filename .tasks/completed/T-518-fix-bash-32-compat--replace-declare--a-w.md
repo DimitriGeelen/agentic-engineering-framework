@@ -12,7 +12,7 @@ tags: [portability, macos, bash, D4]
 components: [C-004, agents/healing/lib/diagnose.sh, agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-03-17T22:09:02Z
-last_update: 2026-03-27T17:34:22Z
+last_update: 2026-04-30T20:48:15Z
 date_finished: 2026-03-17T22:11:22Z
 ---
 
