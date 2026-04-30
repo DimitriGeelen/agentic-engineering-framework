@@ -23,6 +23,7 @@ LAST_N=""
 RUNTIME_DIR="${TERMLINK_RUNTIME_DIR:-/var/lib/termlink}"
 GATE_PCT="1.0"
 JSON_OUT="0"
+CUT_READY="0"
 
 usage() {
     cat <<EOF
@@ -40,10 +41,16 @@ Options:
                        T-1166 entry gate (default: 1.0)
   --json               Emit structured JSON to stdout (T-1312). Stable shape
                        for dashboards, watchtower pages, cron aggregators.
+  --cut-ready          T-1416: stricter binary gate for the T-1166 cut.
+                       Exit 0 iff legacy_attributable == 0 in the chosen
+                       window (default 7d). Ignores pre-T-1409 backlog
+                       (ages out on its own). Compose with --json for CI
+                       use: emits {cut_ready, window_days, legacy_attributable}.
   -h, --help           This message
 
 Reads:  <runtime_dir>/rpc-audit.jsonl
 Exit:   0 = gate PASS at 60d (or chosen window), 1 = FAIL or audit missing.
+        With --cut-ready: 0 iff zero attributable legacy in window.
 
 Why trend mode:  Don't wait 60 days to see if legacy traffic is dropping.
 The trend report shows the trajectory at 1d / 7d / 30d / 60d so you can
@@ -57,10 +64,18 @@ while [ $# -gt 0 ]; do
         --runtime-dir) RUNTIME_DIR="$2"; shift 2 ;;
         --gate-pct) GATE_PCT="$2"; shift 2 ;;
         --json) JSON_OUT="1"; shift ;;
+        --cut-ready) CUT_READY="1"; shift ;;
         -h|--help) usage; exit 0 ;;
         *) echo "Unknown arg: $1" >&2; usage >&2; exit 2 ;;
     esac
 done
+
+# T-1416: cut-ready mode defaults the window to 7d if the operator didn't
+# pass --last-Nd. The "is anyone still hitting legacy?" question doesn't
+# need 60d; 7d is the bake window the operator cares about pre-cut.
+if [ "$CUT_READY" = "1" ] && [ -z "$LAST_N" ]; then
+    LAST_N="7"
+fi
 
 AUDIT_FILE="$RUNTIME_DIR/rpc-audit.jsonl"
 
@@ -75,12 +90,13 @@ if [ ! -f "$AUDIT_FILE" ]; then
     exit 1
 fi
 
-python3 - "$AUDIT_FILE" "$LAST_N" "$GATE_PCT" "$JSON_OUT" <<'PY'
+python3 - "$AUDIT_FILE" "$LAST_N" "$GATE_PCT" "$JSON_OUT" "$CUT_READY" <<'PY'
 import sys, json, time
 from collections import Counter
 
 audit_path, last_n_s, gate_pct_s = sys.argv[1], sys.argv[2], float(sys.argv[3])
 json_out = (sys.argv[4] == "1") if len(sys.argv) > 4 else False
+cut_ready = (sys.argv[5] == "1") if len(sys.argv) > 5 else False
 
 LEGACY = {
     "event.broadcast",
@@ -205,6 +221,34 @@ def build_legacy_callers_by_ip(legacy_ips):
         {"method": method, "peer_ip": ip, "count": count}
         for (method, ip), count in legacy_ips.most_common(15)
     ]
+
+# T-1416: cut-ready short-circuit. Binary gate on attributable-only legacy.
+# Composes with --json (compact CI shape) or human (one-line PASS/FAIL).
+# Exits before the trend/single-window paths so the output is unambiguous.
+if cut_ready:
+    window_days = int(last_n_s) if last_n_s else 7
+    _, _, legacy_total, _, _, _, legacy_unattr = stats_for_window(window_days)
+    legacy_attr = legacy_total - legacy_unattr
+    is_ready = (legacy_attr == 0)
+    if json_out:
+        print(json.dumps({
+            "cut_ready": is_ready,
+            "window_days": window_days,
+            "legacy_attributable": legacy_attr,
+            "legacy_unattributable_pre_t1409": legacy_unattr,
+            "audit_file": audit_path,
+        }))
+    else:
+        status = "READY" if is_ready else "NOT READY"
+        print(f"== fw metrics api-usage --cut-ready ==")
+        print(f"  Audit file:           {audit_path}")
+        print(f"  Window:               last {window_days} days")
+        print(f"  Legacy (attributable): {legacy_attr}")
+        print(f"  Legacy (pre-T-1409):   {legacy_unattr} (ages out, ignored by gate)")
+        print(f"  Cut-ready gate:        {status}")
+        if not is_ready:
+            print(f"  Migrate the remaining attributable callers, then re-check.")
+    sys.exit(0 if is_ready else 1)
 
 # T-1312: JSON output path. Stable shape — see docs/operations/api-usage-metrics.md.
 if json_out:
