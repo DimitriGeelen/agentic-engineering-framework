@@ -45,6 +45,15 @@ Phase 3 from T-1061 inception (GO). Extend TermLink's `orchestrator.route` chain
   **Expected:** Clean additive extension, no regressions
   **If not:** Note where the abstraction leaks or complicates the existing chain
 
+  **Agent supplementary review (2026-04-30, /opt/termlink/docs/reports/T-903-orchestrator-routing.md + crates/termlink-hub/src/router.rs):**
+  - **Additive extension confirmed:** `task_type` is `Option<String>`, all 5 layers (extraction → bypass → cache → discovery → success/failure tracking) gracefully no-op when absent. Backward-compat test (`orchestrator_route_no_task_type_backward_compatible`) pins it.
+  - **Cache key shape:** composite `routing_key = "method::task_type"` (single string concat). Adequate for current scope; if future routing dimensions land (e.g. priority class, tenant), refactor to a `RoutingKey` newtype before string-concat hell. Not blocking.
+  - **"Preference not exclusion":** task-type tag-match sorts candidates first, never filters them out. Means a build-tagged session is preferred but a generic specialist still fields the call when no match exists. Sound — avoids cliff-edge availability failures.
+  - **Tag convention `task-type:<type>`:** filterable, no Registration schema change. Aligns with the existing tag namespace style (`role:`, `task:`, `name:`).
+  - **No abstraction leaks observed:** the `task_type` branch in `router.rs` is co-located with the existing routing chain, not a parallel pipeline.
+  - **Honest concern:** the report doesn't explicitly state how `task_type` propagates to outbound RPC tags or Registration discovery filters — worth a 30-second skim of `router.rs:685+` before stamping.
+  - **Recommendation:** GO. Clean shape. The composite-key concern is "future scaling," not "ship-blocker."
+
 ## Verification
 
 # Worker artefact exists (proof TermLink-side T-903 worker completed)

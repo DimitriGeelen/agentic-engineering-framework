@@ -46,6 +46,15 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
   **Expected:** Clean model routing with intelligent defaults
   **If not:** Note where the cost model is wrong or where routing decisions are opaque
 
+  **Agent supplementary review (2026-04-30, T-906/T-907 reports + crates/termlink-mcp/src/tools.rs):**
+  - **Resolver shape:** `resolve_dispatch_model(requested, task_type, &cache) → (Option<String>, bool)` is a single function with three input cases (explicit / task_type-only / neither). Easier to test than a mid-pipeline lookup; the 5 unit tests cover each branch.
+  - **Fallback chain:** `DEFAULT_MODEL_FALLBACK` is a hard-coded const (opus → sonnet → haiku per the report). Sane defaults; if you want runtime configurability, that's future work.
+  - **Outcome attribution:** uses existing `task.completed` payload `ok` field — no schema change, no ambiguity ("emitted with ok!=false" = success, "ok:false or crashed" = failure). Clean.
+  - **Persistence is best-effort:** `route_cache.save()` errors are swallowed, breaker is in-memory. Acceptable — a lost cache write means one missed learning, not a correctness break.
+  - **Cost model — honest gap:** "cost-effective" in the AC step (3) is NOT directly enforced. The cache learns success rates, not cost per success. A 90%-success-rate opus call beats a 70%-success-rate haiku call regardless of cost. If you want cost-aware routing, a `cost_per_call` field would need to weight the success rate. **For now, cost is implicit in user choice** (caller picks the model; the system only re-picks on circuit-open).
+  - **Decision visibility:** the dispatch result JSON surfaces `model_requested`, `model_used`, `fallback_used`, `task_type` — so a downstream caller (or the orchestrator) can audit which model actually ran. This is the right shape — opaque enough that the caller doesn't have to thread state, transparent enough that auditors can reconstruct decisions.
+  - **Recommendation:** GO with note. The cost-model gap is real but not new — it's a future feature, not a bug. Sound for v1.
+
 ## Verification
 
 # Phase 4a worker artefact (model passthrough)

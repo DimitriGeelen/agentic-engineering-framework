@@ -44,6 +44,8 @@ Phase 1 from T-1061 inception (GO). WezTerm Lua plugin that queries existing Ter
   **Expected:** Task ID and status visible in terminal chrome
   **If not:** Check WezTerm debug overlay (Ctrl+Shift+L) for Lua errors
 
+  **Agent verification gap (2026-04-30, per L-329):** genuine capability gap — this anchor has no Lua interpreter (`luac`/`lua` absent) and no WezTerm install, so neither static syntax nor live render can be verified from here. File is present (236 lines), README accompanies it (89 lines), TermLink dependency is `termlink list --json` which is a stable read-only RPC. The on-WezTerm rendering test requires a workstation with WezTerm + the plugin installed — that's you.
+
 ## Verification
 
 termlink list --json > /dev/null 2>&1 || echo "SKIP: TermLink not running"

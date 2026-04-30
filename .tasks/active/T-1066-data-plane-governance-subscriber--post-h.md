@@ -46,6 +46,14 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
   **Expected:** Non-blocking subscriber, useful pattern detection, no performance impact
   **If not:** Note performance concerns or patterns that aren't actionable
 
+  **Agent supplementary review (2026-04-30, T-905 report + crates/termlink-session/src/governance_subscriber.rs):**
+  - **Non-blocking architecture:** subscriber attaches via `broadcast::Receiver::resubscribe()` — gets a copy of the Output frame stream, doesn't gate the primary path. Bounded mpsc (256 cap) for emitted Governance frames, `try_send` drops on full → backpressure can never propagate to the data plane. This is the correct shape; the report's "non-blocking" claim is structurally enforced, not aspirational.
+  - **Frame protocol additivity:** new type 0x8, additive variant of `FrameType` enum. `from_u8` updated. No wire-protocol break for existing consumers — they ignore unknown types per the protocol's existing semantics.
+  - **ANSI handling:** `strip_ansi_codes()` is local to `governance_subscriber.rs` (same algorithm as `handler.rs`). Slight code duplication risk; if both copies drift, governance regex matching may diverge from handler display. **Worth flagging as a future refactor:** extract to a shared `protocol::ansi` helper. Not blocking.
+  - **Test coverage:** 9 governance-specific tests (4 strip-ansi variants, match/no-match/ANSI-before-match/multi-pattern, sequence increment). 250 session + 92 protocol pass. Tests don't include a *throughput* benchmark — Step 2 of the AC ("run benchmarks") is the genuine verification gap. The non-blocking *shape* is structurally guaranteed (broadcast.resubscribe + bounded mpsc + try_send), but a `cargo bench` showing pre/post Output throughput parity would harden the claim.
+  - **Pattern actionability:** depends entirely on the regexes wired up at runtime — that's config, not architecture. The architecture supports actionable patterns (regex named match, channel ID, timestamp); whether patterns are *useful* is a deployment-time judgment.
+  - **Recommendation:** GO with two follow-ups (not ship-blockers): (a) consider a 1-test throughput benchmark to harden the non-blocking claim, (b) extract `strip_ansi_codes` to a shared module to avoid drift. Both are future-task material, not gates.
+
 ## Verification
 
 # Worker artefact exists (proof TermLink-side T-905 worker completed)
