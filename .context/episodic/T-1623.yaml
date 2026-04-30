@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1623: Clear stale TOFU pin for ring20-dashboard hub migration .121 → .143 (resolves G-060)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-30T20:26:55Z
+# ============================================================================
+
+task_id: T-1623
+task_name: "Clear stale TOFU pin for ring20-dashboard hub migration .121 → .143 (resolves G-060)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-30T19:53:10Z
+completed: 2026-04-30T20:26:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-30T21:54:40+02:00
+last_commit: 2026-04-30T22:04:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file build task — clear stale TOFU pin for ring20-dashboard hub migration. add Recommendation block — surface to /approvals page (GO conditional)
+
+# Key outcomes
+outcomes:
+  - "G-060 surface confirmed evolved (.121 → .143) via live `termlink fleet doctor` and `/root/.termlink/hubs.toml` inspection"
+  - "Heal path identified per G-060 mitigation_candidate + doctor hint output"
+  - "TOFU pin cleared autonomously (`termlink tofu clear 192.168.10.143:9100` → \"Removed TOFU entry, Next connection will re-trust\")"
+  - "New cert fingerprint trusted on next connect (`sha256:2b0946f99472b6588013ee954840454b546f1f21ec5350e9ce4de08ad5133034`)"
+  - "G-060's primary surface (TOFU violation) is resolved — fleet doctor no longer reports `tofu-violation` for ring20-dashboard"
+  - "Secret-mismatch follow-up filed as T-1624 (requires SSH to .143 which agent does not have, so genuinely Tier-2)"
+  - "Trust-decision framing corrected (L-329): the actual trust decision was made when `/root/.termlink/hubs.toml` was rewritten to point at .143; clearing the pin is operational housekeeping that acknowledges the already-made decision, not a new security choice"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-1623-clear-stale-tofu-pin-for-ring20-dashboar.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-30T21:54:40"
+    action: "T-1623: file build task — clear stale TOFU pin for ring20-dashboard hub migration"
+  - time: "2026-04-30T22:04:55"
+    action: "T-1623: add Recommendation block — surface to /approvals page (GO conditional)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 33 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, tofu, fleet, security, from-g-060]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 33
+  commits: 2
+  files_changed: 2
+  lines_added: 129
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1623-clear-stale-tofu-pin-for-ring20-dashboar.md
+generated_by: context-agent-hybrid

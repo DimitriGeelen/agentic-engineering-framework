@@ -1512,17 +1512,19 @@ concerns:
 
 - id: G-060
   type: gap
-  title: "TermLink hub 'ring20-dashboard' (192.168.10.121:9100) has been failing fleet-doctor with tofu-violation for 98+ consecutive runs over >24h"
-  description: "Auto-registered by T-1053 under G-019 (framework-blind-to-persistent-failure guard). Hub has failed fleet-doctor with error class 'tofu-violation' for 98 consecutive runs since 2026-04-27T18:38:31Z (first observed). This indicates either a genuinely broken hub auth state OR stale client credentials that were not refreshed after a hub rotation. Per T-1051 Option D, the heal path is: 1) confirm the hub is intended to be up (termlink remote ping 192.168.10.121:9100 from a trusted anchor), 2) if yes, refresh the client secret (termlink fleet reauth ring20-dashboard when T-1054 lands, or manually copy /var/lib/termlink/hub.secret via an out-of-band channel for now)."
-  spec_reference: "T-1051 inception, T-1053 implementation, .context/working/.fleet-failure-state.json"
+  title: "TermLink hub 'ring20-dashboard' was failing fleet-doctor with tofu-violation — RESOLVED via T-1623 (.121 → .143 migration + TOFU clear)"
+  description: "Auto-registered by T-1053. Surface evolved 2026-04-30: ring20-dashboard hub migrated .121 → .143; TermLink config (/root/.termlink/hubs.toml) was rewritten to point at .143, .121 is dead, .143 is alive with new cert. Original 'tofu-violation' error class was the framework correctly registering the post-migration cert mismatch. T-1623 cleared the TOFU pin (`termlink tofu clear 192.168.10.143:9100`); new cert sha256:2b0946f9...4de08ad5133034 trusted on next connect. fleet-doctor no longer reports tofu-violation for this hub. Remaining surface (secret-mismatch, error class -32010 invalid signature) tracked under T-1624 / G-045 — that needs out-of-band SSH to .143 which the agent does not have."
+  spec_reference: "T-1051 inception, T-1053 implementation, T-1623 resolution, .context/working/.fleet-failure-state.json"
   severity: high
   trigger_fired: true
   trigger_event: "2026-04-28T18:41:55Z: 98 consecutive fleet-doctor failures on ring20-dashboard (192.168.10.121:9100) with class tofu-violation, first observed 2026-04-27T18:38:31Z"
+  resolved_event: "2026-04-30T20:25:08Z: TOFU pin cleared via T-1623; new fingerprint sha256:2b0946f9 trusted; tofu-violation class no longer reported for this hub. Remaining secret-mismatch surface re-homed to T-1624/G-045."
   detection_lag_days: "1"
   what_works_now: "Fleet doctor correctly classifies the error and emits a hint. T-1052 has already recorded an isolated learning. This concern escalates the sustained pattern to Watchtower visibility."
-  what_remains: "Operator must refresh the client's cached secret for this hub. Long-term fix: T-1054 (termlink fleet reauth) lands a one-command heal."
+  what_remains: "Secret refresh on the anchor — T-1624 (owner=human, requires SSH to .143)."
   mitigation_candidate: "Ship T-1054 (fleet reauth Tier-1) and T-1055 (fleet reauth --bootstrap-from, Tier-2)."
-  status: watching
+  status: resolved
   created: 2026-04-28
-  last_reviewed: 2026-04-28
-  related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055]
+  last_reviewed: 2026-04-30
+  resolved_at: 2026-04-30
+  related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055, T-1623, T-1624]

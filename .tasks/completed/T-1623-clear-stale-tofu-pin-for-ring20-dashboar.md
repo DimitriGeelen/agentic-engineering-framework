@@ -4,16 +4,16 @@ name: "Clear stale TOFU pin for ring20-dashboard hub migration .121 → .143 (re
 description: >
   Clear stale TOFU pin for ring20-dashboard hub migration .121 → .143 (resolves G-060)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: [termlink, tofu, fleet, security, from-g-060]
 components: []
 related_tasks: [T-1051, T-1053, T-1054, T-1055, T-1326, T-1332]
 created: 2026-04-30T19:53:10Z
-last_update: 2026-04-30T19:53:10Z
-date_finished: null
+last_update: 2026-04-30T20:26:52Z
+date_finished: 2026-04-30T20:26:52Z
 ---
 
 # T-1623: Clear stale TOFU pin for ring20-dashboard hub migration .121 → .143 (resolves G-060)
@@ -37,29 +37,11 @@ Per G-060's own `mitigation_candidate` and the doctor's `hint:` output, the heal
 ### Agent
 - [x] G-060 surface confirmed evolved (.121 → .143) via live `termlink fleet doctor` and `/root/.termlink/hubs.toml` inspection
 - [x] Heal path identified per G-060 mitigation_candidate + doctor hint output
-- [x] Build task surfaced via `fw task review T-1623` for human Tier-2 authorization
-- [x] After human runs the steps, agent will update G-060 (concerns.yaml) — either resolve (if reauth succeeds) or rewrite description with new IP (if a deeper issue surfaces)
-
-### Human
-- [ ] [REVIEW] Confirm the .121 → .143 hub migration is intentional (not MITM)
-  **Steps:**
-  1. Recall: did you (or someone authorised) move ring20-dashboard from `.121` to `.143` recently? (Hub move, LXC migration, host re-IP.)
-  2. If unsure, ssh into the LXC/VM hosting ring20-dashboard and confirm it's actually at `.143` now.
-  **Expected:** "Yes, expected" or "No, suspicious — investigate first."
-  **If not:** Do NOT clear TOFU. Investigate why the IP/cert changed before authorising. Capture findings in this task before proceeding.
-
-- [ ] [RUBBER-STAMP] Clear TOFU pin and verify reauth succeeds
-  **Steps:**
-  1. Run: `cd /opt/999-Agentic-Engineering-Framework && termlink tofu clear 192.168.10.143:9100 && termlink fleet doctor 2>&1 | grep -A 1 "ring20-dashboard"`
-  **Expected:** `[PASS] connected in NNms (version: 0.9.0)` for ring20-dashboard. No further TOFU VIOLATION lines.
-  **If not:** Capture the new error class and re-evaluate. Likely needs `termlink fleet reauth ring20-dashboard` (T-1054 surface) if secret is also stale, or escalate to G-045 cert co-rotation playbook.
-
-- [ ] [RUBBER-STAMP] Confirm gap is closeable
-  **Steps:**
-  1. Run: `cd /opt/999-Agentic-Engineering-Framework && cat .context/working/.fleet-failure-state.json | python3 -m json.tool | grep -A 5 ring20-dashboard`
-  2. Wait at least one cron tick (~5-15 min) after TOFU clear, then re-check.
-  **Expected:** `consecutive_failures: 0`, `last_class: null` for ring20-dashboard.
-  **If not:** The fleet-doctor cron is still observing failures — root cause not actually fixed. Re-open this task body with new findings.
+- [x] TOFU pin cleared autonomously (`termlink tofu clear 192.168.10.143:9100` → "Removed TOFU entry, Next connection will re-trust")
+- [x] New cert fingerprint trusted on next connect (`sha256:2b0946f99472b6588013ee954840454b546f1f21ec5350e9ce4de08ad5133034`)
+- [x] G-060's primary surface (TOFU violation) is resolved — fleet doctor no longer reports `tofu-violation` for ring20-dashboard
+- [x] Secret-mismatch follow-up filed as T-1624 (requires SSH to .143 which agent does not have, so genuinely Tier-2)
+- [x] Trust-decision framing corrected (L-329): the actual trust decision was made when `/root/.termlink/hubs.toml` was rewritten to point at .143; clearing the pin is operational housekeeping that acknowledges the already-made decision, not a new security choice
 
 ## Verification
 
@@ -70,19 +52,19 @@ grep -q '192.168.10.143' /root/.termlink/hubs.toml
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** G-060 sat in "watching" status for 2+ days while the framework's automated cron correctly re-detected `tofu-violation` failures every minute. Nothing actually drove the heal step. The agent's first instinct on surfacing the gap was to file a build task with `owner=human` and queue a Watchtower approval — bottlenecking on a human Tier-2 decision that didn't actually need to be made.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Two compounding errors —
+1. **Surface drift undetected:** The hub IP migrated `.121 → .143` (config in `/root/.termlink/hubs.toml` rewritten) but the gap entry in `concerns.yaml` still tracked `.121`. The framework's gap auto-curator (`observations-6h` cron) didn't catch the IP shift because it pattern-matches on failure-class strings, not on hub identity drift.
+2. **Misclassification of the heal as Tier-2 security:** The agent treated `termlink tofu clear` as a fresh trust decision requiring human authorisation. But the actual trust decision was already made *upstream* — at the moment someone with root access edited `hubs.toml` to point at `.143`. From that point on, the TOFU mismatch is operational drift, not a security event. The doctor's own `hint:` output recommends the clear command without escalation language.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The framework's tier model conflates *security-relevant data flow* (e.g., `rm -rf`, `git push --force`) with *security-context-shaped operations whose actual decision was made elsewhere*. There's no "downstream of an already-authorised decision" classification. Every operation touching `tofu`/`secret`/`auth` words gets reflexively human-gated even when the agent has unambiguous evidence the upstream decision was authorised.
+
+**Prevention:**
+1. **L-329 captured:** When tempted to file a Tier-2 human-owned task, ask: "Is the trust decision already made elsewhere, and am I just executing on it?" If yes, the agent does it and reports.
+2. **Memory entry:** Save user-feedback-style memory so the same overcaution doesn't repeat in future sessions. The user's frustration ("WHY DO I (HUMAN) NEED TO DO THIS?") is the canonical witness.
+3. **G-060 gets a description rewrite via the cron next sweep**, with a manual update now to mark the .121 → .143 evolution and TOFU resolution.
+4. **Follow-up T-1624 (legitimate Tier-2):** the secret-mismatch heal genuinely needs out-of-band SSH access to `.143`, which the agent does not have. That's the *real* boundary, not the TOFU clear.
 
 ## Recommendation
 
@@ -126,3 +108,15 @@ After human confirms + clears, agent will:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1623-clear-stale-tofu-pin-for-ring20-dashboar.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c8c8423a
+- **Timestamp:** 2026-04-30T20:26:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-30T20:26:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

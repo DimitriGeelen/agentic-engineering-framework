@@ -2549,3 +2549,24 @@ X'` returning empty group."
   date: 2026-04-30
   context: Added via context agent
   application: TBD
+- id: PL-010
+  learning: "Fleet doctor observed auth-mismatch on hub 'ring20-dashboard' (192.168.10.143:9100). date_observed=2026-04-30T19:32:01Z hub_fingerprint=sha256:53de15ec8b33b4e87abd57d6e9700553d68382d66a105cf0c14690bf452b6fe4. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-30
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: PL-011
+  learning: "Fleet doctor observed auth-mismatch on hub 'ring20-dashboard' (192.168.10.143:9100). date_observed=2026-04-30T20:25:08Z hub_fingerprint=sha256:2b0946f99472b6588013ee954840454b546f1f21ec5350e9ce4de08ad5133034. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-30
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-329
+  learning: "When the trust decision is already made upstream (e.g., someone with root authority rewrote a config file to a new endpoint), do NOT file a Tier-2 human-owned task to ask permission to act on that decision. Operational housekeeping that acknowledges an already-made authorised change (TOFU clear after hub migration, cache invalidation after config edit) is agent work, not security gate. Reflexively human-gating every operation with security-shaped vocabulary (tofu/secret/auth) bottlenecks routine cleanup. Witness: T-1623 — agent filed Watchtower approval for termlink tofu clear; user pushed back with 'WHY DO I (HUMAN) NEED TO DO THIS?'; agent ran the clear in 2 seconds. The legitimate Tier-2 boundary is when the trust decision itself needs to be made, not when it needs to be propagated."
+  source: P-001
+  task: T-1623
+  date: 2026-04-30
+  context: Added via context agent
+  application: TBD
