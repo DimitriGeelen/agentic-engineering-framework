@@ -146,6 +146,13 @@ def stats_for_window(days: int):
     legacy_ips = Counter()   # (method, peer_ip) -> count, peer_addr present only
     total = 0
     legacy_total = 0
+    # T-1414: split legacy by attribution. A line is "unattributable" if it
+    # carries no source identifier at all (from, peer_pid, peer_addr all absent).
+    # On the .122 hub this corresponds 1:1 with pre-T-1409 historical lines;
+    # post-T-1409, every TCP line has peer_addr and every Unix line has peer_pid.
+    # The split lets operators see "remaining holdouts" without the rolling
+    # window blurring it via pre-deploy backlog.
+    legacy_unattributable = 0
     for ts, method, from_, peer_pid, peer_addr in entries:
         if ts < cutoff:
             continue
@@ -160,7 +167,9 @@ def stats_for_window(days: int):
                 # T-1410: rollup by IP — ephemeral source ports otherwise
                 # fragment a single host into N rows of count=1.
                 legacy_ips[(method, addr_to_ip(peer_addr))] += 1
-    return counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips
+            if from_ is None and peer_pid is None and not peer_addr:
+                legacy_unattributable += 1
+    return counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips, legacy_unattributable
 
 def build_top_methods(counts, total):
     """T-1312: shared helper for top-10 methods JSON shape."""
@@ -204,25 +213,30 @@ if json_out:
         windows_out = []
         gate_passing = True
         for d in [1, 7, 30, 60]:
-            _, total, legacy_total, _, _, _ = stats_for_window(d)
+            _, total, legacy_total, _, _, _, legacy_unattr = stats_for_window(d)
             pct = (legacy_total / total) * 100 if total else 0.0
             passing = (pct <= gate_pct_s) if total > 0 else True
             windows_out.append({
                 "days": d,
                 "total": total,
                 "legacy": legacy_total,
+                "legacy_attributable": legacy_total - legacy_unattr,
+                "legacy_unattributable_pre_t1409": legacy_unattr,
                 "legacy_pct": round(pct, 4),
                 "passing": passing,
             })
             if d == 60:
                 gate_passing = passing if total > 0 else True
-        counts_60, total_60, _, legacy_callers_60, legacy_pids_60, legacy_ips_60 = stats_for_window(60)
+        counts_60, total_60, legacy_60, legacy_callers_60, legacy_pids_60, legacy_ips_60, legacy_unattr_60 = stats_for_window(60)
         out = {
             "audit_file": audit_path,
             "mode": "trend",
             "gate_pct": gate_pct_s,
             "malformed_lines": malformed,
             "windows": windows_out,
+            "legacy": legacy_60,
+            "legacy_attributable": legacy_60 - legacy_unattr_60,
+            "legacy_unattributable_pre_t1409": legacy_unattr_60,
             "top_methods": build_top_methods(counts_60, total_60),
             "legacy_callers": build_legacy_callers(legacy_callers_60),
             "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids_60),
@@ -233,7 +247,7 @@ if json_out:
         sys.exit(0 if gate_passing else 1)
     else:
         last_n = int(last_n_s)
-        counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips = stats_for_window(last_n)
+        counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips, legacy_unattr = stats_for_window(last_n)
         pct = (legacy_total / total) * 100 if total else 0.0
         passing = (pct <= gate_pct_s) if total > 0 else True
         out = {
@@ -245,9 +259,14 @@ if json_out:
                 "days": last_n,
                 "total": total,
                 "legacy": legacy_total,
+                "legacy_attributable": legacy_total - legacy_unattr,
+                "legacy_unattributable_pre_t1409": legacy_unattr,
                 "legacy_pct": round(pct, 4),
                 "passing": passing,
             }],
+            "legacy": legacy_total,
+            "legacy_attributable": legacy_total - legacy_unattr,
+            "legacy_unattributable_pre_t1409": legacy_unattr,
             "top_methods": build_top_methods(counts, total),
             "legacy_callers": build_legacy_callers(legacy_callers),
             "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids),
@@ -271,8 +290,9 @@ if last_n_s == "":
     print(f"  {'-'*8}  {'-'*8}  {'-'*8}  {'-'*9}  ------")
     final_pass = True
     final_total = 0
+    final_unattr = 0
     for d in windows:
-        _, total, legacy_total, _, _, _ = stats_for_window(d)
+        _, total, legacy_total, _, _, _, legacy_unattr = stats_for_window(d)
         if total == 0:
             print(f"  {d:>5d}d    {total:>8d}  {legacy_total:>8d}  {'  N/A':>9s}  --")
             continue
@@ -285,9 +305,10 @@ if last_n_s == "":
             final_total = total
             final_pct = pct
             final_legacy = legacy_total
+            final_unattr = legacy_unattr
 
     # Top-10 methods using the 60d window (canonical T-1166 gate window)
-    counts_60, total_60, legacy_60, legacy_callers_60, legacy_pids_60, legacy_ips_60 = stats_for_window(60)
+    counts_60, total_60, legacy_60, legacy_callers_60, legacy_pids_60, legacy_ips_60, legacy_unattr_60 = stats_for_window(60)
     print()
     if total_60 > 0:
         print(f"  Top 10 methods (last 60d):")
@@ -327,6 +348,11 @@ if last_n_s == "":
     if final_total == 0:
         print(f"  60d window is empty — gate inconclusive.")
         sys.exit(0)
+    # T-1414: clarify the attribution split so operators can see "remaining
+    # holdouts" without the rolling window blurring it via pre-T-1409 backlog.
+    if final_legacy > 0:
+        attr = final_legacy - final_unattr
+        print(f"  60d legacy split: {attr} attributable, {final_unattr} unattributable (pre-T-1409, ages out)")
     if not final_pass:
         print()
         print(f"  60d legacy traffic ({final_pct:.2f}%) exceeds threshold.")
@@ -336,7 +362,7 @@ if last_n_s == "":
 
 # Single-window mode: original CI-gate behavior.
 last_n = int(last_n_s)
-counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips = stats_for_window(last_n)
+counts, total, legacy_total, legacy_callers, legacy_pids, legacy_ips, legacy_unattr = stats_for_window(last_n)
 print(f"  Window:     last {last_n} days")
 print(f"  Total RPCs: {total}")
 print()
@@ -379,6 +405,11 @@ gate_pass = legacy_pct <= gate_pct_s
 
 status = "PASS" if gate_pass else "FAIL"
 print(f"  Legacy primitives: {legacy_total} ({legacy_pct:.2f}% of total)")
+# T-1414: surface attribution split — pre-T-1409 backlog ages out, attributable
+# is the actionable number.
+if legacy_total > 0:
+    attr = legacy_total - legacy_unattr
+    print(f"    of which: {attr} attributable, {legacy_unattr} unattributable (pre-T-1409)")
 print(f"  Gate threshold:    {gate_pct_s:.2f}%  →  {status}")
 
 if not gate_pass:
