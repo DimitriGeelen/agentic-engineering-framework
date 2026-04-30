@@ -68,15 +68,15 @@ All three documented in `docs/reports/T-1611-werkzeug-vs-gunicorn-local.md`.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1611` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -119,8 +119,17 @@ All three documented in `docs/reports/T-1611-werkzeug-vs-gunicorn-local.md`.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Cheaper one-line fix (Werkzeug `threaded=True` + explicit SocketIO `async_mode='threading'`) not yet tried. Gunicorn path blocked on missing eventlet/gevent deps + prod recipe lives on LXC 170 (not in repo). T-1309 already covers always-on hygiene via systemd. Memory profile (651MB RSS cold-start) suggests leak risk that gunicorn alone wouldn't fix. Sequence as T-1611-A (cheap fix), T-1611-B (RSS observation), T-1611-C (gunicorn swap only if needed).
+
+**Date**: 2026-04-30T08:48:46Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion. -->
+
+### 2026-04-30T08:48:46Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Cheaper one-line fix (Werkzeug `threaded=True` + explicit SocketIO `async_mode='threading'`) not yet tried. Gunicorn path blocked on missing eventlet/gevent deps + prod recipe lives on LXC 170 (not in repo). T-1309 already covers always-on hygiene via systemd. Memory profile (651MB RSS cold-start) suggests leak risk that gunicorn alone wouldn't fix. Sequence as T-1611-A (cheap fix), T-1611-B (RSS observation), T-1611-C (gunicorn swap only if needed).

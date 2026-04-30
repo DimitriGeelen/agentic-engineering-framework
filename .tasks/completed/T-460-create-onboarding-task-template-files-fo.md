@@ -12,7 +12,7 @@ tags: [init, onboarding, templates]
 components: []
 related_tasks: []
 created: 2026-03-12T17:00:54Z
-last_update: 2026-04-06T22:29:17Z
+last_update: 2026-04-30T08:50:52Z
 date_finished: 2026-03-13T10:06:19Z
 ---
 

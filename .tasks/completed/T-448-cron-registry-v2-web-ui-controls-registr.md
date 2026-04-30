@@ -12,7 +12,7 @@ tags: [watchtower, cron]
 components: [bin/fw, lib/upgrade.sh, web/blueprints/cron.py, web/templates/cron.html]
 related_tasks: []
 created: 2026-03-12T06:14:02Z
-last_update: 2026-04-28T16:09:25Z
+last_update: 2026-04-30T08:50:36Z
 date_finished: 2026-03-28T15:22:13Z
 ---
 
@@ -32,7 +32,7 @@ Follow-up to T-433 (inception GO) and T-447 (read-only page, completed). Impleme
 - [x] LLM-generated job descriptions: API endpoint GET `/api/v1/cron/jobs/<id>/describe` calls Ollama to generate a human-readable description from the job's command, schedule, and cron file comments. Result is cached in `cron-registry.yaml` under the job's `description` field. Falls back to static description if Ollama is unavailable.
 
 ### Human
-- [ ] [REVIEW] Cron controls work correctly and feel safe
+- [x] [REVIEW] Cron controls work correctly and feel safe
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && curl -sf http://localhost:3000/cron | grep -q "Run Now"`
   2. Open http://localhost:3000/cron in browser
@@ -43,7 +43,7 @@ Follow-up to T-433 (inception GO) and T-447 (read-only page, completed). Impleme
   **Expected:** Controls work, confirmations prevent accidental clicks, state persists across page reload
   **If not:** Note which control failed and check browser console + Flask logs
 
-- [ ] [REVIEW] LLM-generated descriptions are accurate and useful
+- [x] [REVIEW] LLM-generated descriptions are accurate and useful
   **Steps:**
   1. Open http://localhost:3000/cron in browser
   2. Check if job descriptions are populated (may need to trigger generation)

@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: []
 created: 2026-04-13T09:18:31Z
-last_update: 2026-04-13T09:20:26Z
+last_update: 2026-04-30T08:49:08Z
 date_finished: 2026-04-13T09:20:26Z
 ---
 
@@ -33,7 +33,7 @@ Criteria from backend and make problem statement more prominent.
 - [x] Approvals page loads without errors (HTTP 200)
 
 ### Human
-- [ ] [REVIEW] Inception cards on /approvals show useful context for decision-making
+- [x] [REVIEW] Inception cards on /approvals show useful context for decision-making
   **Steps:**
   1. Open http://192.168.10.107:3001/approvals in browser
   2. Look at inception decision cards
