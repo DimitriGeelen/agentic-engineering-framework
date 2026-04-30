@@ -638,8 +638,16 @@ do_inception_sweep() {
         ticked=$((ticked+1))
 
         # Recount Human ACs after ticking (grep -c returns exit 1 on zero matches under pipefail)
+        # T-1620: strip <!-- ... --> blocks before counting. The default task
+        # template's Example block contains "- [ ] [REVIEW] Dashboard renders
+        # correctly" inside a comment — without this strip, T-1274-class tasks
+        # (template-only Human section) are wrongly counted as having pending
+        # Human ACs and never move to completed/. Mirrors the same fix at
+        # bin/fw verify-acs (G-047) and agents/handover/handover.sh (T-1618).
         local human_unchecked
-        human_unchecked=$(awk '/^### Human/,/^## [A-Z]/' "$f" | grep -cE '^\s*- \[ \]' || true)
+        human_unchecked=$(awk '/^### Human/,/^## [A-Z]/' "$f" \
+            | python3 -c 'import re,sys; sys.stdout.write(re.sub(r"<!--.*?-->", "", sys.stdin.read(), flags=re.DOTALL))' \
+            | grep -cE '^\s*- \[ \]' || true)
 
         if [ "${human_unchecked:-0}" -eq 0 ]; then
             local dest="$completed_dir/$(basename "$f")"

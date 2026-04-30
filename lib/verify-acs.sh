@@ -220,6 +220,12 @@ for fn in sorted(os.listdir(active_dir)):
         continue
 
     human_block = human_match.group(1)
+    # T-1620: strip <!-- ... --> blocks before counting. The default task
+    # template's Example block contains "- [ ] [REVIEW] Dashboard renders
+    # correctly" inside a comment — without this strip, T-1274-class tasks
+    # surface phantom unchecked ACs in `fw verify-acs`. Mirrors the same fix
+    # at bin/fw verify-acs (G-047) and agents/handover/handover.sh (T-1618).
+    human_block = re.sub(r'<!--.*?-->', '', human_block, flags=re.DOTALL)
     # Find unchecked ACs
     unchecked = re.findall(r'^\s*-\s*\[ \]\s*(.*?)$', human_block, re.MULTILINE)
     if not unchecked:

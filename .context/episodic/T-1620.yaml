@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1620: Strip HTML comments in inception.sh and verify-acs.sh AC counters
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-30T17:17:54Z
+# ============================================================================
+
+task_id: T-1620
+task_name: "Strip HTML comments in inception.sh and verify-acs.sh AC counters"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-30T16:59:47Z
+completed: 2026-04-30T17:17:51Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`lib/inception.sh:642` strips `<!-- ... -->` blocks before counting unchecked Human ACs"
+  - "`lib/verify-acs.sh:224` strips `<!-- ... -->` blocks before counting unchecked Human ACs"
+  - "Regression test added: `tests/unit/ac_counter_strip_comments.bats` covers both call-sites with the T-1274 phantom fixture"
+  - "All new tests pass (8/8); pre-existing `verify_acs.bats` (11/11) and `task_verify_extraction.bats` unchanged"
+  - "Live re-scan: T-1274 no longer returns count=1 from either pattern (counts==0 in both, verified inline)"
+  - "`bash -n` parses cleanly for both edited files"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1620-strip-html-comments-in-inceptionsh-and-v.md
+generated_by: context-agent-hybrid
