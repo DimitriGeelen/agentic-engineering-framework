@@ -4,7 +4,7 @@ name: "Hook failures must self-surface — non-blocking != invisible (CWD-invari
 description: >
   Hook failures must self-surface — non-blocking != invisible (CWD-invariant resolution + telemetry)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-30T21:15:27Z
-last_update: 2026-04-30T21:15:27Z
-date_finished: null
+last_update: 2026-04-30T21:18:21Z
+date_finished: 2026-04-30T21:18:21Z
 ---
 
 # T-1626: Hook failures must self-surface — non-blocking != invisible (CWD-invariant resolution + telemetry)
@@ -95,15 +95,15 @@ Three time-boxed spikes, total ≤90 min:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -171,9 +171,73 @@ These are ordered by criticality (B-1 fixes the bleeding; B-2/B-3 prevent recurr
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: This is a structural blindness, not a tactical bug. The framework's enforcement loop is structural problem → hook fires → action blocked or telemetry recorded → audit notices → gap registered → fix shipped. For "non-blocking" hook failures the loop snaps at step 3 — nothing records, nothing audits, no gap appears, no fix lands. We saw this in a live session today: dozens of `PostToolUse:Edit hook error … fw: not found` messages flowed past while the framework reported clean. A framework that doesn't notice its own broken plumbing is structurally identical to G-019 (symptom-level OK while root cause persists). The fix path is bounded (4 small build tasks, each <2h), reversible (every change is a settings.json edit + a counter file), and immediately testable from any subdir.
+
+Evidence:
+- Live transcript (2026-04-30, ring20-dashboard session) showing dozens of `PostToolUse / PreToolUse` failures, all "non-blocking", all invisible to framework telemetry.
+- `~/.local/bin/fw` already does the walk-up resolution for the user-facing CLI — extending to hooks is symmetric, low-risk.
+- G-011 (PostToolUse hooks advisory-only) and G-019 (no self-escalation to systemic root cause) are the pre-existing parents of this gap.
+- Cross-consumer reach: same fragile pattern in every project initialised via `fw upgrade`.
+- T-1333 gap-homing rule applies: hit happened in a consumer, fix lives here.
+
+If GO, build task carve-out (each ≤2h):
+1. B-1 — CWD-invariant hook resolution. Choose between (a) `~/.local/bin/fw-hook` shim that walks up, or (b) inline `cd "$(git rev-parse --show-toplevel)" && ...` in settings.json, or (c) install-time absolute-path baking in `fw upgrade`. Pick whichever has lowest blast radius; bats-test from `/tmp` and from a deep subdir.
+2. B-2 — Hook telemetry. `.context/working/.hook-counter` + `.hook-failure-counter` (per-hook fire/fail counts). Increment on every hook entry/exit. <5ms per fire.
+3. B-3 — Threshold escalation + Watchtower /hooks page. N failures in M minutes → auto-register a G-XXX in `concerns.yaml`. Watchtower `/hooks` page surfaces fire/fail rates per configured hook. `fw doctor` adds a check that exercises every hook from `/tmp`.
+4. B-4 — SessionStart self-test. Invoke each configured hook once at session start with known-safe stdin; one-shot warning to the agent if any returns command-not-found / non-zero on safe input.
+
+These are ordered by criticality (B-1 fixes the bleeding; B-2/B-3 prevent recurrence; B-4 catches the next class).
+
+If DEFER: acceptable only if a higher-priority structural blindness is being fixed first. Note that delaying this means every consumer keeps shipping silently broken hooks until either (a) a human notices in chat (today's case) or (b) the broken hook happens to be a Tier-0 gate, at which point the failure is no longer "non-blocking" — it becomes a security incident.
+
+If NO-GO: would require evidence that hook-failure blindness is acceptable risk. Not seeing that evidence.
+
+**Date**: 2026-04-30T21:18:20Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-30T21:18:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: This is a structural blindness, not a tactical bug. The framework's enforcement loop is structural problem → hook fires → action blocked or telemetry recorded → audit notices → gap registered → fix shipped. For "non-blocking" hook failures the loop snaps at step 3 — nothing records, nothing audits, no gap appears, no fix lands. We saw this in a live session today: dozens of `PostToolUse:Edit hook error … fw: not found` messages flowed past while the framework reported clean. A framework that doesn't notice its own broken plumbing is structurally identical to G-019 (symptom-level OK while root cause persists). The fix path is bounded (4 small build tasks, each <2h), reversible (every change is a settings.json edit + a counter file), and immediately testable from any subdir.
+
+Evidence:
+- Live transcript (2026-04-30, ring20-dashboard session) showing dozens of `PostToolUse / PreToolUse` failures, all "non-blocking", all invisible to framework telemetry.
+- `~/.local/bin/fw` already does the walk-up resolution for the user-facing CLI — extending to hooks is symmetric, low-risk.
+- G-011 (PostToolUse hooks advisory-only) and G-019 (no self-escalation to systemic root cause) are the pre-existing parents of this gap.
+- Cross-consumer reach: same fragile pattern in every project initialised via `fw upgrade`.
+- T-1333 gap-homing rule applies: hit happened in a consumer, fix lives here.
+
+If GO, build task carve-out (each ≤2h):
+1. B-1 — CWD-invariant hook resolution. Choose between (a) `~/.local/bin/fw-hook` shim that walks up, or (b) inline `cd "$(git rev-parse --show-toplevel)" && ...` in settings.json, or (c) install-time absolute-path baking in `fw upgrade`. Pick whichever has lowest blast radius; bats-test from `/tmp` and from a deep subdir.
+2. B-2 — Hook telemetry. `.context/working/.hook-counter` + `.hook-failure-counter` (per-hook fire/fail counts). Increment on every hook entry/exit. <5ms per fire.
+3. B-3 — Threshold escalation + Watchtower /hooks page. N failures in M minutes → auto-register a G-XXX in `concerns.yaml`. Watchtower `/hooks` page surfaces fire/fail rates per configured hook. `fw doctor` adds a check that exercises every hook from `/tmp`.
+4. B-4 — SessionStart self-test. Invoke each configured hook once at session start with known-safe stdin; one-shot warning to the agent if any returns command-not-found / non-zero on safe input.
+
+These are ordered by criticality (B-1 fixes the bleeding; B-2/B-3 prevent recurrence; B-4 catches the next class).
+
+If DEFER: acceptable only if a higher-priority structural blindness is being fixed first. Note that delaying this means every consumer keeps shipping silently broken hooks until either (a) a human notices in chat (today's case) or (b) the broken hook happens to be a Tier-0 gate, at which point the failure is no longer "non-blocking" — it becomes a security incident.
+
+If NO-GO: would require evidence that hook-failure blindness is acceptable risk. Not seeing that evidence.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c4f547fe
+- **Timestamp:** 2026-04-30T21:18:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-30T21:18:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

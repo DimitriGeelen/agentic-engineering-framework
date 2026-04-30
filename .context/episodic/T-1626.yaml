@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1626: Hook failures must self-surface — non-blocking != invisible (CWD-invariant resolution + telemetry)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-30T21:18:24Z
+# ============================================================================
+
+task_id: T-1626
+task_name: "Hook failures must self-surface — non-blocking != invisible (CWD-invariant resolution + telemetry)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-30T21:15:27Z
+completed: 2026-04-30T21:18:21Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-30T23:17:25+02:00
+last_commit: 2026-04-30T23:17:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — Hook failures must self-surface (G-019-shape)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-1626-hook-failures-must-self-surface--non-blo.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-30T23:17:25"
+    action: "T-1626: file inception — Hook failures must self-surface (G-019-shape)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 3
+  lines_added: 181
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1626-hook-failures-must-self-surface--non-blo.md
+generated_by: context-agent-hybrid
