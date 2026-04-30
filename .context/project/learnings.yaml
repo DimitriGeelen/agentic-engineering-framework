@@ -2542,3 +2542,10 @@ X'` returning empty group."
   date: 2026-04-29
   context: Added via context agent
   application: TBD
+- id: L-328
+  learning: "Triple-file source-of-truth for runtime metadata must distinguish process-bound facts (port, pid — write-once safe) from interface-bound facts (LAN IP — rotates independently). Reading interface-bound values from a cached file requires a liveness check; refresh-on-read from the live source (detect_lan_ip) when the process is running, fall back to the file only when stopped. Witness: T-1621/T-1622 — DHCP IP rotation 8x in one day left every emitted review URL stale."
+  source: P-001
+  task: T-1622
+  date: 2026-04-30
+  context: Added via context agent
+  application: TBD

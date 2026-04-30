@@ -4,7 +4,7 @@ name: "Watchtower URL triple-file becomes stale when host LAN IP changes"
 description: >
   Watchtower URL triple-file becomes stale when host LAN IP changes
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-30T19:05:28Z
-last_update: 2026-04-30T19:05:28Z
-date_finished: null
+last_update: 2026-04-30T19:12:24Z
+date_finished: 2026-04-30T19:12:24Z
 ---
 
 # T-1621: Watchtower URL triple-file becomes stale when host LAN IP changes
@@ -66,15 +66,15 @@ date_finished: null
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -135,9 +135,53 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Witnessed firsthand this session — the URL file's first-write semantic combined with DHCP IP rotation (8 lease changes today on this host) emitted stale `.123` URLs in chat for hours. The cheapest fix that actually works is to make `bin/fw watchtower url` (and `bin/fw watchtower port` for symmetry) regenerate the LAN URL from `detect_lan_ip` on every read, while keeping the file as a fallback for when the watchtower process is stopped (so we can still surface "where it WAS running"). Cost: ~10 lines in `bin/watchtower.sh` plus a bats test. Bound: read-path only — write semantics unchanged, file remains the documented triple-file. Refresh frequency = on-demand (one `ip -4` call per `fw watchtower url`), so no extra daemon, no NM hook, no cron. Multi-IP-host fragility (`head -n 1` picking wrong interface) is real but separate; flagged as gotcha, deferred to a sibling task if/when observed.
+
+Evidence:
+- NetworkManager journal `journalctl --since "1 day ago" -u NetworkManager`: 8 lease transitions on `enp5s0` between `192.168.10.123` and `192.168.10.107` over 2026-04-30, last transition at 20:55 UTC+02 to `.107`.
+- `bin/watchtower.sh:208`: URL written once via `printf '%s\n' "$url" > "${URL_FILE}.tmp" && mv` at start. No re-emit.
+- `bin/watchtower.sh:286-296`: `do_url` reads `URL_FILE` verbatim with no liveness check.
+- `bin/watchtower.sh:38-44`: `detect_lan_ip` is `ip -4 addr show scope global | head -n 1` — cheap, fresh per call.
+- This session: `cat .context/working/watchtower.url` returned `http://192.168.10.123:3000` while `ip -br addr` showed `enp5s0 192.168.10.107/24` and `detect_lan_ip` returned `.107`. Stale-by-construction.
+- `git log --all -p -- .context/working/watchtower.url`: only `.107` ever committed — confirming `.123` was a runtime-write that DHCP outran, never a hand-edit.
+- T-885 / T-1287 / T-1376 (Watchtower port resolution discipline) already established the triple-file as authoritative; this fix preserves that contract on the write side and adds a thin liveness check on the read side.
+
+**Date**: 2026-04-30T19:12:24Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-30T19:12:24Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Witnessed firsthand this session — the URL file's first-write semantic combined with DHCP IP rotation (8 lease changes today on this host) emitted stale `.123` URLs in chat for hours. The cheapest fix that actually works is to make `bin/fw watchtower url` (and `bin/fw watchtower port` for symmetry) regenerate the LAN URL from `detect_lan_ip` on every read, while keeping the file as a fallback for when the watchtower process is stopped (so we can still surface "where it WAS running"). Cost: ~10 lines in `bin/watchtower.sh` plus a bats test. Bound: read-path only — write semantics unchanged, file remains the documented triple-file. Refresh frequency = on-demand (one `ip -4` call per `fw watchtower url`), so no extra daemon, no NM hook, no cron. Multi-IP-host fragility (`head -n 1` picking wrong interface) is real but separate; flagged as gotcha, deferred to a sibling task if/when observed.
+
+Evidence:
+- NetworkManager journal `journalctl --since "1 day ago" -u NetworkManager`: 8 lease transitions on `enp5s0` between `192.168.10.123` and `192.168.10.107` over 2026-04-30, last transition at 20:55 UTC+02 to `.107`.
+- `bin/watchtower.sh:208`: URL written once via `printf '%s\n' "$url" > "${URL_FILE}.tmp" && mv` at start. No re-emit.
+- `bin/watchtower.sh:286-296`: `do_url` reads `URL_FILE` verbatim with no liveness check.
+- `bin/watchtower.sh:38-44`: `detect_lan_ip` is `ip -4 addr show scope global | head -n 1` — cheap, fresh per call.
+- This session: `cat .context/working/watchtower.url` returned `http://192.168.10.123:3000` while `ip -br addr` showed `enp5s0 192.168.10.107/24` and `detect_lan_ip` returned `.107`. Stale-by-construction.
+- `git log --all -p -- .context/working/watchtower.url`: only `.107` ever committed — confirming `.123` was a runtime-write that DHCP outran, never a hand-edit.
+- T-885 / T-1287 / T-1376 (Watchtower port resolution discipline) already established the triple-file as authoritative; this fix preserves that contract on the write side and adds a thin liveness check on the read side.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0d835c9d
+- **Timestamp:** 2026-04-30T19:12:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-30T19:12:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
