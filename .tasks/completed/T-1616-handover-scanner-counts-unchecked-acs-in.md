@@ -4,7 +4,7 @@ name: "Handover scanner counts unchecked ACs inside HTML comment blocks — phan
 description: >
   agents/handover/handover.sh:689 counts `^\s*-\s*\[ \]` patterns within the ### Human section without first stripping `<!-- ... -->` comment blocks. The default task template includes an Example block inside `<!-- -->` containing `- [ ] [REVIEW] Dashboard renders correctly`. For tasks that never replaced the template (e.g. T-1274 has only the example comment as its entire Human section), the scanner counts the example as a real unchecked AC and surfaces the task in "Awaiting Human Review" forever. There is nothing the human can do to clear it.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [handover, parser, false-positive, governance-noise]
 components: []
 related_tasks: [T-1274]
 created: 2026-04-30T08:55:00Z
-last_update: 2026-04-30T08:55:00Z
-date_finished: null
+last_update: 2026-04-30T09:22:07Z
+date_finished: 2026-04-30T09:22:07Z
 ---
 
 # T-1616: Handover scanner counts unchecked ACs inside HTML comment blocks — phantom Human ACs surface
@@ -76,15 +76,15 @@ Three spikes (each <15min):
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1616` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -125,8 +125,44 @@ Three spikes (each <15min):
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: - Recommendation: GO
+- Rationale: Spike 1 confirms bug source (`agents/handover/handover.sh:685-689`). Bounded fix (regex strip or line-state scan, ~10 lines). Reversible (revert one block). Real victims (T-1274) actively confused governance. Origin pattern (L-097, CTL-013 parser in audit.sh) shows the framework already has a working in-comment state tracker — borrow that.
+- Evidence:
+  - Bug source verified: `agents/handover/handover.sh:685, 689`
+  - Concrete victim: T-1274's `### Human` body is exclusively the template comment block; "Dashboard renders correctly" is the example, not a real AC
+  - L-097 / T-204 confirms framework already has stateful comment-block parsing pattern in `audit.sh` (CTL-013)
+  - Sibling parsers may exist (Spike 2 to find) but bounded by the codebase's scale (~5 likely candidates)
+  - Self-validating fix: after fix, T-1274 no longer surfaces in next handover
+
+**Date**: 2026-04-30T09:22:07Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion. -->
+
+### 2026-04-30T09:22:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** - Recommendation: GO
+- Rationale: Spike 1 confirms bug source (`agents/handover/handover.sh:685-689`). Bounded fix (regex strip or line-state scan, ~10 lines). Reversible (revert one block). Real victims (T-1274) actively confused governance. Origin pattern (L-097, CTL-013 parser in audit.sh) shows the framework already has a working in-comment state tracker — borrow that.
+- Evidence:
+  - Bug source verified: `agents/handover/handover.sh:685, 689`
+  - Concrete victim: T-1274's `### Human` body is exclusively the template comment block; "Dashboard renders correctly" is the example, not a real AC
+  - L-097 / T-204 confirms framework already has stateful comment-block parsing pattern in `audit.sh` (CTL-013)
+  - Sibling parsers may exist (Spike 2 to find) but bounded by the codebase's scale (~5 likely candidates)
+  - Self-validating fix: after fix, T-1274 no longer surfaces in next handover
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-613ab8e1
+- **Timestamp:** 2026-04-30T09:22:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-30T09:22:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

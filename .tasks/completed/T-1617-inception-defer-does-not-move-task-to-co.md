@@ -4,7 +4,7 @@ name: "Inception DEFER does not move task to completed — semantics question (p
 description: >
   lib/inception.sh:491 explicitly excludes DEFER from the work-completed transition: `if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then ... update-task.sh ... --status work-completed`. Per code comment line 485 ("Complete task if go or no-go (not defer)"), this is intentional — DEFER means "park for later, not done". But it surfaces a semantic gap: a DEFER'd inception sits in `.tasks/active/` indefinitely, appears in Work-In-Progress lists, and in the case of T-1611 (DEFER'd 2026-04-30T08:48Z) creates the impression of unfinished work even though the decision is final. Question: should DEFER auto-move to completed/ (with a `parked` sub-status), stay in active/ as designed, or get a new state entirely?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [inception, lifecycle, semantics, governance-noise]
 components: []
 related_tasks: [T-1611]
 created: 2026-04-30T08:55:00Z
-last_update: 2026-04-30T08:55:00Z
-date_finished: null
+last_update: 2026-04-30T09:22:10Z
+date_finished: 2026-04-30T09:22:10Z
 ---
 
 # T-1617: Inception DEFER does not move task to completed — semantics question (parking vs done)
@@ -84,15 +84,15 @@ Three spikes (each <15min):
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1617` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -130,8 +130,42 @@ Three spikes (each <15min):
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: - Recommendation: GO
+- Rationale: This is a real semantic gap that creates governance noise (T-1611 sitting in active/ with a final DEFER decision is the canonical witness). Option C (filter DEFER'd tasks out of WIP/handover) is the smallest reversible change and probably sufficient. Option A (move to completed/ with parked note) is also viable. The decision between them is the inception's job. Either way, a fix is bounded.
+- Evidence:
+  - Code source: `lib/inception.sh:485-491` explicitly excludes DEFER (intentional, not a bug)
+  - Concrete witness: T-1611 (filed earlier this session, DEFER'd 08:48Z, still in active/ as of now)
+  - Cross-cutting impact: handover Work-In-Progress + Watchtower /tasks + fw task list all read status without filtering on Decision
+  - Smallest viable path (Option C): one helper `task_is_actively_worked()` that returns false if `Decision == DEFER`, called from the 3 consumers
+
+**Date**: 2026-04-30T09:22:10Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion. -->
+
+### 2026-04-30T09:22:10Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** - Recommendation: GO
+- Rationale: This is a real semantic gap that creates governance noise (T-1611 sitting in active/ with a final DEFER decision is the canonical witness). Option C (filter DEFER'd tasks out of WIP/handover) is the smallest reversible change and probably sufficient. Option A (move to completed/ with parked note) is also viable. The decision between them is the inception's job. Either way, a fix is bounded.
+- Evidence:
+  - Code source: `lib/inception.sh:485-491` explicitly excludes DEFER (intentional, not a bug)
+  - Concrete witness: T-1611 (filed earlier this session, DEFER'd 08:48Z, still in active/ as of now)
+  - Cross-cutting impact: handover Work-In-Progress + Watchtower /tasks + fw task list all read status without filtering on Decision
+  - Smallest viable path (Option C): one helper `task_is_actively_worked()` that returns false if `Decision == DEFER`, called from the 3 consumers
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-91f7261f
+- **Timestamp:** 2026-04-30T09:22:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-04-30T09:22:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
