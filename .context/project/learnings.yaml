@@ -2570,3 +2570,10 @@ X'` returning empty group."
   date: 2026-04-30
   context: Added via context agent
   application: TBD
+- id: L-330
+  learning: "When the install-side output shape changes (e.g. T-1364 making fw upgrade write absolute hook paths instead of relative), the migration-side stale-detector must update its notion of 'stale' simultaneously — otherwise consumers stuck on the OLD shape pass the detector and never get migrated. T-1627 RCA: check_stale_paths was authored pre-T-1364; its 'stale' definition (legacy /agents/context/ + PROJECT_ROOT= shells) didn't update when T-1364 introduced a NEW notion of stale (anything-not-absolute). Test rule: every 'output shape change' commit must include a paired 'detector recognizes the OLD shape as stale' bats case."
+  source: P-001
+  task: T-1627
+  date: 2026-04-30
+  context: Added via context agent
+  application: TBD
