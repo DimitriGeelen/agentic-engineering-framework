@@ -6,6 +6,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/templates/base.html` | extends |
+
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-escalation_drift.yaml`*
 *Last verified: 2026-04-28*

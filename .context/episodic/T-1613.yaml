@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1613: Pre-push YAML validation gate for .context/project/*.yaml (T-1610-build)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-30T07:49:27Z
+# ============================================================================
+
+task_id: T-1613
+task_name: "Pre-push YAML validation gate for .context/project/*.yaml (T-1610-build)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-30T07:46:30Z
+completed: 2026-04-30T07:49:22Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`agents/git/lib/hooks.sh` pre-push HOOK_EOF block contains a YAML well-formedness gate: loops over `$PROJECT_ROOT/.context/project/*.yaml`, runs `python3 -c \"import yaml,sys; yaml.safe_load(open(sys.argv[1]))\"` per file, exits 1 with diagnostic message on any parse failure"
+  - "Gate uses `sys.argv` not f-string interpolation (path-safety)"
+  - "Gate runs BEFORE the audit invocation (faster failure feedback)"
+  - "Bats coverage extended in `tests/governance/test_git_hooks.bats`: 2 new tests (block on T-1599-shape corruption, allow on well-formed YAML)"
+  - "All existing tests in `tests/governance/test_git_hooks.bats` still pass (9/9 ok)"
+  - "`bash -n agents/git/lib/hooks.sh` succeeds (syntax valid)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1613-pre-push-yaml-validation-gate-for-contex.md
+generated_by: context-agent-hybrid

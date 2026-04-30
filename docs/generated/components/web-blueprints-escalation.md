@@ -20,6 +20,19 @@ Not all improvement comes from failures. When you notice a practice repeating ad
 
 *(truncated — see CLAUDE.md for full section)*
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/shared.py` | calls |
+
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-escalation.yaml`*
 *Last verified: 2026-04-28*

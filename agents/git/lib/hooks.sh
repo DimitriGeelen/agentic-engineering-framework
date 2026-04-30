@@ -464,6 +464,41 @@ fi
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 export PROJECT_ROOT
 
+# T-1610: YAML well-formedness gate for tracked .context/project/*.yaml.
+# Origin: T-1599 surfaced concerns.yaml corruption (consumer-local writer landed
+# `- id: G-XXX` outside parent mapping) — survived all gates until downstream
+# loaders failed silently. Block at push so corruption can't cross-fan-out to
+# consumers. yaml.safe_load with sys.argv path (not f-string interpolation) so
+# odd characters in paths don't break the check.
+_yaml_failures=""
+for _y in "$PROJECT_ROOT"/.context/project/*.yaml; do
+    [ -f "$_y" ] || continue
+    if ! python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$_y" 2>/dev/null; then
+        _err=$(python3 -c "
+import yaml, sys
+try:
+    yaml.safe_load(open(sys.argv[1]))
+except yaml.YAMLError as e:
+    msg = str(e).splitlines()[0] if str(e) else 'unknown YAML error'
+    print(msg)
+" "$_y" 2>&1 | head -1)
+        _yaml_failures="${_yaml_failures}
+  - ${_y##*/}: ${_err}"
+    fi
+done
+if [ -n "$_yaml_failures" ]; then
+    echo "" >&2
+    echo "ERROR: Push blocked — YAML parse failure in tracked project file(s):" >&2
+    printf '%s\n' "$_yaml_failures" >&2
+    echo "" >&2
+    echo "Origin: T-1599/T-1610 — silent .context/project/*.yaml corruption" >&2
+    echo "must not cross-fan-out to consumer projects." >&2
+    echo "" >&2
+    echo "Fix the YAML, then push again." >&2
+    echo "Bypass: git push --no-verify (Tier 0 protected, logged)" >&2
+    exit 1
+fi
+
 # Resolve audit script. Priority (T-1396):
 #   1. .framework.yaml -> framework_path (explicit consumer config)
 #   2. $PROJECT_ROOT/agents/audit/audit.sh (framework repo: source-of-truth)

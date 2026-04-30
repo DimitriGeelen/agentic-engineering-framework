@@ -147,3 +147,54 @@ STUB
     run bash -c "echo 'refs/heads/master $LOCAL_SHA refs/heads/master $REMOTE_SHA' | .git/hooks/pre-push origin http://localhost"
     [ "$status" -eq 0 ]
 }
+
+# ============================================================================
+# pre-push hook — YAML well-formedness gate (T-1610)
+# ============================================================================
+
+@test "pre-push: BLOCKS push when .context/project/*.yaml has T-1599-shape corruption" {
+    [ -f .git/hooks/pre-push ] || skip "pre-push hook not installed in framework repo"
+    # T-1599 corruption shape: `- id:` line at column 0 (outside parent mapping).
+    # This produces yaml.YAMLError on safe_load — the exact case the gate exists for.
+    mkdir -p .context/project
+    cat > .context/project/concerns.yaml <<'EOF'
+concerns:
+  - id: G-001
+    severity: low
+    description: "valid entry inside the mapping"
+- id: G-002
+  severity: high
+  description: "BUG: leading dash at column 0 — outside concerns: block"
+EOF
+    # Need a delta to push (pre-push only fires when there's something to push)
+    echo "1.2.0" > VERSION
+    git add VERSION .context/project/concerns.yaml
+    git -c commit.gpgsign=false commit -q -m "T-0: bump with corrupted yaml"
+    LOCAL_SHA="$(git rev-parse HEAD)"
+    REMOTE_SHA="$(git rev-parse HEAD~1)"
+    run bash -c "echo 'refs/heads/master $LOCAL_SHA refs/heads/master $REMOTE_SHA' | .git/hooks/pre-push origin http://localhost"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"YAML parse failure"* ]] || [[ "$output" == *"yaml"* ]]
+}
+
+@test "pre-push: ALLOWS push when .context/project/*.yaml is well-formed" {
+    [ -f .git/hooks/pre-push ] || skip "pre-push hook not installed in framework repo"
+    # Same shape as above but properly indented — gate should let this through.
+    mkdir -p .context/project
+    cat > .context/project/concerns.yaml <<'EOF'
+concerns:
+  - id: G-001
+    severity: low
+    description: "valid"
+  - id: G-002
+    severity: high
+    description: "also valid"
+EOF
+    echo "1.3.0" > VERSION
+    git add VERSION .context/project/concerns.yaml
+    git -c commit.gpgsign=false commit -q -m "T-0: bump with valid yaml"
+    LOCAL_SHA="$(git rev-parse HEAD)"
+    REMOTE_SHA="$(git rev-parse HEAD~1)"
+    run bash -c "echo 'refs/heads/master $LOCAL_SHA refs/heads/master $REMOTE_SHA' | .git/hooks/pre-push origin http://localhost"
+    [ "$status" -eq 0 ]
+}
