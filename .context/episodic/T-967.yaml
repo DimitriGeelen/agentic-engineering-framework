@@ -1,0 +1,117 @@
+# ============================================================================
+# EPISODIC MEMORY - T-967: Session profiles + provider registry for orchestrator readiness (T-962 Phase 4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-30T20:59:56Z
+# ============================================================================
+
+task_id: T-967
+task_name: "Session profiles + provider registry for orchestrator readiness (T-962 Phase 4)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T18:25:41Z
+completed: 2026-04-30T20:59:52Z
+duration_days: 24
+updates_count: 4
+first_commit: 2026-04-06T20:25:51+02:00
+last_commit: 2026-04-07T00:22:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-962: Create 4 build tasks for web terminal implementation. Add provider adapter interface, session registry, and profiles. Update blueprint with session CRUD API, refactor terminal.py to use adapter. Register 7 new web/terminal/ components in fabric
+
+# Key outcomes
+outcomes:
+  - "`web/terminal/adapters/base.py` — `SessionAdapter` Protocol class with spawn/capabilities/inject/observe/kill/get_cost methods"
+  - "`web/terminal/adapters/local_shell.py` — `LocalShellAdapter` using pty.fork (migrated from `web/terminal.py`)"
+  - "`web/terminal/adapters/claude_code.py` — `ClaudeCodeAdapter` spawning `claude -p` via PTY"
+  - "`web/terminal/registry.py` — `SessionRegistry` with CRUD, YAML persistence in `.context/sessions/`, query by task/tag/provider/status"
+  - "`web/terminal/session.py` — `Session` dataclass matching T-962 v7 schema (id, type, provider, status, capabilities, cost, process)"
+  - "`web/terminal/profiles.py` — Session profile loader: reads `web/terminal/profiles.yaml`, returns presets (local-bash, local-zsh, claude-code, claude-dispatch)"
+  - "`web/terminal/profiles.yaml` — 4 default profiles with shell/env/icon/color/provider config"
+  - "`web/blueprints/terminal.py` updated: `/api/sessions` CRUD endpoints using registry"
+  - "`web/terminal.py` refactored to use `LocalShellAdapter` instead of direct pty calls"
+  - "Existing Playwright terminal tests still pass after refactor (40/40 passed in 75s)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/web-terminal-adapters-base.yaml"
+  - ".fabric/components/web-terminal-adapters-claude_code.yaml"
+  - ".fabric/components/web-terminal-adapters-local_shell.yaml"
+  - ".fabric/components/web-terminal-__init__.yaml"
+  - ".fabric/components/web-terminal-profiles.yaml"
+  - ".fabric/components/web-terminal-registry.yaml"
+  - ".fabric/components/web-terminal-session.yaml"
+  - ".tasks/active/T-964-watchtower-single-terminal--xtermjs--fla.md"
+  - ".tasks/active/T-965-multi-session-terminal-tabs--session-man.md"
+  - ".tasks/active/T-966-termlink-session-observation-in-watchtow.md"
+  - ".tasks/active/T-967-session-profiles--provider-registry-for-.md"
+  - "web/blueprints/terminal.py"
+  - "web/terminal/adapters/base.py"
+  - "web/terminal/adapters/claude_code.py"
+  - "web/terminal/adapters/__init__.py"
+  - "web/terminal/adapters/local_shell.py"
+  - "web/terminal/__init__.py"
+  - "web/terminal/profiles.py"
+  - "web/terminal/profiles.yaml"
+  - "web/terminal.py"
+  - "web/terminal/registry.py"
+  - "web/terminal/session.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T20:25:51"
+    action: "T-962: Create 4 build tasks for web terminal implementation"
+  - time: "2026-04-06T20:25:51"
+    action: "T-962: Create 4 build tasks for web terminal implementation"
+  - time: "2026-04-07T00:16:18"
+    action: "T-967: Add provider adapter interface, session registry, and profiles"
+  - time: "2026-04-07T00:16:18"
+    action: "T-967: Add provider adapter interface, session registry, and profiles"
+  - time: "2026-04-07T00:20:21"
+    action: "T-967: Update blueprint with session CRUD API, refactor terminal.py to use adapter"
+  - time: "2026-04-07T00:20:21"
+    action: "T-967: Update blueprint with session CRUD API, refactor terminal.py to use adapter"
+  - time: "2026-04-07T00:22:53"
+    action: "T-967: Register 7 new web/terminal/ components in fabric"
+  - time: "2026-04-07T00:22:53"
+    action: "T-967: Register 7 new web/terminal/ components in fabric"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 34714 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 34714
+  commits: 11
+  files_changed: 31
+  lines_added: 3305
+  lines_removed: 240
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-967-session-profiles--provider-registry-for-.md
+generated_by: context-agent-hybrid
