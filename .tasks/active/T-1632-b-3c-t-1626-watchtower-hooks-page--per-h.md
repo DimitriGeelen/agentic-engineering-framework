@@ -4,16 +4,16 @@ name: "B-3c (T-1626): Watchtower /hooks page — per-hook fire/fail rates"
 description: >
   New Watchtower blueprint /hooks reads .hook-counter + .hook-failure-counter (T-1628 telemetry) and displays per-hook table: fires, failures, ratio. Pinned by Playwright DOM-content assertion (T-1575 visual verification rule).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [from-T-1626, B-3c, watchtower, ui]
-components: []
+components: [agents/context/post-compact-resume.sh, bin/fw, lib/doctor-hook-exercise.py, tests/playwright/test_hooks_page.py, tests/unit/doctor_hook_exercise.bats, tests/unit/session_start_hook_warning.bats, web/blueprints/hooks.py, web/blueprints/__init__.py, web/shared.py, web/templates/hooks.html]
 related_tasks: [T-1626, T-1628, T-1629]
 created: 2026-05-01T07:22:38Z
-last_update: 2026-05-01T09:52:19Z
-date_finished: null
+last_update: 2026-05-01T09:57:39Z
+date_finished: 2026-05-01T09:57:39Z
 ---
 
 # T-1632: B-3c (T-1626): Watchtower /hooks page — per-hook fire/fail rates
@@ -100,3 +100,24 @@ PYTHONDONTWRITEBYTECODE=1 FW_TEST_PORT=3000 python3 -m pytest tests/playwright/t
 ### 2026-05-01T09:52:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ff667b43
+- **Timestamp:** 2026-05-01T09:57:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/blueprints/hooks.py` reads `.hook-counter` and `.hook-failure-counter`, sums duplicate keys defensively, invokes `lib/hook-threshold.py --all` for over-threshold flags, and renders a per-hook tab
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/hook-threshold.py in: `web/blueprints/hooks.py` reads `.hook-counter` and `.hook-failure-counter`, sums duplicate keys defensively, invokes `lib/hook-threshold.py --all` fo`
+- **AC#2 (Agent)** — `web/templates/hooks.html` renders the table with: hook name, fires, failures, ratio %, status badge (FAIL / ok); summary metrics (total hooks, total fires, total failures, failing count, overall rati
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/hooks.html in: `web/templates/hooks.html` renders the table with: hook name, fires, failures, ratio %, status badge (FAIL / ok); summary metrics (total hooks, total `
+- **AC#3 (Agent)** — Blueprint registered in `web/blueprints/__init__.py` and added to the `Govern` nav group in `web/shared.py`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/__init__.py in: Blueprint registered in `web/blueprints/__init__.py` and added to the `Govern` nav group in `web/shared.py``
+
+### 2026-05-01T09:57:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

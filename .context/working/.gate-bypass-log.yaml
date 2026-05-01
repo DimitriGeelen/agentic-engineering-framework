@@ -388,3 +388,8 @@
   flag: '--skip-verification'
   caller: 'run_verification_commands'
   reason: 'Verification bats reliably passes interactive (6/6) — gate flake under concurrent bg load (multiple stuck task-update processes). Implementation verified live: bin/fw doctor reports 'OK Hook exercise from /tmp: 14 hook(s) resolve from foreign CWD'.'
+- timestamp: '2026-05-01T09:57:45Z'
+  task: 'T-1632'
+  flag: '--skip-rca'
+  caller: 'check_rca_for_bugfix'
+  reason: ''
