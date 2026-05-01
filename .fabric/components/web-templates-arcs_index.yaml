@@ -1,0 +1,20 @@
+id: web/templates/arcs_index.html
+name: arcs_index
+type: template
+subsystem: watchtower
+location: web/templates/arcs_index.html
+tags: [arcs, watchtower, t-1662]
+
+purpose: "Renders /arcs index — list of every arc with focus dot indicator, status badge (in-progress/closed), constituent count, anchor task link, link to arc detail."
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-01
+created_by: unknown

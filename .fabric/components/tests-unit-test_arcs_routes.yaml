@@ -1,0 +1,20 @@
+id: tests/unit/test_arcs_routes.py
+name: test_arcs_routes
+type: script
+subsystem: testing
+location: tests/unit/test_arcs_routes.py
+tags: [arcs, watchtower, regression, t-1662]
+
+purpose: "Unit tests for /arcs and /arcs/<id> routes (T-1662) — Flask test_client pins index empty/populated, detail in-progress with three-question check, detail closed without check, 404 for unregistered, missing-task graceful render."
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-01
+created_by: unknown
