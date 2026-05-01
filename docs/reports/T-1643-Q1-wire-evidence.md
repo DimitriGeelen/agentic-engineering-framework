@@ -88,3 +88,29 @@ captured at dispatch time, before the worker did any real work. The
 substrate-half half of Q1 remains blocked on U-005, now also blocked on
 "give the worker enough wall-clock to finish." Do not re-dispatch in this
 session.
+
+## 2026-05-01T23:28Z — second dispatch retry also timed out
+
+Re-dispatched as `u005-meta-populate-2` with `--timeout 1800` (30 min — 3x
+the first attempt). Same outcome: `exit 143` SIGTERM at the watchdog
+boundary, `result.md` zero bytes, PTY shows only the bash invocation.
+Claude process was confirmed alive at 5 minutes (PID 3073183, normal CPU
+usage), confirming it wasn't stuck on auth/handshake — it was doing real
+work that just couldn't fit in 30 minutes of wall-clock.
+
+This is now characterized as a **structural blocker** for U-005, not a
+sizing oversight. Two changes are needed before retry:
+
+1. **`agents/termlink/run.sh.tmpl`** — switch `claude -p ... --output-format
+   text` to `--output-format stream-json` so the watchdog kill at timeout
+   leaves a forensic trail in `result.md` (currently empty after timeout,
+   useless for diagnosing whether the work was 90% done or 10% done).
+2. **Higher default `TERMLINK_WORKER_TIMEOUT`** (or a per-task-type
+   override) — `30 min` is enough for a single-file edit + cargo check, but
+   a real cross-repo build task with task-creation ceremony, exploration,
+   edit, test, commit, and report needs 60-90 min budget.
+
+Both changes are framework-side (`/opt/999-Agentic-Engineering-Framework`),
+not /opt/termlink-side, so they unblock U-005 dispatch without depending on
+the cross-repo work itself. Filed as the forward path; do not retry U-005
+dispatch from this session.

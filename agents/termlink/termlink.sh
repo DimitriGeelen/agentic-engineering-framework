@@ -405,13 +405,25 @@ if [ -n "$MODEL" ]; then
 fi
 
 # Background process + kill watchdog (macOS has no `timeout` command)
-claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG --output-format text > "$WDIR/result.md" 2>"$WDIR/stderr.log" &
+# T-1663: stream-json preserves forensic trail when watchdog kills the worker — text format
+# buffers everything until completion, leaving an empty result.md on timeout (T-1643 found
+# this twice consecutively on U-005 dispatches). result.jsonl is the live trail; result.md
+# carries the final assistant text extracted on clean exit (backward-compat with `fw termlink result`).
+claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
 CLAUDE_PID=$!
-(sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" > "$WDIR/stderr.log") &
+(sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
 WATCHDOG_PID=$!
 wait "$CLAUDE_PID" 2>/dev/null
 EXIT_CODE=$?
 kill "$WATCHDOG_PID" 2>/dev/null || true
+
+# Extract final assistant text into result.md for backward-compat. On timeout the result event
+# never arrived, result.md stays empty — operators read result.jsonl directly for forensic trail.
+if [ -s "$WDIR/result.jsonl" ] && command -v jq >/dev/null 2>&1; then
+    jq -r 'select(.type=="result") | .result // empty' "$WDIR/result.jsonl" > "$WDIR/result.md" 2>/dev/null || : > "$WDIR/result.md"
+else
+    : > "$WDIR/result.md"
+fi
 
 echo "$EXIT_CODE" > "$WDIR/exit_code"
 date -u +%Y-%m-%dT%H:%M:%SZ > "$WDIR/finished_at"
