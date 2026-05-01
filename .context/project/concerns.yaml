@@ -319,9 +319,9 @@ concerns:
   related_task: T-242
 - id: G-015
   type: gap
-  title: Sub-agent results bypass task governance — no structural linking
+  title: "Sub-agent results bypass task governance — no structural linking (partial-mitigation 2026-05-01: bus protocol convention via T-1645 GO Option A; structural enforcement still pending)"
   description: 'Sub-agents dispatched via Claude Code''s Task tool write results to /tmp/fw-agent-*.md (outside PROJECT_ROOT). These writes bypass check-active-task.sh and are never registered against the
-    active task.
+    active task. T-1061 was originally framed partly on closing this gap via TermLink, but TermLink scope is PTY/socket — /tmp/ writes are categorically out-of-scope (T-1641 W4 ruling). T-1645 GO Option A confirmed: T-1061 partially mitigates G-015 via the `fw bus post` convention (CLAUDE.md §Result Ledger), not closure. Structural enforcement (PreToolUse hook redirecting /tmp/fw-agent-*.md writes through `fw bus post`) deferred to T-1660 (filed companion).
 
     '
   spec_reference: CLAUDE.md §Sub-Agent Dispatch Protocol, §Result Ledger (fw bus)
@@ -329,10 +329,19 @@ concerns:
   trigger_condition: 'Sub-agent results are lost or must be manually linked for the 3rd time.
 
     '
-  status: watching
+  status: partial-mitigation
+  status_partial_mitigation:
+    via: "T-1645 GO Option A (2026-05-01)"
+    mitigations:
+      - "agents/dispatch/preamble.md instructs sub-agents to use fw bus post"
+      - "fw bus post|read|manifest|clear protocol (CLAUDE.md §Result Ledger)"
+      - "auto-size-gating moves >=2KB payloads to .context/bus/blobs/"
+    gap_remaining: "No PreToolUse hook blocks /tmp/fw-agent-*.md writes; sub-agents that ignore the preamble still bypass governance."
+    structural_closure_path: "T-1660 (Option B observation) — PreToolUse hook on Write/Bash to redirect /tmp/fw-agent-*.md through fw bus post"
   created: 2026-03-06
-  last_reviewed: 2026-03-06
+  last_reviewed: 2026-05-01
   related_task: T-329
+  related_tasks_extra: [T-1061, T-1645, T-1660]
 - id: G-016
   type: gap
   title: Learning capture has no structural trigger for bugfix tasks

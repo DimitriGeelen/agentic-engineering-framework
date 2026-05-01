@@ -62,6 +62,20 @@ related_tasks:
 # Tags for retrieval
 tags: []
 
+# T-1645 GO Option A retroactive clarification (2026-05-01):
+# T-1061's original framing claimed it closed G-015 (sub-agent /tmp/ bypass).
+# T-1641 W4 ruled this incorrect — TermLink scope is PTY/socket; /tmp/ writes
+# are categorically out-of-scope. T-1061 PARTIALLY MITIGATES G-015 via the
+# `fw bus post` convention (CLAUDE.md §Result Ledger), not closes it.
+# G-015 status updated: watching → partial-mitigation 2026-05-01.
+# Structural closure (PreToolUse hook redirecting /tmp/fw-agent-*.md through
+# fw bus post) tracked separately under T-1660.
+g015_framing_correction:
+  date: "2026-05-01"
+  decision: "T-1645 GO Option A"
+  from: "closes G-015"
+  to: "partial mitigation for G-015 via bus protocol; does not structurally close"
+
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 519

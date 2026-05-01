@@ -47,3 +47,23 @@ pending_updates:
   status: pending
   resolved_date: null
   resolution_note: null
+- id: U-004
+  command: 'cd /opt/termlink && # T-1642 GO accepted (Watchtower 19:08:45). Lift 13
+    routing-policy constants from Rust source to runtime config. See full table in
+    /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md
+    ## Recommendation. Cluster B1 (dispatch core: task_type taxonomy + DEFAULT_MODEL_FALLBACK
+    + bypass/template_cache PROMOTION_THRESHOLDs + FAILURE_THRESHOLD), B2 (route cache
+    + breaker tunables: COOLDOWN + DEFAULT_TTL_HOURS + CONFIDENCE_THRESHOLD), B3 (discovery
+    + dispatch: tag prefix + filter strictness + concurrency + attribution), B4 (fw
+    config plumbing). Ship as routing-policy.yaml at /etc/termlink/ + fw config keys
+    via env. Match defaults from the Recommendation table.'
+  reason: T-1642 GO recorded by user via Watchtower 2026-05-01T17:08:45Z. 13 routing-policy
+    parameters to lift cluster-by-cluster. /opt/termlink Rust changes; framework cannot
+    edit cross-repo.
+  task: T-1642
+  host: 192.168.10.107
+  agent: agent
+  created: '2026-05-01T17:19:35Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null
