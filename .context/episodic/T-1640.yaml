@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1640: T-1061 arc integration assessment — verify T-1062/T-1064/T-1065/T-1066 compose end-to-end before human review
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T10:51:45Z
+# ============================================================================
+
+task_id: T-1640
+task_name: "T-1061 arc integration assessment — verify T-1062/T-1064/T-1065/T-1066 compose end-to-end before human review"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T10:48:05Z
+completed: 2026-05-01T10:51:41Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T12:51:38+02:00
+last_commit: 2026-05-01T12:51:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-integration assessment — T-1061 phases compose end-to-end
+
+# Key outcomes
+outcomes:
+  - "`cargo check -p termlink-hub -p termlink-mcp -p termlink-session -p termlink-protocol` exits 0 on /opt/termlink (run via termlink-agent session)"
+  - "`cargo test --lib` on the same four crates exits 0 (no regressions in the arc's claimed test counts)"
+  - "All four worker artefacts referenced by the parent ACs exist on /opt/termlink: T-903-orchestrator-routing.md, T-905-data-plane-governance.md, T-906-model-param-dispatch.md, T-907-multi-llm-routing-phase-4b.md"
+  - "Integration-trace artefact at `docs/reports/T-1061-arc-integration-2026-05-01.md` walks through `termlink_dispatch` line numbers showing T-1063 gate → T-1064 task_type → T-1065 model resolve → outcome attribution composition"
+  - "Four follow-up tasks (T-1636-T-1639) filed for the buried supplementary-review notes (RoutingKey newtype, cost-aware learning, strip_ansi_codes dedup, throughput benchmark)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1061-arc-integration-2026-05-01.md"
+  - ".tasks/active/T-1640-t-1061-arc-integration-assessment--verif.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T12:51:38"
+    action: "T-1640: arc-integration assessment — T-1061 phases compose end-to-end"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1061, termlink, orchestrator, integration, verification]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 202
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1640-t-1061-arc-integration-assessment--verif.md
+generated_by: context-agent-hybrid

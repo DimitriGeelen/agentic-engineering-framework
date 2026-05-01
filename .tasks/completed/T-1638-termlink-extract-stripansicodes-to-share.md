@@ -4,7 +4,7 @@ name: "TermLink: extract strip_ansi_codes to shared protocol::ansi module — pr
 description: >
   T-1066 supplementary review flagged duplicate strip_ansi_codes implementations in crates/termlink-session/src/handler.rs and governance_subscriber.rs. Same algorithm, two copies. Risk: governance regex matching and handler display drift over time, breaking observability. Extract to shared module (protocol::ansi or session::ansi). Pure refactor, no behavior change. Cross-repo: /opt/termlink. Captured horizon:later. Origin: T-1066 review notes 2026-04-30.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [from-T-1066, termlink, cleanup, dedup]
 components: []
 related_tasks: [T-1066]
 created: 2026-05-01T10:45:18Z
-last_update: 2026-05-01T10:53:54Z
-date_finished: null
+last_update: 2026-05-01T11:00:14Z
+date_finished: 2026-05-01T11:00:14Z
 ---
 
 # T-1638: TermLink: extract strip_ansi_codes to shared protocol::ansi module — prevent drift across handler.rs and governance_subscriber.rs
@@ -62,10 +62,10 @@ test -f /opt/termlink/crates/termlink-session/src/ansi.rs
 # Both files now import from the shared module
 grep -q "ansi::strip_ansi_codes\|use.*ansi" /opt/termlink/crates/termlink-session/src/handler.rs
 grep -q "ansi::strip_ansi_codes\|use.*ansi" /opt/termlink/crates/termlink-session/src/governance_subscriber.rs
-# Build clean (run via termlink-agent)
-termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo check -p termlink-session --message-format short 2>&1 | tail -3" --json --timeout 300 | grep -q '"ok":true'
-# Tests clean (run via termlink-agent)
-termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo test -p termlink-session --lib --quiet 2>&1 | tail -3" --json --timeout 600 | grep -q '"ok":true'
+# Build clean (run via termlink-agent) — assert "Finished" appears in output
+termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo check -p termlink-session --message-format short 2>&1 | tail -3" --json --timeout 300 | grep -q 'Finished.*dev.*profile'
+# Tests clean (run via termlink-agent) — assert "test result: ok" with non-zero passes
+termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo test -p termlink-session --lib --quiet 2>&1 | tail -3" --json --timeout 600 | grep -qE 'test result: ok\. [0-9]+ passed; 0 failed'
 
 ## RCA
 
@@ -104,3 +104,20 @@ termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo test -p t
 ### 2026-05-01T10:53:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c7155a1a
+- **Timestamp:** 2026-05-01T11:00:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `crates/termlink-session/src/lib.rs` declares the new module
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=crates/termlink-session/src/lib.rs in: `crates/termlink-session/src/lib.rs` declares the new module`
+
+### 2026-05-01T11:00:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
