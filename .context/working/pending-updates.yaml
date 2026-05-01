@@ -67,3 +67,26 @@ pending_updates:
   status: pending
   resolved_date: null
   resolution_note: null
+- id: U-005
+  command: 'cd /opt/termlink && # When fw termlink dispatch worker reports back via
+    governance frame 0x8 on /var/lib/termlink/sessions/<id>.sock.data, the hub''s
+    dispatch handler already knows: (a) which model the worker actually ran (from
+    --model arg propagated through run.sh), (b) whether routing chose a fallback (orchestrator
+    route_cache decision). Write these back into /tmp/tl-dispatch/<name>/meta.json
+    by setting model_used and fallback_used. See web/blueprints/orchestrator.py:_recent_dispatches
+    and tests/unit/test_termlink_dispatch_task_type.py:test_dispatch_meta_json_format_pinned
+    for the schema. After landing, worker meta.json should look like {model_used:
+    ''sonnet'', fallback_used: false} instead of nulls. Closes orchestrator-rethink
+    arc Q1.'
+  reason: 'T-1643 cross-repo follow-up: framework now writes task_type/model_used/fallback_used
+    to worker meta.json (W4). model_used and fallback_used start as null — /opt/termlink
+    hub needs to populate them when it routes a dispatch and decides the actual specialist
+    (or falls back). This closes Q1 of section Arc Completion Discipline (end-to-end
+    on fresh substrate) for orchestrator-rethink.'
+  task: T-1643
+  host: 192.168.10.107
+  agent: agent
+  created: '2026-05-01T19:52:47Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null
