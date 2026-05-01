@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1628: B-2 (T-1626): hook telemetry — .hook-counter + .hook-failure-counter on every fire
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T07:20:36Z
+# ============================================================================
+
+task_id: T-1628
+task_name: "B-2 (T-1626): hook telemetry — .hook-counter + .hook-failure-counter on every fire"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-30T21:19:26Z
+completed: 2026-05-01T07:20:32Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`lib/hook-telemetry.sh` exists and exports `fw_record_hook_fire <hookname> <exit_code>` + `fw_hook_counter_get <kind> <hookname>` helpers"
+  - "`bin/fw hook` dispatcher records every hook fire (success and failure) by invoking `fw_record_hook_fire` with the hook's exit code"
+  - "On every hook fire, `.context/working/.hook-counter` is incremented for that hook (per-hook `name=count` format)"
+  - "On every non-zero hook exit, `.context/working/.hook-failure-counter` is also incremented for that hook"
+  - "Files are absent before first fire, created on first fire — no init step required"
+  - "Telemetry overhead per fire is <5ms (measured: ~0.17ms/fire — 1000 fires in ~170ms in a single bash session)"
+  - "Telemetry failure NEVER blocks the hook (read-only fs / missing `.context/working/` returns 0 silently)"
+  - "bats tests cover: first-fire creation, repeat-increment, failure-counter only on non-zero exit, multiple hooks tracked independently, performance budget, telemetry-doesn't-block, **plus the missing-hook degrade-to-allow path (T-1626 witness scenario)** — 15 cases, all green"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Flat `<hookname>=<count>` lines, read-modify-write with mapfile"
+    rationale: "Direct to consume — `grep -q '^check-tier0=[0-9]' .hook-counter` answers \"did this hook fire?\". B-3 will threshold-scan ratios (`.hook-failure-counter` / `.hook-counter`); a derived format would force every reader to re-aggregate. Per-fire overhead measured at ~0.17ms — 33× under the 5ms budget — so the read-modify-write doesn't earn the complexity of an append-only log."
+    alternatives_rejected: ["JSONL append + lazy aggregation (sub-ms append, but every reader pays aggregation cost; B-3's threshold scanner would re-read the entire log on every Tool fire); separate file-per-hook (filesystem entry explosion across 11+ hooks × 4 events)."]
+    chose: "Record missing-hook events as exit-127 in failure counter, BUT keep the dispatcher's `exit 0` (degrade-to-allow per T-1360/G-053-B)"
+    rationale: "T-1626 inception explicitly said \"non-blocking != invisible\". The broken-hook scenario shouldn't hard-block (would cascade across every Bash/Write/Edit per T-1360), but it MUST be visible. Synthetic exit-127 is the sh convention for command-not-found, semantically faithful to \"config drift = command-not-found\"."
+    alternatives_rejected: ["Hard-blocking on missing hook (regresses T-1360); skipping telemetry for the degrade path (regresses T-1626 witness scenario); recording with exit 1 (loses the `command-not-found` signal)."]
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 601 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [hooks, telemetry, from-T-1626, B-2]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 601
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1628-b-2-t-1626-hook-telemetry--hook-counter-.md
+generated_by: context-agent-hybrid

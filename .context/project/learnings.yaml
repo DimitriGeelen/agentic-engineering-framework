@@ -2577,3 +2577,10 @@ X'` returning empty group."
   date: 2026-04-30
   context: Added via context agent
   application: TBD
+- id: L-331
+  learning: "Hook dispatch must keep telemetry on the degrade-to-allow path. T-1360 introduced 'missing hook = exit 0' to prevent cascading PreToolUse blocks, but with no counter increment that path was structurally identical to a clean fire. T-1628 records exit-127 there so B-3 threshold scans see the witness scenario. Rule: every guarded early-exit in a dispatcher must still emit observable signal — the guard is allowed to soften the EFFECT, not the SIGNAL."
+  source: T-1626
+  task: T-1628
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD

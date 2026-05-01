@@ -4356,11 +4356,39 @@ PYSEARCH
                 _crash_log="$PROJECT_ROOT/.context/working/.hook-crashes.log"
                 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) missing-hook $_hook_name script=$_hook_script" >> "$_crash_log" 2>/dev/null || true
             fi
+            # T-1628 (B-2 of T-1626): record the missing-hook event as a failure
+            # so .hook-failure-counter surfaces it. This is the exact witness
+            # scenario from T-1626 (ring20-dashboard 2026-04-30): a path-broken
+            # hook that "succeeds" with exit 0 was invisible to every health
+            # surface. By marking it as a fire with synthetic exit 127 (sh
+            # convention for command-not-found), B-3's threshold scan + doctor
+            # check have a deterministic signal to alert on.
+            if [ -f "$FW_LIB_DIR/hook-telemetry.sh" ]; then
+                # shellcheck disable=SC1091
+                source "$FW_LIB_DIR/hook-telemetry.sh"
+                fw_record_hook_fire "$_hook_name" 127 2>/dev/null || true
+            fi
             exit 0
         fi
         export FRAMEWORK_ROOT PROJECT_ROOT
         # T-863: Use bash explicitly — don't require -x (core.filemode=false drops execute bits)
-        exec bash "$_hook_script" "$@"
+        # T-1628 (B-2 of T-1626): record per-hook fire + non-zero-exit telemetry to
+        # .context/working/.hook-counter / .hook-failure-counter. The original `exec`
+        # replaced this process; we now run-and-capture so post-exit telemetry can
+        # observe the exit code. Telemetry overhead is <0.2ms per fire (mapfile-based,
+        # no subprocess); the extra fork from non-exec is negligible vs. hook payload.
+        # Source is best-effort — if telemetry helper is missing, skip silently and
+        # fall back to plain exec (preserves behaviour on degraded installs).
+        if [ -f "$FW_LIB_DIR/hook-telemetry.sh" ]; then
+            # shellcheck disable=SC1091
+            source "$FW_LIB_DIR/hook-telemetry.sh"
+            bash "$_hook_script" "$@"
+            _hook_rc=$?
+            fw_record_hook_fire "$_hook_name" "$_hook_rc" 2>/dev/null || true
+            exit "$_hook_rc"
+        else
+            exec bash "$_hook_script" "$@"
+        fi
         ;;
     hook-enable)
         # fw hook-enable — register a framework hook in .claude/settings.json (T-1189)
