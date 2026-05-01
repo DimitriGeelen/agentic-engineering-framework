@@ -1615,7 +1615,7 @@ concerns:
   related_tasks_extra: [T-1061, T-1062, T-1064, T-1065, T-1066, T-1644, T-1646, T-1647, T-1648, T-1649, T-1650, T-1651, T-1652]
 - id: G-062
   type: gap
-  title: "Framework-blindness pattern — 'shipped' declared before fresh-substrate behavioral verification (partial-mitigation 2026-05-01: behavioral mechanism #1 shipped via T-1655; structural mechanisms #2/#3 pending)"
+  title: "Framework-blindness pattern — 'shipped' declared before fresh-substrate behavioral verification (mitigated 2026-05-01: all three mechanisms shipped — T-1655 text + T-1656 audit detective + T-1657 review-gate preventive)"
   description: 'Recurring failure signature observed in three independent arcs over five weeks:
     the agent declares an arc "shipped" / "GO awaiting review" based on (a) `cargo check` /
     `cargo test --lib` passing, (b) line-number trace through the integration code path,
@@ -1647,7 +1647,7 @@ concerns:
     behavioral verification on a fresh substrate, (b) policy-default audit (`grep -rn "const " | wc -l`
     on shipped code → did any silently-defaulted constant escape human review?), (c) framework-side
     use evidence (does the upstream that motivated the work actually call it?).
-  status: watching
+  status: mitigated
   closure_criteria: 'A structural pre-completion check that asks the agent these three questions
     explicitly before allowing arc-parent tasks to enter `fw task review`. Or three consecutive
     multi-task arcs complete without this signature being identified post-hoc.'
@@ -1659,13 +1659,15 @@ concerns:
     audit before the parent is reviewed.'
   - 'Preventive: `fw task review` for arc-parent tasks (tagged `t-XXXX-followup` or `arc-parent`)
     runs an extra gate asking the three questions interactively.'
-  status_partial_mitigation:
+  status_mitigation:
     mechanism_1_shipped: true
     mechanism_1_artefact: "CLAUDE.md §Arc Completion Discipline (G-062) — three-question checklist with no-symptom-conflation reminder; T-1655"
-    mechanism_2_deferred: "fw audit arc-completion check — when N child tasks under one parent reach work-completed within M days, demand behavioral-verification artefact + policy-defaults audit"
-    mechanism_3_deferred: "fw task review extra gate for arc-parent tasks — interactive three-question check"
-    closure_remaining: "Mechanism #1 is behavioral (text in CLAUDE.md). Structural enforcement (mechanisms #2/#3) needed to close the gap; until then status stays partial-mitigation."
+    mechanism_2_shipped: true
+    mechanism_2_artefact: "agents/audit/audit.sh — `arc-completion` section warns when in-progress arc reaches FW_ARC_COMPLETION_THRESHOLD (default 0.80) child completion without explicit fw arc close; T-1656"
+    mechanism_3_shipped: true
+    mechanism_3_artefact: "lib/review.sh _arc_parent_gate — fw task review on arc-anchor or arc-parent-tagged tasks prints the three questions before the Watchtower URL; T-1657"
+    closure_path: "All three mechanisms in place. To re-watch (move back to watching/partial-mitigation): observe a fourth-instance arc shipped without behavioral verification despite the three checks."
   created: 2026-05-01
   last_reviewed: 2026-05-01
   related_task: T-1641
-  related_tasks_extra: [T-1061, T-1626, T-1633, T-1655]
+  related_tasks_extra: [T-1061, T-1626, T-1633, T-1655, T-1656, T-1657]

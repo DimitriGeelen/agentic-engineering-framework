@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1657: G-062 mechanism #3: fw task review extra gate — interactive three-question check for arc-parent tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T19:17:12Z
+# ============================================================================
+
+task_id: T-1657
+task_name: "G-062 mechanism #3: fw task review extra gate — interactive three-question check for arc-parent tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T16:39:23Z
+completed: 2026-05-01T19:17:07Z
+duration_days: 0
+updates_count: 5
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "AC1 — `lib/review.sh` exposes a function `_arc_parent_gate` called from `emit_review` that detects arc-parent status and prints the three questions"
+  - "AC2 — Detection: task is anchor_task of an in-progress arc (via `.context/arcs/*.yaml`) OR has explicit `arc-parent` tag in frontmatter"
+  - "AC3 — When detected, banner with three §Arc Completion Discipline questions is printed BEFORE the Watchtower URL block emitted by `emit_review`"
+  - "AC4 — Non-arc-parent tasks see no banner (zero noise on regular review flow)"
+  - "AC5 — Unit test `tests/unit/test_arc_parent_review_gate.py` covers: anchor-task case, arc-parent-tag case, regular task case, anchor of closed arc (no banner). 4/4 pass."
+  - "AC6 — Live: `bin/fw task review T-1641` (anchor of orchestrator-rethink) emits the banner"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 157 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 157
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1657-g-062-mechanism-3-fw-task-review-extra-g.md
+generated_by: context-agent-hybrid
