@@ -2619,3 +2619,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-337
+  learning: "Framework can produce the very drift its own audit detects. Witness: agents/termlink/termlink.sh:86 emitted task=NUM (equals) for ~years while the canonical convention defined later (T-1063 / T-1649 / tests/fixtures/termlink-list-schema.json) is task: (colon). The audit's KNOWN_DRIFT_MAP at agents/audit/orchestrator-mcp-scan.sh:107 explicitly knew task=→task: but never traced back to fix the producer. Lesson: when adding a 'detect drift' audit, immediately grep the framework's own code for the same anti-pattern. Detection without source-fix is half a defense."
+  source: P-001
+  task: T-1654
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD

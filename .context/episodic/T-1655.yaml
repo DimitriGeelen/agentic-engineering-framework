@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1655: G-062 mechanism #1: Codify Arc Completion Discipline in CLAUDE.md — three-question checklist before declaring arcs 'shipped'
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T16:38:11Z
+# ============================================================================
+
+task_id: T-1655
+task_name: "G-062 mechanism #1: Codify Arc Completion Discipline in CLAUDE.md — three-question checklist before declaring arcs 'shipped'"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T16:35:45Z
+completed: 2026-05-01T16:38:08Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T18:38:03+02:00
+last_commit: 2026-05-01T18:38:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Arc Completion Discipline section in CLAUDE.md (G-062 mechanism #1)
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md contains a new section `## Arc Completion Discipline` (or similar) with the three explicit questions"
+  - "Each question references its evidence (T-1626, T-1633, T-1641) so future agents see the pattern"
+  - "Section includes the \"no symptom-conflation\" reminder"
+  - "Section cross-references G-062 + G-019 (related but distinct gap)"
+  - "G-062 status updated `watching` → `partial-mitigation` with mechanism #1 listed; remaining mechanisms (#2, #3) explicitly deferred"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".context/project/concerns.yaml"
+  - ".tasks/active/T-1655-g-062-mechanism-1-codify-arc-completion-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T18:38:03"
+    action: "T-1655: Arc Completion Discipline section in CLAUDE.md (G-062 mechanism #1)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [orchestrator, arc-c, governance, claude-md, framework-blindness, arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 3
+  lines_added: 133
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1655-g-062-mechanism-1-codify-arc-completion-.md
+generated_by: context-agent-hybrid
