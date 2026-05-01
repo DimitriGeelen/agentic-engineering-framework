@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1649: Tag-format lint for live TermLink sessions (framework-side half of W10 #4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T12:56:50Z
+# ============================================================================
+
+task_id: T-1649
+task_name: "Tag-format lint for live TermLink sessions (framework-side half of W10 #4)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T12:20:27Z
+completed: 2026-05-01T12:56:47Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-01T14:56:10+02:00
+last_commit: 2026-05-01T14:56:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  framework-side tag-format lint for live TermLink sessions
+
+# Key outcomes
+outcomes:
+  - "`agents/audit/orchestrator-mcp-scan.sh` gains a `tag_format_warnings` finding category"
+  - "Output YAML at `.context/audits/orchestrator-LATEST.yaml` includes a `findings.tag_format_warnings` list when drift exists; entries name the bad prefix, count, and nearest canonical match"
+  - "Lint detects the 4 known drift patterns: `task=` → `task:`, `role=` → `role:`, `tasktype:` → `task-type:`, `task_type:` → `task-type:`"
+  - "`web/blueprints/orchestrator.py` reads `findings.tag_format_warnings` and exposes it to the template"
+  - "`web/templates/orchestrator.html` renders the new finding category in the drift panel"
+  - "TermLink push delivered to termlink-agent with the spawn-validator proposal (cross-repo half)"
+  - "Audit YAML continues to validate as YAML (no schema break)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Ship framework-side lint in this task; file termlink-side validator as a TermLink push to termlink-agent under their own task ID."
+    rationale: "Framework cannot edit /opt/termlink directly (memory: feedback_no_cross_repo_edits). Cross-repo proposals go via TermLink, not direct edits."
+    alternatives_rejected: ["Bundling both into one task — would force a cross-repo edit or block T-1649 on termlink-agent's response window."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/audit/orchestrator-mcp-scan.sh"
+  - ".context/audits/orchestrator-LATEST.yaml"
+  - ".context/episodic/T-1641.yaml"
+  - ".tasks/active/T-1649-task-type-tag-format-invariant--termlink.md"
+  - ".tasks/completed/T-1641-t-1061-orchestrator-arc-reconsideration-.md"
+  - "web/blueprints/orchestrator.py"
+  - "web/templates/orchestrator.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T14:56:10"
+    action: "T-1649: framework-side tag-format lint for live TermLink sessions"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1641, t-1061-followup, drift-defense, termlink, validation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36
+  commits: 1
+  files_changed: 8
+  lines_added: 351
+  lines_removed: 74
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1649-task-type-tag-format-invariant--termlink.md
+generated_by: context-agent-hybrid
