@@ -4,16 +4,16 @@ name: "B-3b (T-1626): hook-failure threshold rule — auto-register G-XXX in con
 description: >
   Scan .hook-counter + .hook-failure-counter (T-1628 telemetry); when any hook's failure ratio exceeds N% over M total fires, auto-write a G-XXX entry to concerns.yaml. Closes detection half of the L-329/G-019 immune-system loop.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [from-T-1626, B-3b, concerns, escalation]
-components: []
+components: [C-004, agents/context/post-compact-resume.sh, bin/fw, lib/doctor-hook-exercise.py, lib/hook-threshold.py, tests/unit/doctor_hook_exercise.bats, tests/unit/hook_threshold.bats, tests/unit/session_start_hook_warning.bats]
 related_tasks: [T-1626, T-1628, T-1629]
 created: 2026-05-01T07:22:34Z
-last_update: 2026-05-01T09:45:40Z
-date_finished: null
+last_update: 2026-05-01T09:51:27Z
+date_finished: 2026-05-01T09:51:27Z
 ---
 
 # T-1631: B-3b (T-1626): hook-failure threshold rule — auto-register G-XXX in concerns.yaml
@@ -38,8 +38,8 @@ B-2 (T-1628) wired per-hook fire/failure telemetry to `.context/working/.hook-co
 
 ## Verification
 
-bash tests/unit/hook_threshold.bats
-bin/fw audit --section structure 2>&1 | grep -qE "(Hook threshold|hook.*fail|PASS|WARN)"
+bats tests/unit/hook_threshold.bats
+bin/fw audit --section structure >/tmp/t1631-audit.log 2>&1; grep -qE "Hook threshold" /tmp/t1631-audit.log
 python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
 
 ## RCA
@@ -79,3 +79,15 @@ python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
 ### 2026-05-01T09:45:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-94fe579f
+- **Timestamp:** 2026-05-01T09:51:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-01T09:51:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

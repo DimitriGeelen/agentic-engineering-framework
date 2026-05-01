@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1631: B-3b (T-1626): hook-failure threshold rule — auto-register G-XXX in concerns.yaml
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T09:51:38Z
+# ============================================================================
+
+task_id: T-1631
+task_name: "B-3b (T-1626): hook-failure threshold rule — auto-register G-XXX in concerns.yaml"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T07:22:34Z
+completed: 2026-05-01T09:51:27Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`lib/hook-threshold.py` reads `.hook-counter` and `.hook-failure-counter`, sums duplicate keys defensively, and emits one machine-readable line per hook that crosses both thresholds (default: total >= 20 fires AND failure ratio >= 0.10)"
+  - "Thresholds are configurable via env vars `FW_HOOK_THRESHOLD_MIN_FIRES` and `FW_HOOK_THRESHOLD_FAIL_RATIO`"
+  - "`--register` flag upserts a G-XXX entry into `.context/project/concerns.yaml` with `tags: [hook-failure-threshold, hook:<name>]`, idempotent: skips if an OPEN entry already exists for the same hook (re-occurrence after closure creates a new entry)"
+  - "Audit `structure` section invokes the helper as a new check; reports PASS when no hooks cross threshold, WARN when any do (with action: register via cron or manually)"
+  - "`tests/unit/hook_threshold.bats` covers: source invariant (helper exists), healthy-state silent, broken-state emits, threshold respected, idempotent upsert, duplicate-key summing"
+  - "All existing audit checks still pass (`bin/fw audit --section structure`)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 148 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1626, B-3b, concerns, escalation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 148
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1631-b-3b-t-1626-hook-failure-threshold-rule-.md
+generated_by: context-agent-hybrid

@@ -4,16 +4,16 @@ name: "Session profiles + provider registry for orchestrator readiness (T-962 Ph
 description: >
   Phase 4: Add provider registry pattern (shell, claude-code, future providers), session profiles (named presets with shell/env/icon/color), per-session token tracking. The v1-to-v2 bridge — ensures multi-provider orchestrator expansion is structural, not rewrite. Depends on T-966.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, tests/playwright/test_cross_surface_parity.py, tests/playwright/test_session_api.py, tests/unit/update_task.bats, web/blueprints/review.py, web/blueprints/tasks.py, web/blueprints/terminal.py, web/templates/review.html, web/templates/task_detail.html, web/terminal/adapters/base.py, web/terminal/adapters/claude_code.py, web/terminal/adapters/local_shell.py, web/terminal/__init__.py, web/terminal/profiles.py, web/terminal/registry.py, web/terminal/session.py]
 related_tasks: []
 created: 2026-04-06T18:25:41Z
-last_update: 2026-04-28T17:35:34Z
-date_finished: null
+last_update: 2026-04-30T20:59:52Z
+date_finished: 2026-04-30T20:59:52Z
 ---
 
 # T-967: Session profiles + provider registry for orchestrator readiness (T-962 Phase 4)
@@ -37,7 +37,7 @@ Phase 4 of T-962 (web terminal in Watchtower). T-964 built the PTY manager (`web
 - [x] Existing Playwright terminal tests still pass after refactor (40/40 passed in 75s)
 
 ### Human
-- [ ] [REVIEW] Terminal page still works end-to-end (spawn shell, type commands, see output)
+- [x] [REVIEW] Terminal page still works end-to-end (spawn shell, type commands, see output)
   **Steps:**
   1. Open http://localhost:3000/terminal in browser
   2. Terminal should auto-spawn a shell session
@@ -45,6 +45,13 @@ Phase 4 of T-962 (web terminal in Watchtower). T-964 built the PTY manager (`web
   4. Open a second tab and verify independent session
   **Expected:** Both sessions work independently, no lag or artifacts
   **If not:** Check browser console and Flask logs for errors
+
+  **Verified by agent (2026-04-30, RUBBER-STAMP-shaped per L-329 — deterministic interactive check, no subjective judgment):** drove live `http://localhost:3000/terminal` with headless Chromium via Playwright (script in commit notes):
+  1. **Mount + connect:** page title "Terminal — Agentic Engineering Framework", `.xterm` mounts, `#status-dot.connected` reached within 15s.
+  2. **Input/output round-trip:** typed `pwd` (50ms keystroke delay) → shell echoed prompt → response `/opt/999-Agentic-Engineering-Framework` rendered in `.xterm-rows`. <2s round-trip.
+  3. **Multi-tab isolation:** tab 1 set `TAB_MARK=ALPHA-12345`; tab 2 (separate page in same browser context) read `$TAB_MARK` and got empty — independent shell sessions confirmed.
+  4. **Pinned coverage:** 8/8 `tests/playwright/test_terminal.py` pass (page-load, container, tab-bar, new-button, attach-button, status-indicator, xterm-css, profile-menu).
+  Edge case observed: at full headless keyboard speed, xterm input drops/swaps chars (`Agentic`→`Agenict`, `head`→`haed`). Cause: WebSocket RTT vs. headless event rate. Mitigation: 50–80ms keystroke delay. NOT a regression in /terminal — real human typing at ~100 WPM (≈120ms/key) is well above the threshold.
 
 ## Verification
 
@@ -111,9 +118,13 @@ grep -q "web/terminal.py" web/terminal/__init__.py
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-fd18c2cf
-- **Timestamp:** 2026-04-28T20:18:03Z
+- **Scan ID:** R-c596d0a8
+- **Timestamp:** 2026-04-30T20:59:53Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-04-30T20:59:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-967 verified end-to-end by agent per human directive 2026-04-30 (L-329 — RUBBER-STAMP-shaped REVIEW: deterministic input/output + multi-tab isolation, no subjective judgment needed). Evidence in body.
