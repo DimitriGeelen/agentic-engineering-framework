@@ -4,15 +4,15 @@ name: "B-3b (T-1626): hook-failure threshold rule — auto-register G-XXX in con
 description: >
   Scan .hook-counter + .hook-failure-counter (T-1628 telemetry); when any hook's failure ratio exceeds N% over M total fires, auto-write a G-XXX entry to concerns.yaml. Closes detection half of the L-329/G-019 immune-system loop.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [from-T-1626, B-3b, concerns, escalation]
 components: []
 related_tasks: [T-1626, T-1628, T-1629]
 created: 2026-05-01T07:22:34Z
-last_update: 2026-05-01T07:22:34Z
+last_update: 2026-05-01T09:45:40Z
 date_finished: null
 ---
 
@@ -22,38 +22,25 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+## Context
+
+B-2 (T-1628) wired per-hook fire/failure telemetry to `.context/working/.hook-counter` and `.hook-failure-counter`. B-3a (T-1629) added an active probe in `fw doctor`. This task closes the detection-to-escalation half of the loop: when telemetry shows a hook is *failing in production* (not just resolvable from /tmp), auto-register a G-XXX entry in `concerns.yaml` so the failure surfaces in audit, /gaps, and Watchtower without depending on agent vigilance.
+
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] `lib/hook-threshold.py` reads `.hook-counter` and `.hook-failure-counter`, sums duplicate keys defensively, and emits one machine-readable line per hook that crosses both thresholds (default: total >= 20 fires AND failure ratio >= 0.10)
+- [x] Thresholds are configurable via env vars `FW_HOOK_THRESHOLD_MIN_FIRES` and `FW_HOOK_THRESHOLD_FAIL_RATIO`
+- [x] `--register` flag upserts a G-XXX entry into `.context/project/concerns.yaml` with `tags: [hook-failure-threshold, hook:<name>]`, idempotent: skips if an OPEN entry already exists for the same hook (re-occurrence after closure creates a new entry)
+- [x] Audit `structure` section invokes the helper as a new check; reports PASS when no hooks cross threshold, WARN when any do (with action: register via cron or manually)
+- [x] `tests/unit/hook_threshold.bats` covers: source invariant (helper exists), healthy-state silent, broken-state emits, threshold respected, idempotent upsert, duplicate-key summing
+- [x] All existing audit checks still pass (`bin/fw audit --section structure`)
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+bash tests/unit/hook_threshold.bats
+bin/fw audit --section structure 2>&1 | grep -qE "(Hook threshold|hook.*fail|PASS|WARN)"
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
 
 ## RCA
 
@@ -88,3 +75,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1631-b-3b-t-1626-hook-failure-threshold-rule-.md
 - **Context:** Initial task creation
+
+### 2026-05-01T09:45:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

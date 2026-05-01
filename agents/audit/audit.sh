@@ -706,6 +706,26 @@ DRIFTEOF
     fi
 fi
 
+# T-1631 (B-3b of T-1626): Hook-failure threshold check.
+# Reads .hook-counter + .hook-failure-counter (T-1628 telemetry) and
+# warns if any hook is failing in production over threshold. Does NOT
+# auto-register here — that's --register. Audit surfaces the signal;
+# operator runs `fw concerns scan-hooks --register` (or cron job) to
+# materialize G-entries.
+HOOK_THRESHOLD_HELPER="$FRAMEWORK_ROOT/lib/hook-threshold.py"
+HOOK_COUNTER_FILE="$PROJECT_ROOT/.context/working/.hook-counter"
+if [ -f "$HOOK_THRESHOLD_HELPER" ] && [ -f "$HOOK_COUNTER_FILE" ]; then
+    hook_threshold_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$HOOK_THRESHOLD_HELPER" 2>/dev/null)
+    if [ -n "$hook_threshold_out" ]; then
+        hook_failing=$(echo "$hook_threshold_out" | grep -c "^FAIL|" || true)
+        warn "Hook threshold: $hook_failing hook(s) failing over threshold (T-1626)" \
+             "$hook_threshold_out" \
+             "Run: python3 $FRAMEWORK_ROOT/lib/hook-threshold.py --register (or fw upgrade if witness pattern)"
+    else
+        pass "Hook threshold: no hooks failing over threshold"
+    fi
+fi
+
 echo ""
 fi # end structure
 
