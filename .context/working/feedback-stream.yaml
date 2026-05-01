@@ -3936,3 +3936,71 @@ scan_id: R-6820fa93
 task_id: T-1645
 payload:
   task_file: .tasks/active/T-1645-g-015-reframe--sub-agent-tmp-bypass-narr.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T19:12:43Z'
+scan_id: R-29300cd8
+task_id: T-1656
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T19:12:43Z'
+scan_id: R-29300cd8
+task_id: T-1656
+payload:
+  task_file: .tasks/active/T-1656-g-062-mechanism-2-fw-audit-arc-completio.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T19:17:09Z'
+scan_id: R-293407ac
+task_id: T-1657
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T19:17:09Z'
+scan_id: R-293407ac
+task_id: T-1657
+payload:
+  task_file: .tasks/active/T-1657-g-062-mechanism-3-fw-task-review-extra-g.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T21:33:02Z'
+scan_id: R-41d97125
+task_id: T-1663
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T21:33:02Z'
+scan_id: R-41d97125
+task_id: T-1663
+payload:
+  task_file: .tasks/active/T-1663-termlink-dispatch-runsh-switch-to-stream.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T21:39:34Z'
+scan_id: R-05a41813
+task_id: T-1664
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T21:39:34Z'
+scan_id: R-05a41813
+task_id: T-1664
+payload:
+  task_file: .tasks/active/T-1664-framework-dispatch-path-populate-modelus.md

@@ -4,16 +4,16 @@ name: "Framework dispatch path: populate model_used + fallback_used in meta.json
 description: >
   Framework dispatch path: populate model_used + fallback_used in meta.json — close Q1 substrate-half mirror of /opt/termlink T-1442
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, tests/unit/test_termlink_dispatch_task_type.py]
 related_tasks: []
 created: 2026-05-01T21:36:07Z
-last_update: 2026-05-01T21:36:07Z
-date_finished: null
+last_update: 2026-05-01T21:39:33Z
+date_finished: 2026-05-01T21:39:33Z
 ---
 
 # T-1664: Framework dispatch path: populate model_used + fallback_used in meta.json — close Q1 substrate-half mirror of /opt/termlink T-1442
@@ -101,3 +101,20 @@ python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1664-framework-dispatch-path-populate-modelus.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-05a41813
+- **Timestamp:** 2026-05-01T21:39:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q`
+
+### 2026-05-01T21:39:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

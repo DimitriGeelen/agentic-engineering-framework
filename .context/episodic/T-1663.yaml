@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1663: TermLink dispatch run.sh: switch to stream-json + raise default timeout — text-format + 30min loses forensic trail on real cross-repo work
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T21:33:05Z
+# ============================================================================
+
+task_id: T-1663
+task_name: "TermLink dispatch run.sh: switch to stream-json + raise default timeout — text-format + 30min loses forensic trail on real cross-repo work"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T21:29:18Z
+completed: 2026-05-01T21:33:01Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T23:32:57+02:00
+last_commit: 2026-05-01T23:32:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  dispatch run.sh streams stream-json to result.jsonl, extracts result.md on clean exit
+
+# Key outcomes
+outcomes:
+  - "`agents/termlink/termlink.sh` worker template invokes `claude -p` with `--output-format stream-json --verbose`, writing to `result.jsonl` not `result.md`."
+  - "After clean exit, `result.md` is populated by extracting `.result` from the final `type=result` event in `result.jsonl` (`jq -r 'select(.type==\"result\") | .result // empty'`)."
+  - "On watchdog timeout, `result.jsonl` retains the partial stream (every line that was written before SIGTERM) — proven by inspecting after kill."
+  - "`fw termlink result <name>` continues to work for clean-exit dispatches (reads `result.md` as before)."
+  - "Existing dispatch unit tests still pass (`tests/unit/test_termlink_dispatch_task_type.py`)."
+  - "Smoke test: spawn a quick dispatch (`echo \"say ok\" | claude...` equivalent), verify both `result.jsonl` is non-empty (line-delimited JSON) and `result.md` contains the final text. Verified via `t1663-smoke`: result.jsonl 10.8KB stream, result.md \"ok\", exit 0."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/termlink/termlink.sh"
+  - "docs/reports/T-1643-Q1-wire-evidence.md"
+  - ".tasks/active/T-1663-termlink-dispatch-runsh-switch-to-stream.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T23:32:57"
+    action: "T-1663: dispatch run.sh streams stream-json to result.jsonl, extracts result.md on clean exit"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 3
+  lines_added: 151
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1663-termlink-dispatch-runsh-switch-to-stream.md
+generated_by: context-agent-hybrid

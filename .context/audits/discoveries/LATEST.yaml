@@ -1,40 +1,25 @@
-timestamp: 2026-05-01T19:00:01Z
+timestamp: 2026-05-01T21:30:02Z
 findings:
-  - id: D4
+  - id: D1
     level: PASS
-    check: "D4: Audit trend — insufficient history (<3 entries)"
-  - id: D5
+    check: "D1: Episodic quality — 1% [TODO] (18/1594)"
+  - id: D2
+    level: FAIL
+    check: "D2: Human review queue — 3 task(s) waiting >30d: T-530(39d) T-708(33d) T-710(33d)"
+    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
+  - id: D8
+    level: PASS
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - id: D10
     level: WARN
-    check: "D5: Task lifecycle — 17 anomaly(s): T-1372(4min,human) T-544(41d-active) T-1065(23d-active) T-1064(23d-active) T-682(33d-active) T-801(27d-active) T-332(57d-active) T-464(50d-active) T-704(33d-active) T-334(57d-active) (+7 more)"
-    mitigation: "Review flagged tasks for process issues"
-  - id: D13
-    level: WARN
-    check: "D13: Inception limbo — 5 task(s): A=0/B=5 T-1265(B) T-1309(B) T-1611(B) T-682(B) T-704(B)"
-    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
-  - id: D3
+    check: "D10: Decision-without-dialogue — 13 task(s): T-815 T-1151 T-608 T-586 T-993"
+    mitigation: "Review flagged tasks — human dialogue may have been skipped"
+  - id: D11
     level: PASS
-    check: "D3: Commit velocity — insufficient data"
-  - id: D7
-    level: PASS
-    check: "D7: Commit bunching — none (PASS no_recent_commits)"
-  - id: D6
-    level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=17.0 earlier=37.0)"
-  - id: D12
-    level: PASS
-    check: "D12: Bypass log — no log file"
-  - id: D9
-    level: PASS
-    check: "D9: Control drift — normal (PASS 10_audits_checked)"
-  - id: D14
-    level: PASS
-    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
-  - id: D15
-    level: PASS
-    check: "D15: Inception limbo state — none (PASS no_limbo)"
+    check: "D11: Gap register staleness — all gaps fresh"
 
 summary:
-  pass: 8
-  warn: 2
-  fail: 0
-  total: 10
+  pass: 3
+  warn: 1
+  fail: 1
+  total: 5

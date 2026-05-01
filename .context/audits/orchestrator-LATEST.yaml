@@ -2,7 +2,7 @@ audit: orchestrator-mcp-scan
 task: T-1646
 parent_arc: T-1644
 origin: T-1641
-last_run: '2026-05-01T16:42:47Z'
+last_run: '2026-05-01T20:46:00Z'
 baseline_count: 75
 current_count: 75
 gated_baseline: 4
@@ -29,7 +29,7 @@ findings:
     suggested: 'role:'
     sample_sessions:
     - t1429-peer
-sessions_scanned: 22
+sessions_scanned: 23
 sessions_probe_error: null
 warnings:
 - 'TAG-FORMAT-DRIFT: 2 non-canonical tag prefix(es) in live sessions: task=(20), role=(1)'

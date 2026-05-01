@@ -11,7 +11,7 @@ uncommitted_changes: 31
 
 # What we're working on
 active_tasks: [T-1062, T-1064, T-1065, T-1066, T-1265, T-1271, T-1274, T-1309, T-1542, T-1611, T-1624, T-1632, T-1634, T-1635, T-1636, T-1637, T-1639, T-1642, T-1643, T-1645, T-1647, T-1653, T-1656, T-1657, T-1658, T-332, T-334, T-449, T-464, T-530, T-544, T-550, T-558, T-682, T-704, T-705, T-708, T-710, T-801, T-802, T-803, T-844]
-tasks_touched: [T-1659, T-1660, T-1661]
+tasks_touched: [T-1659, T-1660, T-1661, T-1662, T-1663, T-1664]
 tasks_completed: []
 
 # Session notes (ephemeral)

@@ -87,6 +87,10 @@ pending_updates:
   host: 192.168.10.107
   agent: agent
   created: '2026-05-01T19:52:47Z'
-  status: pending
-  resolved_date: null
-  resolution_note: null
+  status: resolved
+  resolved_date: '2026-05-01T21:39:37Z'
+  resolution_note: 'Closed end-to-end: /opt/termlink T-1442 (commit 143cd870) populates
+    meta.json on substrate CLI path; framework T-1664 (commit 5fd678eb0) populates
+    meta.json on framework dispatch path. Smoke verified t1664-smoke3 (default fallback)
+    + t1664-explicit (no fallback). Q1 substrate-half closed on both paths. Cross-repo
+    evidence: /opt/termlink/docs/reports/U-005-meta-populate.md'
