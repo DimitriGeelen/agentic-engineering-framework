@@ -2640,3 +2640,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-340
+  learning: "fw termlink dispatch default timeout (600s) is too short for substantial cross-repo engineering work — observed on U-005 dispatch (read schema files, explore Rust codebase, edit hub, add regression test, run cargo check, commit). claude -p with --output-format text buffers until done, so SIGTERM at 600s loses all forensic trail. For cross-repo build tasks, pass --timeout 1800. Symptom: exit 143, empty result.md, PTY shows only bash invocation."
+  source: P-009
+  task: T-1643
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD

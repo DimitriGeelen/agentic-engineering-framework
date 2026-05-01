@@ -59,3 +59,32 @@ The §Arc Completion Discipline rule is explicit that arc closure requires
 *observable artefacts*, not arguments. A learning entry summarises a takeaway;
 this file is the wire snapshot at a specific moment. Both serve different
 purposes — learnings teach, evidence proves.
+
+## 2026-05-01T20:52Z — dispatch timeout (postscript)
+
+The U-005 worker dispatched at 20:42 hit the default 600s watchdog at 20:52
+with `exit 143` (SIGTERM) and an empty `result.md`. PTY output shows no
+streaming text from `claude -p` at any point — `run.sh` invokes claude with
+`--output-format text` which buffers until completion, so a session that's
+killed mid-think loses everything.
+
+Two findings:
+
+1. **`fw termlink dispatch` default timeout (600s) is too short for
+   substantial cross-repo engineering work.** Reading framework schema files,
+   exploring an unfamiliar Rust codebase, editing the dispatch hub, adding a
+   regression test, running `cargo check`, and committing all in one shot is
+   genuinely 20-30 min of agent time. Dispatcher should pass `--timeout 1800`
+   (or higher) for cross-repo build tasks. See L-339-companion below.
+
+2. **`--output-format text` makes timeouts forensically opaque.** When the
+   watchdog kills the session, there's no record of what the agent was
+   working on. Streaming output (`stream-json`) would preserve the trail.
+   Possible follow-up to `agents/termlink/run.sh.tmpl` — out of scope here.
+
+The Q1 wire-level evidence above (canonical tags, schema correctly written
+with the four orchestrator-aware fields) stands regardless — that was
+captured at dispatch time, before the worker did any real work. The
+substrate-half half of Q1 remains blocked on U-005, now also blocked on
+"give the worker enough wall-clock to finish." Do not re-dispatch in this
+session.
