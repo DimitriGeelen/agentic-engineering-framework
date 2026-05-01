@@ -1,90 +1,68 @@
 ---
 id: T-1648
-name: "Governance-frame 0x8 protocol regression test (T-1066 wire format pin)"
+name: "Governance frame 0x8 protocol regression test (T-1066 wire format pin)"
 description: >
-  W10 #3 — governance-frame 0x8 wire format has no golden fixture. Silent layout drift would desync subscribers; reopens G-017 surface area. Build /opt/termlink-side test (dispatch via fw termlink dispatch --project /opt/termlink): one hex-encoded golden fixture for a Governance frame, parse it, assert payload struct fields match. Origin: docs/reports/T-1641-worker-10-defenses.md item #3.
+  W10 #3 — T-1066's data plane Governance frame (FrameType::Governance = 0x8) has zero
+  non-test emit callers; if its byte value or payload schema changes, no production
+  caller will fail loud — only the dormant subscriber's tests. This task adds a
+  framework-side regression test that parses /opt/termlink/crates/termlink-protocol/src/
+  data.rs and governance.rs to pin (a) frame-type → byte mapping and (b) GovernanceEvent
+  payload JSON field set. Skips gracefully when /opt/termlink is not on this host.
+  Origin: docs/reports/T-1641-worker-10-defenses.md item #3.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
-horizon: later
-tags: [from-T-1641, t-1061-followup, drift-defense, termlink, test]
+horizon: now
+tags: [from-T-1641, t-1061-followup, drift-defense, protocol, contract, t-1066]
 components: []
-related_tasks: [T-1641, T-1644, T-1066]
+related_tasks: [T-1641, T-1644, T-1066, T-1651, T-1652]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T12:20:27Z
+last_update: 2026-05-01T15:20:00Z
 date_finished: null
 ---
 
-# T-1649: Governance-frame 0x8 protocol regression test (T-1066 wire format pin)
+# T-1648: Governance frame 0x8 protocol regression test
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1066 wired a data plane governance subscriber that emits Governance frames
+(FrameType::Governance = 0x8) when output patterns match. T-1641 reconsideration
+found: zero non-test callers. The code path exists but is unused.
+
+That makes the wire format invisible to production failure modes. If somebody
+renumbers FrameType::Governance to 0x9, only the subscriber's own tests fail —
+no alarm rings in the framework that depends on this protocol.
+
+This task pins the contract from the framework side. If termlink renames or
+renumbers, this test fails — making the structural change loud.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] `tests/fixtures/termlink-protocol-frame-types.json` exists, listing all frame types and their assigned byte values
+- [x] `tests/unit/test_termlink_governance_frame_contract.py` exists
+- [x] Test parses /opt/termlink/crates/termlink-protocol/src/data.rs and asserts FrameType::Governance = 0x8
+- [x] Test parses /opt/termlink/crates/termlink-protocol/src/governance.rs and asserts GovernanceEvent struct contains all expected fields (pattern_name, match_text, timestamp, channel_id)
+- [x] Test skips gracefully (pytest.skip) when /opt/termlink is not present on the host
+- [x] Test passes against current upstream HEAD
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+test -f tests/fixtures/termlink-protocol-frame-types.json
+python3 -c "import json; d=json.load(open('tests/fixtures/termlink-protocol-frame-types.json')); assert d['frame_types']['Governance']==8"
+test -f tests/unit/test_termlink_governance_frame_contract.py
+python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -v --tb=short
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-01 — Pin via source-parse, not behaviour-test
+
+- **Chose:** Parse the Rust source files (data.rs, governance.rs) from a Python regex-based scan to pin the byte values and field set. No need to compile or link against termlink crates.
+- **Why:** Framework runs in Python; spinning up a Rust toolchain just to compile a single struct is overkill. Source-parse catches the only failure modes that matter (rename, renumber).
+- **Rejected:** (a) Compile termlink-protocol in CI — over-engineered. (b) Behaviour test that emits a real frame — requires termlink running and would be flaky.
 
 ## Updates
 
-### 2026-05-01T12:20:27Z — task-created [task-create-agent]
-- **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1649-governance-frame-0x8-protocol-regression.md
-- **Context:** Initial task creation
+### 2026-05-01T15:20:00Z — promoted-and-scoped [agent]
+- **Action:** Promoted horizon later→now. Continuing Arc C (T-1644) drift defenses per autonomous-mode directive.

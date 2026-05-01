@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "task": "T-1648",
+    "origin": "T-1641 W10 #3",
+    "purpose": "Pin the data plane FrameType byte mapping. T-1066's Governance frame (0x8) has zero production emit callers; without this contract, byte renumbering goes silent.",
+    "termlink_version_observed": "0.9.0",
+    "captured_at": "2026-05-01",
+    "source_of_truth": "/opt/termlink/crates/termlink-protocol/src/data.rs"
+  },
+  "frame_types": {
+    "Output": 0,
+    "Input": 1,
+    "Resize": 2,
+    "Signal": 3,
+    "Transfer": 4,
+    "Ping": 5,
+    "Pong": 6,
+    "Close": 7,
+    "Governance": 8
+  },
+  "governance_event_fields": [
+    "pattern_name",
+    "match_text",
+    "timestamp",
+    "channel_id"
+  ],
+  "consumers": {
+    "FrameType::Governance": [
+      "(framework) docs/reports/T-1641-worker-10-defenses.md",
+      "(framework) .fabric/components/cross-repo-termlink-governance-frame.yaml",
+      "(termlink) /opt/termlink/crates/termlink-session/src/governance_subscriber.rs"
+    ],
+    "GovernanceEvent": [
+      "(termlink) /opt/termlink/crates/termlink-protocol/src/governance.rs",
+      "(termlink) /opt/termlink/crates/termlink-session/src/governance_subscriber.rs"
+    ]
+  }
+}
