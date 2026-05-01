@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1648: Governance frame 0x8 protocol regression test (T-1066 wire format pin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T13:05:35Z
+# ============================================================================
+
+task_id: T-1648
+task_name: "Governance frame 0x8 protocol regression test (T-1066 wire format pin)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T12:20:27Z
+completed: 2026-05-01T13:05:31Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T15:05:08+02:00
+last_commit: 2026-05-01T15:05:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  governance frame 0x8 protocol regression test (4/4 pass)
+
+# Key outcomes
+outcomes:
+  - "`tests/fixtures/termlink-protocol-frame-types.json` exists, listing all frame types and their assigned byte values"
+  - "`tests/unit/test_termlink_governance_frame_contract.py` exists"
+  - "Test parses /opt/termlink/crates/termlink-protocol/src/data.rs and asserts FrameType::Governance = 0x8"
+  - "Test parses /opt/termlink/crates/termlink-protocol/src/governance.rs and asserts GovernanceEvent struct contains all expected fields (pattern_name, match_text, timestamp, channel_id)"
+  - "Test skips gracefully (pytest.skip) when /opt/termlink is not present on the host"
+  - "Test passes against current upstream HEAD"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Parse the Rust source files (data.rs, governance.rs) from a Python regex-based scan to pin the byte values and field set. No need to compile or link against termlink crates."
+    rationale: "Framework runs in Python; spinning up a Rust toolchain just to compile a single struct is overkill. Source-parse catches the only failure modes that matter (rename, renumber)."
+    alternatives_rejected: ["(a) Compile termlink-protocol in CI — over-engineered. (b) Behaviour test that emits a real frame — requires termlink running and would be flaky."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1648-governance-frame-0x8-protocol-regression.md"
+  - "tests/fixtures/termlink-protocol-frame-types.json"
+  - "tests/unit/test_termlink_governance_frame_contract.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T15:05:08"
+    action: "T-1648: governance frame 0x8 protocol regression test (4/4 pass)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 45 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1641, t-1061-followup, drift-defense, protocol, contract, t-1066]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 45
+  commits: 1
+  files_changed: 3
+  lines_added: 213
+  lines_removed: 64
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1648-governance-frame-0x8-protocol-regression.md
+generated_by: context-agent-hybrid

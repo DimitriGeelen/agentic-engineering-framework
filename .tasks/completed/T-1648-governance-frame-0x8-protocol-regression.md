@@ -10,16 +10,16 @@ description: >
   payload JSON field set. Skips gracefully when /opt/termlink is not on this host.
   Origin: docs/reports/T-1641-worker-10-defenses.md item #3.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: [from-T-1641, t-1061-followup, drift-defense, protocol, contract, t-1066]
-components: []
+components: [tests/fixtures/termlink-protocol-frame-types.json, tests/unit/test_termlink_governance_frame_contract.py]
 related_tasks: [T-1641, T-1644, T-1066, T-1651, T-1652]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T15:20:00Z
-date_finished: null
+last_update: 2026-05-01T13:05:31Z
+date_finished: 2026-05-01T13:05:31Z
 ---
 
 # T-1648: Governance frame 0x8 protocol regression test
@@ -54,6 +54,16 @@ python3 -c "import json; d=json.load(open('tests/fixtures/termlink-protocol-fram
 test -f tests/unit/test_termlink_governance_frame_contract.py
 python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -v --tb=short
 
+## RCA
+
+**Symptom:** T-1066 wired a data plane Governance frame (FrameType = 0x8) and a subscriber that consumes it. T-1641 reconsideration found zero non-test emit callers. Net effect: the protocol surface is dormant — no production code path exercises it, so any rename or renumber would land silently.
+
+**Root cause:** No framework-side contract test pinning the wire format. Termlink's own tests cover the roundtrip but say nothing to the framework that depends on the byte assignment via cross-repo fabric cards (T-1652) and W10 documentation (T-1641).
+
+**Why structurally allowed:** Cross-repo dependencies were invisible until T-1652. Even with T-1652 cards in place, those are documentation, not assertions — they do not fail loud on rename.
+
+**Prevention:** This task. tests/unit/test_termlink_governance_frame_contract.py specifically pins FrameType::Governance = 0x8 and the GovernanceEvent field set. A rename in /opt/termlink fails this test on the framework's next CI / pre-push run.
+
 ## Decisions
 
 ### 2026-05-01 — Pin via source-parse, not behaviour-test
@@ -66,3 +76,22 @@ python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -v --tb=
 
 ### 2026-05-01T15:20:00Z — promoted-and-scoped [agent]
 - **Action:** Promoted horizon later→now. Continuing Arc C (T-1644) drift defenses per autonomous-mode directive.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-bba718a6
+- **Timestamp:** 2026-05-01T13:05:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Test parses /opt/termlink/crates/termlink-protocol/src/data.rs and asserts FrameType::Governance = 0x8
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-protocol/src/data.rs in: Test parses /opt/termlink/crates/termlink-protocol/src/data.rs and asserts FrameType::Governance = 0x8`
+- **AC#4 (Agent)** — Test parses /opt/termlink/crates/termlink-protocol/src/governance.rs and asserts GovernanceEvent struct contains all expected fields (pattern_name, match_text, timestamp, channel_id)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-protocol/src/governance.rs in: Test parses /opt/termlink/crates/termlink-protocol/src/governance.rs and asserts GovernanceEvent struct contains all expected fields (pattern_name, ma`
+
+### 2026-05-01T13:05:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
