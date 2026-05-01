@@ -249,6 +249,44 @@
 </details>
 {% endif %}
 
+<!-- Recent dispatches panel (T-1643/W5) -->
+<h2 style="margin-top:2rem;">Recent dispatches</h2>
+<p class="muted">Last {{ recent_dispatches|length }} <code>fw termlink dispatch</code> worker(s) from <code>/tmp/tl-dispatch/</code>.
+    <code>model_used</code> and <code>fallback_used</code> are populated by /opt/termlink via governance frame 0x8;
+    <code>null</code> means the worker hasn't reported routing back yet.</p>
+{% if recent_dispatches %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Task</th>
+            <th>Task-type</th>
+            <th>Model (asked)</th>
+            <th>Model used</th>
+            <th>Fallback?</th>
+            <th>Status</th>
+            <th>Started</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in recent_dispatches %}
+        <tr>
+            <td><code>{{ d.name }}</code></td>
+            <td>{% if d.task %}<a href="/tasks/{{ d.task }}"><code>{{ d.task }}</code></a>{% endif %}</td>
+            <td>{% if d.task_type %}<span class="pill"><code>{{ d.task_type }}</code></span>{% endif %}</td>
+            <td>{% if d.model %}<code>{{ d.model }}</code>{% else %}<span class="muted">—</span>{% endif %}</td>
+            <td>{% if d.model_used %}<code>{{ d.model_used }}</code>{% else %}<span class="muted">null</span>{% endif %}</td>
+            <td>{% if d.fallback_used == True %}<span class="badge badge-warn">yes</span>{% elif d.fallback_used == False %}<span class="badge badge-ok">no</span>{% else %}<span class="muted">null</span>{% endif %}</td>
+            <td>{{ d.status }}</td>
+            <td><small>{{ d.started }}</small></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="muted">No recent dispatches. Run <code>fw termlink dispatch --task T-XXX --name foo --prompt "..."</code> to populate.</p>
+{% endif %}
+
 <!-- Reconsideration arc panel -->
 <h2 style="margin-top:2rem;">Reconsideration arc</h2>
 <p class="muted">Filed by T-1641 (multi-agent reconsideration of T-1061). Three arcs split the work

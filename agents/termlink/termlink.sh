@@ -32,6 +32,47 @@ TERMLINK_WORKER_TIMEOUT=$(fw_config_int "TERMLINK_WORKER_TIMEOUT" 600)
 
 die() { echo -e "${RED}ERROR:${NC} $1" >&2; exit 1; }
 
+# --- Orchestrator-substrate awareness (T-1643) ---
+
+# _derive_task_type — read the active task's workflow_type from focus.yaml.
+# Echoes the derived value (e.g. "build", "inception") or empty if no focus
+# or the focused task file cannot be read. Never errors — failures are silent
+# (caller treats empty as "no derivation").
+_derive_task_type() {
+    local project_root="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    local focus_file="$project_root/.context/working/focus.yaml"
+    [ -f "$focus_file" ] || return 0
+    local current_task
+    current_task=$(awk -F': ' '/^current_task:/ {print $2; exit}' "$focus_file" 2>/dev/null | tr -d ' "')
+    [ -n "$current_task" ] && [ "$current_task" != "null" ] || return 0
+    local task_file
+    task_file=$({ ls "$project_root"/.tasks/{active,completed}/"$current_task"-*.md 2>/dev/null || true; } | head -1)
+    [ -n "$task_file" ] && [ -f "$task_file" ] || return 0
+    awk -F': ' '/^workflow_type:/ {print $2; exit}' "$task_file" 2>/dev/null | tr -d ' "'
+    return 0
+}
+
+# _resolve_dispatch_model — when --model not passed, fall back to
+# DISPATCH_MODEL_FOR_<TASK_TYPE> then DISPATCH_MODEL_DEFAULT (W3).
+_resolve_dispatch_model() {
+    local explicit="$1" task_type="$2"
+    if [ -n "$explicit" ]; then
+        echo "$explicit"
+        return 0
+    fi
+    if [ -n "$task_type" ]; then
+        local key="DISPATCH_MODEL_FOR_$(echo "$task_type" | tr '[:lower:]' '[:upper:]')"
+        local v
+        v=$(fw_config "$key" "" 2>/dev/null || true)
+        if [ -n "$v" ]; then
+            echo "$v"
+            return 0
+        fi
+    fi
+    fw_config "DISPATCH_MODEL_DEFAULT" "" 2>/dev/null || true
+    return 0
+}
+
 # --- Prerequisite check ---
 
 ensure_termlink() {
@@ -63,17 +104,23 @@ cmd_check() {
 
 cmd_spawn() {
     ensure_termlink
-    local task="" name=""
+    local task="" name="" task_type=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --task) task="$2"; shift 2 ;;
             --name) name="$2"; shift 2 ;;
+            --task-type) task_type="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
 
     [ -z "$name" ] && name="worker-$(date +%s)"
+
+    # T-1643/W2: derive task_type from active-task workflow_type when omitted.
+    if [ -z "$task_type" ]; then
+        task_type=$(_derive_task_type)
+    fi
 
     local wdir="$DISPATCH_DIR/$name"
     mkdir -p "$wdir"
@@ -87,12 +134,18 @@ cmd_spawn() {
     # tests/fixtures/termlink-list-schema.json + T-1649 audit. Older code
     # produced `task=` (equals) which trips the orchestrator-arc tag-format
     # drift warning the framework emits against itself.
-    [ -n "$task" ] && spawn_args+=(--tags "task:$task")
+    local tags=""
+    [ -n "$task" ] && tags="task:$task"
+    if [ -n "$task_type" ]; then
+        [ -n "$tags" ] && tags="$tags,task-type:$task_type" || tags="task-type:$task_type"
+    fi
+    [ -n "$tags" ] && spawn_args+=(--tags "$tags")
     spawn_args+=(--shell)
 
     termlink spawn "${spawn_args[@]}"
     echo -e "${GREEN}OK${NC}  Session '$name' registered"
     [ -n "$task" ] && echo "  Tagged: $task"
+    [ -n "$task_type" ] && echo "  Task-type: $task_type"
 }
 
 cmd_exec() {
@@ -269,7 +322,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model=""
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -280,6 +333,7 @@ cmd_dispatch() {
             --project) project_dir="$2"; shift 2 ;;
             --timeout) timeout="$2"; shift 2 ;;
             --model) model="$2"; shift 2 ;;
+            --task-type) task_type="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
@@ -293,6 +347,14 @@ cmd_dispatch() {
         prompt=$(cat "$prompt_file")
     fi
 
+    # T-1643/W1: auto-derive task_type from focus.yaml when omitted.
+    if [ -z "$task_type" ]; then
+        task_type=$(_derive_task_type)
+    fi
+
+    # T-1643/W3: resolve model via DISPATCH_MODEL_FOR_<TYPE> → DISPATCH_MODEL_DEFAULT.
+    model=$(_resolve_dispatch_model "$model" "$task_type")
+
     project_dir="${project_dir:-$(pwd)}"
     local wdir="$DISPATCH_DIR/$name"
     mkdir -p "$wdir"
@@ -300,13 +362,19 @@ cmd_dispatch() {
     # Save prompt, task tag, and metadata (from tl-dispatch.sh pattern)
     echo "$prompt" > "$wdir/prompt.md"
     [ -n "$task" ] && echo "$task" > "$wdir/task"
+    # T-1643/W4: meta.json includes task_type, model_used, fallback_used.
+    # model_used and fallback_used start null; /opt/termlink populates them
+    # via governance frame 0x8 once the worker reports back.
     cat > "$wdir/meta.json" <<METAEOF
 {
   "name": "$name",
   "project": "$project_dir",
   "timeout": $timeout,
   "task": "${task:-}",
+  "task_type": "${task_type:-}",
   "model": "${model:-}",
+  "model_used": null,
+  "fallback_used": null,
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -356,8 +424,9 @@ echo "Result: $WDIR/result.md"
 RUNEOF
     chmod +x "$wdir/run.sh"
 
-    # Spawn terminal session
-    cmd_spawn ${task:+--task "$task"} --name "$name"
+    # Spawn terminal session — propagate task_type so the long-lived session
+    # carries the task-type:X tag (T-1643/W2).
+    cmd_spawn ${task:+--task "$task"} ${task_type:+--task-type "$task_type"} --name "$name"
 
     # Inject worker script via pty inject (fire-and-forget, NOT interact — claude takes minutes)
     sleep 1
@@ -509,20 +578,23 @@ cmd_help() {
 }
 
 # --- Main routing ---
+# T-1643/W1: skip main routing when sourced (e.g. by tests).
+# `${BASH_SOURCE[0]} != $0` indicates we're being sourced, not executed.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    subcmd="${1:-help}"
+    shift 2>/dev/null || true
 
-subcmd="${1:-help}"
-shift 2>/dev/null || true
-
-case "$subcmd" in
-    check)    cmd_check "$@" ;;
-    spawn)    cmd_spawn "$@" ;;
-    exec)     cmd_exec "$@" ;;
-    status)   cmd_status "$@" ;;
-    cleanup)  cmd_cleanup "$@" ;;
-    dispatch) cmd_dispatch "$@" ;;
-    wait)     cmd_wait "$@" ;;
-    result)   cmd_result "$@" ;;
-    update)   cmd_update "$@" ;;
-    help|--help|-h) cmd_help ;;
-    *) die "Unknown subcommand: $subcmd (run 'fw termlink help')" ;;
-esac
+    case "$subcmd" in
+        check)    cmd_check "$@" ;;
+        spawn)    cmd_spawn "$@" ;;
+        exec)     cmd_exec "$@" ;;
+        status)   cmd_status "$@" ;;
+        cleanup)  cmd_cleanup "$@" ;;
+        dispatch) cmd_dispatch "$@" ;;
+        wait)     cmd_wait "$@" ;;
+        result)   cmd_result "$@" ;;
+        update)   cmd_update "$@" ;;
+        help|--help|-h) cmd_help ;;
+        *) die "Unknown subcommand: $subcmd (run 'fw termlink help')" ;;
+    esac
+fi

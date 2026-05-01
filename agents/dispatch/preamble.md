@@ -86,6 +86,44 @@ When done, your final message should be ≤ 5 lines:
   One-sentence summary
 ```
 
+## TermLink Dispatch — Orchestrator-Aware Workers (T-1643)
+
+When you dispatch via `fw termlink dispatch`, the framework now understands
+the orchestrator substrate built in T-1061. Three things to know:
+
+### 1. Pass `--task-type` (or rely on auto-derivation)
+
+The dispatcher accepts `--task-type build|inception|design|test|refactor|...`.
+If omitted, it auto-derives from `.context/working/focus.yaml` → active task's
+`workflow_type`. The worker's `meta.json` records `task_type` for downstream
+routing and audit.
+
+**Tag specialist sessions explicitly:** when spawning a long-lived worker that
+will handle a specific task class, pass `--task-type` so `termlink discover
+--tag task-type:build` can find it. The orchestrator (in /opt/termlink) uses
+this tag to route work to the right specialist.
+
+### 2. Check `model_used` and `fallback_used` in the result manifest
+
+After `fw termlink result <name>` returns, inspect the result manifest:
+
+- `model_used` — actual LLM the worker ran with (may differ from `--model`
+  if the orchestrator chose a different specialist)
+- `fallback_used` — `true` if the requested specialist was unavailable and
+  the orchestrator routed to a fallback
+
+If `fallback_used` is `true`, surface it to the user — the answer came from
+a different model than asked. Don't silently treat it as if the original
+specialist responded.
+
+### 3. Don't bypass the orchestrator on principle
+
+The whole point of T-1061 was to let the orchestrator make routing decisions
+the framework can't. If you find yourself thinking "I'll just dispatch with
+`--model haiku` directly to bypass routing", check first whether a
+`task-type:X` derivation would route correctly — that's the substrate
+working as designed.
+
 ## Why This Exists
 
 - T-073: 9 agents returned full YAML → 177K token spike → session crash

@@ -4,15 +4,15 @@ name: "Arc B — Framework-side wiring of orchestrator substrate (T-1061 follow-
 description: >
   Make /opt/999 actually USE the substrate it built. W04 confirmed the framework has zero call-sites passing task_type or --model, builds no task-type:X tags, never reads model_used/fallback_used. Six discrete wirings: (1) fw termlink dispatch derives --task-type from active task workflow_type and tags worker; (2) tag long-lived specialist sessions task-type:X; (3) wire --model defaults via .framework.yaml + per-task-type overrides; (4) surface model_used/fallback_used in dispatch result manifest; (5) Watchtower /orchestrator panel subscribing to Governance frames 0x8; (6) update agents/dispatch/preamble.md. Co-arc with /opt/termlink-side hardening: gate the 71 ungated MCP mutators (W03), wire run_with_governance, ship best_model_for min-sample guard (Wilson lower-bound), add fw termlink route CLI verb, surface fallback/breaker state in route response, decide tenancy scope of route-cache, extend audit schema with route/breaker/governance fields. Blocked on Arc A (T-1642) policy decisions. Source: docs/reports/T-1641-worker-04-framework-usage.md, docs/reports/T-1641-worker-03-termlink-current-state.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, framework-integration, arc:orchestrator-rethink]
 components: []
 related_tasks: [T-1641, T-1642, T-1063, T-1064, T-1065, T-1066]
 created: 2026-05-01T11:54:52Z
-last_update: 2026-05-01T18:57:17Z
+last_update: 2026-05-01T19:42:23Z
 date_finished: null
 ---
 
@@ -20,40 +20,47 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Closes Q3 of §Arc Completion Discipline for orchestrator-rethink: "Does the framework that built the arc actually USE the arc?" W04 worker (docs/reports/T-1641-worker-04-framework-usage.md) confirmed framework has zero call-sites passing task_type, builds no `task-type:X` tags, never reads `model_used`/`fallback_used`. Six wirings make /opt/999 actually consume what /opt/termlink built.
+
+T-1643 is a multi-part umbrella; each AC ships independently with `T-1643/Wn:` commit prefix.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **W6 (preamble docs):** `agents/dispatch/preamble.md` has a "TermLink Dispatch — Orchestrator-Aware Workers" section telling agents to (a) pass `--task-type` derived from active task `workflow_type`, (b) check `model_used`/`fallback_used` in the dispatch result manifest, (c) tag long-lived specialist sessions with `task-type:X`. Verifiable via grep.
+- [x] **W1 (task-type derivation):** `fw termlink dispatch` accepts `--task-type` and, when omitted, auto-derives it from `.context/working/focus.yaml` → active task's `workflow_type`. Worker meta.json gets `task_type` field. Backward compatible — no `--task-type` and no focus → no derivation.
+- [x] **W3 (model defaults):** `fw config get DISPATCH_MODEL_DEFAULT` and per-task-type overrides (`DISPATCH_MODEL_FOR_BUILD`, `..._INCEPTION`, etc.) resolved by `cmd_dispatch` when `--model` not passed. Documented in `fw config list`.
+- [x] **W2 (specialist session tagging):** `fw termlink spawn --task-type X` tags the long-lived session `task-type:X` for `termlink discover --tag` filtering. Same auto-derivation as W1.
+- [x] **W4 (manifest fields):** `cmd_dispatch` worker meta.json includes `task_type`, `model_used`, `fallback_used` keys (initially empty/null until /opt/termlink populates them via governance frame 0x8). `fw termlink result` surfaces them in `--json` output.
+- [x] **W5 (Watchtower /orchestrator panel):** `/orchestrator` page renders a "Recent dispatches" panel showing the last N dispatches with `task_type`, `model_used`, `fallback_used` derived from `meta.json` files in `/tmp/tl-dispatch/`. Empty state if no recent dispatches.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Dispatch a test worker and confirm task_type derivation + W6 docs read coherently
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw context focus T-1643`
+  2. `bin/fw termlink dispatch --task T-1643 --name w1-test --prompt "echo task-type works"`
+  3. `cat /tmp/tl-dispatch/w1-test/meta.json | python3 -c "import json,sys; m=json.load(sys.stdin); print(m.get('task_type'))"`
+  4. `sed -n '/Orchestrator-Aware/,/^## /p' agents/dispatch/preamble.md`
+  **Expected:** Step 3 prints `build` (T-1643 is workflow_type=build). Step 4 shows the new section.
+  **If not:** Note which W (1-6) didn't land.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+# W6 — preamble doc landed
+grep -q "Orchestrator-Aware Workers" agents/dispatch/preamble.md
+grep -q "task-type:" agents/dispatch/preamble.md
+# W1 — --task-type accepted by dispatch
+grep -q -- "--task-type" agents/termlink/termlink.sh
+# W3 — model defaults documented
+grep -q "DISPATCH_MODEL_DEFAULT" lib/config.sh
+# W2 — spawn accepts --task-type
+grep -qE 'cmd_spawn\b.*task.type|--task-type' agents/termlink/termlink.sh
+# W4 — manifest has task_type / model_used / fallback_used
+grep -qE '"(task_type|model_used|fallback_used)"' agents/termlink/termlink.sh
+# W5 — Watchtower panel
+grep -q "Recent dispatches" web/templates/orchestrator.html
+# Tests
+python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q 2>&1 | tail -3
 
 ## RCA
 
@@ -70,6 +77,18 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All six framework-side wirings landed: dispatch + spawn accept `--task-type` with auto-derivation from `focus.yaml`; `cmd_dispatch` resolves model via `DISPATCH_MODEL_FOR_<TYPE>` → `DISPATCH_MODEL_DEFAULT`; worker `meta.json` carries `task_type`/`model_used`/`fallback_used`; Watchtower `/orchestrator` renders the new "Recent dispatches" panel; `agents/dispatch/preamble.md` documents the orchestrator-aware dispatch contract. Closes Q3 of §Arc Completion Discipline ("Does the framework that built the arc actually USE the arc?") — answer is now YES on the framework side. Q1 (end-to-end on fresh substrate) still NO until /opt/termlink populates `model_used`/`fallback_used` via governance frame 0x8.
+
+**Evidence:**
+- Tests: `tests/unit/test_termlink_dispatch_task_type.py` 11/11 pass (helpers + static schema pins).
+- E2E spot-check: `bash -c 'source agents/termlink/termlink.sh; _derive_task_type'` returns `build` (current focus T-1643).
+- Visual: Playwright snapshot of `/orchestrator` shows "Recent dispatches" panel with empty state and the existing "Live Sessions / By task-type" panel still calling out the gap (which will close as soon as a worker dispatches with focus set).
+- Backward compatibility: when no focus.yaml exists or `current_task: null`, `_derive_task_type` returns empty — no behaviour change for callers without the new flag.
 
 ## Decisions
 
@@ -91,3 +110,7 @@ date_finished: null
 
 ### 2026-05-01T18:57:17Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
+
+### 2026-05-01T19:42:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

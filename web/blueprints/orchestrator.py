@@ -104,6 +104,50 @@ def _split_tags(session: dict) -> dict[str, list[str]]:
     return grouped
 
 
+def _recent_dispatches(limit: int = 20) -> list[dict]:
+    """T-1643/W5: surface recent fw termlink dispatch worker meta.json files.
+
+    Reads /tmp/tl-dispatch/<name>/meta.json — orchestrator-relevant fields only:
+    name, task, task_type, model, model_used, fallback_used, status, started.
+    Sorted newest first. Empty list if directory missing or no workers.
+    """
+    dispatch_dir = Path("/tmp/tl-dispatch")
+    if not dispatch_dir.is_dir():
+        return []
+    out = []
+    for worker_dir in dispatch_dir.iterdir():
+        if not worker_dir.is_dir():
+            continue
+        meta_path = worker_dir / "meta.json"
+        if not meta_path.is_file():
+            continue
+        try:
+            meta = json.loads(meta_path.read_text())
+        except (json.JSONDecodeError, OSError):
+            continue
+        # Status: prefer exit_code presence over the meta status field
+        # (meta.status is set to "running" at spawn and never updated).
+        exit_code_path = worker_dir / "exit_code"
+        if exit_code_path.is_file():
+            try:
+                exit_code = exit_code_path.read_text().strip()
+                meta["status"] = "done" if exit_code == "0" else f"exit:{exit_code}"
+            except OSError:
+                pass
+        out.append({
+            "name": meta.get("name", worker_dir.name),
+            "task": meta.get("task") or "",
+            "task_type": meta.get("task_type") or "",
+            "model": meta.get("model") or "",
+            "model_used": meta.get("model_used"),
+            "fallback_used": meta.get("fallback_used"),
+            "status": meta.get("status", "?"),
+            "started": meta.get("started", ""),
+        })
+    out.sort(key=lambda r: r["started"], reverse=True)
+    return out[:limit]
+
+
 def _arc_tasks() -> list[dict]:
     """Surface T-1641 + follow-up arc parents for the cross-link panel."""
     targets = ["T-1641", "T-1642", "T-1643", "T-1644", "T-1645", "T-1646", "T-1647"]
@@ -204,4 +248,5 @@ def orchestrator_page():
         session_rows=session_rows[:50],  # cap render width
         session_rows_truncated=max(0, len(session_rows) - 50),
         arc_tasks=_arc_tasks(),
+        recent_dispatches=_recent_dispatches(),
     )
