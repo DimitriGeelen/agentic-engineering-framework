@@ -2591,3 +2591,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-333
+  learning: "Even when all parent tasks of an inception arc are agent-shipped and awaiting human review, valuable agent-autonomous work remains: (a) cross-cutting integration verification (single artefact tracing how the phases compose, e.g. line-numbered pipeline through the entry point); (b) hoisting supplementary-review notes from parent ACs into standalone follow-up tasks before the parents close (otherwise those notes are lost). T-1640 demonstrated this for the T-1061 orchestrator arc — produced docs/reports/T-1061-arc-integration-2026-05-01.md and captured T-1636-T-1639 from buried review notes. Updates L-321 (which incorrectly said agent had no further autonomous arc work)."
+  source: P-001
+  task: T-1640
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD
