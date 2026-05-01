@@ -8,11 +8,11 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: later
-tags: []
+tags: [arc:orchestrator-rethink]
 components: []
 related_tasks: []
 created: 2026-05-01T16:39:23Z
-last_update: 2026-05-01T16:39:41Z
+last_update: 2026-05-01T19:09:43Z
 date_finished: null
 ---
 
@@ -92,3 +92,6 @@ date_finished: null
 ### 2026-05-01T16:39:41Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-05-01T19:09:43Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

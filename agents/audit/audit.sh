@@ -3254,6 +3254,73 @@ echo ""
 fi # end orchestrator
 
 # ============================================
+# ARC-COMPLETION CHECK (T-1656 / G-062 mechanism #2)
+# Detect arcs whose constituent tasks are mostly completed but where the arc
+# itself was never explicitly closed. Catches the "shipped without three-question
+# check" failure mode codified in CLAUDE.md §Arc Completion Discipline.
+# ============================================
+if should_run_section "arc-completion"; then
+echo "=== ARC-COMPLETION CHECKS ==="
+
+ARC_DIR="$CONTEXT_DIR/arcs"
+if [ ! -d "$ARC_DIR" ] || ! ls "$ARC_DIR"/*.yaml >/dev/null 2>&1; then
+    info "Arc registry empty — no arcs to evaluate"
+else
+    threshold="${FW_ARC_COMPLETION_THRESHOLD:-0.80}"
+    for arc_yaml in "$ARC_DIR"/*.yaml; do
+        # Parse arc fields (id, status, constituent_tasks).
+        # Use python to avoid yaml-library coupling — simple line scan suffices.
+        eval "$(python3 - "$arc_yaml" <<'PY'
+import re, sys
+text = open(sys.argv[1]).read()
+def grab(field, default=""):
+    m = re.search(rf'^{field}:\s*(.*?)$', text, re.MULTILINE)
+    return m.group(1).strip() if m else default
+arc_id = grab("id")
+status = grab("status")
+ct_line = grab("constituent_tasks", "[]")
+m = re.match(r'\[(.*?)\]', ct_line)
+items = []
+if m and m.group(1).strip():
+    items = [s.strip().strip('"').strip("'") for s in m.group(1).split(",") if s.strip()]
+print(f'ARC_ID={arc_id!r}')
+print(f'ARC_STATUS={status!r}')
+print(f'ARC_TASKS=({" ".join(items)})')
+PY
+)"
+        # Skip closed arcs and empty arcs.
+        if [ "$ARC_STATUS" != "in-progress" ]; then continue; fi
+        total="${#ARC_TASKS[@]}"
+        if [ "$total" -eq 0 ]; then continue; fi
+
+        # Count tasks at status work-completed across active+completed dirs.
+        completed=0
+        for tid in "${ARC_TASKS[@]}"; do
+            tf=$({ ls "$PROJECT_ROOT"/.tasks/{active,completed}/"$tid"-*.md 2>/dev/null || true; } | head -1)
+            if [ -n "$tf" ] && grep -qE "^status:[[:space:]]*work-completed" "$tf"; then
+                completed=$((completed+1))
+            fi
+        done
+
+        # Compute ratio in shell using awk (portable; no bc dependency).
+        ratio=$(awk -v c="$completed" -v t="$total" 'BEGIN { printf "%.4f", c/t }')
+        # Compare ratio >= threshold (awk again).
+        ge=$(awk -v r="$ratio" -v th="$threshold" 'BEGIN { print (r+0 >= th+0) ? "1" : "0" }')
+
+        if [ "$ge" = "1" ]; then
+            warn "Arc '${ARC_ID}': ${completed}/${total} tasks completed (${ratio}) but arc still in-progress" \
+                 "Threshold ${threshold} reached — code-complete without explicit closure (G-062 signature)" \
+                 "Run §Arc Completion Discipline three-question check, then: fw arc close ${ARC_ID} --decision \"...\""
+        else
+            pass "Arc '${ARC_ID}': ${completed}/${total} (${ratio}) — below threshold ${threshold}, no closure pressure"
+        fi
+    done
+fi
+
+echo ""
+fi # end arc-completion
+
+# ============================================
 # SUMMARY (always runs)
 # ============================================
 echo "=== SUMMARY ==="

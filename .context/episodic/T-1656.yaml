@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1656: G-062 mechanism #2: fw audit arc-completion check — N child tasks under one parent reach work-completed within M days
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T19:12:46Z
+# ============================================================================
+
+task_id: T-1656
+task_name: "G-062 mechanism #2: fw audit arc-completion check — N child tasks under one parent reach work-completed within M days"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T16:39:00Z
+completed: 2026-05-01T19:12:40Z
+duration_days: 0
+updates_count: 5
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "AC1 — `agents/audit/audit.sh` includes a new `arc-completion` section selectable via `--section arc-completion`"
+  - "AC2 — Section iterates `.context/arcs/*.yaml`, computes completion ratio (constituent_tasks at work-completed / total) for each in-progress arc"
+  - "AC3 — When ratio ≥ FW_ARC_COMPLETION_THRESHOLD (default 0.80) AND arc.status is `in-progress`, emits a WARN with mitigation pointing at CLAUDE.md §Arc Completion Discipline"
+  - "AC4 — Closed arcs are skipped (no check), arcs with zero constituent_tasks are skipped (cannot compute ratio)"
+  - "AC5 — Unit test `tests/unit/test_audit_arc_completion.py` exercises the check in isolation: 4 fixtures (no arcs, in-progress arc 50%, in-progress arc 90%, closed arc 100%) → expected warn count 0/0/1/0; passes (4/4)"
+  - "AC6 — `bin/fw audit --section arc-completion` runs against the live registry without errors"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 153 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 153
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1656-g-062-mechanism-2-fw-audit-arc-completio.md
+generated_by: context-agent-hybrid

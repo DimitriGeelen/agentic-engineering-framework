@@ -3,7 +3,7 @@ name: Orchestrator routing rethink
 description: Reconsider orchestrator substrate from T-1061; close G-062 by using what we built.
 status: in-progress
 anchor_task: T-1641
-constituent_tasks: ["T-1643", "T-1647", "T-1661", "T-1641", "T-1642", "T-1644", "T-1645", "T-1646", "T-1648", "T-1649", "T-1650", "T-1651", "T-1652", "T-1654", "T-1655"]
+constituent_tasks: ["T-1643", "T-1647", "T-1661", "T-1641", "T-1642", "T-1644", "T-1645", "T-1646", "T-1648", "T-1649", "T-1650", "T-1651", "T-1652", "T-1654", "T-1655", "T-1656", "T-1657"]
 created: 2026-05-01T18:57:00Z
 closed_at: null
 decision: null
