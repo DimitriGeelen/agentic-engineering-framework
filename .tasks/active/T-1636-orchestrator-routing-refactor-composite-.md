@@ -88,3 +88,25 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1636-orchestrator-routing-refactor-composite-.md
 - **Context:** Initial task creation
+
+## Scoping Note (added 2026-05-01 by /loop continuation)
+
+Probed /opt/termlink today: the `routing_key` composite-string approach
+lives in one file (`crates/termlink-hub/src/router.rs`, ~20 references
+around lines 1104–1478) and is consumed as `&str` by `bypass.rs::registry::check`
+and `route_cache.rs::lookup`. The persisted route cache stores keys as
+strings on disk, so any newtype MUST serialize back to `method::task_type`
+to avoid invalidating existing cache files.
+
+**Original supplementary-review intent (T-1064):** "*if future routing
+dimensions land (e.g. priority class, tenant), refactor to a `RoutingKey`
+newtype before string-concat hell.*" Read carefully: this is an "at the
+moment of adding the next dimension" refactor, **not** a pre-emptive one.
+Doing it now (with only `method` + `task_type`) would be busywork and
+might pick the wrong newtype shape because the next dimension's
+constraints aren't visible yet.
+
+**Disposition:** stays horizon:later. Promote to `now` (and split into
+inception + build if needed) **only when** a new routing dimension is
+being added to TermLink — at that point, the newtype shape will be
+discoverable and the migration is justified.

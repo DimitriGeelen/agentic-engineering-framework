@@ -88,3 +88,27 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1637-multi-llm-routing-cost-aware-learning--w.md
 - **Context:** Initial task creation
+
+## Scoping Note (added 2026-05-01 by /loop continuation)
+
+**Original supplementary-review intent (T-1065):** "*the cost-model gap
+is real but not new — it's a future feature, not a bug.*" The current
+RouteCache learns success rates per (model, task_type) but not cost
+per success. A 90%-success opus call always beats a 70%-success haiku
+call regardless of cost. Adding cost-awareness is a **product feature**,
+not a fix — it requires:
+
+1. A cost-per-call source of truth (env vars? config file? per-model
+   pricing pulled from a known source? Anthropic's published rates?
+   This is a real decision, not just code).
+2. A weighting policy: hard switch to cheaper model above some
+   success-rate floor, vs. soft preference, vs. user-configurable.
+3. Test data showing the policy actually saves money in realistic
+   workloads — otherwise it's premature optimisation that complicates
+   `best_model_for(task_type)` for no gain.
+
+**Disposition:** stays horizon:later — and probably should be promoted
+to **inception** before any build worker touches the code. The cost
+input + weighting policy are product decisions the human should make,
+not an agent. Promote when the human signals they want cost-aware
+routing.
