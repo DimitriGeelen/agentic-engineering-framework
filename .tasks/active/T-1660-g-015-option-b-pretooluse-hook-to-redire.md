@@ -71,6 +71,17 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:** T-1645 already shipped Option A (bus protocol convention) as partial G-015 mitigation. Option B (PreToolUse hook) is the structural closure — cheaper than FUSE/namespaces (Path c is far the cheapest of the three feasibility paths) but currently unjustified: the partial mitigation is in place, and no observed bypass of bus convention has produced lost results. Promotion criteria: ≥1 incident where a sub-agent writes to /tmp/fw-agent-*.md and the result is lost to context compaction, OR Option A coverage gap measured ≥10% of dispatch results. Until then, this remains parked.
+
+**Evidence:**
+- T-1645 work-completed (bus protocol convention is the documented path; preamble.md updated)
+- Path c (Claude Code PreToolUse hook reading Write file_path + rejecting on /tmp/fw-agent-*.md match) is the cheapest of three explored options
+- No observed loss incidents since T-1645 shipped (2026-05-01)
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -81,6 +92,10 @@ date_finished: null
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go|defer --rationale "..." -->
 
 ## Updates
 
