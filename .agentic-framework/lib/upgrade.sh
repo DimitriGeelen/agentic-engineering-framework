@@ -687,6 +687,16 @@ def check_stale_paths(path):
                     cmd = hook.get('command', '')
                     if '/agents/context/' in cmd or 'PROJECT_ROOT=' in cmd:
                         stale += 1
+                    # T-1627 (B-1 of T-1626): bare-relative '.agentic-framework/'
+                    # paths break from any subdir of the consumer. Witness:
+                    # /root/ring20-dashboard 2026-04-30 — every tool call fired
+                    # 'PostToolUse:Edit hook error / .agentic-framework/bin/fw:
+                    # not found' because settings.json predated T-1364's
+                    # absolute-path baking AND the prior stale-detector below
+                    # only saw '.agentic-framework' in the cmd and assumed
+                    # framework-OK. Bare-relative is structurally broken — flag.
+                    elif cmd and cmd.lstrip().startswith('.agentic-framework/'):
+                        stale += 1
                     # T-679: Detect non-framework hooks (e.g., pre-existing project hooks)
                     # Framework hooks always contain 'fw hook' or '.agentic-framework'
                     elif cmd and 'fw hook' not in cmd and '.agentic-framework' not in cmd:
