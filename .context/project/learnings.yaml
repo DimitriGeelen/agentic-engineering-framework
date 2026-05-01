@@ -2584,3 +2584,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-332
+  learning: "Never use heredoc-in-command-substitution ($(cmd <<EOF ... EOF)) in scripts that are hot-path hook dispatchers (bin/fw, agent shims). Parse interaction between $() subshell tokeniser and heredoc terminator lookup is fragile across bash versions; a parse error in bin/fw is unrecoverable from inside Claude Code because every PreToolUse hook routes through bin/fw, parse-error exit 2 = policy-block, and Edit/Write/Bash all become unreachable. Rule: any Python helper >10 lines goes in lib/doctor-*.py / lib/*.py and is invoked as 'python3 $FW_LIB_DIR/helper.py' with env vars; the bash side stays parse-safe. Origin: T-1629 (B-3a) attempt 1, 2026-05-01 — locked self out for ~5 minutes, required user 'git checkout HEAD -- bin/fw'."
+  source: T-1626
+  task: T-1629
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD

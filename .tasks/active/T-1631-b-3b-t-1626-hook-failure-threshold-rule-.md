@@ -1,22 +1,22 @@
 ---
-id: T-1629
-name: "B-3 (T-1626): hook-failure escalation — threshold rule + Watchtower /hooks page + doctor check"
+id: T-1631
+name: "B-3b (T-1626): hook-failure threshold rule — auto-register G-XXX in concerns.yaml"
 description: >
-  When .hook-failure-counter exceeds N failures in M minutes for any hook, auto-write a G-XXX entry to concerns.yaml. Watchtower /hooks page surfaces fire/fail rates per configured hook. fw doctor adds a check that exercises each registered hook from /tmp and reports failures. Closes the L-329 / G-019 detection loop for hook breakage.
+  Scan .hook-counter + .hook-failure-counter (T-1628 telemetry); when any hook's failure ratio exceeds N% over M total fires, auto-write a G-XXX entry to concerns.yaml. Closes detection half of the L-329/G-019 immune-system loop.
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [hooks, escalation, watchtower, doctor, from-T-1626, B-3]
+tags: [from-T-1626, B-3b, concerns, escalation]
 components: []
-related_tasks: [T-1626, T-1627, T-1628]
-created: 2026-04-30T21:19:30Z
-last_update: 2026-04-30T21:19:30Z
+related_tasks: [T-1626, T-1628, T-1629]
+created: 2026-05-01T07:22:34Z
+last_update: 2026-05-01T07:22:34Z
 date_finished: null
 ---
 
-# T-1629: B-3 (T-1626): hook-failure escalation — threshold rule + Watchtower /hooks page + doctor check
+# T-1631: B-3b (T-1626): hook-failure threshold rule — auto-register G-XXX in concerns.yaml
 
 ## Context
 
@@ -84,7 +84,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-30T21:19:30Z — task-created [task-create-agent]
+### 2026-05-01T07:22:34Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1629-b-3-t-1626-hook-failure-escalation--thre.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1631-b-3b-t-1626-hook-failure-threshold-rule-.md
 - **Context:** Initial task creation

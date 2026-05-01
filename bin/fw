@@ -895,6 +895,34 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
         warnings=$((warnings + 1))
     fi
 
+    # Check 6c: Hook exercise from /tmp (T-1629, B-3a of T-1626).
+    # Active probe — runs each configured hook from /tmp (foreign CWD that
+    # mimics agent cd-drift) and reports any whose path doesn't resolve.
+    # Closes the T-1626 witness scenario: bare-relative paths that "exist"
+    # relative to project root but break under cd. Check 6 above is static.
+    # L-332: helper lives in lib/doctor-hook-exercise.py, NOT inline heredoc
+    # — heredoc-in-$() inside bin/fw is unrecoverable on parse error.
+    local exercise_script="$FW_LIB_DIR/doctor-hook-exercise.py"
+    if [ -f "$settings_file" ] && [ -f "$exercise_script" ]; then
+        local hook_exercise
+        hook_exercise=$(SETTINGS_FILE="$settings_file" python3 "$exercise_script" 2>/dev/null)
+        if [ -n "$hook_exercise" ]; then
+            local hex_total hex_fail
+            hex_total=$(echo "$hook_exercise" | head -1 | cut -d'|' -f1)
+            hex_fail=$(echo "$hook_exercise" | head -1 | cut -d'|' -f2)
+            if [ "${hex_fail:-0}" -gt 0 ]; then
+                echo -e "  ${RED}FAIL${NC}  Hook exercise from /tmp: $hex_fail/$hex_total hook(s) failed to resolve"
+                echo "$hook_exercise" | tail -n +2 | while IFS='|' read -r _ event tag reason; do
+                    echo -e "        ${RED}x${NC} $event/$tag - $reason"
+                done
+                echo -e "        Run: fw upgrade (regenerates hook paths to absolute form)"
+                issues=$((issues + 1))
+            elif [ "${hex_total:-0}" -gt 0 ]; then
+                echo -e "  ${GREEN}OK${NC}  Hook exercise from /tmp: $hex_total hook(s) resolve from foreign CWD"
+            fi
+        fi
+    fi
+
     # Check 7: Agent scripts executable
     local agents_ok=true
     for agent in audit/audit.sh context/context.sh git/git.sh handover/handover.sh healing/healing.sh resume/resume.sh task-create/create-task.sh; do

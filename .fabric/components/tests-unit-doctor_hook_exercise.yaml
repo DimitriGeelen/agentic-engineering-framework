@@ -1,0 +1,20 @@
+id: tests/unit/doctor_hook_exercise.bats
+name: doctor_hook_exercise
+type: script
+subsystem: unknown
+location: tests/unit/doctor_hook_exercise.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-01
+created_by: unknown

@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1629: B-3a (T-1626): fw doctor exercise-from-/tmp hook check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T08:04:54Z
+# ============================================================================
+
+task_id: T-1629
+task_name: "B-3a (T-1626): fw doctor exercise-from-/tmp hook check"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-30T21:19:30Z
+completed: 2026-05-01T08:02:27Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`fw doctor` parses `.claude/settings.json` and extracts every configured hook command (delegated to `lib/doctor-hook-exercise.py`)"
+  - "For each PreToolUse/PostToolUse hook, `fw doctor` invokes it from `/tmp` with stdin `{}` (timeout 5s)"
+  - "Hooks that exit 0 or 2 (block) are reported OK — exit 2 is intentional policy block"
+  - "Hooks that exit non-zero/non-2, OR whose command resolution fails (rc==127 / \"not found\" / \"no such file\"), are reported FAIL with exit code + first line of stderr"
+  - "Output uses the same OK/WARN/FAIL prefix convention as the rest of `fw doctor`"
+  - "Doctor wall-clock impact bounded — exercise scoped to gate-style PreToolUse + PostToolUse events (PreCompact/SessionStart skipped: they legitimately take >5s for handover/resume; their failure modes are out of B-3a scope)"
+  - "bats test pins: parses settings, invokes from /tmp, reports OK on healthy hook, reports FAIL on broken hook (forged bare-relative path), tolerates exit 2 as OK, reports each broken hook by name"
+  - "Test exercises a deliberately-broken `settings.json` with `.agentic-framework/bin/fw hook check-tier0` (the T-1626 witness shape) — verifies FAIL is reported"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Split into T-1629 (B-3a doctor probe), T-1631 (B-3b threshold rule), T-1632 (B-3c Watchtower /hooks page)"
+    rationale: "Original T-1629 bundled three independent deliverables — violates one-task-one-deliverable rule (CLAUDE.md §Task Sizing). Each carves cleanly; B-3a is foundational (active signal), B-3b consumes the same telemetry T-1628 produces, B-3c is pure UI on top."
+    alternatives_rejected: ["Shipping all three under T-1629 (three sessions of work, no way to checkpoint progress); skipping decomposition until later (creates exactly the all-or-nothing failure mode the rule exists to prevent)."]
+    chose: "Exclude PreCompact / SessionStart from the exercise"
+    rationale: "PreCompact runs a full handover (commit + push + audit), SessionStart runs context resume — both legitimately exceed the 5s probe budget. T-1626's witness was specifically the high-frequency PreToolUse/PostToolUse path (every tool call); those are also the hooks where CWD drift bites. Probing the slow event-triggered hooks would produce timeouts that look like failures but are spurious."
+    alternatives_rejected: ["Probing all events with longer timeout (30s × N hooks would inflate `fw doctor` wall-clock); skipping probe entirely for slow events without documenting why (silently shrinks scope without explaining it)."]
+    chose: "`lib/doctor-hook-exercise.py` invoked as `python3 $FW_LIB_DIR/doctor-hook-exercise.py` with env vars"
+    rationale: "Heredoc-in-command-substitution (`$(python3 <<EOF ... EOF)`) caused a bash parse error in `bin/fw` during attempt 1 of this task. Because every PreToolUse hook routes through `bin/fw`, a parse error there is unrecoverable from inside Claude Code (exit 2 = block, every Edit/Write/Bash blocked). Required user `git checkout HEAD -- bin/fw`. Lesson: any Python helper >10 lines that runs from a hot-path bash script lives as a `.py` file."
+    alternatives_rejected: ["Keeping the helper inline (parse-fragility risk recurs); using `python3 -c \"...\"` with escaped string (unreadable, and one stray quote re-creates the same lockout vector)."]
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 642 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [hooks, escalation, watchtower, doctor, from-T-1626, B-3]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 642
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1629-b-3-t-1626-hook-failure-escalation--thre.md
+generated_by: context-agent-hybrid
