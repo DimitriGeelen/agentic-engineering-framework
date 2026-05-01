@@ -2626,3 +2626,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-338
+  learning: "T-1655 shipped G-062 §Arc Completion Discipline (no symptom-conflation rule) — and itself fell to symptom-conflation. The 7 grep-based verification commands all passed; the YAML file containing the change had a colon in a freshly-edited title that broke yaml.safe_load. The audit caught it within 60s. Lesson: when editing structured data files (YAML/JSON/TOML), the verification MUST include 'does it still parse' as a separate check from 'does it contain my new content'. Grep verifies content; the parser verifies validity. Both required, neither sufficient. This is concretely the G-062 signature — code-complete via narrow checks, behaviorally unverified at the file level."
+  source: P-001
+  task: T-1655
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD
