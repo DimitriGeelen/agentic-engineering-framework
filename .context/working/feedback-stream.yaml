@@ -3715,3 +3715,224 @@ scan_id: R-47b82cd3
 task_id: T-1646
 payload:
   task_file: .tasks/active/T-1646-mcp-tool-taskid-enforcement-audit--agent.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T12:29:12Z'
+scan_id: R-88fdc870
+task_id: T-1641
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T12:29:12Z'
+scan_id: R-88fdc870
+task_id: T-1641
+payload:
+  task_file: .tasks/active/T-1641-t-1061-orchestrator-arc-reconsideration-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T12:56:47Z'
+scan_id: R-e775c3dd
+task_id: T-1649
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T12:56:47Z'
+scan_id: R-e775c3dd
+task_id: T-1649
+payload:
+  task_file: .tasks/active/T-1649-task-type-tag-format-invariant--termlink.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T12:59:07Z'
+scan_id: R-e8d35b19
+task_id: T-1651
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T12:59:07Z'
+scan_id: R-e8d35b19
+task_id: T-1651
+payload:
+  task_file: .tasks/active/T-1651-wezterm-plugin-contract-test--pin-termli.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T13:02:53Z'
+scan_id: R-5e66a734
+task_id: T-1652
+payload:
+  overall: CONCERN
+  finding_count: 6
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T13:02:53Z'
+scan_id: R-5e66a734
+task_id: T-1652
+payload:
+  task_file: .tasks/active/T-1652-cross-repo-fabric-cards-for-opttermlink-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T13:05:32Z'
+scan_id: R-bba718a6
+task_id: T-1648
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T13:05:32Z'
+scan_id: R-bba718a6
+task_id: T-1648
+payload:
+  task_file: .tasks/active/T-1648-governance-frame-0x8-protocol-regression.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T13:07:43Z'
+scan_id: R-c96b2b84
+task_id: T-1650
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T13:07:43Z'
+scan_id: R-c96b2b84
+task_id: T-1650
+payload:
+  task_file: .tasks/active/T-1650-routecache-persistence-schema-regression.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T13:08:53Z'
+scan_id: R-be55ec6e
+task_id: T-1644
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T13:08:53Z'
+scan_id: R-be55ec6e
+task_id: T-1644
+payload:
+  task_file: .tasks/active/T-1644-arc-c--orchestrator-arc-drift-defenses-t.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T16:38:08Z'
+scan_id: R-4bd81cee
+task_id: T-1655
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T16:38:08Z'
+scan_id: R-4bd81cee
+task_id: T-1655
+payload:
+  task_file: .tasks/active/T-1655-g-062-mechanism-1-codify-arc-completion-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T16:38:15Z'
+scan_id: R-d6dc9b3b
+task_id: T-1654
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T16:38:15Z'
+scan_id: R-d6dc9b3b
+task_id: T-1654
+payload:
+  task_file: .tasks/active/T-1654-fix-framework-dispatch-tag-drift--agents.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T16:48:01Z'
+scan_id: R-d48c2b23
+task_id: T-1658
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T16:48:01Z'
+scan_id: R-d48c2b23
+task_id: T-1658
+payload:
+  task_file: .tasks/active/T-1658-vendored-agentic-framework-drift-sync--p.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T17:08:41Z'
+scan_id: R-5c7aac69
+task_id: T-1642
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T17:08:41Z'
+scan_id: R-5c7aac69
+task_id: T-1642
+payload:
+  task_file: .tasks/active/T-1642-arc-a--orchestrator-routing-policy-consu.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T17:08:58Z'
+scan_id: R-de0f35f5
+task_id: T-1653
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T17:08:58Z'
+scan_id: R-de0f35f5
+task_id: T-1653
+payload:
+  task_file: .tasks/active/T-1653-arcs-as-first-class-entity-orchestrator-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T17:09:08Z'
+scan_id: R-6820fa93
+task_id: T-1645
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T17:09:08Z'
+scan_id: R-6820fa93
+task_id: T-1645
+payload:
+  task_file: .tasks/active/T-1645-g-015-reframe--sub-agent-tmp-bypass-narr.md

@@ -4,7 +4,7 @@ name: "G-062 mechanism #1: Codify Arc Completion Discipline in CLAUDE.md — thr
 description: >
   G-062 (high, score 16) tracks the framework-blindness pattern where agents declare arcs 'shipped' based on code/test artifacts without (a) end-to-end behavioral verification on fresh substrate, (b) policy-defaults audit, (c) framework-side use evidence. Three documented incidents in 5 weeks: T-1626, T-1633, T-1641. Mechanism #1 from the gap: add CLAUDE.md §Arc Completion Discipline section with explicit three-question checklist + 'no symptom-conflation' reminder. Closes the behavioral half of G-062; mechanisms #2 (fw audit arc-completion check) and #3 (fw task review extra gate) deferred.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [orchestrator, arc-c, governance, claude-md, framework-blindness, arc:orch
 components: [CLAUDE.md]
 related_tasks: [T-1641, T-1644, T-1626, T-1633, T-1654]
 created: 2026-05-01T16:35:45Z
-last_update: 2026-05-01T16:35:45Z
-date_finished: null
+last_update: 2026-05-01T16:38:08Z
+date_finished: 2026-05-01T16:38:08Z
 ---
 
 # T-1655: G-062 mechanism #1: Codify Arc Completion Discipline in CLAUDE.md — three-question checklist before declaring arcs 'shipped'
@@ -98,3 +98,15 @@ grep -q "G-062" .context/project/concerns.yaml && grep -A 30 "id: G-062" .contex
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1655-g-062-mechanism-1-codify-arc-completion-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-4bd81cee
+- **Timestamp:** 2026-05-01T16:38:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-01T16:38:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

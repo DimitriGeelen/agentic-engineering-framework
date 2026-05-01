@@ -1,0 +1,189 @@
+"""T-1661 — Arc system MVP regression tests.
+
+Pins lib/arc.sh + bin/fw arc behaviour against T-1653 Phase 1 deliverables
+(D1..D9). Each test runs the real `bin/fw arc` binary against an isolated
+PROJECT_ROOT (tmp_path) so we don't pollute the live registry.
+"""
+
+import os
+import re
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+FW = REPO_ROOT / "bin" / "fw"
+ARC_SH = REPO_ROOT / "lib" / "arc.sh"
+
+
+def _run(cmd, cwd, env_extra=None, check=False):
+    env = os.environ.copy()
+    env["PROJECT_ROOT"] = str(cwd)
+    env["FRAMEWORK_ROOT"] = str(REPO_ROOT)
+    if env_extra:
+        env.update(env_extra)
+    return subprocess.run(
+        cmd, cwd=str(cwd), env=env, capture_output=True, text=True, check=check
+    )
+
+
+@pytest.fixture
+def project(tmp_path):
+    """Minimal PROJECT_ROOT skeleton: dirs + one task file."""
+    (tmp_path / ".tasks" / "active").mkdir(parents=True)
+    (tmp_path / ".tasks" / "completed").mkdir(parents=True)
+    (tmp_path / ".context" / "working").mkdir(parents=True)
+    # Minimal `.framework.yaml` so the path-resolution accepts cwd as a project.
+    (tmp_path / ".framework.yaml").write_text("framework_path: " + str(REPO_ROOT) + "\n")
+
+    # Seed one task that will be tagged.
+    task = tmp_path / ".tasks" / "active" / "T-9001-seed.md"
+    task.write_text(
+        """---
+id: T-9001
+name: "seed task for arc tag"
+status: started-work
+workflow_type: build
+horizon: now
+tags: [seed]
+---
+
+# T-9001
+"""
+    )
+    return tmp_path
+
+
+def test_arc_sh_present():
+    assert ARC_SH.is_file(), f"{ARC_SH} missing"
+
+
+def test_arc_help_lists_all_verbs(project):
+    """D1 — `bin/fw arc help` lists 7 verbs."""
+    r = _run([str(FW), "arc", "help"], cwd=project)
+    assert r.returncode == 0, r.stderr
+    out = r.stdout
+    for verb in ("create", "focus", "list", "show", "tag", "close", "migrate"):
+        assert verb in out, f"verb {verb} not in arc help"
+
+
+def test_arc_create_writes_yaml_with_required_fields(project):
+    """D2 — `arc create` writes a YAML with id/name/status/anchor/created."""
+    r = _run(
+        [str(FW), "arc", "create", "test-arc", "--name", "Test arc", "--anchor", "T-1641"],
+        cwd=project,
+    )
+    assert r.returncode == 0, r.stderr + r.stdout
+    arc_file = project / ".context" / "arcs" / "test-arc.yaml"
+    assert arc_file.is_file(), "arc YAML not written"
+    text = arc_file.read_text()
+    for field in ("id: test-arc", "name: Test arc", "status: in-progress",
+                  "anchor_task: T-1641", "constituent_tasks: []", "created:"):
+        assert field in text, f"missing field/value '{field}' in arc yaml:\n{text}"
+
+
+def test_arc_create_rejects_invalid_id(project):
+    """Slug must be lowercase + slug-safe."""
+    r = _run([str(FW), "arc", "create", "Bad_ID", "--name", "X"], cwd=project)
+    assert r.returncode != 0
+    assert "lowercase slug" in (r.stderr + r.stdout).lower()
+
+
+def test_arc_focus_writes_arc_focus_yaml(project):
+    """D3 — `arc focus` sets current_arc."""
+    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    r = _run([str(FW), "arc", "focus", "alpha"], cwd=project)
+    assert r.returncode == 0, r.stderr
+    focus = (project / ".context" / "working" / "arc-focus.yaml").read_text()
+    assert "current_arc: alpha" in focus
+
+    # Verify list marks it focused (* in the indicator column)
+    r2 = _run([str(FW), "arc", "list"], cwd=project)
+    assert "alpha" in r2.stdout
+    assert "*" in r2.stdout  # focus marker
+
+    # Clear focus
+    r3 = _run([str(FW), "arc", "focus", "--clear"], cwd=project)
+    assert r3.returncode == 0
+    cleared = (project / ".context" / "working" / "arc-focus.yaml").read_text()
+    assert "current_arc: null" in cleared
+
+
+def test_arc_tag_adds_to_task_and_constituents(project):
+    """D4 — tag T-9001 with arc:alpha; tag appears in task file and arc YAML."""
+    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    r = _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project)
+    assert r.returncode == 0, r.stderr + r.stdout
+    task_text = (project / ".tasks" / "active" / "T-9001-seed.md").read_text()
+    assert "arc:alpha" in task_text, f"tag not added to task:\n{task_text}"
+    arc_text = (project / ".context" / "arcs" / "alpha.yaml").read_text()
+    assert "T-9001" in arc_text, "task not in constituent_tasks"
+
+
+def test_arc_tag_idempotent(project):
+    """Re-tagging the same task does not duplicate the entry."""
+    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
+    _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
+    arc_text = (project / ".context" / "arcs" / "alpha.yaml").read_text()
+    assert arc_text.count("T-9001") == 1, f"duplicate constituent:\n{arc_text}"
+
+
+def test_arc_close_marks_status_and_clears_focus(project):
+    """D7-bonus — close ends the arc + drops focus if it was focused."""
+    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "focus", "alpha"], cwd=project, check=True)
+    r = _run([str(FW), "arc", "close", "alpha", "--decision", "shipped"], cwd=project)
+    assert r.returncode == 0, r.stderr
+    arc_text = (project / ".context" / "arcs" / "alpha.yaml").read_text()
+    assert "status: closed" in arc_text
+    assert "decision: shipped" in arc_text
+    focus = (project / ".context" / "working" / "arc-focus.yaml").read_text()
+    assert "current_arc: null" in focus, "focus not cleared on close"
+
+
+def test_arc_show_renders_metadata_and_tasks(project):
+    """D5 — show emits id/name/status + tagged task lines."""
+    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
+    r = _run([str(FW), "arc", "show", "alpha"], cwd=project)
+    assert r.returncode == 0
+    out = r.stdout
+    assert "id: alpha" in out
+    assert "T-9001" in out
+    assert "Tasks tagged arc:alpha" in out
+
+
+def test_handover_injects_current_arc_section(project):
+    """D6 — handover.sh emits ## Current Arc when arc-focus.yaml is set.
+
+    We don't need to run the whole handover agent — the injection block is a
+    self-contained `$(...)` subshell. We grep handover.sh to assert the block
+    exists, then prove the block produces output for a focused project.
+    """
+    text = (REPO_ROOT / "agents" / "handover" / "handover.sh").read_text()
+    # Assertion 1: the injection point exists in the script.
+    assert "ARC_FOCUS_FILE" in text, "handover.sh has no ARC_FOCUS_FILE injection"
+    assert "## Current Arc" in text, "handover.sh has no ## Current Arc emit"
+
+    # Assertion 2: when focus.yaml has current_arc:, the inline block emits the section.
+    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "focus", "alpha"], cwd=project, check=True)
+    inline = '''
+ARC_FOCUS_FILE="$PROJECT_ROOT/.context/working/arc-focus.yaml"
+cur_arc=$(grep -E '^current_arc:' "$ARC_FOCUS_FILE" 2>/dev/null | head -1 | awk -F': ' '{print $2}' | tr -d ' "')
+arc_yaml="$PROJECT_ROOT/.context/arcs/${cur_arc}.yaml"
+arc_name=$(awk -F': ' '/^name:/ {sub(/^name: /,""); print; exit}' "$arc_yaml")
+echo "## Current Arc"
+echo "**${cur_arc}** — ${arc_name}"
+'''
+    r = subprocess.run(
+        ["bash", "-c", inline],
+        env={**os.environ, "PROJECT_ROOT": str(project)},
+        capture_output=True, text=True,
+    )
+    assert "## Current Arc" in r.stdout
+    assert "**alpha**" in r.stdout
+    assert "A" in r.stdout

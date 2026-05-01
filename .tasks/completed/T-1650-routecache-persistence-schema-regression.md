@@ -15,11 +15,11 @@ status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
-tags: [from-T-1641, t-1061-followup, drift-defense, termlink, contract]
+tags: [from-T-1641, t-1061-followup, drift-defense, termlink, contract, arc:orchestrator-rethink]
 components: [tests/fixtures/termlink-route-cache-schema.json, tests/unit/test_termlink_route_cache_schema.py]
 related_tasks: [T-1641, T-1644, T-1064, T-1065, T-1648, T-1651]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T13:07:42Z
+last_update: 2026-05-01T18:58:38Z
 date_finished: 2026-05-01T13:07:42Z
 ---
 
@@ -98,3 +98,6 @@ python3 -m pytest tests/unit/test_termlink_route_cache_schema.py -v --tb=short
 
 ### 2026-05-01T13:07:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-05-01T18:58:38Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

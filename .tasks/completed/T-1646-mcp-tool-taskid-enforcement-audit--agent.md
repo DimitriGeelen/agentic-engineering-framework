@@ -8,11 +8,11 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [from-T-1641, t-1061-followup, drift-defense, audit, termlink]
+tags: [from-T-1641, t-1061-followup, drift-defense, audit, termlink, arc:orchestrator-rethink]
 components: []
 related_tasks: [T-1641, T-1644, T-1063]
 created: 2026-05-01T12:04:15Z
-last_update: 2026-05-01T12:12:54Z
+last_update: 2026-05-01T18:58:37Z
 date_finished: 2026-05-01T12:12:54Z
 ---
 
@@ -97,3 +97,6 @@ grep -q orchestrator-mcp-scan agents/audit/audit.sh
 ### 2026-05-01T12:12:54Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** All 5 Agent ACs satisfied; verification gate runs the 7 commands (cluster: baseline exists, script exists+executable, baseline count math holds, audit runs clean, LATEST yaml emitted, status key present, audit.sh integrated). Live audit reports 4/75 gated as the documented baseline.
+
+### 2026-05-01T18:58:37Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

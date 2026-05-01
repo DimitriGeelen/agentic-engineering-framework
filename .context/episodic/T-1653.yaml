@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1653: Arcs as first-class entity (orchestrator-rethink follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T17:09:01Z
+# ============================================================================
+
+task_id: T-1653
+task_name: "Arcs as first-class entity (orchestrator-rethink follow-up)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T13:31:01Z
+completed: 2026-05-01T17:08:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T15:32:41+02:00
+last_commit: 2026-05-01T15:32:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — Arcs as first-class entity (research artefact)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - "docs/reports/T-1653-arcs-as-first-class.md"
+  - ".tasks/active/T-1653-arcs-as-first-class-entity-orchestrator-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T15:32:41"
+    action: "T-1653: inception — Arcs as first-class entity (research artefact)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 217 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 217
+  commits: 2
+  files_changed: 5
+  lines_added: 407
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1653-arcs-as-first-class-entity-orchestrator-.md
+generated_by: context-agent-hybrid

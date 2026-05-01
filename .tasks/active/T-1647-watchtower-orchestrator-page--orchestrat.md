@@ -8,11 +8,11 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [from-T-1641, t-1061-followup, drift-defense, watchtower, observability]
+tags: [from-T-1641, t-1061-followup, drift-defense, watchtower, observability, arc:orchestrator-rethink]
 components: []
 related_tasks: [T-1641, T-1644, T-1646, T-1063, T-1064, T-1066]
 created: 2026-05-01T12:14:30Z
-last_update: 2026-05-01T12:14:30Z
+last_update: 2026-05-01T18:57:17Z
 date_finished: null
 ---
 
@@ -108,3 +108,6 @@ curl -s http://localhost:3000/orchestrator | grep -q "75"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1647-watchtower-orchestrator-page--orchestrat.md
 - **Context:** Initial task creation
+
+### 2026-05-01T18:57:17Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

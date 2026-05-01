@@ -8,11 +8,11 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, framework-integration]
+tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, framework-integration, arc:orchestrator-rethink]
 components: []
 related_tasks: [T-1641, T-1642, T-1063, T-1064, T-1065, T-1066]
 created: 2026-05-01T11:54:52Z
-last_update: 2026-05-01T11:54:52Z
+last_update: 2026-05-01T18:57:17Z
 date_finished: null
 ---
 
@@ -88,3 +88,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1643-arc-b--framework-side-wiring-of-orchestr.md
 - **Context:** Initial task creation
+
+### 2026-05-01T18:57:17Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

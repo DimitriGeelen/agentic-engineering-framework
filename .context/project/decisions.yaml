@@ -394,3 +394,38 @@ decisions:
     date: 2026-05-01
     task: T-1641
     rationale: "T-1626 (hooks), T-1633 (fw upgrade), T-1641 (orchestrator arc) all share the signature: code/tests pass + integration-trace exists + child ACs done → agent declares ship → user pushback or downstream cascade reveals headline mechanic was never run, policy was never asked, framework never USES it. The pattern is distinct from G-019 (which is about bug-fix vs root-cause). This one is about arc-completion vs arc-effect. Captured as G-062 with proposed structural mechanisms (CLAUDE.md section + fw audit arc check + fw task review extra gate)."
+
+  - id: D-059
+    decision: "Ship framework-side lint in this task; file termlink-side validator as a TermLink push to termlink-agent under their own task ID."
+    scope: project
+    date: 2026-05-01
+    task: T-1649
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-060
+    decision: "Pin all session-object keys consumed by ANY framework component (WezTerm + orchestrator.py + lint), not just WezTerm."
+    scope: project
+    date: 2026-05-01
+    task: T-1651
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-061
+    decision: "Extend existing fabric YAML format with `cross_project: <name>` + `cross_repo_url:` fields. Card slug: `cross-repo-<project>-<module>.yaml`. No code change to `bin/fw fabric register` — cross-repo cards are hand-crafted (rare) and the convention is documented."
+    scope: project
+    date: 2026-05-01
+    task: T-1652
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-062
+    decision: "Parse the Rust source files (data.rs, governance.rs) from a Python regex-based scan to pin the byte values and field set. No need to compile or link against termlink crates."
+    scope: project
+    date: 2026-05-01
+    task: T-1648
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-063
+    decision: "Same pattern as T-1648 — Python regex parses Rust source for `pub <field>:` lines and `pub enum X { ... }` variants. No Rust toolchain dependency."
+    scope: project
+    date: 2026-05-01
+    task: T-1650
+    rationale: "Auto-captured from task file on completion"

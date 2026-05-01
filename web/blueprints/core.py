@@ -193,6 +193,62 @@ def _get_focus_task():
     return {"id": task_id, "name": ""}
 
 
+def _get_arcs_in_flight():
+    """T-1661: Return in-progress arcs with task counts for landing-page section.
+
+    Returns list of dicts: {id, name, status, task_count, focused}.
+    Empty list if no arcs registered or all closed.
+    """
+    arcs_dir = PROJECT_ROOT / ".context" / "arcs"
+    if not arcs_dir.exists():
+        return []
+
+    # Read focused arc id (single-arc focus model).
+    focused = None
+    arc_focus_file = PROJECT_ROOT / ".context" / "working" / "arc-focus.yaml"
+    if arc_focus_file.exists():
+        try:
+            d = _load_yaml(arc_focus_file)
+            focused = d.get("current_arc") if d else None
+        except Exception:
+            focused = None
+
+    arcs = []
+    for f in sorted(arcs_dir.glob("*.yaml")):
+        try:
+            d = _load_yaml(f) or {}
+        except Exception:
+            continue
+        if d.get("status") != "in-progress":
+            continue
+        arc_id = d.get("id") or f.stem
+        # Count tasks tagged arc:<id> across active+completed.
+        task_count = 0
+        tag = f"arc:{arc_id}"
+        for tasks_dir in (PROJECT_ROOT / ".tasks" / "active", PROJECT_ROOT / ".tasks" / "completed"):
+            if not tasks_dir.exists():
+                continue
+            for tf in tasks_dir.glob("T-*.md"):
+                try:
+                    text = tf.read_text(errors="replace")
+                except Exception:
+                    continue
+                # cheap tag presence check (frontmatter line `tags: [...]`)
+                for line in text.splitlines():
+                    if line.startswith("tags:"):
+                        if tag in line:
+                            task_count += 1
+                        break
+        arcs.append({
+            "id": arc_id,
+            "name": d.get("name", arc_id),
+            "status": d.get("status", "in-progress"),
+            "task_count": task_count,
+            "focused": (arc_id == focused),
+        })
+    return arcs
+
+
 def _get_stale_tasks():
     """Count stale tasks: active with issues or >7d without update (T-398).
 
@@ -340,6 +396,7 @@ def index():
         ctx["concerns_summary"] = _get_concerns_summary()
         ctx["focus_task"] = _get_focus_task()
         ctx["stale_tasks"] = _get_stale_tasks()
+        ctx["arcs_in_flight"] = _get_arcs_in_flight()
         # T-671: QR code for mobile approvals
         approval_summary, qr_data, qr_url = _get_approval_qr()
         ctx["approval_summary"] = approval_summary
@@ -373,6 +430,7 @@ def index():
         concerns_summary=concerns_summary,
         focus_task=_get_focus_task(),
         stale_tasks=_get_stale_tasks(),
+        arcs_in_flight=_get_arcs_in_flight(),
         last_session=last_session,
         is_inception=False,
         audit_status=audit_status,

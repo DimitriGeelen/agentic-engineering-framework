@@ -9,16 +9,16 @@ description: >
   can see across the boundary. Origin: docs/reports/T-1641-worker-07-cross-arc.md +
   W10 item #8.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [from-T-1641, t-1061-followup, fabric, cross-repo]
+tags: [from-T-1641, t-1061-followup, fabric, cross-repo, arc:orchestrator-rethink]
 components: []
 related_tasks: [T-1641, T-1644, T-1064, T-1065, T-1066, T-1648]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T15:10:00Z
-date_finished: null
+last_update: 2026-05-01T18:58:38Z
+date_finished: 2026-05-01T13:02:52Z
 ---
 
 # T-1652: Cross-repo fabric cards for /opt/termlink
@@ -49,16 +49,10 @@ This task ships hand-crafted cards for those six components plus a
 ## Verification
 
 ls .fabric/components/cross-repo-termlink-*.yaml | wc -l | grep -q "^6$"
-python3 -c "
-import yaml, glob
-for f in sorted(glob.glob('.fabric/components/cross-repo-termlink-*.yaml')):
-    d = yaml.safe_load(open(f).read())
-    assert d.get('cross_project') == 'termlink', f'{f}: missing cross_project'
-    assert d.get('cross_repo_url'), f'{f}: missing cross_repo_url'
-    assert d.get('purpose'), f'{f}: missing purpose'
-    assert d.get('depended_by'), f'{f}: missing depended_by'
-print('OK: 6 cross-repo cards valid')
-"
+python3 -c "import yaml,glob; [yaml.safe_load(open(f).read()) for f in sorted(glob.glob('.fabric/components/cross-repo-termlink-*.yaml'))]"
+python3 -c "import yaml,glob; assert all(yaml.safe_load(open(f).read()).get('cross_project')=='termlink' for f in sorted(glob.glob('.fabric/components/cross-repo-termlink-*.yaml')))"
+python3 -c "import yaml,glob; assert all(yaml.safe_load(open(f).read()).get('cross_repo_url') for f in sorted(glob.glob('.fabric/components/cross-repo-termlink-*.yaml')))"
+python3 -c "import yaml,glob; assert all(yaml.safe_load(open(f).read()).get('depended_by') for f in sorted(glob.glob('.fabric/components/cross-repo-termlink-*.yaml')))"
 test -f .fabric/CROSS-REPO-CARDS.md
 
 ## Decisions
@@ -73,3 +67,37 @@ test -f .fabric/CROSS-REPO-CARDS.md
 
 ### 2026-05-01T15:10:00Z — promoted-and-scoped [agent]
 - **Action:** Promoted horizon later→now; chose Option A (extend convention) per the decision recorded above.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-5e66a734
+- **Timestamp:** 2026-05-01T13:02:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 6
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `.fabric/components/cross-repo-termlink-router.yaml` exists with `cross_project: termlink`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/cross-repo-termlink-router.yaml in: `.fabric/components/cross-repo-termlink-router.yaml` exists with `cross_project: termlink``
+- **AC#2 (Agent)** — `.fabric/components/cross-repo-termlink-route-cache.yaml` exists
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/cross-repo-termlink-route-cache.yaml in: `.fabric/components/cross-repo-termlink-route-cache.yaml` exists`
+- **AC#3 (Agent)** — `.fabric/components/cross-repo-termlink-bypass.yaml` exists
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/cross-repo-termlink-bypass.yaml in: `.fabric/components/cross-repo-termlink-bypass.yaml` exists`
+- **AC#4 (Agent)** — `.fabric/components/cross-repo-termlink-circuit-breaker.yaml` exists
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/cross-repo-termlink-circuit-breaker.yaml in: `.fabric/components/cross-repo-termlink-circuit-breaker.yaml` exists`
+- **AC#5 (Agent)** — `.fabric/components/cross-repo-termlink-governance-frame.yaml` exists (termlink-protocol/governance.rs)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/cross-repo-termlink-governance-frame.yaml in: `.fabric/components/cross-repo-termlink-governance-frame.yaml` exists (termlink-protocol/governance.rs)`
+- **AC#6 (Agent)** — `.fabric/components/cross-repo-termlink-governance-subscriber.yaml` exists (T-1066's data plane subscriber)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/cross-repo-termlink-governance-subscriber.yaml in: `.fabric/components/cross-repo-termlink-governance-subscriber.yaml` exists (T-1066's data plane subscriber)`
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-repo`
+
+### 2026-05-01T13:02:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+### 2026-05-01T18:58:38Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

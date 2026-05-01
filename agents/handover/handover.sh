@@ -479,6 +479,31 @@ else:
     print('Session started. See Recent Commits below for activity.')
 " 2>/dev/null || echo "See Recent Commits below for session activity.")
 
+$(
+# T-1661: Inject ## Current Arc section if arc-focus.yaml has a current_arc value.
+# Empty / missing focus file → section omitted entirely (no empty header).
+ARC_FOCUS_FILE="$PROJECT_ROOT/.context/working/arc-focus.yaml"
+if [ -f "$ARC_FOCUS_FILE" ]; then
+    cur_arc=$(grep -E '^current_arc:' "$ARC_FOCUS_FILE" 2>/dev/null | head -1 | awk -F': ' '{print $2}' | tr -d ' "')
+    if [ -n "$cur_arc" ] && [ "$cur_arc" != "null" ]; then
+        arc_yaml="$PROJECT_ROOT/.context/arcs/${cur_arc}.yaml"
+        if [ -f "$arc_yaml" ]; then
+            arc_name=$(awk -F': ' '/^name:/ {sub(/^name: /,""); print; exit}' "$arc_yaml")
+            arc_status=$(awk -F': ' '/^status:/ {print $2; exit}' "$arc_yaml")
+            # Count tasks tagged arc:<id> across active+completed
+            task_count=$( { grep -lE "^tags:.*arc:${cur_arc}" "$PROJECT_ROOT"/.tasks/active/*.md 2>/dev/null || true
+                            grep -lE "^tags:.*arc:${cur_arc}" "$PROJECT_ROOT"/.tasks/completed/*.md 2>/dev/null || true
+                          } | wc -l | tr -d ' ')
+            echo "## Current Arc"
+            echo ""
+            echo "**${cur_arc}** — ${arc_name} (${arc_status}, ${task_count} task(s))"
+            echo ""
+            echo "Run \`fw arc show ${cur_arc}\` for detail; \`fw arc focus --clear\` to drop focus."
+            echo ""
+        fi
+    fi
+fi
+)
 ## Work in Progress
 
 EOF

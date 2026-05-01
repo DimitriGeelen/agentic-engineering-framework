@@ -309,6 +309,26 @@
 </article>
 {% endif %}
 
+{# --- Arcs in flight (T-1661) -------------------------------- #}
+{% if arcs_in_flight %}
+<article style="padding: 0.8rem 1rem; margin-bottom: 1rem; border-left: 3px solid var(--pico-secondary);">
+    <header style="margin-bottom: 0.4rem; padding: 0;">
+        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--pico-muted-color); font-weight: 600; letter-spacing: 0.04em;">Arcs in flight</span>
+    </header>
+    <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        {% for arc in arcs_in_flight %}
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+            {% if arc.focused %}<span title="focused arc" style="color: var(--pico-primary); font-weight: 700;">●</span>{% else %}<span style="color: var(--pico-muted-color);">○</span>{% endif %}
+            <a href="{{ url_for('tasks.tasks') }}?arc={{ arc.id }}"
+               style="font-weight: 600; color: var(--pico-primary); text-decoration: none;">{{ arc.id }}</a>
+            <span style="font-size: 0.9rem;">{{ arc.name }}</span>
+            <span style="font-size: 0.8rem; color: var(--pico-muted-color); margin-left: auto;">{{ arc.task_count }} task{% if arc.task_count != 1 %}s{% endif %}</span>
+        </div>
+        {% endfor %}
+    </div>
+</article>
+{% endif %}
+
 {# --- Project Pulse ----------------------------------------- #}
 <article>
     <h4 class="wt-section-title">Project Pulse</h4>

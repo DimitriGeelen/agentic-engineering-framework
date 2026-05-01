@@ -8,11 +8,11 @@ status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
-tags: [from-T-1061, termlink, orchestrator, reconsideration, multi-agent]
+tags: [from-T-1061, termlink, orchestrator, reconsideration, multi-agent, arc:orchestrator-rethink]
 components: [C-004, agents/audit/orchestrator-mcp-scan.sh, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: []
 created: 2026-05-01T11:30:01Z
-last_update: 2026-05-01T12:29:12Z
+last_update: 2026-05-01T18:58:36Z
 date_finished: 2026-05-01T12:29:12Z
 ---
 
@@ -254,3 +254,6 @@ For human reviewer: decide GO/NO-GO/DEFER on the arc-or-arcs proposal (split int
 ### 2026-05-01T12:29:12Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-05-01T18:58:36Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

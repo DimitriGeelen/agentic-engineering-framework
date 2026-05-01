@@ -123,6 +123,17 @@ if [ -f "$FOCUS_FILE" ]; then
     fi
 fi
 
+# T-1661: Current arc focus (single arc, mirrors task focus model).
+ARC_FOCUS_FILE="$PROJECT_ROOT/.context/working/arc-focus.yaml"
+if [ -f "$ARC_FOCUS_FILE" ]; then
+    CURRENT_ARC=$(grep "^current_arc:" "$ARC_FOCUS_FILE" 2>/dev/null | cut -d: -f2 | tr -d ' "')
+    if [ -n "$CURRENT_ARC" ] && [ "$CURRENT_ARC" != "null" ]; then
+        CONTEXT="${CONTEXT}
+## Current Arc: ${CURRENT_ARC}
+"
+    fi
+fi
+
 # Active tasks summary
 TASK_SUMMARY=""
 for f in "$PROJECT_ROOT/.tasks/active"/*.md; do

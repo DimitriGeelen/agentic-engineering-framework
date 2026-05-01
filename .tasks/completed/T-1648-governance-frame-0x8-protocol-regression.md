@@ -14,11 +14,11 @@ status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
-tags: [from-T-1641, t-1061-followup, drift-defense, protocol, contract, t-1066]
+tags: [from-T-1641, t-1061-followup, drift-defense, protocol, contract, t-1066, arc:orchestrator-rethink]
 components: [tests/fixtures/termlink-protocol-frame-types.json, tests/unit/test_termlink_governance_frame_contract.py]
 related_tasks: [T-1641, T-1644, T-1066, T-1651, T-1652]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T13:05:31Z
+last_update: 2026-05-01T18:58:37Z
 date_finished: 2026-05-01T13:05:31Z
 ---
 
@@ -95,3 +95,6 @@ python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -v --tb=
 
 ### 2026-05-01T13:05:31Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-05-01T18:58:37Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

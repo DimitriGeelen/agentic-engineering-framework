@@ -60,12 +60,12 @@ _arc_current_focus() {
 }
 
 # Find tasks tagged with a given arc tag. Returns T-IDs one per line.
+# Always exits 0 — empty output is a valid result, not a failure.
 _arc_tasks_with_tag() {
     local tag="$1"
-    local pattern="(^|\\W)${tag}(\\W|$)"
     {
-        grep -lE "^tags:.*${tag}" "$PROJECT_ROOT"/.tasks/active/*.md 2>/dev/null
-        grep -lE "^tags:.*${tag}" "$PROJECT_ROOT"/.tasks/completed/*.md 2>/dev/null
+        grep -lE "^tags:.*${tag}" "$PROJECT_ROOT"/.tasks/active/*.md 2>/dev/null || true
+        grep -lE "^tags:.*${tag}" "$PROJECT_ROOT"/.tasks/completed/*.md 2>/dev/null || true
     } | while IFS= read -r f; do
         # extract id from frontmatter
         awk -F: '/^id:/ {gsub(/[ "]/,"",$2); print $2; exit}' "$f"
@@ -113,6 +113,7 @@ YAML
 
     echo "Created arc '${id}' → $(_arc_path "$id")"
     [ -n "$anchor" ] && echo "  anchor: ${anchor}"
+    return 0
 }
 
 arc_focus() {
@@ -165,10 +166,11 @@ arc_list() {
         name=$(awk -F': ' '/^name:/ {sub(/^name: /,""); print; exit}' "$f")
         task_count=$(_arc_tasks_with_tag "arc:${id}" | wc -l | tr -d ' ')
         marker="  "
-        [ "$id" = "$current" ] && marker=" *"
+        if [ "$id" = "$current" ]; then marker=" *"; fi
         printf "%-2s %-30s %-12s %-7s %s\n" "$marker" "$id" "$status" "$task_count" "$name"
     done
     [ -n "$current" ] && echo "" && echo "(* = focused arc)"
+    return 0
 }
 
 arc_show() {
@@ -186,7 +188,7 @@ arc_show() {
     echo "─── Tasks tagged arc:${id} ───"
     local found=0
     while IFS= read -r tid; do
-        [ -z "$tid" ] && continue
+        if [ -z "$tid" ]; then continue; fi
         found=1
         # find task file & extract status/horizon
         local tf
@@ -204,6 +206,7 @@ arc_show() {
     [ "$found" -eq 0 ] && echo "  (no tasks yet — use 'fw arc tag $id T-XXXX')"
 
     [ "$id" = "$current" ] && echo "" && echo "[FOCUSED]"
+    return 0
 }
 
 arc_tag() {
@@ -276,6 +279,7 @@ text = text[:m.start(1)] + new + text[m.end(1):]
 open(fn, "w").write(text)
 print(f"Added {tid} to arc constituents")
 PY
+    return 0
 }
 
 arc_close() {
@@ -312,6 +316,7 @@ PY
     if [ "$current" = "$id" ]; then
         arc_focus --clear
     fi
+    return 0
 }
 
 arc_migrate() {
@@ -351,18 +356,19 @@ PY
     # 2. Find tasks with legacy `from-T-XXXX` tag matching anchor.
     if [ -n "$anchor" ]; then
         while IFS= read -r tid; do
-            [ -z "$tid" ] && continue
+            if [ -z "$tid" ]; then continue; fi
             arc_tag "$id" "$tid" >/dev/null && seeded=$((seeded+1))
         done < <(_arc_tasks_with_tag "from-${anchor}")
     fi
 
     # 3. Already-tagged-with-arc tasks (idempotency check).
     while IFS= read -r tid; do
-        [ -z "$tid" ] && continue
+        if [ -z "$tid" ]; then continue; fi
         arc_tag "$id" "$tid" >/dev/null
     done < <(_arc_tasks_with_tag "arc:${id}")
 
     echo "Migration complete: $seeded task(s) processed for arc '${id}'"
+    return 0
 }
 
 arc_help() {

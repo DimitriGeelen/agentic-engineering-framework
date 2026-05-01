@@ -27,16 +27,16 @@ Watchtower landing-page section + `/tasks?arc=` filter, migration of orchestrato
 ## Acceptance Criteria
 
 ### Agent
-- [ ] D1 — `lib/arc.sh` exists with helper functions; `bin/fw arc help` lists 7 verbs (create / focus / list / show / close / tag / migrate)
-- [ ] D2 — `bin/fw arc create orchestrator-rethink --name "..." --anchor T-1641` writes `.context/arcs/orchestrator-rethink.yaml` with required fields (id, name, status, anchor_task, constituent_tasks, created)
-- [ ] D3 — `bin/fw arc focus orchestrator-rethink` writes `.context/working/arc-focus.yaml` with `current_arc:` field; `fw arc list` shows focused arc with marker
-- [ ] D4 — `bin/fw arc tag orchestrator-rethink T-1661` adds `arc:orchestrator-rethink` to T-1661's tags AND appends T-1661 to the arc's `constituent_tasks`
-- [ ] D5 — `bin/fw arc show orchestrator-rethink` renders id, name, status, focus, task counts (now/next/later/completed)
-- [ ] D6 — `agents/handover/handover.sh` emits a `## Current Arc` section when arc-focus.yaml has a `current_arc:` value (no section if unset)
-- [ ] D7 — Migration command `bin/fw arc migrate orchestrator-rethink --anchor T-1641` seeds constituent_tasks from anchor's `related_tasks` + tasks tagged `from-T-1641` / `arc:orchestrator-rethink` (idempotent)
-- [ ] D8 — Watchtower landing page (`/`) renders an "Arcs in flight" section for in-progress arcs (verifiable via `curl … | grep -q "Arcs in flight"` when at least one arc exists)
-- [ ] D9 — Watchtower `/tasks?arc=orchestrator-rethink` filter works: returns only tasks tagged `arc:orchestrator-rethink`
-- [ ] D10 — Pytest module `tests/unit/test_arc_system.py` covers: arc create/focus/tag/migrate flow, YAML schema, handover injection on/off, focus-cleared behaviour (≥6 tests, all pass)
+- [x] D1 — `lib/arc.sh` exists with helper functions; `bin/fw arc help` lists 7 verbs (create / focus / list / show / close / tag / migrate)
+- [x] D2 — `bin/fw arc create orchestrator-rethink --name "..." --anchor T-1641` writes `.context/arcs/orchestrator-rethink.yaml` with required fields (id, name, status, anchor_task, constituent_tasks, created)
+- [x] D3 — `bin/fw arc focus orchestrator-rethink` writes `.context/working/arc-focus.yaml` with `current_arc:` field; `fw arc list` shows focused arc with marker
+- [x] D4 — `bin/fw arc tag orchestrator-rethink T-1661` adds `arc:orchestrator-rethink` to T-1661's tags AND appends T-1661 to the arc's `constituent_tasks`
+- [x] D5 — `bin/fw arc show orchestrator-rethink` renders id, name, status, focus, task counts (now/next/later/completed)
+- [x] D6 — `agents/handover/handover.sh` emits a `## Current Arc` section when arc-focus.yaml has a `current_arc:` value (no section if unset)
+- [x] D7 — Migration command `bin/fw arc migrate orchestrator-rethink --anchor T-1641` seeds constituent_tasks from anchor's `related_tasks` + tasks tagged `from-T-1641` / `arc:orchestrator-rethink` (idempotent)
+- [x] D8 — Watchtower landing page (`/`) renders an "Arcs in flight" section for in-progress arcs (verifiable via `curl … | grep -q "Arcs in flight"` when at least one arc exists)
+- [x] D9 — Watchtower `/tasks?arc=orchestrator-rethink` filter works: returns only tasks tagged `arc:orchestrator-rethink`
+- [x] D10 — Pytest module `tests/unit/test_arc_system.py` covers: arc create/focus/tag/migrate flow, YAML schema, handover injection on/off, focus-cleared behaviour (≥6 tests, all pass)
 
 ### Human
 - [ ] [REVIEW] Watchtower landing-page "Arcs in flight" section reads cleanly at a glance
@@ -61,6 +61,20 @@ PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3
 python3 -m pytest tests/unit/test_arc_system.py -q
 # D9 — task filter accepts arc query (HTTP 200; emptier check is fine before migration)
 PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3000}/tasks?arc=orchestrator-rethink" >/dev/null
+
+## Recommendation
+
+- **Recommendation:** GO (close partial-complete; one Human AC for visual review remains)
+- **Rationale:** All 10 Agent ACs (D1–D10) verified against the live registry and test suite. The orchestrator-rethink arc is migrated and contains 15 constituent tasks (T-1641 anchor + 14 children). Handover injection works (LATEST.md already shows `## Current Arc`). Watchtower landing-page shows the "Arcs in flight" section with a focused-dot indicator and click-through; `/tasks?arc=orchestrator-rethink` filter works (200, with arc-chip rendered). The `set -e` traps caught during build (3 instances) hardened the shell logic — `_arc_tasks_with_tag` now never returns non-zero on empty match, conditional `&&` chains converted to `if`-form, and every public verb terminates with explicit `return 0`. Build is reversible (no deletes, no schema migrations of existing data).
+- **Evidence:**
+  - `bin/fw arc list` → 1 arc (orchestrator-rethink, 15 tasks, focused)
+  - `python3 -m pytest tests/unit/test_arc_system.py -q` → 10/10 pass (1.07s)
+  - `curl -sf http://localhost:3000/` contains "orchestrator-rethink" (2 hits: section header + arc card)
+  - `curl http://localhost:3000/tasks?arc=orchestrator-rethink` → 200, chip rendered
+  - `.context/handovers/LATEST.md` already contains `## Current Arc` block
+  - `.context/arcs/orchestrator-rethink.yaml` constituent_tasks: T-1641, T-1642, T-1643, T-1644, T-1645, T-1646, T-1647, T-1648, T-1649, T-1650, T-1651, T-1652, T-1654, T-1655, T-1661
+
+**Out of MVP scope (filed separately):** dedicated `/arcs` page (Phase 2), arc-specific CLAUDE.md snippets, multi-arc focus stack — none deferred during build.
 
 ## RCA
 

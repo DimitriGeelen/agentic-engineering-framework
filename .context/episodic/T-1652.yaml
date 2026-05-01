@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1652: Cross-repo fabric cards for /opt/termlink orchestrator modules
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T13:02:56Z
+# ============================================================================
+
+task_id: T-1652
+task_name: "Cross-repo fabric cards for /opt/termlink orchestrator modules"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T12:20:27Z
+completed: 2026-05-01T13:02:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T15:02:18+02:00
+last_commit: 2026-05-01T15:02:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cross-repo fabric cards for /opt/termlink orchestrator modules
+
+# Key outcomes
+outcomes:
+  - "`.fabric/components/cross-repo-termlink-router.yaml` exists with `cross_project: termlink`"
+  - "`.fabric/components/cross-repo-termlink-route-cache.yaml` exists"
+  - "`.fabric/components/cross-repo-termlink-bypass.yaml` exists"
+  - "`.fabric/components/cross-repo-termlink-circuit-breaker.yaml` exists"
+  - "`.fabric/components/cross-repo-termlink-governance-frame.yaml` exists (termlink-protocol/governance.rs)"
+  - "`.fabric/components/cross-repo-termlink-governance-subscriber.yaml` exists (T-1066's data plane subscriber)"
+  - "All 6 cards parse as valid YAML and include `cross_project`, `cross_repo_url`, `purpose`, and at least one local `depended_by` edge to a framework component"
+  - "`.fabric/CROSS-REPO-CARDS.md` documents the convention"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Extend existing fabric YAML format with `cross_project: <name>` + `cross_repo_url:` fields. Card slug: `cross-repo-<project>-<module>.yaml`. No code change to `bin/fw fabric register` — cross-repo cards are hand-crafted (rare) and the convention is documented."
+    rationale: "Keeps framework fabric authoritative for blast-radius queries while making external dependencies visible. Avoids the alternative (extending `register` to accept cross-repo paths) which would conflate \"exists in this checkout\" with \"is a tracked dependency.\""
+    alternatives_rejected: ["(a) Document boundary, no cards — leaves blast-radius blind. (b) Extend `register` to fetch cross-repo files — opens the door to filesystem coupling we don't want."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/cross-repo-termlink-bypass.yaml"
+  - ".fabric/components/cross-repo-termlink-circuit-breaker.yaml"
+  - ".fabric/components/cross-repo-termlink-governance-frame.yaml"
+  - ".fabric/components/cross-repo-termlink-governance-subscriber.yaml"
+  - ".fabric/components/cross-repo-termlink-route-cache.yaml"
+  - ".fabric/components/cross-repo-termlink-router.yaml"
+  - ".fabric/CROSS-REPO-CARDS.md"
+  - ".tasks/active/T-1652-cross-repo-fabric-cards-for-opttermlink-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T15:02:18"
+    action: "T-1652: cross-repo fabric cards for /opt/termlink orchestrator modules"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 42 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1641, t-1061-followup, fabric, cross-repo]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 42
+  commits: 2
+  files_changed: 22
+  lines_added: 723
+  lines_removed: 100
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1652-cross-repo-fabric-cards-for-opttermlink-.md
+generated_by: context-agent-hybrid

@@ -4,7 +4,7 @@ name: "Vendored .agentic-framework/ drift sync — pull T-1620, T-1626/T-1627/T-
 description: >
   The framework dogfoods consumer mode via .agentic-framework/. Upstream lib/inception.sh, lib/upgrade.sh, lib/verify-acs.sh have been changed since last vendor (e50b96bc2 'T-012: Resync vendored .agentic-framework/'). New file lib/hook-telemetry.sh (T-1628) is missing from the vendored copy. Hygiene resync — run fw vendor or copy 4 files manually. Low-risk; reversible.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [hygiene, vendoring, dogfood, framework-self-fix]
 components: [.agentic-framework/lib/inception.sh, .agentic-framework/lib/upgrade.sh, .agentic-framework/lib/verify-acs.sh, .agentic-framework/lib/hook-telemetry.sh]
 related_tasks: [T-1620, T-1626, T-1627, T-1628, T-1542, T-012]
 created: 2026-05-01T16:39:49Z
-last_update: 2026-05-01T16:47:02Z
-date_finished: null
+last_update: 2026-05-01T16:48:01Z
+date_finished: 2026-05-01T16:48:01Z
 ---
 
 # T-1658: Vendored .agentic-framework/ drift sync — pull T-1620, T-1626/T-1627/T-1628, T-1542 fixes from upstream lib/ into .agentic-framework/lib/
@@ -102,3 +102,15 @@ diff -q lib/hook-telemetry.sh .agentic-framework/lib/hook-telemetry.sh
 ### 2026-05-01T16:47:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d48c2b23
+- **Timestamp:** 2026-05-01T16:48:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-01T16:48:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
