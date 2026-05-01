@@ -2633,3 +2633,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-339
+  learning: "CTL-013 verification re-run cannot invoke 'fw audit' — outer audit holds run-lock, inner audit aborts with 'Another audit is already running', producing false-positive failures. Verification authors must avoid recursive fw audit calls; use structural grep + pytest file-presence checks instead. Symptom seen on T-1656 (G-062 audit detective verification). Behavioral pytest tests still run normally outside audit context."
+  source: P-011
+  task: T-1656
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD
