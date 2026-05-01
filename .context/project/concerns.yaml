@@ -1606,7 +1606,7 @@ concerns:
   related_tasks_extra: [T-1061, T-1062, T-1064, T-1065, T-1066, T-1644, T-1646, T-1647, T-1648, T-1649, T-1650, T-1651, T-1652]
 - id: G-062
   type: gap
-  title: Framework-blindness pattern — 'shipped' declared before fresh-substrate behavioral verification (partial-mitigation 2026-05-01: behavioral mechanism #1 shipped via T-1655; structural mechanisms #2/#3 pending)
+  title: "Framework-blindness pattern — 'shipped' declared before fresh-substrate behavioral verification (partial-mitigation 2026-05-01: behavioral mechanism #1 shipped via T-1655; structural mechanisms #2/#3 pending)"
   description: 'Recurring failure signature observed in three independent arcs over five weeks:
     the agent declares an arc "shipped" / "GO awaiting review" based on (a) `cargo check` /
     `cargo test --lib` passing, (b) line-number trace through the integration code path,
