@@ -10,16 +10,16 @@ description: >
   `termlink list --json` output matches the required-key set. Skips gracefully
   when termlink is not installed. Origin: docs/reports/T-1641-worker-10-defenses.md item #6.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: [from-T-1641, t-1061-followup, drift-defense, wezterm, framework, contract]
-components: []
+components: [tests/fixtures/termlink-list-schema.json, tests/unit/test_termlink_list_contract.py]
 related_tasks: [T-1641, T-1644, T-1062, T-1647, T-1649]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T15:00:00Z
-date_finished: null
+last_update: 2026-05-01T12:59:06Z
+date_finished: 2026-05-01T12:59:06Z
 ---
 
 # T-1651: TermLink list --json contract test
@@ -66,3 +66,15 @@ python3 -m pytest tests/unit/test_termlink_list_contract.py -v --tb=short
 ### 2026-05-01T15:00:00Z — promoted-and-scoped [agent]
 - **Action:** Promoted horizon later→now; expanded scope from WezTerm-only to all framework consumers of termlink list --json.
 - **Context:** Continuing Arc C (T-1644) drift defenses per autonomous-mode directive.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-e8d35b19
+- **Timestamp:** 2026-05-01T12:59:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-01T12:59:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

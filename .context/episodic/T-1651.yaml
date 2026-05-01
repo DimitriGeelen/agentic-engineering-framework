@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1651: TermLink list --json contract test — pin session-object keys consumed by framework
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T12:59:10Z
+# ============================================================================
+
+task_id: T-1651
+task_name: "TermLink list --json contract test — pin session-object keys consumed by framework"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T12:20:27Z
+completed: 2026-05-01T12:59:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T14:58:59+02:00
+last_commit: 2026-05-01T14:58:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  TermLink list --json contract test (5 cases, all pass)
+
+# Key outcomes
+outcomes:
+  - "`tests/fixtures/termlink-list-schema.json` exists with the required + optional key sets"
+  - "`tests/unit/test_termlink_list_contract.py` exists and uses pytest"
+  - "Test calls `termlink list --json`, parses, validates each session has all required keys"
+  - "Test skips gracefully (pytest.skip) when `termlink` binary is unavailable"
+  - "Test passes against current live data on this host"
+  - "Schema documents which framework consumer reads each key (for blame-on-break)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Pin all session-object keys consumed by ANY framework component (WezTerm + orchestrator.py + lint), not just WezTerm."
+    rationale: "The task title says \"WezTerm plugin contract\" but the contract surface is broader; pinning only WezTerm leaves the other two consumers exposed to silent rename."
+    alternatives_rejected: ["WezTerm-only schema — narrower than actual blast radius."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1651-wezterm-plugin-contract-test--pin-termli.md"
+  - "tests/fixtures/termlink-list-schema.json"
+  - "tests/unit/test_termlink_list_contract.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T14:58:59"
+    action: "T-1651: TermLink list --json contract test (5 cases, all pass)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 38 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1641, t-1061-followup, drift-defense, wezterm, framework, contract]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 38
+  commits: 1
+  files_changed: 3
+  lines_added: 195
+  lines_removed: 64
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1651-wezterm-plugin-contract-test--pin-termli.md
+generated_by: context-agent-hybrid
