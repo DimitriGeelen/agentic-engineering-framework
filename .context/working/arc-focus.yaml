@@ -1,0 +1,3 @@
+# Arc focus (T-1661). Set via 'fw arc focus <arc-id>'.
+current_arc: orchestrator-rethink
+focused_at: 2026-05-01T18:57:03Z

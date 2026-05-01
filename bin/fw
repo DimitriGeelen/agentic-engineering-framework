@@ -2571,6 +2571,14 @@ case "$cmd" in
     context)
         exec "$AGENTS_DIR/context/context.sh" "$@"
         ;;
+    arc)
+        # T-1661: Arc system — first-class workspace grouping tasks by theme.
+        # Verbs: create / focus / list / show / tag / close / migrate / help
+        # shellcheck disable=SC1091
+        . "$FRAMEWORK_ROOT/lib/arc.sh"
+        arc_dispatch "$@"
+        exit $?
+        ;;
     cron)
         # T-448: Cron registry management
         cron_subcmd="${1:-}"
