@@ -2605,3 +2605,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-335
+  learning: "fw task create has a race-condition in ID allocation: parallel invocations can pick the same next-T-NNNN. Observed 2026-05-01 filing 5 W10 follow-ups in parallel — got 3×T-1648 + 2×T-1649. Workaround: serialize task creation OR renumber post-hoc by patching id: field + filename. Real fix: lock the ID-allocator in agents/task-create/create-task.sh (likely flock on .tasks/.id-counter or similar). Worth a real bug task."
+  source: P-006
+  task: T-1641
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD
