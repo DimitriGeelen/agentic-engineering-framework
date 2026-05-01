@@ -20,27 +20,41 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+The orchestrator arc (T-1062–T-1066) ships 13 hardcoded routing-policy constants in `/opt/termlink`, every one set silently by the implementing agent — no commit-message rationale, no design-doc cite, no `decisions.yaml` entry, no human consultation. The user's pushback during T-1641 ("nor have i been consulted for routing rules etc") is structurally accurate: the orchestrator encodes ~10 unilateral policy calls. None are runtime-configurable; changing any policy today requires Rust edit + cargo build + reinstall.
+
+T-1641 W08 enumerated the 13 parameters (model fallback chain, bypass/template-cache PROMOTION_THRESHOLDs, FAILURE_THRESHOLD, COOLDOWN, route-cache TTL & CONFIDENCE_THRESHOLD, task_type taxonomy, tag prefix, discovery filter strictness, cost weighting, concurrency cap, success/failure attribution). Source: `docs/reports/T-1641-worker-08-policy-questions.md`.
+
+This inception's job: make all 13 explicit human decisions with recorded rationale, before Arc B (T-1643) wires the framework to depend on them.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- **A1:** All 13 parameters are *policy* choices (subjective, context-dependent), not engineering invariants. Validated — none follow from a derivation; each was a code-author judgment call.
+- **A2:** The cost of leaving these implicit > the cost of consultation. Validated — T-1061 was framed on closing G-015 partly via these defaults; the human flagged the unilateralism explicitly.
+- **A3:** Runtime configurability is feasible via either `routing-policy.yaml` shipped under `/etc/termlink/` or `fw config` keys propagated via env. Both have prior art in the framework. (No spike needed; pick one in implementation tasks.)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+Already complete via T-1641 W08. Artefact: `docs/reports/T-1641-worker-08-policy-questions.md`. Contains: enumerated 13 parameters with current-default + set-by + question-for-human; top-5 surfaced; recommended follow-up filing pattern. No further spike work needed before decision.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- Configurable surface must survive consumer-project upgrades (per `fw upgrade` semantics).
+- Changes must NOT break current callers (default-on, opt-in override).
+- TermLink is machine-wide (per CLAUDE.md TermLink section) — config surface lives in TermLink config or framework `fw config` plumbed via env, not per-project.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:**
+- Surface all 13 routing-policy parameters as explicit human decisions.
+- Capture rationale per parameter in `.context/project/decisions.yaml`.
+- Propose a runtime-configurable surface: pick `routing-policy.yaml` vs `fw config` keys vs `hub.toml`.
+- Produce per-cluster build-task specs (one per cluster, see "Recommendation" below).
+
+**OUT:**
+- Implementing the configurable values (separate per-cluster build tasks — pre-decisioned here, executed there).
+- Cost-aware routing (T-1637 already deferred to `horizon: later`).
+- Multi-LLM fallback policy beyond order/quality (T-1065 owns the routing intelligence).
+- Migration of existing on-disk caches to a new format (separate concern; default is rebuild-on-mismatch per T-1650 proposal).
 
 ## Acceptance Criteria
 
@@ -64,14 +78,17 @@ date_finished: null
 
 ## Go/No-Go Criteria
 
-<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- Human accepts (or overrides) each of the 13 proposed defaults in the Recommendation table.
+- A configurable surface (`routing-policy.yaml` vs `fw config` vs `hub.toml`) is chosen; `decisions.yaml` records the choice.
+- 4 build tasks (B1–B4) are filed on `horizon: now` or `next` per cluster sequencing in the Recommendation.
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- Human decides the orchestrator arc itself should be deprecated (would invalidate the policy decisions before they land).
+- A fundamental restart of routing is preferred over surfacing the existing 13 (would re-litigate W08).
+
+**DEFER if:**
+- Other arcs (T-1653 first-class arcs, or routing redesign) need to settle before policy commitment makes sense — but in that case, freeze the 13 constants where they are and re-surface after settling.
 
 ## Verification
 
@@ -86,15 +103,41 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Every one of these 13 constants is a policy decision masquerading as an engineering default. Leaving them implicit forfeits the framework's auditability promise (D2 directive — Reliability) and blocks Arc B (T-1643) from wiring the framework to depend on stable contracts. The exploration is already done (W08 artefact); what remains is recording 13 explicit decisions and sequencing the build tasks that flip each from constant to config. The cost of doing this now (~1 session of human dialogue + 4 build tasks) is dominated by the cost of *not* doing it (T-1061-class accusations of unilateral design recurring on every routing-related fix).
+
+**Evidence:**
+- W08 enumeration of all 13 parameters with current values, set-by, and per-param question — `docs/reports/T-1641-worker-08-policy-questions.md`
+- T-1641 W02 (review-feedback mining, item N3) confirms these were never consulted in the original review either — `docs/reports/T-1641-worker-02-review-feedback-mining.md`
+- T-1650 proposal to termlink-agent (route_cache `version: u32` field) was accepted in principle — concrete signal that policy/contract changes can land cross-repo.
+- 13 cross-repo fabric cards (`.fabric/components/cross-repo-termlink-*.yaml`) already pin the constant values from the framework side as of T-1652 — moving them from constants to config is a bounded refactor, not a redesign.
+
+**Proposed defaults for human override (each is a separate decision in `decisions.yaml`):**
+
+| # | Parameter | Proposed default | Rationale |
+|---|-----------|------------------|-----------|
+| 1 | task_type taxonomy | **Closed enum** mirroring framework `workflow_type` (build/test/audit/review/inception/specification/design/refactor/decommission) | Avoids silent typos routing to nobody; consistent with the rest of the framework's vocabulary. |
+| 2 | DEFAULT_MODEL_FALLBACK | **`[opus-4-7, sonnet-4-6, haiku-4-5]`** quality-first; per-task-type override allowed in v2 | Quality-first matches current default behaviour; cost-awareness deferred per T-1637 horizon: later. |
+| 3 | PROMOTION_THRESHOLD (bypass) | **5 successes / 0 failures** keep current; emit warning when promoted | 5 is calibration-by-feel; keep until we have RouteCache hit-rate data to recalibrate. Warning gives audit trail. |
+| 4 | PROMOTION_THRESHOLD (template_cache) | **Diverge** — 3 successes for template-cache vs 5 for bypass | Template caching is a reversible perf opt; bypass skips orchestration entirely. Different stakes, different bars. |
+| 5 | FAILURE_THRESHOLD (circuit) | **3 consecutive** keep current; **add per-model override** | 3 is fine for opus/sonnet; haiku flakes more. Per-model override hedges. |
+| 6 | COOLDOWN (circuit) | **60s linear** keep current; revisit when T-1639 throughput benchmark lands | No data to justify exponential yet. |
+| 7 | DEFAULT_TTL_HOURS (route cache) | **168h (7d)** keep current | Matches a typical work-week cycle; short enough that fleet churn invalidates within bounds. |
+| 8 | CONFIDENCE_THRESHOLD | **0.8** keep current; document operational meaning in `decisions.yaml` | Document, don't change — the 0.8 isn't broken, the missing rationale is. |
+| 9 | task-type tag prefix | **`task-type:`** keep current; reserve `arc:` namespace alongside (per T-1653 if GO) | Already in production; alternative `tt:`/`workflow:` saves bytes but loses readability. |
+| 10 | Discovery filter (no-match) | **Soft preference** (current) keep; add `--strict` flag for fail-closed at call site | Fail-closed by default risks cascading dispatch failures during specialist outages; opt-in strict for tests/CI. |
+| 11 | Cost weighting | **Defer** — T-1637 already at `horizon: later` | Confirmed deferral. |
+| 12 | Concurrency cap | **5 hub-side, 10 client-side** | 5 matches framework sub-agent dispatch protocol; 10 client-side preserves current dispatch caller behaviour. |
+| 13 | Success/failure attribution | **`InfraFailure` does NOT block promotion; `CommandFailure` does** keep current; add `UserAbort` as third class (counts as neither) | Stable boundary needs operator definition. UserAbort case is currently misclassified as failure. |
+
+**Configurable surface:** propose `routing-policy.yaml` shipped at `/opt/termlink/etc/routing-policy.yaml` (TermLink-side), with `fw config` keys plumbed through env for per-project override. Decided in build task, not here.
+
+**Proposed follow-up build tasks (file under `from-T-1642`, on GO):**
+- T-1642-B1: Lift parameters #1–#5 (task_type, fallback, both PROMOTION_THRESHOLDs, FAILURE_THRESHOLD) to `routing-policy.yaml` — cluster: dispatch core
+- T-1642-B2: Lift #6–#8 (COOLDOWN, TTL, CONFIDENCE_THRESHOLD) — cluster: route cache + breaker tunables
+- T-1642-B3: Lift #9–#10 + #12–#13 (tag prefix, discovery filter, concurrency, attribution) — cluster: discovery + dispatch
+- T-1642-B4: `fw config` plumbing (read `routing-policy.yaml` via env, validate on startup) — cluster: framework wiring (overlaps T-1643)
 
 ## Decisions
 

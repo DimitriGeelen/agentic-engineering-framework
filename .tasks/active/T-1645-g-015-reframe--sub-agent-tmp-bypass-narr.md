@@ -20,27 +20,35 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+T-1061 (orchestrator arc) was framed partly on closing **G-015** — "Sub-agent results bypass task governance — no structural linking." The original review-feedback artefact W4 (`docs/reports/T-1641-worker-02-review-feedback-mining.md`) explicitly contradicted this framing: sub-agents write their results to `/tmp/fw-agent-*.md` *outside* the PTY scope TermLink observes. **TermLink cannot see those writes**, therefore cannot govern them, therefore cannot structurally close G-015.
+
+T-1641 W02 surfaced this as a "lost observation" — never tasked, never reconciled, but T-1061's stated G-015 benefit remains in the concerns register. This inception decides: narrow the T-1061 claim and refile G-015 as a non-TermLink workstream, or accept the gap stays open as a known tradeoff.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- **A1:** TermLink genuinely cannot observe `/tmp/fw-agent-*.md` writes. Validated — TermLink scope is PTY/socket; `/tmp/` writes use direct filesystem syscalls outside any PTY. (Confirmed by W4 author.)
+- **A2:** Sub-agent governance is achievable via non-TermLink mechanisms. Plausible — `fw bus post`/`fw bus manifest` already provides governed dispatch; FUSE-overlay or strace-hook is a longer path. The framework has partial mitigation today via the dispatch preamble convention (sub-agents write to `/tmp/`, return path; orchestrator integrates).
+- **A3:** Keeping G-015 open while T-1061 advertises closing it is structurally misleading and erodes the gaps register's signal. Validated — the gaps register is consumed by handover and Watchtower; misframed claims compound on every read.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+Already complete via T-1641 W02 (review-feedback mining). Decision-only inception. ~1 session of dialogue + commit.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None. This is a framing/registration decision — no code or config changes.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:**
+- Decide between Option A (narrow T-1061's claim, keep G-015 open) and Option B (open a non-TermLink sub-agent governance workstream).
+- Update `concerns.yaml` G-015 entry to reflect the chosen framing.
+- If Option B: file the companion task (FUSE / strace / framework-side bus enforcement / hook-side gate).
+- If Option A: file a documentation update task to reflect the narrowed scope.
+
+**OUT:**
+- Implementing the non-TermLink workstream (separate build task on Option B).
+- Re-litigating T-1061's G-015 framing in T-1061 itself (T-1061 is shipped; this fixes the *framing*, not the implementation).
 
 ## Acceptance Criteria
 
@@ -64,14 +72,13 @@ date_finished: null
 
 ## Go/No-Go Criteria
 
-<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
-**GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+**GO if (Option A):** Human accepts the narrowing; `concerns.yaml` G-015 → `partial-mitigation` with bus protocol credited; T-1061 episodic updated; companion observation task filed.
 
-**NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+**GO if (Option B):** Human commits 2–3 weeks of build effort to a non-TermLink sub-agent governance mechanism; FUSE/strace/hook spikes are filed.
+
+**NO-GO if:** Human prefers to leave T-1061's G-015 claim as-is. (Strongly not recommended — gaps register integrity matters.)
+
+**DEFER if:** A larger restructuring of the gaps register is in flight that would resolve this naturally.
 
 ## Verification
 
@@ -86,15 +93,24 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO with **Option A** (narrow T-1061's G-015 claim) + a small companion observation task documenting the partial mitigation that already exists.
+
+**Rationale:** TermLink genuinely cannot govern `/tmp/` writes — that's a categorical scope limit, not an implementation gap. Pretending T-1061 closed G-015 is structurally dishonest and erodes the gaps register. Option B (FUSE / strace / framework-side enforcement) is real engineering, ~1–2 weeks, and is not blocked by anything Option A doesn't fix; it can land later if the gap proves operationally painful. Option A costs minutes and removes the misframing immediately.
+
+What's worth recording explicitly: the framework already has *partial* mitigation via the `fw bus post --task T-XXX` protocol (CLAUDE.md "Result Ledger" section), which gives sub-agents a structurally-governed channel that supersedes `/tmp/`. The dispatch preamble (`agents/dispatch/preamble.md`) instructs agents to use `fw bus post` instead of raw `/tmp/` writes. This is enforcement-by-convention, not by hook — but it exists. The honest framing is: G-015 has *partial mitigation* (bus protocol), not *closure* (no PreToolUse hook blocking `/tmp/fw-agent-*` writes).
+
+**Evidence:**
+- W4 ruling: TermLink scope is PTY/socket; `/tmp/` writes are out-of-scope by design — `docs/reports/T-1641-worker-02-review-feedback-mining.md` (item L1, item W4)
+- T-1641 W02 confirms no follow-up workstream exists for sub-agent file-write governance
+- `agents/dispatch/preamble.md` + `fw bus post` provide a partial mitigation path that the gap entry doesn't currently credit
+- T-1061 episodic shows G-015 listed as benefit but never re-tested post-ship
+
+**Concrete actions on GO Option A:**
+1. Update `.context/project/concerns.yaml` G-015 entry: status `watching` → `partial-mitigation`; add `mitigations: [agents/dispatch/preamble.md, fw bus post protocol]`; add `gap_remaining: "no structural enforcement — sub-agents can still write directly to /tmp/ if they ignore the preamble"`.
+2. Update T-1061 episodic (`.context/episodic/T-1061.yaml`) — change "closes G-015" → "partial mitigation for G-015 via bus protocol; does not structurally close".
+3. File a small `horizon: later` observation task: "Consider PreToolUse hook on Write/Bash to redirect `/tmp/fw-agent-*.md` writes through `fw bus post`" — captures Option B as a future workstream without committing to it now.
+
+**If Option B preferred** (less likely): file three sub-tasks — FUSE feasibility spike, strace-hook spike, framework-side `fw bus` enforcement gate. Estimate 2–3 weeks total. NOT recommended unless an operational incident proves the gap matters.
 
 ## Decisions
 

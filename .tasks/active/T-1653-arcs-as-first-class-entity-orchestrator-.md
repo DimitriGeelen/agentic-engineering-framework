@@ -86,15 +86,33 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO Phase 1
+
+**Rationale:** Six explicit user requirements + a partially-shadow-implemented model (umbrella tasks + free-form tags + per-task focus) make this a *refactor*, not a green-field design. Phase 1 MVP is ~4h, fully reversible, no new dependencies. The seven design questions (Q1–Q7) all have low-risk recommended answers — see research artefact `docs/reports/T-1653-arcs-as-first-class.md`. Phase 2 (`/arcs` page, arc-specific CLAUDE.md snippets) can land later or be dropped.
+
+**Evidence:**
+- Six concrete user requirements captured verbatim in the artefact dialogue log (2026-05-01)
+- Existing facilities table shows the gaps are small: namespace convention for tags, arc-level focus state, prompt-injection line, landing-page section, `/tasks?arc=` filter chip
+- Migration scope is one arc (`orchestrator-rethink`, seeded from T-1641's related_tasks) — proving the shape before generalising
+
+**Phase 1 MVP scope (~4h):**
+
+1. **Data model:** `.context/arcs/<arc-id>.yaml` with `id, name, description, status (in-progress|closed|abandoned), anchor_task, constituent_tasks: [], created, closed_at, decision`.
+2. **CLI:** `bin/fw arc {create|focus|list|show|close|tag}` (7 verbs, ~150 lines bash).
+3. **Tag namespace:** canonical `arc:<arc-id>`; legacy `from-T-XXXX` stays one release as alias.
+4. **Prompt injection:** extend `agents/handover/handover.sh` to add `## Current Arc` line; SessionStart resume picks it up.
+5. **Watchtower:** "Arcs in flight" section on landing page above active tasks; `/tasks?arc=<id>` filter chip with discoverable arc list.
+6. **Migration:** auto-create `orchestrator-rethink` arc from T-1641, seed `constituent_tasks` from T-1641/T-1644 `related_tasks`.
+
+**Out of MVP scope (Phase 2, file separately if/when needed):** dedicated `/arcs` page (replaces `/orchestrator`); arc-specific CLAUDE.md snippets; multi-arc focus stack (rejected — start single).
+
+**Full design artefact** (Q1–Q7 alternatives matrix, rejected options, dialogue log): `docs/reports/T-1653-arcs-as-first-class.md`
+
+**Decision options:**
+1. **GO Phase 1** — proceed with MVP as described
+2. **GO with modifications** — adjust any of Q1–Q7 first (see artefact)
+3. **NO-GO** — keep arcs implicit; iterate `/orchestrator` differently
+4. **DEFER** — interesting, not now
 
 ## Decisions
 
