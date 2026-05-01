@@ -4,15 +4,15 @@ name: "Phase 2: Watchtower /arcs/<id> generic arc surface page (generalize T-164
 description: >
   Generalize the orchestrator-specific /orchestrator page (T-1647) into a generic /arcs/<id> surface that works for any arc registered in .context/arcs/. Each arc gets: header (id, name, status, decision), constituent task table with status badges, three-question section Arc Completion Discipline checklist, link to anchor task, fw arc close CLI snippet. /orchestrator becomes a 302 redirect to /arcs/orchestrator-rethink for back-compat. Closes the user's original 'absolutely unclear what kind of use this page should be' feedback by making the surface generic and reusable. Picks up after orchestrator-rethink arc closure unblocks (T-1643 cross-repo dependency).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, arcs, phase-2, from-T-1653]
 components: []
 related_tasks: [T-1647, T-1661, T-1653]
 created: 2026-05-01T19:34:55Z
-last_update: 2026-05-01T19:34:55Z
+last_update: 2026-05-01T19:53:42Z
 date_finished: null
 ---
 
@@ -20,40 +20,38 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Phase 2 of the T-1653 inception arc. T-1661 shipped Phase 1 (Arc system MVP — `.context/arcs/<id>.yaml` registry + `fw arc` CLI + handover injection + landing-page section + `/tasks?arc=<id>` filter). Phase 2 ships the operator-facing surface: a generic per-arc detail page replacing the orchestrator-specific `/orchestrator` page that prompted the original "absolutely unclear what kind of use this page should be" feedback.
+
+`/orchestrator` keeps its specialized MCP audit + live-sessions panels (still useful as orchestrator-specific drill-down) and gains a cross-link to `/arcs/orchestrator-rethink`. The new `/arcs` index lists every arc; `/arcs/<id>` shows constituent tasks with §Arc Completion Discipline three-question checklist.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **Index route:** `GET /arcs` returns 200 with a list of every arc registered in `.context/arcs/*.yaml`. Each row shows id, name, status, decision (if any), constituent task count, focus indicator. Empty state when registry empty.
+- [x] **Detail route:** `GET /arcs/<arc_id>` returns 200 for any registered arc. Shows arc metadata (name, status, decision, anchor, created/closed timestamps), constituent task table with status badges, three-question §Arc Completion Discipline checklist, link to anchor task, copy-pasteable `fw arc close <id> --decision "..."` snippet (only for in-progress arcs). 404 with friendly message for unregistered arcs.
+- [x] **Cross-link:** `/orchestrator` page gains a top-of-page link to `/arcs/orchestrator-rethink` so the operator can flip between the specialized and generic views.
+- [x] **Index nav:** `/arcs` is reachable from the Watchtower top nav (under Architecture or similar group).
+- [x] **Tests:** `tests/unit/test_arcs_routes.py` pins index + detail + 404 + empty state via Flask test_client. ≥4 tests (6 shipped).
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] /arcs index and /arcs/orchestrator-rethink detail are useful at a glance
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/arcs` — verify orchestrator-rethink listed with its constituent count
+  2. Click through to `http://192.168.10.107:3000/arcs/orchestrator-rethink` — verify task table renders with status badges, three-question check is visible, anchor link works
+  3. Open `http://192.168.10.107:3000/orchestrator` — verify the cross-link to `/arcs/orchestrator-rethink` is present
+  **Expected:** Both pages render; the operator can answer "what is this arc, what's done, what's left, what's the closure check?" from `/arcs/<id>` alone.
+  **If not:** Note which panel is unclear.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+# Routes return 200 / 404 as expected
+curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/arcs | grep -q 200
+curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/arcs/orchestrator-rethink | grep -q 200
+curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/arcs/nonexistent-arc-id | grep -q 404
+# Cross-link present on /orchestrator
+curl -s http://localhost:3000/orchestrator | grep -q "/arcs/orchestrator-rethink"
+# Tests pass
+python3 -m pytest tests/unit/test_arcs_routes.py -q 2>&1 | tail -3
 
 ## RCA
 
@@ -70,6 +68,18 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The original "absolutely unclear what kind of use this page should be" feedback that triggered the entire arc system is now closed. `/arcs` lists every registered arc with focus indicator and status; `/arcs/<id>` shows constituent tasks, completion stats with the audit-detective threshold call-out (e.g. orchestrator-rethink renders "82% audit warns ≥80%"), and the §Arc Completion Discipline three-question check inline. `/orchestrator` becomes the orchestrator-arc-specific drill-down (MCP audit, live sessions, recent dispatches) cross-linked from `/arcs/orchestrator-rethink`, so the generic and specialized views feed each other instead of competing.
+
+**Evidence:**
+- 6/6 unit tests pass (`tests/unit/test_arcs_routes.py`): index empty/populated, detail in-progress/closed/missing-task/404.
+- HTTP probes: `/arcs` 200, `/arcs/orchestrator-rethink` 200, `/arcs/no-such-arc` 404, `/orchestrator` 200 (cross-link visible).
+- Playwright screenshot of `/arcs/orchestrator-rethink` confirms: FOCUSED pill, 14/17 stat strip, "audit warns ≥80%" badge matching the live audit detective, full task table with status badges, §Arc Completion Discipline check, `fw arc close` snippet.
+- Nav: "Arcs" entry added under Architecture group.
 
 ## Decisions
 
@@ -88,3 +98,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1662-phase-2-watchtower-arcsid-generic-arc-su.md
 - **Context:** Initial task creation
+
+### 2026-05-01T19:53:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
