@@ -97,6 +97,7 @@ NAV_GROUPS = [
         ("Directives",    "core.directives",                       None),
         ("Enforcement",   "enforcement.enforcement_dashboard",     None),
         ("Discoveries",   "discoveries_bp.discoveries_dashboard",  None),
+        ("Hooks",         "hooks.hooks_page",                      None),
         ("Risks",         "risks.risk_register",                   None),
         ("Gaps",          "discovery.gaps",                        None),
         ("Quality",       "quality.quality_gate",                  None),

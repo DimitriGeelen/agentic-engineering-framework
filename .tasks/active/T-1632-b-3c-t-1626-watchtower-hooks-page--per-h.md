@@ -4,15 +4,15 @@ name: "B-3c (T-1626): Watchtower /hooks page — per-hook fire/fail rates"
 description: >
   New Watchtower blueprint /hooks reads .hook-counter + .hook-failure-counter (T-1628 telemetry) and displays per-hook table: fires, failures, ratio. Pinned by Playwright DOM-content assertion (T-1575 visual verification rule).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [from-T-1626, B-3c, watchtower, ui]
 components: []
 related_tasks: [T-1626, T-1628, T-1629]
 created: 2026-05-01T07:22:38Z
-last_update: 2026-05-01T07:22:38Z
+last_update: 2026-05-01T09:52:19Z
 date_finished: null
 ---
 
@@ -22,38 +22,46 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+## Context
+
+Surfaces the T-1628 telemetry (and T-1631 threshold-rule state) on a Watchtower page so an operator can see at a glance which hooks are firing, which are failing, and which are over threshold — without grepping `.context/working/`. Closes the visible-evidence half of the T-1626 immune-system loop. Threshold logic delegated to `lib/hook-threshold.py` via subprocess so the rule lives in exactly one place.
+
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `web/blueprints/hooks.py` reads `.hook-counter` and `.hook-failure-counter`, sums duplicate keys defensively, invokes `lib/hook-threshold.py --all` for over-threshold flags, and renders a per-hook table sorted (failing-first, then by descending failures, then name)
+- [x] `web/templates/hooks.html` renders the table with: hook name, fires, failures, ratio %, status badge (FAIL / ok); summary metrics (total hooks, total fires, total failures, failing count, overall ratio); threshold-config display
+- [x] Blueprint registered in `web/blueprints/__init__.py` and added to the `Govern` nav group in `web/shared.py`
+- [x] `tests/playwright/test_hooks_page.py` asserts the page returns 200 and contains the expected DOM elements (page heading, summary card, table headers, at least one row when telemetry exists) — per T-1575 visual verification rule
+- [x] Page renders without 500 when telemetry files don't exist (degraded-empty case — covered by `test_either_table_or_empty_state`)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Page is readable and useful at a glance
+      **Steps:**
+      1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve --port 3000` (in another terminal)
+      2. Open `http://localhost:3000/hooks` in a browser
+      3. Skim: can you tell within 5 seconds which hooks (if any) are unhealthy?
+      **Expected:** failing hooks rise to the top with a visible badge; total counts immediately surface scale
+      **If not:** note what got buried or what was hard to scan
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+python3 -c "from web.blueprints.hooks import bp; print('imports ok')"
+python3 -m py_compile web/blueprints/hooks.py
+PYTHONDONTWRITEBYTECODE=1 FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_hooks_page.py -q
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** /hooks page closes the visible-evidence half of the T-1626 immune-system loop. Operator can now see at a glance which hooks are firing, which are failing, and which are over threshold — without grepping `.context/working/`. Threshold logic is delegated to `lib/hook-threshold.py` (T-1631) so the rule has a single source of truth across audit + register + UI. Sort order surfaces failing hooks at the top.
+
+**Evidence:**
+- Live page returns 200: `curl -sf http://localhost:3000/hooks` succeeds, contains `Hook Telemetry`, `Hooks Tracked`, `Total Fires`, `hooks-summary`, `hooks-table`
+- 6/6 Playwright tests pass — `test_page_returns_200`, `test_page_has_main_heading`, `test_summary_card_block_present`, `test_either_table_or_empty_state`, `test_threshold_info_displays_config`, `test_table_columns_when_present`
+- Empty-state path covered (page renders without 500 when no telemetry exists)
+- Blueprint registered in `web/blueprints/__init__.py:38`; nav entry added to Govern group in `web/shared.py:101`
+- Fabric cards: `web-blueprints-hooks.yaml`, `web-templates-hooks.yaml`, `tests-playwright-test_hooks_page.yaml`
 
 ## RCA
 
@@ -88,3 +96,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1632-b-3c-t-1626-watchtower-hooks-page--per-h.md
 - **Context:** Initial task creation
+
+### 2026-05-01T09:52:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

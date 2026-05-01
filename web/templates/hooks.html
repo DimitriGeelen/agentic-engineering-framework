@@ -1,0 +1,128 @@
+<style>
+    .hooks-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .hooks-summary { grid-template-columns: 1fr 1fr; }
+    }
+    .metric-card { text-align: center; }
+    .metric-card .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .metric-card .metric-label {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .metric-fail { color: #c62828; }
+    .metric-ok { color: #2e7d32; }
+    .badge {
+        display: inline-block;
+        padding: 0.15em 0.55em;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+    .badge-ok { background: #2e7d3222; color: #2e7d32; }
+    .badge-fail { background: #c6282822; color: #c62828; }
+    .hooks-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .hooks-table th {
+        text-align: left;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--pico-muted-color);
+        padding: 0.5rem 0.75rem;
+        border-bottom: 2px solid var(--pico-muted-border-color);
+    }
+    .hooks-table td {
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+        font-size: 0.9rem;
+        font-variant-numeric: tabular-nums;
+    }
+    .hooks-table tr:last-child td { border-bottom: none; }
+    .hooks-table tr.row-fail td { background: #c6282808; }
+    .threshold-info {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        margin-bottom: 1rem;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--pico-muted-color);
+    }
+</style>
+
+<div class="page-header flex-between" id="hooks-page-root">
+    <div>
+        <h1>Hook Telemetry</h1>
+        <p class="muted">Per-hook fire/failure rates from <code>.context/working/.hook-counter</code> + <code>.hook-failure-counter</code> (T-1628). Threshold flags from <code>lib/hook-threshold.py</code> (T-1631).</p>
+    </div>
+</div>
+
+<div class="hooks-summary" id="hooks-summary">
+    <article class="metric-card">
+        <div class="metric-value">{{ total_hooks }}</div>
+        <div class="metric-label">Hooks Tracked</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-value">{{ '{:,}'.format(total_fires) }}</div>
+        <div class="metric-label">Total Fires</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-value {% if total_failures > 0 %}metric-fail{% else %}metric-ok{% endif %}">{{ '{:,}'.format(total_failures) }}</div>
+        <div class="metric-label">Total Failures</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-value {% if failing_count > 0 %}metric-fail{% else %}metric-ok{% endif %}">{{ failing_count }}</div>
+        <div class="metric-label">Over Threshold</div>
+    </article>
+</div>
+
+<p class="threshold-info">
+    Threshold rule: hooks with at least <strong>{{ min_fires }}</strong> fires AND failure ratio &ge; <strong>{{ fail_ratio_pct }}%</strong> are flagged.
+    Overall failure ratio: <strong>{{ overall_ratio }}%</strong>. Override via <code>FW_HOOK_THRESHOLD_MIN_FIRES</code> / <code>FW_HOOK_THRESHOLD_FAIL_RATIO</code>.
+</p>
+
+{% if rows %}
+<article>
+    <table class="hooks-table" id="hooks-table">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Hook</th>
+                <th style="text-align:right">Fires</th>
+                <th style="text-align:right">Failures</th>
+                <th style="text-align:right">Ratio</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr class="{% if row.status == 'FAIL' %}row-fail{% endif %}">
+                <td><span class="badge badge-{{ 'fail' if row.status == 'FAIL' else 'ok' }}">{{ row.status }}</span></td>
+                <td><code>{{ row.name }}</code></td>
+                <td style="text-align:right">{{ '{:,}'.format(row.fires) }}</td>
+                <td style="text-align:right">{{ '{:,}'.format(row.failures) }}</td>
+                <td style="text-align:right">{{ row.ratio_pct }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+{% else %}
+<div class="empty-state" id="hooks-empty">
+    <p>No hook telemetry yet. The counters self-create on the first hook fire — kick a tool call (Read, Edit, Bash, etc.) and reload.</p>
+</div>
+{% endif %}
