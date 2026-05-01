@@ -12,3 +12,38 @@ pending_updates:
   status: pending
   resolved_date: null
   resolution_note: null
+- id: U-002
+  command: 'cd /opt/termlink && $EDITOR crates/termlink-hub/src/route_cache.rs  #
+    add: pub version: u32 field with #[serde(default)]; on load, if version != EXPECTED_VERSION
+    (=1), log warn + return empty RouteCache; bump EXPECTED_VERSION on breaking schema
+    changes'
+  reason: 'T-1650 cross-repo proposal: silent route_cache schema-break → cold cache.
+    Framework already pins schema (tests/unit/test_termlink_route_cache_schema.py,
+    4 pass + 1 deliberate skip awaiting this field). When version field lands upstream,
+    refresh tests/fixtures/termlink-route-cache-schema.json to pin version=1 and remove
+    the skip.'
+  task: T-1650
+  host: 192.168.10.107
+  agent: agent
+  created: '2026-05-01T16:25:17Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null
+- id: U-003
+  command: 'cd /opt/termlink && $EDITOR crates/termlink-hub/src/registry.rs  # in
+    spawn-tag validation: warn (or reject in strict mode) when tag prefix is not in
+    CANONICAL_PREFIXES = [''task-type:'', ''role:'', ''task:'', ''model:'', ''host='',
+    ''project='']. Witness: live audit detects ''task='' (=20) and ''role='' (=1)
+    non-canonical prefix usage in production'
+  reason: 'T-1649 cross-repo proposal: framework Arc C drift defenses include source-side
+    validator. Currently the framework only DETECTS at /orchestrator + via cron audit
+    (agents/audit/orchestrator-mcp-scan.sh). Source validator at spawn time would
+    PREVENT the drift at the moment it occurs. Witness: 21 sessions in ''task=NUM''
+    / ''role=NAME'' format (non-canonical) right now on this hub.'
+  task: T-1649
+  host: 192.168.10.107
+  agent: agent
+  created: '2026-05-01T16:25:26Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null

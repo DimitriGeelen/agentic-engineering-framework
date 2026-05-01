@@ -2612,3 +2612,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-336
+  learning: "TermLink inject delivers raw keystrokes to whatever the target session shell IS. If the target is bash (not Claude Code), prose proposals get typed as commands and rejected ('===: command not found'). Cross-repo agent communication requires a session running an *interactive Claude agent*, not a tagged operator shell. Witness: T-1649/T-1650 proposals injected into termlink-agent (a bash session at /opt/termlink with role=termlink) — 100% lost. Recover via fw pending register. Verify: termlink_agent_ask returns 'no agent.listen handler' if the target isn't a real agent. Pre-flight before injecting prose."
+  source: P-001
+  task: T-1650
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD
