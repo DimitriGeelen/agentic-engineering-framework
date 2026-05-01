@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1633: fw upgrade must work without local-path knowledge — upstream URL + fresh-machine simulation guard
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T10:29:50Z
+# ============================================================================
+
+task_id: T-1633
+task_name: "fw upgrade must work without local-path knowledge — upstream URL + fresh-machine simulation guard"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T10:13:34Z
+completed: 2026-05-01T10:29:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T12:16:10+02:00
+last_commit: 2026-05-01T12:16:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — fw upgrade must work without local-path knowledge
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - "docs/reports/T-1633-fw-upgrade-no-local-path.md"
+  - ".tasks/active/T-1633-fw-upgrade-must-work-without-local-path-.md"
+  - ".tasks/completed/T-1625-pickup-six-framework-level-bugs-surfaced.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T12:16:10"
+    action: "T-1633: file inception — fw upgrade must work without local-path knowledge"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 1
+  files_changed: 4
+  lines_added: 263
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1633-fw-upgrade-must-work-without-local-path-.md
+generated_by: context-agent-hybrid

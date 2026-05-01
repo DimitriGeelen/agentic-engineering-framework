@@ -4,7 +4,7 @@ name: "fw upgrade must work without local-path knowledge — upstream URL + fres
 description: >
   fw upgrade must work without local-path knowledge — upstream URL + fresh-machine simulation guard
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-01T10:13:34Z
-last_update: 2026-05-01T10:13:34Z
-date_finished: null
+last_update: 2026-05-01T10:29:47Z
+date_finished: 2026-05-01T10:29:47Z
 ---
 
 # T-1633: fw upgrade must work without local-path knowledge — upstream URL + fresh-machine simulation guard
@@ -61,15 +61,15 @@ GO decision authorizes filing two implementation build tasks:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -132,9 +132,31 @@ T-1633 closes once both follow-ups are filed.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: A vendored consumer cannot upgrade itself without scavenging the developer's filesystem. The framework's upgrade flow has had an unstated precondition all along — *"the developer's checkout is somewhere on this filesystem"* — that's invisible until a non-developer hits it. T-1542 fixed the crash and shipped a louder dead-end; the user story stayed broken. The fix is structural: replace the local-path assumption with a remote URL, add the missing fresh-machine simulation guard, and codify the rule. Without the simulation guard, we will regenerate this class of failure forever.
+
+**Date**: 2026-05-01T10:29:46Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-01T10:29:46Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** A vendored consumer cannot upgrade itself without scavenging the developer's filesystem. The framework's upgrade flow has had an unstated precondition all along — *"the developer's checkout is somewhere on this filesystem"* — that's invisible until a non-developer hits it. T-1542 fixed the crash and shipped a louder dead-end; the user story stayed broken. The fix is structural: replace the local-path assumption with a remote URL, add the missing fresh-machine simulation guard, and codify the rule. Without the simulation guard, we will regenerate this class of failure forever.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-5be9a7ad
+- **Timestamp:** 2026-05-01T10:29:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-01T10:29:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
