@@ -88,3 +88,30 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1639-termlink-throughput-benchmark-for-govern.md
 - **Context:** Initial task creation
+
+## Scoping Note (added 2026-05-01 by T-1638 closure)
+
+The TermLink project has NO existing benchmarks (`find -name benches` returns
+nothing; no `[[bench]]` entries in any Cargo.toml; no criterion dep). Adding
+this benchmark is therefore the FIRST bench in the project, which is a
+project-level decision, not a one-shot dispatch:
+
+1. **Framework choice:** built-in `#[bench]` (nightly only) vs `criterion`
+   (stable, more featureful, adds dev-dep + ~50 transitive crates).
+2. **Convention:** `crates/termlink-session/benches/` is the natural location
+   per cargo conventions, but the project may want a top-level `benches/` to
+   share infra across crates.
+3. **Wire-up:** dev-dependencies entry + `[[bench]]` table in Cargo.toml.
+
+Recommend a brief inception (or design pass) on the framework/convention
+question before dispatching a build worker. Otherwise the worker will
+either pick framework/convention silently (ungoverned decision) or stall
+on the question.
+
+Suggested split:
+- **T-1639a (inception):** "Pick benchmark framework + harness convention
+  for TermLink." Output: a 1-page note in `docs/decisions/` capturing the
+  choice + rationale.
+- **T-1639b (build):** the actual throughput benchmark, post-decision.
+
+Captured horizon: later for now. Promote to `now` after the inception lands.
