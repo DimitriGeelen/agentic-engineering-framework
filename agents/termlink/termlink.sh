@@ -83,7 +83,11 @@ cmd_spawn() {
     # timing, and wait-for-registration natively. (GH #9: the old code
     # reimplemented these primitives and introduced two bugs.)
     local spawn_args=(--name "$name" --wait --wait-timeout 30)
-    [ -n "$task" ] && spawn_args+=(--tags "task=$task")
+    # T-1654: canonical tag prefix is `task:` (colon), per
+    # tests/fixtures/termlink-list-schema.json + T-1649 audit. Older code
+    # produced `task=` (equals) which trips the orchestrator-arc tag-format
+    # drift warning the framework emits against itself.
+    [ -n "$task" ] && spawn_args+=(--tags "task:$task")
     spawn_args+=(--shell)
 
     termlink spawn "${spawn_args[@]}"
