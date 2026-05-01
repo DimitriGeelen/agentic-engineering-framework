@@ -1,0 +1,17 @@
+id: cross-repo:termlink/crates/termlink-hub/src/route_cache.rs
+name: termlink-route-cache
+type: source
+subsystem: orchestrator-arc
+location: /opt/termlink/crates/termlink-hub/src/route_cache.rs
+cross_project: termlink
+cross_repo_url: https://github.com/DimitriGeelen/termlink/blob/master/crates/termlink-hub/src/route_cache.rs
+tags: [orchestrator-arc, routing, persistence, t-1650-target]
+purpose: 'Persistent routing cache — remembers (request-shape → session) mappings across hub restarts. T-1650 schema-pin candidate. Composite key currently mixes task-type + role + tags; refactor to RoutingKey newtype tracked by T-1636.'
+depends_on: []
+depended_by:
+- target: cross-repo:termlink/crates/termlink-hub/src/router.rs
+  type: called_by
+related_tasks: [T-1641, T-1644, T-1650, T-1636]
+last_verified: '2026-05-01'
+created_by: T-1652
+last_enriched: '2026-05-01'

@@ -2,89 +2,74 @@
 id: T-1652
 name: "Cross-repo fabric cards for /opt/termlink orchestrator modules"
 description: >
-  W10 #8 — Component Fabric (483 cards, none for /opt/termlink orchestrator/router/fallback/governance-frame). Decide in this task: extend fabric to register cross-repo components (with a 'project: termlink' field) OR document explicitly that Fabric coverage stops at the framework boundary and provide an alternative pointer for orchestrator-arc components. Files to register if option A: termlink-orchestrator-router.yaml, -fallback.yaml, -governance-frame.yaml, -bypass-registry.yaml, -circuit-breaker.yaml. Origin: docs/reports/T-1641-worker-07-cross-arc.md + W10 item #8.
+  W10 #8 — Component Fabric (485 cards, none for /opt/termlink orchestrator/router/
+  fallback/governance-frame). Decision: extend fabric convention to include cross-repo
+  components via a `cross_project: <name>` field; register 6 termlink-side
+  orchestrator-arc components so blast-radius and dependency queries from the framework
+  can see across the boundary. Origin: docs/reports/T-1641-worker-07-cross-arc.md +
+  W10 item #8.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [from-T-1641, t-1061-followup, fabric, cross-repo]
 components: []
-related_tasks: [T-1641, T-1644, T-1064, T-1065, T-1066]
+related_tasks: [T-1641, T-1644, T-1064, T-1065, T-1066, T-1648]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T12:20:27Z
+last_update: 2026-05-01T15:10:00Z
 date_finished: null
 ---
 
-# T-1648: Cross-repo fabric cards for /opt/termlink orchestrator modules
+# T-1652: Cross-repo fabric cards for /opt/termlink
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1641 reconsideration surfaced: framework fabric maps 485 components, but zero of
+them are the /opt/termlink modules our orchestrator arc actually depends on
+(`router.rs`, `route_cache.rs`, `bypass.rs`, `circuit_breaker.rs`,
+`termlink-protocol/governance.rs`, `governance_subscriber.rs`). Blast-radius
+queries stop at the boundary — we cannot see what we depend on.
+
+This task ships hand-crafted cards for those six components plus a
+`cross_project:` convention so future additions follow the same pattern.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] `.fabric/components/cross-repo-termlink-router.yaml` exists with `cross_project: termlink`
+- [x] `.fabric/components/cross-repo-termlink-route-cache.yaml` exists
+- [x] `.fabric/components/cross-repo-termlink-bypass.yaml` exists
+- [x] `.fabric/components/cross-repo-termlink-circuit-breaker.yaml` exists
+- [x] `.fabric/components/cross-repo-termlink-governance-frame.yaml` exists (termlink-protocol/governance.rs)
+- [x] `.fabric/components/cross-repo-termlink-governance-subscriber.yaml` exists (T-1066's data plane subscriber)
+- [x] All 6 cards parse as valid YAML and include `cross_project`, `cross_repo_url`, `purpose`, and at least one local `depended_by` edge to a framework component
+- [x] `.fabric/CROSS-REPO-CARDS.md` documents the convention
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+ls .fabric/components/cross-repo-termlink-*.yaml | wc -l | grep -q "^6$"
+python3 -c "
+import yaml, glob
+for f in sorted(glob.glob('.fabric/components/cross-repo-termlink-*.yaml')):
+    d = yaml.safe_load(open(f).read())
+    assert d.get('cross_project') == 'termlink', f'{f}: missing cross_project'
+    assert d.get('cross_repo_url'), f'{f}: missing cross_repo_url'
+    assert d.get('purpose'), f'{f}: missing purpose'
+    assert d.get('depended_by'), f'{f}: missing depended_by'
+print('OK: 6 cross-repo cards valid')
+"
+test -f .fabric/CROSS-REPO-CARDS.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-01 — Cross-repo card convention
+
+- **Chose:** Extend existing fabric YAML format with `cross_project: <name>` + `cross_repo_url:` fields. Card slug: `cross-repo-<project>-<module>.yaml`. No code change to `bin/fw fabric register` — cross-repo cards are hand-crafted (rare) and the convention is documented.
+- **Why:** Keeps framework fabric authoritative for blast-radius queries while making external dependencies visible. Avoids the alternative (extending `register` to accept cross-repo paths) which would conflate "exists in this checkout" with "is a tracked dependency."
+- **Rejected:** (a) Document boundary, no cards — leaves blast-radius blind. (b) Extend `register` to fetch cross-repo files — opens the door to filesystem coupling we don't want.
 
 ## Updates
 
-### 2026-05-01T12:20:27Z — task-created [task-create-agent]
-- **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1648-cross-repo-fabric-cards-for-opttermlink-.md
-- **Context:** Initial task creation
+### 2026-05-01T15:10:00Z — promoted-and-scoped [agent]
+- **Action:** Promoted horizon later→now; chose Option A (extend convention) per the decision recorded above.

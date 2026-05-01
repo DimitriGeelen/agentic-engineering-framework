@@ -1,0 +1,25 @@
+id: cross-repo:termlink/crates/termlink-hub/src/router.rs
+name: termlink-router
+type: source
+subsystem: orchestrator-arc
+location: /opt/termlink/crates/termlink-hub/src/router.rs
+cross_project: termlink
+cross_repo_url: https://github.com/DimitriGeelen/termlink/blob/master/crates/termlink-hub/src/router.rs
+tags: [orchestrator-arc, routing, t-1064-target]
+purpose: 'Hub-side request router. Selects target session for incoming RPC by tag affinity, role, and routing-cache hit. Hardcodes 13 routing-policy constants surfaced by W08 (DEFAULT_MODEL_FALLBACK, PROMOTION_THRESHOLD=5, FAILURE_THRESHOLD=3, COOLDOWN=60s, etc.). Arc A (T-1642) policy-consultation target.'
+depends_on:
+- target: cross-repo:termlink/crates/termlink-hub/src/route_cache.rs
+  type: calls
+- target: cross-repo:termlink/crates/termlink-hub/src/circuit_breaker.rs
+  type: calls
+- target: cross-repo:termlink/crates/termlink-hub/src/bypass.rs
+  type: calls
+depended_by:
+- target: web/blueprints/orchestrator.py
+  type: surfaced_by
+- target: agents/audit/orchestrator-mcp-scan.sh
+  type: audited_by
+related_tasks: [T-1641, T-1642, T-1064, T-1644]
+last_verified: '2026-05-01'
+created_by: T-1652
+last_enriched: '2026-05-01'

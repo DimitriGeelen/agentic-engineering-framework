@@ -1,0 +1,17 @@
+id: cross-repo:termlink/crates/termlink-hub/src/circuit_breaker.rs
+name: termlink-circuit-breaker
+type: source
+subsystem: orchestrator-arc
+location: /opt/termlink/crates/termlink-hub/src/circuit_breaker.rs
+cross_project: termlink
+cross_repo_url: https://github.com/DimitriGeelen/termlink/blob/master/crates/termlink-hub/src/circuit_breaker.rs
+tags: [orchestrator-arc, resilience, circuit-breaker]
+purpose: 'Per-target circuit breaker — N failures in window opens the breaker and routes elsewhere; cooldown then half-open. FAILURE_THRESHOLD=3, COOLDOWN=60s hardcoded. T-1642 (Arc A) consults whether these are production-realistic.'
+depends_on: []
+depended_by:
+- target: cross-repo:termlink/crates/termlink-hub/src/router.rs
+  type: called_by
+related_tasks: [T-1641, T-1642, T-1644]
+last_verified: '2026-05-01'
+created_by: T-1652
+last_enriched: '2026-05-01'

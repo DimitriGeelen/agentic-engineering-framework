@@ -1,0 +1,21 @@
+id: cross-repo:termlink/crates/termlink-session/src/governance_subscriber.rs
+name: termlink-governance-subscriber
+type: source
+subsystem: orchestrator-arc
+location: /opt/termlink/crates/termlink-session/src/governance_subscriber.rs
+cross_project: termlink
+cross_repo_url: https://github.com/DimitriGeelen/termlink/blob/master/crates/termlink-session/src/governance_subscriber.rs
+tags: [orchestrator-arc, data-plane, subscriber, t-1066, post-hoc-detection]
+purpose: 'T-1066 data plane governance subscriber — watches PTY Output frames asynchronously, emits Governance frames (0x8) on pattern match. Opt-in, non-blocking, bounded queue. Reconsideration finding: run_with_governance has zero non-test callers; subscriber is wired but unused.'
+depends_on:
+- target: cross-repo:termlink/crates/termlink-protocol/src/governance.rs
+  type: emits
+depended_by:
+- target: web/blueprints/orchestrator.py
+  type: surfaced_by
+- target: agents/audit/orchestrator-mcp-scan.sh
+  type: tracked_by
+related_tasks: [T-1641, T-1066, T-1639, T-1644]
+last_verified: '2026-05-01'
+created_by: T-1652
+last_enriched: '2026-05-01'

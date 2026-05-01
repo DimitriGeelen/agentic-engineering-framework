@@ -1,0 +1,17 @@
+id: cross-repo:termlink/crates/termlink-hub/src/bypass.rs
+name: termlink-bypass
+type: source
+subsystem: orchestrator-arc
+location: /opt/termlink/crates/termlink-hub/src/bypass.rs
+cross_project: termlink
+cross_repo_url: https://github.com/DimitriGeelen/termlink/blob/master/crates/termlink-hub/src/bypass.rs
+tags: [orchestrator-arc, routing, bypass, promotion]
+purpose: 'Bypass registry — N consecutive successful direct-routes promote a (caller, target) pair to bypass-cache (skip router). PROMOTION_THRESHOLD=5 hardcoded; T-1642 (Arc A) consults the human on whether 5 is the right bar.'
+depends_on: []
+depended_by:
+- target: cross-repo:termlink/crates/termlink-hub/src/router.rs
+  type: called_by
+related_tasks: [T-1641, T-1642, T-1644]
+last_verified: '2026-05-01'
+created_by: T-1652
+last_enriched: '2026-05-01'
