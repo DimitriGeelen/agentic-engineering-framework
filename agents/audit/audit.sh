@@ -3202,6 +3202,51 @@ echo ""
 fi # end deployment
 
 # ============================================
+# ORCHESTRATOR ARC CHECKS (T-1646 — drift defense for MCP-tool task_id enforcement)
+# Origin: T-1641 W10. Probes /opt/termlink, classifies MCP tools, surfaces drift.
+# ============================================
+if should_run_section "orchestrator"; then
+echo "=== ORCHESTRATOR ARC CHECKS ==="
+
+ORCH_SCRIPT="$FRAMEWORK_ROOT/agents/audit/orchestrator-mcp-scan.sh"
+ORCH_LATEST="$CONTEXT_DIR/audits/orchestrator-LATEST.yaml"
+
+if [ ! -x "$ORCH_SCRIPT" ]; then
+    warn "Orchestrator scan: $ORCH_SCRIPT not executable" \
+         "$ORCH_SCRIPT missing or not +x" \
+         "chmod +x $ORCH_SCRIPT"
+elif ! [ -d "${FW_TERMLINK_REPO:-/opt/termlink}/crates/termlink-mcp/src" ] && ! command -v termlink >/dev/null 2>&1; then
+    info "Orchestrator scan: skipped — TermLink repo unreachable on this host"
+else
+    if bash "$ORCH_SCRIPT" >/dev/null 2>&1; then
+        ORCH_STATUS=$(grep -oE '^status: [a-z]+' "$ORCH_LATEST" 2>/dev/null | awk '{print $2}')
+        ORCH_GATED=$(grep -oE '^gated_current: [0-9]+' "$ORCH_LATEST" 2>/dev/null | awk '{print $2}')
+        ORCH_TOTAL=$(grep -oE '^current_count: [0-9]+' "$ORCH_LATEST" 2>/dev/null | awk '{print $2}')
+        pass "Orchestrator-arc MCP scan: $ORCH_STATUS — $ORCH_GATED/$ORCH_TOTAL tools gated"
+    else
+        ORCH_EXIT=$?
+        if [ "$ORCH_EXIT" = "1" ]; then
+            ORCH_WARNS=$(awk '/^warnings:/{flag=1; next} /^errors:/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
+            warn "Orchestrator-arc MCP scan: drift detected" \
+                 "${ORCH_WARNS:-see $ORCH_LATEST}" \
+                 "Update .context/audits/orchestrator-mcp-baseline.yaml or investigate ratchet/new-tool"
+        elif [ "$ORCH_EXIT" = "2" ]; then
+            ORCH_ERRS=$(awk '/^errors:/{flag=1; next} /^[a-z]/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
+            fail "Orchestrator-arc MCP scan: regression — gated tool lost its check_task_governance" \
+                 "${ORCH_ERRS:-see $ORCH_LATEST}" \
+                 "Restore the gate or update baseline if removal was intentional (commit body must explain)"
+        else
+            warn "Orchestrator-arc MCP scan: probe failed (exit $ORCH_EXIT)" \
+                 "Cannot reach /opt/termlink via direct read or termlink interact" \
+                 "Check FW_TERMLINK_REPO and TermLink session availability"
+        fi
+    fi
+fi
+
+echo ""
+fi # end orchestrator
+
+# ============================================
 # SUMMARY (always runs)
 # ============================================
 echo "=== SUMMARY ==="

@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1646: MCP-tool task_id enforcement audit — agents/audit/orchestrator-mcp-scan.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T12:12:58Z
+# ============================================================================
+
+task_id: T-1646
+task_name: "MCP-tool task_id enforcement audit — agents/audit/orchestrator-mcp-scan.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T12:04:15Z
+completed: 2026-05-01T12:12:54Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`.context/audits/orchestrator-mcp-baseline.yaml` exists with classification of all 75 MCP tools (4 gated + 29 mutators_ungated + 42 readonly_exempt = 75) and counts verify via `python3 -c \"import yaml; d=yaml.safe_load(open('.context/audits/orchestrator-mcp-baseline.yaml')); assert len(d['gated']['tools'])+len(d['mutators_ungated']['tools'])+len(d['readonly_exempt']['tools'])==d['baseline_count']==75\"`"
+  - "`agents/audit/orchestrator-mcp-scan.sh` exists, executable, exits 0 against the live /opt/termlink baseline (`bash agents/audit/orchestrator-mcp-scan.sh; test $? -eq 0`)"
+  - "Audit script writes `.context/audits/orchestrator-LATEST.yaml` with status, counts, and findings (file exists after run, contains `status:` key, contains `gated_current:` key)"
+  - "Audit script integrated into `agents/audit/audit.sh` so `bin/fw audit` includes it (grep for `orchestrator-mcp-scan` in `agents/audit/audit.sh`)"
+  - "T-1166 deprecation status annotated in baseline for tools migrated to `channel.*` (termlink_broadcast, termlink_inbox_*, etc.) — comment explains they are deprecated-but-present"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1641, t-1061-followup, drift-defense, audit, termlink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1646-mcp-tool-taskid-enforcement-audit--agent.md
+generated_by: context-agent-hybrid

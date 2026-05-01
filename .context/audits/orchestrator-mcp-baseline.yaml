@@ -1,0 +1,113 @@
+# MCP-tool task_id enforcement baseline
+# T-1646 (Arc C drift defense from T-1641)
+# Source of truth for orchestrator-mcp-scan.sh
+#
+# Categories:
+#   gated            — MUST call check_task_governance() — mutators that already do
+#   mutators_ungated — Mutators with side effects that SHOULD gate but currently don't (ratchet target)
+#   readonly_exempt  — Passive/read-only tools — gating optional
+#
+# Drift detection rules:
+#   1. Any tool listed under `gated` losing its check_task_governance call → FAIL
+#   2. Any tool in `mutators_ungated` GAINING a check_task_governance call → CONGRATS, move it to `gated` and update baseline (ratchet)
+#   3. New tool not in any list → WARN, requires manual classification
+#   4. `gated` count must not drop below baseline_count
+#
+# Source code reference: /opt/termlink/crates/termlink-mcp/src/tools.rs
+# Provenance: snapshot 2026-05-01 from T-1641 W03 + this scan.
+
+baseline_count: 75
+last_verified: 2026-05-01
+
+gated:
+  description: "Enforces check_task_governance() — TERMLINK_TASK_GOVERNANCE=1 requires task_id"
+  count: 4
+  tools:
+    - termlink_exec
+    - termlink_spawn
+    - termlink_interact
+    - termlink_dispatch
+
+mutators_ungated:
+  description: |
+    Tools with side effects that bypass governance. Gating-target list — every entry
+    here is a candidate for moving to `gated` (handled by T-1643/Arc B framework wiring
+    + /opt/termlink-side handler edits). FAIL if list grows; ratchet down as items move.
+  count: 29
+  tools:
+    - termlink_inject              # PTY write → executes commands
+    - termlink_run                 # ephemeral exec
+    - termlink_signal              # SIGTERM/etc. on processes
+    - termlink_remote_exec         # cross-machine exec
+    - termlink_remote_inject       # cross-machine PTY write
+    - termlink_remote_call         # cross-machine RPC
+    - termlink_send                # raw JSON-RPC (broadest blast radius)
+    - termlink_broadcast           # event injection — all sessions; T-1166-deprecated → channel.post(broadcast:global) (T-1403). Do not invest gating effort; remove from baseline when MCP facade goes away.
+    - termlink_emit                # event injection — one session
+    - termlink_emit_to             # event injection — targeted
+    - termlink_tag                 # session metadata mutation
+    - termlink_batch_exec          # mass execution
+    - termlink_batch_run           # mass run
+    - termlink_batch_tag           # mass tag mutation
+    - termlink_clean               # removes session registrations
+    - termlink_kv_set              # KV write; T-1166 candidate (legacy primitive, watch for migration)
+    - termlink_kv_del              # KV delete; T-1166 candidate
+    - termlink_channel_post        # channel write — successor primitive for broadcast/inbox migration
+    - termlink_channel_create      # channel create
+    - termlink_channel_subscribe   # subscription mutation
+    - termlink_inbox_clear         # inbox mutation; T-1166-deprecated (T-1400 migrated callers to channel.list(prefix=inbox:); T-1435 closed last-mile). Facade present, do not gate — slated for removal.
+    - termlink_remote_inbox_clear  # remote inbox mutation; T-1166-deprecated (same arc as inbox_clear)
+    - termlink_file_send           # cross-host file send; T-1166-deprecated (T-1251 file.* legacy + Blob GC successor)
+    - termlink_file_receive        # local file write; T-1166-deprecated (T-1251)
+    - termlink_hub_restart         # hub control
+    - termlink_hub_start           # hub control
+    - termlink_hub_stop            # hub control
+    - termlink_token_create        # auth token mutation
+    - termlink_tofu_clear          # TOFU state mutation
+
+readonly_exempt:
+  description: "Passive/observational — gating optional. Adding new entries here requires an explicit reason in the commit body."
+  count: 42
+  tools:
+    - termlink_ping
+    - termlink_status
+    - termlink_output
+    - termlink_discover
+    - termlink_doctor
+    - termlink_overview
+    - termlink_resize           # local-only PTY size adjust, no exec
+    - termlink_request          # passive read
+    - termlink_wait             # passive event waiter
+    - termlink_info
+    - termlink_topics
+    - termlink_collect
+    - termlink_version
+    - termlink_help
+    - termlink_register         # own-session announcement
+    - termlink_deregister       # own-session deregister
+    - termlink_events
+    - termlink_event_poll
+    - termlink_event_subscribe
+    - termlink_kv_get
+    - termlink_kv_list
+    - termlink_kv_watch
+    - termlink_channel_list
+    - termlink_channel_queue_status
+    - termlink_inbox_list             # T-1166-deprecated (T-1400 migrated to channel.list(prefix=inbox:); T-1435 closed)
+    - termlink_inbox_status           # T-1166-deprecated (same arc)
+    - termlink_remote_inbox_list      # T-1166-deprecated (same arc)
+    - termlink_remote_inbox_status    # T-1166-deprecated (same arc)
+    - termlink_remote_list
+    - termlink_remote_ping
+    - termlink_remote_doctor
+    - termlink_fleet_doctor
+    - termlink_fleet_status
+    - termlink_hub_status
+    - termlink_list_sessions
+    - termlink_net_test
+    - termlink_pty_mode
+    - termlink_dispatch_status
+    - termlink_token_inspect
+    - termlink_tofu_list
+    - termlink_agent_ask
+    - termlink_batch_ping       # benign mass-ping, no exec
