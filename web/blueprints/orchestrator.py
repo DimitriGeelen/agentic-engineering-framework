@@ -1,0 +1,206 @@
+"""T-1647 (W10 #2 of T-1641 Arc C) — Watchtower /orchestrator page.
+
+Surfaces orchestrator-arc state for the operator. Direct response to the
+T-1641 trigger ("absolutely seeing nothing that indicates we are now
+orchestrating"). Three panels:
+
+1. **MCP audit summary** — reads `.context/audits/orchestrator-LATEST.yaml`
+   produced by `agents/audit/orchestrator-mcp-scan.sh` (T-1646). Shows
+   gated/total counts, drift findings, last-run timestamp.
+
+2. **Live sessions** — parses `termlink list --json` for session task-type,
+   role, model, and task tags. Per-task-type aggregation. Cleanly degrades
+   when TermLink is not running.
+
+3. **Reconsideration arc** — cross-link panel to T-1641 artefact and the
+   four follow-up arcs (T-1642/T-1643/T-1644/T-1645) so the reviewer can
+   navigate the open work.
+
+Data sources:
+- `.context/audits/orchestrator-LATEST.yaml` (T-1646)
+- `termlink list --json` (subprocess; bounded timeout; degrades on failure)
+- `.tasks/active/T-1641-*.md`, T-1642/3/4/5 — task-file metadata
+"""
+
+import json
+import re
+import subprocess
+from collections import Counter
+from pathlib import Path
+
+import yaml
+from flask import Blueprint
+
+from web.shared import PROJECT_ROOT, render_page
+
+bp = Blueprint("orchestrator", __name__)
+
+
+_FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
+_TAG_PREFIXES = ("task-type:", "role:", "task:", "model:", "host=", "project=")
+
+
+def _read_audit() -> dict:
+    """Parse the latest MCP audit; return {} if missing."""
+    path = PROJECT_ROOT / ".context" / "audits" / "orchestrator-LATEST.yaml"
+    if not path.is_file():
+        return {}
+    try:
+        return yaml.safe_load(path.read_text()) or {}
+    except (yaml.YAMLError, OSError):
+        return {}
+
+
+def _read_baseline() -> dict:
+    """Parse the MCP baseline classification; return {} if missing."""
+    path = PROJECT_ROOT / ".context" / "audits" / "orchestrator-mcp-baseline.yaml"
+    if not path.is_file():
+        return {}
+    try:
+        return yaml.safe_load(path.read_text()) or {}
+    except (yaml.YAMLError, OSError):
+        return {}
+
+
+def _termlink_sessions() -> tuple[list[dict], str | None]:
+    """Return (sessions, error). Bounded subprocess; degrades on failure."""
+    try:
+        proc = subprocess.run(
+            ["termlink", "list", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=4,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError) as exc:
+        return [], f"TermLink unreachable: {type(exc).__name__}"
+    if proc.returncode != 0:
+        return [], f"termlink list exited {proc.returncode}"
+    try:
+        data = json.loads(proc.stdout or "{}")
+    except json.JSONDecodeError as exc:
+        return [], f"json parse: {exc}"
+    return data.get("sessions", []) or [], None
+
+
+def _split_tags(session: dict) -> dict[str, list[str]]:
+    """Parse session.tags string ('a=1,b=2,task-type:build') into prefix-grouped lists."""
+    raw = session.get("tags") or ""
+    if isinstance(raw, list):
+        items = [str(t) for t in raw]
+    else:
+        items = [t.strip() for t in str(raw).split(",") if t.strip()]
+    grouped: dict[str, list[str]] = {p: [] for p in _TAG_PREFIXES}
+    other: list[str] = []
+    for item in items:
+        matched = False
+        for prefix in _TAG_PREFIXES:
+            if item.startswith(prefix):
+                grouped[prefix].append(item[len(prefix):])
+                matched = True
+                break
+        if not matched:
+            other.append(item)
+    grouped["_other"] = other
+    return grouped
+
+
+def _arc_tasks() -> list[dict]:
+    """Surface T-1641 + follow-up arc parents for the cross-link panel."""
+    targets = ["T-1641", "T-1642", "T-1643", "T-1644", "T-1645", "T-1646", "T-1647"]
+    tasks_dir = PROJECT_ROOT / ".tasks"
+    out = []
+    for tid in targets:
+        path = None
+        for sub in ("active", "completed"):
+            for cand in (tasks_dir / sub).glob(f"{tid}-*.md"):
+                path = cand
+                break
+            if path:
+                break
+        if not path:
+            continue
+        try:
+            text = path.read_text()
+        except OSError:
+            continue
+        m = _FRONTMATTER_RE.search(text)
+        if not m:
+            continue
+        try:
+            fm = yaml.safe_load(m.group(1)) or {}
+        except yaml.YAMLError:
+            continue
+        out.append({
+            "id": tid,
+            "name": fm.get("name", "(no name)"),
+            "status": fm.get("status", "?"),
+            "horizon": fm.get("horizon", "?"),
+            "type": fm.get("workflow_type", "?"),
+            "completed": (path.parent.name == "completed"),
+        })
+    return out
+
+
+@bp.route("/orchestrator")
+def orchestrator_page():
+    """Orchestrator-arc state surface (T-1647 / Arc C from T-1641)."""
+    audit = _read_audit()
+    baseline = _read_baseline()
+    sessions, sessions_err = _termlink_sessions()
+
+    # Aggregate sessions by task-type tag
+    task_type_counts: Counter[str] = Counter()
+    role_counts: Counter[str] = Counter()
+    task_counts: Counter[str] = Counter()
+    untagged_sessions = 0
+    session_rows = []
+    for s in sessions:
+        tags = _split_tags(s)
+        tt = tags["task-type:"]
+        if tt:
+            for t in tt:
+                task_type_counts[t] += 1
+        else:
+            untagged_sessions += 1
+        for r in tags["role:"]:
+            role_counts[r] += 1
+        for t in tags["task:"]:
+            task_counts[t] += 1
+        session_rows.append({
+            "id": s.get("id") or "",
+            "name": s.get("name") or "",
+            "state": s.get("state") or "?",
+            "task_types": tt,
+            "roles": tags["role:"],
+            "models": tags["model:"],
+            "tasks": tags["task:"],
+        })
+
+    # Sort: tagged sessions first, then by name
+    session_rows.sort(key=lambda r: (0 if r["task_types"] or r["tasks"] else 1, r["name"]))
+
+    # Audit findings condensed
+    findings = audit.get("findings", {}) if audit else {}
+    has_drift = bool(
+        findings.get("new_unclassified_tools")
+        or findings.get("gate_drop_outs")
+        or findings.get("gate_added_ratchet_candidates")
+        or findings.get("removed_tools")
+    )
+
+    return render_page(
+        "orchestrator.html",
+        page_title="Orchestrator",
+        audit=audit,
+        baseline=baseline,
+        has_drift=has_drift,
+        sessions_total=len(sessions),
+        sessions_err=sessions_err,
+        task_type_counts=sorted(task_type_counts.items(), key=lambda x: (-x[1], x[0])),
+        role_counts=sorted(role_counts.items(), key=lambda x: (-x[1], x[0])),
+        task_counts_total=len(task_counts),
+        untagged_sessions=untagged_sessions,
+        session_rows=session_rows[:50],  # cap render width
+        session_rows_truncated=max(0, len(session_rows) - 50),
+        arc_tasks=_arc_tasks(),
+    )

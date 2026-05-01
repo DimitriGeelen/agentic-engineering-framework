@@ -35,6 +35,7 @@ def register_blueprints(app):
     from web.blueprints.reviewer import bp as reviewer_bp
     from web.blueprints.escalation import bp as escalation_bp
     from web.blueprints.hooks import bp as hooks_bp
+    from web.blueprints.orchestrator import bp as orchestrator_bp
 
     for bp in (
         core_bp, tasks_bp, timeline_bp, discovery_bp, quality_bp,
@@ -42,5 +43,6 @@ def register_blueprints(app):
         risks_bp, fabric_bp, discoveries_bp, docs_bp, settings_bp, cron_bp, api_bp,
         approvals_bp, review_bp, costs_bp, config_bp, terminal_bp, sessions_page_bp,
         prompts_bp, pending_bp, fleet_bp, reviewer_bp, escalation_bp, hooks_bp,
+        orchestrator_bp,
     ):
         app.register_blueprint(bp)

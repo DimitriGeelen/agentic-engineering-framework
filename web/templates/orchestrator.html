@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .orch-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .orch-summary { grid-template-columns: 1fr 1fr; }
+    }
+    .metric-card { text-align: center; }
+    .metric-card .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .metric-card .metric-label {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .metric-fail { color: #c62828; }
+    .metric-warn { color: #e07b00; }
+    .metric-ok { color: #2e7d32; }
+    .badge {
+        display: inline-block;
+        padding: 0.15em 0.55em;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+    .badge-ok { background: #2e7d3222; color: #2e7d32; }
+    .badge-warn { background: #e07b0022; color: #e07b00; }
+    .badge-fail { background: #c6282822; color: #c62828; }
+    .badge-info { background: #1976d222; color: #1976d2; }
+    .orch-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .orch-table th {
+        text-align: left;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--pico-muted-color);
+        padding: 0.5rem 0.75rem;
+        border-bottom: 2px solid var(--pico-muted-border-color);
+    }
+    .orch-table td {
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+        font-size: 0.9rem;
+        font-variant-numeric: tabular-nums;
+    }
+    .orch-table tr:last-child td { border-bottom: none; }
+    .empty-state {
+        text-align: center;
+        padding: 1.5rem;
+        color: var(--pico-muted-color);
+        background: var(--pico-card-background-color);
+        border: 1px dashed var(--pico-muted-border-color);
+        border-radius: 6px;
+    }
+    .arc-card {
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-left: 3px solid var(--pico-muted-border-color);
+        background: var(--pico-card-background-color);
+    }
+    .arc-card.completed { border-left-color: #2e7d32; opacity: 0.75; }
+    .arc-card .arc-meta { font-size: 0.8rem; color: var(--pico-muted-color); }
+    .panel-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) { .panel-grid { grid-template-columns: 1fr; } }
+    .pill { font-size: 0.75rem; background: var(--pico-card-sectioning-background-color); padding: 0.1em 0.5em; border-radius: 3px; margin-right: 0.25em; }
+</style>
+
+<div class="page-header flex-between">
+    <div>
+        <h1>Orchestrator Arc</h1>
+        <p class="muted">Surfaces T-1061 orchestrator substrate state. Direct response to T-1641 trigger
+            (<em>"absolutely seeing nothing that indicates we are now orchestrating"</em>).
+            Sources: <code>.context/audits/orchestrator-LATEST.yaml</code> (T-1646) +
+            <code>termlink list --json</code>.</p>
+    </div>
+</div>
+
+<!-- Audit summary -->
+<h2>MCP Governance Audit</h2>
+{% if audit %}
+<div class="orch-summary">
+    <article class="metric-card">
+        <div class="metric-value">{{ audit.gated_current }} / {{ audit.current_count }}</div>
+        <div class="metric-label">Tools Gated</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-value
+            {% if audit.status == 'pass' %}metric-ok
+            {% elif audit.status == 'warn' %}metric-warn
+            {% else %}metric-fail{% endif %}">
+            {{ audit.status | upper }}
+        </div>
+        <div class="metric-label">Audit Status</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-value">{{ audit.mutators_ungated_baseline }}</div>
+        <div class="metric-label">Mutators Ungated <small>(ratchet target)</small></div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-value" style="font-size:1rem; font-weight:500;">{{ audit.last_run | default('—') }}</div>
+        <div class="metric-label">Last Run</div>
+    </article>
+</div>
+
+{% if has_drift %}
+<details open>
+    <summary><strong class="metric-warn">Drift findings</strong> — manual review</summary>
+    <ul>
+        {% if audit.findings.gate_drop_outs %}
+            <li><strong class="metric-fail">REGRESSION:</strong> tools lost their gate: <code>{{ audit.findings.gate_drop_outs | join(', ') }}</code></li>
+        {% endif %}
+        {% if audit.findings.new_unclassified_tools %}
+            <li><strong class="metric-warn">NEW:</strong> unclassified tools: <code>{{ audit.findings.new_unclassified_tools | join(', ') }}</code></li>
+        {% endif %}
+        {% if audit.findings.gate_added_ratchet_candidates %}
+            <li><strong class="metric-ok">RATCHET:</strong> mutators that gained a gate (move to <code>gated</code> in baseline): <code>{{ audit.findings.gate_added_ratchet_candidates | join(', ') }}</code></li>
+        {% endif %}
+        {% if audit.findings.removed_tools %}
+            <li><span class="badge badge-info">REMOVED</span> tools no longer present (T-1166 deprecation may have completed): <code>{{ audit.findings.removed_tools | join(', ') }}</code></li>
+        {% endif %}
+    </ul>
+</details>
+{% else %}
+<p class="muted"><span class="badge badge-ok">PASS</span> No drift. Baseline <strong>{{ audit.baseline_count }}</strong> tools tracked.</p>
+{% endif %}
+
+<details>
+    <summary>Baseline classification breakdown</summary>
+    <p class="muted">From <code>.context/audits/orchestrator-mcp-baseline.yaml</code>. T-1166 deprecation annotated in YAML comments — facades that will be removed are not gating targets.</p>
+    <ul>
+        <li><strong>Gated ({{ baseline.gated.count if baseline.gated else 0 }}):</strong>
+            {% for t in (baseline.gated.tools if baseline.gated else []) %}<span class="pill"><code>{{ t }}</code></span>{% endfor %}
+        </li>
+        <li><strong>Mutators ungated ({{ baseline.mutators_ungated.count if baseline.mutators_ungated else 0 }}):</strong>
+            {% for t in (baseline.mutators_ungated.tools if baseline.mutators_ungated else []) %}<span class="pill"><code>{{ t }}</code></span>{% endfor %}
+        </li>
+        <li><strong>Read-only exempt ({{ baseline.readonly_exempt.count if baseline.readonly_exempt else 0 }}):</strong> {{ baseline.readonly_exempt.count if baseline.readonly_exempt else 0 }} tools (collapsed)</li>
+    </ul>
+</details>
+{% else %}
+<div class="empty-state">
+    Audit not yet run. <code>bash agents/audit/orchestrator-mcp-scan.sh</code> or
+    <code>bin/fw audit --section orchestrator</code>.
+</div>
+{% endif %}
+
+<!-- Live sessions panel -->
+<h2 style="margin-top:2rem;">Live Sessions <small class="muted">({{ sessions_total }})</small></h2>
+{% if sessions_err %}
+<div class="empty-state">
+    <strong>{{ sessions_err }}</strong>
+    <p class="muted">Make sure the TermLink hub is running locally. Routing/orchestration data is live-only; nothing is cached on this page.</p>
+</div>
+{% elif sessions_total == 0 %}
+<div class="empty-state">No TermLink sessions registered.</div>
+{% else %}
+<div class="panel-grid">
+    <div>
+        <h3>By task-type</h3>
+        {% if task_type_counts %}
+        <table class="orch-table">
+            <thead><tr><th>task-type</th><th>count</th></tr></thead>
+            <tbody>
+                {% for tt, n in task_type_counts %}
+                <tr><td><code>{{ tt }}</code></td><td>{{ n }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            No sessions tagged <code>task-type:&lt;X&gt;</code>.
+            <p class="muted">This is the symptom — orchestrator can route by task-type, but
+                {{ untagged_sessions }} live session(s) carry no such tag.
+                Tracked under <a href="/tasks/T-1643">T-1643 (Arc B — framework wiring)</a>.</p>
+        </div>
+        {% endif %}
+    </div>
+    <div>
+        <h3>By role</h3>
+        {% if role_counts %}
+        <table class="orch-table">
+            <thead><tr><th>role</th><th>count</th></tr></thead>
+            <tbody>
+                {% for r, n in role_counts %}
+                <tr><td><code>{{ r }}</code></td><td>{{ n }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">No sessions tagged <code>role:&lt;X&gt;</code>.</div>
+        {% endif %}
+    </div>
+</div>
+
+<details>
+    <summary>Session table ({{ session_rows | length }}{% if session_rows_truncated %} of {{ sessions_total }}, top 50 shown{% endif %})</summary>
+    <table class="orch-table">
+        <thead>
+            <tr><th>name</th><th>state</th><th>task-type</th><th>role</th><th>model</th><th>task</th></tr>
+        </thead>
+        <tbody>
+            {% for s in session_rows %}
+            <tr>
+                <td><code>{{ s.name }}</code></td>
+                <td>{{ s.state }}</td>
+                <td>{% for t in s.task_types %}<span class="pill"><code>{{ t }}</code></span>{% endfor %}</td>
+                <td>{% for r in s.roles %}<span class="pill"><code>{{ r }}</code></span>{% endfor %}</td>
+                <td>{% for m in s.models %}<span class="pill"><code>{{ m }}</code></span>{% endfor %}</td>
+                <td>{% for t in s.tasks %}<a href="/tasks/{{ t }}" class="pill"><code>{{ t }}</code></a>{% endfor %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</details>
+{% endif %}
+
+<!-- Reconsideration arc panel -->
+<h2 style="margin-top:2rem;">Reconsideration arc</h2>
+<p class="muted">Filed by T-1641 (multi-agent reconsideration of T-1061). Three arcs split the work
+    so reviewers see policy / wiring / drift as distinct decisions, not one mega-arc.</p>
+{% for t in arc_tasks %}
+<article class="arc-card{% if t.completed %} completed{% endif %}">
+    <strong><a href="/tasks/{{ t.id }}">{{ t.id }}</a> — {{ t.name }}</strong>
+    <div class="arc-meta">
+        type: {{ t.type }} ·
+        status:
+        {% if t.completed %}<span class="badge badge-ok">work-completed</span>
+        {% elif t.status == 'started-work' %}<span class="badge badge-info">{{ t.status }}</span>
+        {% else %}<span class="badge badge-warn">{{ t.status }}</span>{% endif %}
+        · horizon: {{ t.horizon }}
+    </div>
+</article>
+{% endfor %}
+
+<p style="margin-top:1.5rem;"><em>Background:</em> <a href="/docs/T-1641-orchestrator-arc-reconsideration">T-1641 reconsideration artefact</a> · <a href="/review/T-1641">/review/T-1641</a> for human decision · 10 worker reports under <code>docs/reports/T-1641-worker-NN-*.md</code>.</p>
+
+{% endblock %}
