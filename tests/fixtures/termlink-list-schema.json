@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "task": "T-1651",
+    "origin": "T-1641 W10 #6 (orchestrator-arc reconsideration)",
+    "purpose": "Pin the session-object key contract that framework consumers depend on. If termlink ever renames or removes one of these keys, this contract test fails — preventing the silent-break failure mode W10 surfaced.",
+    "termlink_version_observed": "0.9.0",
+    "captured_at": "2026-05-01"
+  },
+  "top_level_required": ["ok", "sessions"],
+  "session_required_keys": [
+    "id",
+    "display_name",
+    "state",
+    "tags",
+    "roles"
+  ],
+  "session_optional_keys": [
+    "name",
+    "age",
+    "capabilities",
+    "created_at",
+    "heartbeat_at",
+    "metadata",
+    "pid",
+    "socket_path",
+    "uid",
+    "role"
+  ],
+  "consumers": {
+    "id": ["web/blueprints/orchestrator.py", "agents/audit/orchestrator-mcp-scan.sh"],
+    "display_name": ["web/blueprints/orchestrator.py", "agents/audit/orchestrator-mcp-scan.sh"],
+    "name": ["web/blueprints/orchestrator.py", "agents/audit/orchestrator-mcp-scan.sh"],
+    "state": ["web/blueprints/orchestrator.py"],
+    "tags": ["plugins/wezterm/termlink-chrome.lua", "web/blueprints/orchestrator.py", "agents/audit/orchestrator-mcp-scan.sh"],
+    "roles": ["plugins/wezterm/termlink-chrome.lua"],
+    "role": ["plugins/wezterm/termlink-chrome.lua"]
+  },
+  "tag_canonical_prefixes": [
+    "task-type:",
+    "role:",
+    "task:",
+    "model:",
+    "host=",
+    "project="
+  ]
+}

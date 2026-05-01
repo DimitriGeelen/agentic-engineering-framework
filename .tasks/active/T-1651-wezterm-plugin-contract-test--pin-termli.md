@@ -1,90 +1,68 @@
 ---
 id: T-1651
-name: "WezTerm plugin contract test — pin termlink list --json key set"
+name: "TermLink list --json contract test — pin session-object keys consumed by framework"
 description: >
-  W10 #6 — WezTerm Lua plugin (T-1062) consumes termlink list --json; if a key is renamed (e.g. 'tags' → 'labels'), the plugin breaks silently. Build framework-side test in tests/unit/: shared JSON-schema file in plugins/wezterm/expected-schema.json; pytest validates that termlink list --json output matches the schema. Or static check: grep the Lua plugin for accessed JSON keys (.tags, .roles, .name, .id), assert each is a documented field. Lighter version: frozen JSON snapshot in tests/fixtures/. Origin: docs/reports/T-1641-worker-10-defenses.md item #6.
+  W10 #6 — WezTerm Lua plugin (T-1062), Watchtower /orchestrator (T-1647), and
+  audit lint (T-1649) all consume `termlink list --json` session objects. If a
+  key is renamed (e.g. 'tags' → 'labels'), all three break silently. Build a
+  framework-side contract test in tests/unit/: shared JSON-schema file in
+  tests/fixtures/termlink-list-schema.json; pytest validates that live
+  `termlink list --json` output matches the required-key set. Skips gracefully
+  when termlink is not installed. Origin: docs/reports/T-1641-worker-10-defenses.md item #6.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
-horizon: later
-tags: [from-T-1641, t-1061-followup, drift-defense, wezterm, framework]
+horizon: now
+tags: [from-T-1641, t-1061-followup, drift-defense, wezterm, framework, contract]
 components: []
-related_tasks: [T-1641, T-1644, T-1062]
+related_tasks: [T-1641, T-1644, T-1062, T-1647, T-1649]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T12:20:27Z
+last_update: 2026-05-01T15:00:00Z
 date_finished: null
 ---
 
-# T-1648: WezTerm plugin contract test — pin termlink list --json key set
+# T-1651: TermLink list --json contract test
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Three framework consumers read `termlink list --json` session objects:
+
+| Consumer | Keys consumed |
+|----------|---------------|
+| `plugins/wezterm/termlink-chrome.lua` | `roles`, `role`, `tags` |
+| `web/blueprints/orchestrator.py` | `id`, `name`, `display_name`, `state`, `tags` |
+| `agents/audit/orchestrator-mcp-scan.sh` (T-1649) | `display_name`, `name`, `id`, `tags` |
+
+Any rename (`tags` → `labels`, `display_name` → `title`, etc.) silently breaks all three. This task pins the contract.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] `tests/fixtures/termlink-list-schema.json` exists with the required + optional key sets
+- [x] `tests/unit/test_termlink_list_contract.py` exists and uses pytest
+- [x] Test calls `termlink list --json`, parses, validates each session has all required keys
+- [x] Test skips gracefully (pytest.skip) when `termlink` binary is unavailable
+- [x] Test passes against current live data on this host
+- [x] Schema documents which framework consumer reads each key (for blame-on-break)
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+test -f tests/fixtures/termlink-list-schema.json
+python3 -c "import json; json.load(open('tests/fixtures/termlink-list-schema.json'))"
+test -f tests/unit/test_termlink_list_contract.py
+python3 -m pytest tests/unit/test_termlink_list_contract.py -v --tb=short
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-01 — Schema scope
+
+- **Chose:** Pin all session-object keys consumed by ANY framework component (WezTerm + orchestrator.py + lint), not just WezTerm.
+- **Why:** The task title says "WezTerm plugin contract" but the contract surface is broader; pinning only WezTerm leaves the other two consumers exposed to silent rename.
+- **Rejected:** WezTerm-only schema — narrower than actual blast radius.
 
 ## Updates
 
-### 2026-05-01T12:20:27Z — task-created [task-create-agent]
-- **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1648-wezterm-plugin-contract-test--pin-termli.md
-- **Context:** Initial task creation
+### 2026-05-01T15:00:00Z — promoted-and-scoped [agent]
+- **Action:** Promoted horizon later→now; expanded scope from WezTerm-only to all framework consumers of termlink list --json.
+- **Context:** Continuing Arc C (T-1644) drift defenses per autonomous-mode directive.
