@@ -73,15 +73,90 @@ fi
 
 CURRENT_GATED=$(probe_gate_calls)
 
+# T-1649: also pull live TermLink sessions for tag-format lint. Bounded; degrades silently.
+probe_sessions_json() {
+  if ! command -v termlink >/dev/null 2>&1; then
+    echo ""
+    return 0
+  fi
+  timeout 4 termlink list --json 2>/dev/null || echo ""
+}
+SESSIONS_JSON=$(probe_sessions_json)
+
 # Run classification in Python (yaml + set ops are easier than bash)
-export CURRENT_TOOLS CURRENT_GATED BASELINE LATEST
+export CURRENT_TOOLS CURRENT_GATED BASELINE LATEST SESSIONS_JSON
 python3 - <<'PYEOF'
-import yaml, sys, datetime, os
+import yaml, sys, datetime, os, json
 
 baseline_path = os.environ['BASELINE']
 latest_path = os.environ['LATEST']
 current_tools = {t for t in os.environ['CURRENT_TOOLS'].splitlines() if t}
 current_gated = {t for t in os.environ['CURRENT_GATED'].splitlines() if t}
+sessions_json = os.environ.get('SESSIONS_JSON', '') or ''
+
+# T-1649: tag-format lint.
+# Canonical orchestrator routing prefixes (mirrors web/blueprints/orchestrator.py
+# _TAG_PREFIXES). When live sessions carry near-misses (wrong separator, typo),
+# orchestrator routing silently falls through to defaults — the W08 / T-1641 symptom.
+CANONICAL_PREFIXES = (
+    "task-type:", "role:", "task:", "model:",  # colon-separated (routing-relevant)
+    "host=", "project=",                        # equals-separated (host metadata)
+)
+# Hard-coded common drifts (cheap heuristic; avoids Levenshtein dependency).
+KNOWN_DRIFT_MAP = {
+    "task=": "task:",
+    "role=": "role:",
+    "model=": "model:",
+    "task-type=": "task-type:",
+    "host:": "host=",
+    "project:": "project=",
+    "tasktype:": "task-type:",
+    "task_type:": "task-type:",
+    "tasktype=": "task-type:",
+    "task_type=": "task-type:",
+}
+
+def _tag_prefix(tag: str) -> str | None:
+    """Extract the prefix (incl. separator) of a tag if it has one; else None."""
+    for sep in (':', '='):
+        if sep in tag:
+            return tag.split(sep, 1)[0] + sep
+    return None
+
+tag_format_warnings = []
+sessions_total = 0
+sessions_err = None
+if sessions_json:
+    try:
+        sessions = json.loads(sessions_json).get('sessions', []) or []
+        sessions_total = len(sessions)
+        from collections import Counter
+        bad_counter: Counter[str] = Counter()
+        sample_sessions: dict[str, list[str]] = {}  # bad_prefix -> [session names]
+        for s in sessions:
+            sname = s.get('display_name') or s.get('name') or s.get('id', '?')
+            for tag in s.get('tags', []) or []:
+                prefix = _tag_prefix(tag)
+                if not prefix:
+                    continue
+                if prefix in CANONICAL_PREFIXES:
+                    continue
+                bad_counter[prefix] += 1
+                sample_sessions.setdefault(prefix, [])
+                if len(sample_sessions[prefix]) < 3 and sname not in sample_sessions[prefix]:
+                    sample_sessions[prefix].append(sname)
+        for bad_prefix, count in sorted(bad_counter.items(), key=lambda x: (-x[1], x[0])):
+            suggestion = KNOWN_DRIFT_MAP.get(bad_prefix)
+            tag_format_warnings.append({
+                'bad': bad_prefix,
+                'count': count,
+                'suggested': suggestion,
+                'sample_sessions': sample_sessions.get(bad_prefix, []),
+            })
+    except (json.JSONDecodeError, ValueError) as exc:
+        sessions_err = f"sessions json parse: {exc}"
+elif not sessions_json:
+    sessions_err = "termlink list unavailable"
 
 with open(baseline_path) as f:
     baseline = yaml.safe_load(f)
@@ -120,6 +195,12 @@ if ratchet_candidates:
 if removed_tools:
     warnings.append(f"REMOVED: {len(removed_tools)} tool(s) gone from /opt/termlink (likely renamed or T-1166 deprecation completed): {', '.join(removed_tools)}")
 
+if tag_format_warnings:
+    drift_summary = ", ".join(f"{w['bad']}({w['count']})" for w in tag_format_warnings)
+    warnings.append(f"TAG-FORMAT-DRIFT: {len(tag_format_warnings)} non-canonical tag prefix(es) in live sessions: {drift_summary}")
+    if exit_code == 0:
+        status = "warn"; exit_code = 1
+
 result = {
     'audit': 'orchestrator-mcp-scan',
     'task': 'T-1646',
@@ -139,7 +220,10 @@ result = {
         'gate_drop_outs': gate_drop_outs,
         'gate_added_ratchet_candidates': ratchet_candidates,
         'removed_tools': removed_tools,
+        'tag_format_warnings': tag_format_warnings,
     },
+    'sessions_scanned': sessions_total,
+    'sessions_probe_error': sessions_err,
     'warnings': warnings,
     'errors': errors,
 }
@@ -152,6 +236,10 @@ print(f"Tools: {len(current_tools)} (baseline {baseline['baseline_count']})")
 print(f"Gated: {len(current_gated)} (baseline {len(bl_gated)})")
 print(f"Mutators ungated (baseline): {len(bl_mutators_ungated)}")
 print(f"Readonly exempt (baseline): {len(bl_readonly)}")
+if sessions_total:
+    print(f"Sessions scanned (tag-lint): {sessions_total}")
+elif sessions_err:
+    print(f"Sessions scanned (tag-lint): SKIPPED ({sessions_err})")
 print()
 for w in warnings:
     print(f"  WARN: {w}")

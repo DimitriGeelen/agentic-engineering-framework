@@ -1,90 +1,81 @@
 ---
 id: T-1649
-name: "task-type tag-format invariant — termlink spawn validator + fw audit lint"
+name: "Tag-format lint for live TermLink sessions (framework-side half of W10 #4)"
 description: >
-  W10 #4 — typo'd task-type tag silently routes to default specialist. Two halves: (a) /opt/termlink-side: termlink spawn validates known tag prefixes (task-type:, role:, model:, host=, project=, task=); rejects unknown tasktype:/task_type:/etc with actionable error. (b) Framework-side: extend agents/audit/orchestrator-mcp-scan.sh (T-1646) to lint live session tags from termlink list --json — warn on unrecognized prefixes that resemble known ones. Tracks G-061 closure. Origin: docs/reports/T-1641-worker-10-defenses.md item #4.
+  W10 #4 — typo'd or wrong-separator task-type tag silently routes to default specialist.
+  Framework-side half of T-1649 split: extend agents/audit/orchestrator-mcp-scan.sh to
+  inspect `termlink list --json` and warn on unrecognized tag prefixes that resemble
+  canonical orchestrator prefixes (task-type:, role:, task:, model:, host=, project=).
+  Surfaces in Watchtower /orchestrator and via `fw audit --section orchestrator`.
+  Cross-repo half (termlink-side spawn validator) goes as a TermLink push to
+  termlink-agent — the framework cannot edit /opt/termlink directly. Tracks G-061 closure.
+  Origin: docs/reports/T-1641-worker-10-defenses.md item #4.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [from-T-1641, t-1061-followup, drift-defense, termlink, validation]
 components: []
-related_tasks: [T-1641, T-1644, T-1064, T-1646]
+related_tasks: [T-1641, T-1644, T-1064, T-1646, T-1647]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T12:20:27Z
+last_update: 2026-05-01T14:50:00Z
 date_finished: null
 ---
 
-# T-1648: task-type tag-format invariant — termlink spawn validator + fw audit lint
+# T-1649: Tag-format lint for live TermLink sessions (framework-side)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1647 surfaced the symptom: 22 live sessions, 0 tagged `task-type:`. Drilling down,
+20/22 use `task=` (wrong separator vs canonical `task:`), 1 uses `role=` (vs canonical
+`role:`). The orchestrator's tag parser silently ignores these, so any specialist
+routing or per-task affinity falls back to defaults — invisibly.
+
+This task adds a tag-format **lint** to the framework audit (the non-cross-repo half).
+The actual fix lives in /opt/termlink (validate at spawn) and is filed as a TermLink
+push to termlink-agent.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `agents/audit/orchestrator-mcp-scan.sh` gains a `tag_format_warnings` finding category
+- [x] Output YAML at `.context/audits/orchestrator-LATEST.yaml` includes a `findings.tag_format_warnings` list when drift exists; entries name the bad prefix, count, and nearest canonical match
+- [x] Lint detects the 4 known drift patterns: `task=` → `task:`, `role=` → `role:`, `tasktype:` → `task-type:`, `task_type:` → `task-type:`
+- [x] `web/blueprints/orchestrator.py` reads `findings.tag_format_warnings` and exposes it to the template
+- [x] `web/templates/orchestrator.html` renders the new finding category in the drift panel
+- [x] TermLink push delivered to termlink-agent with the spawn-validator proposal (cross-repo half)
+- [x] Audit YAML continues to validate as YAML (no schema break)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+
+(none — purely structural lint, all checks deterministic)
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+# Shell commands that MUST pass before work-completed.
+test -x agents/audit/orchestrator-mcp-scan.sh
+bash agents/audit/orchestrator-mcp-scan.sh
+python3 -c "import yaml; d=yaml.safe_load(open('.context/audits/orchestrator-LATEST.yaml').read()); assert 'tag_format_warnings' in d.get('findings', {}), 'missing tag_format_warnings key'"
+python3 -c "import yaml; d=yaml.safe_load(open('.context/audits/orchestrator-LATEST.yaml').read()); w=d['findings']['tag_format_warnings']; assert any(e.get('bad') == 'task=' for e in w), 'expected task= drift in live data'"
+python3 -c "import ast; ast.parse(open('web/blueprints/orchestrator.py').read())"
+curl -sf -o /dev/null -w "%{http_code}\n" http://localhost:3000/orchestrator | grep -q 200
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-01 — Cross-repo split
+
+- **Chose:** Ship framework-side lint in this task; file termlink-side validator as a TermLink push to termlink-agent under their own task ID.
+- **Why:** Framework cannot edit /opt/termlink directly (memory: feedback_no_cross_repo_edits). Cross-repo proposals go via TermLink, not direct edits.
+- **Rejected:** Bundling both into one task — would force a cross-repo edit or block T-1649 on termlink-agent's response window.
 
 ## Updates
 
 ### 2026-05-01T12:20:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1648-task-type-tag-format-invariant--termlink.md
-- **Context:** Initial task creation
+- **Output:** Initial task creation under T-1644 Arc C.
+
+### 2026-05-01T14:50:00Z — promoted-and-scoped [agent]
+- **Action:** Promoted horizon later→now, status captured→started-work.
+- **Context:** Continuing orchestrator-arc work (Arc C drift defenses) per autonomous-mode directive.
+- **Scope change:** Split into framework-side lint (this task) + cross-repo proposal (TermLink push to termlink-agent for /opt/termlink spawn validator).

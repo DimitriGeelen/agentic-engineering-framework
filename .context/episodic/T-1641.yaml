@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1641: T-1061 orchestrator arc reconsideration — what got lost between inception, exploration, and shipped phases?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T12:29:15Z
+# ============================================================================
+
+task_id: T-1641
+task_name: "T-1061 orchestrator arc reconsideration — what got lost between inception, exploration, and shipped phases?"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T11:30:01Z
+completed: 2026-05-01T12:29:12Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T13:32:46+02:00
+last_commit: 2026-05-01T13:36:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — orchestrator arc reconsideration. 10 TermLink workers W01-W10 dispatched
+
+# Key outcomes
+outcomes:
+  - "Research artefact `docs/reports/T-1641-orchestrator-arc-reconsideration.md` exists with the user pushback dialogue captured verbatim and the investigation plan"
+  - "At least 8 of 10 TermLink workers dispatched (slots W01–W10), each writing findings to `docs/reports/T-1641-worker-NN-<topic>.md` — 10/10 dispatched 2026-05-01T11:36Z, sessions: w01-coverage, w02-feedback, w03-state, w04-usage, w05-gaps, w06-directives, w07-arcs, w08-policy, w09-smoke, w10-defenses"
+  - "Aggregated \"what got lost\" list compiled into the master research artefact — 30 items (L1–L30) reconciled in `docs/reports/T-1641-orchestrator-arc-reconsideration.md` §Findings"
+  - "Each \"lost\" item is either filed as a new task (with `from-T-1641` tag) or explicitly reconciled — T-1642 (Arc A inception, policy), T-1643 (Arc B build, framework wiring), T-1644 (Arc C build, drift defenses), T-1645 (G-015 reframe inception); 4 items reconciled by direct edit (G-011/G-017 in concerns.yaml, related_tasks cross-link on T-1062/4/5/6/T-1636/7/9/40, Recommendation rewrites on T-1062/4/5/6, L-334 + D-058 captured); 5 deferred to T-1637 / horizon:later or out-of-scope"
+  - "Recommendation written with concrete arc-or-arcs proposal for the next pass — three distinct arcs (A=policy, B=wiring, C=defenses) with explicit blocking relationship (B blocked on A) + decision-only inception L9 + housekeeping reconciled in this pass; G-061 (orchestrator-arc rot) and G-062 (framework-blindness pattern) registered in concerns.yaml"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1641-orchestrator-arc-reconsideration.md"
+  - ".tasks/active/T-1641-t-1061-orchestrator-arc-reconsideration-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T13:32:46"
+    action: "T-1641: file inception — orchestrator arc reconsideration"
+  - time: "2026-05-01T13:36:47"
+    action: "T-1641: 10 TermLink workers W01-W10 dispatched"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 59 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1061, termlink, orchestrator, reconsideration, multi-agent]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 59
+  commits: 3
+  files_changed: 73
+  lines_added: 13072
+  lines_removed: 11926
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1641-t-1061-orchestrator-arc-reconsideration-.md
+generated_by: context-agent-hybrid

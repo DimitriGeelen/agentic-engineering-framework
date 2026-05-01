@@ -4,16 +4,16 @@ name: "T-1061 orchestrator arc reconsideration — what got lost between incepti
 description: >
   User flagged (2026-05-01 mid-loop): the arc is being treated as 'shipped' but nothing has been demonstrated to actually orchestrate; no test cases run; no human consultation on routing rules. Re-examine the original T-1061 inception, exploration, and scoping artefacts to surface what got lost. Multi-agent investigation via TermLink (up to 10 workers) writing to docs/reports/T-XXXX-worker-NN-*.md. C-001 research-artefact-first discipline. Output: aggregated findings + concrete arc-or-arcs proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: [from-T-1061, termlink, orchestrator, reconsideration, multi-agent]
-components: []
+components: [C-004, agents/audit/orchestrator-mcp-scan.sh, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: []
 created: 2026-05-01T11:30:01Z
-last_update: 2026-05-01T11:30:01Z
-date_finished: null
+last_update: 2026-05-01T12:29:12Z
+date_finished: 2026-05-01T12:29:12Z
 ---
 
 # T-1641: T-1061 orchestrator arc reconsideration — what got lost between inception, exploration, and shipped phases?
@@ -98,7 +98,7 @@ Multi-agent TermLink dispatch — 10 workers in parallel, each writing findings 
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -172,9 +172,85 @@ Multi-agent TermLink dispatch — 10 workers in parallel, each writing findings 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — but NOT as a single-arc continuation of T-1061. Split into three distinct arcs (A=policy, B=wiring, C=defenses) with one decision-only inception.
+
+Rationale: 10-worker investigation confirmed the user's pushback: the orchestrator arc is behaviorally real (W09 proved task-type routing + cache + failover on the wire), but operationally dormant and policy-unconsulted. Bundling the gaps into one mega-arc is exactly the T-1061 mistake replayed — three different failure modes wearing one outfit.
+
+The three arcs and inception:
+- T-1642 (Arc A — INCEPTION, horizon:now): Routing-policy consultation. 13 hardcoded constants surface as explicit human decisions. Blocks Arc B's framework-wiring completion.
+- T-1643 (Arc B — BUILD, horizon:next): Framework-side wiring. Make /opt/999 actually USE the substrate (zero call-sites pass task_type or --model today). Co-arc with /opt/termlink hardening (gate the 71 ungated MCP mutators, wire run_with_governance, ship min-sample guard, surface fallback state). Blocked on T-1642.
+- T-1644 (Arc C — BUILD, horizon:now): Drift defenses. 10 absent structural protections from W10 — MCP-tool task_id audit, fallback-chain regression test, governance-frame golden fixture, tag-format validator, route_cache schema test, Watchtower /orchestrator page. Runs parallel to Arc A.
+- T-1645 (decision-only inception, horizon:next): G-015 reframing — narrow T-1061's claim or open non-TermLink workstream for sub-agent /tmp/ bypass.
+
+Evidence: (full trace in `docs/reports/T-1641-orchestrator-arc-reconsideration.md`)
+- W09 live wire test: orchestration does work — spawned 2 specialists with `task-type:` tags, routed 3 ways, killed one, observed cache rewrite + fallback. Core T-1061 promise is not vapourware.
+- W03: 4 of 75 MCP tools enforce `check_task_governance`; 71 ungated (incl. mutators `inject`, `run`, `remote_exec`, `batch_exec`, `send`, `kv_`).
+- W04: Framework has zero call-sites passing `task_type`; `--model` flag exists in `agents/termlink/termlink.sh:278` but no caller passes it; zero `GovernanceSubscriber` references anywhere in `agents/ bin/ lib/ web/`.
+- W06: Production audit log records only `{ts, method, peer_addr}`; `orchestrator.route` fired 0× in 71,275 events — circuit breaker never opened, fallback chain never exercised.
+- W08: 13 routing-policy constants silently defaulted (model fallback chain, PROMOTION_THRESHOLD=5, FAILURE_THRESHOLD=3, COOLDOWN=60s, DEFAULT_TTL_HOURS=168, CONFIDENCE_THRESHOLD=0.8, task_type taxonomy free-string, tag prefix, concurrency cap, success/failure attribution, selector role contract, default-on governance, discovery filter strictness).
+- W05: Concerns register went unmodified across the entire arc; G-011/G-015/G-017 last_reviewed dates predate T-1061's inception.
+- W07: Same "shipped before substrate-verified" signature as T-1626 + T-1633 — three independent G-019 escalations in five weeks. Captured as G-062 with proposed structural mechanisms.
+- W10: Zero drift defenses exist (10 enumerated). Captured as G-061.
+
+Housekeeping completed in this aggregation pass (not new tasks):
+- Updated G-011 (record T-1063 partial mitigation) and G-017 (accepted-risk with rationale) in concerns.yaml.
+- Added G-061 (orchestrator-arc rot) and G-062 (framework-blindness pattern, references T-1626/T-1633/T-1641).
+- Captured L-334 (arc completion ≠ code-complete) and D-058 (framework-blindness pattern decision).
+- Cross-linked `related_tasks: [T-1641]` on T-1062, T-1064, T-1065, T-1066, T-1636, T-1637, T-1639, T-1640.
+- Rewrote Recommendation blocks on T-1062/4/5/6 to honestly flag what shipped vs what was promised.
+
+For human reviewer: decide GO/NO-GO/DEFER on the arc-or-arcs proposal (split into three distinct arcs, vs continue as one). Recommendation: GO on the split. Then T-1642 (Arc A) needs its own GO when the policy questions are surfaced.
+
+**Date**: 2026-05-01T12:29:11Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-01T12:29:11Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — but NOT as a single-arc continuation of T-1061. Split into three distinct arcs (A=policy, B=wiring, C=defenses) with one decision-only inception.
+
+Rationale: 10-worker investigation confirmed the user's pushback: the orchestrator arc is behaviorally real (W09 proved task-type routing + cache + failover on the wire), but operationally dormant and policy-unconsulted. Bundling the gaps into one mega-arc is exactly the T-1061 mistake replayed — three different failure modes wearing one outfit.
+
+The three arcs and inception:
+- T-1642 (Arc A — INCEPTION, horizon:now): Routing-policy consultation. 13 hardcoded constants surface as explicit human decisions. Blocks Arc B's framework-wiring completion.
+- T-1643 (Arc B — BUILD, horizon:next): Framework-side wiring. Make /opt/999 actually USE the substrate (zero call-sites pass task_type or --model today). Co-arc with /opt/termlink hardening (gate the 71 ungated MCP mutators, wire run_with_governance, ship min-sample guard, surface fallback state). Blocked on T-1642.
+- T-1644 (Arc C — BUILD, horizon:now): Drift defenses. 10 absent structural protections from W10 — MCP-tool task_id audit, fallback-chain regression test, governance-frame golden fixture, tag-format validator, route_cache schema test, Watchtower /orchestrator page. Runs parallel to Arc A.
+- T-1645 (decision-only inception, horizon:next): G-015 reframing — narrow T-1061's claim or open non-TermLink workstream for sub-agent /tmp/ bypass.
+
+Evidence: (full trace in `docs/reports/T-1641-orchestrator-arc-reconsideration.md`)
+- W09 live wire test: orchestration does work — spawned 2 specialists with `task-type:` tags, routed 3 ways, killed one, observed cache rewrite + fallback. Core T-1061 promise is not vapourware.
+- W03: 4 of 75 MCP tools enforce `check_task_governance`; 71 ungated (incl. mutators `inject`, `run`, `remote_exec`, `batch_exec`, `send`, `kv_`).
+- W04: Framework has zero call-sites passing `task_type`; `--model` flag exists in `agents/termlink/termlink.sh:278` but no caller passes it; zero `GovernanceSubscriber` references anywhere in `agents/ bin/ lib/ web/`.
+- W06: Production audit log records only `{ts, method, peer_addr}`; `orchestrator.route` fired 0× in 71,275 events — circuit breaker never opened, fallback chain never exercised.
+- W08: 13 routing-policy constants silently defaulted (model fallback chain, PROMOTION_THRESHOLD=5, FAILURE_THRESHOLD=3, COOLDOWN=60s, DEFAULT_TTL_HOURS=168, CONFIDENCE_THRESHOLD=0.8, task_type taxonomy free-string, tag prefix, concurrency cap, success/failure attribution, selector role contract, default-on governance, discovery filter strictness).
+- W05: Concerns register went unmodified across the entire arc; G-011/G-015/G-017 last_reviewed dates predate T-1061's inception.
+- W07: Same "shipped before substrate-verified" signature as T-1626 + T-1633 — three independent G-019 escalations in five weeks. Captured as G-062 with proposed structural mechanisms.
+- W10: Zero drift defenses exist (10 enumerated). Captured as G-061.
+
+Housekeeping completed in this aggregation pass (not new tasks):
+- Updated G-011 (record T-1063 partial mitigation) and G-017 (accepted-risk with rationale) in concerns.yaml.
+- Added G-061 (orchestrator-arc rot) and G-062 (framework-blindness pattern, references T-1626/T-1633/T-1641).
+- Captured L-334 (arc completion ≠ code-complete) and D-058 (framework-blindness pattern decision).
+- Cross-linked `related_tasks: [T-1641]` on T-1062, T-1064, T-1065, T-1066, T-1636, T-1637, T-1639, T-1640.
+- Rewrote Recommendation blocks on T-1062/4/5/6 to honestly flag what shipped vs what was promised.
+
+For human reviewer: decide GO/NO-GO/DEFER on the arc-or-arcs proposal (split into three distinct arcs, vs continue as one). Recommendation: GO on the split. Then T-1642 (Arc A) needs its own GO when the policy questions are surfaced.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-88fdc870
+- **Timestamp:** 2026-05-01T12:29:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-01T12:29:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

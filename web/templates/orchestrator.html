@@ -136,6 +136,23 @@
         {% if audit.findings.removed_tools %}
             <li><span class="badge badge-info">REMOVED</span> tools no longer present (T-1166 deprecation may have completed): <code>{{ audit.findings.removed_tools | join(', ') }}</code></li>
         {% endif %}
+        {% if audit.findings.tag_format_warnings %}
+            <li><strong class="metric-warn">TAG-FORMAT DRIFT (T-1649):</strong> live sessions carry non-canonical tag prefixes — orchestrator routing silently falls back to defaults. <a href="/tasks/T-1649">T-1649</a>
+                <table class="orch-table" style="margin-top:0.5rem;">
+                    <thead><tr><th>bad prefix</th><th>count</th><th>suggested</th><th>sample sessions</th></tr></thead>
+                    <tbody>
+                    {% for w in audit.findings.tag_format_warnings %}
+                        <tr>
+                            <td><code>{{ w.bad }}</code></td>
+                            <td>{{ w.count }}</td>
+                            <td>{% if w.suggested %}<code>{{ w.suggested }}</code>{% else %}<span class="muted">unrecognized</span>{% endif %}</td>
+                            <td>{% for s in w.sample_sessions %}<span class="pill"><code>{{ s }}</code></span>{% endfor %}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </li>
+        {% endif %}
     </ul>
 </details>
 {% else %}

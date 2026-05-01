@@ -186,6 +186,7 @@ def orchestrator_page():
         or findings.get("gate_drop_outs")
         or findings.get("gate_added_ratchet_candidates")
         or findings.get("removed_tools")
+        or findings.get("tag_format_warnings")
     )
 
     return render_page(

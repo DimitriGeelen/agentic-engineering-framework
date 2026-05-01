@@ -3227,9 +3227,16 @@ else
         ORCH_EXIT=$?
         if [ "$ORCH_EXIT" = "1" ]; then
             ORCH_WARNS=$(awk '/^warnings:/{flag=1; next} /^errors:/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
-            warn "Orchestrator-arc MCP scan: drift detected" \
-                 "${ORCH_WARNS:-see $ORCH_LATEST}" \
-                 "Update .context/audits/orchestrator-mcp-baseline.yaml or investigate ratchet/new-tool"
+            # T-1649: tag-format drift uses a different remediation path than baseline drift.
+            if echo "$ORCH_WARNS" | grep -q "TAG-FORMAT-DRIFT"; then
+                warn "Orchestrator-arc tag-format drift: live sessions carry non-canonical prefixes" \
+                     "${ORCH_WARNS:-see $ORCH_LATEST}" \
+                     "Fix at source: update spawn callers (see /orchestrator) or add validator (T-1649 cross-repo half)"
+            else
+                warn "Orchestrator-arc MCP scan: drift detected" \
+                     "${ORCH_WARNS:-see $ORCH_LATEST}" \
+                     "Update .context/audits/orchestrator-mcp-baseline.yaml or investigate ratchet/new-tool"
+            fi
         elif [ "$ORCH_EXIT" = "2" ]; then
             ORCH_ERRS=$(awk '/^errors:/{flag=1; next} /^[a-z]/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
             fail "Orchestrator-arc MCP scan: regression — gated tool lost its check_task_governance" \
