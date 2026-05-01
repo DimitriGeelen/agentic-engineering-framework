@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1650: route_cache persistence-schema regression test (framework-side pin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T13:07:46Z
+# ============================================================================
+
+task_id: T-1650
+task_name: "route_cache persistence-schema regression test (framework-side pin)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T12:20:27Z
+completed: 2026-05-01T13:07:42Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-01T15:07:36+02:00
+last_commit: 2026-05-01T15:07:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  route_cache persistence schema regression test (4 pass, 1 deliberate skip)
+
+# Key outcomes
+outcomes:
+  - "`tests/fixtures/termlink-route-cache-schema.json` exists, listing the field set for RouteCache, RouteCacheEntry, ModelStats, RequestSchema, LearnedFrom variants"
+  - "`tests/unit/test_termlink_route_cache_schema.py` exists and uses pytest"
+  - "Test parses /opt/termlink/crates/termlink-hub/src/route_cache.rs and asserts each pinned struct retains its fields"
+  - "Test asserts LearnedFrom enum still has Orchestrator + Builtin variants"
+  - "Test skips gracefully when /opt/termlink not present"
+  - "Test passes against current upstream HEAD"
+  - "TermLink push delivered to termlink-agent with the version-tag-and-refuse-rebuild proposal (cross-repo half)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Same pattern as T-1648 — Python regex parses Rust source for `pub <field>:` lines and `pub enum X { ... }` variants. No Rust toolchain dependency."
+    rationale: "Cheap, framework-native, catches the only failure modes that matter (rename, removal, variant deletion)."
+    alternatives_rejected: ["(a) Compile a smoke test against termlink-hub crate — heavy. (b) Persist a real cache and reload — flaky."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1650-routecache-persistence-schema-regression.md"
+  - "tests/fixtures/termlink-route-cache-schema.json"
+  - "tests/unit/test_termlink_route_cache_schema.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T15:07:36"
+    action: "T-1650: route_cache persistence schema regression test (4 pass, 1 deliberate skip)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 47 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1641, t-1061-followup, drift-defense, termlink, contract]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 47
+  commits: 1
+  files_changed: 3
+  lines_added: 231
+  lines_removed: 59
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1650-routecache-persistence-schema-regression.md
+generated_by: context-agent-hybrid

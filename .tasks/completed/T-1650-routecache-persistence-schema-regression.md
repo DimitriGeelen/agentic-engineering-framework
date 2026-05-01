@@ -11,16 +11,16 @@ description: >
   filed as TermLink push to termlink-agent. Origin:
   docs/reports/T-1641-worker-10-defenses.md item #5.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: [from-T-1641, t-1061-followup, drift-defense, termlink, contract]
-components: []
+components: [tests/fixtures/termlink-route-cache-schema.json, tests/unit/test_termlink_route_cache_schema.py]
 related_tasks: [T-1641, T-1644, T-1064, T-1065, T-1648, T-1651]
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T15:30:00Z
-date_finished: null
+last_update: 2026-05-01T13:07:42Z
+date_finished: 2026-05-01T13:07:42Z
 ---
 
 # T-1650: route_cache persistence-schema regression test
@@ -77,3 +77,24 @@ python3 -m pytest tests/unit/test_termlink_route_cache_schema.py -v --tb=short
 - **Action:** Promoted horizon later→now, status captured→started-work.
 - **Context:** Continuing Arc C (T-1644) drift defenses per autonomous-mode directive.
 - **Scope split:** Framework-side schema pin in this task; cross-repo version-tag proposal sent via TermLink to termlink-agent.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c96b2b84
+- **Timestamp:** 2026-05-01T13:07:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Test parses /opt/termlink/crates/termlink-hub/src/route_cache.rs and asserts each pinned struct retains its fields
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-hub/src/route_cache.rs in: Test parses /opt/termlink/crates/termlink-hub/src/route_cache.rs and asserts each pinned struct retains its fields`
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-repo`
+
+### 2026-05-01T13:07:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
