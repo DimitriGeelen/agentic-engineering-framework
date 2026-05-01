@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1644: Arc C — Orchestrator-arc drift defenses (T-1061 follow-up)
+# ============================================================================
+# STATUS: REQUIRES ENRICHMENT
+# Limited data sources. Review and fill missing sections manually.
+# Generated: 2026-05-01T13:08:56Z
+# ============================================================================
+
+task_id: T-1644
+task_name: "Arc C — Orchestrator-arc drift defenses (T-1061 follow-up)"
+workflow_type: build
+enrichment_status: pending  # No git commits or AC found — needs manual enrichment
+
+# Timeline
+created: 2026-05-01T11:55:00Z
+completed: 2026-05-01T13:08:53Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  - description: "[TODO: What worked well?]"
+    why: "[TODO: Why did it work?]"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1641, t-1061-followup, drift-defense, orchestrator, termlink, audit, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 73
+  commits: 1
+  files_changed: 73
+  lines_added: 12787
+  lines_removed: 11924
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1644-arc-c--orchestrator-arc-drift-defenses-t.md
+generated_by: context-agent-hybrid

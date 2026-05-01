@@ -4,16 +4,16 @@ name: "Arc C — Orchestrator-arc drift defenses (T-1061 follow-up)"
 description: >
   Ten absent structural defenses identified by W10 — without them new tools silently skip governance, constants drift, frame 0x8 wire format changes, task-type tags get typo'd, route-cache schema breaks restore, all undetected. Sequenced E first (durable register: open G-061 with five decay vectors), then A+C parallel (MCP-tool task_id audit in agents/audit/audit.sh + bundled regression tests: fallback chain, route_cache schema, governance frame golden, termlink list --json schema), then B/D/F (Watchtower /orchestrator blueprint; termlink spawn task-type tag-prefix validator; cross-repo fabric cards for orchestrator/router/fallback/frame). Each follow-up is small (≤4h), reversible, binary pass/fail. Source: docs/reports/T-1641-worker-10-defenses.md, docs/reports/T-1641-worker-06-directive-evidence.md.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [from-T-1641, t-1061-followup, drift-defense, orchestrator, termlink, audit, test]
-components: []
+components: [C-004, agents/audit/orchestrator-mcp-scan.sh, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1063, T-1064, T-1065, T-1066]
 created: 2026-05-01T11:55:00Z
-last_update: 2026-05-01T11:55:00Z
-date_finished: null
+last_update: 2026-05-01T13:08:53Z
+date_finished: 2026-05-01T13:08:53Z
 ---
 
 # T-1644: Arc C — Orchestrator-arc drift defenses (T-1061 follow-up)
@@ -88,3 +88,25 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1644-arc-c--orchestrator-arc-drift-defenses-t.md
 - **Context:** Initial task creation
+
+### 2026-05-01T13:08:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-be55ec6e
+- **Timestamp:** 2026-05-01T13:08:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — [First criterion]
+  - **empty-body** (severe, deterministic) — `- [ ] [First criterion]`
+- **AC#2 (Agent)** — [Second criterion]
+  - **empty-body** (severe, deterministic) — `- [ ] [Second criterion]`
+
+### 2026-05-01T13:08:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
