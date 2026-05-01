@@ -712,6 +712,31 @@ After fixing any problem discovered by the human (not found during development):
 
 **Structural enforcement (T-1550):** Bug-class tasks (workflow_type ∉ {inception, specification, design} AND tag/title matches bug/fix/error/regression/etc.) cannot reach `--status work-completed` without a substantive `## RCA` section. `--skip-rca` bypasses with logged Tier-2 entry. Origin: T-1549 spike showed 99% of bug-class tasks (315/317) shipped without RCA capture — this rule was advisory text for months while the template never asked.
 
+### Arc Completion Discipline (G-062)
+
+**Distinct from G-019 — same family.** G-019 is about *bug-completion* (treats symptom-level fixes as complete); this rule is about *arc-completion* (declares an arc "shipped" before behavioral verification on a fresh substrate). Same failure mode, different scale.
+
+**Trigger:** Before declaring any multi-task arc "shipped" / GO-awaiting-review (i.e. before recommending the umbrella/parent task's `work-completed` or filing it for `fw task review`).
+
+**Three questions you MUST answer with concrete evidence — not by argument:**
+
+1. **Did the integrated system run end-to-end on a fresh substrate?** Not `cargo check`, not `cargo test --lib`, not "the line numbers match." A fresh process (or a session, or a container) actually exercised the headline mechanic and the headline mechanic was observed *on the wire*. If you cannot point to a log line or a captured wire frame showing the mechanic firing, the answer is **no**.
+
+2. **Did any silently-defaulted constants escape human review?** Run `grep -rn "const " | wc -l` (or equivalent) over the shipped surface. For each constant, ask: was this consulted, or did the implementing agent set it? Routing thresholds, fallback chains, retry counts, taxonomies, tag prefixes — anything that encodes policy. If ≥1 constant is policy and was never raised with the human, the arc is not shipped — it is "code-complete, policy-unconsulted."
+
+3. **Does the framework that built the arc actually USE the arc?** The strongest evidence of arc completion is: the framework's own dispatch / hooks / agents call into the new substrate. If your audit, dispatch, handover, healing, or context paths still bypass the new system, the arc is "shipped" only by code-coverage standards, not by usefulness standards.
+
+**No symptom-conflation.** "Tests pass" is not "the system works." "ACs ticked" is not "the human can use this." Each of the three questions has a specific answer; do not blur one into another. The danger signature is *smooth language* — "we shipped X, all tests pass, ready for review" — without each question having an explicit, demonstrable answer.
+
+**Evidence (5 weeks, 3 incidents, same signature):**
+- **T-1626** (hooks self-surface): code shipped with no fire-rate visibility; human asked "why is this hook silent?"
+- **T-1633** (`fw upgrade` no-local-path): worked locally, no fresh-machine simulation guard; cascade T-1591→T-1594 of follow-up RCAs.
+- **T-1641** (orchestrator arc reconsideration): T-1061 declared shipped, all five phases GO; user pushback "absolutely seeing nothing that indicates we are now orchestrating" forced 10-worker re-examination; W04 confirmed the framework that built the arc never USES it.
+
+**The test:** If you're about to recommend an arc-parent task GO/work-completed and you cannot point to (a) a wire-level observation, (b) a constants audit, (c) framework-side use evidence — you have the symptom of G-062. Stop, capture the missing artefact, and re-evaluate.
+
+**Why this rule exists, structurally:** "shipped" is a declaration, not a state. The framework can verify state (gates, tests, AC checkboxes) but cannot verify the meaning behind a declaration. The three questions force the meaning into observable artefacts the framework *can* gate on. T-1655 codified this; mechanism #2 (`fw audit` arc-completion check) and #3 (`fw task review` extra gate) are pending — until then, this rule is behavioral, not structural.
+
 ## Plan Mode Prohibition
 
 **NEVER use the built-in `EnterPlanMode` tool.** It bypasses all framework governance:
