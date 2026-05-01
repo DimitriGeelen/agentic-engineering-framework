@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "task": "T-1650",
+    "origin": "T-1641 W10 #5",
+    "purpose": "Pin the on-disk route_cache.json schema. The hub stores per-capability routing decisions across restarts; serde rename/removal silently breaks deserialization → cold cache → no routing.",
+    "termlink_version_observed": "0.9.0",
+    "captured_at": "2026-05-01",
+    "source_of_truth": "/opt/termlink/crates/termlink-hub/src/route_cache.rs",
+    "open_proposal": "Cross-repo: add `version: u32` field to RouteCache and refuse-and-rebuild on mismatch (sent to termlink-agent)."
+  },
+  "structs": {
+    "RouteCache": {
+      "fields": ["entries", "model_stats"]
+    },
+    "RouteCacheEntry": {
+      "fields": [
+        "capability",
+        "specialist",
+        "confidence",
+        "request_schema",
+        "learned_from",
+        "last_used",
+        "hit_count",
+        "ttl_hours",
+        "created_at"
+      ]
+    },
+    "ModelStats": {
+      "fields": ["model", "task_type", "successes", "failures", "last_used"]
+    },
+    "RequestSchema": {
+      "fields": ["required", "optional"]
+    }
+  },
+  "enums": {
+    "LearnedFrom": {
+      "variants": ["Orchestrator", "Builtin"],
+      "serde_attrs": "rename_all = lowercase"
+    }
+  },
+  "constants": {
+    "CONFIDENCE_THRESHOLD": 0.8,
+    "DEFAULT_TTL_HOURS": 168,
+    "CONFIDENCE_DECAY_PER_WEEK": 0.05
+  }
+}
