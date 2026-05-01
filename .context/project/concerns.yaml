@@ -1578,14 +1578,32 @@ concerns:
     small (≤4h), each with a proposed mechanism.'
   trigger: Sustained ungated MCP-tool drift, fallback-chain silent change, frame-0x8 layout drift,
     or a typo'd `task-type:` tag silently routing to default specialist.
-  status: watching
+  status: partial-mitigation
   closure_criteria: G-061 closes when Arc C (drift-defenses) lands — at minimum, MCP `task_id`
     audit + fallback-chain test + governance-frame golden + tag-format validator + Watchtower
     `/orchestrator` page in place.
+  partial_mitigation: |
+    2026-05-01 — Arc C (T-1644) shipped 4 of 5 closure criteria:
+      [x] MCP task_id audit             — T-1646 (agents/audit/orchestrator-mcp-scan.sh)
+      [x] Governance-frame 0x8 golden   — T-1648 (tests/unit/test_termlink_governance_frame_contract.py)
+      [x] Tag-format validator          — T-1649 (framework-side lint; cross-repo half delivered to termlink-agent)
+      [x] Watchtower /orchestrator      — T-1647 (live; surfaces audit + sessions + arc cards)
+      [ ] Fallback-chain regression     — DEFERRED to Arc A (T-1642). Reason: the chain ORDER
+                                          (opus → sonnet → haiku) is itself a policy decision
+                                          owned by the human; pinning it before consultation
+                                          would lock in a default by accident. T-1650 pins
+                                          route_cache schema (the chain's persistence) and
+                                          T-1648 pins frame 0x8 (the governance protocol the
+                                          chain exercises) — so the SHAPES are protected;
+                                          only the ORDER is pending Arc A.
+    Plus 2 bonus defenses not in original closure criteria:
+      [x] termlink list --json contract — T-1651 (5 pytest cases pin consumed keys)
+      [x] route_cache schema regression — T-1650 (4 pass + 1 deferred to cross-repo version tag)
+      [x] Cross-repo fabric coverage    — T-1652 (6 cards + .fabric/CROSS-REPO-CARDS.md convention)
   created: 2026-05-01
   last_reviewed: 2026-05-01
   related_task: T-1641
-  related_tasks_extra: [T-1061, T-1062, T-1064, T-1065, T-1066]
+  related_tasks_extra: [T-1061, T-1062, T-1064, T-1065, T-1066, T-1644, T-1646, T-1647, T-1648, T-1649, T-1650, T-1651, T-1652]
 - id: G-062
   type: gap
   title: Framework-blindness pattern — 'shipped' declared before fresh-substrate behavioral verification
