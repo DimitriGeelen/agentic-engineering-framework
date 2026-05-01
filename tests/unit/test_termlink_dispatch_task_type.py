@@ -147,3 +147,54 @@ def test_dispatch_accepts_task_type_flag():
     src = TERMLINK_SH.read_text()
     dispatch_block = src.split("cmd_dispatch() {", 1)[1].split("cmd_wait() {", 1)[0]
     assert "--task-type)" in dispatch_block, "cmd_dispatch missing --task-type handler"
+
+
+# T-1664: _resolve_dispatch_model_and_fallback returns "<model>|<fallback_used>"
+
+def test_resolve_with_fallback_explicit_returns_false(tmp_path):
+    """Explicit --model wins; fallback_used is false."""
+    (tmp_path / ".framework.yaml").write_text(
+        "DISPATCH_MODEL_DEFAULT: opus\nDISPATCH_MODEL_FOR_BUILD: haiku\n"
+    )
+    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "sonnet" "build"')
+    assert r.returncode == 0
+    assert r.stdout.strip() == "sonnet|false"
+
+
+def test_resolve_with_fallback_per_type_returns_true(tmp_path):
+    """Per-type override path; fallback_used is true."""
+    (tmp_path / ".framework.yaml").write_text(
+        "DISPATCH_MODEL_DEFAULT: opus\nDISPATCH_MODEL_FOR_BUILD: haiku\n"
+    )
+    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "" "build"')
+    assert r.returncode == 0
+    assert r.stdout.strip() == "haiku|true"
+
+
+def test_resolve_with_fallback_default_returns_true(tmp_path):
+    """No per-type → DISPATCH_MODEL_DEFAULT; fallback_used is true."""
+    (tmp_path / ".framework.yaml").write_text("DISPATCH_MODEL_DEFAULT: sonnet\n")
+    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "" "inception"')
+    assert r.returncode == 0
+    assert r.stdout.strip() == "sonnet|true"
+
+
+def test_resolve_with_fallback_none_returns_pipe(tmp_path):
+    """No explicit, no config → empty model|empty fallback (sentinel '|')."""
+    (tmp_path / ".framework.yaml").write_text("")
+    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "" ""')
+    assert r.returncode == 0
+    assert r.stdout.strip() == "|"
+
+
+def test_dispatch_meta_json_populates_fields_from_resolution():
+    """Pin that cmd_dispatch wires resolution into meta.json (not always null)."""
+    src = TERMLINK_SH.read_text()
+    dispatch_block = src.split("cmd_dispatch() {", 1)[1].split("cmd_wait() {", 1)[0]
+    # The new resolution call:
+    assert "_resolve_dispatch_model_and_fallback" in dispatch_block, (
+        "cmd_dispatch should call extended resolver"
+    )
+    # The values should land in JSON via heredoc-substituted variables, not literal "null":
+    assert "$model_used_json" in dispatch_block, "meta.json must use $model_used_json"
+    assert "$fallback_used_json" in dispatch_block, "meta.json must use $fallback_used_json"

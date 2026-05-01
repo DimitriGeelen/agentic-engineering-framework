@@ -54,6 +54,7 @@ _derive_task_type() {
 
 # _resolve_dispatch_model — when --model not passed, fall back to
 # DISPATCH_MODEL_FOR_<TASK_TYPE> then DISPATCH_MODEL_DEFAULT (W3).
+# Echoes a single line for backward-compat (model only).
 _resolve_dispatch_model() {
     local explicit="$1" task_type="$2"
     if [ -n "$explicit" ]; then
@@ -70,6 +71,36 @@ _resolve_dispatch_model() {
         fi
     fi
     fw_config "DISPATCH_MODEL_DEFAULT" "" 2>/dev/null || true
+    return 0
+}
+
+# _resolve_dispatch_model_and_fallback — extended form returning "<model>|<fallback_used>".
+# Mirrors /opt/termlink T-1442 semantics so framework + substrate dispatch paths converge
+# on the same answer for the same inputs (T-1664, closes T-1643 Q1 substrate half).
+# fallback_used = false when --model is explicit; true when resolved via per-type or default;
+# returns "|" when no resolution (empty model + empty fallback).
+_resolve_dispatch_model_and_fallback() {
+    local explicit="$1" task_type="$2"
+    if [ -n "$explicit" ]; then
+        echo "${explicit}|false"
+        return 0
+    fi
+    if [ -n "$task_type" ]; then
+        local key="DISPATCH_MODEL_FOR_$(echo "$task_type" | tr '[:lower:]' '[:upper:]')"
+        local v
+        v=$(fw_config "$key" "" 2>/dev/null || true)
+        if [ -n "$v" ]; then
+            echo "${v}|true"
+            return 0
+        fi
+    fi
+    local d
+    d=$(fw_config "DISPATCH_MODEL_DEFAULT" "" 2>/dev/null || true)
+    if [ -n "$d" ]; then
+        echo "${d}|true"
+    else
+        echo "|"
+    fi
     return 0
 }
 
@@ -353,7 +384,24 @@ cmd_dispatch() {
     fi
 
     # T-1643/W3: resolve model via DISPATCH_MODEL_FOR_<TYPE> → DISPATCH_MODEL_DEFAULT.
-    model=$(_resolve_dispatch_model "$model" "$task_type")
+    # T-1664: resolve fallback flag in the same pass so meta.json carries the truth
+    # at dispatch time (closes Q1 substrate half on the framework path).
+    local _resolved
+    _resolved=$(_resolve_dispatch_model_and_fallback "$model" "$task_type")
+    model="${_resolved%|*}"
+    local fallback_used="${_resolved#*|}"
+    # JSON-safe: empty resolution → null (not the string "null"); non-empty model → quoted string.
+    local model_used_json
+    if [ -n "$model" ]; then
+        model_used_json="\"$model\""
+    else
+        model_used_json="null"
+    fi
+    local fallback_used_json
+    case "$fallback_used" in
+        true|false) fallback_used_json="$fallback_used" ;;
+        *)          fallback_used_json="null" ;;
+    esac
 
     project_dir="${project_dir:-$(pwd)}"
     local wdir="$DISPATCH_DIR/$name"
@@ -362,9 +410,9 @@ cmd_dispatch() {
     # Save prompt, task tag, and metadata (from tl-dispatch.sh pattern)
     echo "$prompt" > "$wdir/prompt.md"
     [ -n "$task" ] && echo "$task" > "$wdir/task"
-    # T-1643/W4: meta.json includes task_type, model_used, fallback_used.
-    # model_used and fallback_used start null; /opt/termlink populates them
-    # via governance frame 0x8 once the worker reports back.
+    # T-1643/W4 + T-1664: meta.json includes task_type, model_used, fallback_used.
+    # model_used / fallback_used now populated at dispatch time when resolution succeeds;
+    # remain null when no model resolves (DISPATCH_MODEL_DEFAULT unset and no per-type pin).
     cat > "$wdir/meta.json" <<METAEOF
 {
   "name": "$name",
@@ -373,8 +421,8 @@ cmd_dispatch() {
   "task": "${task:-}",
   "task_type": "${task_type:-}",
   "model": "${model:-}",
-  "model_used": null,
-  "fallback_used": null,
+  "model_used": $model_used_json,
+  "fallback_used": $fallback_used_json,
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
