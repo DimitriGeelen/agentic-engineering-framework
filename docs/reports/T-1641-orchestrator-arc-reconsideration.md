@@ -109,13 +109,117 @@ After all workers land, the aggregation step:
 
 ---
 
-## Findings (TBD)
+## Findings (aggregated 2026-05-01 from W01–W10)
 
-*To be populated as worker reports land.*
+### Headline
 
-## Recommendation (TBD)
+The orchestrator arc is **behaviorally real, operationally dormant, and policy-unconsulted.** W09 dispatched a live JSON-RPC call to `hub.sock`, spawned two `task-type:`-tagged specialists, observed task-typed routing, killed one, observed cache rewrite + fallback to the survivor, and confirmed the bypass-registry tracks promotion candidates — *the core T-1061 promise is not vapourware*. But:
 
-*Concrete arc-or-arcs proposal goes here once findings aggregated.*
+- Only **4 of 75** MCP tools enforce `check_task_governance`; the other 71 (including `inject`, `run`, `remote_exec`, `batch_exec`, `send`, `kv_*`) are ungated. (W03)
+- The framework (`/opt/999`) **does not USE** the routing it built. Zero call-sites pass `task_type` or `--model`; `cmd_dispatch` builds no `task-type:<X>` tag; `model_used`/`fallback_used` returned in dispatch results are never read. (W04)
+- **13 routing-policy parameters** are hardcoded constants — model fallback chain, bypass thresholds, breaker thresholds, cache TTL, confidence threshold, task-type taxonomy (free-string), tag prefix, concurrency cap, success/failure attribution. None went through human consultation. (W08)
+- **`run_with_governance`** (the Layer 3 governance-frame mechanism T-1061 sold) has **zero non-test callers**. Frame type 0x8 is theoretically defined and never emitted on the wire. (W03, W06)
+- The **bypass registry has never promoted in production** — only ephemeral `/tmp/tl-hub-*` test fixtures have entries; `/var/lib/termlink/bypass-registry.json` is empty. The "antifragile learning" claim has no operational evidence. (W06)
+- **Concerns register went unmodified across the entire arc.** G-011, G-015, G-017 last_reviewed dates predate T-1061's inception; no companion bookkeeping commit landed during 6 task closures. (W05)
+- **Zero drift defenses exist.** No MCP-tool `task_id`-enforcement audit, no fallback-chain regression test, no governance-frame golden fixture, no task-type tag-format validator, no route_cache schema test. New tools can silently skip governance with no signal. (W10)
+- **T-1061's MCP governance promised three checks** (existence, scope, concurrency); only existence shipped. The "G-011 ceases to exist at this layer" claim is doubly compromised — half missing AND opt-in. (W01)
+- **Sub-agent `/tmp/` bypass** (item W4 from the original review-feedback artefact) was never reconciled. T-1061 was framed partly on G-015; the review explicitly said TermLink cannot solve that, and no follow-up workstream was opened. (W02)
+- **Pattern recurrence:** same "shipped before substrate-verified" framework-blindness signature as T-1626 (hooks) and T-1633 (fw upgrade). Three independent G-019 escalations in five weeks. (W07)
+- **`orchestrator.route` is hub-only RPC** — session sockets reject it (`-32601 Method not found`); the only ergonomic surface is the MCP `dispatch` wrapper. Bare CLI callers must `nc -U /var/lib/termlink/hub.sock`. (W09)
+- **Selector role-vs-tag split** — `{tags:["role:X"]}` matches but `{roles:["X"]}` does not, even when the session was spawned with `role:X` tag. Silent semantic disagreement between session.roles and `role:` tag prefix. (W09)
+- **Production audit log records only `{ts, method, peer_addr}`** — not route/breaker/governance decisions. The "complete audit trail" claim is structurally vacuous for the headline mechanic. (W06)
+- **WezTerm chrome (T-1062) was never visually verified** — no Lua/WezTerm runtime on the framework anchor; the AC `[REVIEW]` was the only gate, and the multi-pane / context-fabric viz / dispatch-as-multi-agent-UX claims from T-1061 were never built. (W01)
+- **Cost-aware routing — the headline 60-80% cost-reduction value-prop — is unshipped.** `best_model_for` returns the highest-success model regardless of cost. (W01, W08)
+
+### What got lost — reconciliation matrix
+
+| # | Lost item | Source | Disposition |
+|---|-----------|--------|-------------|
+| L1 | Live E2E orchestration smoke (proof on the wire) | W01 F1, W06 #1, W09 #2, W10 #3 | **NEW TASK** — `T-1641` E2E smoke harness in /opt/termlink CI |
+| L2 | Routing-rule policy consultation (13 hardcoded params) | W01 F2, W03 #5, W06 #3, W08, W10 #5 | **NEW INCEPTION** — routing-policy consultation arc |
+| L3 | MCP governance v2 — scope + concurrency checks | W01 F3, W03 gap, W06 #1 | **NEW TASK** — gate the missing checks |
+| L4 | MCP governance coverage — 71 ungated tools | W03 #1 | **NEW TASK** — classify + gate every mutator |
+| L5 | Framework-side wiring (--task-type, --model, GovSubscriber) | W01 F4, W04 #1–#5 | **NEW TASK** — single arc, six discrete wirings |
+| L6 | Data-plane subscriber default deployment | W01 F5, W03 #3, W06 #2 | **NEW TASK** — wire `run_with_governance` or delete dead path |
+| L7 | Cost-weighted `best_model_for` | W01 F8, W08 #11, T-1637 (already filed) | **PROMOTE T-1637** when L2 confirms cost-awareness desired |
+| L8 | Drift defenses (audit + tests + register) | W01 F7, W06 #5, W10 (all 10) | **NEW ARC** — drift-defenses arc (G-025 + audit + tests + Watchtower /orchestrator page) |
+| L9 | Sub-agent `/tmp/` bypass (G-015 reframing) | W02 W4 | **NEW INCEPTION** (decision-only) — narrow T-1061's G-015 claim OR open non-TermLink workstream |
+| L10 | Non-PTY sessions in governance paths | W02 N2 | **NEW TASK** — audit `pty.is_some()` assumptions |
+| L11 | Routing-policy parameter surface (config plumbing) | W02 N3, W08 footer | Folded into L2 as the build phase that follows |
+| L12 | `pty interact` polling regression tests | W02 N5 | **NEW TASK** — test |
+| L13 | VT-emulation creep / CC-format coupling defenses | W02 R1/R2/R3 | Folded into L8 (drift-defenses arc) |
+| L14 | Phase 1b — multi-pane WezTerm UI / fabric viz / dispatch-UX | W01 F6, W02 P6 | **DEFER** — set horizon:later, awaiting Phase 1 visual verification first |
+| L15 | Concerns-register hygiene during arc completion | W05 | **DECISION/LEARNING** — capture as L-330 + new gap "arc bookkeeping" |
+| L16 | Update G-011 entry to record T-1063 partial mitigation | W05 #1 | **DIRECT EDIT** of concerns.yaml (this aggregation pass) |
+| L17 | Make `TERMLINK_TASK_GOVERNANCE=1` default-on | W05 #2, W04 partial wiring | Folded into L5 (framework-wiring) |
+| L18 | G-017 explicit deferral or accepted-risk | W05 #5 | **DIRECT EDIT** of concerns.yaml |
+| L19 | `task_type` canonical enum + validation | W03 #2, W08 #1 | Folded into L2 (policy decision precedes implementation) |
+| L20 | `best_model_for` min-sample guard (Wilson lower-bound) | W03 #4 | **NEW TASK** — small bugfix |
+| L21 | `fw termlink route` / `termlink hub send` CLI verb | W09 #1 | **NEW TASK** — ergonomics + portability |
+| L22 | Selector role-vs-tag contract decision | W09 #3 | Folded into L2 (semantic policy) |
+| L23 | Surface fallback/breaker state in route response | W09 #4 | **NEW TASK** — observability fix |
+| L24 | Per-tenant cache scoping (route-cache global per host) | W09 #5 | **NEW TASK** — tenancy concern |
+| L25 | Component fabric cards for orchestrator modules | W07 #5, W10 #8 | Folded into L8 (drift-defenses arc) |
+| L26 | Cross-link `related_tasks` on siblings (T-1062/4/5/6, T-1636/7/9/40) | W07 #1, #2 | **DIRECT EDIT** of task files (this aggregation pass) |
+| L27 | Capture framework-blindness pattern as decision/G-0XX | W07 #3 | **DIRECT EDIT** — `fw context add-decision` + new G-026 |
+| L28 | T-1542 owner-flip-or-close (out of strict scope) | W07 #4 | **DEFER** — flag in handover, not arc work |
+| L29 | Audit-schema extension (route/breaker/governance fields) | W06 #3 | **NEW TASK** — folded into the orchestrator-side hardening cluster |
+| L30 | Rewrite Recommendation blocks on T-1062/4/5/6 | findings (this artefact) | **DIRECT EDIT** of task files (this aggregation pass) |
+
+## Recommendation
+
+**Recommendation:** GO — but explicitly NOT a single-arc continuation of T-1061. The reconsideration produced enough scoped, interconnected gaps that the work belongs in **three distinct parallel arcs plus housekeeping**, with one decision-only inception sitting upstream of the others.
+
+### The three proposed arcs
+
+**Arc A — Routing-policy consultation (DECISION/INCEPTION, blocks B and C completion)**
+- Parent: a new inception task tagged `from-T-1641, t-1061-followup, policy`.
+- Scope: surface the 13 hardcoded constants in W08; produce a `routing-policy.yaml` (or per-param `fw config` keys); answer W08 top-5 + selector role contract (W09) + task_type enum decision (W03/W08).
+- Output: `decisions.yaml` entries; build follow-ups for each adopted policy change.
+- **Blocks:** Arc B's framework-side wiring (we shouldn't wire features whose policy we haven't agreed); Arc C's drift defenses (we can't pin invariants we haven't confirmed).
+- **Items reconciled:** L2, L11, L17 (default-on), L19 (task_type enum), L22 (selector role contract).
+
+**Arc B — Behavioral wiring & framework integration (BUILD)**
+- Parent: a new build task tagged `from-T-1641, t-1061-followup, wiring`.
+- Scope: make /opt/999 actually call the substrate. Six discrete wirings from W04: `--task-type` derived from active task's `workflow_type`; specialist sessions tagged with `task-type:<type>`; `--model` defaults via `.framework.yaml`; surface `model_used`/`fallback_used` in dispatch result manifest; subscribe to Governance frames in Watchtower `/orchestrator` panel; preamble updates.
+- **Items reconciled:** L1 (E2E smoke proves the wiring), L5, L6 (subscriber wiring), L17.
+- Co-arc with /opt/termlink-side work: L3 (scope+concurrency MCP), L4 (gate the 71 ungated mutators), L20 (min-sample guard), L21 (`fw termlink route` CLI), L23 (surface fallback state), L24 (tenancy), L29 (audit schema).
+
+**Arc C — Drift defenses (TEST/AUDIT)**
+- Parent: a new build task tagged `from-T-1641, t-1061-followup, drift`.
+- Scope: register G-025; ship the W10 ten defenses (MCP-tool `task_id` audit, fallback-chain regression, governance-frame golden, tag-format validator, route_cache schema test, WezTerm plugin contract, `fw audit` orchestrator-arc checks, fabric cards, Watchtower `/orchestrator` page).
+- **Items reconciled:** L8, L13, L25, the drift half of L1.
+
+### Decision-only inceptions (parallel to A)
+
+- **L9** — narrow T-1061's G-015 claim OR open a non-TermLink workstream (FUSE/namespace/hook). Decision, ~1 session.
+
+### Housekeeping (do in this aggregation pass; not new tasks)
+
+- **L16** — update `concerns.yaml` G-011 to record T-1063 partial mitigation (cross-session MCP only, opt-in).
+- **L18** — update G-017 to `accepted-risk` with structural-incapability rationale.
+- **L26** — add `related_tasks: [T-1641]` to T-1062, T-1064, T-1065, T-1066, T-1636, T-1637, T-1639, T-1640.
+- **L27** — register **G-026 — "Framework-blindness pattern: shipped-before-substrate-verified"** with T-1626/T-1633/T-1641 as exemplars; add L-330 learning.
+- **L30** — rewrite Recommendation blocks on T-1062/4/5/6 to flag what shipped vs what was promised.
+
+### Deferred (filed, but explicitly horizon:later or out of scope)
+
+- **L7** (cost-aware) — promote T-1637 only after Arc A confirms cost-awareness is desired.
+- **L14** — multi-pane WezTerm UI / fabric viz / dispatch-as-multi-agent-UX. Defer until Phase 1 (T-1062) gets human visual verification first.
+- **L28** — T-1542 cleanup is out of T-1061-arc scope; flagged in handover.
+
+### Why three arcs, not one
+
+The shipped-but-dormant pattern is **three different failure modes wearing one outfit**:
+1. Policy was never asked → Arc A
+2. The implementation was never wired → Arc B
+3. The thing protecting against future regression was never built → Arc C
+
+Bundling them into one mega-arc is exactly the T-1061 mistake replayed. Three arcs let each have its own GO/NO-GO, its own ACs, and its own verification. Drift defenses (C) and policy (A) can run in parallel; wiring (B) waits on A's policy answers.
+
+### What this means for the four open parents (T-1062, T-1064, T-1065, T-1066)
+
+Their Recommendation blocks should be **rewritten** before human review to honestly flag: "Code shipped, behavior unverified at the framework boundary, policy unconsulted." Reviewers should see the full picture before stamping GO. This is housekeeping item L30 above.
 
 ## Decision
 

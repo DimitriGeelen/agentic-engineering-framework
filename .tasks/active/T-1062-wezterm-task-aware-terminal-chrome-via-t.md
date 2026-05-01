@@ -10,7 +10,7 @@ owner: human
 horizon: now
 tags: [termlink, wezterm, usability]
 components: []
-related_tasks: [T-1061]
+related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:02Z
 last_update: 2026-04-20T07:17:58Z
 date_finished: null
@@ -55,9 +55,14 @@ grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 
 ## Recommendation
 
-**Recommendation:** GO
+**⚠️ T-1641 Reconsideration (2026-05-01):** This Recommendation rates **code-and-AC completeness**, not behavioral verification or full Phase-1 scope coverage. T-1641 multi-agent investigation found:
+- The plugin (236 Lua lines) was **never visually verified** — no Lua/WezTerm runtime on the framework anchor.
+- T-1061 §Phase-1 promised three deliverables: *"multi-pane task governance UI"*, *"context fabric visualization"*, *"dispatch system as multi-agent UX"*. This task shipped only the third (a single status-bar readout). The first two were not built. (W01)
+- Reviewer should consult `docs/reports/T-1641-orchestrator-arc-reconsideration.md` (item L14) and clarify what GO means here: "Phase-1a chrome shipped" (yes) vs "Phase-1 complete" (no — Phase-1b multi-pane UI / fabric viz needs a separate task, currently deferred horizon:later).
 
-**Rationale:** All 6 Agent ACs verified satisfied. Plugin shipped at `plugins/wezterm/termlink-chrome.lua`, README documents install, fabric registered, content grep passes. No TermLink-side changes needed — pure consumer of existing JSON RPC, matches T-1061 Phase-1 plan. Awaits Human [REVIEW] of on-WezTerm rendering (which requires the human's WezTerm install — agent has no WezTerm to dogfood against).
+**Recommendation:** GO (Phase-1a only)
+
+**Rationale:** All 6 Agent ACs verified satisfied. Plugin shipped at `plugins/wezterm/termlink-chrome.lua`, README documents install, fabric registered, content grep passes. No TermLink-side changes needed — pure consumer of existing JSON RPC. Awaits Human [REVIEW] of on-WezTerm rendering (which requires the human's WezTerm install — agent has no WezTerm to dogfood against).
 
 **Evidence:**
 - `test -f plugins/wezterm/termlink-chrome.lua` → exists.
@@ -65,6 +70,11 @@ grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 - `grep -q "termlink" plugins/wezterm/termlink-chrome.lua` → matches.
 - `test -f .fabric/components/plugins-wezterm-termlink-chrome.yaml` → exists.
 - All 4 commands in `## Verification` pass.
+
+**Caveats (from T-1641):**
+- Multi-pane task governance UI: not built.
+- Context fabric visualization: not built.
+- On-WezTerm visual verification: not performed by agent.
 
 ## Decisions
 

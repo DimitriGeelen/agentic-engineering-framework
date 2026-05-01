@@ -10,7 +10,7 @@ owner: human
 horizon: now
 tags: [termlink, routing, orchestrator]
 components: []
-related_tasks: [T-1061]
+related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:16Z
 last_update: 2026-04-28T17:31:41Z
 date_finished: null
@@ -63,9 +63,18 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 
 ## Recommendation
 
-**Recommendation:** GO
+**⚠️ T-1641 Reconsideration (2026-05-01):** This Recommendation rates **code completeness**. T-1641 multi-agent investigation found significant scope/policy gaps:
+- W09 confirmed task-type routing **does work** end-to-end on the wire (spawned 2 specialists, routed 3 ways, killed 1, observed cache rewrite + fallback to survivor) — the core mechanic is real, not vapourware.
+- W01: T-1064's name promises *"task-type routing AND **model-aware specialist selection**"*. Only the task-type prong shipped here; model selection got punted into T-1065 as "passthrough" not "specialist selection." Conflated and dropped.
+- W03: `task_type` is a **free string** — no enum, no validation, no documented set; not connected to framework `workflow_type`. A typo (`"buld"`) silently routes to the default specialist.
+- W08: Several **routing-rule policy parameters** were silently defaulted (composite-key shape, tag prefix `task-type:`, discovery-filter strictness as soft-preference vs fail-closed, PROMOTION_THRESHOLD=5). None went through human consultation — captured as **T-1642 (Arc A inception)**.
+- W09: **Selector role-vs-tag split** — `{tags:["role:X"]}` matches but `{roles:["X"]}` does not even when spawned with that tag. Silent semantic disagreement.
+- W04: The framework that built this **does not USE it.** `agents/termlink/termlink.sh::cmd_dispatch` has no `--task-type` flag, never tags spawned workers, dispatch preamble silent. Captured as **T-1643 (Arc B build)**.
+- Reviewer should consult `docs/reports/T-1641-orchestrator-arc-reconsideration.md` and **T-1642** before stamping GO if a decision on policy is needed first.
 
-**Rationale:** All 6 Agent ACs verified satisfied via TermLink-side T-903 worker. `orchestrator.route` accepts optional `task_type`, route cache learns task-type → specialist mappings, bypass registry considers task_type, existing method-based routing unchanged when type is absent. 3 new tests, 155 hub tests pass. Backward-compatible additive extension — exactly the shape called for in the AC. Awaits Human [REVIEW] of routing-design quality (subjective architectural judgement).
+**Recommendation:** GO (mechanism shipped) — but flag that **policy consultation (T-1642) must precede framework-side wiring (T-1643)**.
+
+**Rationale:** All 6 Agent ACs verified satisfied via TermLink-side T-903 worker. `orchestrator.route` accepts optional `task_type`, route cache learns task-type → specialist mappings, bypass registry considers task_type, existing method-based routing unchanged when type is absent. 3 new tests, 155 hub tests pass. W09 live wire test confirms behavior end-to-end. Backward-compatible additive extension — exactly the shape called for in the AC.
 
 **Evidence:**
 - Worker exit code: 0
@@ -73,6 +82,13 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 - Report: `/opt/termlink/docs/reports/T-903-orchestrator-routing.md`
 - Tag convention: `task-type:<type>` (e.g., `task-type:build`)
 - Composite key: `method::task_type` for independent cache/bypass tracking
+- W09 live e2e: `routed_to: spec-build` (task_type=build), `routed_to: spec-test` (task_type=test), failover after SIGTERM works.
+
+**Caveats (from T-1641):**
+- Model-aware specialist selection: dropped from this phase, deferred to T-1065 as model passthrough only.
+- Task_type taxonomy: free-string, no validation. Pending T-1642.
+- Selector role contract: ambiguous between `session.roles` and `tags["role:X"]`. Pending T-1642.
+- Framework-side use: zero. Pending T-1643.
 
 ## Decisions
 

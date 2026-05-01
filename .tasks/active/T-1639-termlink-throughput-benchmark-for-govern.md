@@ -10,7 +10,7 @@ owner: agent
 horizon: later
 tags: [from-T-1066, termlink, benchmark, performance]
 components: []
-related_tasks: [T-1066]
+related_tasks: [T-1066, T-1641]
 created: 2026-05-01T10:45:22Z
 last_update: 2026-05-01T10:45:22Z
 date_finished: null

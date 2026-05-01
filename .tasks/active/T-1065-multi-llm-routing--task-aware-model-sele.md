@@ -10,7 +10,7 @@ owner: human
 horizon: now
 tags: [termlink, multi-llm, routing]
 components: []
-related_tasks: [T-1061]
+related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:25Z
 last_update: 2026-04-28T17:31:57Z
 date_finished: null
@@ -66,9 +66,16 @@ test -f .tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md
 
 ## Recommendation
 
-**Recommendation:** GO
+**⚠️ T-1641 Reconsideration (2026-05-01):** This Recommendation rates **mechanism completeness**, not value-prop delivery or policy consultation.
+- W01: T-1061 quantified the value at *"60-80% cost reduction by routing routine tasks to Haiku"*. Phase 4b shipped success-rate tracking only; **`best_model_for` returns the highest-success model regardless of cost**. The headline cost-reduction value-prop is **unshipped**. Captured as **T-1637 (horizon:later)** — promote when Arc A confirms cost-aware routing is desired.
+- W03: **`best_model_for` has no min-sample guard** — first successful run on a model permanently outranks any model with even one failure (1/1 outranks 99/100). Antifragility claim is undermined; cache locks in lucky early routes. Need Wilson lower-bound or `MIN_SAMPLES` floor.
+- W08: **`DEFAULT_MODEL_FALLBACK = ["opus","sonnet","haiku"]`** is a hardcoded const, no commit-message rationale, no decision-doc cite, no human consultation. Same for `FAILURE_THRESHOLD=3`, `COOLDOWN=60s`, `DEFAULT_TTL_HOURS=168`, `CONFIDENCE_THRESHOLD=0.8`. Five policy decisions made by code authors. Captured as **T-1642 (Arc A inception)**.
+- W04: Framework never passes `--model` and never reads `model_used`/`fallback_used` from result JSON. The learning loop is starved — cache feeds on nothing because nothing routes through it. Captured as **T-1643 (Arc B build)**.
+- W06: **Circuit breaker never opened in production** — `orchestrator.route` fired 0× in 71,275 audit events. Mechanism wired, never exercised on the route path.
 
-**Rationale:** Full Phase 4 scope now shipped. The 2 ACs originally split as "future" (route-cache model tracking, circuit-breaker fallback) closed via T-1590 Phase 4b on 2026-04-28. All 7 Agent ACs satisfied with evidence. Task awaits Human [REVIEW] of the integrated multi-LLM routing design (passthrough + tracking + fallback as one coherent system).
+**Recommendation:** GO (mechanism shipped) — with explicit caveats that **(a) cost-aware routing is unshipped, (b) `best_model_for` has a known statistical-validity bug at low N, (c) hardcoded fallback chain is policy-unconsulted**.
+
+**Rationale:** Full Phase 4 scope now shipped. The 2 ACs originally split as "future" (route-cache model tracking, circuit-breaker fallback) closed via T-1590 Phase 4b on 2026-04-28. All 7 Agent ACs satisfied with evidence.
 
 **Evidence:**
 - Phase 4a (passthrough): `/opt/termlink/docs/reports/T-906-model-param-dispatch.md` — 3 tests pass (opus, sonnet, absent).
@@ -76,6 +83,13 @@ test -f .tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md
 - Integrated test count: 480/0 (278 hub unit + 103 mcp unit + 99 mcp integration). `cargo test` exit 0.
 - T-1590 closed scope split — `.tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md`.
 - Decisions block updated 2026-04-28 to record scope-split closure.
+
+**Caveats (from T-1641):**
+- Cost-awareness: unshipped (T-1637 horizon:later).
+- `best_model_for` min-sample guard: missing (file as small follow-up under T-1643 / Arc B co-arc).
+- DEFAULT_MODEL_FALLBACK + 4 thresholds: hardcoded, policy-unconsulted (T-1642).
+- Framework-side `--model` use: zero (T-1643).
+- Live failover: never observed in production (audit shows 0× routes).
 
 ## Decisions
 

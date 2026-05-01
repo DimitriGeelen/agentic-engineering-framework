@@ -2598,3 +2598,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-334
+  learning: "Arc completion ≠ code-complete. T-1641 reconsideration of T-1061 surfaced the recurring signature: agent declares an arc 'shipped' based on cargo check + line-number trace + child-task ACs done, without (a) end-to-end behavioral verification on a fresh substrate, (b) audit of silently-defaulted policy constants, (c) framework-side use evidence. Same signature appeared in T-1626, T-1633. Prevention: before declaring an arc complete, ask three questions explicitly — does it run, was policy consulted, does the framework that built it USE it. See G-062."
+  source: P-007
+  task: T-1641
+  date: 2026-05-01
+  context: Added via context agent
+  application: TBD

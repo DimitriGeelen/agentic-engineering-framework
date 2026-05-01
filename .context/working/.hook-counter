@@ -1,0 +1,13 @@
+error-watchdog=35
+checkpoint=74
+check-tier0=39
+budget-gate=57
+check-project-boundary=57
+loop-detect=73
+audit-task-tools=70
+check-active-task=19
+commit-cadence=19
+check-fabric-new-file=5
+check-agent-dispatch=1
+check-dispatch=1
+post-compact-resume=1

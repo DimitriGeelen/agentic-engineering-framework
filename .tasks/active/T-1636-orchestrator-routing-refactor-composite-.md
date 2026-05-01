@@ -10,7 +10,7 @@ owner: agent
 horizon: later
 tags: [from-T-1064, termlink, routing, cleanup]
 components: []
-related_tasks: [T-1064]
+related_tasks: [T-1064, T-1641]
 created: 2026-05-01T10:44:54Z
 last_update: 2026-05-01T10:44:54Z
 date_finished: null

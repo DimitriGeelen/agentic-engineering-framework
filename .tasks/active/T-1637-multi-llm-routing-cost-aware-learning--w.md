@@ -10,7 +10,7 @@ owner: agent
 horizon: later
 tags: [from-T-1065, termlink, multi-llm, cost-routing]
 components: []
-related_tasks: [T-1065]
+related_tasks: [T-1065, T-1641]
 created: 2026-05-01T10:45:13Z
 last_update: 2026-05-01T10:45:13Z
 date_finished: null

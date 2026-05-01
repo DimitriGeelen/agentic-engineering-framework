@@ -4,16 +4,16 @@ name: "T-1061 arc integration assessment — verify T-1062/T-1064/T-1065/T-1066 
 description: >
   Cross-cutting verification: cargo check + cargo test on /opt/termlink (via termlink-agent) for the four crates the arc touched (hub, mcp, session, protocol); trace the composition through termlink_dispatch (T-1063 gate -> T-1064 task_type -> T-1065 model resolve -> outcome attribution); confirm T-1062 and T-1066 align as documented designs (read-only consumer / opt-in observer). Deliverable: docs/reports/T-1061-arc-integration-2026-05-01.md. Output: GO recommendation for the four open parents, four follow-ups captured (T-1636-T-1639) for buried supplementary-review notes.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: [from-T-1061, termlink, orchestrator, integration, verification]
 components: []
-related_tasks: []
+related_tasks: [T-1061, T-1641]
 created: 2026-05-01T10:48:05Z
-last_update: 2026-05-01T10:48:05Z
-date_finished: null
+last_update: 2026-05-01T10:51:41Z
+date_finished: 2026-05-01T10:51:41Z
 ---
 
 # T-1640: T-1061 arc integration assessment — verify T-1062/T-1064/T-1065/T-1066 compose end-to-end before human review
@@ -90,3 +90,15 @@ grep -q "T-1066" docs/reports/T-1061-arc-integration-2026-05-01.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1640-t-1061-arc-integration-assessment--verif.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0c5e2200
+- **Timestamp:** 2026-05-01T10:51:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-01T10:51:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

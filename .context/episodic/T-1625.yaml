@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1625: Pickup: Six framework-level bugs surfaced as long-watching concerns in 003-NTB-ATC-Plugin. Project is decide-deferring all six locally and forwarding upstream so framework-agent can prioritize fixes. (from 003-NTB-ATC-Plugin)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T10:03:37Z
+# ============================================================================
+
+task_id: T-1625
+task_name: "Pickup: Six framework-level bugs surfaced as long-watching concerns in 003-NTB-ATC-Plugin. Project is decide-deferring all six locally and forwarding upstream so framework-agent can prioritize fixes. (from 003-NTB-ATC-Plugin)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-30T21:07:01Z
+completed: 2026-05-01T10:03:34Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-05-01T12:02:19+02:00
+last_commit: 2026-05-01T12:02:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  triage 6-bug pickup from 003-NTB-ATC-Plugin (inception, GO recommendation)
+
+# Key outcomes
+outcomes:
+  - "Pickup envelope located, parsed, and bugs catalogued individually (above table)"
+  - "Each bug assessed: severity, fix locus, complexity estimate"
+  - "Recommendation written: priority order + decomposition plan into individual follow-up tasks"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "triage 6-bug pickup from 003-NTB-ATC-Plugin (inception, GO recommendation)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Decompose into 6 individual tasks, prioritized."
+    rationale: "\"One bug = one task\" rule. Each concern has a different fix locus, risk profile, and regression-test surface. Bundling them would destroy causality traceability and make commit messages multi-purpose."
+    alternatives_rejected: ["Single sweeping \"fix all six\" build task — would violate Task Sizing Rules and create an all-or-nothing PR."]
+    alternatives_rejected: ["Defer all six — consumer has documented this is cumulative friction; each individual fix is small and worth doing."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1625-pickup-six-framework-level-bugs-surfaced.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T12:02:19"
+    action: "T-1625: triage 6-bug pickup from 003-NTB-ATC-Plugin (inception, GO recommendation)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 776 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 776
+  commits: 1
+  files_changed: 1
+  lines_added: 71
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1625-pickup-six-framework-level-bugs-surfaced.md
+generated_by: context-agent-hybrid

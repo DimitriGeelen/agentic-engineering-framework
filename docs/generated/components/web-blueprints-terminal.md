@@ -32,6 +32,7 @@ Singleton registry and adapter map (initialized on first use)
 ### Tasks
 - T-964: Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)
 - T-966: TermLink session observation in Watchtower terminal (T-962 Phase 3)
+- T-967: Session profiles + provider registry for orchestrator readiness (T-962 Phase 4)
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-terminal.yaml`*

@@ -3358,3 +3358,343 @@ scan_id: R-2352645e
 task_id: T-1615
 payload:
   task_file: .tasks/active/T-1615-watchtower-rss-observation-cron--detect-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T09:22:08Z'
+scan_id: R-613ab8e1
+task_id: T-1616
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T09:22:08Z'
+scan_id: R-613ab8e1
+task_id: T-1616
+payload:
+  task_file: .tasks/active/T-1616-handover-scanner-counts-unchecked-acs-in.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T09:22:10Z'
+scan_id: R-91f7261f
+task_id: T-1617
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T09:22:10Z'
+scan_id: R-91f7261f
+task_id: T-1617
+payload:
+  task_file: .tasks/active/T-1617-inception-defer-does-not-move-task-to-co.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T16:42:33Z'
+scan_id: R-9dd3fdaa
+task_id: T-1618
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T16:42:33Z'
+scan_id: R-9dd3fdaa
+task_id: T-1618
+payload:
+  task_file: .tasks/active/T-1618-strip-html-comments-from-human-ac-parser.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T16:54:45Z'
+scan_id: R-d02aec48
+task_id: T-1619
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T16:54:45Z'
+scan_id: R-d02aec48
+task_id: T-1619
+payload:
+  task_file: .tasks/active/T-1619-filter-deferd-inceptions-from-handover-w.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T17:17:51Z'
+scan_id: R-f386156d
+task_id: T-1620
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T17:17:51Z'
+scan_id: R-f386156d
+task_id: T-1620
+payload:
+  task_file: .tasks/active/T-1620-strip-html-comments-in-inceptionsh-and-v.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T19:12:24Z'
+scan_id: R-0d835c9d
+task_id: T-1621
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T19:12:24Z'
+scan_id: R-0d835c9d
+task_id: T-1621
+payload:
+  task_file: .tasks/active/T-1621-watchtower-url-triple-file-becomes-stale.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T19:16:15Z'
+scan_id: R-50fac4a5
+task_id: T-1622
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T19:16:15Z'
+scan_id: R-50fac4a5
+task_id: T-1622
+payload:
+  task_file: .tasks/active/T-1622-refresh-on-read-for-fw-watchtower-urlpor.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T20:26:52Z'
+scan_id: R-c8c8423a
+task_id: T-1623
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T20:26:52Z'
+scan_id: R-c8c8423a
+task_id: T-1623
+payload:
+  task_file: .tasks/active/T-1623-clear-stale-tofu-pin-for-ring20-dashboar.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T20:59:53Z'
+scan_id: R-c596d0a8
+task_id: T-967
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T20:59:53Z'
+scan_id: R-c596d0a8
+task_id: T-967
+payload:
+  task_file: .tasks/active/T-967-session-profiles--provider-registry-for-.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T21:18:21Z'
+scan_id: R-c4f547fe
+task_id: T-1626
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T21:18:21Z'
+scan_id: R-c4f547fe
+task_id: T-1626
+payload:
+  task_file: .tasks/active/T-1626-hook-failures-must-self-surface--non-blo.md
+---
+kind: scan_emitted
+timestamp: '2026-04-30T21:27:45Z'
+scan_id: R-3cc85a9e
+task_id: T-1627
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-04-30T21:27:45Z'
+scan_id: R-3cc85a9e
+task_id: T-1627
+payload:
+  task_file: .tasks/active/T-1627-b-1-t-1626-cwd-invariant-hook-resolution.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T07:20:33Z'
+scan_id: R-6876e526
+task_id: T-1628
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T07:20:33Z'
+scan_id: R-6876e526
+task_id: T-1628
+payload:
+  task_file: .tasks/active/T-1628-b-2-t-1626-hook-telemetry--hook-counter-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T08:04:51Z'
+scan_id: R-d5b3af2d
+task_id: T-1629
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T08:04:51Z'
+scan_id: R-d5b3af2d
+task_id: T-1629
+payload:
+  task_file: .tasks/active/T-1629-b-3-t-1626-hook-failure-escalation--thre.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T08:57:14Z'
+scan_id: R-9c245441
+task_id: T-1630
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T08:57:14Z'
+scan_id: R-9c245441
+task_id: T-1630
+payload:
+  task_file: .tasks/active/T-1630-b-4-t-1626-sessionstart-hook-self-test--.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T09:51:35Z'
+scan_id: R-94fe579f
+task_id: T-1631
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T09:51:35Z'
+scan_id: R-94fe579f
+task_id: T-1631
+payload:
+  task_file: .tasks/active/T-1631-b-3b-t-1626-hook-failure-threshold-rule-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T09:57:45Z'
+scan_id: R-ff667b43
+task_id: T-1632
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T09:57:45Z'
+scan_id: R-ff667b43
+task_id: T-1632
+payload:
+  task_file: .tasks/active/T-1632-b-3c-t-1626-watchtower-hooks-page--per-h.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T10:03:34Z'
+scan_id: R-dc348914
+task_id: T-1625
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T10:03:34Z'
+scan_id: R-dc348914
+task_id: T-1625
+payload:
+  task_file: .tasks/active/T-1625-pickup-six-framework-level-bugs-surfaced.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T10:29:47Z'
+scan_id: R-5be9a7ad
+task_id: T-1633
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T10:29:47Z'
+scan_id: R-5be9a7ad
+task_id: T-1633
+payload:
+  task_file: .tasks/active/T-1633-fw-upgrade-must-work-without-local-path-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T10:51:41Z'
+scan_id: R-0c5e2200
+task_id: T-1640
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T10:51:41Z'
+scan_id: R-0c5e2200
+task_id: T-1640
+payload:
+  task_file: .tasks/active/T-1640-t-1061-arc-integration-assessment--verif.md
+---
+kind: scan_emitted
+timestamp: '2026-05-01T11:00:17Z'
+scan_id: R-c7155a1a
+task_id: T-1638
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-01T11:00:17Z'
+scan_id: R-c7155a1a
+task_id: T-1638
+payload:
+  task_file: .tasks/active/T-1638-termlink-extract-stripansicodes-to-share.md

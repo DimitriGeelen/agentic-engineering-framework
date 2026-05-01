@@ -1,9 +1,9 @@
-# Audit Results - 2026-04-30-1115
-timestamp: 2026-04-30T09:15:04Z
+# Audit Results - 2026-04-30-2328
+timestamp: 2026-04-30T21:28:23Z
 sections: "structure"
 summary:
   pass: 9
-  warn: 2
+  warn: 1
   fail: 0
 findings:
   - level: PASS
@@ -20,13 +20,10 @@ findings:
     check: "No duplicate task IDs across active/ and completed/"
   - level: PASS
     check: "All 10 project YAML files parse correctly"
-  - level: WARN
-    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
-    mitigation: "Run: fw fabric drift"
   - level: PASS
-    check: "Fabric: 471 registered, 0 unregistered"
+    check: "Fabric: 472 registered, 0 unregistered"
   - level: WARN
-    check: "Fabric: 37/472 cards have no edges"
+    check: "Fabric: 38/473 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (471 cards)"
+    check: "Fabric drift: All watched source files registered (472 cards)"

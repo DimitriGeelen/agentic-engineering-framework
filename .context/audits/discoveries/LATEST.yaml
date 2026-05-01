@@ -1,11 +1,11 @@
-timestamp: 2026-04-30T14:30:01Z
+timestamp: 2026-05-01T12:00:01Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1561)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1578)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 12 task(s) waiting >30d: T-446(46d) T-470(48d) T-481(46d) T-505(44d) T-518(43d) T-530(38d) T-612(35d) T-613(33d) T-706(32d) T-708(32d) T-710(32d) T-782(31d)"
+    check: "D2: Human review queue — 3 task(s) waiting >30d: T-530(39d) T-708(33d) T-710(32d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - id: D8
     level: PASS

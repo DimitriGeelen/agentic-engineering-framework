@@ -1,0 +1,83 @@
+pickup_id: P-045
+version: 1
+type: bug-report
+source:
+  project: "003-NTB-ATC-Plugin"
+  task_id: "T-271"
+  agent: "claude-code"
+  timestamp: "2026-04-30T21:05:00Z"
+payload:
+  summary: "Six framework-level bugs surfaced as long-watching concerns in 003-NTB-ATC-Plugin. Project is decide-deferring all six locally and forwarding upstream so framework-agent can prioritize fixes."
+  detail: |
+    All six concerns below have been in `watching` status for 5+ days
+    in 003-NTB-ATC-Plugin's concerns register. Each is a defect in the
+    framework itself (fw CLI / Watchtower / hooks / sovereignty path),
+    not in the project's own code. The project is closing them locally
+    as `decided-defer` because the project has documented workarounds
+    (`--skip-sovereignty`, `WATCHTOWER_URL=http://localhost:3039`,
+    CLI fallback for inception decide) and the structural fix lives
+    upstream. Forwarded so they're visible in framework-agent's
+    pickup inbox and can be triaged into a sprint.
+
+    Full details in:
+      /003-NTB-ATC-Plugin/.context/project/concerns.yaml
+
+    --- C-006 (line 267) — R-033 dual-fire on inception completion
+    Sovereignty fires twice during inception close-out: once at
+    `fw inception decide T-XXX go` (legitimate), then AGAIN at
+    `fw task update T-XXX --status work-completed`. Workaround:
+    `--skip-sovereignty` (logged each time). Hit on T-011, T-115,
+    T-077-era closures. The decide IS the sovereignty event.
+
+    --- C-009 (line 453) — Watchtower /inception/decide HTTP 500
+    Watchtower's review-first inception page returns 500 on
+    partial-complete success and cannot recover from a P-010 mid-decide
+    (AC checkbox enforcement raised mid-flow). Project has been using
+    CLI fallback (`fw inception decide T-XXX go --skip-sovereignty`).
+
+    --- C-010 (line 529) — Project-level agent extensions homeless
+    Per-project agents (export-reviewer customizations, project-specific
+    review-prompts) have no version-controlled home; either they live
+    in `.agentic-framework/` (overwritten on framework upgrade) or in
+    ad-hoc project paths (no discovery). Need a convention like
+    `.fabric/agents/` or `.claude/agents/`.
+
+    --- C-011 (line 568) — fw task review silent exit-1
+    `fw task review T-XXX` exits 1 silently when the task body lacks an
+    unindented `**Recommendation:**` line. No error message. Operator
+    sees only "exit 1" and has to grep the source. Should print
+    "task body missing **Recommendation:** line — add one and retry".
+
+    --- C-012 (line 612) — update-task.sh flock leaks FD to VBCSCompiler
+    `agents/task-create/update-task.sh` opens a flock and spawns dotnet
+    subprocesses (when running verification commands containing
+    `dotnet build`). The flock FD leaks into VBCSCompiler.exe's daemon,
+    which inherits and holds the FD even after update-task.sh exits.
+    Future `fw task update` invocations block on the lock indefinitely.
+    Workaround: `pkill VBCSCompiler` between updates. Fix: O_CLOEXEC on
+    the flock FD.
+
+    --- C-018 (line 960) — partial-complete recheck ignores --skip-acceptance-criteria
+    `fw task update T-XXX --status work-completed --skip-acceptance-criteria`
+    succeeds on first call, but the partial-complete *recheck* path
+    (when owner=human and Agent ACs pass while Human ACs are unchecked)
+    re-evaluates AC enforcement WITHOUT honoring the original
+    `--skip-acceptance-criteria` flag. The flag is dropped in the
+    recheck branch.
+
+    PROJECT IMPACT
+        Each of these has had a workaround documented in this project's
+        memory or CLAUDE.md. None block project work. But they're
+        cumulative friction (every inception close burns 2 sovereignty
+        prompts; every task update after a build risks the flock leak;
+        every Watchtower flow has fallback logic baked in). A consolidated
+        framework-side pass would clean them all up.
+
+    PROJECT'S DECISION LOCALLY
+        All six moved from `watching` → `decided-defer` in this project's
+        register on 2026-04-30, citing this pickup envelope. Will reopen
+        in our register if framework-agent's fix lands and we want to
+        validate locally.
+
+  priority: medium
+  tags: [framework, fw-cli, watchtower, sovereignty, hooks, batch]

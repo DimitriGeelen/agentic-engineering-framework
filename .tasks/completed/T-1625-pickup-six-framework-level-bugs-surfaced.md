@@ -4,7 +4,7 @@ name: "Pickup: Six framework-level bugs surfaced as long-watching concerns in 00
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-271. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-30T21:07:01Z
-last_update: 2026-05-01T10:02:06Z
-date_finished: null
+last_update: 2026-05-01T10:03:34Z
+date_finished: 2026-05-01T10:03:34Z
 source_task_id_in_origin: T-271
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---
@@ -122,3 +122,52 @@ T-1625 closes once the six follow-ups are filed.
 ### 2026-05-01T10:02:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-05-01T10:03:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — decompose into 6 individual bug tasks; ship in priority order
+
+Rationale: The envelope bundles 6 distinct bugs from 003-NTB-ATC-Plugin's `decided-defer` register. Each has a different fix locus and risk profile. Per the "one bug = one task" rule, they cannot be a single build task — each needs its own RCA, fix, and regression test. The right move is decomposition into 6 follow-up build tasks, prioritized by leverage:
+
+Suggested priority order (smallest blast → highest leverage):
+1. C-018 partial-complete recheck flag drop (correctness bug; flag-respect is load-bearing for autonomous flows)
+2. C-011 silent exit-1 on missing Recommendation (likely already fixed for inception by T-1545; verify and extend to non-inception)
+3. C-006 sovereignty dual-fire (annoyance; fires `--skip-sovereignty` bypass twice per inception close-out — pollutes bypass log)
+4. C-009 Watchtower HTTP 500 on partial-complete decide (UX correctness; CLI fallback exists but Watchtower is the canonical path)
+5. C-012 flock FD leak to VBCSCompiler (correctness; only fires for .NET-toolchain consumers — hard to regression-test without a .NET host, but `O_CLOEXEC` fix is small)
+6. C-010 project-level agent home convention (design + implementation; needs its own inception to choose between `.fabric/agents/`, `.claude/agents/`, or shim convention)
+
+Evidence:
+- Envelope source verified: `.context/pickup/processed/P-045-from-ntb-atc-bug-report.yaml` (84 lines, 6 distinct concerns referenced by line numbers in the consumer's concerns.yaml)
+- All 6 bugs have documented workarounds in 003-NTB-ATC-Plugin (per envelope) — no consumer is blocked, this is friction reduction
+- C-011 has prior framework work (T-1545); fix may already be complete for the inception path — first task should verify-and-extend rather than rebuild
+- C-010 is design, not bug — should be its own inception task (workflow_type: inception), not a build
+
+Decomposition plan:
+On GO decision, framework-agent creates:
+- T-1633 (build): C-018 partial-complete recheck flag propagation
+- T-1634 (build): C-011 verify T-1545 fix + extend to non-inception
+- T-1635 (build): C-006 sovereignty single-fire across inception arc
+- T-1636 (build): C-009 Watchtower HTTP 500 recovery
+- T-1637 (build): C-012 flock FD `O_CLOEXEC`
+- T-1638 (inception): C-010 project-level agent home convention
+
+T-1625 closes once the six follow-ups are filed.
+
+Out of scope for this inception:
+- Actually shipping any of the six fixes (each gets its own task and RCA)
+- Reopening the consumer's `decided-defer` entries (consumer will reopen on framework-side fix landing)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-dc348914
+- **Timestamp:** 2026-05-01T10:03:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-01T10:03:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

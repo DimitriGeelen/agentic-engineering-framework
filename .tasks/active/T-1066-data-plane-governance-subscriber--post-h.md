@@ -10,7 +10,7 @@ owner: human
 horizon: now
 tags: [termlink, data-plane, audit]
 components: []
-related_tasks: [T-1061]
+related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:32Z
 last_update: 2026-04-28T17:32:14Z
 date_finished: null
@@ -63,9 +63,18 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 
 ## Recommendation
 
-**Recommendation:** GO
+**⚠️ T-1641 Reconsideration (2026-05-01):** This Recommendation rates **mechanism completeness**. T-1641 multi-agent investigation found the mechanism is shipped-as-dead-code:
+- W03 + W06: **`run_with_governance` has zero non-test callers in /opt/termlink**, and zero references in /opt/999. The Layer 3 mechanism that T-1061 sold as "the future-extension story" is **never wired into a production session**. Governance frame type 0x8 is theoretically defined and **never emitted on the wire** in real use.
+- W01 + AC #4: The "opt-in (not attached by default)" stance was an explicit design choice, but in practice "opt-in" means "no caller exists" — there is no `termlink spawn --governance-config <file>` flag, no default pattern set, no Watchtower subscriber. (W04: framework has zero `GovernanceSubscriber` references.)
+- W02 R1/R2/R3: Three risks from the original review-feedback artefact (VT-emulation creep, Claude-Code-format coupling, "deterministic" framing of heuristic parsing) **have no defending audit/test/monitor**. A future agent extending the subscriber can drift into any of them silently.
+- W10 #3: **No governance-frame protocol regression test** with golden hex fixture. Wire-format drift is the worst silent-failure class.
+- W06 follow-up #2: needs "wire `run_with_governance` + ship default pattern + smoke test asserting a 0x8 frame on the wire."
+- W10 #6: **Strip-ansi duplication** (in `handler.rs` and `governance_subscriber.rs`) — captured as T-1638 (closed) earlier this session via TermLink dispatch.
+- All this routes to **T-1643 (Arc B build, framework-side wiring)** + **T-1644 (Arc C drift defenses)**.
 
-**Rationale:** All 7 Agent ACs verified satisfied via TermLink-side T-905 worker. New Governance frame type (0x8) added to binary protocol, opt-in non-blocking subscriber receives Output frames and matches configurable patterns, emits Governance frames back to session, async/non-blocking design preserves data plane throughput. 9 new tests; 250 session + 92 protocol tests pass (342 total). Awaits Human [REVIEW] of architectural design + benchmark validation.
+**Recommendation:** GO (protocol + subscriber shipped) — with explicit caveat that **the mechanism is currently dormant: no caller wires it, no production session emits frame 0x8, no regression test pins the wire format**. Reviewer should treat this as "Layer 3 substrate exists" rather than "Layer 3 is operational."
+
+**Rationale:** All 7 Agent ACs verified satisfied via TermLink-side T-905 worker. New Governance frame type (0x8) added to binary protocol, opt-in non-blocking subscriber receives Output frames and matches configurable patterns, emits Governance frames back to session, async/non-blocking design preserves data plane throughput. 9 new tests; 250 session + 92 protocol tests pass (342 total).
 
 **Evidence:**
 - Worker exit code: 0
@@ -74,6 +83,13 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 - Architecture: broadcast channel -> ANSI strip -> regex match -> mpsc Governance frame
 - New files: `governance.rs` (protocol), `governance_subscriber.rs` (session)
 - New dependency: `regex = "1"` (workspace)
+
+**Caveats (from T-1641):**
+- `run_with_governance` callers: zero (T-1643).
+- Frame 0x8 wire emission: never observed in production.
+- Golden-hex regression test: missing (T-1644).
+- Throughput benchmark: deferred (T-1639 horizon:later).
+- VT-emulation / format-coupling drift defenses: missing (T-1644).
 
 ## Decisions
 

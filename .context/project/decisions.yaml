@@ -331,3 +331,66 @@ decisions:
     date: 2026-04-29
     task: T-1600
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-050
+    decision: "Flat `<hookname>=<count>` lines, read-modify-write with mapfile"
+    scope: project
+    date: 2026-05-01
+    task: T-1628
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-051
+    decision: "Record missing-hook events as exit-127 in failure counter, BUT keep the dispatcher's `exit 0` (degrade-to-allow per T-1360/G-053-B)"
+    scope: project
+    date: 2026-05-01
+    task: T-1628
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-052
+    decision: "Split into T-1629 (B-3a doctor probe), T-1631 (B-3b threshold rule), T-1632 (B-3c Watchtower /hooks page)"
+    scope: project
+    date: 2026-05-01
+    task: T-1629
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-053
+    decision: "Exclude PreCompact / SessionStart from the exercise"
+    scope: project
+    date: 2026-05-01
+    task: T-1629
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-054
+    decision: "`lib/doctor-hook-exercise.py` invoked as `python3 $FW_LIB_DIR/doctor-hook-exercise.py` with env vars"
+    scope: project
+    date: 2026-05-01
+    task: T-1629
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-055
+    decision: "Append probe call to existing `agents/context/post-compact-resume.sh` (covers compact/resume matchers)"
+    scope: project
+    date: 2026-05-01
+    task: T-1630
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-056
+    decision: "Call `lib/doctor-hook-exercise.py` directly from the resume hook"
+    scope: project
+    date: 2026-05-01
+    task: T-1630
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-057
+    decision: "Decompose into 6 individual tasks, prioritized."
+    scope: project
+    date: 2026-05-01
+    task: T-1625
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-058
+    decision: "Framework-blindness pattern — 'shipped before substrate-verified' is a recurring class, not an isolated incident"
+    scope: project
+    date: 2026-05-01
+    task: T-1641
+    rationale: "T-1626 (hooks), T-1633 (fw upgrade), T-1641 (orchestrator arc) all share the signature: code/tests pass + integration-trace exists + child ACs done → agent declares ship → user pushback or downstream cascade reveals headline mechanic was never run, policy was never asked, framework never USES it. The pattern is distinct from G-019 (which is about bug-fix vs root-cause). This one is about arc-completion vs arc-effect. Captured as G-062 with proposed structural mechanisms (CLAUDE.md section + fw audit arc check + fw task review extra gate)."

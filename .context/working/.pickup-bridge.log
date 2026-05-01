@@ -16,3 +16,5 @@
 2026-04-27T18:38:05Z posted via=event.broadcast topic=framework:pickup msg_type=pickup-bug-report sha=10a61f60e7e2cb1b13d1481eb1182ff2774be37ea30648f8237d1e531d0c7de2
 2026-04-29T07:45:05Z channel.post-failed envelope=P-018-bug-report-from-ntb-atc.yaml — falling back to event.broadcast
 2026-04-29T07:45:05Z posted via=event.broadcast topic=framework:pickup msg_type=pickup-bug-report sha=4f320e82b1b2b45ae18020dc966aea61c5b2eddb28e650b28feef5fbcd2e5e4c
+2026-04-30T21:07:05Z channel.post-failed envelope=P-045-from-ntb-atc-bug-report.yaml — falling back to event.broadcast
+2026-04-30T21:07:05Z posted via=event.broadcast topic=framework:pickup msg_type=pickup-bug-report sha=fdb2583beb3e785914178ac7b783cef377c5922aa6e8a7ceb556f0ce93ef60e3
