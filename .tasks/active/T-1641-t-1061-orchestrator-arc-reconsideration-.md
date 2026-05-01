@@ -90,8 +90,8 @@ Multi-agent TermLink dispatch — 10 workers in parallel, each writing findings 
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Research artefact `docs/reports/T-1641-orchestrator-arc-reconsideration.md` exists with the user pushback dialogue captured verbatim and the investigation plan
-- [ ] At least 8 of 10 TermLink workers dispatched (slots W01–W10), each writing findings to `docs/reports/T-1641-worker-NN-<topic>.md`
+- [x] Research artefact `docs/reports/T-1641-orchestrator-arc-reconsideration.md` exists with the user pushback dialogue captured verbatim and the investigation plan
+- [x] At least 8 of 10 TermLink workers dispatched (slots W01–W10), each writing findings to `docs/reports/T-1641-worker-NN-<topic>.md` — 10/10 dispatched 2026-05-01T11:36Z, sessions: w01-coverage, w02-feedback, w03-state, w04-usage, w05-gaps, w06-directives, w07-arcs, w08-policy, w09-smoke, w10-defenses
 - [ ] Aggregated "what got lost" list compiled into the master research artefact
 - [ ] Each "lost" item is either filed as a new task (with `from-T-1641` tag) or explicitly reconciled (already done / scoped out / requires human input)
 - [ ] Recommendation written with concrete arc-or-arcs proposal for the next pass
