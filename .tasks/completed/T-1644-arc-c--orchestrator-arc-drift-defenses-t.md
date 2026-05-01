@@ -25,9 +25,12 @@ date_finished: 2026-05-01T13:08:53Z
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+<!-- Backfilled from delivered components (T-1644 shipped with placeholders, slipped P-010; CTL-012 surfaced it). -->
+- [x] G-061 register entry created — five decay vectors documented (W10 sequencing E)
+- [x] MCP-tool task_id audit shipped — `agents/audit/orchestrator-mcp-scan.sh` + audit integration (W10 A)
+- [x] Bundled regression tests landed: fallback chain, route_cache schema, governance frame 0x8 golden, termlink list --json schema (W10 C, see related_tasks: T-1063/T-1064/T-1065/T-1066)
+- [x] Watchtower `/orchestrator` blueprint + template registered (W10 B, T-1647 follow-up)
+- [x] Cross-repo fabric cards for orchestrator/router/fallback/frame planted (W10 F, T-1652)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
