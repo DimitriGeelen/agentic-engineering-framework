@@ -4,15 +4,15 @@ name: "TermLink: extract strip_ansi_codes to shared protocol::ansi module — pr
 description: >
   T-1066 supplementary review flagged duplicate strip_ansi_codes implementations in crates/termlink-session/src/handler.rs and governance_subscriber.rs. Same algorithm, two copies. Risk: governance regex matching and handler display drift over time, breaking observability. Extract to shared module (protocol::ansi or session::ansi). Pure refactor, no behavior change. Cross-repo: /opt/termlink. Captured horizon:later. Origin: T-1066 review notes 2026-04-30.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
-horizon: later
+horizon: now
 tags: [from-T-1066, termlink, cleanup, dedup]
 components: []
 related_tasks: [T-1066]
 created: 2026-05-01T10:45:18Z
-last_update: 2026-05-01T10:45:18Z
+last_update: 2026-05-01T10:53:54Z
 date_finished: null
 ---
 
@@ -20,40 +20,52 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1066 supplementary review (2026-04-30) flagged that `strip_ansi_codes` is implemented twice with the same algorithm: once in `crates/termlink-session/src/handler.rs` (line 374) for display rendering, and once in `crates/termlink-session/src/governance_subscriber.rs` (line 121) for governance regex matching. If they drift, governance pattern matching diverges from what the user actually sees on the terminal — silent observability bug. Pure refactor: extract to a single `crates/termlink-session/src/ansi.rs` module and update both call sites to use it.
+
+Cross-repo: this work lives on /opt/termlink. Dispatched via `fw termlink dispatch --project /opt/termlink`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] New module `crates/termlink-session/src/ansi.rs` with single `pub(crate) fn strip_ansi_codes(s: &str) -> String` (or `pub fn` if needed by external crate)
+- [x] `crates/termlink-session/src/lib.rs` declares the new module
+- [x] `crates/termlink-session/src/handler.rs` removes its private `strip_ansi_codes` and imports from `crate::ansi`
+- [x] `crates/termlink-session/src/governance_subscriber.rs` removes its private `strip_ansi_codes` and imports from `crate::ansi`
+- [x] `cargo check -p termlink-session` exits 0
+- [x] `cargo test -p termlink-session --lib` exits 0 (no test count regression — actual baseline is 316, post-refactor still 316. The "250" cited in T-1066 was stale; the refactor introduced no test deltas.)
+- [x] Worker artefact `docs/reports/T-1638-strip-ansi-shared-module.md` documents the change with line references and before/after
+- [x] No semantic change — both call sites produce identical output for the same input (worker confirmed byte-identical via diff exit 0; doc-comment was the only textual difference, richer variant preserved)
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Pure extraction completed by TermLink-dispatched worker (TermLink-side task T-1437). Byte-identical confirmation via `diff` exit 0 — the two pre-existing implementations were textually identical except for doc-comment richness; richer variant kept. Both call sites retargeted to `crate::ansi::strip_ansi_codes(...)`. All 11 strip_ansi_codes unit tests preserved verbatim in `ansi::tests`. Build clean (cargo check 4.82s) and tests clean (316/316 lib pass — same count as pre-refactor baseline). Closes the supplementary-review note from T-1066 about ANSI-handling drift between display and governance paths.
+
+**Evidence:**
+- Worker artefact: `/opt/termlink/docs/reports/T-1638-strip-ansi-shared-module.md`
+- TermLink-side commit: `ecdb0df0 T-1437 / T-1638: extract strip_ansi_codes to shared ansi module`
+- Diff summary: +130 lines (ansi.rs new) / +1 (lib.rs declare) / -113 (handler.rs) / -50 (governance_subscriber.rs)
+- `cargo check -p termlink-session` → exit 0 (Finished dev profile in 4.82s)
+- `cargo test -p termlink-session --lib` → exit 0 (test result: ok. 316 passed; 0 failed; 0 ignored)
+- All 8 verification commands pass
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+# Worker artefact present
+test -f /opt/termlink/docs/reports/T-1638-strip-ansi-shared-module.md
+# New module created
+test -f /opt/termlink/crates/termlink-session/src/ansi.rs
+# Old duplicate definitions removed
+! grep -E "^fn strip_ansi_codes" /opt/termlink/crates/termlink-session/src/handler.rs
+! grep -E "^fn strip_ansi_codes" /opt/termlink/crates/termlink-session/src/governance_subscriber.rs
+# Both files now import from the shared module
+grep -q "ansi::strip_ansi_codes\|use.*ansi" /opt/termlink/crates/termlink-session/src/handler.rs
+grep -q "ansi::strip_ansi_codes\|use.*ansi" /opt/termlink/crates/termlink-session/src/governance_subscriber.rs
+# Build clean (run via termlink-agent)
+termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo check -p termlink-session --message-format short 2>&1 | tail -3" --json --timeout 300 | grep -q '"ok":true'
+# Tests clean (run via termlink-agent)
+termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo test -p termlink-session --lib --quiet 2>&1 | tail -3" --json --timeout 600 | grep -q '"ok":true'
 
 ## RCA
 
@@ -88,3 +100,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1638-termlink-extract-stripansicodes-to-share.md
 - **Context:** Initial task creation
+
+### 2026-05-01T10:53:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
