@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1658: Vendored .agentic-framework/ drift sync — pull T-1620, T-1626/T-1627/T-1628, T-1542 fixes from upstream lib/ into .agentic-framework/lib/
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-01T16:48:04Z
+# ============================================================================
+
+task_id: T-1658
+task_name: "Vendored .agentic-framework/ drift sync — pull T-1620, T-1626/T-1627/T-1628, T-1542 fixes from upstream lib/ into .agentic-framework/lib/"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T16:39:49Z
+completed: 2026-05-01T16:48:01Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-05-01T18:47:54+02:00
+last_commit: 2026-05-01T18:47:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  commit vendored .agentic-framework/ sync (T-1620, T-1626/1627/1628, T-1542)
+
+# Key outcomes
+outcomes:
+  - "`.agentic-framework/lib/inception.sh` is byte-identical to `lib/inception.sh`"
+  - "`.agentic-framework/lib/upgrade.sh` is byte-identical to `lib/upgrade.sh`"
+  - "`.agentic-framework/lib/verify-acs.sh` is byte-identical to `lib/verify-acs.sh`"
+  - "`.agentic-framework/lib/hook-telemetry.sh` is byte-identical to `lib/hook-telemetry.sh`"
+  - "All four files are tracked in git (no untracked vendored files)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/lib/hook-telemetry.sh"
+  - ".agentic-framework/lib/inception.sh"
+  - ".agentic-framework/lib/upgrade.sh"
+  - ".agentic-framework/lib/verify-acs.sh"
+  - ".tasks/active/T-1658-vendored-agentic-framework-drift-sync--p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T18:47:54"
+    action: "T-1658: commit vendored .agentic-framework/ sync (T-1620, T-1626/1627/1628, T-1542)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [hygiene, vendoring, dogfood, framework-self-fix]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 2
+  files_changed: 7
+  lines_added: 407
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1658-vendored-agentic-framework-drift-sync--p.md
+generated_by: context-agent-hybrid
