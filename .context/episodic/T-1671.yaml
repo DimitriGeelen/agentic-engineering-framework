@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1671: Implement Default-to-OPEN agent gate in fw arc close — refuse closure when CLAUDECODE=1 (T-1670 build, mirror T-1259 inception-decide)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T07:45:33Z
+# ============================================================================
+
+task_id: T-1671
+task_name: "Implement Default-to-OPEN agent gate in fw arc close — refuse closure when CLAUDECODE=1 (T-1670 build, mirror T-1259 inception-decide)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T07:38:50Z
+completed: 2026-05-02T07:45:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-02T09:44:44+02:00
+last_commit: 2026-05-02T09:44:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  implement Default-to-OPEN agent gate in fw arc close
+
+# Key outcomes
+outcomes:
+  - "`lib/arc.sh:arc_close()` refuses when `CLAUDECODE=1` and neither"
+  - "Refusal message names §ACD/G-062, points at"
+  - "`--i-am-human` flag bypasses the gate (rare human-typing-into-"
+  - "`--from-watchtower` flag bypasses the gate (Flask backend exemption,"
+  - "`CLAUDECODE` unset OR empty AND `--i-am-human` passed → close proceeds"
+  - "No regression in T-1668 gates (--demo + --headline-mechanic still"
+  - "New test file `tests/unit/test_arc_close_agent_gate.py` pins:"
+  - "All existing arc tests pass: `pytest tests/unit/test_arc_system.py"
+  - "CLAUDE.md §Arc Completion Discipline updated with one-line note"
+  - "Live verification: `CLAUDECODE=1 bin/fw arc close orchestrator-rethink"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".context/arcs/orchestrator-rethink.yaml"
+  - "lib/arc.sh"
+  - ".tasks/active/T-1671-implement-default-to-open-agent-gate-in-.md"
+  - ".tasks/completed/T-1667-rca--systemic-remediation-for-acd-self-a.md"
+  - ".tasks/completed/T-1670-default-to-open-structural-gate-gap--age.md"
+  - "tests/unit/test_arc_close_agent_gate.py"
+  - "tests/unit/test_arc_headline_demo.py"
+  - "tests/unit/test_arc_system.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T09:44:44"
+    action: "T-1671: implement Default-to-OPEN agent gate in fw arc close"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 8
+  lines_added: 430
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1671-implement-default-to-open-agent-gate-in-.md
+generated_by: context-agent-hybrid
