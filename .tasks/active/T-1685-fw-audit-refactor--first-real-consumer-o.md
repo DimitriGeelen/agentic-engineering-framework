@@ -86,15 +86,17 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** NO-GO
+
+**Rationale:** Phase 1 spike showed `fw audit` is bash/git/IO bound (2m18s wall-clock; sys 2m7s = fork/exec + git ops + file I/O), with ZERO LLM-amenable workload in any check. Refactoring through the orchestrator would inject LLM cost + non-determinism + external dependencies into a deterministic pipeline that costs zero today. The premise — "audit has slow analytical checks that would benefit from typed routing" — does not survive investigation.
+
+**Evidence:**
+- Full Phase 1 spike at `docs/reports/T-1685-audit-refactor.md`
+- Audit timing: 2m18s wall, 2m7s sys (fork/exec + git ops dominant)
+- Section-by-section workload review: every check is regex/grep/structural-count, none synthesis-shaped
+- T-1688 sibling survey confirms the same finding across all 18 autonomous workloads
+
+**Implications:** This NO-GO is structural confirmation of G-064 — the framework's existing autonomous workload is not LLM-amenable. Closure of G-064 needs either a NEW autonomous consumer (T-1684 cron health-check, escalation-scan v0.5) or explicit acceptance of opt-in-only orchestrator. T-1685 does not block any closure path; it cleanly rules out audit refactor as a candidate.
 
 ## Decisions
 

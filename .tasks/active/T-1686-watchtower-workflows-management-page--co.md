@@ -86,15 +86,22 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — but with explicit honesty about what this does and does not solve.
+
+**Rationale:** Real product feature. Real user request. Reversible. Modest scope (~880 LOC across 6 new + 2 modified files; 1.5–2 sessions). Two-phase split lets Phase 2a (schema + resolver + tests) ship independently of Phase 2b (page + telemetry). Makes the existing orchestrator substrate meaningfully more useful by giving it a configurable surface that today doesn't exist (today it can only learn what it observes; post-T-1686 an operator can pin "inception always uses opus" and observe per-workflow cost).
+
+**Caveat (load-bearing):** Does NOT autonomously close G-064. T-1686 makes the substrate a configurable product; it does not make anything use the product autonomously. G-064 closure still requires either (a) a production caller emerging naturally (someone configures and `fw inception start` is wired to dispatch), OR (b) explicit acceptance that the orchestrator is opt-in only.
+
+**Note (post-T-1687 Q2 collapse):** The original scope `(model, thinking_level, cost_cap)` table needs to expand post-CONTEXT.md collapse — the Agent IS the orchestrator, so the management page configures the *Delegation Envelope* schema (worker_kind, model, prompt template, context_pack composition, cwd), not just routing knobs. Phase 2a should reflect this broader scope.
+
+**Evidence:**
+- Full Phase 1 spike at `docs/reports/T-1686-workflow-management-page.md`
+- Resolver-wiring approach: workflows.yaml consulted before route_cache (deterministic override beats learned defaults)
+- LOC estimate based on existing `/orchestrator` blueprint (T-1647) as reference shape
+- Two-phase split mirrors T-1647's incremental delivery (route_cache resolver shipped before the page)
+- T-1688 sibling survey confirms management page is most concrete in-progress orchestrator-arc work after retrofit ruled out
+
+**On dependencies:** GO on Phase 2a should not be blocked by T-1688 decision. Phase 2a is independently valuable regardless of which G-064 closure path the human picks.
 
 ## Decisions
 
