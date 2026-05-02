@@ -8,11 +8,11 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [from-T-1633, upgrade, upstream]
+tags: [from-T-1633, upgrade, upstream, arc:project-shape-resilience]
 components: []
 related_tasks: [T-1633, T-1542]
 created: 2026-05-01T10:30:30Z
-last_update: 2026-05-01T10:30:30Z
+last_update: 2026-05-02T10:07:11Z
 date_finished: null
 ---
 
@@ -88,3 +88,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1634-fw-upgrade-no-args-read-upstream-url-fro.md
 - **Context:** Initial task creation
+
+### 2026-05-02T10:07:11Z — status-update [task-update-agent]
+- **Change:** tags: +arc:project-shape-resilience

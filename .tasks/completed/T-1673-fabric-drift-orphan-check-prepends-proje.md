@@ -8,11 +8,11 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc:project-shape-resilience]
 components: [agents/fabric/lib/drift.sh, tests/unit/test_fabric_drift_absolute_paths.py]
 related_tasks: []
 created: 2026-05-02T08:59:51Z
-last_update: 2026-05-02T09:08:44Z
+last_update: 2026-05-02T10:07:11Z
 date_finished: 2026-05-02T09:08:44Z
 ---
 
@@ -141,3 +141,6 @@ prefix-always pattern.
 
 ### 2026-05-02T09:08:44Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-05-02T10:07:11Z — status-update [task-update-agent]
+- **Change:** tags: +arc:project-shape-resilience

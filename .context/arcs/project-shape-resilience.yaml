@@ -1,0 +1,14 @@
+id: project-shape-resilience
+name: Project-shape resilience — kill the consumer-shape conflation class
+description: 
+status: in-progress
+anchor_task: T-1675
+constituent_tasks: ["T-1675", "T-1257", "T-1542", "T-1634", "T-1635", "T-1673"]
+headline_mechanic: "agent or human runs any fw verb in any of the 4 project shapes (framework / consumer-init\
+  \ / consumer-fresh / consumer-vendored-skewed) and observes a sensible response\
+  \ \u2014 success, clean refusal with right guidance, or graceful default \u2014\
+  \ never silent error fall-through"
+demo_evidence: null
+created: 2026-05-02T10:07:06Z
+closed_at: null
+decision: null

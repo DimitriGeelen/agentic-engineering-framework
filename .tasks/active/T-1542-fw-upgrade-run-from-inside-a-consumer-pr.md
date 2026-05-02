@@ -13,11 +13,11 @@ status: started-work
 workflow_type: build
 owner: human
 horizon: now
-tags: []
+tags: [arc:project-shape-resilience]
 components: []
 related_tasks: []
 created: 2026-04-27T13:19:34Z
-last_update: 2026-04-28T17:18:57Z
+last_update: 2026-05-02T10:07:11Z
 date_finished: null
 ---
 
@@ -118,3 +118,6 @@ grep -q "FRAMEWORK_ROOT.*resolves\|self-target check\|bare-from-consumer" lib/up
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-02T10:07:11Z — status-update [task-update-agent]
+- **Change:** tags: +arc:project-shape-resilience
