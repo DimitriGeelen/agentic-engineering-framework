@@ -4,16 +4,16 @@ name: "Implement §ACD enforcement gates: --headline-mechanic at create, --demo 
 description: >
   Implement §ACD enforcement gates: --headline-mechanic at create, --demo at close, CLAUDE.md §ACD compression
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py, tests/unit/test_audit_arc_completion.py]
 related_tasks: []
 created: 2026-05-02T06:11:31Z
-last_update: 2026-05-02T06:11:31Z
-date_finished: null
+last_update: 2026-05-02T07:18:01Z
+date_finished: 2026-05-02T07:18:01Z
 ---
 
 # T-1668: Implement §ACD enforcement gates: --headline-mechanic at create, --demo at close, CLAUDE.md §ACD compression
@@ -123,3 +123,20 @@ CLAUDE.md compressed net-negative (976 → 961). 28/28 arc tests pass.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1668-implement-acd-enforcement-gates---headli.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c0e87e58
+- **Timestamp:** 2026-05-02T07:18:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — `fw arc close --demo none --justification "..."` logs to `.context/audits/arc-bypass.jsonl` and proceeds
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/arc-bypass.jsonl in: `fw arc close --demo none --justification "..."` logs to `.context/audits/arc-bypass.jsonl` and proceeds`
+
+### 2026-05-02T07:18:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

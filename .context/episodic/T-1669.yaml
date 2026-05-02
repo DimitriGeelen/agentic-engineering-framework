@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1669: Wire framework dispatch into orchestrator route_cache (Step 1-4: read+write+surface+demo)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T07:17:58Z
+# ============================================================================
+
+task_id: T-1669
+task_name: "Wire framework dispatch into orchestrator route_cache (Step 1-4: read+write+surface+demo)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T06:28:34Z
+completed: 2026-05-02T07:17:52Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Step 1: `_resolve_dispatch_model_and_fallback` reads route-cache.json before env-var fallback"
+  - "Step 1: when route_cache has a hit for task_type, uses it; meta.json records source: \"route_cache\""
+  - "Step 1: when no hit, falls back to env-var; meta.json records source: \"env-per-type\" or \"env-default\""
+  - "Step 1: tests pin all three resolution paths (cache-hit / env-fallback / no-resolution)"
+  - "Step 2: cmd_dispatch records outcome (success/failure) into route-cache.json after worker exits"
+  - "Step 2: file write is atomic (tmpfile + rename) and idempotent on concurrent dispatches"
+  - "Step 2: tests pin success and failure recording"
+  - "Step 3: web/blueprints/orchestrator.py reads route-cache.json, exposes per-task-type stats"
+  - "Step 3: /orchestrator template renders learned-prefs panel above recent-dispatches"
+  - "Step 3: tests pin the route renders prefs from a seeded cache"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 49 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 49
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1669-wire-framework-dispatch-into-orchestrato.md
+generated_by: context-agent-hybrid

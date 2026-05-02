@@ -4,16 +4,16 @@ name: "Wire framework dispatch into orchestrator route_cache (Step 1-4: read+wri
 description: >
   Wire framework dispatch into orchestrator route_cache (Step 1-4: read+write+surface+demo)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, tests/unit/test_termlink_dispatch_task_type.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: []
 created: 2026-05-02T06:28:34Z
-last_update: 2026-05-02T06:28:34Z
-date_finished: null
+last_update: 2026-05-02T07:17:52Z
+date_finished: 2026-05-02T07:17:52Z
 ---
 
 # T-1669: Wire framework dispatch into orchestrator route_cache (Step 1-4: read+write+surface+demo)
@@ -152,3 +152,20 @@ bin/fw arc close orchestrator-rethink \
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1669-wire-framework-dispatch-into-orchestrato.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-79368a5f
+- **Timestamp:** 2026-05-02T07:17:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#8 (Agent)** — Step 3: web/blueprints/orchestrator.py reads route-cache.json, exposes per-task-type stats
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/orchestrator.py in: Step 3: web/blueprints/orchestrator.py reads route-cache.json, exposes per-task-type stats`
+
+### 2026-05-02T07:17:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

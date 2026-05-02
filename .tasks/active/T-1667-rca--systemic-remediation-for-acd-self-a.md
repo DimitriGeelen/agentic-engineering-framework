@@ -110,15 +110,39 @@ on `fw task review` (P3 from Angle 1 — defer 6 months).
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Three-agent inception research converged on a single
+mechanism (`--headline-mechanic` at arc creation + `--demo` at arc
+close) that simultaneously satisfies all three angles: smallest
+cognitive intervention, smallest framework gate, largest CLAUDE.md
+compression target (§ACD: 24 → 9 lines, net-negative). The fix shipped
+as T-1668 and is now load-bearing in lib/arc.sh — the gates cannot be
+self-bypassed by closure-bias. T-1669 then delivered the actual
+orchestration (the missing thing the original 3 pushbacks were about);
+the arc's headline_mechanic is captured at
+`docs/reports/orchestrator-rethink-demo/`.
+
+**Evidence:**
+- T-1668 commit `8a31c99c7` — gates implemented + tested (28/28)
+- CLAUDE.md compressed 976 → 961 lines (§ACD: 24 → 9)
+- T-1669 demo dir — proves the structural intervention freed the
+  agent to deliver the actual orchestration on the same arc
+- 3 worker reports under `docs/reports/T-1667-angle-{1,2,3}-*.md`
+- `_arc_validate_headline_mechanic` + `_arc_validate_demo_path` in
+  lib/arc.sh:84-180 — the runtime enforcement
+- Live verification: `bin/fw arc close orchestrator-rethink --decision X`
+  refuses without `--demo`, prints `headline_mechanic` to operator
+
+**Go/No-Go criteria evaluation:**
+- Root cause identified with bounded fix path: YES (closure-bias +
+  substrate-vs-deliverable conflation; fix = move §ACD into gates)
+- Fix is scoped, testable, reversible: YES (one PR, 28 tests pin the
+  gates, gates can be removed by reverting `8a31c99c7`)
+- Problem requires fundamental redesign or unbounded scope: NO
+- Fix cost exceeds benefit given current evidence: NO (the same
+  agent that pushed back 3 times then shipped the actual delivery
+  on the very next task — T-1669 — within one session post-fix)
 
 ## Decisions
 
