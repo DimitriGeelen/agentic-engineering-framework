@@ -2668,3 +2668,10 @@ X'` returning empty group."
   date: 2026-05-02
   context: Added via context agent
   application: TBD
+- id: L-344
+  learning: "Substrate verified end-to-end is NOT the same as deliverable shipped — substrate works when invoked but if zero production consumers invoke it, the user-facing behaviour change does not exist. Filter for arc closure: count autonomous invocations in the last N days. If only synthetic verification touched the substrate, the arc is OPEN regardless of test green / wire evidence / live re-verification. (5th-incident on orchestrator-rethink, escalation pattern: substrate→behavioural→consumption verification)"
+  source: G-064
+  task: T-1683
+  date: 2026-05-02
+  context: Added via context agent
+  application: TBD

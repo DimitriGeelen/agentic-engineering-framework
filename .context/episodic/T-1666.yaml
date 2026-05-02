@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1666: T-1642-B4 framework: fw config plumbing for routing-policy.yaml
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T10:21:11Z
+# ============================================================================
+
+task_id: T-1666
+task_name: "T-1642-B4 framework: fw config plumbing for routing-policy.yaml"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T05:37:42Z
+completed: 2026-05-02T10:21:07Z
+duration_days: 0
+updates_count: 8
+first_commit: 2026-05-02T07:38:00+02:00
+last_commit: 2026-05-02T10:56:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file T-1642-B4 framework-side fw config plumbing for routing-policy.yaml. rescope build → inception, file research artifact, DEFER recommendation
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (only 2/13 constants are framework-side; 11 are substrate-internal)"
+  - "Three feasibility paths evaluated (wait / env-var passthrough / drop scope)"
+  - "Recommendation written with promotion criteria for revisiting"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/arcs/orchestrator-rethink.yaml"
+  - "docs/reports/T-1666-fw-config-plumbing-routing-policy.md"
+  - ".tasks/active/T-1666-t-1642-b4-framework-fw-config-plumbing-f.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T07:38:00"
+    action: "T-1666: file T-1642-B4 framework-side fw config plumbing for routing-policy.yaml"
+  - time: "2026-05-02T10:56:39"
+    action: "T-1666: rescope build → inception, file research artifact, DEFER recommendation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 283 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, from-T-1642]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 283
+  commits: 2
+  files_changed: 3
+  lines_added: 357
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1666-t-1642-b4-framework-fw-config-plumbing-f.md
+generated_by: context-agent-hybrid

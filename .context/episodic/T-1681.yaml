@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1681: tl-dispatch run.sh never updates meta.json post-exit — status:running stays forever
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T15:16:54Z
+# ============================================================================
+
+task_id: T-1681
+task_name: "tl-dispatch run.sh never updates meta.json post-exit — status:running stays forever"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T14:30:23Z
+completed: 2026-05-02T15:16:47Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-05-02T17:16:07+02:00
+last_commit: 2026-05-02T17:16:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tl-dispatch run.sh now updates meta.json post-exit. tick ACs after live-verified completion
+
+# Key outcomes
+outcomes:
+  - "`agents/termlink/termlink.sh` run.sh heredoc updates `$WDIR/meta.json` post-exit using `jq` + atomic mv: status=`done`/`failed`, exit_code=$EXIT_CODE, ended=$finished_at. Skipped silently if `jq` is missing (best-effort, same pattern as `result.md` extraction)."
+  - "Existing unit tests pass: `pytest tests/unit/test_route_cache_record.py tests/unit/test_route_cache_resolve.py tests/unit/test_orchestrator_learned_routing.py tests/unit/test_termlink_dispatch_task_type.py -q` (47 tests green pre-patch)."
+  - "New regression test pins the meta.json update lines in the heredoc — same pattern as `test_dispatch_run_sh_calls_record_outcome` (greps the heredoc block, asserts the canonical lines exist)."
+  - "Live-verified: a real dispatch with a cheap prompt (sufficient timeout) produces a `meta.json` with `status: done` and `exit_code: 0` post-exit, captured as evidence file under the orchestrator-rethink-demo directory."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/termlink/termlink.sh"
+  - "docs/reports/orchestrator-rethink-demo/meta-T1681-postpatch-evidence.json"
+  - ".tasks/active/T-1681-tl-dispatch-runsh-never-updates-metajson.md"
+  - ".tasks/completed/T-1682-orchestrator-arc-failure-path-verificati.md"
+  - "tests/unit/test_route_cache_record.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T17:16:07"
+    action: "T-1681: tl-dispatch run.sh now updates meta.json post-exit"
+  - time: "2026-05-02T17:16:46"
+    action: "T-1681: tick ACs after live-verified completion"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 46 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, dispatch, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 46
+  commits: 2
+  files_changed: 5
+  lines_added: 75
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1681-tl-dispatch-runsh-never-updates-metajson.md
+generated_by: context-agent-hybrid

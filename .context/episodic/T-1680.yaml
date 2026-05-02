@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1680: orchestrator arc live-test re-verification — 2026-05-02 operator-request
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T14:30:56Z
+# ============================================================================
+
+task_id: T-1680
+task_name: "orchestrator arc live-test re-verification — 2026-05-02 operator-request"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T14:28:25Z
+completed: 2026-05-02T14:30:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-02T16:30:49+02:00
+last_commit: 2026-05-02T16:30:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  orchestrator arc live-test re-verification — headline_mechanic fires on demand
+
+# Key outcomes
+outcomes:
+  - "Three real `fw termlink dispatch` invocations spawn without `--model`, one per task_type (build/design/inception). Verified: workers `arctest-build-1004230`, `arctest-design-1007117`, `arctest-inception-1007117` spawned 12:41:30Z–12:41:40Z."
+  - "Each worker's `meta.json` shows `resolution_source: route_cache` and the model predicted by `_resolve_dispatch_model_and_fallback`. Verified: build→haiku, design→sonnet, inception→opus."
+  - "All three workers exit 0 with non-empty `result.md`. Verified: exit_code files = 0, results = `build` / `Design workflow loaded...` / `inception`."
+  - "Cache `model_stats` rows for the three (model:task_type) keys grow `successes` by exactly +1 each, with `last_used` timestamps in the dispatch window. Verified: haiku:build 8s/1f→9s/1f, sonnet:design 5s/0f→6s/0f, opus:inception 7s/1f→8s/1f, last_used 12:41:38Z / 12:41:53Z / 12:41:46Z."
+  - "Cache snapshot saved as `docs/reports/orchestrator-rethink-demo/cache-05-2026-05-02-1241Z-live-test.json`."
+  - "`/orchestrator` page re-fetched after worker exits renders updated success rates: `haiku 90% (build)`, `sonnet 100% (design)`, `opus 89% (inception)`. Verified via grep on `/tmp/orch-page-post.html`."
+  - "README §Live-test verification appended with procedure, delta table, and surface-confirmation evidence."
+  - "Observability gap discovered (worker `meta.json` never updated post-exit by `run.sh`) captured as a follow-up task."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/orchestrator-rethink-demo/cache-05-2026-05-02-1241Z-live-test.json"
+  - "docs/reports/orchestrator-rethink-demo/README.md"
+  - ".tasks/active/T-1680-orchestrator-arc-live-test-re-verificati.md"
+  - ".tasks/active/T-1681-tl-dispatch-runsh-never-updates-metajson.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T16:30:49"
+    action: "T-1680: orchestrator arc live-test re-verification — headline_mechanic fires on demand"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [orchestrator-rethink, verification, termlink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 315
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1680-orchestrator-arc-live-test-re-verificati.md
+generated_by: context-agent-hybrid

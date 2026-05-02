@@ -4,7 +4,7 @@ name: "orchestrator arc live-test re-verification — 2026-05-02 operator-reques
 description: >
   orchestrator arc live-test re-verification — 2026-05-02 operator-request
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [orchestrator-rethink, verification, termlink]
 components: []
 related_tasks: [T-1669, T-1678]
 created: 2026-05-02T14:28:25Z
-last_update: 2026-05-02T14:28:25Z
-date_finished: null
+last_update: 2026-05-02T14:30:53Z
+date_finished: 2026-05-02T14:30:53Z
 ---
 
 # T-1680: orchestrator arc live-test re-verification — 2026-05-02 operator-request
@@ -97,3 +97,20 @@ python3 -c "import json; d=json.load(open('docs/reports/orchestrator-rethink-dem
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1680-orchestrator-arc-live-test-re-verificati.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-5697dd16
+- **Timestamp:** 2026-05-02T14:30:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — `/orchestrator` page re-fetched after worker exits renders updated success rates: `haiku 90% (build)`, `sonnet 100% (design)`, `opus 89% (inception)`. Verified via grep on `/tmp/orch-page-post.html`.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tmp/orch-page-post.html in: `/orchestrator` page re-fetched after worker exits renders updated success rates: `haiku 90% (build)`, `sonnet 100% (design)`, `opus 89% (inception)`.`
+
+### 2026-05-02T14:30:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

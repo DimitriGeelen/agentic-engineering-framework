@@ -4,7 +4,7 @@ name: "Project-shape conflation umbrella — framework code assumes consumer sha
 description: >
   Project-shape conflation umbrella — framework code assumes consumer shape, silently fails in framework repo / fresh-init / vendored states
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:project-shape-resilience]
 components: []
 related_tasks: []
 created: 2026-05-02T10:04:39Z
-last_update: 2026-05-02T10:07:10Z
-date_finished: null
+last_update: 2026-05-02T10:21:20Z
+date_finished: 2026-05-02T10:21:20Z
 ---
 
 # T-1675: Project-shape conflation umbrella — framework code assumes consumer shape, silently fails in framework repo / fresh-init / vendored states
@@ -125,17 +125,17 @@ A3. The number of ad-hoc `[ -f .framework.yaml ]` checks across `lib/`
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated (≥3 prior incidents named, class boundaries clear)
+- [x] Problem statement validated (≥3 prior incidents named, class boundaries clear)
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested — A2 spike (25-line bash classifier disambiguates 4 shapes across 4 synthetic + 13 live-host fixtures, zero misses) AND A3 spike (103 refs / 11 files / ~13 conflation sites — well under 50-site ceiling). Both load-bearing assumptions hold.
+- [x] Assumptions tested — A2 spike (25-line bash classifier disambiguates 4 shapes across 4 synthetic + 13 live-host fixtures, zero misses) AND A3 spike (103 refs / 11 files / ~13 conflation sites — well under 50-site ceiling). Both load-bearing assumptions hold.
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale (Lever 1 first; Lever 2 next; Lever 3 over-Q)
+- [x] Recommendation written with rationale (Lever 1 first; Lever 2 next; Lever 3 over-Q)
 <!-- @auto-tick-on-decide -->
-- [ ] Umbrella concern G-063 registered in `.context/project/concerns.yaml` linking constituent tasks
+- [x] Umbrella concern G-063 registered in `.context/project/concerns.yaml` linking constituent tasks
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -226,7 +226,55 @@ behavior is wrong, not every `[ -f .framework.yaml ]` check.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — start with Lever 1 (project-shape classifier)
+
+Rationale: Lever 1 is the smallest investment with the broadest
+return because most observed conflations vanish once classification is
+centralized — there's literally one place to get the shape detection
+right. Lever 2 (test matrix) becomes much cheaper to write AFTER
+Lever 1 lands (3-shape fixtures all use `fw_project_context()` to
+assert state). Lever 3 (upgrade-CI) is the highest-payoff long-term
+but has the heaviest infrastructure (container substrate, ratchet
+fixture management) and is partially captured in T-1635 already.
+
+Sequence:
+1. Lever 1 first — file as build task on GO, ~0.5 days. Single
+   `fw_project_context()` function; refactor existing `[ -f
+   .framework.yaml ]` sites that silently mis-handle non-consumer
+   shapes (anchor: `_config_list` + `_config_get` + `_config_set` in
+   `lib/config-file.sh`).
+2. Lever 2 next — file as build task immediately after Lever 1
+   ships. Three-shape fixture pattern + parametrized tests; one new
+   fixture per public verb (`config list`, `doctor`, `metrics`,
+   `audit`, `init`, `upgrade`).
+3. Lever 3 over Q — promote T-1635 to `horizon: now` once Lever 1
+   + Lever 2 establish the test scaffolding.
+
+Evidence:
+- Six prior incidents named in Problem Statement, all reducible to
+  "framework code assumed one shape."
+- T-1673 (this session) used the 3-fixture pattern (absolute /
+  relative-existing / relative-missing) and the regression test
+  pinned the fix in 0.66s with zero flakes — the pattern works.
+- `lib/config-file.sh:177-181` is the smallest tractable
+  demonstration of the conflation; fixing it via Lever 1 produces a
+  visible win on the very next `fw config list` run from the
+  framework repo.
+
+Tradeoff to flag: Lever 1 is a touch-many-files refactor
+(estimated <50 sites grepping `.framework.yaml`). Risk: scope creep.
+Mitigation: strict criterion — only refactor sites where current
+behavior is wrong, not every `[ -f .framework.yaml ]` check.
+
+Promotion criteria for revisiting:
+- If Lever 1 ships AND a new conflation incident still slips through →
+  Lever 2 promotes immediately to `now`.
+- If Lever 1 + Lever 2 ship AND a consumer reports an upgrade failure
+  not caught locally → Lever 3 promotes to `now`.
+
+**Date**: 2026-05-02T10:21:20Z
 
 ## Updates
 
@@ -235,3 +283,70 @@ behavior is wrong, not every `[ -f .framework.yaml ]` check.
 
 ### 2026-05-02T10:07:10Z — status-update [task-update-agent]
 - **Change:** tags: +arc:project-shape-resilience
+
+### 2026-05-02T10:21:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — start with Lever 1 (project-shape classifier)
+
+Rationale: Lever 1 is the smallest investment with the broadest
+return because most observed conflations vanish once classification is
+centralized — there's literally one place to get the shape detection
+right. Lever 2 (test matrix) becomes much cheaper to write AFTER
+Lever 1 lands (3-shape fixtures all use `fw_project_context()` to
+assert state). Lever 3 (upgrade-CI) is the highest-payoff long-term
+but has the heaviest infrastructure (container substrate, ratchet
+fixture management) and is partially captured in T-1635 already.
+
+Sequence:
+1. Lever 1 first — file as build task on GO, ~0.5 days. Single
+   `fw_project_context()` function; refactor existing `[ -f
+   .framework.yaml ]` sites that silently mis-handle non-consumer
+   shapes (anchor: `_config_list` + `_config_get` + `_config_set` in
+   `lib/config-file.sh`).
+2. Lever 2 next — file as build task immediately after Lever 1
+   ships. Three-shape fixture pattern + parametrized tests; one new
+   fixture per public verb (`config list`, `doctor`, `metrics`,
+   `audit`, `init`, `upgrade`).
+3. Lever 3 over Q — promote T-1635 to `horizon: now` once Lever 1
+   + Lever 2 establish the test scaffolding.
+
+Evidence:
+- Six prior incidents named in Problem Statement, all reducible to
+  "framework code assumed one shape."
+- T-1673 (this session) used the 3-fixture pattern (absolute /
+  relative-existing / relative-missing) and the regression test
+  pinned the fix in 0.66s with zero flakes — the pattern works.
+- `lib/config-file.sh:177-181` is the smallest tractable
+  demonstration of the conflation; fixing it via Lever 1 produces a
+  visible win on the very next `fw config list` run from the
+  framework repo.
+
+Tradeoff to flag: Lever 1 is a touch-many-files refactor
+(estimated <50 sites grepping `.framework.yaml`). Risk: scope creep.
+Mitigation: strict criterion — only refactor sites where current
+behavior is wrong, not every `[ -f .framework.yaml ]` check.
+
+Promotion criteria for revisiting:
+- If Lever 1 ships AND a new conflation incident still slips through →
+  Lever 2 promotes immediately to `now`.
+- If Lever 1 + Lever 2 ship AND a consumer reports an upgrade failure
+  not caught locally → Lever 3 promotes to `now`.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-838ca294
+- **Timestamp:** 2026-05-02T10:21:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Umbrella concern G-063 registered in `.context/project/concerns.yaml` linking constituent tasks
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/concerns.yaml in: Umbrella concern G-063 registered in `.context/project/concerns.yaml` linking constituent tasks`
+
+### 2026-05-02T10:21:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -4004,3 +4004,445 @@ scan_id: R-05a41813
 task_id: T-1664
 payload:
   task_file: .tasks/active/T-1664-framework-dispatch-path-populate-modelus.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T05:35:38Z'
+scan_id: R-b3189f1c
+task_id: T-1665
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T05:35:38Z'
+scan_id: R-b3189f1c
+task_id: T-1665
+payload:
+  task_file: .tasks/active/T-1665-t-1656-arc-completion-detective-never-fi.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T05:51:46Z'
+scan_id: R-0e906fcb
+task_id: T-1643
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T05:51:46Z'
+scan_id: R-0e906fcb
+task_id: T-1643
+payload:
+  task_file: .tasks/active/T-1643-arc-b--framework-side-wiring-of-orchestr.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T05:52:00Z'
+scan_id: R-aa57fd53
+task_id: T-1647
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T05:52:00Z'
+scan_id: R-aa57fd53
+task_id: T-1647
+payload:
+  task_file: .tasks/active/T-1647-watchtower-orchestrator-page--orchestrat.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T05:52:23Z'
+scan_id: R-3d206800
+task_id: T-1661
+payload:
+  overall: CONCERN
+  finding_count: 5
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T05:52:23Z'
+scan_id: R-3d206800
+task_id: T-1661
+payload:
+  task_file: .tasks/active/T-1661-t-1653-phase-1-build-arc-system-mvp--con.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T07:17:54Z'
+scan_id: R-79368a5f
+task_id: T-1669
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T07:17:54Z'
+scan_id: R-79368a5f
+task_id: T-1669
+payload:
+  task_file: .tasks/active/T-1669-wire-framework-dispatch-into-orchestrato.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T07:18:06Z'
+scan_id: R-c0e87e58
+task_id: T-1668
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T07:18:06Z'
+scan_id: R-c0e87e58
+task_id: T-1668
+payload:
+  task_file: .tasks/active/T-1668-implement-acd-enforcement-gates---headli.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T07:37:52Z'
+scan_id: R-4a9be6cf
+task_id: T-1667
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T07:37:52Z'
+scan_id: R-4a9be6cf
+task_id: T-1667
+payload:
+  task_file: .tasks/active/T-1667-rca--systemic-remediation-for-acd-self-a.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T07:38:04Z'
+scan_id: R-cec2f8f9
+task_id: T-1670
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T07:38:04Z'
+scan_id: R-cec2f8f9
+task_id: T-1670
+payload:
+  task_file: .tasks/active/T-1670-default-to-open-structural-gate-gap--age.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T07:45:29Z'
+scan_id: R-1d7e3728
+task_id: T-1671
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T07:45:29Z'
+scan_id: R-1d7e3728
+task_id: T-1671
+payload:
+  task_file: .tasks/active/T-1671-implement-default-to-open-agent-gate-in-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T07:48:55Z'
+scan_id: R-c275dcb0
+task_id: T-1672
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T07:48:55Z'
+scan_id: R-c275dcb0
+task_id: T-1672
+payload:
+  task_file: .tasks/active/T-1672-update-watchtower-arcsid-close-instructi.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T08:39:55Z'
+scan_id: R-116d9393
+task_id: T-1660
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T08:39:55Z'
+scan_id: R-116d9393
+task_id: T-1660
+payload:
+  task_file: .tasks/active/T-1660-g-015-option-b-pretooluse-hook-to-redire.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T09:08:45Z'
+scan_id: R-052bd5e5
+task_id: T-1673
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T09:08:45Z'
+scan_id: R-052bd5e5
+task_id: T-1673
+payload:
+  task_file: .tasks/active/T-1673-fabric-drift-orphan-check-prepends-proje.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T09:12:49Z'
+scan_id: R-7ee9914a
+task_id: T-1674
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T09:12:49Z'
+scan_id: R-7ee9914a
+task_id: T-1674
+payload:
+  task_file: .tasks/active/T-1674-fabric-drift-on2--stale-edge-check-spawn.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T10:21:08Z'
+scan_id: R-78735509
+task_id: T-1666
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T10:21:08Z'
+scan_id: R-78735509
+task_id: T-1666
+payload:
+  task_file: .tasks/active/T-1666-t-1642-b4-framework-fw-config-plumbing-f.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T10:21:20Z'
+scan_id: R-838ca294
+task_id: T-1675
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T10:21:20Z'
+scan_id: R-838ca294
+task_id: T-1675
+payload:
+  task_file: .tasks/active/T-1675-project-shape-conflation-umbrella--frame.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T10:54:52Z'
+scan_id: R-f7c82c8b
+task_id: T-1676
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T10:54:52Z'
+scan_id: R-f7c82c8b
+task_id: T-1676
+payload:
+  task_file: .tasks/active/T-1676-revise-consumer-upgrade-prompts-github-u.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T11:29:18Z'
+scan_id: R-a64cc3e8
+task_id: T-1678
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T11:29:18Z'
+scan_id: R-a64cc3e8
+task_id: T-1678
+payload:
+  task_file: .tasks/active/T-1678-live-update-verification-route-cache-con.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T11:45:37Z'
+scan_id: R-0f8d398b
+task_id: T-1679
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T11:45:37Z'
+scan_id: R-0f8d398b
+task_id: T-1679
+payload:
+  task_file: .tasks/active/T-1679-ac-classification-compliance-sweep-split.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T11:46:18Z'
+scan_id: R-cd3ce9af
+task_id: T-1064
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T11:46:18Z'
+scan_id: R-cd3ce9af
+task_id: T-1064
+payload:
+  task_file: .tasks/active/T-1064-extend-orchestratorroute-with-task-type-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T11:47:09Z'
+scan_id: R-713b11f4
+task_id: T-1062
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T11:47:09Z'
+scan_id: R-713b11f4
+task_id: T-1062
+payload:
+  task_file: .tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T11:47:09Z'
+scan_id: R-46652acb
+task_id: T-1065
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T11:47:09Z'
+scan_id: R-46652acb
+task_id: T-1065
+payload:
+  task_file: .tasks/active/T-1065-multi-llm-routing--task-aware-model-sele.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T11:47:09Z'
+scan_id: R-02b8b919
+task_id: T-1066
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T11:47:09Z'
+scan_id: R-02b8b919
+task_id: T-1066
+payload:
+  task_file: .tasks/active/T-1066-data-plane-governance-subscriber--post-h.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T14:30:53Z'
+scan_id: R-5697dd16
+task_id: T-1680
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T14:30:53Z'
+scan_id: R-5697dd16
+task_id: T-1680
+payload:
+  task_file: .tasks/active/T-1680-orchestrator-arc-live-test-re-verificati.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T14:34:11Z'
+scan_id: R-d2181a71
+task_id: T-1682
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T14:34:11Z'
+scan_id: R-d2181a71
+task_id: T-1682
+payload:
+  task_file: .tasks/active/T-1682-orchestrator-arc-failure-path-verificati.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T15:16:51Z'
+scan_id: R-cc0093ca
+task_id: T-1681
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T15:16:51Z'
+scan_id: R-cc0093ca
+task_id: T-1681
+payload:
+  task_file: .tasks/active/T-1681-tl-dispatch-runsh-never-updates-metajson.md
+---
+kind: scan_emitted
+timestamp: '2026-05-02T17:36:09Z'
+scan_id: R-bd190e12
+task_id: T-1683
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-02T17:36:09Z'
+scan_id: R-bd190e12
+task_id: T-1683
+payload:
+  task_file: .tasks/active/T-1683-g-064-register-orchestrator-substrate-no.md

@@ -94,3 +94,14 @@ pending_updates:
     meta.json on framework dispatch path. Smoke verified t1664-smoke3 (default fallback)
     + t1664-explicit (no fallback). Q1 substrate-half closed on both paths. Cross-repo
     evidence: /opt/termlink/docs/reports/U-005-meta-populate.md'
+- id: U-006
+  command: bin/fw push
+  reason: ct301 (onedev origin) under migration through ~11:55Z 2026-05-02 — last
+    attempt 502; commit 477268803 (T-1676) and prior c1cd7b633 held locally
+  task: T-1676
+  host: ct301
+  agent: agent
+  created: '2026-05-02T11:00:06Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null

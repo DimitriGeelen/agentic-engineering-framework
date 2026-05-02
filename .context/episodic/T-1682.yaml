@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1682: orchestrator arc failure-path verification — induce haiku:build timeout, observe cache failure increment + surface shift
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T14:34:14Z
+# ============================================================================
+
+task_id: T-1682
+task_name: "orchestrator arc failure-path verification — induce haiku:build timeout, observe cache failure increment + surface shift"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T14:32:04Z
+completed: 2026-05-02T14:34:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-02T16:34:07+02:00
+last_commit: 2026-05-02T16:34:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  orchestrator arc failure-path verification — preferences shift in both directions
+
+# Key outcomes
+outcomes:
+  - "Dispatch with `--timeout 3` and a long prompt forces a SIGTERM kill before claude can complete. Verified: `arctest-fail-1507529` exit_code=143, stderr.log contains TIMEOUT marker."
+  - "Worker meta.json shows resolver still picks haiku (highest pre-test rate) — failure-path test must use the same model success-path uses, to prove the cache record-outcome is symmetric. Verified: meta.json shows `model=haiku source=route_cache`."
+  - "Cache `model_stats[haiku:build].failures` increments by exactly 1 (1f → 2f). Verified by direct read."
+  - "Cache `model_stats[haiku:build].last_used` updates to the post-failure timestamp (was 12:41:38Z, now 14:32:30Z). Verified by direct read."
+  - "`/orchestrator` re-fetched renders new haiku-for-build success rate `82%` (was 90%). Verified: `grep -c \"82%\" /tmp/orch-page-postfail.html` returns 2."
+  - "Cache snapshot saved as `docs/reports/orchestrator-rethink-demo/cache-06-2026-05-02-1432Z-failure-path.json`."
+  - "README.md §Failure-path verification appended with procedure, delta table, surface-confirmation evidence."
+  - "Resolver still picks haiku for build post-failure (no model-swap event needed — failure-path verification is about the cache writing failures correctly, not about displacement). Verified: resolver trace post-test still yields `haiku|true|route_cache` for build."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/orchestrator-rethink-demo/cache-06-2026-05-02-1432Z-failure-path.json"
+  - "docs/reports/orchestrator-rethink-demo/README.md"
+  - ".tasks/active/T-1682-orchestrator-arc-failure-path-verificati.md"
+  - ".tasks/completed/T-1680-orchestrator-arc-live-test-re-verificati.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T16:34:07"
+    action: "T-1682: orchestrator arc failure-path verification — preferences shift in both directions"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [orchestrator-rethink, verification, termlink, failure-path]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 223
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1682-orchestrator-arc-failure-path-verificati.md
+generated_by: context-agent-hybrid

@@ -163,3 +163,7 @@
 2026-05-01T20:39:05Z posted via=event.broadcast topic=channel:learnings msg_type=learning-P-011 id=L-339 origin=999-Agentic-Engineering-Framework
 2026-05-01T20:53:04Z channel.post-failed id=L-340 — falling back to event.broadcast
 2026-05-01T20:53:04Z posted via=event.broadcast topic=channel:learnings msg_type=learning-P-009 id=L-340 origin=999-Agentic-Engineering-Framework
+2026-05-02T05:39:10Z posted via=channel.post topic=channel:learnings msg_type=learning-P-011 id=L-341 origin=999-Agentic-Engineering-Framework
+2026-05-02T09:13:53Z posted via=channel.post topic=channel:learnings msg_type=learning-P-009 id=L-342 origin=999-Agentic-Engineering-Framework
+2026-05-02T09:13:58Z posted via=channel.post topic=channel:learnings msg_type=learning-P-009 id=L-343 origin=999-Agentic-Engineering-Framework
+2026-05-02T17:36:33Z posted via=channel.post topic=channel:learnings msg_type=learning-G-064 id=L-344 origin=999-Agentic-Engineering-Framework

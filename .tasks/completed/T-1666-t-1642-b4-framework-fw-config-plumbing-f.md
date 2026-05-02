@@ -4,16 +4,16 @@ name: "T-1642-B4 framework: fw config plumbing for routing-policy.yaml"
 description: >
   Implementation half of T-1642 GO decision (substrate-side B1/B2/B3 file in /opt/termlink). Lift the 13 routing-policy constants from code defaults to a routing-policy.yaml read via fw_config. Wire DISPATCH_MODEL_DEFAULT, ARC_COMPLETION_THRESHOLD, and the new keys (PROMOTION_THRESHOLD_BYPASS, PROMOTION_THRESHOLD_TEMPLATE, FAILURE_THRESHOLD, COOLDOWN, DEFAULT_TTL_HOURS, CONFIDENCE_THRESHOLD, etc.) so projects can override per-instance via .framework.yaml. Validate at audit time.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [arc:orchestrator-rethink, from-T-1642]
 components: []
 related_tasks: []
 created: 2026-05-02T05:37:42Z
-last_update: 2026-05-02T08:56:29Z
-date_finished: null
+last_update: 2026-05-02T10:21:07Z
+date_finished: 2026-05-02T10:21:07Z
 ---
 
 # T-1666: T-1642-B4 framework: fw config plumbing for routing-policy.yaml
@@ -44,11 +44,11 @@ in `docs/reports/T-1666-fw-config-plumbing-routing-policy.md`.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated (only 2/13 constants are framework-side; 11 are substrate-internal)
+- [x] Problem statement validated (only 2/13 constants are framework-side; 11 are substrate-internal)
 <!-- @auto-tick-on-decide -->
-- [ ] Three feasibility paths evaluated (wait / env-var passthrough / drop scope)
+- [x] Three feasibility paths evaluated (wait / env-var passthrough / drop scope)
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with promotion criteria for revisiting
+- [x] Recommendation written with promotion criteria for revisiting
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -156,3 +156,52 @@ in the framework reads is dead surface area at risk of config drift.
 ### 2026-05-02T08:56:29Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-05-02T10:21:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: DEFER
+
+Rationale: The 11 substrate-internal constants (PROMOTION_THRESHOLD,
+FAILURE_THRESHOLD, COOLDOWN, DEFAULT_TTL_HOURS, CONFIDENCE_THRESHOLD,
+task_type taxonomy, tag prefix, discovery filter, concurrency cap,
+attribution) belong in `/opt/termlink/etc/routing-policy.yaml` and
+should be consumed by `termlink-hub` directly. The 2 framework-side keys
+(DISPATCH_MODEL_DEFAULT, ARC_COMPLETION_THRESHOLD) are already plumbed
+via lib/config.sh:167–168. Adding 11 keys to lib/config.sh that nothing
+in the framework reads is dead surface area at risk of config drift.
+
+Promotion criteria (revisit if):
+- Substrate ships `/opt/termlink/etc/routing-policy.yaml` AND a consumer
+  project requests per-project override via `.framework.yaml`.
+- A new framework feature emerges that reads any of the 11
+  substrate-internal constants (none currently planned).
+
+Evidence:
+- `lib/config.sh:167–168` — DISPATCH_MODEL_DEFAULT + ARC_COMPLETION_THRESHOLD
+  already plumbed; remaining 11 keys absent.
+- `/opt/termlink/crates/termlink-hub/src/{template_cache,bypass,circuit_breaker,route_cache}.rs`
+  — all 11 constants live in Rust hub code, not consumed by framework.
+- `git -C /opt/termlink log --since=2026-05-01` — no commits matching
+  T-1642/B1/B2/B3/routing-policy since GO; substrate focused on
+  T-1438/T-1418 chat-arc + auth-healing work.
+- `docs/reports/T-1666-fw-config-plumbing-routing-policy.md` —
+  full three-path analysis.
+
+### 2026-05-02T10:21:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-78735509
+- **Timestamp:** 2026-05-02T10:21:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-02T10:21:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

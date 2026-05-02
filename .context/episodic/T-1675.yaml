@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1675: Project-shape conflation umbrella — framework code assumes consumer shape, silently fails in framework repo / fresh-init / vendored states
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T10:21:24Z
+# ============================================================================
+
+task_id: T-1675
+task_name: "Project-shape conflation umbrella — framework code assumes consumer shape, silently fails in framework repo / fresh-init / vendored states"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T10:04:39Z
+completed: 2026-05-02T10:21:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-02T12:09:28+02:00
+last_commit: 2026-05-02T12:19:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file project-shape-resilience inception arc + G-063 umbrella. ran A2 spike (load-bearing assumption) — classifier feasibility confirmed
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (≥3 prior incidents named, class boundaries clear)"
+  - "Assumptions tested — A2 spike (25-line bash classifier disambiguates 4 shapes across 4 synthetic + 13 live-host fixtures, zero misses) AND A3 spike (103 refs / 11 files / ~13 conflation sites — well under 50-site ceiling). Both load-bearing assumptions hold."
+  - "Recommendation written with rationale (Lever 1 first; Lever 2 next; Lever 3 over-Q)"
+  - "Umbrella concern G-063 registered in `.context/project/concerns.yaml` linking constituent tasks"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/arcs/project-shape-resilience.yaml"
+  - ".context/project/concerns.yaml"
+  - "docs/reports/T-1675-project-shape-resilience-umbrella.md"
+  - ".tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md"
+  - ".tasks/active/T-1634-fw-upgrade-no-args-read-upstream-url-fro.md"
+  - ".tasks/active/T-1635-fw-upgrade-fresh-machine-simulation-guar.md"
+  - ".tasks/active/T-1675-project-shape-conflation-umbrella--frame.md"
+  - ".tasks/completed/T-1257-fix-context-blind-fw-path-rule-in-claude.md"
+  - ".tasks/completed/T-1673-fabric-drift-orphan-check-prepends-proje.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T12:09:28"
+    action: "T-1675: file project-shape-resilience inception arc + G-063 umbrella"
+  - time: "2026-05-02T12:19:15"
+    action: "T-1675: ran A2 spike (load-bearing assumption) — classifier feasibility confirmed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:project-shape-resilience]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 2
+  files_changed: 9
+  lines_added: 462
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1675-project-shape-conflation-umbrella--frame.md
+generated_by: context-agent-hybrid

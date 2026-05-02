@@ -4,16 +4,16 @@ name: "tl-dispatch run.sh never updates meta.json post-exit — status:running s
 description: >
   Discovered in T-1680. agents/termlink/dispatch/run.sh writes exit_code, finished_at, result.md and calls record-outcome — but does NOT update meta.json. meta.json is written by spawn code with status=running and stays that way forever. fw termlink dispatch_status surface is misleading post-exit. Fix: append a meta.json rewrite step in run.sh after record-outcome (atomic via mv), or change dispatch_status to read exit_code file instead.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [termlink, dispatch, observability]
-components: []
+components: [agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-05-02T14:30:23Z
-last_update: 2026-05-02T15:13:55Z
-date_finished: null
+last_update: 2026-05-02T15:16:47Z
+date_finished: 2026-05-02T15:16:47Z
 ---
 
 # T-1681: tl-dispatch run.sh never updates meta.json post-exit — status:running stays forever
@@ -102,3 +102,20 @@ python3 -c "import json; d=json.load(open('docs/reports/orchestrator-rethink-dem
 
 ### 2026-05-02T15:13:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-cc0093ca
+- **Timestamp:** 2026-05-02T15:16:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `agents/termlink/termlink.sh` run.sh heredoc updates `$WDIR/meta.json` post-exit using `jq` + atomic mv: status=`done`/`failed`, exit_code=$EXIT_CODE, ended=$finished_at. Skipped silently if `jq` is m
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=WDIR/meta.json in: `agents/termlink/termlink.sh` run.sh heredoc updates `$WDIR/meta.json` post-exit using `jq` + atomic mv: status=`done`/`failed`, exit_code=$EXIT_CODE,`
+
+### 2026-05-02T15:16:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

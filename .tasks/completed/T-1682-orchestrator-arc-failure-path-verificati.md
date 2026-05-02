@@ -4,7 +4,7 @@ name: "orchestrator arc failure-path verification — induce haiku:build timeout
 description: >
   orchestrator arc failure-path verification — induce haiku:build timeout, observe cache failure increment + surface shift
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [orchestrator-rethink, verification, termlink, failure-path]
 components: []
 related_tasks: [T-1669, T-1678, T-1680]
 created: 2026-05-02T14:32:04Z
-last_update: 2026-05-02T14:32:04Z
-date_finished: null
+last_update: 2026-05-02T14:34:11Z
+date_finished: 2026-05-02T14:34:11Z
 ---
 
 # T-1682: orchestrator arc failure-path verification — induce haiku:build timeout, observe cache failure increment + surface shift
@@ -98,3 +98,20 @@ bash -c "source agents/termlink/termlink.sh; out=\$(_resolve_dispatch_model_and_
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1682-orchestrator-arc-failure-path-verificati.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d2181a71
+- **Timestamp:** 2026-05-02T14:34:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `/orchestrator` re-fetched renders new haiku-for-build success rate `82%` (was 90%). Verified: `grep -c "82%" /tmp/orch-page-postfail.html` returns 2.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tmp/orch-page-postfail.html in: `/orchestrator` re-fetched renders new haiku-for-build success rate `82%` (was 90%). Verified: `grep -c "82%" /tmp/orch-page-postfail.html` returns 2.`
+
+### 2026-05-02T14:34:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
