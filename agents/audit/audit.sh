@@ -3259,7 +3259,7 @@ fi # end orchestrator
 # itself was never explicitly closed. Catches the "shipped without three-question
 # check" failure mode codified in CLAUDE.md §Arc Completion Discipline.
 # ============================================
-if should_run_section "arc-completion"; then
+if should_run_section "arc-completion" || should_run_section "oe-daily"; then
 echo "=== ARC-COMPLETION CHECKS ==="
 
 ARC_DIR="$CONTEXT_DIR/arcs"

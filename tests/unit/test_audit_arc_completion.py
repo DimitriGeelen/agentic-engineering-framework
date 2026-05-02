@@ -130,3 +130,31 @@ def test_arc_completion_closed_arc_skipped(tmp_path):
     arc_passes = sum(1 for line in out.splitlines() if line.startswith("[PASS]") and "Arc 'done'" in line)
     assert arc_warns == 0
     assert arc_passes == 0  # closed arcs don't emit PASS either
+
+
+def test_arc_completion_runs_under_oe_daily(tmp_path):
+    """T-1665: arc-completion must fire under `--section oe-daily` so the cron
+    detective signal lands in production. Pre-T-1665 the section was guarded
+    by `should_run_section "arc-completion"` only, which neither cron path
+    invokes (cron uses `--section oe-daily` and `--section observations,gaps`).
+    """
+    p = _seed_project(tmp_path)
+    tasks = [f"T-{n}" for n in range(1, 11)]
+    _write_arc(p, "ringing", "in-progress", tasks)
+    for n, t in enumerate(tasks, start=1):
+        status = "work-completed" if n <= 9 else "started-work"
+        _write_task(p, t, status)
+
+    env = os.environ.copy()
+    env["PROJECT_ROOT"] = str(p)
+    env["FRAMEWORK_ROOT"] = str(REPO_ROOT)
+    r = subprocess.run(
+        [str(FW), "audit", "--section", "oe-daily"],
+        cwd=str(p), env=env, capture_output=True, text=True,
+    )
+    out = r.stdout
+    assert "ARC-COMPLETION CHECKS" in out, (
+        "arc-completion section header missing under oe-daily — fix never landed:\n" + out
+    )
+    arc_warns = sum(1 for line in out.splitlines() if line.startswith("[WARN]") and "Arc 'ringing'" in line)
+    assert arc_warns == 1, f"expected the detective to fire under oe-daily:\n{out}"
