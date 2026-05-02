@@ -13,7 +13,19 @@ The Agent's responsibility to (a) match incoming work to a Workflow, (b) compose
 _Avoid_: Routing (too narrow — orchestration includes envelope composition, not just lookup), Dispatch (only the last step), Reasoning (overstates — orchestration is mostly table-driven).
 
 **Workflow**:
-A named, human-curated configuration that maps a task_type to a Delegation envelope template. Stored in `workflows.yaml` (per the T-1686 management page). Fields: `task_type`, `default_model`, `prompt_template`, `context_pack` (CLAUDE.md fragment, MCP subset, tool allowlist, command allowlist), `cwd`, optional `cost_cap`. The Agent consults `workflows.yaml` on every dispatch; if a task_type has no entry, dispatch falls back to a documented default workflow rather than going inline.
+A named, human-curated configuration that maps a task_type to a Delegation envelope template. Stored in `workflows.yaml` (per the T-1686 management page). v1 schema (six fields, plus `inline` flag for interactive types):
+```yaml
+- task_type: build
+  model: sonnet                # alias or full name
+  effort: medium               # low | medium | high | xhigh | max
+  prompt_template: prompts/build.md
+  allowed_tools: [Read, Edit, Bash, Grep]
+  cost_cap_usd: 1.50           # optional
+  cwd: $PROJECT_ROOT
+- task_type: inception
+  inline: true                 # Agent does this; never dispatched
+```
+Additional fields (`mcp_config`, `add_dirs`, `system_prompt_mode`, `permission_mode`, `disallowed_tools`) graduate into the schema only when a real Worker pattern demands them — no speculation. The Agent consults `workflows.yaml` on every dispatch; if a task_type has no entry, dispatch falls back to a documented default workflow.
 _Avoid_: Profile, Preset, Recipe (all imply UI-decoration; Workflow is load-bearing config).
 
 **Worker**:
@@ -21,7 +33,7 @@ A dispatched executor that runs a Delegation envelope. Three flavours today: Tas
 _Avoid_: Sub-agent (ambiguous — Claude Code's "sub-agent" concept conflates Task tool and TermLink), Specialist (overloaded with TermLink's specialist registry).
 
 **Delegation envelope**:
-The structured input to a Worker. Composed by the Agent from a Workflow plus the live task context. Fields: `worker_kind` (Task | TermLink | provider), `model`, `prompt`, `context_pack` (tailored CLAUDE.md fragment, MCP subset, tool allowlist, command allowlist), `cwd`. The unit of dispatch.
+The structured input to a Worker. Composed by the Agent from a Workflow plus the live task context. v1 expansion of a Workflow entry: `worker_kind` (Task | TermLink | provider), `model`, `effort`, `prompt` (template rendered with task context), `allowed_tools`, `cost_cap_usd`, `cwd`. Workers always launch with `--bare` (skip hooks/plugins/auto-memory/CLAUDE.md auto-discovery) — that's a Worker invariant, not a per-workflow knob. The Agent may pass an `overrides` map to apply chat-time user instructions on top of the Workflow defaults. The unit of dispatch.
 _Avoid_: Job, Request, Task (collides with the framework's Task concept, T-XXX).
 
 ## Relationships
