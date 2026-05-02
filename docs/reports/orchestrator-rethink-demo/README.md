@@ -221,18 +221,33 @@ many more haiku failures or many opus successes; that is a
 separate test of the "best model can change" property, captured
 as future work if it ever matters operationally.
 
-## Closure
+## Closure status — OPEN (5th-incident, see G-064)
 
-This artefact is the wire-level evidence required by §ACD / G-062 to
-close the arc. After three pushbacks where the agent recommended
-closure on substrate (T-1626, T-1633, T-1641, T-1667 RCA), this is the
-first demo that shows the headline_mechanic firing end-to-end.
+This artefact captures wire-level evidence that the substrate works
+when invoked. It does NOT capture evidence that the substrate is
+invoked in the framework's normal operation. Every cache row in this
+demo was populated by synthetic verification dispatches (T-1669,
+T-1680, T-1682, T-1681 patch verification). Zero cron jobs and zero
+framework subsystems autonomously call `fw termlink dispatch`. The
+dispatch preamble is documentation; nothing in everyday workflow
+acts on it.
 
-To close the arc:
+This is the §ACD substrate-vs-deliverable conflation in its
+cleanest form. The arc shipped a tool. Nothing uses the tool except
+the agent, manually, while running tests on the tool.
 
-```bash
-bin/fw arc close orchestrator-rethink \
-    --demo docs/reports/orchestrator-rethink-demo/ \
-    --decision "shipped — headline mechanic verified live on 2026-05-02 \
-                across 3 task_types with 3 real workers"
-```
+The user pattern-matched this on 2026-05-02 ("we again are missing
+on essential") — the 5th-incident self-application failure on this
+arc (after T-1626, T-1633, T-1641 reconsideration, T-1667 RCA,
+T-1670 4th-incident). Default-to-OPEN per §ACD applies.
+
+**The gap is registered as G-064** in
+`.context/project/concerns.yaml` with three candidate consumer paths
+(audit refactor / cron health-check / opt-in `--via-orchestrator`
+flag). Pick one, ship it, let it run for a week of real workload,
+then re-evaluate closure.
+
+`fw arc close orchestrator-rethink` is intentionally NOT documented
+here. Closure belongs to the human (T-1671 gate) AND requires
+evidence of autonomous consumption — neither this README nor any
+future agent-only verification cycle satisfies that bar.

@@ -1730,3 +1730,93 @@ concerns:
   last_reviewed: 2026-05-02
   related_task: T-1675
   related_tasks_extra: [T-1257, T-1542, T-1634, T-1635, T-1673]
+- id: G-064
+  type: gap
+  title: "Orchestrator substrate has zero production consumers — arc shipped infrastructure, not behaviour change"
+  description: >
+    The orchestrator-rethink arc (T-1641 anchor) declares the headline_mechanic
+    "agent dispatches a task without specifying a model → orchestrator picks the
+    model based on task_type and historical success rates → user observes the
+    routing decision live on /orchestrator and watches per-task-type model
+    preferences shift as the route_cache learns" as verified after T-1669
+    (demo) + T-1678 (still firing) + T-1680 (live re-test) + T-1682 (failure
+    path) + T-1681 (observability fix). All five were synthetic dispatches
+    invoked manually by an agent during verification work.
+
+    Audit shows: zero cron jobs dispatch through the orchestrator. Zero
+    framework subsystems autonomously call `fw termlink dispatch`. The dispatch
+    preamble (`agents/dispatch/preamble.md`) is documentation telling agents
+    they CAN use it; nothing in the framework's everyday workflow actually
+    DOES. The route_cache.json on this host has FIVE keys, every single
+    last_used timestamp from today, all of them populated by verification
+    sessions, not by real workload. The cache will go cold the moment
+    verification work stops.
+
+    This is the §ACD substrate-vs-deliverable conflation in its cleanest form
+    — the arc shipped a TOOL that works when invoked. Nothing INVOKES the
+    tool autonomously. "Preferences shift as the route_cache learns" requires
+    an autonomous workload exercising the substrate; there is none.
+
+    The user pattern-matched this immediately on the 2026-05-02 14:48Z message
+    "we again are missing on essential". This is the 5th-incident agent
+    self-application failure on this arc (after T-1626, T-1633, T-1641
+    reconsideration, T-1667 RCA, T-1670 4th-incident).
+  trigger_fired: true
+  trigger_event: |
+    2026-05-02: Multiple "shipped" declarations on the orchestrator-rethink
+    arc (T-1626, T-1633, T-1641, T-1667 RCA, T-1670, this session's T-1680/
+    T-1682/T-1681 ladder) all rated substrate completeness without ever
+    confirming production consumption. User correction: "we again are missing
+    on essential".
+  severity: high
+  status: watching
+  what_works_now: |
+    Substrate is real and behaviourally verified end-to-end:
+    - Resolver picks model from cache (T-1680 + 47 unit tests).
+    - record-outcome writes both successes (T-1680) and failures (T-1682).
+    - /orchestrator surface re-renders updated rates live.
+    - Worker meta.json now reflects exit state post-patch (T-1681).
+    - Cross-repo schema pinned (T-1648, T-1650, T-1651).
+
+    What works for synthetic invocation works. The substrate is not broken.
+  what_remains: |
+    Need at least ONE autonomous consumer of `fw termlink dispatch
+    --task-type X` (no --model) firing in the framework's normal operation
+    — not synthetic verification — before the headline_mechanic
+    "user observes routing decisions" is true in any meaningful sense.
+
+    Concrete candidate consumers (any one would close this gap):
+
+    1. Audit / discovery / handover agents that today run inline could be
+       refactored to dispatch slow checks via the orchestrator. They would
+       benefit from cached model selection (haiku for fast structural
+       checks, sonnet for synthesis, opus for inception-class reasoning).
+
+    2. A periodic cron health-check that dispatches a tiny prompt across
+       all three task_types daily and writes the result to
+       `.context/audits/orchestrator-LATEST.yaml`. Keeps the cache warm
+       AND gives operators rolling evidence of a live system. Roughly the
+       same shape as the existing 30-minute audit cron.
+
+    3. The pickup / dispatch / inception / handover agents could expose a
+       `--via-orchestrator` flag for sub-tasks, defaulting OFF until
+       proven. Even one user-driven session running with the flag would
+       generate real workload.
+
+    Without one of these, closure of the orchestrator-rethink arc would
+    repeat the substrate-vs-deliverable pattern on the 6th-incident.
+  recommendation: |
+    1. Arc orchestrator-rethink remains OPEN regardless of T-1680/T-1682/
+       T-1681. Default-to-OPEN per §ACD applies (≥2 prior pushbacks; this
+       is the 5th-incident).
+    2. Pick one of the three candidate consumers above (#2 is smallest
+       and most reversible — a cron health-check). File as a build task.
+       After ONE week of autonomous workload reflected in route_cache
+       last_used timestamps, re-evaluate arc closure.
+    3. Do not declare this gap mitigated by "we have ACs and tests" — the
+       gap is the absence of an autonomous consumer. Tests verify the
+       substrate; only autonomous workload verifies the deliverable.
+  created: 2026-05-02
+  last_reviewed: 2026-05-02
+  related_task: T-1683
+  related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682]
