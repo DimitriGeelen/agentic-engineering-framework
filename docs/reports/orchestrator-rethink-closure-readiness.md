@@ -1,7 +1,7 @@
 # Orchestrator-rethink arc — closure-readiness packet
 
-**Captured:** 2026-05-02T05:20Z
-**Arc:** `orchestrator-rethink` (16/19 completed, 84%, audit-detective WARN firing)
+**Captured:** 2026-05-02T05:20Z (last revised 2026-05-02T05:38Z, post-T-1665)
+**Arc:** `orchestrator-rethink` (17/20 completed, 85%, audit-detective WARN firing — and now firing in production cron, post-T-1665)
 **Anchor task:** T-1641
 **Decision needed:** `fw arc close orchestrator-rethink --decision "..."`
 
@@ -86,9 +86,9 @@ firing right now: 16/19 (84%) ≥ ARC_COMPLETION_THRESHOLD (80%), badge
 "audit warns ≥80%" rendered on `/arcs/orchestrator-rethink`. The mechanism
 built under the arc is producing the closure signal for the arc itself.
 
-## Constituent task status (19 total)
+## Constituent task status (20 total)
 
-**Completed (16):**
+**Completed (17):**
 - T-1641 (anchor — orchestrator-arc reconsideration)
 - T-1642 (Arc A — routing-policy consultation, GO with 13 constants)
 - T-1644 (Arc C — drift defenses)
@@ -105,6 +105,7 @@ built under the arc is producing the closure signal for the arc itself.
 - T-1657 (G-062 mech #3 — fw task review extra gate)
 - T-1663 (dispatch run.sh stream-json visibility)
 - T-1664 (framework dispatch path populates model_used/fallback_used)
+- T-1665 (arc-completion detective wired into oe-daily cron — fires in production)
 
 **Started-work, awaiting human review (3):**
 - T-1643 (Arc B — framework-side wiring) — [GO via `fw task review T-1643`](http://192.168.10.107:3000/review/T-1643)
