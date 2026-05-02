@@ -37,14 +37,19 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
 - [x] Tests: model dispatch (3 tests pass: opus, sonnet, absent)
 - [x] All existing tests pass (`cargo test`) — 480/0 in T-1590 Phase 4b verification (278 hub + 103 mcp unit + 99 mcp integration)
 
-### Human
-- [ ] [REVIEW] Multi-LLM routing design — model selection strategy is sound and cost-effective
+### Agent (T-1679 split — mechanical halves of the original routing-design review)
+- [x] Resolver picks correct model per task_type from live cache. Verified 2026-05-02T11:xx live (`_resolve_dispatch_model_and_fallback`): build→haiku, design→sonnet, inception→opus, unknown→none. Trace pinned at `docs/reports/orchestrator-rethink-demo/resolver-trace.txt`; live-update evidence in `cache-04-2026-05-02-1100Z-still-firing.json`.
+- [x] Fallback chain is `opus → sonnet → haiku` (hard-coded const). Verified 2026-05-02T11:xx via T-1679 grep: `pub const DEFAULT_MODEL_FALLBACK: &[&str] = &["opus", "sonnet", "haiku"];` at `/opt/termlink/crates/termlink-hub/src/circuit_breaker.rs:114`.
+- [x] Outcome attribution uses task.completed `ok` field — no schema change. Verified 2026-05-02T11:xx via T-1679: `resolve_dispatch_model` at `/opt/termlink/crates/termlink-mcp/src/tools.rs:854` + 3 unit tests pass (`resolve_dispatch_model_passthrough_when_breaker_closed`, `resolve_dispatch_model_uses_best_for_task_type`, `resolve_dispatch_model_no_inputs_returns_none` — 3/3 pass).
+
+### Human (T-1679 split — residual subjective ship-decision)
+- [ ] [REVIEW] **Cost-aware routing is NOT implemented.** Cache weights success rates only, not cost-per-success — a 90%-success-rate opus call beats a 70%-success-rate haiku call regardless of cost. Ship as-is, OR add cost-weighting first?
   **Steps:**
-  1. Review the routing logic and model selection heuristics
-  2. Verify fallback chain is sensible (e.g., opus -> sonnet -> haiku)
-  3. Check that cost implications are considered (route cheap tasks to cheap models)
-  **Expected:** Clean model routing with intelligent defaults
-  **If not:** Note where the cost model is wrong or where routing decisions are opaque
+  1. Read the supplementary review block below (cost-model gap explicitly called out as "future feature, not bug")
+  2. Read T-1637 (captured: "Multi-LLM routing: cost-aware learning — weight RouteCache success rates by cost-per-call")
+  3. Decide: ship now and pick T-1637 later, OR block on T-1637 first
+  **Expected:** Decision logged in `## Decisions` section, this AC ticked
+  **If not:** Leave unticked; arc closure proceeds without T-1065 closed
 
   **Agent supplementary review (2026-04-30, T-906/T-907 reports + crates/termlink-mcp/src/tools.rs):**
   - **Resolver shape:** `resolve_dispatch_model(requested, task_type, &cache) → (Option<String>, bool)` is a single function with three input cases (explicit / task_type-only / neither). Easier to test than a mid-pipeline lookup; the 5 unit tests cover each branch.
@@ -130,9 +135,18 @@ test -f .tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-d18730d9
-- **Timestamp:** 2026-04-28T18:13:48Z
+- **Scan ID:** R-46652acb
+- **Timestamp:** 2026-05-02T11:47:09Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent (T-1679 split — mechanical halves of the original routing-design review))** — Resolver picks correct model per task_type from live cache. Verified 2026-05-02T11:xx live (`_resolve_dispatch_model_and_fallback`): build→haiku, design→sonnet, inception→opus, unknown→none. Trace pin
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=docs/reports/orchestrator-rethink-demo/resolver-trace.txt in: Resolver picks correct model per task_type from live cache. Verified 2026-05-02T11:xx live (`_resolve_dispatch_model_and_fallback`): build→haiku, desi`
+- **AC#2 (Agent (T-1679 split — mechanical halves of the original routing-design review))** — Fallback chain is `opus → sonnet → haiku` (hard-coded const). Verified 2026-05-02T11:xx via T-1679 grep: `pub const DEFAULT_MODEL_FALLBACK: &[&str] = &["opus", "sonnet", "haiku"];` at `/opt/termlink/c
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-hub/src/circuit_breaker.rs in: Fallback chain is `opus → sonnet → haiku` (hard-coded const). Verified 2026-05-02T11:xx via T-1679 grep: `pub const DEFAULT_MODEL_FALLBACK: &[&str] = `
+- **AC#3 (Agent (T-1679 split — mechanical halves of the original routing-design review))** — Outcome attribution uses task.completed `ok` field — no schema change. Verified 2026-05-02T11:xx via T-1679: `resolve_dispatch_model` at `/opt/termlink/crates/termlink-mcp/src/tools.rs:854` + 3 unit t
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-mcp/src/tools.rs in: Outcome attribution uses task.completed `ok` field — no schema change. Verified 2026-05-02T11:xx via T-1679: `resolve_dispatch_model` at `/opt/termlin`

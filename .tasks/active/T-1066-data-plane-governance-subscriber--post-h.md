@@ -37,14 +37,20 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
 - [x] Tests: pattern matching, governance frame emission, throughput non-regression
 - [x] All existing tests pass (`cargo test`) — 250 session + 92 protocol pass
 
-### Human
-- [ ] [REVIEW] Data plane governance design — pattern detection is useful and doesn't degrade performance
+### Agent (T-1679 split — mechanical halves of the original governance-design review)
+- [x] Subscriber is structurally non-blocking. Verified 2026-05-02T11:xx via T-1679 grep: `pub async fn run(&self, mut output_rx: broadcast::Receiver<Vec<u8>>, governance_tx: mpsc::Sender<Frame>)` at `/opt/termlink/crates/termlink-session/src/governance_subscriber.rs:54-58`. `broadcast::Receiver::resubscribe()` gives a copy stream (no gate on primary). Bounded mpsc(256) with `try_send` drops on full → backpressure cannot propagate to data plane.
+- [x] Governance frame 0x8 protocol is pinned by regression test. Verified 2026-05-02T11:xx via T-1679: `python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -q` → 4 passed in 0.04s.
+- [x] Pattern-matching unit tests pass in /opt/termlink. Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-session/Cargo.toml --lib governance_subscriber` → 5 passed (`pattern_match_emits_governance_frame`, `no_match_no_frame`, `ansi_stripped_before_matching`, `multiple_patterns_multiple_matches`, `governance_frame_sequence_increments`). 0 failed.
+
+### Human (T-1679 split — residual subjective signal-utility judgment)
+- [ ] [REVIEW] **Are the patterns currently detected actually useful?** The mechanism works (above ACs prove non-blocking + frame protocol + pattern-match plumbing). The question reviewers cannot mechanically answer: when the subscriber DOES emit a Governance frame, does the signal point at something worth surfacing?
   **Steps:**
-  1. Review the subscriber architecture and frame protocol changes
-  2. Run benchmarks to verify no throughput regression
-  3. Evaluate whether detected patterns are actionable
-  **Expected:** Non-blocking subscriber, useful pattern detection, no performance impact
-  **If not:** Note performance concerns or patterns that aren't actionable
+  1. Read the supplementary review below (architecture is sound; subscriber is opt-in)
+  2. Read T-1639 (captured: "TermLink: throughput benchmark for governance subscriber — harden non-blocking claim") — note this AC's "no performance impact" wing is BENCHMARKED there, not here
+  3. Walk through what patterns the default config detects (or note: no default config exists; it's user-supplied)
+  4. Decide: signal utility is sufficient to ship, OR pattern-set needs design work first
+  **Expected:** Decision logged in `## Decisions` section, this AC ticked
+  **If not:** Leave unticked; arc closure proceeds without T-1066 closed
 
   **Agent supplementary review (2026-04-30, T-905 report + crates/termlink-session/src/governance_subscriber.rs):**
   - **Non-blocking architecture:** subscriber attaches via `broadcast::Receiver::resubscribe()` — gets a copy of the Output frame stream, doesn't gate the primary path. Bounded mpsc (256 cap) for emitted Governance frames, `try_send` drops on full → backpressure can never propagate to the data plane. This is the correct shape; the report's "non-blocking" claim is structurally enforced, not aspirational.
@@ -120,9 +126,22 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-2034e139
-- **Timestamp:** 2026-04-28T18:13:48Z
+- **Scan ID:** R-02b8b919
+- **Timestamp:** 2026-05-02T11:47:09Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent (T-1679 split — mechanical halves of the original governance-design review))** — Subscriber is structurally non-blocking. Verified 2026-05-02T11:xx via T-1679 grep: `pub async fn run(&self, mut output_rx: broadcast::Receiver<Vec<u8>>, governance_tx: mpsc::Sender<Frame>)` at `/opt/
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-session/src/governance_subscriber.rs in: Subscriber is structurally non-blocking. Verified 2026-05-02T11:xx via T-1679 grep: `pub async fn run(&self, mut output_rx: broadcast::Receiver<Vec<u8`
+- **AC#2 (Agent (T-1679 split — mechanical halves of the original governance-design review))** — Governance frame 0x8 protocol is pinned by regression test. Verified 2026-05-02T11:xx via T-1679: `python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -q` → 4 passed in 0.04s.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_termlink_governance_frame_contract.py in: Governance frame 0x8 protocol is pinned by regression test. Verified 2026-05-02T11:xx via T-1679: `python3 -m pytest tests/unit/test_termlink_governan`
+- **AC#3 (Agent (T-1679 split — mechanical halves of the original governance-design review))** — Pattern-matching unit tests pass in /opt/termlink. Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-session/Cargo.toml --lib governance_subscriber` → 5 p
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-session/Cargo.toml in: Pattern-matching unit tests pass in /opt/termlink. Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-ses`
+
+- **Layer-1 escalations:** 1
+  1. **external-publish** (high) — External publish or release
+     - matched: `broadcast`

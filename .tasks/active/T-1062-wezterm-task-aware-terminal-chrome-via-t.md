@@ -34,17 +34,20 @@ Phase 1 from T-1061 inception (GO). WezTerm Lua plugin that queries existing Ter
 - [x] README in `plugins/wezterm/` with install instructions
 - [x] Plugin registered in component fabric
 
-### Human
-- [ ] [REVIEW] Terminal chrome displays task state correctly when TermLink sessions are active
-  **Steps:**
+### Agent (T-1679 split — mechanical RPC-contract half of the original Human AC)
+- [x] Plugin's RPC contract still satisfied by current TermLink. `termlink list --json` exposes a `tags` array on each session; plugin extracts task IDs at `plugins/wezterm/termlink-chrome.lua:49-58` via regex matching both `task:T-XXX` and `task=T-XXX`. Verified 2026-05-02T11:xx via T-1679: `termlink list --json` returns sessions with `tags` field present.
+
+### Human (T-1679 split — residual visual render, genuinely cannot automate without desktop env)
+- [ ] [REVIEW] Visual render — task ID from a TermLink session appears in WezTerm status bar
+  **Steps (Steps 1-3 are mechanical setup; only Step 4 is the actual judgment):**
   1. Install plugin: `cp plugins/wezterm/termlink-chrome.lua ~/.config/wezterm/`
   2. Add `require("termlink-chrome")` to `~/.wezterm.lua`
-  3. Start a TermLink session: `termlink spawn --name test --shell --tags "task:T-1062"`
-  4. Verify task info appears in WezTerm status bar
-  **Expected:** Task ID and status visible in terminal chrome
+  3. Start a tagged TermLink session: `termlink spawn --name test --shell --tags "task:T-1062"`
+  4. **Visually verify** task ID and status visible in WezTerm status bar
+  **Expected:** Task ID and status visible in terminal chrome (Step 4)
   **If not:** Check WezTerm debug overlay (Ctrl+Shift+L) for Lua errors
 
-  **Agent verification gap (2026-04-30, per L-329):** genuine capability gap — this anchor has no Lua interpreter (`luac`/`lua` absent) and no WezTerm install, so neither static syntax nor live render can be verified from here. File is present (236 lines), README accompanies it (89 lines), TermLink dependency is `termlink list --json` which is a stable read-only RPC. The on-WezTerm rendering test requires a workstation with WezTerm + the plugin installed — that's you.
+  **Agent verification gap (2026-04-30, per L-329):** genuine capability gap — anchor has no Lua interpreter (`luac`/`lua` absent) and no WezTerm install, so neither static syntax nor live render can be verified here. File is present (236 lines), README accompanies it (89 lines), TermLink dependency is `termlink list --json` which is a stable read-only RPC (T-1679 verified the contract still matches plugin assumptions). The on-WezTerm rendering test requires a workstation with WezTerm + the plugin installed — that's you.
 
 ## Verification
 
@@ -120,3 +123,12 @@ grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 
 ### 2026-04-20T07:17:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-713b11f4
+- **Timestamp:** 2026-05-02T11:47:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

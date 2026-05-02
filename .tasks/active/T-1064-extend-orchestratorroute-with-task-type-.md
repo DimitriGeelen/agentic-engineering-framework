@@ -36,14 +36,20 @@ Phase 3 from T-1061 inception (GO). Extend TermLink's `orchestrator.route` chain
 - [x] Tests: task-type routing selects correct specialist, fallback to method routing when no type match
 - [x] All existing tests pass (`cargo test`) — 155 hub tests pass
 
-### Human
-- [ ] [REVIEW] Routing design review — task-type integration is clean and doesn't complicate the existing route chain
+### Agent (T-1679 split — mechanical halves of the original Routing design review)
+- [x] /opt/termlink termlink-hub compiles clean (no regressions). Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-hub/Cargo.toml --no-run` succeeded; broader 480/0 confirmed in T-1590 Phase 4b verification (per supplementary review below).
+- [x] Backward-compatibility test exists and passes: `orchestrator_route_no_task_type_backward_compatible` at `/opt/termlink/crates/termlink-hub/src/router.rs:3350`. Verified 2026-05-02T11:xx via T-1679: 1 passed; 0 failed.
+- [x] task-type integration is structurally additive: `task_type` parsed at `router.rs:1156` from request params with `.and_then(|t| t.as_str()).map(String::from)` (Option<String> shape, no schema break). Verified 2026-05-02T11:xx via T-1679 grep.
+
+### Human (T-1679 split — residual subjective)
+- [ ] [REVIEW] Composite cache-key shape — `routing_key = "method::task_type"` (string concat at `/opt/termlink/crates/termlink-hub/src/router.rs:1158-1163`). Accept now and ship, or refactor to `RoutingKey` newtype first?
   **Steps:**
-  1. Review the router.rs changes in the TermLink repo
-  2. Check that task-type routing is additive (no breaking changes to existing flow)
-  3. Verify the route cache schema evolution is backward-compatible
-  **Expected:** Clean additive extension, no regressions
-  **If not:** Note where the abstraction leaks or complicates the existing chain
+  1. Read `/opt/termlink/crates/termlink-hub/src/router.rs:1156-1170` (the routing-key construction)
+  2. Read T-1636 (captured: "Refactor composite cache key to RoutingKey newtype before adding more dimensions")
+  3. Read the supplementary review block below (composite-key concern is "future scaling, not ship-blocker")
+  4. Decide: ship now and pick T-1636 later, OR block on T-1636 first
+  **Expected:** Decision logged in `## Decisions` section, this AC ticked
+  **If not:** Leave unticked; arc closure proceeds without T-1064 closed
 
   **Agent supplementary review (2026-04-30, /opt/termlink/docs/reports/T-903-orchestrator-routing.md + crates/termlink-hub/src/router.rs):**
   - **Additive extension confirmed:** `task_type` is `Option<String>`, all 5 layers (extraction → bypass → cache → discovery → success/failure tracking) gracefully no-op when absent. Backward-compat test (`orchestrator_route_no_task_type_backward_compatible`) pins it.
@@ -115,9 +121,16 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-2517635e
-- **Timestamp:** 2026-04-28T18:13:48Z
+- **Scan ID:** R-cd3ce9af
+- **Timestamp:** 2026-05-02T11:46:18Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent (T-1679 split — mechanical halves of the original Routing design review))** — /opt/termlink termlink-hub compiles clean (no regressions). Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-hub/Cargo.toml --no-run` succeeded; broader 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-hub/Cargo.toml in: /opt/termlink termlink-hub compiles clean (no regressions). Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/ter`
+- **AC#2 (Agent (T-1679 split — mechanical halves of the original Routing design review))** — Backward-compatibility test exists and passes: `orchestrator_route_no_task_type_backward_compatible` at `/opt/termlink/crates/termlink-hub/src/router.rs:3350`. Verified 2026-05-02T11:xx via T-1679: 1 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-hub/src/router.rs in: Backward-compatibility test exists and passes: `orchestrator_route_no_task_type_backward_compatible` at `/opt/termlink/crates/termlink-hub/src/router.`

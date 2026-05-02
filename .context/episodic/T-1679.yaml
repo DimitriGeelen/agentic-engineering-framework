@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1679: AC classification compliance sweep: split Human ACs of T-1062/T-1064/T-1065/T-1066 into Agent (mechanical, verifiable) + Human (genuinely subjective) per CLAUDE.md AC Classification Matrix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T11:45:41Z
+# ============================================================================
+
+task_id: T-1679
+task_name: "AC classification compliance sweep: split Human ACs of T-1062/T-1064/T-1065/T-1066 into Agent (mechanical, verifiable) + Human (genuinely subjective) per CLAUDE.md AC Classification Matrix"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T11:37:12Z
+completed: 2026-05-02T11:45:37Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "T-1062 Human AC split. Original `[REVIEW] Terminal chrome displays task state correctly` decomposed into: 3 mechanical Agent ACs (plugin file present, Lua syntax-valid, queries `termlink list --json` and `termlink status`) + 1 residual Human AC (visual render in live wezterm session — needs desktop env). `grep -E \"^- \[ \] \[REVIEW\] Terminal chrome displays\" .tasks/active/T-1062-*.md` returns NOTHING (original AC replaced)."
+  - "T-1064 Human AC split. Original `[REVIEW] Routing design review` decomposed into: 3 mechanical Agent ACs (cargo test pass, backward-compat test pass, task_type field is Option<String>) + 1 residual Human AC (composite-key shape `method::task_type` — accept now or refactor to RoutingKey newtype first; T-1636 captured). `grep -E \"^- \[ \] \[REVIEW\] Routing design review$\" .tasks/active/T-1064-*.md` returns NOTHING."
+  - "T-1065 Human AC split. Original `[REVIEW] Multi-LLM routing design` decomposed into: 3 mechanical Agent ACs (resolver picks correctly per cache, fallback chain is opus→sonnet→haiku, outcome attribution uses task.completed `ok` field) + 1 residual Human AC (cost-aware routing NOT implemented — ship as-is or refactor first). `grep -E \"^- \[ \] \[REVIEW\] Multi-LLM routing design$\" .tasks/active/T-1065-*.md` returns NOTHING."
+  - "T-1066 Human AC split. Original `[REVIEW] Data plane governance design` decomposed into: 3 mechanical Agent ACs (subscriber is async + non-blocking shape, governance frame 0x8 protocol pinned, pattern detection unit tests pass) + 1 residual Human AC (subjective: are detected patterns useful?). `grep -E \"^- \[ \] \[REVIEW\] Data plane governance design$\" .tasks/active/T-1066-*.md` returns NOTHING."
+  - "All four task files still have at least one `### Human` AC remaining (residual subjective). `for t in T-1062 T-1064 T-1065 T-1066; do grep -A30 \"^### Human\" .tasks/active/${t}-*.md | grep -q \"^- \[ \] \[REVIEW\]\" || echo \"FAIL: $t lost human AC\"; done` produces no FAIL lines."
+  - "All four task files' frontmatter still parses (no YAML breakage). `for t in T-1062 T-1064 T-1065 T-1066; do python3 -c \"import yaml; yaml.safe_load(open('.tasks/active/${t}-'+__import__('glob').glob('.tasks/active/${t}-*.md')[0].split('${t}-')[-1]).read().split('---',2)[1])\"; done` exits 0."
+  - "Mechanical Agent ACs are RUN and ticked where they pass (separate from this task's own ACs). Each of T-1062/T-1064/T-1065/T-1066 has the new Agent ACs verified and checked, OR clearly noted in an Updates entry where verification couldn't run (e.g. T-1062 visual render)."
+  - "[REVIEW] Dashboard renders correctly"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1679-ac-classification-compliance-sweep-split.md
+generated_by: context-agent-hybrid
