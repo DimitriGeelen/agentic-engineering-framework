@@ -13,19 +13,23 @@ The Agent's responsibility to (a) match incoming work to a Workflow, (b) compose
 _Avoid_: Routing (too narrow — orchestration includes envelope composition, not just lookup), Dispatch (only the last step), Reasoning (overstates — orchestration is mostly table-driven).
 
 **Workflow**:
-A named, human-curated configuration that maps a task_type to a Delegation envelope template. Stored in `workflows.yaml` (per the T-1686 management page). v1 schema (six fields, plus `inline` flag for interactive types):
+A named, human-curated configuration that maps a task_type to a Delegation envelope template. Stored as **one YAML file per workflow** in `.context/project/workflows/<task_type>.yaml` — same one-file-per-entity pattern as `.context/arcs/<id>.yaml` and `docs/adr/000X.md`. v1 schema per file (six fields, plus `inline` flag for interactive types):
 ```yaml
-- task_type: build
-  model: sonnet                # alias or full name
-  effort: medium               # low | medium | high | xhigh | max
-  prompt_template: prompts/build.md
-  allowed_tools: [Read, Edit, Bash, Grep]
-  cost_cap_usd: 1.50           # optional
-  cwd: $PROJECT_ROOT
-- task_type: inception
-  inline: true                 # Agent does this; never dispatched
+# .context/project/workflows/build.yaml
+task_type: build
+model: sonnet                  # alias or full name
+effort: medium                 # low | medium | high | xhigh | max
+prompt_template: prompts/build.md
+allowed_tools: [Read, Edit, Bash, Grep]
+cost_cap_usd: 1.50             # optional
+cwd: $PROJECT_ROOT
 ```
-Additional fields (`mcp_config`, `add_dirs`, `system_prompt_mode`, `permission_mode`, `disallowed_tools`) graduate into the schema only when a real Worker pattern demands them — no speculation. The Agent consults `workflows.yaml` on every dispatch; if a task_type has no entry, dispatch falls back to a documented default workflow.
+```yaml
+# .context/project/workflows/inception.yaml
+task_type: inception
+inline: true                   # Agent does this; never dispatched
+```
+Additional fields (`mcp_config`, `add_dirs`, `system_prompt_mode`, `permission_mode`, `disallowed_tools`) graduate into the schema only when a real Worker pattern demands them — no speculation. The Agent reads the workflow file on every dispatch; if a task_type has no file, dispatch falls back to a documented default workflow.
 _Avoid_: Profile, Preset, Recipe (all imply UI-decoration; Workflow is load-bearing config).
 
 **Worker**:
@@ -40,7 +44,7 @@ _Avoid_: Job, Request, Task (collides with the framework's Task concept, T-XXX).
 
 - The **Agent** runs on a model configured per-project (default `opus`, key `AGENT_MODEL` in `.framework.yaml`). The configured model is *the* orchestration model — there is no separate orchestration tier.
 - The **Agent**'s job has three slices: (1) **task management** — create, ensure-updates, close-with-guards — done by the Agent, authoritatively; (2) **interactive work** — inception, grilling, design dialogue, anything where operator interjection mid-stream is essential — done by the Agent because Workers cannot efficiently solicit operator input; (3) **dispatch** — all other substantive work, routed to Workers.
-- The **Agent** consults **Workflow** entries in `workflows.yaml` to compose **Delegation envelopes**. The human curates `workflows.yaml`; the Agent does not invent envelopes from scratch.
+- The **Agent** consults **Workflow** files in `.context/project/workflows/<task_type>.yaml` to compose **Delegation envelopes**. The human curates these files (one per task_type); the Agent does not invent envelopes from scratch.
 - A **Delegation envelope** is the only artefact a **Worker** sees from the **Agent**.
 - The **Agent** observes Worker outcomes (success/failure, cost, duration) and writes them to two artifacts: `route_cache.json` (sparse aggregates per provider+model+task_type, used by the resolver — no info loss but lossy by design) and `dispatches.jsonl` (append-only per-dispatch log: `ts, task_id, workflow_id, provider, worker_kind, model, effort, cost_usd, duration_ms, exit_code, override_applied`). Cache feeds future dispatches; log feeds telemetry / auto-improvement / healing batch jobs. Log rotates monthly to `dispatches-YYYY-MM.jsonl`. Routing memory does NOT override `workflows.yaml` — the human-curated table wins.
 
