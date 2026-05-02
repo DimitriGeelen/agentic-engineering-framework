@@ -4,16 +4,16 @@ name: "Update Watchtower /arcs/<id> close-instructions block to reflect T-1668 (
 description: >
   Update Watchtower /arcs/<id> close-instructions block to reflect T-1668 (--demo required) + T-1671 (CLAUDECODE refusal + override flags)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink]
-components: []
+components: [web/templates/arc_detail.html]
 related_tasks: []
 created: 2026-05-02T07:46:38Z
-last_update: 2026-05-02T07:48:20Z
-date_finished: null
+last_update: 2026-05-02T07:48:53Z
+date_finished: 2026-05-02T07:48:53Z
 ---
 
 # T-1672: Update Watchtower /arcs/<id> close-instructions block to reflect T-1668 (--demo required) + T-1671 (CLAUDECODE refusal + override flags)
@@ -55,9 +55,9 @@ date_finished: null
 
 ## Verification
 
-pytest tests/unit/test_arcs_routes.py -q
-bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q "demo path-to-wire-evidence\|demo &lt;path-to-wire-evidence&gt;\|--demo "'
-bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q "T-1671\|--i-am-human\|--from-watchtower"'
+python3 -m pytest tests/unit/test_arcs_routes.py -q
+bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q -- "--demo "'
+bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q -- "--from-watchtower"'
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
@@ -97,3 +97,20 @@ bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q "T-1
 
 ### 2026-05-02T07:48:20Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c275dcb0
+- **Timestamp:** 2026-05-02T07:48:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/templates/arc_detail.html` close-instructions block shows
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arc_detail.html in: `web/templates/arc_detail.html` close-instructions block shows`
+
+### 2026-05-02T07:48:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

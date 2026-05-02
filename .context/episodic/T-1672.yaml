@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1672: Update Watchtower /arcs/<id> close-instructions block to reflect T-1668 (--demo required) + T-1671 (CLAUDECODE refusal + override flags)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T07:48:58Z
+# ============================================================================
+
+task_id: T-1672
+task_name: "Update Watchtower /arcs/<id> close-instructions block to reflect T-1668 (--demo required) + T-1671 (CLAUDECODE refusal + override flags)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T07:46:38Z
+completed: 2026-05-02T07:48:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-02T09:48:20+02:00
+last_commit: 2026-05-02T09:48:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower /arcs/<id> close-block reflects T-1668 (--demo) + T-1671 (override flags)
+
+# Key outcomes
+outcomes:
+  - "`web/templates/arc_detail.html` close-instructions block shows"
+  - "Block names §ACD/G-062, links T-1668 / T-1671 inline"
+  - "Block lists override flags (`--i-am-human`, `--from-watchtower`)"
+  - "Block surfaces `arc.demo_evidence` if already populated (preserved"
+  - "Existing arc-detail tests still pass:"
+  - "Live: GET /arcs/orchestrator-rethink renders the new block,"
+  - "[REVIEW] Dashboard renders correctly"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/arcs/orchestrator-rethink.yaml"
+  - ".tasks/active/T-1672-update-watchtower-arcsid-close-instructi.md"
+  - "web/templates/arc_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T09:48:20"
+    action: "T-1672: Watchtower /arcs/<id> close-block reflects T-1668 (--demo) + T-1671 (override flags)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 3
+  lines_added: 121
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1672-update-watchtower-arcsid-close-instructi.md
+generated_by: context-agent-hybrid
