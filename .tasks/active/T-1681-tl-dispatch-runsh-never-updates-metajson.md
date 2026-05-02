@@ -27,10 +27,10 @@ Fix: append a `meta.json` rewrite step in `run.sh` (after `record-outcome`) that
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/termlink/termlink.sh` run.sh heredoc updates `$WDIR/meta.json` post-exit using `jq` + atomic mv: status=`done`/`failed`, exit_code=$EXIT_CODE, ended=$finished_at. Skipped silently if `jq` is missing (best-effort, same pattern as `result.md` extraction).
-- [ ] Existing unit tests pass: `pytest tests/unit/test_route_cache_record.py tests/unit/test_route_cache_resolve.py tests/unit/test_orchestrator_learned_routing.py tests/unit/test_termlink_dispatch_task_type.py -q` (47 tests green pre-patch).
-- [ ] New regression test pins the meta.json update lines in the heredoc — same pattern as `test_dispatch_run_sh_calls_record_outcome` (greps the heredoc block, asserts the canonical lines exist).
-- [ ] Live-verified: a real dispatch with a cheap prompt (sufficient timeout) produces a `meta.json` with `status: done` and `exit_code: 0` post-exit, captured as evidence file under the orchestrator-rethink-demo directory.
+- [x] `agents/termlink/termlink.sh` run.sh heredoc updates `$WDIR/meta.json` post-exit using `jq` + atomic mv: status=`done`/`failed`, exit_code=$EXIT_CODE, ended=$finished_at. Skipped silently if `jq` is missing (best-effort, same pattern as `result.md` extraction).
+- [x] Existing unit tests pass: `pytest tests/unit/test_route_cache_record.py tests/unit/test_route_cache_resolve.py tests/unit/test_orchestrator_learned_routing.py tests/unit/test_termlink_dispatch_task_type.py -q` (47 tests green pre-patch).
+- [x] New regression test pins the meta.json update lines in the heredoc — same pattern as `test_dispatch_run_sh_calls_record_outcome` (greps the heredoc block, asserts the canonical lines exist).
+- [x] Live-verified: a real dispatch with a cheap prompt (sufficient timeout) produces a `meta.json` with `status: done` and `exit_code: 0` post-exit, captured as evidence file under the orchestrator-rethink-demo directory.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
