@@ -253,8 +253,11 @@
 <!-- Recent dispatches panel (T-1643/W5) -->
 <h2 style="margin-top:2rem;">Recent dispatches</h2>
 <p class="muted">Last {{ recent_dispatches|length }} <code>fw termlink dispatch</code> worker(s) from <code>/tmp/tl-dispatch/</code>.
-    <code>model_used</code> and <code>fallback_used</code> are populated by /opt/termlink via governance frame 0x8;
-    <code>null</code> means the worker hasn't reported routing back yet.</p>
+    <code>model_used</code> and <code>fallback_used</code> are populated at dispatch time by the framework
+    (<a href="/tasks/T-1664"><code>T-1664</code></a>) and by <code>/opt/termlink</code>'s substrate
+    CLI (<code>scripts/tl-dispatch.sh</code>, /opt/termlink T-1442 commit <code>143cd870</code>).
+    <code>null</code> means neither path resolved a value (no explicit <code>--model</code> and no
+    <code>FW_DISPATCH_MODEL_DEFAULT</code> / <code>DISPATCH_MODEL_FOR_&lt;TYPE&gt;</code> set).</p>
 {% if recent_dispatches %}
 <table>
     <thead>

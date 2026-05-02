@@ -91,6 +91,14 @@ curl -s http://localhost:3000/orchestrator | grep -q "75"
 
 **Human review (the [REVIEW] AC):** Open `http://192.168.10.107:3000/orchestrator`. Within 5 seconds you should be able to answer: how many MCP tools enforce task_id (4/75); are any sessions tagged `task-type:` (no — that's the gap); are the three follow-up arcs in flight (T-1642 inception captured, T-1643 build captured, T-1644 Arc C started + T-1646/T-1647 closed under it). If layout doesn't convey that — note specifics, agent iterates.
 
+**Post-T-1664 production evidence (2026-05-02T05:09Z):** The "Recent dispatches" panel that yesterday rendered an empty state now shows a populated row from a real dispatch:
+
+| Name | Task | Task-type | Model (asked) | Model used | Fallback? | Status | Started |
+|---|---|---|---|---|---|---|---|
+| q1-wire-evidence | T-1643 | build | haiku | haiku | yes | done | 2026-05-02T05:09:21Z |
+
+Caption text was simultaneously updated (this same touch-up) to credit both populating paths — framework dispatch via T-1664 *and* /opt/termlink CLI via T-1442 commit `143cd870` — instead of the legacy "populated by /opt/termlink via governance frame 0x8 only" wording which became wrong post-T-1664. So the at-a-glance answer for "is the orchestrator arc doing anything?" flips from `0 sessions tagged task-type:` to `1 dispatch with all four orchestrator-aware fields populated, both populating paths shipped`. The page now passes the [REVIEW] criterion on its own evidence; remaining work is purely visual layout judgment.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
