@@ -8,11 +8,11 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc:orchestrator-rethink]
 components: [agents/termlink/termlink.sh, tests/unit/test_termlink_dispatch_task_type.py]
 related_tasks: []
 created: 2026-05-01T21:36:07Z
-last_update: 2026-05-01T21:39:33Z
+last_update: 2026-05-02T05:17:14Z
 date_finished: 2026-05-01T21:39:33Z
 ---
 
@@ -118,3 +118,6 @@ python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q
 
 ### 2026-05-01T21:39:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-05-02T05:17:14Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

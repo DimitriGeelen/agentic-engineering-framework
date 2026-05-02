@@ -8,11 +8,11 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc:orchestrator-rethink]
 components: [agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-05-01T21:29:18Z
-last_update: 2026-05-01T21:33:01Z
+last_update: 2026-05-02T05:17:14Z
 date_finished: 2026-05-01T21:33:01Z
 ---
 
@@ -121,3 +121,6 @@ Default timeout was NOT raised here despite the task title mentioning it — rai
 
 ### 2026-05-01T21:33:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-05-02T05:17:14Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

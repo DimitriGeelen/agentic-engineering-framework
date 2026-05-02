@@ -76,6 +76,8 @@ PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3
 
 **Out of MVP scope (filed separately):** dedicated `/arcs` page (Phase 2), arc-specific CLAUDE.md snippets, multi-arc focus stack — none deferred during build.
 
+**Live state at 2026-05-02T05:14Z:** Arc grew from 15 → 19 constituents as T-1656/T-1657 (G-062 mech #2/#3) and T-1663/T-1664 (Q1 substrate-half closure on framework path) were tagged `arc:orchestrator-rethink` post-build. Landing-page card reflects "19 tasks" live; `/arcs/orchestrator-rethink` shows 16/19 completion ratio (~84%) with the "audit warns ≥80%" badge firing — T-1656 mech #2 detective working as designed. Phase 1 of T-1653 (this task) is therefore not just code-complete but actively producing the closure signal it was built for; the human's review gate is the last step before `fw arc close`.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
