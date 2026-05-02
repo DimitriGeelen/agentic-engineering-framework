@@ -133,6 +133,86 @@ _resolve_dispatch_model() {
 # learned routing. T-1669 inserts step 2: read route-cache.json (written by
 # /opt/termlink hub + this framework's own outcome reports) and pick the
 # model with best historical success_rate for the task_type.
+# T-1669 Step 2 — record dispatch outcome into route_cache.
+# Atomic JSON update (file lock + tmpfile rename) so concurrent dispatches
+# from this framework and /opt/termlink hub don't lose updates. Silent on
+# permission errors / missing python3 — recording is best-effort, never
+# fatal to the dispatch itself.
+#
+# Key shape mirrors /opt/termlink RouteCache (route_cache.rs):
+#   model_stats["<model>:<task_type>"] = {model, task_type, successes,
+#                                          failures, last_used}
+_route_cache_record_outcome() {
+    local model="$1" task_type="$2" exit_code="$3"
+    [ -n "$model" ] && [ -n "$task_type" ] && [ -n "$exit_code" ] || return 0
+    command -v python3 >/dev/null 2>&1 || return 0
+    local cache_file
+    cache_file=$(_route_cache_path)
+    local cache_dir
+    cache_dir=$(dirname "$cache_file")
+    mkdir -p "$cache_dir" 2>/dev/null || return 0
+    [ -w "$cache_dir" ] || return 0
+    python3 - "$cache_file" "$model" "$task_type" "$exit_code" <<'PY' 2>/dev/null || true
+import fcntl, json, os, sys, tempfile
+from datetime import datetime, timezone
+
+cache_file, model, task_type, exit_code = (
+    sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+)
+key = f"{model}:{task_type}"
+ok = (exit_code == "0")
+
+lock_path = cache_file + ".lock"
+lock_fd = open(lock_path, "w")
+try:
+    fcntl.flock(lock_fd, fcntl.LOCK_EX)
+    cache = {"entries": {}, "model_stats": {}}
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file) as f:
+                loaded = json.load(f)
+            if isinstance(loaded, dict):
+                cache = loaded
+        except Exception:
+            pass  # corrupt → reset
+    if not isinstance(cache.get("model_stats"), dict):
+        cache["model_stats"] = {}
+    if not isinstance(cache.get("entries"), dict):
+        cache["entries"] = {}
+    stat = cache["model_stats"].get(key)
+    if not isinstance(stat, dict):
+        stat = {
+            "model": model, "task_type": task_type,
+            "successes": 0, "failures": 0, "last_used": None,
+        }
+    if ok:
+        stat["successes"] = int(stat.get("successes", 0) or 0) + 1
+    else:
+        stat["failures"] = int(stat.get("failures", 0) or 0) + 1
+    stat["model"] = model
+    stat["task_type"] = task_type
+    stat["last_used"] = datetime.now(timezone.utc).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    cache["model_stats"][key] = stat
+
+    cache_dir = os.path.dirname(cache_file) or "."
+    fd, tmp = tempfile.mkstemp(dir=cache_dir, prefix=".route-cache-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(cache, f, indent=2)
+        os.replace(tmp, cache_file)
+    except Exception:
+        try: os.unlink(tmp)
+        except Exception: pass
+        raise
+finally:
+    try: fcntl.flock(lock_fd, fcntl.LOCK_UN)
+    except Exception: pass
+    lock_fd.close()
+PY
+}
+
 _resolve_dispatch_model_and_fallback() {
     local explicit="$1" task_type="$2"
     if [ -n "$explicit" ]; then
@@ -495,6 +575,7 @@ METAEOF
     cat > "$wdir/run.sh" <<'RUNEOF'
 #!/bin/bash
 WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"
+TASK_TYPE="$6"; FW_BIN="$7"
 cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"; exit 1; }
 
 # T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
@@ -537,6 +618,15 @@ fi
 
 echo "$EXIT_CODE" > "$WDIR/exit_code"
 date -u +%Y-%m-%dT%H:%M:%SZ > "$WDIR/finished_at"
+
+# T-1669 Step 2: record outcome into route_cache so future dispatches can
+# learn from it. Best-effort — missing model / task_type / fw skips silently.
+if [ -n "$MODEL" ] && [ -n "$TASK_TYPE" ] && [ -n "$FW_BIN" ] && [ -x "$FW_BIN" ]; then
+    "$FW_BIN" termlink record-outcome \
+        --model "$MODEL" --task-type "$TASK_TYPE" --exit-code "$EXIT_CODE" \
+        >/dev/null 2>&1 || true
+fi
+
 termlink event emit "$WORKER_NAME" worker.done \
     -p "{\"exit_code\":$EXIT_CODE,\"result\":\"$WDIR/result.md\"}" 2>/dev/null || true
 
@@ -552,7 +642,11 @@ RUNEOF
 
     # Inject worker script via pty inject (fire-and-forget, NOT interact — claude takes minutes)
     sleep 1
-    termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model'" --enter >/dev/null 2>&1
+    # T-1669 Step 2: pass task_type + fw binary path so the worker can
+    # record outcome into route_cache after it exits.
+    local fw_bin="${FRAMEWORK_ROOT:-$(dirname "$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")")}/bin/fw"
+    [ -x "$fw_bin" ] || fw_bin=""
+    termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model' '$task_type' '$fw_bin'" --enter >/dev/null 2>&1
 
     echo "Worker spawned: $name (wdir: $wdir)"
 }
@@ -699,6 +793,22 @@ cmd_help() {
     echo "  fw termlink cleanup"
 }
 
+# T-1669 Step 2 — `fw termlink record-outcome --model X --task-type Y --exit-code N`
+# Called from dispatch run.sh after the worker exits, and usable directly for
+# tests / manual replay. No-op on missing args (best-effort recording).
+cmd_record_outcome() {
+    local model="" task_type="" exit_code=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --model) model="$2"; shift 2 ;;
+            --task-type) task_type="$2"; shift 2 ;;
+            --exit-code) exit_code="$2"; shift 2 ;;
+            *) die "Unknown option: $1" ;;
+        esac
+    done
+    _route_cache_record_outcome "$model" "$task_type" "$exit_code"
+}
+
 # --- Main routing ---
 # T-1643/W1: skip main routing when sourced (e.g. by tests).
 # `${BASH_SOURCE[0]} != $0` indicates we're being sourced, not executed.
@@ -716,6 +826,7 @@ if [ "${BASH_SOURCE[0]}" = "$0" ]; then
         wait)     cmd_wait "$@" ;;
         result)   cmd_result "$@" ;;
         update)   cmd_update "$@" ;;
+        record-outcome) cmd_record_outcome "$@" ;;
         help|--help|-h) cmd_help ;;
         *) die "Unknown subcommand: $subcmd (run 'fw termlink help')" ;;
     esac
