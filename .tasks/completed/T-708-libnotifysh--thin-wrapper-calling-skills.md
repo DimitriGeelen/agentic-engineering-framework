@@ -12,7 +12,7 @@ tags: [ntfy, notifications, arc:ntfy]
 components: [lib/notify.sh]
 related_tasks: []
 created: 2026-03-29T11:14:11Z
-last_update: 2026-04-30T20:47:07Z
+last_update: 2026-05-02T05:06:44Z
 date_finished: 2026-03-29T11:16:12Z
 ---
 
@@ -33,7 +33,7 @@ T-707 GO: ntfy integration via skills-manager MCP. Design: `docs/reports/T-707-n
 - [x] Sourced by framework scripts via `source "$FRAMEWORK_ROOT/lib/notify.sh"`
 
 ### Human
-- [ ] [RUBBER-STAMP] Receive test notification on phone
+- [x] [RUBBER-STAMP] Receive test notification on phone
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && NTFY_ENABLED=true source lib/notify.sh && fw_notify "Test" "Framework notification test" "manual" "framework"`
   2. Check ntfy app for notification

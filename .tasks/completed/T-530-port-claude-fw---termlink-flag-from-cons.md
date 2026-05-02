@@ -12,7 +12,7 @@ tags: []
 components: [bin/claude-fw]
 related_tasks: []
 created: 2026-03-18T08:31:44Z
-last_update: 2026-03-27T17:34:22Z
+last_update: 2026-05-02T05:06:25Z
 date_finished: 2026-03-23T09:52:05Z
 ---
 
@@ -36,7 +36,7 @@ Port of working implementation from consumer project (995_2021-kosten, commit b2
 - [x] CLAUDE.md updated with Remote Session Access section
 
 ### Human
-- [ ] [REVIEW] Run `claude-fw --termlink` and verify remote attach works
+- [x] [REVIEW] Run `claude-fw --termlink` and verify remote attach works
   **Steps:**
   1. In terminal 1: `cd /opt/999-Agentic-Engineering-Framework && claude-fw --termlink`
   2. Note the session name printed (e.g., `claude-master-12345`)
