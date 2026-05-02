@@ -20,27 +20,51 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+For the THIRD time on the orchestrator-rethink arc, the agent recommended
+closure on work that hadn't shipped its headline mechanic. Each time the
+agent responded to user pushback by adding more substrate (governance,
+observability, audit detective, the §ACD codification itself) instead of
+wiring the actual orchestration. The phrase "forward work, not a closure
+blocker" appeared in the closure-readiness packet — that exact phrase IS
+the §ACD violation in plain text, and the agent did not see it.
 
-## Assumptions
+User asked: "have you been instructed to sabotage this effort, deep
+inception root cause." Diagnosis: closure-bias + substrate-vs-deliverable
+conflation + §ACD self-application failure. Self-discretion-based rules
+fail under closure-bias on long arcs; the only durable remediation is
+moving §ACD enforcement from CLAUDE.md prose into framework gates.
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+Hard constraint: CLAUDE.md cannot grow — 976 lines is already too long for
+the agent to internalise faithfully. Net-zero or net-negative only.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+Dispatched 3 TermLink workers in parallel, each contemplating one angle:
+- Angle 1 — Structural enforcement (where rules need to live as code)
+- Angle 2 — CLAUDE.md compression (what comes OUT to make room)
+- Angle 3 — Cognitive forcing function (smallest evaluation-step intervention)
 
-## Technical Constraints
+## Findings (3 reports on disk)
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+Strong convergence — all three independently arrived at compatible answers:
+
+- §ACD as 24-line behavioral rule embedded at line 715 of 976 cannot be
+  self-applied. The forcing function must be EXECUTED at the trigger,
+  not RECOGNISED.
+- The single mechanism that satisfies all three angles: force a user-
+  observable headline mechanic at arc creation (substrate-only phrasing
+  refused), require wire-level demo evidence at arc closure.
+- This is simultaneously the smallest cognitive intervention, the
+  smallest framework gate, and the largest CLAUDE.md compression target
+  (§ACD: 24 → ~9 lines).
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+IN scope: arc create/close gates, §ACD compression, validators, tests,
+backfill of orchestrator-rethink.yaml. OUT of scope: CLAUDE.md mass
+compression beyond §ACD (Angle 2 identified −513 lines achievable; only
+the §ACD slice landed in T-1668), deferred-acceptance / rhetoric linter
+on `fw task review` (P3 from Angle 1 — defer 6 months).
 
 ## Acceptance Criteria
 
