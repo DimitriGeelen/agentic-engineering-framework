@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1665: T-1656 arc-completion detective never fires in cron — wire into oe-daily
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T05:35:41Z
+# ============================================================================
+
+task_id: T-1665
+task_name: "T-1656 arc-completion detective never fires in cron — wire into oe-daily"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T05:30:47Z
+completed: 2026-05-02T05:35:38Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-02T07:35:34+02:00
+last_commit: 2026-05-02T07:35:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-completion detective never fired in cron — wire into oe-daily
+
+# Key outcomes
+outcomes:
+  - "`agents/audit/audit.sh` arc-completion `if`-guard widens to also fire under `oe-daily` profile: `if should_run_section \"arc-completion\" || should_run_section \"oe-daily\"; then ... fi`"
+  - "Manual reproduction proves the change wires the detective into the cron path: `SECTIONS=oe-daily bash agents/audit/audit.sh 2>&1 | grep -q \"ARC-COMPLETION\"` returns 0"
+  - "Today's cron audit at 07:00 already showed `oe-daily` ran (per `.context/audits/cron/LATEST-CRON.yaml`); a follow-up cron-style run with the fix produces an arc-completion finding for `orchestrator-rethink` (84%, ≥ ARC_COMPLETION_THRESHOLD 0.80)"
+  - "Pytest pin in `tests/unit/test_audit_arc_completion.py` updated (or new test added) to assert the section runs under `oe-daily`"
+  - "Verification block in this task uses structural-only checks (per L-339)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-1665-t-1656-arc-completion-detective-never-fi.md"
+  - "tests/unit/test_audit_arc_completion.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T07:35:34"
+    action: "T-1665: arc-completion detective never fired in cron — wire into oe-daily"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 3
+  lines_added: 160
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1665-t-1656-arc-completion-detective-never-fi.md
+generated_by: context-agent-hybrid
