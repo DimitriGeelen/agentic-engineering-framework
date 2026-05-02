@@ -85,13 +85,22 @@ fi
 
 # Prefer channel.post (T-1160 structured Tier-A). Payload path via --payload-from-file
 # when available; else inline --payload; else stdin.
+# T-1445: probe for --ensure-topic support (T-1443+). When the flag is
+# available, idempotent topic auto-create heals across hub-restart topic
+# loss (G-051). When absent (older binaries), empty flag preserves
+# pre-T-1445 behavior.
+ENSURE_TOPIC_FLAG=""
+if termlink channel post --help 2>/dev/null | grep -q -- '--ensure-topic'; then
+    ENSURE_TOPIC_FLAG="--ensure-topic"
+fi
+
 if termlink channel post --help >/dev/null 2>&1; then
     TMP_PAY=$(mktemp 2>/dev/null || echo /tmp/pub-learning-$$.json)
     printf '%s' "$PAYLOAD" > "$TMP_PAY" 2>/dev/null || true
 
-    if termlink channel post "$TOPIC" --msg-type "$MSG_TYPE" \
+    if termlink channel post "$TOPIC" $ENSURE_TOPIC_FLAG --msg-type "$MSG_TYPE" \
            --payload-from-file "$TMP_PAY" >/dev/null 2>&1 \
-       || termlink channel post "$TOPIC" --msg-type "$MSG_TYPE" \
+       || termlink channel post "$TOPIC" $ENSURE_TOPIC_FLAG --msg-type "$MSG_TYPE" \
            --payload "$PAYLOAD" >/dev/null 2>&1; then
         _log "posted via=channel.post topic=$TOPIC msg_type=$MSG_TYPE id=$L_ID origin=$ORIGIN"
         rm -f "$TMP_PAY" 2>/dev/null || true

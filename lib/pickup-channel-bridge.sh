@@ -71,10 +71,19 @@ MSG_TYPE="pickup-$P_TYPE"
 TOPIC="framework:pickup"
 
 # Try channel.post path first (T-1160 — structured, signed, drift-tolerant Tier-A)
+# T-1445: probe for --ensure-topic support (T-1443+). When the flag is
+# available, idempotent topic auto-create heals across hub-restart topic
+# loss (G-051). When absent (older binaries), empty flag preserves
+# pre-T-1445 behavior.
+ENSURE_TOPIC_FLAG=""
+if termlink channel post --help 2>/dev/null | grep -q -- '--ensure-topic'; then
+    ENSURE_TOPIC_FLAG="--ensure-topic"
+fi
+
 if termlink channel post --help >/dev/null 2>&1; then
-    if termlink channel post "$TOPIC" --msg-type "$MSG_TYPE" --payload-from-file "$ENVELOPE" \
+    if termlink channel post "$TOPIC" $ENSURE_TOPIC_FLAG --msg-type "$MSG_TYPE" --payload-from-file "$ENVELOPE" \
             >/dev/null 2>&1 \
-       || termlink channel post "$TOPIC" --msg-type "$MSG_TYPE" --payload "$(cat "$ENVELOPE")" \
+       || termlink channel post "$TOPIC" $ENSURE_TOPIC_FLAG --msg-type "$MSG_TYPE" --payload "$(cat "$ENVELOPE")" \
             >/dev/null 2>&1; then
         _log "posted via=channel.post topic=$TOPIC msg_type=$MSG_TYPE sha=$SHA"
         : > "$DEDUP_DIR/$SHA"
