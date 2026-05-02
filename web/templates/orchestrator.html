@@ -250,6 +250,61 @@
 </details>
 {% endif %}
 
+<!-- Learned routing panel (T-1669 Step 3) -->
+<h2 style="margin-top:2rem;">Learned routing</h2>
+<p class="muted">Per-task-type model preferences derived from <code>route-cache.json</code>
+    (<code>{{ learned.path }}</code>). Each row shows the model with the highest historical
+    success rate for that task type — the framework dispatch path
+    (<a href="/tasks/T-1669"><code>T-1669</code></a>) consults this cache before falling
+    back to <code>FW_DISPATCH_MODEL_FOR_&lt;TYPE&gt;</code> / <code>FW_DISPATCH_MODEL_DEFAULT</code>.
+    Outcomes (success / failure) are recorded back into the same cache after each
+    dispatch's worker exits, so the table grows as the agent dispatches more work.</p>
+{% if not learned.available %}
+<p><span class="badge badge-warn">cache absent</span> No <code>route-cache.json</code> at <code>{{ learned.path }}</code> yet.
+    Spawn at least one <code>fw termlink dispatch</code> worker to seed it.</p>
+{% elif learned.total_stats == 0 %}
+<p><span class="badge badge-info">no recordings</span> Cache file exists but no <code>model_stats</code>
+    have been recorded yet. The headline mechanic ("orchestrator picks model based on task_type +
+    historical success rates") needs at least one completed dispatch per task_type to start firing.</p>
+{% else %}
+<table>
+    <thead>
+        <tr>
+            <th>Task-type</th>
+            <th>Best model</th>
+            <th>Success rate</th>
+            <th>Volume</th>
+            <th>Last used</th>
+            <th>All candidates</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in learned.by_task_type %}
+        <tr>
+            <td><span class="pill"><code>{{ row.task_type }}</code></span></td>
+            <td><strong><code>{{ row.best.model }}</code></strong></td>
+            <td>
+                {{ "%.0f%%"|format(row.best.rate * 100) }}
+                <small class="muted">({{ row.best.successes }}/{{ row.best.total }})</small>
+            </td>
+            <td>{{ row.best.total }}</td>
+            <td><small>{{ row.best.last_used or "—" }}</small></td>
+            <td>
+                {% for c in row.candidates %}
+                    <span class="pill" title="{{ c.successes }} successes / {{ c.failures }} failures">
+                        <code>{{ c.model }}</code> {{ "%.0f%%"|format(c.rate * 100) }}
+                    </span>
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p class="muted"><small>{{ learned.total_stats }} model/task-type stat(s) total. Resolution order in
+    framework dispatch: explicit <code>--model</code> → route-cache best → env-per-type →
+    env-default → none. Recording uses atomic write + flock for concurrency safety.</small></p>
+{% endif %}
+
 <!-- Recent dispatches panel (T-1643/W5) -->
 <h2 style="margin-top:2rem;">Recent dispatches</h2>
 <p class="muted">Last {{ recent_dispatches|length }} <code>fw termlink dispatch</code> worker(s) from <code>/tmp/tl-dispatch/</code>.

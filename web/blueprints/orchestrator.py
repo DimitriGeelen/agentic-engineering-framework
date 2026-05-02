@@ -23,9 +23,10 @@ Data sources:
 """
 
 import json
+import os
 import re
 import subprocess
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import yaml
@@ -148,6 +149,89 @@ def _recent_dispatches(limit: int = 20) -> list[dict]:
     return out[:limit]
 
 
+def _route_cache_path() -> Path:
+    """Resolve route-cache.json path consistently with agents/termlink/termlink.sh.
+
+    Order: TERMLINK_RUNTIME_DIR > XDG_RUNTIME_DIR/termlink > /var/lib/termlink.
+    """
+    env_runtime = os.environ.get("TERMLINK_RUNTIME_DIR")
+    if env_runtime:
+        return Path(env_runtime) / "route-cache.json"
+    xdg = os.environ.get("XDG_RUNTIME_DIR")
+    if xdg:
+        return Path(xdg) / "termlink" / "route-cache.json"
+    return Path("/var/lib/termlink/route-cache.json")
+
+
+def _route_cache_learned() -> dict:
+    """T-1669 Step 3 — surface learned per-task-type model preferences.
+
+    Reads route-cache.json (written by /opt/termlink hub AND framework
+    record-outcome) and returns a structure ready for the template:
+
+      {
+        "available": bool,
+        "path": str,
+        "by_task_type": [
+            {"task_type": "build",
+             "best": {"model": "haiku", "successes": 8, "failures": 2, "rate": 0.8},
+             "candidates": [{"model": "haiku", ...}, {"model": "opus", ...}]},
+            ...
+        ],
+        "total_stats": int,
+      }
+
+    Empty `by_task_type` when the cache has no model_stats (the framework
+    hasn't recorded any dispatches yet — that's the headline_mechanic's
+    "before" state on a fresh deployment).
+    """
+    path = _route_cache_path()
+    if not path.is_file():
+        return {"available": False, "path": str(path), "by_task_type": [], "total_stats": 0}
+    try:
+        cache = json.loads(path.read_text())
+    except (json.JSONDecodeError, OSError):
+        return {"available": False, "path": str(path), "by_task_type": [], "total_stats": 0}
+    stats = cache.get("model_stats") or {}
+    if not isinstance(stats, dict):
+        stats = {}
+    by_tt: dict[str, list[dict]] = defaultdict(list)
+    for stat in stats.values():
+        if not isinstance(stat, dict):
+            continue
+        tt = stat.get("task_type")
+        model = stat.get("model")
+        if not tt or not model:
+            continue
+        succ = int(stat.get("successes", 0) or 0)
+        fail = int(stat.get("failures", 0) or 0)
+        total = succ + fail
+        if total <= 0:
+            continue
+        by_tt[tt].append({
+            "model": model,
+            "successes": succ,
+            "failures": fail,
+            "total": total,
+            "rate": succ / total,
+            "last_used": stat.get("last_used"),
+        })
+    rows = []
+    for tt, candidates in sorted(by_tt.items()):
+        candidates.sort(key=lambda c: (-c["rate"], -c["total"], c["model"]))
+        rows.append({
+            "task_type": tt,
+            "best": candidates[0],
+            "candidates": candidates,
+        })
+    return {
+        "available": True,
+        "path": str(path),
+        "by_task_type": rows,
+        "total_stats": sum(len(r["candidates"]) for r in rows),
+    }
+
+
 def _arc_tasks() -> list[dict]:
     """Surface T-1641 + follow-up arc parents for the cross-link panel."""
     targets = ["T-1641", "T-1642", "T-1643", "T-1644", "T-1645", "T-1646", "T-1647"]
@@ -249,4 +333,5 @@ def orchestrator_page():
         session_rows_truncated=max(0, len(session_rows) - 50),
         arc_tasks=_arc_tasks(),
         recent_dispatches=_recent_dispatches(),
+        learned=_route_cache_learned(),
     )
