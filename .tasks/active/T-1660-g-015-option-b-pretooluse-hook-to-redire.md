@@ -20,14 +20,29 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Companion to T-1645 (which shipped G-015 Option A — the bus protocol
+convention as partial mitigation). T-1660 explores Option B: a PreToolUse
+hook that intercepts `Write`/`Bash` tool calls writing to
+`/tmp/fw-agent-*.md` and redirects them through `fw bus post --task T-XXX`.
+
+Three feasibility paths considered:
+- (a) FUSE overlay on `/tmp/`
+- (b) Linux user namespace + bind-mount
+- (c) Claude Code PreToolUse hook reading Write `file_path` and rejecting
+      on match (with hint to use `fw bus post`)
+
+Path (c) is far the cheapest. Inception first; design afterwards.
+Closes G-015 fully when shipped.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+<!-- @auto-tick-on-decide -->
+- [ ] Problem statement validated (Option A vs B trade-off articulated)
+<!-- @auto-tick-on-decide -->
+- [ ] Three feasibility paths evaluated (FUSE / namespace / PreToolUse hook)
+<!-- @auto-tick-on-decide -->
+- [ ] Recommendation written with promotion criteria for re-watching
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
