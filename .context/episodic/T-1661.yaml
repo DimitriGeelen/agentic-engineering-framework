@@ -1,0 +1,140 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1661: T-1653 Phase 1 build: Arc system MVP — .context/arcs/<id>.yaml + bin/fw arc {create,focus,list,show,close,tag} + handover injection + Watchtower landing-page section + /tasks?arc= filter chip + migrate orchestrator-rethink arc
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T05:52:26Z
+# ============================================================================
+
+task_id: T-1661
+task_name: "T-1653 Phase 1 build: Arc system MVP — .context/arcs/<id>.yaml + bin/fw arc {create,focus,list,show,close,tag} + handover injection + Watchtower landing-page section + /tasks?arc= filter chip + migrate orchestrator-rethink arc"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T17:19:00Z
+completed: 2026-05-02T05:52:15Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-01T21:00:04+02:00
+last_commit: 2026-05-01T21:08:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Arc system MVP — lib/arc.sh + bin/fw arc + orchestrator-rethink registered. Arc system Phase 1 ship — D6 handover injection + D8/D9 Watchtower + D10 tests
+
+# Key outcomes
+outcomes:
+  - "D1 — `lib/arc.sh` exists with helper functions; `bin/fw arc help` lists 7 verbs (create / focus / list / show / close / tag / migrate)"
+  - "D2 — `bin/fw arc create orchestrator-rethink --name \"...\" --anchor T-1641` writes `.context/arcs/orchestrator-rethink.yaml` with required fields (id, name, status, anchor_task, constituent_tasks, created)"
+  - "D3 — `bin/fw arc focus orchestrator-rethink` writes `.context/working/arc-focus.yaml` with `current_arc:` field; `fw arc list` shows focused arc with marker"
+  - "D4 — `bin/fw arc tag orchestrator-rethink T-1661` adds `arc:orchestrator-rethink` to T-1661's tags AND appends T-1661 to the arc's `constituent_tasks`"
+  - "D5 — `bin/fw arc show orchestrator-rethink` renders id, name, status, focus, task counts (now/next/later/completed)"
+  - "D6 — `agents/handover/handover.sh` emits a `## Current Arc` section when arc-focus.yaml has a `current_arc:` value (no section if unset)"
+  - "D7 — Migration command `bin/fw arc migrate orchestrator-rethink --anchor T-1641` seeds constituent_tasks from anchor's `related_tasks` + tasks tagged `from-T-1641` / `arc:orchestrator-rethink` (idempotent)"
+  - "D8 — Watchtower landing page (`/`) renders an \"Arcs in flight\" section for in-progress arcs (verifiable via `curl … | grep -q \"Arcs in flight\"` when at least one arc exists)"
+  - "D9 — Watchtower `/tasks?arc=orchestrator-rethink` filter works: returns only tasks tagged `arc:orchestrator-rethink`"
+  - "D10 — Pytest module `tests/unit/test_arc_system.py` covers: arc create/focus/tag/migrate flow, YAML schema, handover injection on/off, focus-cleared behaviour (≥6 tests, all pass)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/post-compact-resume.sh"
+  - "agents/handover/handover.sh"
+  - "bin/fw"
+  - ".context/arcs/orchestrator-rethink.yaml"
+  - ".context/audits/2026-05-01.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/audits/orchestrator-LATEST.yaml"
+  - ".context/episodic/T-1642.yaml"
+  - ".context/episodic/T-1645.yaml"
+  - ".context/episodic/T-1652.yaml"
+  - ".context/episodic/T-1653.yaml"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/project/decisions.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/arc-focus.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/feedback-stream.yaml"
+  - ".context/working/.fleet-failure-state.json"
+  - ".context/working/focus.yaml"
+  - ".context/working/.hook-counter"
+  - ".context/working/.loop-detect.json"
+  - ".context/working/.mirror-sync.log"
+  - ".context/working/.pre-compact.last-run"
+  - ".context/working/.publish-learning-bus.log"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".context/working/watchtower.pid"
+  - "docs/generated/components/agents-audit-orchestrator-mcp-scan.md"
+  - ".fabric/components/lib-arc.yaml"
+  - "lib/arc.sh"
+  - ".tasks/active/T-1643-arc-b--framework-side-wiring-of-orchestr.md"
+  - ".tasks/active/T-1647-watchtower-orchestrator-page--orchestrat.md"
+  - ".tasks/active/T-1661-t-1653-phase-1-build-arc-system-mvp--con.md"
+  - ".tasks/completed/T-1641-t-1061-orchestrator-arc-reconsideration-.md"
+  - ".tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md"
+  - ".tasks/completed/T-1644-arc-c--orchestrator-arc-drift-defenses-t.md"
+  - ".tasks/completed/T-1645-g-015-reframe--sub-agent-tmp-bypass-narr.md"
+  - ".tasks/completed/T-1646-mcp-tool-taskid-enforcement-audit--agent.md"
+  - ".tasks/completed/T-1648-governance-frame-0x8-protocol-regression.md"
+  - ".tasks/completed/T-1649-task-type-tag-format-invariant--termlink.md"
+  - ".tasks/completed/T-1650-routecache-persistence-schema-regression.md"
+  - ".tasks/completed/T-1651-wezterm-plugin-contract-test--pin-termli.md"
+  - ".tasks/completed/T-1652-cross-repo-fabric-cards-for-opttermlink-.md"
+  - ".tasks/completed/T-1653-arcs-as-first-class-entity-orchestrator-.md"
+  - ".tasks/completed/T-1654-fix-framework-dispatch-tag-drift--agents.md"
+  - ".tasks/completed/T-1655-g-062-mechanism-1-codify-arc-completion-.md"
+  - ".tasks/completed/T-1658-vendored-agentic-framework-drift-sync--p.md"
+  - "tests/unit/test_arc_system.py"
+  - "VERSION"
+  - "web/blueprints/core.py"
+  - "web/blueprints/tasks.py"
+  - "web/templates/cockpit.html"
+  - "web/templates/index.html"
+  - "web/templates/tasks.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T21:00:04"
+    action: "T-1661: Arc system MVP — lib/arc.sh + bin/fw arc + orchestrator-rethink registered"
+  - time: "2026-05-01T21:08:25"
+    action: "T-1661: Arc system Phase 1 ship — D6 handover injection + D8/D9 Watchtower + D10 tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 753 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [orchestrator, arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 753
+  commits: 2
+  files_changed: 57
+  lines_added: 6437
+  lines_removed: 4983
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1661-t-1653-phase-1-build-arc-system-mvp--con.md
+generated_by: context-agent-hybrid

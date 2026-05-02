@@ -4,16 +4,16 @@ name: "RCA + systemic remediation for §ACD self-application closure-bias incide
 description: >
   RCA + systemic remediation for §ACD self-application closure-bias incident (3rd repeat)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink]
-components: []
+components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py, tests/unit/test_audit_arc_completion.py]
 related_tasks: []
 created: 2026-05-02T06:03:11Z
-last_update: 2026-05-02T07:28:58Z
-date_finished: null
+last_update: 2026-05-02T07:37:51Z
+date_finished: 2026-05-02T07:37:51Z
 ---
 
 # T-1667: RCA + systemic remediation for §ACD self-application closure-bias incident (3rd repeat)
@@ -70,15 +70,15 @@ on `fw task review` (P3 from Angle 1 — defer 6 months).
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -157,7 +157,43 @@ the arc's headline_mechanic is captured at
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Three-agent inception research converged on a single
+mechanism (`--headline-mechanic` at arc creation + `--demo` at arc
+close) that simultaneously satisfies all three angles: smallest
+cognitive intervention, smallest framework gate, largest CLAUDE.md
+compression target (§ACD: 24 → 9 lines, net-negative). The fix shipped
+as T-1668 and is now load-bearing in lib/arc.sh — the gates cannot be
+self-bypassed by closure-bias. T-1669 then delivered the actual
+orchestration (the missing thing the original 3 pushbacks were about);
+the arc's headline_mechanic is captured at
+`docs/reports/orchestrator-rethink-demo/`.
+
+Evidence:
+- T-1668 commit `8a31c99c7` — gates implemented + tested (28/28)
+- CLAUDE.md compressed 976 → 961 lines (§ACD: 24 → 9)
+- T-1669 demo dir — proves the structural intervention freed the
+  agent to deliver the actual orchestration on the same arc
+- 3 worker reports under `docs/reports/T-1667-angle-{1,2,3}-.md`
+- `_arc_validate_headline_mechanic` + `_arc_validate_demo_path` in
+  lib/arc.sh:84-180 — the runtime enforcement
+- Live verification: `bin/fw arc close orchestrator-rethink --decision X`
+  refuses without `--demo`, prints `headline_mechanic` to operator
+
+Go/No-Go criteria evaluation:
+- Root cause identified with bounded fix path: YES (closure-bias +
+  substrate-vs-deliverable conflation; fix = move §ACD into gates)
+- Fix is scoped, testable, reversible: YES (one PR, 28 tests pin the
+  gates, gates can be removed by reverting `8a31c99c7`)
+- Problem requires fundamental redesign or unbounded scope: NO
+- Fix cost exceeds benefit given current evidence: NO (the same
+  agent that pushed back 3 times then shipped the actual delivery
+  on the very next task — T-1669 — within one session post-fix)
+
+**Date**: 2026-05-02T07:37:51Z
 
 ## Updates
 
@@ -166,3 +202,53 @@ the arc's headline_mechanic is captured at
 
 ### 2026-05-02T07:28:58Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
+
+### 2026-05-02T07:37:51Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Three-agent inception research converged on a single
+mechanism (`--headline-mechanic` at arc creation + `--demo` at arc
+close) that simultaneously satisfies all three angles: smallest
+cognitive intervention, smallest framework gate, largest CLAUDE.md
+compression target (§ACD: 24 → 9 lines, net-negative). The fix shipped
+as T-1668 and is now load-bearing in lib/arc.sh — the gates cannot be
+self-bypassed by closure-bias. T-1669 then delivered the actual
+orchestration (the missing thing the original 3 pushbacks were about);
+the arc's headline_mechanic is captured at
+`docs/reports/orchestrator-rethink-demo/`.
+
+Evidence:
+- T-1668 commit `8a31c99c7` — gates implemented + tested (28/28)
+- CLAUDE.md compressed 976 → 961 lines (§ACD: 24 → 9)
+- T-1669 demo dir — proves the structural intervention freed the
+  agent to deliver the actual orchestration on the same arc
+- 3 worker reports under `docs/reports/T-1667-angle-{1,2,3}-.md`
+- `_arc_validate_headline_mechanic` + `_arc_validate_demo_path` in
+  lib/arc.sh:84-180 — the runtime enforcement
+- Live verification: `bin/fw arc close orchestrator-rethink --decision X`
+  refuses without `--demo`, prints `headline_mechanic` to operator
+
+Go/No-Go criteria evaluation:
+- Root cause identified with bounded fix path: YES (closure-bias +
+  substrate-vs-deliverable conflation; fix = move §ACD into gates)
+- Fix is scoped, testable, reversible: YES (one PR, 28 tests pin the
+  gates, gates can be removed by reverting `8a31c99c7`)
+- Problem requires fundamental redesign or unbounded scope: NO
+- Fix cost exceeds benefit given current evidence: NO (the same
+  agent that pushed back 3 times then shipped the actual delivery
+  on the very next task — T-1669 — within one session post-fix)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-4a9be6cf
+- **Timestamp:** 2026-05-02T07:37:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-02T07:37:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

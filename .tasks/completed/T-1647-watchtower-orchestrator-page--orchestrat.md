@@ -4,16 +4,16 @@ name: "Watchtower /orchestrator page — orchestrator-arc surface"
 description: >
   W10 #2 — directly answers the question that triggered T-1641 ('absolutely seeing nothing that indicates we are now orchestrating'). Single Watchtower page surfacing: (a) MCP audit summary from .context/audits/orchestrator-LATEST.yaml (gated/total, drift findings, deprecated facades), (b) live sessions parsed from termlink list --json with task-type/role/task tag breakdown, (c) per-task-type specialist counts, (d) cross-link panel to T-1641 reconsideration artefact + T-1642/T-1643/T-1644 follow-up arcs. Modeled after web/blueprints/hooks.py shape.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [from-T-1641, t-1061-followup, drift-defense, watchtower, observability, arc:orchestrator-rethink]
-components: []
+components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/shared.py, web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1644, T-1646, T-1063, T-1064, T-1066]
 created: 2026-05-01T12:14:30Z
-last_update: 2026-05-01T18:57:17Z
-date_finished: null
+last_update: 2026-05-02T05:52:00Z
+date_finished: 2026-05-02T05:52:00Z
 ---
 
 # T-1647: Watchtower /orchestrator page — orchestrator-arc surface
@@ -34,7 +34,7 @@ date_finished: null
 - [x] Component registered in fabric: `.fabric/components/web-blueprints-orchestrator.yaml` exists
 
 ### Human
-- [ ] [REVIEW] Page conveys whether the orchestrator arc is "doing anything" at a glance
+- [x] [REVIEW] Page conveys whether the orchestrator arc is "doing anything" at a glance
   **Steps:**
   1. Open `http://192.168.10.107:3000/orchestrator`
   2. Within ~5 seconds of looking, can you tell: how many MCP tools enforce task_id? are any sessions tagged `task-type:`? are policy/wiring/defenses arcs in flight?
@@ -119,3 +119,21 @@ Caption text was simultaneously updated (this same touch-up) to credit both popu
 
 ### 2026-05-01T18:57:17Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-aa57fd53
+- **Timestamp:** 2026-05-02T05:52:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Page surfaces audit summary from `.context/audits/orchestrator-LATEST.yaml` (gated count, baseline) — verifiable via `curl -s http://localhost:3000/orchestrator | grep -q "75"` after an audit run
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/orchestrator-LATEST.yaml in: Page surfaces audit summary from `.context/audits/orchestrator-LATEST.yaml` (gated count, baseline) — verifiable via `curl -s http://localhost:3000/or`
+
+### 2026-05-02T05:52:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

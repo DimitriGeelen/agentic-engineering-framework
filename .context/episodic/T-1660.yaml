@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1660: G-015 Option B: PreToolUse hook to redirect /tmp/fw-agent-*.md sub-agent writes through fw bus post
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T08:39:59Z
+# ============================================================================
+
+task_id: T-1660
+task_name: "G-015 Option B: PreToolUse hook to redirect /tmp/fw-agent-*.md sub-agent writes through fw bus post"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T17:18:21Z
+completed: 2026-05-02T08:39:55Z
+duration_days: 1
+updates_count: 5
+first_commit: 2026-05-01T22:23:43+02:00
+last_commit: 2026-05-02T10:36:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  add Recommendation (DEFER) + Decision sections — fix audit CTL-027. file research artifact for DEFER decision
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (Option A vs B trade-off articulated)"
+  - "Three feasibility paths evaluated (FUSE / namespace / PreToolUse hook)"
+  - "Recommendation written with promotion criteria for re-watching"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "add Recommendation (DEFER) + Decision sections — fix audit CTL-027"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1660-g-015-option-b-pretooluse-hook.md"
+  - ".tasks/active/T-1660-g-015-option-b-pretooluse-hook-to-redire.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T22:23:43"
+    action: "T-1660: add Recommendation (DEFER) + Decision sections — fix audit CTL-027"
+  - time: "2026-05-02T10:36:56"
+    action: "T-1660: file research artifact for DEFER decision"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 921 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 921
+  commits: 2
+  files_changed: 2
+  lines_added: 202
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1660-g-015-option-b-pretooluse-hook-to-redire.md
+generated_by: context-agent-hybrid

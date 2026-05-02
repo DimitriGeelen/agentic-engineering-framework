@@ -4,16 +4,16 @@ name: "Arc B — Framework-side wiring of orchestrator substrate (T-1061 follow-
 description: >
   Make /opt/999 actually USE the substrate it built. W04 confirmed the framework has zero call-sites passing task_type or --model, builds no task-type:X tags, never reads model_used/fallback_used. Six discrete wirings: (1) fw termlink dispatch derives --task-type from active task workflow_type and tags worker; (2) tag long-lived specialist sessions task-type:X; (3) wire --model defaults via .framework.yaml + per-task-type overrides; (4) surface model_used/fallback_used in dispatch result manifest; (5) Watchtower /orchestrator panel subscribing to Governance frames 0x8; (6) update agents/dispatch/preamble.md. Co-arc with /opt/termlink-side hardening: gate the 71 ungated MCP mutators (W03), wire run_with_governance, ship best_model_for min-sample guard (Wilson lower-bound), add fw termlink route CLI verb, surface fallback/breaker state in route response, decide tenancy scope of route-cache, extend audit schema with route/breaker/governance fields. Blocked on Arc A (T-1642) policy decisions. Source: docs/reports/T-1641-worker-04-framework-usage.md, docs/reports/T-1641-worker-03-termlink-current-state.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, framework-integration, arc:orchestrator-rethink]
-components: []
+components: [agents/dispatch/preamble.md, agents/termlink/termlink.sh, lib/config.sh, tests/unit/test_arcs_routes.py, tests/unit/test_termlink_dispatch_task_type.py, web/blueprints/arcs.py, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/arc_detail.html, web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1642, T-1063, T-1064, T-1065, T-1066]
 created: 2026-05-01T11:54:52Z
-last_update: 2026-05-01T19:42:23Z
-date_finished: null
+last_update: 2026-05-02T05:51:46Z
+date_finished: 2026-05-02T05:51:46Z
 ---
 
 # T-1643: Arc B — Framework-side wiring of orchestrator substrate (T-1061 follow-up)
@@ -35,7 +35,7 @@ T-1643 is a multi-part umbrella; each AC ships independently with `T-1643/Wn:` c
 - [x] **W5 (Watchtower /orchestrator panel):** `/orchestrator` page renders a "Recent dispatches" panel showing the last N dispatches with `task_type`, `model_used`, `fallback_used` derived from `meta.json` files in `/tmp/tl-dispatch/`. Empty state if no recent dispatches.
 
 ### Human
-- [ ] [REVIEW] Dispatch a test worker and confirm task_type derivation + W6 docs read coherently
+- [x] [REVIEW] Dispatch a test worker and confirm task_type derivation + W6 docs read coherently
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw context focus T-1643`
   2. `bin/fw termlink dispatch --task T-1643 --name w1-test --prompt "echo task-type works"`
@@ -116,3 +116,21 @@ python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q 2>&1 | tail 
 ### 2026-05-01T19:42:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0e906fcb
+- **Timestamp:** 2026-05-02T05:51:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — **W1 (task-type derivation):** `fw termlink dispatch` accepts `--task-type` and, when omitted, auto-derives it from `.context/working/focus.yaml` → active task's `workflow_type`. Worker meta.json gets
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/focus.yaml in: **W1 (task-type derivation):** `fw termlink dispatch` accepts `--task-type` and, when omitted, auto-derives it from `.context/working/focus.yaml` → ac`
+
+### 2026-05-02T05:51:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

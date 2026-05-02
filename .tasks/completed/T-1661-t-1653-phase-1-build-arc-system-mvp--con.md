@@ -4,16 +4,16 @@ name: "T-1653 Phase 1 build: Arc system MVP — .context/arcs/<id>.yaml + bin/fw
 description: >
   T-1653 GO'd Phase 1 (Watchtower 19:09:02). MVP scope per Recommendation: 1) data model .context/arcs/<id>.yaml with id/name/description/status/anchor_task/constituent_tasks/created/closed_at/decision; 2) bin/fw arc CLI 7 verbs (create/focus/list/show/close/tag); 3) tag namespace arc:<id> canonical, legacy from-T-XXXX as alias one release; 4) handover.sh adds Current Arc line, SessionStart resume picks up; 5) Watchtower landing-page Arcs in flight section + /tasks?arc=<id> filter chip; 6) migration: auto-create orchestrator-rethink arc from T-1641, seed constituent_tasks. ~4h. Out of scope: dedicated /arcs page (Phase 2), arc-specific CLAUDE.md snippets, multi-arc focus stack. Full design: docs/reports/T-1653-arcs-as-first-class.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [orchestrator, arc:orchestrator-rethink]
-components: []
+components: [agents/context/post-compact-resume.sh, agents/handover/handover.sh, bin/fw, lib/arc.sh, tests/unit/test_arc_system.py, web/blueprints/core.py, web/blueprints/tasks.py, web/templates/cockpit.html, web/templates/index.html, web/templates/tasks.html]
 related_tasks: []
 created: 2026-05-01T17:19:00Z
-last_update: 2026-05-01T17:19:21Z
-date_finished: null
+last_update: 2026-05-02T05:52:34Z
+date_finished: 2026-05-02T05:52:15Z
 ---
 
 # T-1661: T-1653 Phase 1 build: Arc system MVP — .context/arcs/<id>.yaml + bin/fw arc {create,focus,list,show,close,tag} + handover injection + Watchtower landing-page section + /tasks?arc= filter chip + migrate orchestrator-rethink arc
@@ -39,7 +39,7 @@ Watchtower landing-page section + `/tasks?arc=` filter, migration of orchestrato
 - [x] D10 — Pytest module `tests/unit/test_arc_system.py` covers: arc create/focus/tag/migrate flow, YAML schema, handover injection on/off, focus-cleared behaviour (≥6 tests, all pass)
 
 ### Human
-- [ ] [REVIEW] Watchtower landing-page "Arcs in flight" section reads cleanly at a glance
+- [x] [REVIEW] Watchtower landing-page "Arcs in flight" section reads cleanly at a glance
       **Steps:**
       1. Open `http://192.168.10.107:3000/` in browser
       2. Locate "Arcs in flight" section (above active tasks)
@@ -115,3 +115,32 @@ PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3
 ### 2026-05-01T17:19:21Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
 - **Change:** tags: +orchestrator,arc:orchestrator-rethink
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-3d206800
+- **Timestamp:** 2026-05-02T05:52:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 5
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — D2 — `bin/fw arc create orchestrator-rethink --name "..." --anchor T-1641` writes `.context/arcs/orchestrator-rethink.yaml` with required fields (id, name, status, anchor_task, constituent_tasks, crea
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/arcs/orchestrator-rethink.yaml in: D2 — `bin/fw arc create orchestrator-rethink --name "..." --anchor T-1641` writes `.context/arcs/orchestrator-rethink.yaml` with required fields (id, `
+- **AC#3 (Agent)** — D3 — `bin/fw arc focus orchestrator-rethink` writes `.context/working/arc-focus.yaml` with `current_arc:` field; `fw arc list` shows focused arc with marker
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/arc-focus.yaml in: D3 — `bin/fw arc focus orchestrator-rethink` writes `.context/working/arc-focus.yaml` with `current_arc:` field; `fw arc list` shows focused arc with `
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/fw arc list >/dev/null`
+  2. **empty-output-success** (partial, heuristic) @ Verification:line 8
+     - evidence: `PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3000}/" >/dev/null`
+  3. **empty-output-success** (partial, heuristic) @ Verification:line 12
+     - evidence: `PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3000}/tasks?arc=orchestrator-rethink" >/dev/null`
+
+### 2026-05-02T05:52:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

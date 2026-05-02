@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1667: RCA + systemic remediation for §ACD self-application closure-bias incident (3rd repeat)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T07:37:55Z
+# ============================================================================
+
+task_id: T-1667
+task_name: "RCA + systemic remediation for §ACD self-application closure-bias incident (3rd repeat)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T06:03:11Z
+completed: 2026-05-02T07:37:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-02T08:20:16+02:00
+last_commit: 2026-05-02T08:20:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  3-agent inception RCA — structural remediation for §ACD self-application failure
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1667-angle-1-structural-enforcement.md"
+  - "docs/reports/T-1667-angle-2-claudemd-compression.md"
+  - "docs/reports/T-1667-angle-3-cognitive-forcing-function.md"
+  - ".tasks/active/T-1667-rca--systemic-remediation-for-acd-self-a.md"
+  - ".tasks/completed/T-1643-arc-b--framework-side-wiring-of-orchestr.md"
+  - ".tasks/completed/T-1647-watchtower-orchestrator-page--orchestrat.md"
+  - ".tasks/completed/T-1661-t-1653-phase-1-build-arc-system-mvp--con.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T08:20:16"
+    action: "T-1667: 3-agent inception RCA — structural remediation for §ACD self-application failure"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 94 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 94
+  commits: 1
+  files_changed: 5
+  lines_added: 1007
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1667-rca--systemic-remediation-for-acd-self-a.md
+generated_by: context-agent-hybrid

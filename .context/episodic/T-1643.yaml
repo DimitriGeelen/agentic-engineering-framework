@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1643: Arc B — Framework-side wiring of orchestrator substrate (T-1061 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T05:51:50Z
+# ============================================================================
+
+task_id: T-1643
+task_name: "Arc B — Framework-side wiring of orchestrator substrate (T-1061 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T11:54:52Z
+completed: 2026-05-02T05:51:46Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-05-01T21:50:30+02:00
+last_commit: 2026-05-02T07:37:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Arc B — framework-side wiring of orchestrator substrate. register test fabric card with subsystem/tags/purpose. register U-005 cross-repo follow-up for /opt/termlink to populate model_used/fallback_used in dispatch meta.json (closes orchestrator-rethink Q1). capture Q1 wire-level evidence — framework half live in production. U-005 dispatch hit 600s timeout — postscript + L-340. post-T-1664 production wire evidence — Q1 closed both paths. orchestrator-rethink closure-readiness packet. closure-readiness packet — refresh post-T-1665
+
+# Key outcomes
+outcomes:
+  - "**W6 (preamble docs):** `agents/dispatch/preamble.md` has a \"TermLink Dispatch — Orchestrator-Aware Workers\" section telling agents to (a) pass `--task-type` derived from active task `workflow_type`, (b) check `model_used`/`fallback_used` in the dispatch result manifest, (c) tag long-lived specialist sessions with `task-type:X`. Verifiable via grep."
+  - "**W1 (task-type derivation):** `fw termlink dispatch` accepts `--task-type` and, when omitted, auto-derives it from `.context/working/focus.yaml` → active task's `workflow_type`. Worker meta.json gets `task_type` field. Backward compatible — no `--task-type` and no focus → no derivation."
+  - "**W3 (model defaults):** `fw config get DISPATCH_MODEL_DEFAULT` and per-task-type overrides (`DISPATCH_MODEL_FOR_BUILD`, `..._INCEPTION`, etc.) resolved by `cmd_dispatch` when `--model` not passed. Documented in `fw config list`."
+  - "**W2 (specialist session tagging):** `fw termlink spawn --task-type X` tags the long-lived session `task-type:X` for `termlink discover --tag` filtering. Same auto-derivation as W1."
+  - "**W4 (manifest fields):** `cmd_dispatch` worker meta.json includes `task_type`, `model_used`, `fallback_used` keys (initially empty/null until /opt/termlink populates them via governance frame 0x8). `fw termlink result` surfaces them in `--json` output."
+  - "**W5 (Watchtower /orchestrator panel):** `/orchestrator` page renders a \"Recent dispatches\" panel showing the last N dispatches with `task_type`, `model_used`, `fallback_used` derived from `meta.json` files in `/tmp/tl-dispatch/`. Empty state if no recent dispatches."
+  - "[REVIEW] Dispatch a test worker and confirm task_type derivation + W6 docs read coherently"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/dispatch/preamble.md"
+  - "agents/termlink/termlink.sh"
+  - ".context/project/learnings.yaml"
+  - ".context/working/pending-updates.yaml"
+  - "docs/reports/orchestrator-rethink-closure-readiness.md"
+  - "docs/reports/T-1643-Q1-wire-evidence.md"
+  - ".fabric/components/tests-unit-test_termlink_dispatch_task_type.yaml"
+  - "lib/config.sh"
+  - ".tasks/active/T-1643-arc-b--framework-side-wiring-of-orchestr.md"
+  - "tests/unit/test_termlink_dispatch_task_type.py"
+  - "web/blueprints/orchestrator.py"
+  - "web/templates/orchestrator.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T21:50:30"
+    action: "T-1643: Arc B — framework-side wiring of orchestrator substrate"
+  - time: "2026-05-01T21:50:49"
+    action: "T-1643: register test fabric card with subsystem/tags/purpose"
+  - time: "2026-05-01T21:53:35"
+    action: "T-1643: register U-005 cross-repo follow-up for /opt/termlink to populate model_used/fallback_used in dispatch meta.json (closes orchestrator-rethink Q1)"
+  - time: "2026-05-01T22:44:27"
+    action: "T-1643: capture Q1 wire-level evidence — framework half live in production"
+  - time: "2026-05-01T22:53:16"
+    action: "T-1643: U-005 dispatch hit 600s timeout — postscript + L-340"
+  - time: "2026-05-02T07:11:59"
+    action: "T-1643: post-T-1664 production wire evidence — Q1 closed both paths"
+  - time: "2026-05-02T07:22:25"
+    action: "T-1643: orchestrator-rethink closure-readiness packet"
+  - time: "2026-05-02T07:37:02"
+    action: "T-1643: closure-readiness packet — refresh post-T-1665"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 10 commit(s), 1076 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, framework-integration, arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1076
+  commits: 10
+  files_changed: 86
+  lines_added: 13644
+  lines_removed: 11978
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1643-arc-b--framework-side-wiring-of-orchestr.md
+generated_by: context-agent-hybrid
