@@ -42,7 +42,35 @@ cwd: $PROJECT_ROOT
 task_type: inception
 inline: true                   # Agent does this; never dispatched
 ```
-Additional fields (`mcp_config`, `add_dirs`, `system_prompt_mode`, `permission_mode`, `disallowed_tools`) graduate into the schema only when a real Worker pattern demands them — no speculation. The Agent reads the workflow file on every dispatch. **Fallback (Q12, 2026-05-03):** if `.context/project/workflows/<task_type>.yaml` is missing, the resolver reads `.context/project/workflows/default.yaml`; if `default.yaml` is also missing, that is a framework install bug and the Agent hard-errors. There is no magic-string default in code — just one file lookup with one fallback step. The framework ships a baseline set: `default.yaml` (TermLink + sonnet + medium + standard tools), plus `inception.yaml` / `grilling.yaml` / `design-dialogue.yaml` pre-marked `inline: true` so the structural cut from ADR-0002 is encoded in shipped files rather than operator memory. The dispatch log (`dispatches.jsonl`) records both the original `task_type` and the resolved `workflow_id` so default-routed dispatches don't blur into one telemetry bucket.
+```yaml
+# .context/project/workflows/complex-build.yaml — Tier 3 (meta-prompted)
+task_type: complex-build
+worker_kind: TermLink
+model: sonnet
+effort: high
+prompt_template: prompts/build.md
+prompt_strategy: meta-prompted   # static | assembled | meta-prompted (default: assembled)
+meta_model: haiku                # smaller than worker model; required when prompt_strategy=meta-prompted
+meta_template: prompts/meta/build.md
+allowed_tools: [Read, Edit, Bash, Grep]
+cost_cap_usd: 2.50
+outcome_evaluator: scripts/eval/build-outcome.sh   # optional; scores quality post-dispatch
+variants:                        # optional A/B/C; default = no variants
+  A: { weight: 0.5, prompt_template: prompts/build.md }
+  B: { weight: 0.5, prompt_template: prompts/build-v2.md }
+cwd: $PROJECT_ROOT
+```
+Additional fields (`mcp_config`, `add_dirs`, `system_prompt_mode`, `permission_mode`, `disallowed_tools`) graduate into the schema only when a real Worker pattern demands them — no speculation.
+
+**Prompt strategy (Q10, 2026-05-03) — three tiers, declared per workflow:**
+
+| Tier | `prompt_strategy` | Construction | Cost | When |
+|------|-------------------|--------------|------|------|
+| 1 | `static` | Pure file, no variables | $0 | Trivial workers |
+| 2 | `assembled` | `$VAR` substitution + resolver-side context selection from `dispatches.jsonl`, `patterns.yaml`, frontmatter | $0 | **Default** — most workflows |
+| 3 | `meta-prompted` | LLM call (cheaper meta-model) composes/refines the prompt before dispatch | small extra LLM call | Quality-sensitive, high-value dispatches where prompt-construction leverage > meta-cost |
+
+The resolver, not the template language, is where prompt quality is constructed in Tier 2. It populates variables from sources beyond task frontmatter (last-N dispatch outcomes for the task_type from `dispatches.jsonl`; matched healing patterns from `patterns.yaml`; few-shot examples from `prompts/examples/`). It also wraps optional sections so empty values don't leave dangling headers. Self-improving prompts (an agent that mines `dispatches.jsonl` and rewrites templates over time) is **deferred to v2** — but v1 wires the substrate so the v2 loop has data to learn from (see Resolver section below). The Agent reads the workflow file on every dispatch. **Fallback (Q12, 2026-05-03):** if `.context/project/workflows/<task_type>.yaml` is missing, the resolver reads `.context/project/workflows/default.yaml`; if `default.yaml` is also missing, that is a framework install bug and the Agent hard-errors. There is no magic-string default in code — just one file lookup with one fallback step. The framework ships a baseline set: `default.yaml` (TermLink + sonnet + medium + standard tools), plus `inception.yaml` / `grilling.yaml` / `design-dialogue.yaml` pre-marked `inline: true` so the structural cut from ADR-0002 is encoded in shipped files rather than operator memory. The dispatch log (`dispatches.jsonl`) records both the original `task_type` and the resolved `workflow_id` so default-routed dispatches don't blur into one telemetry bucket.
 _Avoid_: Profile, Preset, Recipe (all imply UI-decoration; Workflow is load-bearing config).
 
 **Worker**:
@@ -58,8 +86,15 @@ Always strictly downstream of the Agent. Workers do the substantive reasoning th
 _Avoid_: Sub-agent (ambiguous — Claude Code's "sub-agent" concept conflates Task tool and TermLink), Specialist (overloaded with TermLink's specialist registry).
 
 **Delegation envelope**:
-The structured input to a Worker. Composed by the Agent from a Workflow plus the live task context. v1 expansion of a Workflow entry: `worker_kind` (Task | TermLink | provider), `model`, `effort`, `prompt` (template rendered with task context), `allowed_tools`, `cost_cap_usd`, `cwd`. Workers always launch with `--bare` (skip hooks/plugins/auto-memory/CLAUDE.md auto-discovery) — that's a Worker invariant, not a per-workflow knob. The Agent may pass an `overrides` map to apply chat-time user instructions on top of the Workflow defaults. The unit of dispatch.
+The structured input to a Worker. Composed by the Agent from a Workflow plus the live task context. v1 expansion of a Workflow entry: `worker_kind` (Task | TermLink | provider), `model`, `effort`, `prompt` (template rendered with task context), `allowed_tools`, `cost_cap_usd`, `cwd`, plus the `dispatch_id` that ties the dispatch to its `dispatches.jsonl` record and `.context/dispatch-blobs/<YYYY-MM>/<dispatch-id>/` blob directory (full prompt text, meta-prompt text if Tier 3, worker artifacts). Workers always launch with `--bare` (skip hooks/plugins/auto-memory/CLAUDE.md auto-discovery) — that's a Worker invariant, not a per-workflow knob. The Agent may pass an `overrides` map to apply chat-time user instructions on top of the Workflow defaults. The unit of dispatch.
 _Avoid_: Job, Request, Task (collides with the framework's Task concept, T-XXX).
+
+**Resolver**:
+The Agent-side function that turns a Workflow + live task context into a Delegation envelope. Three responsibilities:
+1. **Workflow lookup** — read `<task_type>.yaml`, fall back to `default.yaml` per Q12.
+2. **Prompt construction** — execute the workflow's `prompt_strategy` (static / assembled / meta-prompted). For `assembled`, populate `$VAR` slots from frontmatter + `dispatches.jsonl` (last-N outcomes for the task_type) + `patterns.yaml` (matched healing hints) + `prompts/examples/` (few-shot), wrapping optional sections so empty values omit headers. For `meta-prompted`, run the meta-model with the meta-template against the assembled context, take its output as the worker prompt.
+3. **Variant selection** — if the workflow declares `variants:`, pick one weighted-randomly; record the variant ID.
+4. **Telemetry capture** — every dispatch gets a unique `dispatch_id`, a row in `dispatches.jsonl`, and a `.context/dispatch-blobs/<YYYY-MM>/<dispatch-id>/` directory. v2 self-improvement reads from these; v1 only writes. See "v2-readiness" below.
 
 ## Relationships
 
@@ -67,7 +102,36 @@ _Avoid_: Job, Request, Task (collides with the framework's Task concept, T-XXX).
 - The **Agent**'s job has three slices: (1) **task management** — create, ensure-updates, close-with-guards — done by the Agent, authoritatively; (2) **interactive work** — inception, grilling, design dialogue, anything where operator interjection mid-stream is essential — done by the Agent because Workers cannot efficiently solicit operator input; (3) **dispatch** — all other substantive work, routed to Workers.
 - The **Agent** consults **Workflow** files in `.context/project/workflows/<task_type>.yaml` to compose **Delegation envelopes**. The human curates these files (one per task_type); the Agent does not invent envelopes from scratch.
 - A **Delegation envelope** is the only artefact a **Worker** sees from the **Agent**.
-- The **Agent** observes Worker outcomes (success/failure, cost, duration) and writes them to two artifacts: `route_cache.json` (sparse aggregates per provider+model+task_type, used by the resolver — no info loss but lossy by design) and `dispatches.jsonl` (append-only per-dispatch log: `ts, task_id, workflow_id, provider, worker_kind, model, effort, cost_usd, duration_ms, exit_code, override_applied`). Cache feeds future dispatches; log feeds telemetry / auto-improvement / healing batch jobs. Log rotates monthly to `dispatches-YYYY-MM.jsonl`. Routing memory does NOT override `workflows.yaml` — the human-curated table wins.
+- The **Agent** observes Worker outcomes (success/failure, cost, duration) and writes them to two artifacts: `route_cache.json` (sparse aggregates per provider+model+task_type, used by the resolver — no info loss but lossy by design) and `dispatches.jsonl` (append-only per-dispatch log; rich schema below). Cache feeds future dispatches; log feeds telemetry / auto-improvement / healing batch jobs. Log rotates monthly to `dispatches-YYYY-MM.jsonl`. Routing memory does NOT override `workflows.yaml` — the human-curated table wins.
+
+## v2-readiness (the wiring v1 must ship)
+
+Self-improving prompts are deferred to v2, but the v2 loop can only learn from data that exists. v1 commits to capturing every byte v2 will need so retrofit is unnecessary. The architectural test for any v1 design choice on the dispatch path: **"if v2 wants to learn whether prompt-revision X improves outcome Y, can the loop read enough from `dispatches.jsonl` + blobs + episodic to answer that?"**
+
+**`dispatches.jsonl` rich schema (v1).** Many fields nullable in v1; all reserved:
+```
+ts, dispatch_id, task_id, parent_dispatch_id, workflow_id, workflow_sha,
+prompt_strategy, prompt_template, prompt_template_sha, prompt_blob_ref,
+meta_model, meta_template, meta_template_sha, meta_prompt_blob_ref,
+variant_id, worker_kind, model, effort, allowed_tools,
+cost_usd, duration_ms, exit_code,
+verification_passed, ac_satisfied, human_accepted, task_completion_outcome,
+artifact_blob_refs, override_applied, retry_of_dispatch_id
+```
+
+**`.context/dispatch-blobs/<YYYY-MM>/<dispatch-id>/`** stores `prompt.txt`, `meta-prompt.txt` (Tier 3 only), `artifacts/` (worker output files). Same inline-vs-blob threshold as `fw bus` blobs (T-1063): <2KB inline in the JSONL row, ≥2KB blob-referenced. Rotation aligned with the JSONL.
+
+**Template versioning at dispatch time.** Resolver computes `git rev-parse HEAD:.context/project/workflows/<task_type>.yaml` and `:prompts/<template>.md` and records both SHAs. Falls back to file-mtime hash if uncommitted, flagged in the record so v2 can exclude unstable rows.
+
+**Outcome enrichment hook.** Workflows declare an optional `outcome_evaluator` script. After Worker exit, the resolver runs it; output (`{verification_passed, ac_satisfied, quality_score, notes}`) goes into the dispatch record. Default evaluator: did `## Verification` pass + are all `### Agent` ACs ticked. Custom evaluators can score quality.
+
+**A/B variant slot.** Workflow files support optional `variants:` map (A/B/C, weights). Resolver picks per dispatch, records the variant ID. Default: no variants — operators opt in by editing the workflow file. v1 enables A/B without code changes; v2 automates variant generation.
+
+**Quality-signal back-propagation.** When a task transitions to `work-completed` (or `issues`) AFTER a dispatch ran for it, the resolver back-fills the dispatch record's `task_completion_outcome` field. Without this, the loop sees only short-horizon outcomes.
+
+**`fw orchestrator improve` command stub.** Reserved namespace, exits with "v2: not yet implemented; data is being captured at .context/dispatches.jsonl and .context/dispatch-blobs/". Visible to operators, locks in the CLI surface.
+
+**What v1 does NOT build:** analysis tools, learning logic, template rewriting, auto-variant generation, meta-prompt optimization, cross-task generalization. v1 records; v2 learns.
 
 ## Example dialogue
 
@@ -82,3 +146,4 @@ _Avoid_: Job, Request, Task (collides with the framework's Task concept, T-XXX).
 - "Orchestrator" was used as a noun-entity in early drafts of the rethink. **Resolved 2026-05-02**: orchestration is a verb the Agent performs, not a separate entity. Speak of "orchestration" (the responsibility), not "the orchestrator" (the thing).
 - "Agent reasons inline" was an early framing of how the delegation moment works. **Resolved 2026-05-02 (Q5)**: the Agent does NOT make case-by-case inline-vs-delegate decisions on substantive work. The cut is structural — interactive work (inception, grilling, design dialogue) stays inline because Workers can't efficiently ask the operator questions; everything else dispatches via Workflow lookup.
 - "What happens when a task_type has no workflow file?" was open during Q11. **Resolved 2026-05-03 (Q12)**: fall back to `default.yaml` (also a real workflow file), with shipped baseline workflow files for the interactive task_types so missing-file ≠ silent dispatch of inception/grilling. No magic-string default in code; missing `default.yaml` is treated as a framework install bug.
+- "Plain $VAR vs jinja2 vs dynamic generation" (substrate framing) was the wrong question. **Resolved 2026-05-03 (Q10)**: prompt construction is a per-workflow choice across three tiers — `static` / `assembled` (default) / `meta-prompted`. The substrate is plain text + `$VAR`, but the resolver does context selection (not just substitution) — populating variables from `dispatches.jsonl`, `patterns.yaml`, `prompts/examples/`. Tier 3 spends tokens on a meta-LLM step for quality-sensitive dispatches. **Self-improving prompts deferred to v2**, but v1 wires the data substrate (rich `dispatches.jsonl` schema, blob storage, template SHAs, A/B variant slot, outcome evaluator hook, quality-signal back-propagation, reserved `fw orchestrator improve` namespace) so v2 needs no retrofit. See ADR-0003.
