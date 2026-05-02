@@ -5,27 +5,32 @@ The framework's domain language. Captured during the orchestrator-as-triage arch
 ## Language
 
 **Agent**:
-The parent Claude Code session running the project's CLAUDE.md. The single source of reasoning in the framework. Performs orchestration (triage + envelope composition + dispatch) as part of its job — not a separate entity.
-_Avoid_: Main agent, parent agent, framework agent (all redundant — there is only one Agent in a session).
+The parent Claude Code session running the project's CLAUDE.md. Authoritative for (1) task lifecycle — create, ensure-updates, close-with-guards — and (2) work that requires extensive mid-stream operator interaction (inception, grilling, design dialogue). All other substantive work is routed to Workers via dispatch. The Agent does as little of (3) — non-interactive substantive work — as possible.
+_Avoid_: Main agent, parent agent, framework agent (all redundant — there is only one Agent in a session). Also avoid framing the Agent as a general reasoning engine — that overstates its role; substantive reasoning on dispatchable work belongs to Workers.
 
 **Orchestration**:
-The Agent's responsibility to (a) triage incoming work, (b) decide between doing it inline vs delegating, (c) when delegating, compose a delegation envelope. A verb, not a noun-entity.
-_Avoid_: Routing (too narrow — orchestration includes the inline-vs-delegate decision), Dispatch (only the last step of orchestration).
+The Agent's responsibility to (a) match incoming work to a Workflow, (b) compose a Delegation envelope from that Workflow's defaults, (c) dispatch the Worker. A verb, not a noun-entity. The Agent does NOT make ad-hoc inline-vs-delegate calls on substantive work. The decision rule is structural: **interactive** work stays inline with the Agent because Workers have no efficient operator-interaction channel; **non-interactive** substantive work dispatches.
+_Avoid_: Routing (too narrow — orchestration includes envelope composition, not just lookup), Dispatch (only the last step), Reasoning (overstates — orchestration is mostly table-driven).
+
+**Workflow**:
+A named, human-curated configuration that maps a task_type to a Delegation envelope template. Stored in `workflows.yaml` (per the T-1686 management page). Fields: `task_type`, `default_model`, `prompt_template`, `context_pack` (CLAUDE.md fragment, MCP subset, tool allowlist, command allowlist), `cwd`, optional `cost_cap`. The Agent consults `workflows.yaml` on every dispatch; if a task_type has no entry, dispatch falls back to a documented default workflow rather than going inline.
+_Avoid_: Profile, Preset, Recipe (all imply UI-decoration; Workflow is load-bearing config).
 
 **Worker**:
-A dispatched executor that runs a delegation envelope. Three flavours today: Task tool sub-agent (in-session, shares context), TermLink dispatched session (separate process, isolated context), or a non-Claude provider (local llama / OpenRouter — not yet wired). Always strictly downstream of the Agent.
+A dispatched executor that runs a Delegation envelope. Three flavours today: Task tool sub-agent (in-session, shares context), TermLink dispatched session (separate process, isolated context), or a non-Claude provider (local llama / OpenRouter — not yet wired). Always strictly downstream of the Agent. Workers do the substantive reasoning the Agent intentionally does not.
 _Avoid_: Sub-agent (ambiguous — Claude Code's "sub-agent" concept conflates Task tool and TermLink), Specialist (overloaded with TermLink's specialist registry).
 
 **Delegation envelope**:
-The structured input to a Worker. Composed by the Agent at triage time. Fields: `worker_kind` (Task | TermLink | provider), `model`, `prompt`, `context_pack` (tailored CLAUDE.md fragment, MCP subset, tool allowlist, command allowlist), `cwd`. The unit of dispatch.
+The structured input to a Worker. Composed by the Agent from a Workflow plus the live task context. Fields: `worker_kind` (Task | TermLink | provider), `model`, `prompt`, `context_pack` (tailored CLAUDE.md fragment, MCP subset, tool allowlist, command allowlist), `cwd`. The unit of dispatch.
 _Avoid_: Job, Request, Task (collides with the framework's Task concept, T-XXX).
 
 ## Relationships
 
-- The **Agent** runs on a model configured per-project (default `opus`). The configured model is *the* orchestration model — there is no separate orchestration tier.
-- The **Agent** issues **Delegation envelopes** to **Workers**.
+- The **Agent** runs on a model configured per-project (default `opus`, key `AGENT_MODEL` in `.framework.yaml`). The configured model is *the* orchestration model — there is no separate orchestration tier.
+- The **Agent**'s job has three slices: (1) **task management** — create, ensure-updates, close-with-guards — done by the Agent, authoritatively; (2) **interactive work** — inception, grilling, design dialogue, anything where operator interjection mid-stream is essential — done by the Agent because Workers cannot efficiently solicit operator input; (3) **dispatch** — all other substantive work, routed to Workers.
+- The **Agent** consults **Workflow** entries in `workflows.yaml` to compose **Delegation envelopes**. The human curates `workflows.yaml`; the Agent does not invent envelopes from scratch.
 - A **Delegation envelope** is the only artefact a **Worker** sees from the **Agent**.
-- The **Agent** observes Worker outcomes and updates its routing memory (today: `route_cache.json`).
+- The **Agent** observes Worker outcomes (success/failure, cost, duration) and updates its routing memory (today: `route_cache.json`). Routing memory feeds future dispatches but does NOT override `workflows.yaml` — the human-curated table wins.
 
 ## Example dialogue
 
@@ -38,3 +43,4 @@ _Avoid_: Job, Request, Task (collides with the framework's Task concept, T-XXX).
 
 - "Framework agent" was used informally to refer to (a) the parent Claude Code session, (b) a hypothetical separate orchestrator entity. **Resolved 2026-05-02**: there is no separate orchestrator. The Agent (singular) does orchestration as one of its responsibilities. "Framework agent" should be retired in favour of "Agent."
 - "Orchestrator" was used as a noun-entity in early drafts of the rethink. **Resolved 2026-05-02**: orchestration is a verb the Agent performs, not a separate entity. Speak of "orchestration" (the responsibility), not "the orchestrator" (the thing).
+- "Agent reasons inline" was an early framing of how the delegation moment works. **Resolved 2026-05-02 (Q5)**: the Agent does NOT make case-by-case inline-vs-delegate decisions on substantive work. The cut is structural — interactive work (inception, grilling, design dialogue) stays inline because Workers can't efficiently ask the operator questions; everything else dispatches via Workflow lookup.
