@@ -1,0 +1,99 @@
+---
+id: T-1672
+name: "Update Watchtower /arcs/<id> close-instructions block to reflect T-1668 (--demo required) + T-1671 (CLAUDECODE refusal + override flags)"
+description: >
+  Update Watchtower /arcs/<id> close-instructions block to reflect T-1668 (--demo required) + T-1671 (CLAUDECODE refusal + override flags)
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: [arc:orchestrator-rethink]
+components: []
+related_tasks: []
+created: 2026-05-02T07:46:38Z
+last_update: 2026-05-02T07:48:20Z
+date_finished: null
+---
+
+# T-1672: Update Watchtower /arcs/<id> close-instructions block to reflect T-1668 (--demo required) + T-1671 (CLAUDECODE refusal + override flags)
+
+## Context
+
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+
+## Acceptance Criteria
+
+### Agent
+- [x] `web/templates/arc_detail.html` close-instructions block shows
+      `--demo <path>` argument (T-1668 gate requirement)
+- [x] Block names §ACD/G-062, links T-1668 / T-1671 inline
+- [x] Block lists override flags (`--i-am-human`, `--from-watchtower`)
+      with their CLAUDECODE semantics
+- [x] Block surfaces `arc.demo_evidence` if already populated (preserved
+      from prior aborted close attempts) so the reviewer can see the
+      candidate evidence without leaving the page
+- [x] Existing arc-detail tests still pass:
+      `pytest tests/unit/test_arcs_routes.py -q`
+- [x] Live: GET /arcs/orchestrator-rethink renders the new block,
+      including `--demo` and the override-flags note
+
+### Human
+<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
+     Remove this section if all criteria are agent-verifiable.
+     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
+     Example:
+       - [x] [REVIEW] Dashboard renders correctly
+         **Steps:**
+         1. Open https://example.com/dashboard in browser
+         2. Verify all panels load within 2 seconds
+         3. Check browser console for errors
+         **Expected:** All panels visible, no console errors
+         **If not:** Screenshot the broken panel and note the console error
+-->
+
+## Verification
+
+pytest tests/unit/test_arcs_routes.py -q
+bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q "demo path-to-wire-evidence\|demo &lt;path-to-wire-evidence&gt;\|--demo "'
+bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q "T-1671\|--i-am-human\|--from-watchtower"'
+# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
+# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+
+## RCA
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-05-02T07:46:38Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1672-update-watchtower-arcsid-close-instructi.md
+- **Context:** Initial task creation
+
+### 2026-05-02T07:48:20Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

@@ -119,7 +119,27 @@
     </ol>
 </div>
 <p>When you can answer all three with evidence, close the arc:</p>
-<pre><code>cd {{ project_root }} && bin/fw arc close {{ arc_id }} --decision "&lt;success|partial|failed|cancelled&gt;"</code></pre>
+<pre><code>cd {{ project_root }} && bin/fw arc close {{ arc_id }} \
+    --demo &lt;path-to-wire-evidence&gt; \
+    --decision "&lt;success|partial|failed|cancelled&gt; — &lt;one-line summary&gt;"</code></pre>
+<p class="muted">
+    <strong>§ACD/G-062 gates:</strong>
+    <code>--demo</code> is REQUIRED (T-1668) — supply a path or URL whose content
+    references the arc id <code>{{ arc_id }}</code> or one of its constituent
+    tasks (<code>.json</code>, <code>.jsonl</code>, <code>.yaml</code>, <code>.md</code>,
+    <code>.cast</code>, <code>.png</code>, <code>.html</code>, etc., ≥256 bytes).
+    For arcs with no runtime mechanic, use <code>--demo none --justification
+    "&lt;≥30 chars&gt;"</code> (logged to <code>.context/audits/arc-bypass.jsonl</code>).
+    <br>
+    <strong>Closure verb is human-only (T-1671).</strong> Under <code>$CLAUDECODE=1</code>
+    the command refuses; agents must redirect to <code>fw task review
+    {{ arc.anchor_task }}</code>. Overrides: <code>--i-am-human</code> (rare
+    human-typing-into-agent-session), <code>--from-watchtower</code> (used by
+    Flask backend when Watchtower closes the arc on the human's behalf).
+</p>
+{% if arc.demo_evidence %}
+<p class="muted"><small><strong>Latest demo on file:</strong> <code>{{ arc.demo_evidence }}</code> — preserved across any aborted close attempts.</small></p>
+{% endif %}
 {% else %}
 <h2>Arc closed</h2>
 <p>Decision: <strong>{{ arc.decision or 'unspecified' }}</strong>{% if arc.closed_at %} · {{ arc.closed_at }}{% endif %}</p>
