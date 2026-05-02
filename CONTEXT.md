@@ -42,7 +42,7 @@ _Avoid_: Job, Request, Task (collides with the framework's Task concept, T-XXX).
 - The **Agent**'s job has three slices: (1) **task management** — create, ensure-updates, close-with-guards — done by the Agent, authoritatively; (2) **interactive work** — inception, grilling, design dialogue, anything where operator interjection mid-stream is essential — done by the Agent because Workers cannot efficiently solicit operator input; (3) **dispatch** — all other substantive work, routed to Workers.
 - The **Agent** consults **Workflow** entries in `workflows.yaml` to compose **Delegation envelopes**. The human curates `workflows.yaml`; the Agent does not invent envelopes from scratch.
 - A **Delegation envelope** is the only artefact a **Worker** sees from the **Agent**.
-- The **Agent** observes Worker outcomes (success/failure, cost, duration) and updates its routing memory (today: `route_cache.json`). Routing memory feeds future dispatches but does NOT override `workflows.yaml` — the human-curated table wins.
+- The **Agent** observes Worker outcomes (success/failure, cost, duration) and writes them to two artifacts: `route_cache.json` (sparse aggregates per provider+model+task_type, used by the resolver — no info loss but lossy by design) and `dispatches.jsonl` (append-only per-dispatch log: `ts, task_id, workflow_id, provider, worker_kind, model, effort, cost_usd, duration_ms, exit_code, override_applied`). Cache feeds future dispatches; log feeds telemetry / auto-improvement / healing batch jobs. Log rotates monthly to `dispatches-YYYY-MM.jsonl`. Routing memory does NOT override `workflows.yaml` — the human-curated table wins.
 
 ## Example dialogue
 
