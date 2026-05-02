@@ -26,7 +26,9 @@ vendored-skewed consumer.
 | consumer-uninitialized       | bare directory, no fw artefacts                        |
 | consumer-vendored-skewed     | `.framework.yaml` present, vendored shim out of sync   |
 
-## 3. Spike — Assumption A3 measurement
+## 3. Spikes
+
+### A3 — Refactor surface measurement
 
 **Run on master at d791fbbdc..2f3e61dca:**
 
@@ -36,9 +38,57 @@ vendored-skewed consumer.
 | Files containing references                        |    11 |
 | Sites doing `[ -f .framework.yaml ]` existence tests |   ~13 |
 
-Assumption A3 (refactor surface ≤50 sites) **holds**. Lever 1 is a
-tractable refactor: ~13 conflation sites across 11 files, all in
-`lib/`.
+A3 (refactor surface ≤50 sites) **holds**. Lever 1 is a tractable
+refactor: ~13 conflation sites across 11 files, all in `lib/`.
+
+### A2 — Filesystem-only classifier feasibility
+
+A 25-line bash function, run against 4 synthetic fixtures + 13 real
+consumer projects on this host:
+
+```bash
+fw_project_context() {
+    local root="${1:-$(pwd)}"
+    if [ -f "$root/FRAMEWORK.md" ] && [ -x "$root/bin/fw" ] \
+       && [ ! -f "$root/.framework.yaml" ]; then
+        echo framework; return
+    fi
+    if [ -f "$root/.framework.yaml" ] \
+       && [ -x "$root/.agentic-framework/bin/fw" ]; then
+        # vendored-vs-framework version compare (skew detection)
+        ...
+        echo consumer-initialized; return
+    fi
+    if [ -f "$root/.framework.yaml" ] \
+       && [ ! -d "$root/.agentic-framework" ]; then
+        echo consumer-vendored-skewed; return
+    fi
+    if [ ! -f "$root/.framework.yaml" ] \
+       && [ ! -d "$root/.agentic-framework" ] \
+       && [ ! -f "$root/FRAMEWORK.md" ]; then
+        echo consumer-uninitialized; return
+    fi
+    echo unknown
+}
+```
+
+| Fixture                                          | Expected                  | Got                         |
+|--------------------------------------------------|---------------------------|-----------------------------|
+| `/opt/999-Agentic-Engineering-Framework`         | `framework`               | `framework` ✓               |
+| fresh `mktemp -d`                                | `consumer-uninitialized`  | `consumer-uninitialized` ✓  |
+| synthetic: `.framework.yaml` + shim symlink      | `consumer-initialized`    | `consumer-initialized` ✓    |
+| synthetic: `.framework.yaml` only, no shim       | `consumer-vendored-skewed`| `consumer-vendored-skewed` ✓|
+| 13 real consumer projects on this host           | `consumer-initialized`    | `consumer-initialized` × 13 ✓|
+
+A2 (filesystem-only disambiguation) **holds**. No env-var inputs
+needed. No exotic edge cases on the live host.
+
+**Caveat for the build task:** the `consumer-vendored-skewed`
+detection in this spike fires on STRUCTURAL skew (yaml present + no
+shim dir). True VERSION skew (yaml + shim dir + version mismatch)
+needs the comparison logic exercised on a real fixture; none of the
+13 live consumers exhibit it. Build task should add a fixture that
+forces version skew explicitly.
 
 ## 4. Anchor demonstration
 

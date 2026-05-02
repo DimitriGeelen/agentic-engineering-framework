@@ -127,7 +127,7 @@ A3. The number of ad-hoc `[ -f .framework.yaml ]` checks across `lib/`
 <!-- @auto-tick-on-decide -->
 - [ ] Problem statement validated (≥3 prior incidents named, class boundaries clear)
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested (A3 spike: 103 references / 11 files / ~13 conflation sites — refactor scope confirmed tractable)
+- [ ] Assumptions tested — A2 spike (25-line bash classifier disambiguates 4 shapes across 4 synthetic + 13 live-host fixtures, zero misses) AND A3 spike (103 refs / 11 files / ~13 conflation sites — well under 50-site ceiling). Both load-bearing assumptions hold.
 <!-- @auto-tick-on-decide -->
 - [ ] Recommendation written with rationale (Lever 1 first; Lever 2 next; Lever 3 over-Q)
 <!-- @auto-tick-on-decide -->
