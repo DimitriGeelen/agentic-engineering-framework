@@ -1,0 +1,13 @@
+{
+  "name": "t1669-demo-inception-1777706028",
+  "project": "/opt/999-Agentic-Engineering-Framework",
+  "timeout": 120,
+  "task": "T-1669",
+  "task_type": "inception",
+  "model": "opus",
+  "model_used": "opus",
+  "fallback_used": true,
+  "resolution_source": "route_cache",
+  "started": "2026-05-02T07:13:48Z",
+  "status": "running"
+}

@@ -42,19 +42,19 @@ Authority: T-1667 inception research + user authorisation 2026-05-02.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Step 1: `_resolve_dispatch_model_and_fallback` reads route-cache.json before env-var fallback
-- [ ] Step 1: when route_cache has a hit for task_type, uses it; meta.json records source: "route_cache"
-- [ ] Step 1: when no hit, falls back to env-var; meta.json records source: "env-per-type" or "env-default"
-- [ ] Step 1: tests pin all three resolution paths (cache-hit / env-fallback / no-resolution)
-- [ ] Step 2: cmd_dispatch records outcome (success/failure) into route-cache.json after worker exits
-- [ ] Step 2: file write is atomic (tmpfile + rename) and idempotent on concurrent dispatches
-- [ ] Step 2: tests pin success and failure recording
-- [ ] Step 3: web/blueprints/orchestrator.py reads route-cache.json, exposes per-task-type stats
-- [ ] Step 3: /orchestrator template renders learned-prefs panel above recent-dispatches
-- [ ] Step 3: tests pin the route renders prefs from a seeded cache
-- [ ] Step 4: demo directory contains ≥5 meta.json captures, ≥1 cache snapshot, ≥1 page screenshot
-- [ ] Step 4: cache snapshot shows non-empty model_stats with at least 2 task_types
-- [ ] Step 4: `fw arc close orchestrator-rethink --demo docs/reports/orchestrator-rethink-demo --decision "shipped"` is accepted by the gate built in T-1668
+- [x] Step 1: `_resolve_dispatch_model_and_fallback` reads route-cache.json before env-var fallback
+- [x] Step 1: when route_cache has a hit for task_type, uses it; meta.json records source: "route_cache"
+- [x] Step 1: when no hit, falls back to env-var; meta.json records source: "env-per-type" or "env-default"
+- [x] Step 1: tests pin all three resolution paths (cache-hit / env-fallback / no-resolution)
+- [x] Step 2: cmd_dispatch records outcome (success/failure) into route-cache.json after worker exits
+- [x] Step 2: file write is atomic (tmpfile + rename) and idempotent on concurrent dispatches
+- [x] Step 2: tests pin success and failure recording
+- [x] Step 3: web/blueprints/orchestrator.py reads route-cache.json, exposes per-task-type stats
+- [x] Step 3: /orchestrator template renders learned-prefs panel above recent-dispatches
+- [x] Step 3: tests pin the route renders prefs from a seeded cache
+- [x] Step 4: demo directory contains ≥5 meta.json captures, ≥1 cache snapshot, ≥1 page screenshot
+- [x] Step 4: cache snapshot shows non-empty model_stats with at least 2 task_types
+- [x] Step 4: `fw arc close orchestrator-rethink --demo docs/reports/orchestrator-rethink-demo --decision "shipped"` is accepted by the gate built in T-1668
 
 ### Human
 
@@ -79,6 +79,45 @@ bash -n agents/termlink/termlink.sh
 pytest tests/unit/test_route_cache_resolve.py tests/unit/test_route_cache_record.py -q
 test -f docs/reports/orchestrator-rethink-demo/cache-final.json
 test "$(ls docs/reports/orchestrator-rethink-demo/meta-*.json | wc -l)" -ge 5
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 13 Agent ACs verified. Steps 1-4 shipped sequentially
+with check-ins. The headline_mechanic for the orchestrator-rethink arc
+fires end-to-end: 3 real `claude -p` workers spawned via
+`fw termlink dispatch` without `--model`, route_cache picked 3 different
+models per task_type (haiku/sonnet/opus from cache stats), workers
+completed exit 0, outcomes recorded back to the same cache atomically,
+operator-visible /orchestrator panel reflects the shift. Demo dir
+satisfies the §ACD/G-062 `--demo` gate built in T-1668.
+
+**Evidence:**
+- Step 1 commit: `3e2108c23` — read path
+- Step 2 commit: `f29246d97` — write path with flock + atomic rename
+- Step 3 commit: `9cb103cc7` — Watchtower surface
+- Step 4 directory: `docs/reports/orchestrator-rethink-demo/` —
+  5 meta.json captures, 4 cache snapshots, /orchestrator screenshot,
+  resolver-trace.txt, README narrative
+- Tests: 22 across `test_route_cache_resolve.py` (10) and
+  `test_route_cache_record.py` (12); 9 in
+  `test_orchestrator_learned_routing.py`. All pass.
+- Live wire-evidence: `meta-01-{build,design,inception}-dispatch.json`
+  show `resolution_source: route_cache` against the seeded cache. The
+  cache delta from `cache-02` to `cache-03` proves the worker run.sh
+  callback fires.
+- Gate acceptance: `_arc_validate_demo_path docs/reports/orchestrator-rethink-demo/README.md
+  orchestrator-rethink .context/arcs/orchestrator-rethink.yaml`
+  returns rc=0.
+
+After GO, the arc is closeable with:
+
+```bash
+bin/fw arc close orchestrator-rethink \
+    --demo docs/reports/orchestrator-rethink-demo/README.md \
+    --decision "shipped — headline mechanic verified live across 3 task_types"
+```
 
 ## RCA
 
