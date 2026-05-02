@@ -4,15 +4,15 @@ name: "tl-dispatch run.sh never updates meta.json post-exit — status:running s
 description: >
   Discovered in T-1680. agents/termlink/dispatch/run.sh writes exit_code, finished_at, result.md and calls record-outcome — but does NOT update meta.json. meta.json is written by spawn code with status=running and stays that way forever. fw termlink dispatch_status surface is misleading post-exit. Fix: append a meta.json rewrite step in run.sh after record-outcome (atomic via mv), or change dispatch_status to read exit_code file instead.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [termlink, dispatch, observability]
 components: []
 related_tasks: []
 created: 2026-05-02T14:30:23Z
-last_update: 2026-05-02T14:30:23Z
+last_update: 2026-05-02T15:13:55Z
 date_finished: null
 ---
 
@@ -20,14 +20,17 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Discovered in T-1680 / T-1682. `tl-dispatch` workers write `exit_code`, `finished_at`, `result.md` and call `record-outcome` after exit — but `meta.json` (created at spawn time with `status: running`) is never rewritten. So `fw termlink dispatch_status` reports `running` forever. Headline mechanic of the orchestrator-rethink arc is unaffected; only the dispatch-status CLI surface is misleading.
+
+Fix: append a `meta.json` rewrite step in `run.sh` (after `record-outcome`) that updates `status` (`done` if exit==0 else `failed`), `exit_code`, and `ended` timestamp. Atomic via tmp+mv. Pinned by unit test.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `agents/termlink/termlink.sh` run.sh heredoc updates `$WDIR/meta.json` post-exit using `jq` + atomic mv: status=`done`/`failed`, exit_code=$EXIT_CODE, ended=$finished_at. Skipped silently if `jq` is missing (best-effort, same pattern as `result.md` extraction).
+- [ ] Existing unit tests pass: `pytest tests/unit/test_route_cache_record.py tests/unit/test_route_cache_resolve.py tests/unit/test_orchestrator_learned_routing.py tests/unit/test_termlink_dispatch_task_type.py -q` (47 tests green pre-patch).
+- [ ] New regression test pins the meta.json update lines in the heredoc — same pattern as `test_dispatch_run_sh_calls_record_outcome` (greps the heredoc block, asserts the canonical lines exist).
+- [ ] Live-verified: a real dispatch with a cheap prompt (sufficient timeout) produces a `meta.json` with `status: done` and `exit_code: 0` post-exit, captured as evidence file under the orchestrator-rethink-demo directory.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -54,6 +57,11 @@ date_finished: null
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+
+python3 -m pytest tests/unit/test_route_cache_record.py tests/unit/test_route_cache_resolve.py tests/unit/test_orchestrator_learned_routing.py tests/unit/test_termlink_dispatch_task_type.py -q
+grep -q "T-1681" agents/termlink/termlink.sh
+test -f docs/reports/orchestrator-rethink-demo/meta-T1681-postpatch-evidence.json
+python3 -c "import json; d=json.load(open('docs/reports/orchestrator-rethink-demo/meta-T1681-postpatch-evidence.json')); assert d['status']=='done', d; assert d['exit_code']==0, d; assert d.get('ended'), d; print('post-patch meta.json pinned: status=done exit_code=0 ended=' + d['ended'])"
 
 ## RCA
 
@@ -88,3 +96,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1681-tl-dispatch-runsh-never-updates-metajson.md
 - **Context:** Initial task creation
+
+### 2026-05-02T15:13:55Z — status-update [task-update-agent]
+- **Change:** horizon: later → now
+
+### 2026-05-02T15:13:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

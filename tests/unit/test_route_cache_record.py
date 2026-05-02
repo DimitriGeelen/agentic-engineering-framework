@@ -218,3 +218,22 @@ def test_dispatch_run_sh_calls_record_outcome():
     assert "'$task_type' '$fw_bin'" in dispatch_block, (
         "pty inject must pass task_type + fw_bin to run.sh"
     )
+
+
+def test_dispatch_run_sh_updates_meta_json_post_exit():
+    """Pin the heredoc that rewrites meta.json after worker exit (T-1681).
+
+    Pre-T-1681: meta.json was written at spawn with status:running and
+    never updated. `fw termlink dispatch_status` reported running forever
+    even after exit_code/finished_at/record-outcome had all fired. Fix is
+    a jq-based atomic rewrite in run.sh. Drop this rewrite and the
+    dispatch_status surface goes stale again.
+    """
+    src = TERMLINK_SH.read_text()
+    dispatch_block = src.split("cmd_dispatch() {", 1)[1].split("cmd_wait() {", 1)[0]
+    assert "T-1681" in dispatch_block, "run.sh must reference T-1681 (the meta.json post-exit rewrite)"
+    assert "command -v jq" in dispatch_block, "meta.json rewrite must guard on jq presence"
+    assert ".status = $s" in dispatch_block, "meta.json rewrite must set status field"
+    assert ".exit_code = $ec" in dispatch_block, "meta.json rewrite must set exit_code field"
+    assert ".ended = $fa" in dispatch_block, "meta.json rewrite must set ended timestamp"
+    assert "meta.json.tmp" in dispatch_block, "meta.json rewrite must use atomic tmp+mv"

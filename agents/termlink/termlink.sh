@@ -617,7 +617,22 @@ else
 fi
 
 echo "$EXIT_CODE" > "$WDIR/exit_code"
-date -u +%Y-%m-%dT%H:%M:%SZ > "$WDIR/finished_at"
+FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+echo "$FINISHED_AT" > "$WDIR/finished_at"
+
+# T-1681: rewrite meta.json post-exit so `fw termlink dispatch_status` reflects
+# reality. Pre-patch behaviour: meta.json was written at spawn with
+# status:running and never updated, so dispatch_status reported running forever
+# even though exit_code/finished_at/record-outcome had all fired. Best-effort —
+# skipped silently when jq is unavailable (same pattern as result.md extraction).
+if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ]; then
+    NEW_STATUS=$([ "$EXIT_CODE" -eq 0 ] && echo done || echo failed)
+    jq --arg s "$NEW_STATUS" --argjson ec "$EXIT_CODE" --arg fa "$FINISHED_AT" \
+       '.status = $s | .exit_code = $ec | .ended = $fa' \
+       "$WDIR/meta.json" > "$WDIR/meta.json.tmp" 2>/dev/null \
+        && mv "$WDIR/meta.json.tmp" "$WDIR/meta.json" \
+        || rm -f "$WDIR/meta.json.tmp"
+fi
 
 # T-1669 Step 2: record outcome into route_cache so future dispatches can
 # learn from it. Best-effort — missing model / task_type / fw skips silently.
