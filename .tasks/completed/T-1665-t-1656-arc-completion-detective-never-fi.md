@@ -4,16 +4,16 @@ name: "T-1656 arc-completion detective never fires in cron — wire into oe-dail
 description: >
   T-1656 arc-completion detective never fires in cron — wire into oe-daily
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
-components: []
+tags: [arc:orchestrator-rethink]
+components: [C-004, tests/unit/test_audit_arc_completion.py]
 related_tasks: []
 created: 2026-05-02T05:30:47Z
-last_update: 2026-05-02T05:30:47Z
-date_finished: null
+last_update: 2026-05-02T05:36:03Z
+date_finished: 2026-05-02T05:35:38Z
 ---
 
 # T-1665: T-1656 arc-completion detective never fires in cron — wire into oe-daily
@@ -129,3 +129,23 @@ This is a §ACD Q3 violation in miniature — the framework that built the arc w
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1665-t-1656-arc-completion-detective-never-fi.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-b3189f1c
+- **Timestamp:** 2026-05-02T05:35:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Today's cron audit at 07:00 already showed `oe-daily` ran (per `.context/audits/cron/LATEST-CRON.yaml`); a follow-up cron-style run with the fix produces an arc-completion finding for `orchestrator-re
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/cron/LATEST-CRON.yaml in: Today's cron audit at 07:00 already showed `oe-daily` ran (per `.context/audits/cron/LATEST-CRON.yaml`); a follow-up cron-style run with the fix produ`
+
+### 2026-05-02T05:35:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+### 2026-05-02T05:36:03Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink
