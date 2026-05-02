@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1673: fabric drift orphan check prepends PROJECT_ROOT even for absolute paths — false orphans for cross-repo cards
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T09:08:49Z
+# ============================================================================
+
+task_id: T-1673
+task_name: "fabric drift orphan check prepends PROJECT_ROOT even for absolute paths — false orphans for cross-repo cards"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T08:59:51Z
+completed: 2026-05-02T09:08:44Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-02T11:08:11+02:00
+last_commit: 2026-05-02T11:08:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric drift orphan check honours absolute location paths
+
+# Key outcomes
+outcomes:
+  - "`agents/fabric/lib/drift.sh:55` orphan check handles absolute `location:` paths without prepending `$PROJECT_ROOT`"
+  - "All 6 cross-repo cards (cross-repo-termlink-{bypass,circuit-breaker,governance-frame,governance-subscriber,route-cache,router}) no longer appear in orphaned list when their absolute-path files exist"
+  - "Regression test pins the cross-repo-card-not-orphaned behaviour"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/fabric/lib/drift.sh"
+  - ".tasks/active/T-1673-fabric-drift-orphan-check-prepends-proje.md"
+  - "tests/unit/test_fabric_drift_absolute_paths.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T11:08:11"
+    action: "T-1673: fabric drift orphan check honours absolute location paths"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 3
+  lines_added: 275
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1673-fabric-drift-orphan-check-prepends-proje.md
+generated_by: context-agent-hybrid

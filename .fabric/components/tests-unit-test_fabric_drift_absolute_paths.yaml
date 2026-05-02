@@ -1,0 +1,20 @@
+id: tests/unit/test_fabric_drift_absolute_paths.py
+name: test_fabric_drift_absolute_paths
+type: script
+subsystem: unknown
+location: tests/unit/test_fabric_drift_absolute_paths.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-02
+created_by: unknown
