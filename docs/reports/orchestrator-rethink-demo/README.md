@@ -181,6 +181,46 @@ in `$WDIR/exit_code` + `$WDIR/finished_at` (and the cache
 post-update). Filed as follow-up — does not affect the headline
 mechanic, only the dispatch_status CLI surface.
 
+## Failure-path verification (T-1682, 2026-05-02T14:32Z)
+
+T-1680 verified the success path. T-1682 verifies the failure
+path — that timeouts and non-zero exits are recorded as failures
+in the cache, and the surface re-renders the lower success rate.
+Captured as `cache-06-2026-05-02-1432Z-failure-path.json`.
+
+Procedure:
+
+1. Pre-test cache (= cache-05): `haiku:build 9s/1f` (90%).
+2. Single `fw termlink dispatch` invocation, build task_type, no
+   `--model`, `--timeout 3` with a deliberately verbose prompt that
+   cannot finish in 3s. Resolver picks haiku as before
+   (`resolution_source: route_cache`).
+3. Watchdog SIGTERM kills the claude subprocess at the 3s mark
+   (TIMEOUT marker in stderr.log). `exit_code` file = 143.
+4. `run.sh` calls `record-outcome --model haiku --task-type build
+   --exit-code 143` — non-zero, recorded as a failure.
+5. Cache delta vs pre-test:
+
+```
+haiku:build      9s/1f → 9s/2f   (last_used → 14:32:30Z, success rate 90% → 82%)
+```
+
+6. `/orchestrator` re-fetched: rendered success rate for haiku in
+   the build row drops from 90% to 82% (`grep -c "82%"` returns 2,
+   one per occurrence in the panel).
+
+This proves the cache writes failures symmetrically to successes,
+the surface reflects the new rate immediately, and the
+preferences-shift half of the §ACD headline_mechanic ("watch
+per-task-type model preferences shift as the route_cache learns")
+fires end-to-end in both directions.
+
+Resolver still picks haiku for build post-failure (haiku 82%
+> opus 25%) — no model-swap event yet. Displacement would need
+many more haiku failures or many opus successes; that is a
+separate test of the "best model can change" property, captured
+as future work if it ever matters operationally.
+
 ## Closure
 
 This artefact is the wire-level evidence required by §ACD / G-062 to
