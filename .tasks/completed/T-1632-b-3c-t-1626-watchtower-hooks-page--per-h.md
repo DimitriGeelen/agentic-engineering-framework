@@ -12,7 +12,7 @@ tags: [from-T-1626, B-3c, watchtower, ui]
 components: [agents/context/post-compact-resume.sh, bin/fw, lib/doctor-hook-exercise.py, tests/playwright/test_hooks_page.py, tests/unit/doctor_hook_exercise.bats, tests/unit/session_start_hook_warning.bats, web/blueprints/hooks.py, web/blueprints/__init__.py, web/shared.py, web/templates/hooks.html]
 related_tasks: [T-1626, T-1628, T-1629]
 created: 2026-05-01T07:22:38Z
-last_update: 2026-05-01T09:57:39Z
+last_update: 2026-05-02T05:06:07Z
 date_finished: 2026-05-01T09:57:39Z
 ---
 
@@ -36,7 +36,7 @@ Surfaces the T-1628 telemetry (and T-1631 threshold-rule state) on a Watchtower 
 - [x] Page renders without 500 when telemetry files don't exist (degraded-empty case — covered by `test_either_table_or_empty_state`)
 
 ### Human
-- [ ] [REVIEW] Page is readable and useful at a glance
+- [x] [REVIEW] Page is readable and useful at a glance
       **Steps:**
       1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve --port 3000` (in another terminal)
       2. Open `http://localhost:3000/hooks` in a browser
