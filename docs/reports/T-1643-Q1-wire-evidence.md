@@ -114,3 +114,80 @@ Both changes are framework-side (`/opt/999-Agentic-Engineering-Framework`),
 not /opt/termlink-side, so they unblock U-005 dispatch without depending on
 the cross-repo work itself. Filed as the forward path; do not retry U-005
 dispatch from this session.
+
+## 2026-05-02T05:09Z — post-T-1664 verification (Q1 closure)
+
+Both forward-path follow-ups have now landed (T-1663 stream-json, T-1664
+framework dispatch path populates `model_used` / `fallback_used`). U-005
+also resolved separately via /opt/termlink T-1442 (commit `143cd870`) which
+populates the same fields on the substrate CLI path.
+
+Re-ran the Q1 observation today on the framework dispatch path with focus
+T-1643 and `FW_DISPATCH_MODEL_DEFAULT=haiku`:
+
+```bash
+$ FW_DISPATCH_MODEL_DEFAULT=haiku bin/fw termlink dispatch \
+    --task T-1643 --name q1-wire-evidence --timeout 180 \
+    --prompt "Reply with the single word: confirmed."
+```
+
+Outcome (sub-15-second round-trip):
+
+- `exit_code` = 0
+- `result.md` = `confirmed.` (claude -p haiku via T-1663 stream-json)
+- `result.jsonl` = 12.7 KB of stream-json events (forensic trail intact)
+- Session tags on `q1-wire-evidence` (via `termlink discover --tag task:T-1643 --json`):
+  - `task:T-1643`
+  - `task-type:build`
+  - **No legacy `task=T-1643` form** — T-1654 fix verified live.
+
+Live `meta.json` (snapshotted at dispatch time, before claude even started):
+
+```json
+{
+  "name": "q1-wire-evidence",
+  "project": "/opt/999-Agentic-Engineering-Framework",
+  "timeout": 180,
+  "task": "T-1643",
+  "task_type": "build",
+  "model": "haiku",
+  "model_used": "haiku",
+  "fallback_used": true,
+  "started": "2026-05-02T05:09:21Z",
+  "status": "running"
+}
+```
+
+**Compare to yesterday's snapshot above:** same schema, but `model_used`
+and `fallback_used` are now non-null. That's the T-1664 wiring landing in
+production, observable on the wire — not just covered by smoke tests.
+
+`fallback_used: true` because no explicit `--model` was passed and the
+value was resolved from the `FW_DISPATCH_MODEL_DEFAULT` env var via
+`_resolve_dispatch_model_and_fallback`. Had `--model haiku` been passed
+explicitly, the same dispatch would have shown `fallback_used: false`
+(see T-1664 smoke `t1664-explicit`).
+
+Watchtower's `/orchestrator` "Recent dispatches" panel (T-1643/W5)
+renders this entry live with task link, `build` task-type pill, and
+the populated values. The "By task-type" empty-state diagnostic that
+yesterday's screenshots captured (`0 sessions tagged task-type:`) now
+flips to non-zero as soon as a dispatch like this runs with focus set.
+
+### Q1 status by path
+
+| Path | Substrate | State | Evidence |
+|------|-----------|-------|----------|
+| Framework dispatch path | `agents/termlink/termlink.sh` cmd_dispatch | **Closed** | This file (post-T-1664), smoke `t1664-smoke3` + `t1664-explicit` |
+| /opt/termlink CLI path | `scripts/tl-dispatch.sh` cmd_spawn | **Closed** | /opt/termlink/docs/reports/U-005-meta-populate.md, T-1442 commit `143cd870`, 21/21 substrate tests pass |
+
+**Q1 of §Arc Completion Discipline is now answered with observable
+artefacts on both paths.** The orchestrator-rethink arc is structurally
+ready for human-led `fw arc close orchestrator-rethink` decision.
+
+### Cleanup
+
+`q1-wire-evidence` session left running in /tmp/tl-dispatch/ for human
+spot-check. Run `bin/fw termlink cleanup` to terminate and remove. Yesterday's
+`u005-meta-populate*` workdirs were cleaned by handover protocol; today's
+remains.

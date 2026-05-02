@@ -90,6 +90,8 @@ python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q 2>&1 | tail 
 - Visual: Playwright snapshot of `/orchestrator` shows "Recent dispatches" panel with empty state and the existing "Live Sessions / By task-type" panel still calling out the gap (which will close as soon as a worker dispatches with focus set).
 - Backward compatibility: when no focus.yaml exists or `current_task: null`, `_derive_task_type` returns empty — no behaviour change for callers without the new flag.
 
+**Post-T-1664 production evidence (2026-05-02T05:09Z):** A real dispatch via this path with `FW_DISPATCH_MODEL_DEFAULT=haiku` produced a live `meta.json` at `/tmp/tl-dispatch/q1-wire-evidence/meta.json` with `task_type: "build"`, `model: "haiku"`, `model_used: "haiku"`, `fallback_used: true` — all four orchestrator-aware fields populated at dispatch time. Session `q1-wire-evidence` carried canonical tags `task:T-1643, task-type:build` (no legacy `task=` prefix). Watchtower `/orchestrator` "Recent dispatches" panel renders the live entry with task link, `build` task-type pill, and populated values. Result round-tripped (`exit_code=0`, `result.md = "confirmed."`) in under 15s via T-1663 stream-json. Full observation in `docs/reports/T-1643-Q1-wire-evidence.md` (2026-05-02T05:09Z section). **Q1 of §Arc Completion Discipline is now answered with observable artefacts on both framework and /opt/termlink CLI paths** — the rationale's earlier "Q1 still NO" caveat is superseded.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
