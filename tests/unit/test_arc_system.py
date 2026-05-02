@@ -72,7 +72,8 @@ def test_arc_help_lists_all_verbs(project):
 def test_arc_create_writes_yaml_with_required_fields(project):
     """D2 — `arc create` writes a YAML with id/name/status/anchor/created."""
     r = _run(
-        [str(FW), "arc", "create", "test-arc", "--name", "Test arc", "--anchor", "T-1641"],
+        [str(FW), "arc", "create", "test-arc", "--name", "Test arc", "--anchor", "T-1641",
+         "--headline-mechanic", "user runs fw work-on and sees the test arc complete"],
         cwd=project,
     )
     assert r.returncode == 0, r.stderr + r.stdout
@@ -93,7 +94,8 @@ def test_arc_create_rejects_invalid_id(project):
 
 def test_arc_focus_writes_arc_focus_yaml(project):
     """D3 — `arc focus` sets current_arc."""
-    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "create", "alpha", "--name", "A",
+         "--headline-mechanic", "user runs fw work-on and sees the demo arc complete"], cwd=project, check=True)
     r = _run([str(FW), "arc", "focus", "alpha"], cwd=project)
     assert r.returncode == 0, r.stderr
     focus = (project / ".context" / "working" / "arc-focus.yaml").read_text()
@@ -113,7 +115,8 @@ def test_arc_focus_writes_arc_focus_yaml(project):
 
 def test_arc_tag_adds_to_task_and_constituents(project):
     """D4 — tag T-9001 with arc:alpha; tag appears in task file and arc YAML."""
-    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "create", "alpha", "--name", "A",
+         "--headline-mechanic", "user runs fw work-on and sees the demo arc complete"], cwd=project, check=True)
     r = _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project)
     assert r.returncode == 0, r.stderr + r.stdout
     task_text = (project / ".tasks" / "active" / "T-9001-seed.md").read_text()
@@ -124,7 +127,8 @@ def test_arc_tag_adds_to_task_and_constituents(project):
 
 def test_arc_tag_idempotent(project):
     """Re-tagging the same task does not duplicate the entry."""
-    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "create", "alpha", "--name", "A",
+         "--headline-mechanic", "user runs fw work-on and sees the demo arc complete"], cwd=project, check=True)
     _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
     _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
     arc_text = (project / ".context" / "arcs" / "alpha.yaml").read_text()
@@ -133,20 +137,27 @@ def test_arc_tag_idempotent(project):
 
 def test_arc_close_marks_status_and_clears_focus(project):
     """D7-bonus — close ends the arc + drops focus if it was focused."""
-    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "create", "alpha", "--name", "A",
+         "--headline-mechanic", "user runs fw work-on and sees the demo arc complete"], cwd=project, check=True)
     _run([str(FW), "arc", "focus", "alpha"], cwd=project, check=True)
-    r = _run([str(FW), "arc", "close", "alpha", "--decision", "shipped"], cwd=project)
+    # T-1668 §ACD Layer B: close requires --demo. Use the bypass for this
+    # test (it's testing close mechanics, not §ACD enforcement).
+    r = _run([str(FW), "arc", "close", "alpha", "--decision", "shipped",
+              "--demo", "none",
+              "--justification", "test-fixture exercising close mechanics, no runtime mechanic"],
+             cwd=project)
     assert r.returncode == 0, r.stderr
     arc_text = (project / ".context" / "arcs" / "alpha.yaml").read_text()
     assert "status: closed" in arc_text
-    assert "decision: shipped" in arc_text
+    assert "shipped" in arc_text  # decision now quoted
     focus = (project / ".context" / "working" / "arc-focus.yaml").read_text()
     assert "current_arc: null" in focus, "focus not cleared on close"
 
 
 def test_arc_show_renders_metadata_and_tasks(project):
     """D5 — show emits id/name/status + tagged task lines."""
-    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "create", "alpha", "--name", "A",
+         "--headline-mechanic", "user runs fw work-on and sees the demo arc complete"], cwd=project, check=True)
     _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
     r = _run([str(FW), "arc", "show", "alpha"], cwd=project)
     assert r.returncode == 0
@@ -169,7 +180,8 @@ def test_handover_injects_current_arc_section(project):
     assert "## Current Arc" in text, "handover.sh has no ## Current Arc emit"
 
     # Assertion 2: when focus.yaml has current_arc:, the inline block emits the section.
-    _run([str(FW), "arc", "create", "alpha", "--name", "A"], cwd=project, check=True)
+    _run([str(FW), "arc", "create", "alpha", "--name", "A",
+         "--headline-mechanic", "user runs fw work-on and sees the demo arc complete"], cwd=project, check=True)
     _run([str(FW), "arc", "focus", "alpha"], cwd=project, check=True)
     inline = '''
 ARC_FOCUS_FILE="$PROJECT_ROOT/.context/working/arc-focus.yaml"

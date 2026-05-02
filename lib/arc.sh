@@ -59,6 +59,111 @@ _arc_current_focus() {
         | head -1 | awk -F': ' '{print $2}' | tr -d ' "'
 }
 
+# T-1668 §ACD Layer A — headline_mechanic validation.
+# Forces user-facing deliverable description before any work begins.
+_arc_validate_headline_mechanic() {
+    local text="$1"
+    local len=${#text}
+    if [ "$len" -lt 30 ] || [ "$len" -gt 500 ]; then
+        echo "Error: --headline-mechanic must be 30-500 chars (got $len)." >&2
+        echo "  Describe a user-observable deliverable, e.g.:" >&2
+        echo "  \"agent dispatches a task without --model → orchestrator picks based on task_type and history → user watches the decision on /orchestrator\"" >&2
+        return 1
+    fi
+    local allowed='dispatch(es)?|route(s)?|select(s)?|pick(s)?|run(s)?|observe(s)?|watch(es)?|see(s)?|receive(s)?|get(s)?|execute(s)?|fire(s)?|complete(s)?|ask(s)?|request(s)?|land(s)?|trigger(s)?|invoke(s)?|edit(s)?|commit(s)?'
+    if ! printf '%s' "$text" | grep -qiE "($allowed)"; then
+        echo "Error: --headline-mechanic must describe an observable action." >&2
+        echo "  Include a verb like: dispatches, runs, picks, sees, observes, receives, executes." >&2
+        echo "  Got: \"$text\"" >&2
+        return 1
+    fi
+    local substrate='infrastructure|groundwork|substrate|metadata capture|governance hook|audit page|framework path|the framework (populates|renders|captures|logs|tracks|warns|stores)'
+    local has_substrate=0 has_user=0
+    printf '%s' "$text" | grep -qiE "$substrate" && has_substrate=1
+    printf '%s' "$text" | grep -qiE '(user|human|agent|developer|operator|caller|they|their)' && has_user=1
+    if [ "$has_substrate" = "1" ] && [ "$has_user" = "0" ]; then
+        echo "Error: --headline-mechanic appears to describe substrate, not a user-observable mechanic." >&2
+        echo "  A real headline mechanic names WHO observes WHAT — not what the framework does internally." >&2
+        return 1
+    fi
+    return 0
+}
+
+# T-1668 §ACD Layer B — demo path validation.
+_arc_validate_demo_path() {
+    local demo="$1" arc_id="$2" arc_yaml="$3"
+    [ -f "$demo" ] || { echo "Error: --demo path '$demo' does not exist." >&2; return 1; }
+    local size
+    size=$(wc -c < "$demo" 2>/dev/null || echo 0)
+    if [ "$size" -lt 256 ]; then
+        echo "Error: --demo file '$demo' is too small ($size bytes; need ≥256)." >&2
+        echo "  This gate exists to prevent trivial bypass with hand-typed placeholder files." >&2
+        return 1
+    fi
+    case "$demo" in
+        *.json|*.jsonl|*.yaml|*.yml|*.md|*.cast|*.mp4|*.log|*.txt|*.html|*.png|*.jpg|*.jpeg|*.gif|*.svg|*.webm) ;;
+        *)
+            echo "Error: --demo extension not in evidence allowlist." >&2
+            echo "  Allowed: .json .jsonl .yaml .yml .md .cast .mp4 .log .txt .html .png .jpg .jpeg .gif .svg .webm" >&2
+            return 1 ;;
+    esac
+    case "$demo" in
+        *.json|*.jsonl|*.yaml|*.yml|*.md|*.log|*.txt|*.html|*.cast)
+            if grep -qE "(${arc_id}|T-[0-9]+)" "$demo" 2>/dev/null; then
+                local matched=0
+                if grep -qE "${arc_id}" "$demo" 2>/dev/null; then matched=1; fi
+                if [ "$matched" = "0" ]; then
+                    while IFS= read -r tid; do
+                        [ -z "$tid" ] && continue
+                        grep -qE "${tid}" "$demo" 2>/dev/null && { matched=1; break; }
+                    done < <(grep -oE 'T-[0-9]+' "$arc_yaml" 2>/dev/null | sort -u)
+                fi
+                if [ "$matched" = "0" ]; then
+                    echo "Error: --demo file '$demo' references task IDs but none belong to arc '${arc_id}'." >&2
+                    return 1
+                fi
+            else
+                echo "Error: --demo file '$demo' does not reference arc id '${arc_id}' or any task id." >&2
+                echo "  Wire-level evidence must be traceable to this arc." >&2
+                return 1
+            fi
+            ;;
+    esac
+    return 0
+}
+
+_arc_validate_demo_url() {
+    local url="$1" arc_id="$2"
+    if ! command -v curl >/dev/null 2>&1; then
+        echo "Error: curl required to validate --demo URL." >&2
+        return 1
+    fi
+    local code
+    code=$(curl -s -o /dev/null -w "%{http_code}" -m 5 -L -I "$url" 2>/dev/null || echo "000")
+    case "$code" in
+        2*) ;;
+        *) echo "Error: --demo URL '$url' returned HTTP $code (need 2xx)." >&2; return 1 ;;
+    esac
+    local body
+    body=$(curl -s -m 5 -L --max-filesize 65536 "$url" 2>/dev/null || true)
+    if ! printf '%s' "$body" | grep -qE "${arc_id}"; then
+        echo "Error: --demo URL '$url' body does not reference arc id '${arc_id}' in first 32KB." >&2
+        return 1
+    fi
+    return 0
+}
+
+_arc_log_bypass() {
+    local arc_id="$1" reason="$2" justification="$3"
+    local logf="$PROJECT_ROOT/.context/audits/arc-bypass.jsonl"
+    mkdir -p "$(dirname "$logf")"
+    local now
+    now="$(_arc_now)"
+    printf '{"arc":"%s","ts":"%s","reason":"%s","justification":%s}\n' \
+        "$arc_id" "$now" "$reason" "$(printf '%s' "$justification" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')" \
+        >> "$logf"
+}
+
 # Find tasks tagged with a given arc tag. Returns T-IDs one per line.
 # Always exits 0 — empty output is a valid result, not a failure.
 _arc_tasks_with_tag() {
@@ -75,20 +180,31 @@ _arc_tasks_with_tag() {
 # ─── verbs ──────────────────────────────────────────────────────────────────
 
 arc_create() {
-    local id="" name="" anchor="" description=""
+    local id="" name="" anchor="" description="" headline_mechanic=""
     while [ $# -gt 0 ]; do
         case "$1" in
             --name) name="$2"; shift 2;;
             --anchor) anchor="$2"; shift 2;;
             --description) description="$2"; shift 2;;
+            --headline-mechanic) headline_mechanic="$2"; shift 2;;
             -*) echo "Unknown flag: $1" >&2; return 2;;
             *) [ -z "$id" ] && id="$1" || { echo "Unexpected arg: $1" >&2; return 2; }; shift;;
         esac
     done
 
-    [ -n "$id" ]   || { echo "Usage: fw arc create <arc-id> --name \"...\" [--anchor T-XXXX]" >&2; return 2; }
+    [ -n "$id" ]   || { echo "Usage: fw arc create <arc-id> --name \"...\" --headline-mechanic \"...\" [--anchor T-XXXX]" >&2; return 2; }
     [ -n "$name" ] || { echo "Error: --name is required" >&2; return 2; }
     _arc_validate_id "$id" || return 2
+    # T-1668 §ACD Layer A: refuse without a user-observable headline mechanic.
+    if [ -z "$headline_mechanic" ]; then
+        echo "Error: --headline-mechanic is required (§ACD/G-062)." >&2
+        echo "  Describe the user-observable deliverable in one sentence:" >&2
+        echo "    fw arc create $id --name \"$name\" \\" >&2
+        echo "      --headline-mechanic \"<who> <does what> <observes what user-visible result>\"" >&2
+        echo "  Example: \"agent dispatches a task without --model → orchestrator picks based on task_type and history → user watches the decision on /orchestrator\"" >&2
+        return 2
+    fi
+    _arc_validate_headline_mechanic "$headline_mechanic" || return 2
     _arc_ensure_dir
 
     if _arc_exists "$id"; then
@@ -99,6 +215,10 @@ arc_create() {
     local now
     now="$(_arc_now)"
 
+    # Use python to YAML-quote headline_mechanic safely (handles colons, arrows, quotes).
+    local hm_yaml
+    hm_yaml=$(printf '%s' "$headline_mechanic" | python3 -c 'import yaml,sys; print(yaml.safe_dump(sys.stdin.read().rstrip("\n"), default_style=chr(34)).rstrip())')
+
     cat > "$(_arc_path "$id")" <<YAML
 id: ${id}
 name: ${name}
@@ -106,6 +226,8 @@ description: ${description}
 status: in-progress
 anchor_task: ${anchor}
 constituent_tasks: []
+headline_mechanic: ${hm_yaml}
+demo_evidence: null
 created: ${now}
 closed_at: null
 decision: null
@@ -113,6 +235,7 @@ YAML
 
     echo "Created arc '${id}' → $(_arc_path "$id")"
     [ -n "$anchor" ] && echo "  anchor: ${anchor}"
+    echo "  headline_mechanic: ${headline_mechanic}"
     return 0
 }
 
@@ -283,14 +406,16 @@ PY
 }
 
 arc_close() {
-    local id="" decision=""
+    local id="" decision="" demo="" justification=""
     while [ $# -gt 0 ]; do
         case "$1" in
             --decision) decision="$2"; shift 2;;
+            --demo) demo="$2"; shift 2;;
+            --justification) justification="$2"; shift 2;;
             *) [ -z "$id" ] && id="$1" || { echo "Unexpected arg: $1" >&2; return 2; }; shift;;
         esac
     done
-    [ -n "$id" ] || { echo "Usage: fw arc close <arc-id> [--decision \"...\"]" >&2; return 2; }
+    [ -n "$id" ] || { echo "Usage: fw arc close <arc-id> --demo <path|url|none> [--justification \"...\"] [--decision \"...\"]" >&2; return 2; }
     _arc_validate_id "$id" || return 2
     _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
 
@@ -298,19 +423,53 @@ arc_close() {
     f="$(_arc_path "$id")"
     now="$(_arc_now)"
 
-    python3 - "$f" "$now" "$decision" <<'PY'
+    # T-1668 §ACD Layer B: refuse without --demo.
+    if [ -z "$demo" ]; then
+        echo "Error: --demo is required to close an arc (§ACD/G-062)." >&2
+        echo "  Provide wire-level evidence the headline mechanic fired:" >&2
+        echo "    fw arc close $id --demo <path-to-meta.json|stream-json|screencast> --decision \"...\"" >&2
+        echo "    fw arc close $id --demo <https://watchtower-url-showing-mechanic-state> --decision \"...\"" >&2
+        echo "  Or — if this arc has no runtime mechanic — bypass with explicit justification:" >&2
+        echo "    fw arc close $id --demo none --justification \"<≥30 chars explaining why no demo applies>\" --decision \"...\"" >&2
+        if grep -q "^headline_mechanic:" "$f" 2>/dev/null; then
+            echo "  Headline mechanic for this arc:" >&2
+            grep "^headline_mechanic:" "$f" | sed 's/^/    /' >&2
+        fi
+        return 2
+    fi
+    if [ "$demo" = "none" ]; then
+        if [ -z "$justification" ] || [ "${#justification}" -lt 30 ]; then
+            echo "Error: --demo none requires --justification \"<≥30 chars>\"." >&2
+            return 2
+        fi
+        _arc_log_bypass "$id" "no-runtime-mechanic" "$justification"
+        echo "Logged --demo none bypass to .context/audits/arc-bypass.jsonl"
+    else
+        case "$demo" in
+            http://*|https://*) _arc_validate_demo_url "$demo" "$id" || return 1 ;;
+            *)                  _arc_validate_demo_path "$demo" "$id" "$f" || return 1 ;;
+        esac
+    fi
+
+    python3 - "$f" "$now" "$decision" "$demo" <<'PY'
 import re, sys
-fn, now, decision = sys.argv[1], sys.argv[2], sys.argv[3]
+fn, now, decision, demo = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 text = open(fn).read()
 text = re.sub(r'^status:.*$', 'status: closed', text, count=1, flags=re.MULTILINE)
 text = re.sub(r'^closed_at:.*$', f'closed_at: {now}', text, count=1, flags=re.MULTILINE)
 if decision:
-    text = re.sub(r'^decision:.*$', f'decision: {decision}', text, count=1, flags=re.MULTILINE)
+    safe = decision.replace('"', '\\"')
+    text = re.sub(r'^decision:.*$', f'decision: "{safe}"', text, count=1, flags=re.MULTILINE)
+safe_demo = demo.replace('"', '\\"')
+if re.search(r'^demo_evidence:', text, re.MULTILINE):
+    text = re.sub(r'^demo_evidence:.*$', f'demo_evidence: "{safe_demo}"', text, count=1, flags=re.MULTILINE)
+else:
+    text = text.rstrip("\n") + f'\ndemo_evidence: "{safe_demo}"\n'
 open(fn, "w").write(text)
 PY
     echo "Closed arc '${id}' at ${now}${decision:+ — ${decision}}"
+    echo "  demo_evidence: ${demo}"
 
-    # Clear focus if focused arc was the one closed.
     local current
     current="$(_arc_current_focus)"
     if [ "$current" = "$id" ]; then
@@ -376,20 +535,27 @@ arc_help() {
 fw arc — Arc system (T-1653 / T-1661)
 
 Verbs:
-  create <id> --name "..." [--anchor T-XXXX] [--description "..."]
-                            Register a new arc
+  create <id> --name "..." --headline-mechanic "..." [--anchor T-XXXX] [--description "..."]
+                            Register a new arc. --headline-mechanic is REQUIRED
+                            (§ACD/G-062): describes the user-observable deliverable;
+                            substrate-only phrasing is refused.
   focus <id> | --clear      Set/clear the focused arc (one at a time)
   list                      Show all arcs (* marks focused)
   show <id>                 Detail: metadata + constituent tasks
   tag <id> T-XXXX           Add arc:<id> tag to a task + append to constituents
-  close <id> [--decision "..."]
-                            Mark arc closed
+  close <id> --demo <path|url|none> [--justification "..."] [--decision "..."]
+                            Mark arc closed. --demo is REQUIRED (§ACD/G-062):
+                            wire-level evidence of the headline_mechanic firing.
+                            Use 'none' + --justification (≥30 chars) for arcs
+                            with no runtime mechanic — bypass is logged.
   migrate <id> --anchor T-XXXX
                             Seed constituent_tasks from anchor's related_tasks
                             and legacy from-T-XXXX tags (idempotent)
 
 Examples:
-  fw arc create orchestrator-rethink --name "Orchestrator routing rethink" --anchor T-1641
+  fw arc create orchestrator-rethink --name "Orchestrator routing rethink" --anchor T-1641 \\
+    --headline-mechanic "agent dispatches without --model → orchestrator picks based on task_type → user observes routing on /orchestrator"
+  fw arc close orchestrator-rethink --demo docs/reports/T-1643-Q1-wire-evidence.md --decision "shipped"
   fw arc focus orchestrator-rethink
   fw arc tag orchestrator-rethink T-1661
   fw arc list

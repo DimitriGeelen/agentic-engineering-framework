@@ -3310,7 +3310,7 @@ PY
         if [ "$ge" = "1" ]; then
             warn "Arc '${ARC_ID}': ${completed}/${total} tasks completed (${ratio}) but arc still in-progress" \
                  "Threshold ${threshold} reached — code-complete without explicit closure (G-062 signature)" \
-                 "Run §Arc Completion Discipline three-question check, then: fw arc close ${ARC_ID} --decision \"...\""
+                 "Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close ${ARC_ID} --demo <path|url> --decision \"...\""
         else
             pass "Arc '${ARC_ID}': ${completed}/${total} (${ratio}) — below threshold ${threshold}, no closure pressure"
         fi

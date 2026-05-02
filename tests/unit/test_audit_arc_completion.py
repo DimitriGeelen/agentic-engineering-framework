@@ -112,9 +112,10 @@ def test_arc_completion_above_threshold_warns(tmp_path):
     out = r.stdout
     arc_warns = sum(1 for line in out.splitlines() if line.startswith("[WARN]") and "Arc 'hot'" in line)
     assert arc_warns == 1, f"expected exactly 1 warn for 'hot' arc:\n{out}"
-    # Mitigation must point at §Arc Completion Discipline / fw arc close.
+    # T-1668: mitigation now points at the structural --demo gate (§ACD enforced).
     assert "fw arc close" in out
-    assert "Arc Completion Discipline" in out
+    assert "--demo" in out
+    assert "headline_mechanic" in out
 
 
 def test_arc_completion_closed_arc_skipped(tmp_path):
