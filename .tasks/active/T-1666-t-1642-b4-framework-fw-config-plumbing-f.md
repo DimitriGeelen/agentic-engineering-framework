@@ -5,14 +5,14 @@ description: >
   Implementation half of T-1642 GO decision (substrate-side B1/B2/B3 file in /opt/termlink). Lift the 13 routing-policy constants from code defaults to a routing-policy.yaml read via fw_config. Wire DISPATCH_MODEL_DEFAULT, ARC_COMPLETION_THRESHOLD, and the new keys (PROMOTION_THRESHOLD_BYPASS, PROMOTION_THRESHOLD_TEMPLATE, FAILURE_THRESHOLD, COOLDOWN, DEFAULT_TTL_HOURS, CONFIDENCE_THRESHOLD, etc.) so projects can override per-instance via .framework.yaml. Validate at audit time.
 
 status: captured
-workflow_type: build
+workflow_type: inception
 owner: agent
-horizon: next
+horizon: later
 tags: [arc:orchestrator-rethink, from-T-1642]
 components: []
 related_tasks: []
 created: 2026-05-02T05:37:42Z
-last_update: 2026-05-02T05:37:52Z
+last_update: 2026-05-02T08:56:29Z
 date_finished: null
 ---
 
@@ -20,14 +20,35 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1642's recommendation called for four follow-up build tasks (B1–B4):
+B1/B2/B3 substrate-side in `/opt/termlink` (lift 13 routing-policy
+constants to `/opt/termlink/etc/routing-policy.yaml`), B4 framework-side
+(`fw_config` plumbing).
+
+Inspection during scoping (2026-05-02) revealed:
+
+1. The framework currently consumes only **2 of the 13 constants**
+   (`DISPATCH_MODEL_DEFAULT`, `ARC_COMPLETION_THRESHOLD`) — both already
+   plumbed (lib/config.sh:167–168).
+2. The other 11 are substrate-internal `termlink-hub` constants
+   (`template_cache.rs`, `bypass.rs`, `circuit_breaker.rs`,
+   `route_cache.rs`).
+3. Substrate-side B1/B2/B3 has NOT shipped as of 2026-05-02
+   (`/opt/termlink/etc/routing-policy.yaml` does not exist).
+
+Reclassified from build → inception. Three feasibility paths analyzed
+(wait-for-substrate / env-var-passthrough / drop-scope). Full analysis
+in `docs/reports/T-1666-fw-config-plumbing-routing-policy.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+<!-- @auto-tick-on-decide -->
+- [ ] Problem statement validated (only 2/13 constants are framework-side; 11 are substrate-internal)
+<!-- @auto-tick-on-decide -->
+- [ ] Three feasibility paths evaluated (wait / env-var passthrough / drop scope)
+<!-- @auto-tick-on-decide -->
+- [ ] Recommendation written with promotion criteria for revisiting
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -71,6 +92,36 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:** The 11 substrate-internal constants (PROMOTION_THRESHOLD,
+FAILURE_THRESHOLD, COOLDOWN, DEFAULT_TTL_HOURS, CONFIDENCE_THRESHOLD,
+task_type taxonomy, tag prefix, discovery filter, concurrency cap,
+attribution) belong in `/opt/termlink/etc/routing-policy.yaml` and
+should be consumed by `termlink-hub` directly. The 2 framework-side keys
+(DISPATCH_MODEL_DEFAULT, ARC_COMPLETION_THRESHOLD) are already plumbed
+via lib/config.sh:167–168. Adding 11 keys to lib/config.sh that nothing
+in the framework reads is dead surface area at risk of config drift.
+
+**Promotion criteria (revisit if):**
+- Substrate ships `/opt/termlink/etc/routing-policy.yaml` AND a consumer
+  project requests per-project override via `.framework.yaml`.
+- A new framework feature emerges that reads any of the 11
+  substrate-internal constants (none currently planned).
+
+**Evidence:**
+- `lib/config.sh:167–168` — DISPATCH_MODEL_DEFAULT + ARC_COMPLETION_THRESHOLD
+  already plumbed; remaining 11 keys absent.
+- `/opt/termlink/crates/termlink-hub/src/{template_cache,bypass,circuit_breaker,route_cache}.rs`
+  — all 11 constants live in Rust hub code, not consumed by framework.
+- `git -C /opt/termlink log --since=2026-05-01` — no commits matching
+  T-1642/B1/B2/B3/routing-policy since GO; substrate focused on
+  T-1438/T-1418 chat-arc + auth-healing work.
+- `docs/reports/T-1666-fw-config-plumbing-routing-policy.md` —
+  full three-path analysis.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -94,3 +145,14 @@ date_finished: null
 
 ### 2026-05-02T05:37:52Z — status-update [task-update-agent]
 - **Change:** tags: +from-T-1642
+
+### 2026-05-02T08:53:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-05-02T08:55:00Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → inception
+
+### 2026-05-02T08:56:29Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
