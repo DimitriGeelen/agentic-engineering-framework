@@ -52,7 +52,15 @@ for p in data.get('patterns', []):
         [ -f "$card" ] || continue
         local loc
         loc=$({ grep "^location:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^location: //')
-        if [ -n "$loc" ] && [ ! -f "$PROJECT_ROOT/$loc" ]; then
+        # T-1673: handle absolute paths (cross-repo cards from T-1652) — don't
+        # join with PROJECT_ROOT when the location is already absolute.
+        local resolved
+        if [ -n "$loc" ] && [ "${loc:0:1}" = "/" ]; then
+            resolved="$loc"
+        else
+            resolved="$PROJECT_ROOT/$loc"
+        fi
+        if [ -n "$loc" ] && [ ! -f "$resolved" ]; then
             local name
             name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
             echo "  ! $name → $loc (file missing)"
