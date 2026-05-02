@@ -2647,3 +2647,10 @@ X'` returning empty group."
   date: 2026-05-01
   context: Added via context agent
   application: TBD
+- id: L-341
+  learning: "Detective mechanisms (audit sections, lint rules, gates) need both logic tests AND production-trigger tests. T-1656 shipped arc-completion logic with full unit coverage but the section guard was never invoked by any cron/hook — detective was inert for 24h. The §ACD Q3 inverse: code shipped without execution path. Pattern: when adding any 'should_run_section' guard or hook trigger, write a test asserting it fires under a real production profile, not just under the explicit invocation path."
+  source: P-011
+  task: T-1665
+  date: 2026-05-02
+  context: Added via context agent
+  application: TBD
