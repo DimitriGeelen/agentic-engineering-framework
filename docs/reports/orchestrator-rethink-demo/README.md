@@ -138,6 +138,49 @@ spawned a worker, observed exit 0, and atomically updated the cache
 the loop. This proves the system continues to fire after the demo
 capture, not just at the moment evidence was being gathered.
 
+## Live-test verification (T-1680, 2026-05-02T12:41Z)
+
+End-to-end re-test executed on operator request to confirm the
+headline_mechanic still fires on demand. Captured at 12:41Z:
+`cache-05-2026-05-02-1241Z-live-test.json`.
+
+Procedure:
+
+1. Pre-test cache snapshot taken (matches `cache-04`).
+2. Resolver traced for build/design/inception/nonexistent — predicted
+   haiku/sonnet/opus/none, source=`route_cache` for the three known
+   types.
+3. Three real `fw termlink dispatch` invocations — no `--model`
+   flag, only `--task-type`. Worker `meta.json` for each shows
+   `resolution_source: route_cache` and the predicted model.
+4. All three workers exited 0 (results: `build`, `Design workflow
+   loaded. What topic would you like to design?`, `inception`).
+5. Cache delta vs pre-test:
+
+```
+haiku:build      8s/1f → 9s/1f   (last_used → 12:41:38Z)
+sonnet:design    5s/0f → 6s/0f   (last_used → 12:41:53Z)
+opus:inception   7s/1f → 8s/1f   (last_used → 12:41:46Z)
+```
+
+6. `/orchestrator` re-fetched: rendered success rates now
+   `haiku 90% (build)`, `sonnet 100% (design)`, `opus 89%
+   (inception)`. These are the new cache values rendered live (9/10,
+   6/6, 8/9 round-trip through the success_rate template formula).
+
+This is the headline_mechanic firing in one continuous flow on
+demand, with the resolver picking the right model from history, the
+worker exiting clean, the record-outcome callback updating the
+atomic cache file, and the operator surface reflecting the new
+state — without any cached page load or stale snapshot in between.
+
+**Known observability gap discovered during this run:** worker
+`meta.json` is written at spawn time with `status: running` and
+never updated post-exit by `run.sh`. Authoritative exit state lives
+in `$WDIR/exit_code` + `$WDIR/finished_at` (and the cache
+post-update). Filed as follow-up — does not affect the headline
+mechanic, only the dispatch_status CLI surface.
+
 ## Closure
 
 This artefact is the wire-level evidence required by §ACD / G-062 to
