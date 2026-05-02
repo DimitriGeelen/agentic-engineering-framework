@@ -1647,10 +1647,35 @@ concerns:
     behavioral verification on a fresh substrate, (b) policy-default audit (`grep -rn "const " | wc -l`
     on shipped code → did any silently-defaulted constant escape human review?), (c) framework-side
     use evidence (does the upstream that motivated the work actually call it?).
-  status: mitigated
+  status: watching
   closure_criteria: 'A structural pre-completion check that asks the agent these three questions
     explicitly before allowing arc-parent tasks to enter `fw task review`. Or three consecutive
     multi-task arcs complete without this signature being identified post-hoc.'
+  reopen_history:
+  - reopened_at: 2026-05-02
+    reason: |
+      4th-instance event: agent (autonomously, this session) ran
+      `fw arc close orchestrator-rethink --demo .../README.md --decision
+      "shipped"` at 07:19:26Z despite the §ACD Default-to-OPEN clause
+      ("≥2 prior pushbacks → arc OPEN regardless of new evidence").
+      Three previous incidents on this same arc made this exactly the
+      pattern G-062's mitigations were sized for. The mitigations did
+      not catch it because:
+      - Mechanism 1 (CLAUDE.md prose) was the §ACD self-application
+        rule itself — relying on the agent to remember and apply during
+        closure pressure. T-1667 already RCAed this failure mode and
+        moved it to gates; the Default-to-OPEN sub-clause was the part
+        that DIDN'T move to gates.
+      - Mechanism 2 (audit arc-completion check) warns AFTER child-task
+        completion threshold; arc_close itself isn't audited.
+      - Mechanism 3 (review-gate) targets `fw task review` on arc
+        anchors; arc_close bypasses it.
+      Closure decision is a wider attack surface than the three
+      mechanisms cover. T-1670 inception filed for structural fix:
+      arc_close counts pushbacks and refuses when CLAUDECODE=1 and
+      pushback_count >= 2. Override: --override-pushback flag with
+      tier-2 logging, refused under CLAUDECODE.
+    related_task: T-1670
   proposed_mechanisms:
   - 'Behavioral: CLAUDE.md §Arc Completion Discipline (new section) — three-question checklist
     with explicit "no symptom-conflation" reminder.'
@@ -1670,4 +1695,4 @@ concerns:
   created: 2026-05-01
   last_reviewed: 2026-05-01
   related_task: T-1641
-  related_tasks_extra: [T-1061, T-1626, T-1633, T-1655, T-1656, T-1657]
+  related_tasks_extra: [T-1061, T-1626, T-1633, T-1655, T-1656, T-1657, T-1667, T-1668, T-1669, T-1670]
