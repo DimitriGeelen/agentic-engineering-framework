@@ -1785,38 +1785,47 @@ concerns:
     — not synthetic verification — before the headline_mechanic
     "user observes routing decisions" is true in any meaningful sense.
 
-    Concrete candidate consumers (any one would close this gap):
+    T-1688 surveyed every autonomous workload (18 cron jobs + code-wide
+    scan for `claude -p` / `termlink dispatch`). Result: zero existing
+    workloads are LLM-amenable today. The retrofit path is exhausted.
 
-    1. Audit / discovery / handover agents that today run inline could be
-       refactored to dispatch slow checks via the orchestrator. They would
-       benefit from cached model selection (haiku for fast structural
-       checks, sonnet for synthesis, opus for inception-class reasoning).
+    Two plausible candidates with rework:
+    a. `fw reviewer audit` — `lib/reviewer/static_scan.py:18-19` explicitly
+       defers "Orchestrator routing (v3+)" as a future v2.x capability.
+       Real consumer when implemented. Cost: multi-session reviewer
+       roadmap commitment.
+    b. `tools/escalation-scan-v0.py` — line 1 names itself a v0 spike,
+       lines 6-10 say "intentionally simple". Successor (v0.5) could
+       LLM-augment H1-H3 heuristics for nuance. Smaller scope than
+       reviewer v2.x; explicit internal precedent.
 
-    2. A periodic cron health-check that dispatches a tiny prompt across
-       all three task_types daily and writes the result to
-       `.context/audits/orchestrator-LATEST.yaml`. Keeps the cache warm
-       AND gives operators rolling evidence of a live system. Roughly the
-       same shape as the existing 30-minute audit cron.
+    Plus the original three (kept for completeness):
+    c. T-1684 — synthetic cron health-check. Mitigates cold-cache symptom;
+       does not address root question of real users. Captured horizon:later.
+    d. Audit / discovery / handover agents — ruled out by T-1688 (no
+       LLM-amenable workload).
+    e. Opt-in `--via-orchestrator` flag — opt-in is by definition not
+       autonomous; doesn't close G-064.
 
-    3. The pickup / dispatch / inception / handover agents could expose a
-       `--via-orchestrator` flag for sub-tasks, defaulting OFF until
-       proven. Even one user-driven session running with the flag would
-       generate real workload.
-
-    Without one of these, closure of the orchestrator-rethink arc would
-    repeat the substrate-vs-deliverable pattern on the 6th-incident.
+    Without one of (a) or (b), closure of the orchestrator-rethink arc
+    would repeat the substrate-vs-deliverable pattern on the 6th-incident.
   recommendation: |
     1. Arc orchestrator-rethink remains OPEN regardless of T-1680/T-1682/
        T-1681. Default-to-OPEN per §ACD applies (≥2 prior pushbacks; this
        is the 5th-incident).
-    2. Pick one of the three candidate consumers above (#2 is smallest
-       and most reversible — a cron health-check). File as a build task.
-       After ONE week of autonomous workload reflected in route_cache
-       last_used timestamps, re-evaluate arc closure.
-    3. Do not declare this gap mitigated by "we have ACs and tests" — the
+    2. Per T-1688 survey: retrofit of existing workloads is ruled out.
+       Recommended path is "accept G-064 long-term + schedule
+       escalation-scan v0.5" (option 1+4 in T-1688). This makes the
+       substrate-vs-deliverable status of the orchestrator EXPLICIT
+       (developer-facing tool, not autonomous-consumer system) until
+       v0.5 ships. Decision authority: human via Watchtower /inception/
+       T-1688.
+    3. T-1684 (synthetic cron health-check) stays captured as the "if
+       v0.5 stalls" fallback. Do not promote without human GO.
+    4. Do not declare this gap mitigated by "we have ACs and tests" — the
        gap is the absence of an autonomous consumer. Tests verify the
        substrate; only autonomous workload verifies the deliverable.
   created: 2026-05-02
   last_reviewed: 2026-05-02
   related_task: T-1683
-  related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682]
+  related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682, T-1684, T-1688]
