@@ -139,3 +139,35 @@ def test_arc_detail_handles_missing_constituent_task_file(client):
     body = resp.get_data(as_text=True)
     assert "T-9999" in body
     assert "task file not found" in body or "missing" in body.lower()
+
+
+def test_arc_detail_renders_arc_keyed_reports(client):
+    """docs/reports/<arc_id>-*.md files surface as Reports & evidence section."""
+    c, p = client
+    _write_arc(p, "demo")
+    reports_dir = p / "docs" / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    (reports_dir / "demo-closure-readiness.md").write_text("# Closure readiness\n")
+    (reports_dir / "demo-q1-evidence.md").write_text("# Q1 evidence\n")
+    # Also a non-matching file that must NOT appear:
+    (reports_dir / "T-9999-unrelated.md").write_text("# unrelated\n")
+    resp = c.get("/arcs/demo")
+    assert resp.status_code == 200
+    body = resp.get_data(as_text=True)
+    assert "Reports &amp; evidence" in body
+    assert "demo-closure-readiness" in body
+    assert "demo-q1-evidence" in body
+    # Each report is a /file/ link
+    assert "/file/docs/reports/demo-closure-readiness.md" in body
+    # Unrelated reports stay out
+    assert "T-9999-unrelated" not in body
+
+
+def test_arc_detail_omits_reports_section_when_none(client):
+    """No matching arc-keyed reports → section is not rendered."""
+    c, p = client
+    _write_arc(p, "demo")
+    resp = c.get("/arcs/demo")
+    assert resp.status_code == 200
+    body = resp.get_data(as_text=True)
+    assert "Reports &amp; evidence" not in body

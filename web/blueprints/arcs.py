@@ -173,6 +173,24 @@ def _completion_stats(constituents: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _arc_reports(arc_id: str) -> list[dict[str, str]]:
+    """Find docs/reports/<arc_id>-*.md files for this arc.
+
+    Returns list of {name, path} where path is relative to PROJECT_ROOT
+    (the /file/ viewer route prepends /file/ for navigation).
+    """
+    reports_dir = PROJECT_ROOT / "docs" / "reports"
+    if not reports_dir.is_dir():
+        return []
+    out: list[dict[str, str]] = []
+    for f in sorted(reports_dir.glob(f"{arc_id}-*.md")):
+        out.append({
+            "name": f.stem,
+            "path": f"docs/reports/{f.name}",
+        })
+    return out
+
+
 @bp.route("/arcs")
 def arcs_index():
     """List every arc."""
@@ -194,6 +212,7 @@ def arc_detail(arc_id: str):
     stats = _completion_stats(constituents)
     focused = (_read_focus() == arc_id)
     has_specialized_view = (arc_id == "orchestrator-rethink")
+    reports = _arc_reports(arc_id)
     return render_page(
         "arc_detail.html",
         page_title=f"Arc: {arc.get('name', arc_id)}",
@@ -203,4 +222,5 @@ def arc_detail(arc_id: str):
         stats=stats,
         focused=focused,
         has_specialized_view=has_specialized_view,
+        reports=reports,
     )

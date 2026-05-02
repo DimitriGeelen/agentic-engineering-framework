@@ -62,6 +62,16 @@
 <p><strong>Specialized view available:</strong> <a href="/orchestrator">→ /orchestrator</a> (MCP audit, live sessions, recent dispatches).</p>
 {% endif %}
 
+{% if reports %}
+<h2>Reports &amp; evidence</h2>
+<p class="muted">Arc-keyed reports under <code>docs/reports/{{ arc_id }}-*.md</code>:</p>
+<ul>
+    {% for r in reports %}
+    <li><a href="/file/{{ r.path }}"><code>{{ r.name }}</code></a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 <h2>Constituent tasks</h2>
 {% if constituents %}
 <table>
