@@ -8,11 +8,11 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc:orchestrator-rethink]
 components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py, tests/unit/test_audit_arc_completion.py]
 related_tasks: []
 created: 2026-05-02T06:11:31Z
-last_update: 2026-05-02T07:18:01Z
+last_update: 2026-05-02T07:28:58Z
 date_finished: 2026-05-02T07:18:01Z
 ---
 
@@ -140,3 +140,6 @@ CLAUDE.md compressed net-negative (976 → 961). 28/28 arc tests pass.
 
 ### 2026-05-02T07:18:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-05-02T07:28:58Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

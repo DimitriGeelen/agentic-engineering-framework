@@ -8,11 +8,11 @@ status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
-tags: []
+tags: [arc:orchestrator-rethink]
 components: []
 related_tasks: []
 created: 2026-05-02T06:03:11Z
-last_update: 2026-05-02T06:03:11Z
+last_update: 2026-05-02T07:28:58Z
 date_finished: null
 ---
 
@@ -163,3 +163,6 @@ the arc's headline_mechanic is captured at
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-02T07:28:58Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink
