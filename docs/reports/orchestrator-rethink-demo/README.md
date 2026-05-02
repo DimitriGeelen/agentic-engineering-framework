@@ -110,6 +110,34 @@ done
 open "$(bin/fw watchtower url)/orchestrator"
 ```
 
+## Live-update verification (T-1678, 2026-05-02T11:00Z)
+
+Captured at 11:00Z, four hours after the demo above:
+`cache-04-2026-05-02-1100Z-still-firing.json`.
+
+Delta vs `cache-03-after-real-dispatches.json`:
+
+```
+haiku:build      7s/1f → 8s/1f   (+1 success — last_used 07:15:44Z, after cache-03 captured)
+opus:inception   6s/1f → 7s/1f   (+1 success — recorded post-demo)
+sonnet:design    5s/0f → 5s/0f   (no new design dispatches in window)
+haiku:design     1s/2f → 1s/2f   (unchanged; same as cache-03)
+opus:build       1s/3f → 1s/3f   (unchanged; same as cache-03)
+```
+
+Two model_stats keys grew their `successes` count (`haiku:build`,
+`opus:inception`) WITHOUT manual `record-outcome` calls or hand-edits
+between demo capture and 11:00Z. The only code path that increments
+those counters is the framework dispatch path's post-worker
+`record-outcome` invocation (Step 2 write path, commit `f29246d97`).
+
+Concretely: between 07:14Z (cache-03) and 11:00Z (cache-04) the
+orchestrator framework dispatch resolved a build task to haiku,
+spawned a worker, observed exit 0, and atomically updated the cache
+— and the same for an inception task routed to opus. No human in
+the loop. This proves the system continues to fire after the demo
+capture, not just at the moment evidence was being gathered.
+
 ## Closure
 
 This artefact is the wire-level evidence required by §ACD / G-062 to

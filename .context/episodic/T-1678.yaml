@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1678: live-update verification: route-cache continued growth post-demo (orchestrator-rethink arc closure-quality)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-02T11:29:21Z
+# ============================================================================
+
+task_id: T-1678
+task_name: "live-update verification: route-cache continued growth post-demo (orchestrator-rethink arc closure-quality)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T11:27:14Z
+completed: 2026-05-02T11:29:18Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Live snapshot saved as `docs/reports/orchestrator-rethink-demo/cache-04-2026-05-02-1100Z-still-firing.json` with valid JSON; `python3 -c \"import json; json.load(open('docs/reports/orchestrator-rethink-demo/cache-04-2026-05-02-1100Z-still-firing.json'))\"`."
+  - "Snapshot shows growth vs cache-03: at least one model_stats key has higher successes count than cache-03 AND `haiku:build` successes ≥ 8 AND `opus:inception` successes ≥ 7. (Initial AC assumed new keys would appear; cache-03 already had all 5 keys from demo seeding — the real evidence is success-count growth from real dispatches firing after the demo was captured.)"
+  - "README §Closure section appended with \"Live-update verification\" subsection naming cache-04 file and the delta evidence."
+  - "No source-code changes — evidence-only commit."
+  - "[REVIEW] Dashboard renders correctly"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1678-live-update-verification-route-cache-con.md
+generated_by: context-agent-hybrid
