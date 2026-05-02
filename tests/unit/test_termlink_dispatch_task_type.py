@@ -20,11 +20,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 TERMLINK_SH = REPO_ROOT / "agents" / "termlink" / "termlink.sh"
 
 
-def _run_helper(project_root, helper_call):
+def _run_helper(project_root, helper_call, extra_env=None):
     """Source termlink.sh and run a helper function, returning stdout."""
     env = os.environ.copy()
     env["PROJECT_ROOT"] = str(project_root)
     env["FRAMEWORK_ROOT"] = str(REPO_ROOT)
+    if extra_env:
+        env.update(extra_env)
     # Source termlink.sh inside a subshell that ignores its trailing
     # "wrong-call" exit; we only want the function definitions.
     cmd = (
@@ -149,42 +151,54 @@ def test_dispatch_accepts_task_type_flag():
     assert "--task-type)" in dispatch_block, "cmd_dispatch missing --task-type handler"
 
 
-# T-1664: _resolve_dispatch_model_and_fallback returns "<model>|<fallback_used>"
+# T-1664 + T-1669: _resolve_dispatch_model_and_fallback returns
+# "<model>|<fallback_used>|<source>". Source values: explicit | route_cache |
+# env-per-type | env-default | none. T-1669 inserted route_cache lookup
+# BEFORE env-var fallback; tests below use a fresh empty TERMLINK_RUNTIME_DIR
+# so the route_cache is empty and env-var paths are exercised.
 
 def test_resolve_with_fallback_explicit_returns_false(tmp_path):
     """Explicit --model wins; fallback_used is false."""
     (tmp_path / ".framework.yaml").write_text(
         "DISPATCH_MODEL_DEFAULT: opus\nDISPATCH_MODEL_FOR_BUILD: haiku\n"
     )
-    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "sonnet" "build"')
+    rt = tmp_path / "tlrun"; rt.mkdir()
+    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "sonnet" "build"',
+                    extra_env={"TERMLINK_RUNTIME_DIR": str(rt)})
     assert r.returncode == 0
-    assert r.stdout.strip() == "sonnet|false"
+    assert r.stdout.strip() == "sonnet|false|explicit"
 
 
 def test_resolve_with_fallback_per_type_returns_true(tmp_path):
-    """Per-type override path; fallback_used is true."""
+    """Per-type override path; fallback_used is true; source: env-per-type."""
     (tmp_path / ".framework.yaml").write_text(
         "DISPATCH_MODEL_DEFAULT: opus\nDISPATCH_MODEL_FOR_BUILD: haiku\n"
     )
-    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "" "build"')
+    rt = tmp_path / "tlrun"; rt.mkdir()
+    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "" "build"',
+                    extra_env={"TERMLINK_RUNTIME_DIR": str(rt)})
     assert r.returncode == 0
-    assert r.stdout.strip() == "haiku|true"
+    assert r.stdout.strip() == "haiku|true|env-per-type"
 
 
 def test_resolve_with_fallback_default_returns_true(tmp_path):
-    """No per-type → DISPATCH_MODEL_DEFAULT; fallback_used is true."""
+    """No per-type → DISPATCH_MODEL_DEFAULT; fallback_used is true; source: env-default."""
     (tmp_path / ".framework.yaml").write_text("DISPATCH_MODEL_DEFAULT: sonnet\n")
-    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "" "inception"')
+    rt = tmp_path / "tlrun"; rt.mkdir()
+    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "" "inception"',
+                    extra_env={"TERMLINK_RUNTIME_DIR": str(rt)})
     assert r.returncode == 0
-    assert r.stdout.strip() == "sonnet|true"
+    assert r.stdout.strip() == "sonnet|true|env-default"
 
 
-def test_resolve_with_fallback_none_returns_pipe(tmp_path):
-    """No explicit, no config → empty model|empty fallback (sentinel '|')."""
+def test_resolve_with_fallback_none_returns_sentinel(tmp_path):
+    """No explicit, no config, empty cache → ||none."""
     (tmp_path / ".framework.yaml").write_text("")
-    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "" ""')
+    rt = tmp_path / "tlrun"; rt.mkdir()
+    r = _run_helper(tmp_path, '_resolve_dispatch_model_and_fallback "" ""',
+                    extra_env={"TERMLINK_RUNTIME_DIR": str(rt)})
     assert r.returncode == 0
-    assert r.stdout.strip() == "|"
+    assert r.stdout.strip() == "||none"
 
 
 def test_dispatch_meta_json_populates_fields_from_resolution():

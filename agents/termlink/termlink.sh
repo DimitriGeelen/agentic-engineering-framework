@@ -32,7 +32,54 @@ TERMLINK_WORKER_TIMEOUT=$(fw_config_int "TERMLINK_WORKER_TIMEOUT" 600)
 
 die() { echo -e "${RED}ERROR:${NC} $1" >&2; exit 1; }
 
-# --- Orchestrator-substrate awareness (T-1643) ---
+# --- Orchestrator-substrate awareness (T-1643, T-1669) ---
+
+# T-1669 — route_cache.json path (matches /opt/termlink runtime_dir resolution).
+_route_cache_path() {
+    if [ -n "${TERMLINK_RUNTIME_DIR:-}" ]; then
+        echo "${TERMLINK_RUNTIME_DIR}/route-cache.json"
+    elif [ -n "${XDG_RUNTIME_DIR:-}" ]; then
+        echo "${XDG_RUNTIME_DIR}/termlink/route-cache.json"
+    else
+        echo "/var/lib/termlink/route-cache.json"
+    fi
+}
+
+# T-1669 Step 1 — query route_cache for best model for a task_type.
+# Echoes "<model>" if a stat exists (highest success_rate, ties broken by
+# total volume) or empty when no data / file missing / parse failure.
+# Never errors. Pure read; the cache file is JSON written by /opt/termlink hub.
+_route_cache_query_best_model() {
+    local task_type="$1"
+    [ -n "$task_type" ] || return 0
+    local cache_file
+    cache_file=$(_route_cache_path)
+    [ -f "$cache_file" ] || return 0
+    python3 - "$cache_file" "$task_type" <<'PY' 2>/dev/null || true
+import json, sys
+try:
+    cache = json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(0)
+tt = sys.argv[2]
+stats = cache.get("model_stats") or {}
+best = None
+for s in stats.values():
+    if s.get("task_type") != tt:
+        continue
+    succ = s.get("successes", 0)
+    fail = s.get("failures", 0)
+    total = succ + fail
+    if total <= 0:
+        continue
+    rate = succ / total
+    cand = (rate, total, s.get("model"))
+    if best is None or cand > best:
+        best = cand
+if best:
+    print(best[2])
+PY
+}
 
 # _derive_task_type — read the active task's workflow_type from focus.yaml.
 # Echoes the derived value (e.g. "build", "inception") or empty if no focus
@@ -74,32 +121,45 @@ _resolve_dispatch_model() {
     return 0
 }
 
-# _resolve_dispatch_model_and_fallback — extended form returning "<model>|<fallback_used>".
-# Mirrors /opt/termlink T-1442 semantics so framework + substrate dispatch paths converge
-# on the same answer for the same inputs (T-1664, closes T-1643 Q1 substrate half).
-# fallback_used = false when --model is explicit; true when resolved via per-type or default;
-# returns "|" when no resolution (empty model + empty fallback).
+# _resolve_dispatch_model_and_fallback — returns "<model>|<fallback_used>|<source>".
+# Resolution order (T-1669 closes T-1641):
+#   1. --model explicit                   → source: "explicit",      fallback_used: false
+#   2. route_cache.best_model_for(tt)     → source: "route_cache",   fallback_used: true
+#   3. FW_DISPATCH_MODEL_FOR_<TYPE> env   → source: "env-per-type",  fallback_used: true
+#   4. FW_DISPATCH_MODEL_DEFAULT env      → source: "env-default",   fallback_used: true
+#   5. (none)                             → source: "none",          fallback_used: false  → "||none"
+#
+# Pre-T-1669 the framework dispatch path did 3+4 only — env-var lookup, no
+# learned routing. T-1669 inserts step 2: read route-cache.json (written by
+# /opt/termlink hub + this framework's own outcome reports) and pick the
+# model with best historical success_rate for the task_type.
 _resolve_dispatch_model_and_fallback() {
     local explicit="$1" task_type="$2"
     if [ -n "$explicit" ]; then
-        echo "${explicit}|false"
+        echo "${explicit}|false|explicit"
         return 0
     fi
     if [ -n "$task_type" ]; then
+        local cached
+        cached=$(_route_cache_query_best_model "$task_type" 2>/dev/null || true)
+        if [ -n "$cached" ]; then
+            echo "${cached}|true|route_cache"
+            return 0
+        fi
         local key="DISPATCH_MODEL_FOR_$(echo "$task_type" | tr '[:lower:]' '[:upper:]')"
         local v
         v=$(fw_config "$key" "" 2>/dev/null || true)
         if [ -n "$v" ]; then
-            echo "${v}|true"
+            echo "${v}|true|env-per-type"
             return 0
         fi
     fi
     local d
     d=$(fw_config "DISPATCH_MODEL_DEFAULT" "" 2>/dev/null || true)
     if [ -n "$d" ]; then
-        echo "${d}|true"
+        echo "${d}|true|env-default"
     else
-        echo "|"
+        echo "||none"
     fi
     return 0
 }
@@ -383,13 +443,14 @@ cmd_dispatch() {
         task_type=$(_derive_task_type)
     fi
 
-    # T-1643/W3: resolve model via DISPATCH_MODEL_FOR_<TYPE> → DISPATCH_MODEL_DEFAULT.
-    # T-1664: resolve fallback flag in the same pass so meta.json carries the truth
-    # at dispatch time (closes Q1 substrate half on the framework path).
+    # T-1643/W3 + T-1664 + T-1669: resolve model.
+    # Pre-T-1669: env-var lookup only.
+    # T-1669: route_cache.best_model_for(task_type) consulted FIRST, env-var as fallback.
+    # Returns "<model>|<fallback_used>|<source>".
     local _resolved
     _resolved=$(_resolve_dispatch_model_and_fallback "$model" "$task_type")
-    model="${_resolved%|*}"
-    local fallback_used="${_resolved#*|}"
+    local resolution_source
+    IFS='|' read -r model fallback_used resolution_source <<< "$_resolved"
     # JSON-safe: empty resolution → null (not the string "null"); non-empty model → quoted string.
     local model_used_json
     if [ -n "$model" ]; then
@@ -423,6 +484,7 @@ cmd_dispatch() {
   "model": "${model:-}",
   "model_used": $model_used_json,
   "fallback_used": $fallback_used_json,
+  "resolution_source": "${resolution_source:-none}",
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
