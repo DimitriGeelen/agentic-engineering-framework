@@ -2654,3 +2654,17 @@ X'` returning empty group."
   date: 2026-05-02
   context: Added via context agent
   application: TBD
+- id: L-342
+  learning: "Drift/audit commands that scan fabric components must be O(n) — spawning subprocesses per card scales catastrophically as the fabric grows. Always test on a fixture with N=20+ cards."
+  source: P-009
+  task: T-1674
+  date: 2026-05-02
+  context: Added via context agent
+  application: TBD
+- id: L-343
+  learning: "Cross-repo fabric cards (location: absolute path) require path-handling care everywhere PROJECT_ROOT is joined with location. T-1652 introduced absolute-path cards; T-1673 caught the orphan-check assumption."
+  source: P-009
+  task: T-1673
+  date: 2026-05-02
+  context: Added via context agent
+  application: TBD
