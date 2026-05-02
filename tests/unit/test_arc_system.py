@@ -22,6 +22,10 @@ def _run(cmd, cwd, env_extra=None, check=False):
     env = os.environ.copy()
     env["PROJECT_ROOT"] = str(cwd)
     env["FRAMEWORK_ROOT"] = str(REPO_ROOT)
+    # T-1671: clear CLAUDECODE so arc-close tests run as human invocation
+    # (CLAUDECODE-aware tests live in test_arc_close_agent_gate.py with
+    # explicit env_extra={"CLAUDECODE": "1"} where needed).
+    env.pop("CLAUDECODE", None)
     if env_extra:
         env.update(env_extra)
     return subprocess.run(

@@ -718,9 +718,9 @@ Enforced structurally. `fw arc create` requires `--headline-mechanic "<who> <doe
 
 **Trigger:** any time you are about to write `## Recommendation` on an arc-parent task or run `fw arc close`. The mandatory question is whether the captured `--demo` artefact shows the `headline_mechanic` firing — not whether substrate / tests / AC checkboxes ship. The phrases "forward work, not a closure blocker" and "substrate is in place" are §ACD violations in plain text.
 
-**Default-to-OPEN:** if ≥2 human pushbacks on the same arc have not been resolved by a captured headline-mechanic instance, the arc is OPEN regardless of new evidence filed since. The pattern is the signal.
+**Default-to-OPEN:** if ≥2 human pushbacks on the same arc have not been resolved by a captured headline-mechanic instance, the arc is OPEN regardless of new evidence filed since. The pattern is the signal. **Gated structurally (T-1671):** `fw arc close` refuses under `$CLAUDECODE=1`; closure belongs to the human via `fw task review <anchor>` + Watchtower (overrides: `--i-am-human`, `--from-watchtower`).
 
-**Evidence:** T-1626, T-1633, T-1641 (origin); T-1667 (3rd-incident RCA → these gates). See `docs/reports/T-1667-angle-{1,2,3}-*.md`.
+**Evidence:** T-1626, T-1633, T-1641 (origin); T-1667 (3rd-incident RCA → demo+headline-mechanic gates); T-1670 (4th-incident agent auto-close → T-1671 closure-decision gate).
 
 ## Plan Mode Prohibition
 

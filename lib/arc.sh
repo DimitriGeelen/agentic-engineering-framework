@@ -407,17 +407,58 @@ PY
 
 arc_close() {
     local id="" decision="" demo="" justification=""
+    local i_am_human=false from_watchtower=false
     while [ $# -gt 0 ]; do
         case "$1" in
             --decision) decision="$2"; shift 2;;
             --demo) demo="$2"; shift 2;;
             --justification) justification="$2"; shift 2;;
+            --i-am-human) i_am_human=true; shift;;
+            --from-watchtower) from_watchtower=true; shift;;
             *) [ -z "$id" ] && id="$1" || { echo "Unexpected arg: $1" >&2; return 2; }; shift;;
         esac
     done
     [ -n "$id" ] || { echo "Usage: fw arc close <arc-id> --demo <path|url|none> [--justification \"...\"] [--decision \"...\"]" >&2; return 2; }
     _arc_validate_id "$id" || return 2
     _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+
+    # T-1671 §ACD/G-062 Default-to-OPEN agent gate. Mirrors lib/inception.sh
+    # do_inception_decide (T-1259/T-1260): closure decisions belong to the
+    # human, recorded via Watchtower. Origin: 4th-instance auto-close incident
+    # 2026-05-02 on this very arc — see T-1670, docs/reports/T-1670-default-to-open-gate-gap.md.
+    if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ] && [ "$from_watchtower" = false ]; then
+        local anchor="" wt_url=""
+        anchor=$(awk -F': ' '/^anchor_task:/ {print $2; exit}' "$(_arc_path "$id")" 2>/dev/null | tr -d ' "' || true)
+        if command -v fw_config >/dev/null 2>&1; then
+            wt_url="$(fw_config WATCHTOWER_URL "" 2>/dev/null || true)"
+        fi
+        if [ -z "$wt_url" ]; then
+            wt_url="$(bin/fw watchtower url 2>/dev/null || true)"
+        fi
+        [ -z "$wt_url" ] && wt_url="http://localhost:3000"
+        echo "Error: agents must not invoke 'fw arc close' directly (§ACD/G-062, T-1671)." >&2
+        echo "" >&2
+        echo "  You appear to be running inside Claude Code (\$CLAUDECODE=1)." >&2
+        echo "  Arc closure carries the same authority weight as inception go/no-go" >&2
+        echo "  and belongs to the human (Default-to-OPEN: ≥2 prior pushbacks → OPEN" >&2
+        echo "  regardless of new evidence)." >&2
+        echo "" >&2
+        echo "  Correct flow:" >&2
+        if [ -n "$anchor" ]; then
+            echo "    1. Agent: bin/fw task review ${anchor}" >&2
+        else
+            echo "    1. Agent: bin/fw task review <arc-anchor-task>" >&2
+        fi
+        echo "    2. Human: open the Watchtower URL, review the demo evidence," >&2
+        echo "       run 'bin/fw arc close ${id} --demo <path> --decision \"...\"'" >&2
+        echo "" >&2
+        echo "  Arc detail: ${wt_url}/arcs/${id}" >&2
+        echo "" >&2
+        echo "  Overrides (mirror T-1259 inception-decide): --i-am-human (human typing" >&2
+        echo "  into an agent session, rare); --from-watchtower (Flask backend)." >&2
+        echo "  See CLAUDE.md §Arc Completion Discipline." >&2
+        return 1
+    fi
 
     local f now
     f="$(_arc_path "$id")"

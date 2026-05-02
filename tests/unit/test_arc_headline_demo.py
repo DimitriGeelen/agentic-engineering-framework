@@ -27,6 +27,11 @@ def _run(cmd, cwd, env_extra=None):
     env = os.environ.copy()
     env["PROJECT_ROOT"] = str(cwd)
     env["FRAMEWORK_ROOT"] = str(REPO_ROOT)
+    # T-1671: clear CLAUDECODE so pre-existing tests of T-1668 gates run as
+    # "human invocation" (CLAUDECODE-aware tests use _run with --i-am-human
+    # OR explicit env_extra={"CLAUDECODE": "1"} — never inherit from this
+    # session's parent env).
+    env.pop("CLAUDECODE", None)
     if env_extra:
         env.update(env_extra)
     return subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True)
