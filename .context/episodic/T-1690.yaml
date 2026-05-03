@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1690: v1 Outcome enrichment hook + task-completion back-propagation into dispatches.jsonl
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T08:29:15Z
+# ============================================================================
+
+task_id: T-1690
+task_name: "v1 Outcome enrichment hook + task-completion back-propagation into dispatches.jsonl"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T22:55:57Z
+completed: 2026-05-03T08:29:11Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-03T10:17:56+02:00
+last_commit: 2026-05-03T10:17:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception spike — eval+backprop work; design pivot to append-only outcomes
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Separate `dispatch-outcomes.jsonl` (append-only)."
+    rationale: "Spike caught last-writer-wins corruption when concurrent back-props for *different* task_ids race at the FILE level. The fix isn't another atomicity primitive (T-1689 already proved per-call unique tmp prevents JSON corruption — that's row-level). The fix is to stop modifying in place. Append-only files compose under any concurrency. v2 self-improvement does read-side joins, which is cheap for monthly-rotated logs."
+    alternatives_rejected: ["Application-level mutex/lockfile — adds operational complexity, doesn't help v2's offline read path, doesn't survive cross-process concurrency cleanly. Rejected SQLite migration — premature for v1; would force a schema migration if outcomes evolve."]
+    chose: "Verification + Agent ACs only for v1 default."
+    rationale: "Both signals are already required by framework gates (P-010 + P-011). Free-rider on existing structure. Custom evaluators slot in for workflows that need richer signals (e.g., diff size, regression test pass rate) without forcing every workflow to provide one."
+    alternatives_rejected: ["Including Reviewer Verdict / handover-mention / commit-message-quality in the default — coupling to subsystems that aren't yet stable; better to let custom evaluators opt in."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1690-spikes/eval_backprop_spike.py"
+  - ".tasks/active/T-1690-v1-outcome-enrichment-hook--task-complet.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T10:17:56"
+    action: "T-1690: inception spike — eval+backprop work; design pivot to append-only outcomes"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 573 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, telemetry]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 573
+  commits: 1
+  files_changed: 2
+  lines_added: 305
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1690-v1-outcome-enrichment-hook--task-complet.md
+generated_by: context-agent-hybrid

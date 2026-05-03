@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1691: v1 Ollama proxy adapter — pick proxy (litellm vs claude-code-router vs claude-bridge) + per-workflow env-redirect plumbing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T08:29:39Z
+# ============================================================================
+
+task_id: T-1691
+task_name: "v1 Ollama proxy adapter — pick proxy (litellm vs claude-code-router vs claude-bridge) + per-workflow env-redirect plumbing"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T22:56:02Z
+completed: 2026-05-03T08:29:35Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-03T10:19:48+02:00
+last_commit: 2026-05-03T10:19:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — pick litellm; defer empirical tool-use validation to build
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "litellm as v1 default ollama proxy."
+    rationale: "Most mature (5K+ stars, multi-year production history), broadest backend coverage (100+ providers — same proxy can later front OpenAI/Groq/OpenRouter), well-documented Anthropic-format mode, single install + config pattern."
+    alternatives_rejected: ["claude-code-router — designed specifically for Claude Code, but smaller community = longer time-to-fix when issues hit. Holding as fallback if litellm fails empirical validation."]
+    alternatives_rejected: ["claude-bridge — sparsest documentation, smallest community. Last resort."]
+    chose: "Ship the substrate (`env:` workflow field, Resolver env-merge, `fw doctor` integration design) at v1; validate proxy choice empirically when the build task has the dispatch harness loaded."
+    rationale: "Empirical validation requires a representative test harness which IS the v1 build task. Doing it in inception would either (a) duplicate the harness or (b) cut corners and produce a less reliable recommendation than the paper version."
+    alternatives_rejected: ["Hold inception open until empirical validation lands — would block T-1689's downstream consumers (T-1691 is one of them) for a phase that doesn't change the substrate design."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1691-proxy-comparison.md"
+  - ".tasks/active/T-1691-v1-ollama-proxy-adapter--pick-proxy-lite.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T10:19:48"
+    action: "T-1691: inception — pick litellm; defer empirical tool-use validation to build"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 573 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, multi-provider, ollama]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 573
+  commits: 1
+  files_changed: 2
+  lines_added: 118
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1691-v1-ollama-proxy-adapter--pick-proxy-lite.md
+generated_by: context-agent-hybrid

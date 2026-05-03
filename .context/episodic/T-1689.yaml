@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1689: v1 Resolver — workflow lookup + context assembly + variant selection + telemetry capture
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T08:28:43Z
+# ============================================================================
+
+task_id: T-1689
+task_name: "v1 Resolver — workflow lookup + context assembly + variant selection + telemetry capture"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T22:55:52Z
+completed: 2026-05-03T08:28:39Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-03T10:09:56+02:00
+last_commit: 2026-05-03T10:15:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  research artifact — A-1/A-2/A-3/A-5 validated, A-4 deferred to build. inception complete — spikes pass, recommendation GO
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Single `lib/resolver.py` (~400 LOC) + thin `lib/resolver.sh` (~30 LOC) shim."
+    rationale: "290-LOC spike does not split naturally. The five concerns (workflow lookup, prompt assembly, variant selection, telemetry, env merge) are tightly coupled — they share the workflow dict and dispatch_id throughout. Splitting would create artificial seams that hurt readability without reducing complexity."
+    alternatives_rejected: ["lib/resolver/{workflow.py, assemble.py, telemetry.py, variants.py} package — premature factoring, would force inter-module data plumbing for ~50-LOC pieces."]
+    chose: "Per-call unique tmp filename (`.jsonl.tmp.<pid>.<tid>`) for ALL modify-in-place paths in T-1690."
+    rationale: "Spike A-5 caught the shared-`.tmp` race on first run. The framework's existing lib/learning.sh / lib/decision.sh use shared `.tmp` and have not corrupted in 1500+ tasks — but those are sequentially called from a single agent process; back-prop hooks may fire concurrently across multiple completing tasks."
+    alternatives_rejected: ["Application-level lockfile — adds complexity without solving the last-writer-wins semantic, which is acceptable for back-prop frequency."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1064.yaml"
+  - ".context/episodic/T-1065.yaml"
+  - ".context/episodic/T-1066.yaml"
+  - ".context/episodic/T-1662.yaml"
+  - ".context/episodic/T-1686.yaml"
+  - ".context/episodic/T-1688.yaml"
+  - ".context/episodic/T-1693.yaml"
+  - ".context/episodic/T-1694.yaml"
+  - ".context/episodic/T-1695.yaml"
+  - ".context/project/assumptions.yaml"
+  - ".context/project/decisions.yaml"
+  - "docs/reports/T-1689-resolver-inception.md"
+  - "docs/reports/T-1689-spikes/backprop_spike.py"
+  - "docs/reports/T-1689-spikes/resolver_spike.py"
+  - ".gitignore"
+  - ".tasks/active/T-1689-v1-resolver--workflow-lookup--context-as.md"
+  - ".tasks/completed/T-1694-fw-doctor-extensions--pi-installed-check.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T10:09:56"
+    action: "T-1689: research artifact — A-1/A-2/A-3/A-5 validated, A-4 deferred to build"
+  - time: "2026-05-03T10:15:07"
+    action: "T-1689: inception complete — spikes pass, recommendation GO"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 572 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, resolver]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 572
+  commits: 2
+  files_changed: 17
+  lines_added: 1750
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1689-v1-resolver--workflow-lookup--context-as.md
+generated_by: context-agent-hybrid

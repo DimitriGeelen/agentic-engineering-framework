@@ -492,3 +492,59 @@ decisions:
     date: 2026-05-03
     task: T-1694
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-073
+    decision: "Single `lib/resolver.py` (~400 LOC) + thin `lib/resolver.sh` (~30 LOC) shim."
+    scope: project
+    date: 2026-05-03
+    task: T-1689
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-074
+    decision: "Per-call unique tmp filename (`.jsonl.tmp.<pid>.<tid>`) for ALL modify-in-place paths in T-1690."
+    scope: project
+    date: 2026-05-03
+    task: T-1689
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-075
+    decision: "Separate `dispatch-outcomes.jsonl` (append-only)."
+    scope: project
+    date: 2026-05-03
+    task: T-1690
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-076
+    decision: "Verification + Agent ACs only for v1 default."
+    scope: project
+    date: 2026-05-03
+    task: T-1690
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-077
+    decision: "litellm as v1 default ollama proxy."
+    scope: project
+    date: 2026-05-03
+    task: T-1691
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-078
+    decision: "Ship the substrate (`env:` workflow field, Resolver env-merge, `fw doctor` integration design) at v1; validate proxy choice empirically when the build task has the dispatch harness loaded."
+    scope: project
+    date: 2026-05-03
+    task: T-1691
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-079
+    decision: "Python `lib/pi_worker.py` using `subprocess.Popen` with `bufsize=1` (line-buffered) and explicit `\\n` line splitting (NOT `readline`)."
+    scope: project
+    date: 2026-05-03
+    task: T-1692
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-080
+    decision: "Ship wrapper design + RPC contract documentation at v1 inception; install + smoke test happens in build task alongside the actual `lib/resolver.py` integration."
+    scope: project
+    date: 2026-05-03
+    task: T-1692
+    rationale: "Auto-captured from task file on completion"

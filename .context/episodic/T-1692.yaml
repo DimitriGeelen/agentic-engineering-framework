@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1692: v1 Pi backend integration — RPC mode wrapper for worker_kind=pi
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T08:30:16Z
+# ============================================================================
+
+task_id: T-1692
+task_name: "v1 Pi backend integration — RPC mode wrapper for worker_kind=pi"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T22:56:06Z
+completed: 2026-05-03T08:30:12Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-03T10:21:53+02:00
+last_commit: 2026-05-03T10:21:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — pi RPC wrapper design ready; install deferred to build
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Python `lib/pi_worker.py` using `subprocess.Popen` with `bufsize=1` (line-buffered) and explicit `\n` line splitting (NOT `readline`)."
+    rationale: "pi's docs explicitly call out Node `readline` as non-protocol-compliant because it splits on `U+2028`/`U+2029` which appear inside JSON strings. Python's default file iterator is `\n`-only, but we need to be defensive — strip trailing `\r` and never assume universal newlines."
+    alternatives_rejected: ["Use a JSONL streaming library (e.g., `jsonlines`) — adds dependency for ~10 LOC of value; the protocol contract is simple enough to inline."]
+    chose: "Ship wrapper design + RPC contract documentation at v1 inception; install + smoke test happens in build task alongside the actual `lib/resolver.py` integration."
+    rationale: "Same reason as T-1691: the build task IS the test harness. Doing install + smoke test in inception would duplicate the harness or cut corners. Wrapper design is solid enough to commit to via paper validation of A-1/A-3/A-4."
+    alternatives_rejected: ["Hold inception open until smoke test lands — would block T-1689 downstream consumers when the substrate design is independent of the wrapper's runtime correctness."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1692-pi-rpc-integration.md"
+  - ".tasks/active/T-1692-v1-pi-backend-integration--rpc-mode-wrap.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T10:21:53"
+    action: "T-1692: inception — pi RPC wrapper design ready; install deferred to build"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 574 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, pi, multi-provider]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 574
+  commits: 1
+  files_changed: 2
+  lines_added: 161
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1692-v1-pi-backend-integration--rpc-mode-wrap.md
+generated_by: context-agent-hybrid

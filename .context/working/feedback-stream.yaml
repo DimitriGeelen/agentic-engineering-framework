@@ -4599,3 +4599,71 @@ scan_id: R-6412da39
 task_id: T-1694
 payload:
   task_file: .tasks/active/T-1694-fw-doctor-extensions--pi-installed-check.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T08:28:39Z'
+scan_id: R-26b303e9
+task_id: T-1689
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T08:28:39Z'
+scan_id: R-26b303e9
+task_id: T-1689
+payload:
+  task_file: .tasks/active/T-1689-v1-resolver--workflow-lookup--context-as.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T08:29:12Z'
+scan_id: R-6c0f946a
+task_id: T-1690
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T08:29:12Z'
+scan_id: R-6c0f946a
+task_id: T-1690
+payload:
+  task_file: .tasks/active/T-1690-v1-outcome-enrichment-hook--task-complet.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T08:29:36Z'
+scan_id: R-a3e3c03c
+task_id: T-1691
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T08:29:36Z'
+scan_id: R-a3e3c03c
+task_id: T-1691
+payload:
+  task_file: .tasks/active/T-1691-v1-ollama-proxy-adapter--pick-proxy-lite.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T08:30:12Z'
+scan_id: R-561d3f52
+task_id: T-1692
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T08:30:12Z'
+scan_id: R-561d3f52
+task_id: T-1692
+payload:
+  task_file: .tasks/active/T-1692-v1-pi-backend-integration--rpc-mode-wrap.md
