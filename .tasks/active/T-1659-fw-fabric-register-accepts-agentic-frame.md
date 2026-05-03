@@ -22,6 +22,8 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Class widened 2026-05-03 (T-1693):** the malformed-card pattern is not limited to `.agentic-framework/` paths. `bin/fw fabric register .context/project/workflows/<file>.yaml` also produces `.fabric/components/.yaml` (empty filename) — four invocations all overwrote each other. Filename derivation is brittle for any path with multiple slashes; vendored-copy detection is a separate concern. Fix scope should cover **both** bugs: (1) robust filename derivation across all repo-relative paths (slash → dash, leading-dot stripped or hex-encoded), (2) detect vendored-copy paths and reject. T-1693 worked around it by manually deleting the malformed card; root fix lives here.
+
 ## Acceptance Criteria
 
 ### Agent

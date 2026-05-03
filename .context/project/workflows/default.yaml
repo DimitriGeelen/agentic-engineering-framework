@@ -1,0 +1,8 @@
+task_type: default
+worker_kind: TermLink
+model: sonnet
+effort: medium
+prompt_template: prompts/default.md
+allowed_tools: [Read, Edit, Bash, Grep]
+cost_cap_usd: 1.50
+cwd: $PROJECT_ROOT
