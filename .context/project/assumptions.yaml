@@ -307,3 +307,30 @@ assumptions:
   linked_task: T-1689
   created: '2026-05-03'
   resolved_date: '2026-05-03'
+- id: A-032
+  statement: Thin tool-loop calling litellm /v1/messages with curated 3-5 tool def
+    hits 90%+ on simple-read using hermes3:8b
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1705
+  created: '2026-05-03'
+  resolved_date: null
+- id: A-033
+  statement: claude-code-router prompt rewriting coaxes tool_use from hermes3:8b through
+    wider catalogues
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1705
+  created: '2026-05-03'
+  resolved_date: null
+- id: A-034
+  statement: Accepting text-only ollama-research closes G-064 (autonomous-consumer)
+    story OR requires reframing what counts as a consumer
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1705
+  created: '2026-05-03'
+  resolved_date: null

@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1703: v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest path to 90% real tool-use
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T20:00:19Z
+# ============================================================================
+
+task_id: T-1703
+task_name: "v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest path to 90% real tool-use"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-03T19:33:36Z
+completed: 2026-05-03T20:00:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-03T21:40:43+02:00
+last_commit: 2026-05-03T22:00:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  --tools plumb-through + probe matrix substrate. catalogue restriction disproven on gemma4 + qwen3.5 (0/18); v3 = pull tool-tuned model
+
+# Key outcomes
+outcomes:
+  - "`agents/termlink/termlink.sh` accepts `--tools <comma-list>` flag; written to"
+  - "`.context/litellm-config.yaml` adds two probe aliases:"
+  - "`tools/t1700-ollama-harness.sh` accepts `T1700_HARNESS_MODEL`, `T1700_HARNESS_TOOLS`,"
+  - "Probe matrix runs on simple-read task class: gemma4 × {wide, \"Read,Bash,Grep\", \"Read\"}"
+  - "Report includes per-cell `tool_use_pct` (real metric — exit=0 AND tool_uses≥1),"
+  - "If no cell ≥90%: pivot path captured in `## Decisions`; v3 follow-up task filed."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "declare path (c) from T-1700 recommendation (restrict `allowed_tools`) DEAD"
+    rationale: "failure mode is structural — gemma4 hallucinates/refuses, qwen3.5 emits bash in"
+    alternatives_rejected: ["N=5 expansion, prompt engineering, system-prompt forcing — catalogue"]
+    chose: "drop the loaded 32B coder model from the v2 candidate list."
+    rationale: "bonus N=3 with narrow catalogue produced 3/3 timeouts at 180s. IQ2 quant +"
+    alternatives_rejected: ["wait longer per dispatch — fundamentally violates the workflow's"]
+    chose: "file follow-up to pull `hermes-3:8b` (or `xlam:7b` as alternate) and re-probe."
+    rationale: "function-calling-tuned 7-8B models have demonstrably emitted correct tool_use"
+    alternatives_rejected: ["claude-code-router as next step — same wide-prompt strategy that failed on"]
+    alternatives_rejected: ["larger model — 70B doesn't fit 16GB, 32B IQ2 is too slow, leaving 14B as"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/termlink/termlink.sh"
+  - ".context/litellm-config.yaml"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-1700-harness-results.md"
+  - "docs/reports/T-1703-curated-catalogue-probe.md"
+  - ".fabric/components/tools-t1703-probe-matrix.yaml"
+  - ".tasks/active/T-1700-v1-build-install--integrate-litellm-prox.md"
+  - ".tasks/active/T-1703-v2-probe-gemma4--qwen35-against-curated-.md"
+  - ".tasks/active/T-1704-v3-ollama-research-pull-function-calling.md"
+  - "tools/t1700-ollama-harness.sh"
+  - "tools/t1703-probe-matrix.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T21:40:43"
+    action: "T-1703: --tools plumb-through + probe matrix substrate"
+  - time: "2026-05-03T22:00:12"
+    action: "T-1703: catalogue restriction disproven on gemma4 + qwen3.5 (0/18); v3 = pull tool-tuned model"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [v2-prep]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 26
+  commits: 2
+  files_changed: 11
+  lines_added: 687
+  lines_removed: 48
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1703-v2-probe-gemma4--qwen35-against-curated-.md
+generated_by: context-agent-hybrid

@@ -548,3 +548,24 @@ decisions:
     date: 2026-05-03
     task: T-1692
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-081
+    decision: "declare path (c) from T-1700 recommendation (restrict `allowed_tools`) DEAD"
+    scope: project
+    date: 2026-05-03
+    task: T-1703
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-082
+    decision: "drop the loaded 32B coder model from the v2 candidate list."
+    scope: project
+    date: 2026-05-03
+    task: T-1703
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-083
+    decision: "file follow-up to pull `hermes-3:8b` (or `xlam:7b` as alternate) and re-probe."
+    scope: project
+    date: 2026-05-03
+    task: T-1703
+    rationale: "Auto-captured from task file on completion"

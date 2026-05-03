@@ -4,16 +4,16 @@ name: "v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest pa
 description: >
   v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest path to 90% real tool-use
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [v2-prep]
-components: []
+components: [agents/termlink/termlink.sh, tools/t1700-ollama-harness.sh, tools/t1703-probe-matrix.sh]
 related_tasks: []
 created: 2026-05-03T19:33:36Z
-last_update: 2026-05-03T19:34:04Z
-date_finished: null
+last_update: 2026-05-03T20:00:15Z
+date_finished: 2026-05-03T20:00:15Z
 ---
 
 # T-1703: v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest path to 90% real tool-use
@@ -179,3 +179,20 @@ v3 path documented for follow-up.
 
 ### 2026-05-03T19:34:04Z — status-update [task-update-agent]
 - **Change:** tags: +v2-prep
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-f535ac95
+- **Timestamp:** 2026-05-03T20:00:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `tools/t1700-ollama-harness.sh` accepts `T1700_HARNESS_MODEL`, `T1700_HARNESS_TOOLS`,
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/t1700-ollama-harness.sh in: `tools/t1700-ollama-harness.sh` accepts `T1700_HARNESS_MODEL`, `T1700_HARNESS_TOOLS`,`
+
+### 2026-05-03T20:00:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

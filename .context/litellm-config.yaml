@@ -30,6 +30,16 @@ model_list:
       model: ollama_chat/qwen3.5:latest
       api_base: http://192.168.10.107:11434
 
+  # T-1704: function-calling-tuned candidates. T-1703 disproved that catalogue
+  # restriction rescues generalist 8-10B models — they emit prose/code-blocks
+  # instead of tool_use JSON. hermes3:8b (Nous Research) is explicitly trained
+  # on function-calling datasets and emits tool_use format reliably in public
+  # benchmarks. ~4.66GB Q4, fits 16GB easily.
+  - model_name: claude-3-5-sonnet-hermes3
+    litellm_params:
+      model: ollama_chat/hermes3:8b
+      api_base: http://192.168.10.107:11434
+
   - model_name: claude-3-5-haiku-20241022
     litellm_params:
       model: ollama_chat/gemma4:latest

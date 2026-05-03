@@ -2696,3 +2696,10 @@ X'` returning empty group."
   date: 2026-05-03
   context: Added via context agent
   application: TBD
+- id: L-348
+  learning: "ollama-research bottleneck is claude -p's prompt construction, NOT model capability. hermes3:8b on direct litellm API with 1 curated tool def: 3/3 perfect tool_use JSON. Same model via fw termlink dispatch (claude -p wide catalogue): 0/N tool calls — pure prose. Implication: catalogue restriction (T-1703 path c) is dead because claude -p's full prompt template (system prompt + ~100 tools + instructions) overwhelms open-weight models even when --tools restricts the exposed list. v4 paths: (a) skip claude -p, write thin tool-loop directly against litellm; (b) claude-code-router with aggressive prompt rewriting to a 1-2 tool curated call; (c) accept ollama-research as text-only narrow workflow. Function-calling-tuned models work; claude -p's prompt does not surface that capability."
+  source: P-001
+  task: T-1704
+  date: 2026-05-03
+  context: Added via context agent
+  application: TBD
