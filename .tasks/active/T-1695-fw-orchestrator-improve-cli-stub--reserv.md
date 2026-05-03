@@ -4,7 +4,7 @@ name: "fw orchestrator improve CLI stub — reserve namespace, exit with v2-pend
 description: >
   Per CONTEXT.md (ADR-0003 v2-readiness): ship a stub 'fw orchestrator improve' that exits 0 with 'v2: not yet implemented; data is being captured at .context/dispatches.jsonl and .context/dispatch-blobs/'. Reserves the CLI namespace so it can't be claimed by an unrelated feature; gives operators visibility into the v2 path. Trivial build task — ~15 lines.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [arc:orchestrator-rethink, cli]
 components: []
 related_tasks: [T-1687]
 created: 2026-05-02T22:56:20Z
-last_update: 2026-05-02T22:56:20Z
+last_update: 2026-05-03T07:56:48Z
 date_finished: null
 ---
 
@@ -25,11 +25,11 @@ Per CONTEXT.md (ADR-0003 v2-readiness): ship `fw orchestrator improve` as a CLI 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `bin/fw orchestrator improve` is wired into the fw command router
-- [ ] Running it exits 0
-- [ ] Output mentions "v2", "not yet implemented", AND the data paths (`.context/dispatches.jsonl`, `.context/dispatch-blobs/`)
-- [ ] Appears in `fw orchestrator --help` (or `fw help orchestrator`) output
-- [ ] Does NOT actually read or analyze any dispatch data (it's a stub)
+- [x] `bin/fw orchestrator improve` is wired into the fw command router
+- [x] Running it exits 0
+- [x] Output mentions "v2", "not yet implemented", AND the data paths (`.context/dispatches.jsonl`, `.context/dispatch-blobs/`)
+- [x] Appears in `fw orchestrator --help` (or `fw help orchestrator`) output
+- [x] Does NOT actually read or analyze any dispatch data (it's a stub)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -76,16 +76,20 @@ bin/fw orchestrator improve
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Decisions
+## Recommendation
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Recommendation:** GO
+
+**Rationale:** All five Agent ACs satisfied. Reserves the `fw orchestrator` namespace per ADR-0003 v2-readiness. Pure inline case-statement in `bin/fw` (no new file, no library — matches the "trivial stub" sizing). Operator running it gets a clear pointer at the v1 telemetry paths and the v2 deferral.
+
+**Evidence:**
+- `bin/fw orchestrator improve | grep -q "v2"` → ✓
+- `bin/fw orchestrator improve | grep -q "dispatches.jsonl"` → ✓
+- `bin/fw orchestrator improve` exits 0 → ✓
+- `bin/fw orchestrator --help` lists `improve` → ✓
+- Stub does no data analysis (just `cat <<EOF`) → ✓ by inspection
+
+## Decisions
 
 ## Updates
 
@@ -93,3 +97,6 @@ bin/fw orchestrator improve
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1695-fw-orchestrator-improve-cli-stub--reserv.md
 - **Context:** Initial task creation
+
+### 2026-05-03T07:56:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

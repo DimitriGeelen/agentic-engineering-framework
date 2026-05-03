@@ -2992,6 +2992,52 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         source "$FW_LIB_DIR/inception.sh"
         do_inception "$@"
         ;;
+    orchestrator)
+        # T-1695: namespace stub for v2 self-improvement (ADR-0003 v2-readiness).
+        # v1 captures dispatch telemetry; v2 will add a learner that mines the log
+        # and rewrites templates. Reserve the namespace now so it can't be
+        # claimed by an unrelated feature.
+        _orch_subcmd="${1:-}"
+        case "$_orch_subcmd" in
+            improve)
+                shift
+                cat <<EOF
+fw orchestrator improve — v2: not yet implemented
+
+This subcommand is reserved for the v2 self-improvement loop (ADR-0003).
+v1 only captures dispatch telemetry; the v2 learner is not built.
+
+Data is being captured at:
+  .context/dispatches.jsonl    (append-only per-dispatch log)
+  .context/dispatch-blobs/      (per-dispatch prompt + meta-prompt + worker artifacts)
+
+When v2 lands, this command will mine that data, propose template rewrites,
+and (with operator approval) update files in .context/project/workflows/
+and prompts/.
+
+Track via: T-1687 (orchestrator-rethink arc), ADR-0003.
+EOF
+                exit 0
+                ;;
+            ""|-h|--help)
+                cat <<EOF
+fw orchestrator — v1 dispatch substrate (ADR-0001..0003)
+
+Usage:
+  fw orchestrator improve    Reserve namespace for v2 self-improvement (stub)
+
+v1 wires the data substrate (dispatches.jsonl + blob storage + template SHAs +
+A/B variants); v2 self-improvement is deferred. See ADR-0003.
+EOF
+                exit 0
+                ;;
+            *)
+                echo "fw orchestrator: unknown subcommand '$_orch_subcmd'" >&2
+                echo "Try: fw orchestrator --help" >&2
+                exit 1
+                ;;
+        esac
+        ;;
     promote)
         source "$FW_LIB_DIR/promote.sh"
         do_promote "$@"
