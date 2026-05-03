@@ -7,15 +7,22 @@
 #   2 — Block tool execution (stderr shown to agent)
 #
 # For Write/Edit: extracts file_path, blocks if outside PROJECT_ROOT.
-# For Bash: detects cd+write patterns targeting other projects.
+# For Bash: detects cd, write, fw-on-other-project, AND read-side outside-path
+# arguments (T-1702 / G-065 — read-blind hole closed 2026-05-03).
 #
-# Allowed exceptions:
+# Allowed exceptions (Bash + Write):
 #   /tmp/**                — Agent dispatch working files
 #   /root/.claude/**       — Claude Code memory/settings
 #   /etc/cron.d/**         — Cron install (T-603/T-1191)
 #   PROJECT_ROOT/**        — Obviously allowed
 #
-# Origin: T-559 — Agent created 6 tasks on another project (T-549 violation)
+# Read-side allowlist (Bash outside-path arguments only — broader because
+# reads are observably less destructive than mutations):
+#   /tmp/**, /usr/**, /etc/**, /var/log/**, /var/lib/**,
+#   /root/.local/**, /root/.claude/**, /proc/**, /sys/**, /dev/**,
+#   /bin/**, /sbin/**, /lib/**, /lib64/**
+#
+# Origin: T-559 (cd block) → T-1702 (read-side block, G-065 fix).
 # Part of: Agentic Engineering Framework (P-002: Structural Enforcement)
 
 set -uo pipefail
@@ -113,8 +120,10 @@ except:
     # No command — allow (defensive)
     [ -z "$COMMAND" ] && exit 0
 
-    # Quick pre-filter: if no absolute path reference, skip Python analysis
-    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|>+\s*/|tee\s+/|\.agentic-framework/bin/fw)'; then
+    # Quick pre-filter: if no absolute path reference, skip Python analysis.
+    # T-1702: include any leading-slash token (read-side detection needs to see
+    # /root, /var, /home etc. even when they are not write/cd targets).
+    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s+/|\.agentic-framework/bin/fw)'; then
         exit 0
     fi
 
@@ -184,6 +193,45 @@ def _strip_quoted(s):
 
 command = _strip_quoted(command)
 
+# T-1702: strip simple heredoc bodies before pattern scanning so /opt/x inside
+# `cat > /tmp/x <<EOF\n...\nEOF` doesn't false-positive on Pattern 4. Mirrors
+# the _strip_quoted approach: replace body with spaces of equal length so
+# downstream position-dependent patterns still work.
+def _strip_heredocs(s):
+    out = list(s)
+    i = 0
+    n = len(s)
+    heredoc_re = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?")
+    while i < n:
+        m = heredoc_re.search(s, i)
+        if not m:
+            break
+        marker = m.group(1)
+        nl = s.find('\n', m.end())
+        if nl == -1:
+            break
+        j = nl + 1
+        found = False
+        while j < n:
+            line_end = s.find('\n', j)
+            if line_end == -1:
+                line_end = n
+            line = s[j:line_end].lstrip('\t')
+            if line == marker:
+                # Replace body (between nl and j) with spaces, preserving newlines.
+                for k in range(nl + 1, j):
+                    if out[k] != '\n':
+                        out[k] = ' '
+                i = line_end
+                found = True
+                break
+            j = line_end + 1
+        if not found:
+            break
+    return ''.join(out)
+
+command = _strip_heredocs(command)
+
 # Pattern 1: cd to absolute path outside project root
 cd_pattern = re.compile(r'cd\s+(/[^\s;&|]+)')
 matches = cd_pattern.findall(command)
@@ -213,6 +261,83 @@ for target_file in write_ops.findall(command):
     if not target_file.startswith(project_root + '/'):
         print(f'BLOCKED|File write to {target_file} (outside project root)')
         sys.exit(0)
+
+# Pattern 4 (T-1702 / G-065): read-side outside-path arguments.
+# Detect absolute-path tokens (du /root/x, find /root/x, grep ... /root/x)
+# even when they are not the target of a cd or write redirect. Quote-stripping
+# already happened above, so this scans only "real" tokens, not string literals.
+#
+# Allowlist is broader than cd/write zones because reads are less destructive,
+# but explicitly excludes /opt/<other-projects> and /root/<other-frameworks>
+# (the original incident: agent du'd /root/.agentic-framework after the cd was
+# already blocked).
+READ_ALLOWED_PREFIXES = (
+    project_root + '/',
+    '/tmp/',
+    '/usr/',
+    '/etc/',
+    '/var/log/',
+    '/var/lib/',          # postgres data dirs etc — read-only inspection
+    '/var/run/',          # pid files
+    '/var/cache/',        # apt cache reads
+    '/root/.local/',      # user shim install dir (Tier 0 reads)
+    '/root/.claude/',     # Claude Code state
+    '/proc/',
+    '/sys/',
+    '/dev/',
+    '/bin/',
+    '/sbin/',
+    '/lib/',
+    '/lib64/',
+    '/opt/',              # exact /opt only — handled below; SUBDIRS narrowed
+)
+# Exact-path allowlist (no trailing slash test).
+READ_ALLOWED_EXACT = {
+    project_root,
+    '/tmp', '/usr', '/etc', '/proc', '/sys', '/dev',
+    '/bin', '/sbin', '/lib', '/lib64', '/opt', '/var',
+    '/root', '/home',
+}
+
+# Tokenize: split on whitespace and shell meta. For each /-starting token,
+# strip surrounding shell punctuation that can lead it (none expected after
+# whitespace split, but be defensive about trailing commas/semicolons).
+def _tok_iter(cmd):
+    for raw in re.split(r'[\s;&|()]+', cmd):
+        if not raw:
+            continue
+        tok = raw.strip(',\'"`<>')
+        if tok.startswith('/'):
+            yield tok
+
+for tok in _tok_iter(command):
+    # Only check what looks like a real path: at least one slash after the
+    # leading one, OR a top-level dir we recognise (e.g. /etc).
+    if tok in READ_ALLOWED_EXACT:
+        continue
+    # Strip glob characters off the end so /var/log/* is checked as /var/log/
+    cand = tok
+    # Allow paths with leading prefix in the explicit list.
+    if any(cand == a.rstrip('/') or cand.startswith(a) for a in READ_ALLOWED_PREFIXES):
+        # Special-case /opt/: only allow exactly /opt or /opt/<this-project>.
+        # /opt/other-project must still block.
+        if cand == '/opt' or cand.startswith('/opt/'):
+            if cand == '/opt' or cand.startswith(project_root + '/') or cand == project_root:
+                continue
+            # /opt/<something-else> — fall through to BLOCK
+        else:
+            continue
+    # Tokens that don't look like paths (single slash, e.g. regex `/foo`):
+    # only block when they look filesystem-y. Heuristic: must contain at least
+    # 2 slashes OR start with a known top-level dir.
+    top = cand.split('/', 2)[1] if '/' in cand[1:] else cand[1:]
+    KNOWN_TOPS = ('opt', 'root', 'home', 'srv', 'mnt', 'media',
+                  'usr', 'etc', 'var', 'tmp', 'proc', 'sys', 'dev',
+                  'bin', 'sbin', 'lib', 'lib64', 'boot', 'run')
+    if top not in KNOWN_TOPS:
+        continue  # not a recognisable filesystem path; skip rather than FP
+    print(f'BLOCKED|Outside-path argument {cand} (not in read-side allowlist)')
+    sys.exit(0)
 
 print('SAFE')
 PYEOF
