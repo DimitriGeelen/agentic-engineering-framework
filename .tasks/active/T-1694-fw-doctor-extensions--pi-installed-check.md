@@ -25,14 +25,14 @@ Per CONTEXT.md (Q13/Q14): extend `fw doctor` to (Q13) report "pi not installed; 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw doctor` reports "pi not installed" when the `pi` binary is absent from PATH (test by temporarily renaming pi or running on a clean host)
-- [ ] `fw doctor` does NOT auto-install pi — only warns and prints the install command
-- [ ] `fw doctor` lints every file matching `.context/project/workflows/*.yaml`
-- [ ] A deliberately broken workflow file (missing required field) produces an error with file path + key reference
-- [ ] `fw doctor` exits 0 when all workflow files are valid AND optional dependencies (pi) are present
-- [ ] `fw doctor` exits non-zero when at least one workflow file fails schema validation
-- [ ] `fw doctor` warns (does not error) when `default.yaml` is missing
-- [ ] `fw doctor` flags `inline: true` co-existing with dispatch fields (`worker_kind`, `model`, etc.) as a schema error
+- [x] `fw doctor` reports "pi not installed" when the `pi` binary is absent from PATH (verified — INFO when no workflow uses `worker_kind: pi`, WARN with install command when one does)
+- [x] `fw doctor` does NOT auto-install pi — only warns and prints the install command (`npm install -g @badlogic/pi-mono`)
+- [x] `fw doctor` lints every file matching `.context/project/workflows/*.yaml` (verified — count message reports file total)
+- [x] A deliberately broken workflow file (missing required field) produces an error with file path + key reference (verified: `_bad-test.yaml: missing required key(s): ['allowed_tools', 'cost_cap_usd', ...]`)
+- [x] `fw doctor` exits 0 when all workflow files are valid AND optional dependencies (pi) are present (verified — exit=0 with current shipped workflows)
+- [x] `fw doctor` exits non-zero when at least one workflow file fails schema validation (verified — exit=2 with broken file)
+- [x] `fw doctor` warns (does not error) when `default.yaml` is missing (verified: WARN, not FAIL)
+- [x] `fw doctor` flags `inline: true` co-existing with dispatch fields (`worker_kind`, `model`, etc.) as a schema error (verified: `inline:true cannot co-exist with dispatch fields: ['model', 'worker_kind']`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -78,16 +78,32 @@ test -d .context/project/workflows && bin/fw doctor 2>&1 | grep -qE "(workflow|p
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All eight Agent ACs satisfied. Q13 + Q14 schema enforcement now ships in `fw doctor` — the first dispatch is no longer the first time the schema is checked. Pi check is conditional (INFO when no workflow needs pi, WARN with install hint only when at least one workflow uses `worker_kind: pi`); workflow lint covers required-field set per tier, worker_kind enum, prompt_template resolution, prompt_strategy/meta_model coupling, and inline-vs-dispatch exclusivity. Soft-warns when default.yaml is missing rather than hard-failing.
+
+**Evidence (all live-tested):**
+- 4 shipped workflows → `OK  Workflow schema: 4 file(s) lint clean` (exit=0)
+- Pi missing + no consumer workflow → `INFO  pi not installed (no workflows require it)` (no warning bump)
+- Broken workflow (missing required keys) → `FAIL  Workflow schema: 1 error(s)...` + path + missing keys (exit=2)
+- inline:true with dispatch fields → schema error citing `['model', 'worker_kind']`
+- default.yaml moved aside → `WARN  Workflow schema: 3 file(s) clean, 1 warning(s)` + Q12-fallback hint
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-03 — pi-check verbosity (INFO vs WARN)
+
+- **Chose:** INFO when pi is missing AND no workflow uses worker_kind:pi; WARN only when at least one workflow needs it.
+- **Why:** Most consumers won't use pi. Hard-warning every doctor run trains operators to ignore it. Conditional severity respects "actionable errors only."
+- **Rejected:** Always-WARN-when-missing — matches TermLink pattern but creates noise where pi has no current consumer.
+
+### 2026-05-03 — workflow lint location (inline Python heredoc vs new lib/ module)
+
+- **Chose:** Inline Python heredoc in `bin/fw do_doctor()`, matching the existing settings.json validator pattern.
+- **Why:** ~80 lines, single-call, no public API surface to maintain. T-1689 Resolver will read these files for dispatch (different access pattern), not for validation.
+- **Rejected:** Standalone `lib/workflow-lint.py` — premature factoring.
 
 ## Updates
 
