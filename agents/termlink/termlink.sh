@@ -493,11 +493,13 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type=""
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools=""
     # T-1700: workflow `env:` plumb-through. Repeatable --env KEY=VAL pairs are
     # injected into the spawned worker's shell so `claude -p` honors per-workflow
     # overrides like ANTHROPIC_BASE_URL=http://localhost:4000 (litellm proxy)
     # without requiring caller to set them in parent env first.
+    # T-1703: --tools plumbs the workflow `allowed_tools:` field through to
+    # claude -p's --tools flag, restricting the catalogue presented to the model.
     local -a envs=()
 
     while [[ $# -gt 0 ]]; do
@@ -516,6 +518,10 @@ cmd_dispatch() {
                     die "--env expects KEY=VALUE with KEY matching [A-Z_][A-Z0-9_]* (got: $2)"
                 fi
                 envs+=("$2"); shift 2 ;;
+            --tools)
+                # T-1703: comma-separated tool list passed to claude -p --tools.
+                # No validation here — claude -p validates against its built-in set.
+                tools="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
@@ -580,6 +586,15 @@ cmd_dispatch() {
         env_keys_json="[${_key_list%,}]"
     fi
 
+    # T-1703: workflow allowed_tools plumb-through. Write tools.txt read by run.sh
+    # to construct --tools flag. Empty when no --tools passed (claude -p default).
+    local tools_json="null"
+    if [ -n "$tools" ]; then
+        printf '%s\n' "$tools" > "$wdir/tools.txt"
+        # Convert "Read,Bash,Grep" → ["Read","Bash","Grep"] for meta.json
+        tools_json="[$(printf '%s' "$tools" | awk -F, '{for(i=1;i<=NF;i++){gsub(/^[ \t]+|[ \t]+$/,"",$i); printf "%s\"%s\"",(i>1?",":""),$i}}')]"
+    fi
+
     # T-1643/W4 + T-1664: meta.json includes task_type, model_used, fallback_used.
     # T-1700: env_keys lists the env var names injected (values not stored — possible secrets).
     # model_used / fallback_used now populated at dispatch time when resolution succeeds;
@@ -596,6 +611,7 @@ cmd_dispatch() {
   "fallback_used": $fallback_used_json,
   "resolution_source": "${resolution_source:-none}",
   "env_keys": $env_keys_json,
+  "tools_restricted": $tools_json,
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -633,12 +649,20 @@ if [ -n "$MODEL" ]; then
     MODEL_FLAG="--model $MODEL"
 fi
 
+# T-1703: Build --tools flag if tools.txt was written by cmd_dispatch.
+# Empty file / missing file → claude -p uses default catalogue (~100 tools).
+# Present → restricts to the comma-separated list (e.g. "Read,Bash,Grep").
+TOOLS_FLAG=""
+if [ -f "$WDIR/tools.txt" ] && [ -s "$WDIR/tools.txt" ]; then
+    TOOLS_FLAG="--tools $(cat "$WDIR/tools.txt")"
+fi
+
 # Background process + kill watchdog (macOS has no `timeout` command)
 # T-1663: stream-json preserves forensic trail when watchdog kills the worker — text format
 # buffers everything until completion, leaving an empty result.md on timeout (T-1643 found
 # this twice consecutively on U-005 dispatches). result.jsonl is the live trail; result.md
 # carries the final assistant text extracted on clean exit (backward-compat with `fw termlink result`).
-claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
+claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
 CLAUDE_PID=$!
 (sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
 WATCHDOG_PID=$!

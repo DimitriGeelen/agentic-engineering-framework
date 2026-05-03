@@ -76,14 +76,26 @@ for i in "${!PROMPTS[@]}"; do
   echo "[$(date -u +%H:%M:%S)] [$N/${#PROMPTS[@]}] Dispatching: ${PROMPT:0:60}..."
   START=$(date +%s)
 
+  # T-1703: harness now parameterized via env vars so the same script can
+  # exercise a probe matrix (model × tool catalogue) without source edits.
+  #   T1700_HARNESS_MODEL  — litellm alias (default claude-3-5-sonnet-20241022)
+  #   T1700_HARNESS_TOOLS  — comma list passed as --tools (default: empty = wide catalogue)
+  #   T1700_HARNESS_TASK   — task ID for tagging (default T-1700)
+  HMODEL="${T1700_HARNESS_MODEL:-claude-3-5-sonnet-20241022}"
+  HTOOLS="${T1700_HARNESS_TOOLS:-}"
+  HTASK="${T1700_HARNESS_TASK:-T-1700}"
+  TOOLS_ARG=()
+  [ -n "$HTOOLS" ] && TOOLS_ARG=(--tools "$HTOOLS")
+
   bin/fw termlink dispatch \
-    --task T-1700 \
+    --task "$HTASK" \
     --name "$WORKER" \
     --task-type ollama-research \
-    --model claude-3-5-sonnet-20241022 \
+    --model "$HMODEL" \
     --timeout 180 \
     --env "ANTHROPIC_BASE_URL=http://localhost:4000" \
     --env "ANTHROPIC_API_KEY=sk-litellm-local-dev" \
+    "${TOOLS_ARG[@]}" \
     --prompt "$PROMPT" >/dev/null 2>&1
 
   # Wait for completion (poll exit_code file)
@@ -149,11 +161,12 @@ P95=$(echo "$SORTED_LATS" | sed -n "$((P95_IDX+1))p")
 
 # --- Write results ---
 MODEL_USED="${T1700_HARNESS_MODEL:-claude-3-5-sonnet-20241022}"
+TOOLS_USED="${T1700_HARNESS_TOOLS:-(wide catalogue — claude -p default)}"
 mkdir -p "$(dirname "$RESULTS")"
 {
   echo "# T-1700 — ollama-research harness results"
   echo ""
-  echo "**Batch:** \`$BATCH_ID\` &nbsp; **N:** $TOTAL &nbsp; **Model alias:** \`$MODEL_USED\`"
+  echo "**Batch:** \`$BATCH_ID\` &nbsp; **N:** $TOTAL &nbsp; **Model alias:** \`$MODEL_USED\` &nbsp; **Tools:** \`$TOOLS_USED\`"
   echo ""
   echo "| Metric | Value | Threshold | Status |"
   echo "|--------|-------|-----------|--------|"

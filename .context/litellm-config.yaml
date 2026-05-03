@@ -18,6 +18,18 @@ model_list:
       model: ollama_chat/qwen3:14b
       api_base: http://192.168.10.107:11434
 
+  # T-1703: probe candidates — already loaded on .107, untested.
+  # gemma4 8B Q4 (8.9GB), qwen3.5 9.7B Q4 (6.1GB). Both fit 16GB.
+  - model_name: claude-3-5-sonnet-gemma4
+    litellm_params:
+      model: ollama_chat/gemma4:latest
+      api_base: http://192.168.10.107:11434
+
+  - model_name: claude-3-5-sonnet-qwen35
+    litellm_params:
+      model: ollama_chat/qwen3.5:latest
+      api_base: http://192.168.10.107:11434
+
   - model_name: claude-3-5-haiku-20241022
     litellm_params:
       model: ollama_chat/gemma4:latest
