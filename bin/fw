@@ -3124,8 +3124,9 @@ This subcommand is reserved for the v2 self-improvement loop (ADR-0003).
 v1 only captures dispatch telemetry; the v2 learner is not built.
 
 Data is being captured at:
-  .context/dispatches.jsonl    (append-only per-dispatch log)
-  .context/dispatch-blobs/      (per-dispatch prompt + meta-prompt + worker artifacts)
+  .context/dispatches.jsonl        (append-only per-dispatch log; T-1696)
+  .context/dispatch-outcomes.jsonl (append-only per-outcome log; T-1697)
+  .context/dispatch-blobs/         (per-dispatch prompt blobs)
 
 When v2 lands, this command will mine that data, propose template rewrites,
 and (with operator approval) update files in .context/project/workflows/
@@ -3135,15 +3136,120 @@ Track via: T-1687 (orchestrator-rethink arc), ADR-0003.
 EOF
                 exit 0
                 ;;
+            status)
+                # T-1699: substrate observability — dispatch + outcome summary.
+                shift
+                _emit_json=0
+                for _arg in "$@"; do
+                    [ "$_arg" = "--json" ] && _emit_json=1
+                done
+                python3 - "$_emit_json" <<'PYEOF'
+import json
+import os
+import sys
+from collections import Counter
+from pathlib import Path
+
+emit_json = sys.argv[1] == "1"
+PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
+DISPATCHES = PROJECT_ROOT / ".context" / "dispatches.jsonl"
+OUTCOMES = PROJECT_ROOT / ".context" / "dispatch-outcomes.jsonl"
+
+
+def _read_jsonl(p: Path):
+    if not p.exists():
+        return []
+    rows = []
+    with p.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rows.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+    return rows
+
+
+dispatches = _read_jsonl(DISPATCHES)
+outcomes = _read_jsonl(OUTCOMES)
+dispatch_ids_with_outcomes = {o.get("dispatch_id") for o in outcomes if o.get("dispatch_id")}
+
+stats = {
+    "dispatch_total": len(dispatches),
+    "outcome_total": len(outcomes),
+    "enriched_dispatches": sum(1 for d in dispatches if d.get("dispatch_id") in dispatch_ids_with_outcomes),
+    "enrichment_ratio": 0.0,
+    "by_task_type": dict(Counter(d.get("task_type") or "?" for d in dispatches).most_common(5)),
+    "by_worker_kind": dict(Counter(d.get("worker_kind") or "?" for d in dispatches)),
+    "recent": [],
+}
+if stats["dispatch_total"]:
+    stats["enrichment_ratio"] = round(stats["enriched_dispatches"] / stats["dispatch_total"], 3)
+
+# Last 5 dispatches with outcome status
+for d in dispatches[-5:]:
+    did = d.get("dispatch_id", "?")
+    matched = [o for o in outcomes if o.get("dispatch_id") == did]
+    out = matched[-1].get("outcome", {}) if matched else None
+    stats["recent"].append({
+        "dispatch_id": did[:8] if did else "?",
+        "ts": d.get("ts", "?"),
+        "task_id": d.get("task_id"),
+        "task_type": d.get("task_type"),
+        "worker_kind": d.get("worker_kind"),
+        "verification_passed": out.get("verification_passed") if out else None,
+        "ac_satisfied": out.get("ac_satisfied") if out else None,
+    })
+
+if emit_json:
+    print(json.dumps(stats, indent=2))
+    sys.exit(0)
+
+if stats["dispatch_total"] == 0 and stats["outcome_total"] == 0:
+    print("no dispatches captured yet")
+    print(f"(write path: {DISPATCHES.relative_to(PROJECT_ROOT)})")
+    sys.exit(0)
+
+print(f"Dispatch substrate (T-1687 arc, v1)")
+print(f"  Dispatches:        {stats['dispatch_total']}")
+print(f"  Outcome events:    {stats['outcome_total']}")
+print(f"  Enriched:          {stats['enriched_dispatches']}/{stats['dispatch_total']} "
+      f"({stats['enrichment_ratio']*100:.0f}%)")
+print()
+print("By task_type:")
+for k, v in stats["by_task_type"].items():
+    print(f"  {k:30s} {v}")
+print()
+print("By worker_kind:")
+for k, v in stats["by_worker_kind"].items():
+    print(f"  {k:30s} {v}")
+print()
+print("Recent dispatches:")
+for r in stats["recent"]:
+    flag = "·"
+    if r["verification_passed"] and r["ac_satisfied"]:
+        flag = "✓"
+    elif r["verification_passed"] is False or r["ac_satisfied"] is False:
+        flag = "✗"
+    print(f"  {flag} {r['ts']} [{r['dispatch_id']}] "
+          f"task={r['task_id']} type={r['task_type']} worker={r['worker_kind']}")
+PYEOF
+                exit $?
+                ;;
             ""|-h|--help)
                 cat <<EOF
 fw orchestrator — v1 dispatch substrate (ADR-0001..0003)
 
 Usage:
+  fw orchestrator status     Show substrate state (dispatches + outcomes)
+  fw orchestrator status --json   Same as above, JSON output
   fw orchestrator improve    Reserve namespace for v2 self-improvement (stub)
 
-v1 wires the data substrate (dispatches.jsonl + blob storage + template SHAs +
-A/B variants); v2 self-improvement is deferred. See ADR-0003.
+v1 wires the data substrate (dispatches.jsonl + dispatch-outcomes.jsonl +
+blob storage + template SHAs + A/B variants); v2 self-improvement is
+deferred. See ADR-0003.
 EOF
                 exit 0
                 ;;
