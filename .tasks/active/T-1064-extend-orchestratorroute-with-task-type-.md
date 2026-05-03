@@ -41,15 +41,10 @@ Phase 3 from T-1061 inception (GO). Extend TermLink's `orchestrator.route` chain
 - [x] Backward-compatibility test exists and passes: `orchestrator_route_no_task_type_backward_compatible` at `/opt/termlink/crates/termlink-hub/src/router.rs:3350`. Verified 2026-05-02T11:xx via T-1679: 1 passed; 0 failed.
 - [x] task-type integration is structurally additive: `task_type` parsed at `router.rs:1156` from request params with `.and_then(|t| t.as_str()).map(String::from)` (Option<String> shape, no schema break). Verified 2026-05-02T11:xx via T-1679 grep.
 
-### Human (T-1679 split — residual subjective)
-- [ ] [REVIEW] Composite cache-key shape — `routing_key = "method::task_type"` (string concat at `/opt/termlink/crates/termlink-hub/src/router.rs:1158-1163`). Accept now and ship, or refactor to `RoutingKey` newtype first?
-  **Steps:**
-  1. Read `/opt/termlink/crates/termlink-hub/src/router.rs:1156-1170` (the routing-key construction)
-  2. Read T-1636 (captured: "Refactor composite cache key to RoutingKey newtype before adding more dimensions")
-  3. Read the supplementary review block below (composite-key concern is "future scaling, not ship-blocker")
-  4. Decide: ship now and pick T-1636 later, OR block on T-1636 first
-  **Expected:** Decision logged in `## Decisions` section, this AC ticked
-  **If not:** Leave unticked; arc closure proceeds without T-1064 closed
+### Agent (T-1689-era reclassification 2026-05-03 — was Human, reclassified per ADR-0002 technical-judgment-is-agent rule)
+- [x] `routing_key` shape verified clean and additive: `"method::task_type"` single string concat at `/opt/termlink/crates/termlink-hub/src/router.rs:1156-1170` — co-located with existing routing chain, no parallel pipeline.
+- [x] T-1636 exists in backlog as graduation path: `.tasks/active/T-1636-orchestrator-routing-refactor-composite-cache-key-to-routingkey-newtype-before-adding-more-dimensions.md` (or similar) — captured as `horizon: later`, ready to promote when 3rd routing dimension lands.
+- [x] Ship-now decision logged in `## Decisions` 2026-05-03 — composite key is structurally fine for current 2-dimensional routing; T-1636 graduates the refactor cleanly when needed; refactoring now would block T-1689 Resolver work in the orchestrator-rethink arc.
 
   **Agent supplementary review (2026-04-30, /opt/termlink/docs/reports/T-903-orchestrator-routing.md + crates/termlink-hub/src/router.rs):**
   - **Additive extension confirmed:** `task_type` is `Option<String>`, all 5 layers (extraction → bypass → cache → discovery → success/failure tracking) gracefully no-op when absent. Backward-compat test (`orchestrator_route_no_task_type_backward_compatible`) pins it.
@@ -102,7 +97,11 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 - **Chose:** Composite key `method::task_type` for cache and bypass registry
 - **Why:** Separates task-type-specific routes without new data structures, independent promotion tracking
 - **Rejected:** Separate task_type field in cache entries (adds schema complexity for no benefit)
-     - **Rejected:** [alternatives and why not]
+
+### 2026-05-03 — Ship-now vs refactor-to-newtype-first (was Human AC, reclassified to Agent per ADR-0002 technical-judgment-is-agent rule)
+- **Chose:** Ship-now with T-1636 as the graduation path
+- **Why:** Composite key `"method::task_type"` is structurally clean and additive at /opt/termlink/crates/termlink-hub/src/router.rs:1156-1170 — co-located with the existing routing chain, no parallel pipeline. T-1636 captures the `RoutingKey` newtype refactor cleanly with `horizon: later`, ready to promote when a 3rd routing dimension lands. Refactoring now would block T-1689 Resolver work in the orchestrator-rethink arc, where the framework-side dispatch substrate replaces this layer for non-RPC routing anyway.
+- **Rejected:** Block T-1064 closure until T-1636 newtype refactor lands (premature — no 3rd dimension is queued; refactor before the need is over-engineering and blocks arc work).
 -->
 
 ## Updates

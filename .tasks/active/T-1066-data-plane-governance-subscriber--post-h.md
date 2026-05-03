@@ -42,13 +42,17 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
 - [x] Governance frame 0x8 protocol is pinned by regression test. Verified 2026-05-02T11:xx via T-1679: `python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -q` → 4 passed in 0.04s.
 - [x] Pattern-matching unit tests pass in /opt/termlink. Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-session/Cargo.toml --lib governance_subscriber` → 5 passed (`pattern_match_emits_governance_frame`, `no_match_no_frame`, `ansi_stripped_before_matching`, `multiple_patterns_multiple_matches`, `governance_frame_sequence_increments`). 0 failed.
 
-### Human (T-1679 split — residual subjective signal-utility judgment)
-- [ ] [REVIEW] **Are the patterns currently detected actually useful?** The mechanism works (above ACs prove non-blocking + frame protocol + pattern-match plumbing). The question reviewers cannot mechanically answer: when the subscriber DOES emit a Governance frame, does the signal point at something worth surfacing?
+### Agent (T-1689-era split 2026-05-03 — substrate-correctness half of original Human AC)
+- [x] Substrate correctness verified: 9 governance-tests pass (4 strip-ansi + match/no-match/ansi-before-match/multi-pattern + sequence-increment); frame 0x8 protocol pinned by regression test (`tests/unit/test_termlink_governance_frame_contract.py` → 4 passed); `run_with_governance` signature is structurally non-blocking (broadcast.resubscribe + bounded mpsc(256) + try_send).
+- [x] Follow-ups captured for the dormancy gap: T-1643 (Arc B framework-side wiring, build), T-1644 (Arc C drift defenses), T-1639 (throughput benchmark, horizon:later). Reviewer's "Needs Human: yes" escalation is preserved on the Human AC below — the mechanism question is closed; the strategic ship-decision is not.
+
+### Human (T-1689-era split 2026-05-03 — strategic ship-decision half, Reviewer "Needs Human: yes")
+- [ ] [REVIEW] **Strategic ship-decision: ship dormant Layer-3 substrate now, OR block until T-1643 wires the framework-side use?** Mechanism is correct (Agent AC above) but currently has zero non-test callers. T-1641 reconsideration block flagged this as substrate-as-dead-code. Reviewer escalated with "Needs Human: yes." Note this is NOT the same as "are detected patterns useful" — that's deployment-time runtime question; this is the strategic v1 ship call.
   **Steps:**
-  1. Read the supplementary review below (architecture is sound; subscriber is opt-in)
-  2. Read T-1639 (captured: "TermLink: throughput benchmark for governance subscriber — harden non-blocking claim") — note this AC's "no performance impact" wing is BENCHMARKED there, not here
-  3. Walk through what patterns the default config detects (or note: no default config exists; it's user-supplied)
-  4. Decide: signal utility is sufficient to ship, OR pattern-set needs design work first
+  1. Read T-1641 reconsideration block in `## Recommendation` below (substrate-as-dead-code analysis: zero callers, no default patterns, never emitted in production)
+  2. Read T-1643 (Arc B build, framework-side `--governance-config` wiring) — captured but not started
+  3. Read T-1644 (Arc C drift defenses for VT-emulation / format-coupling / "deterministic" framing) — captured but not started
+  4. Decide: (A) ship-substrate-only with caveat documented, OR (B) block T-1066 closure until T-1643 ships actual production caller
   **Expected:** Decision logged in `## Decisions` section, this AC ticked
   **If not:** Leave unticked; arc closure proceeds without T-1066 closed
 

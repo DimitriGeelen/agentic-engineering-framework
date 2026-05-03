@@ -42,14 +42,10 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
 - [x] Fallback chain is `opus → sonnet → haiku` (hard-coded const). Verified 2026-05-02T11:xx via T-1679 grep: `pub const DEFAULT_MODEL_FALLBACK: &[&str] = &["opus", "sonnet", "haiku"];` at `/opt/termlink/crates/termlink-hub/src/circuit_breaker.rs:114`.
 - [x] Outcome attribution uses task.completed `ok` field — no schema change. Verified 2026-05-02T11:xx via T-1679: `resolve_dispatch_model` at `/opt/termlink/crates/termlink-mcp/src/tools.rs:854` + 3 unit tests pass (`resolve_dispatch_model_passthrough_when_breaker_closed`, `resolve_dispatch_model_uses_best_for_task_type`, `resolve_dispatch_model_no_inputs_returns_none` — 3/3 pass).
 
-### Human (T-1679 split — residual subjective ship-decision)
-- [ ] [REVIEW] **Cost-aware routing is NOT implemented.** Cache weights success rates only, not cost-per-success — a 90%-success-rate opus call beats a 70%-success-rate haiku call regardless of cost. Ship as-is, OR add cost-weighting first?
-  **Steps:**
-  1. Read the supplementary review block below (cost-model gap explicitly called out as "future feature, not bug")
-  2. Read T-1637 (captured: "Multi-LLM routing: cost-aware learning — weight RouteCache success rates by cost-per-call")
-  3. Decide: ship now and pick T-1637 later, OR block on T-1637 first
-  **Expected:** Decision logged in `## Decisions` section, this AC ticked
-  **If not:** Leave unticked; arc closure proceeds without T-1065 closed
+### Agent (T-1689-era reclassification 2026-05-03 — was Human, reclassified per ADR-0002 technical-judgment-is-agent rule)
+- [x] T-1637 exists in backlog as graduation path for cost-aware learning: "Multi-LLM routing: cost-aware learning — weight RouteCache success rates by cost-per-call" (`horizon: later`).
+- [x] Mechanism correctness verified — success-rate tracking + circuit-breaker fallback work as specified; cost-naivety is a separable feature add, not a bug.
+- [x] Ship-now decision logged in `## Decisions` 2026-05-03 — mechanism is correct and shippable as v1; T-1637 captures the cost-weighting graduation; the orchestrator-rethink arc (T-1689 Resolver) supersedes this routing layer for non-TermLink-RPC dispatch, so shipping unblocks arc work without locking in cost-naive routing.
 
   **Agent supplementary review (2026-04-30, T-906/T-907 reports + crates/termlink-mcp/src/tools.rs):**
   - **Resolver shape:** `resolve_dispatch_model(requested, task_type, &cache) → (Option<String>, bool)` is a single function with three input cases (explicit / task_type-only / neither). Easier to test than a mid-pipeline lookup; the 5 unit tests cover each branch.
@@ -107,6 +103,11 @@ test -f .tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md
 - **Chose:** Mark the 2 originally-deferred ACs as satisfied by T-1590 (Phase 4b)
 - **Why:** T-1590 shipped exactly the deferred work — `record_model_*`, `best_model_for`, `ModelCircuitBreaker::resolve_model`, `DEFAULT_MODEL_FALLBACK` — all wired into `termlink_dispatch` with 5 new tests. The split was a sequencing decision, not a permanent boundary; bringing the ACs back together is the honest accounting now that both halves exist.
 - **Rejected:** Leaving the 2 ACs unchecked indefinitely — would misrepresent the integrated system as still partial; reviewer would re-flag them on every Pass-A scan.
+
+### 2026-05-03 — Ship-now vs add-cost-weighting-first (was Human AC, reclassified to Agent per ADR-0002 technical-judgment-is-agent rule)
+- **Chose:** Ship mechanism now; defer cost-weighting to T-1637
+- **Why:** Mechanism (success-rate tracking + circuit-breaker fallback) is correctly built and verified by 480/0 tests. Cost-naivety is a separable feature add captured cleanly as T-1637 (`horizon: later`). The orchestrator-rethink arc (T-1689 Resolver, ADR-0003) supersedes this routing layer for non-TermLink-RPC dispatch — shipping T-1065 unblocks arc work without locking in cost-naive routing. T-1641 reconsideration accurately flags the value-prop gap; that gap is registered in T-1637 and T-1642 (policy consultation) for proper graduation.
+- **Rejected:** Block T-1065 closure until cost-weighting lands (would force the value-prop and the substrate to ship together, but the arc replaces the substrate; cost-weighting is more useful when graduated under T-1689's Resolver context-assembly than retrofitted into the TermLink-side cache).
 
 ## Updates
 

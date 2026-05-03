@@ -37,17 +37,43 @@ Phase 1 from T-1061 inception (GO). WezTerm Lua plugin that queries existing Ter
 ### Agent (T-1679 split — mechanical RPC-contract half of the original Human AC)
 - [x] Plugin's RPC contract still satisfied by current TermLink. `termlink list --json` exposes a `tags` array on each session; plugin extracts task IDs at `plugins/wezterm/termlink-chrome.lua:49-58` via regex matching both `task:T-XXX` and `task=T-XXX`. Verified 2026-05-02T11:xx via T-1679: `termlink list --json` returns sessions with `tags` field present.
 
-### Human (T-1679 split — residual visual render, genuinely cannot automate without desktop env)
-- [ ] [REVIEW] Visual render — task ID from a TermLink session appears in WezTerm status bar
-  **Steps (Steps 1-3 are mechanical setup; only Step 4 is the actual judgment):**
-  1. Install plugin: `cp plugins/wezterm/termlink-chrome.lua ~/.config/wezterm/`
-  2. Add `require("termlink-chrome")` to `~/.wezterm.lua`
-  3. Start a tagged TermLink session: `termlink spawn --name test --shell --tags "task:T-1062"`
-  4. **Visually verify** task ID and status visible in WezTerm status bar
-  **Expected:** Task ID and status visible in terminal chrome (Step 4)
-  **If not:** Check WezTerm debug overlay (Ctrl+Shift+L) for Lua errors
+### Human (T-1679 split — residual visual render, genuinely cannot automate without desktop env; instructions rewritten 2026-05-03 grounded in actual plugin contract)
+- [ ] [REVIEW] Visual render — TermLink session task ID + role appear in WezTerm right status bar
+  **Prerequisites:**
+  - WezTerm installed (any recent version, see https://wezfurlong.org/wezterm/)
+  - TermLink installed and on PATH (`termlink --version` works)
+  - Optional: Nerd Fonts for icons; without them set `icons = {task="", role="", session=""}` in step 2 config
+  - **Repo cloned and accessible** at the path used in step 1
 
-  **Agent verification gap (2026-04-30, per L-329):** genuine capability gap — anchor has no Lua interpreter (`luac`/`lua` absent) and no WezTerm install, so neither static syntax nor live render can be verified here. File is present (236 lines), README accompanies it (89 lines), TermLink dependency is `termlink list --json` which is a stable read-only RPC (T-1679 verified the contract still matches plugin assumptions). The on-WezTerm rendering test requires a workstation with WezTerm + the plugin installed — that's you.
+  **Steps (one-line, copy-pasteable from project root):**
+  1. Install plugin to WezTerm config dir:
+     `mkdir -p ~/.config/wezterm && cp plugins/wezterm/termlink-chrome.lua ~/.config/wezterm/`
+  2. Activate plugin in your `~/.config/wezterm/wezterm.lua` — add these 4 lines (or merge with your existing config):
+     ```lua
+     local wezterm = require("wezterm")
+     local config = wezterm.config_builder()
+     require("termlink-chrome").apply_to_config(config)
+     return config
+     ```
+     If you already have a wezterm.lua, just add `require("termlink-chrome").apply_to_config(config)` between your `config_builder()` and `return config`.
+  3. Reload WezTerm config: press **Ctrl+Shift+R** inside any WezTerm window (or restart WezTerm).
+  4. Spawn a tagged TermLink session in any terminal:
+     `termlink spawn --name t1062-test --shell --tags "task:T-1062,role:tester"`
+  5. **Look at the WezTerm right status bar** (top-right of any WezTerm window).
+
+  **Expected (per `plugins/wezterm/README.md` "What It Shows"):**
+  - The right status bar shows a segment formatted approximately as `[T-1062 tester]` — task ID + role from the spawned session's tags.
+  - Polls every 3 seconds — give it ~3s after spawning to appear.
+  - With Nerd Fonts: small icons render before the task ID and role; without: just text.
+
+  **If not visible:**
+  1. **Check the Lua loaded** — open WezTerm Debug Overlay: **Ctrl+Shift+L**. Look for "module 'termlink-chrome' not found" → plugin is not on Lua's package path. Fix: confirm step 1 placed the file at `~/.config/wezterm/termlink-chrome.lua`.
+  2. **Check TermLink is reachable** — run `termlink list --json` in a regular terminal. If it errors or returns empty, the spawn in step 4 didn't register; re-run step 4 and confirm the session appears in the JSON output with the `tags` array containing `task:T-1062`.
+  3. **Status bar hidden when empty** — the plugin hides the segment if no task-tagged sessions exist (default behavior). If step 4's session is registered but the bar is still empty, it's a tag-extraction issue: run `termlink list --json | jq '.sessions[].tags'` and confirm `"task:T-1062"` (with colon) appears verbatim. The plugin matches `task:T-XXX` and `task=T-XXX`.
+  4. **No Lua errors but no output** — check `right_status` isn't being overridden elsewhere in your wezterm.lua. The plugin sets it via `apply_to_config(config)`; another `config.right_status` assignment after that line will clobber it.
+  5. **Icons render as boxes** — you don't have Nerd Fonts installed. Pass `icons = {task="", role="", session="", separator=" | "}` as the second argument to `apply_to_config` (see `plugins/wezterm/README.md` "Configuration" section).
+
+  **Agent verification gap (2026-04-30, per L-329):** anchor has no Lua interpreter and no WezTerm install, so neither static syntax nor live render can be verified server-side. The plugin code is grounded (`termlink-chrome.lua` 236 lines, README 89 lines), the RPC contract is stable (T-1679 confirmed `termlink list --json` exposes `tags` array). The on-WezTerm rendering test requires a workstation — that's you.
 
 ## Verification
 
