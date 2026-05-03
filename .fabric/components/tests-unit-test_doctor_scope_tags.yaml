@@ -1,0 +1,20 @@
+id: tests/unit/test_doctor_scope_tags.bats
+name: test_doctor_scope_tags
+type: script
+subsystem: unknown
+location: tests/unit/test_doctor_scope_tags.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-03
+created_by: unknown
