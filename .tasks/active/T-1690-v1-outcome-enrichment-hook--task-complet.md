@@ -4,7 +4,7 @@ name: "v1 Outcome enrichment hook + task-completion back-propagation into dispat
 description: >
   v1 implementation of the post-dispatch outcome evaluator and the task-lifecycle back-propagation. Per CONTEXT.md+ADR-0003: workflows declare optional outcome_evaluator script; default evaluator checks Verification+Agent ACs; when a task transitions to work-completed/issues AFTER a dispatch ran for it, resolver back-fills task_completion_outcome into the matching dispatches.jsonl rows. Couples task lifecycle (Agent slice 1) to dispatch telemetry (Agent slice 3). Inception because the coupling needs careful scoping.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [arc:orchestrator-rethink, telemetry]
 components: []
 related_tasks: [T-1687]
 created: 2026-05-02T22:55:57Z
-last_update: 2026-05-02T22:55:57Z
+last_update: 2026-05-03T08:15:52Z
 date_finished: null
 ---
 
@@ -92,15 +92,48 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — with a design adjustment to the storage model
+
+**Rationale:** Default evaluator works (282ms to parse + run all Verification commands for T-1693, 6/6 Agent ACs detected as satisfied). Back-prop hook is fast on the unmatched path (0.3ms — far below the 10ms NO-GO threshold). Spike passes all functional tests. **Critical finding:** the modify-in-place pattern that T-1689 validated for *single-row* updates does NOT compose under cross-row concurrency — when two back-props run in parallel on different task_ids, the second rename overwrites the first writer's enrichments (last-writer-wins at the FILE level, not the row level). Spike measured 15/50 enrichments preserved when 10 threads enriched distinct task_ids concurrently. This is a CHANGE from T-1689's sub-spike A-5, which only proved no-corruption — not no-overwrite.
+
+**Design adjustment (proposed):** split storage. Keep `dispatches.jsonl` append-only for the dispatch row itself; write outcomes to a separate append-only file `.context/dispatch-outcomes.jsonl` keyed by dispatch_id. v2 read-path joins. This eliminates the last-writer-wins exposure entirely AND keeps both files monotone (simpler rotation + simpler rsync semantics + no rewrite-then-rename code path needed).
+
+**Evidence:**
+- `docs/reports/T-1690-spikes/eval_backprop_spike.py`: ALL CHECKS PASS
+- Default evaluator: 282ms for T-1693 (8 verification commands run live), correctly identifies `verification_passed=True`, `ac_checked=6/6`
+- Back-prop matches by task_id: 3/3 rows enriched, 0.5ms
+- Unmatched-task-id back-prop: 0.3ms (NO-GO threshold >10ms — ~33× headroom)
+- Concurrent back-prop (10 threads, distinct task_ids, 5 rows each): 50/50 rows preserved (no corruption — T-1689 A-5 inheritance held), but only 15/50 enriched (last-writer-wins on FILE rename)
+- Evaluator runs ONCE per task completion (not per dispatch); per-dispatch overhead is back-prop only (~0.5ms)
+
+**v1 build task scope (to file after GO):**
+1. Implement the default evaluator as a Python module loaded by `lib/resolver.py`
+2. **Design adjustment:** outcomes write to `.context/dispatch-outcomes.jsonl` (append-only) rather than modifying `dispatches.jsonl` in place
+3. Resolver-side: when emitting a dispatch row, leave `task_completion_outcome` field absent (not "pending"); v2 read path joins
+4. Hook in `update-task.sh`: on transition to `work-completed` or `issues`, run evaluator → append outcome row keyed by task_id (resolver provides dispatch_id index lookup)
+5. `outcome_evaluator` workflow field: invokes external script when set, falls back to default
+6. Custom evaluator contract: stdout JSON `{verification_passed, ac_satisfied, quality_score?, notes?}`
+7. Index for fast lookup: small in-memory dict `task_id → [dispatch_ids]` rebuilt on first access; rebuild cost amortizes to ~0 for typical task volumes
+8. Stress test: 50 concurrent back-props, all distinct task_ids — must produce 50/50 enrichments (proves the design adjustment works)
+
+**Caveats:**
+- Evaluator latency depends on the task's Verification commands. T-1693 took 282ms. Tasks with `dotnet build` or `playwright` Verification could be 30s+ — that's acceptable because the evaluator runs ONCE on task completion, not per dispatch.
+- Custom evaluators run unsandboxed (operator authority) — same trust model as Verification blocks. v1 ships as-is; sandboxing is a separate concern (T-558 territory).
+- The proposed split (`dispatch-outcomes.jsonl`) is a design CHANGE from the original ADR-0003 schema which had `task_completion_outcome` inline in `dispatches.jsonl`. ADR-0003 should be amended at v1 build time to reflect the split.
+
+## Decisions
+
+### 2026-05-03 — Storage model for outcomes (modify-in-place vs separate append-only file)
+
+- **Chose:** Separate `dispatch-outcomes.jsonl` (append-only).
+- **Why:** Spike caught last-writer-wins corruption when concurrent back-props for *different* task_ids race at the FILE level. The fix isn't another atomicity primitive (T-1689 already proved per-call unique tmp prevents JSON corruption — that's row-level). The fix is to stop modifying in place. Append-only files compose under any concurrency. v2 self-improvement does read-side joins, which is cheap for monthly-rotated logs.
+- **Rejected:** Application-level mutex/lockfile — adds operational complexity, doesn't help v2's offline read path, doesn't survive cross-process concurrency cleanly. Rejected SQLite migration — premature for v1; would force a schema migration if outcomes evolve.
+
+### 2026-05-03 — Default evaluator scope (Verification + Agent ACs vs richer signal)
+
+- **Chose:** Verification + Agent ACs only for v1 default.
+- **Why:** Both signals are already required by framework gates (P-010 + P-011). Free-rider on existing structure. Custom evaluators slot in for workflows that need richer signals (e.g., diff size, regression test pass rate) without forcing every workflow to provide one.
+- **Rejected:** Including Reviewer Verdict / handover-mention / commit-message-quality in the default — coupling to subsystems that aren't yet stable; better to let custom evaluators opt in.
 
 ## Decisions
 
@@ -121,3 +154,6 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-03T08:15:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
