@@ -4,7 +4,7 @@ name: "v1 Ollama proxy adapter — pick proxy (litellm vs claude-code-router vs 
 description: >
   v1 multi-provider path for the TermLink Worker via ANTHROPIC_BASE_URL env redirect. Per CONTEXT.md (Q11): Claude Code supports endpoint redirection (52 binary refs in claude 2.1.126); workflows declare env: ANTHROPIC_BASE_URL=http://localhost:PORT pointing at a proxy fronting ollama / OpenAI / OpenRouter. Inception decides WHICH proxy ships as default, how it integrates into fw doctor, and validation against a real ollama instance.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [arc:orchestrator-rethink, multi-provider, ollama]
 components: []
 related_tasks: [T-1687]
 created: 2026-05-02T22:56:02Z
-last_update: 2026-05-02T22:56:02Z
+last_update: 2026-05-03T08:18:08Z
 date_finished: null
 ---
 
@@ -92,15 +92,49 @@ TermLink Worker via `ANTHROPIC_BASE_URL` redirect (Q11) needs a proxy that trans
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — pick **litellm** as v1 default; defer empirical tool-use validation to v1 build task
+
+**Rationale:** This inception narrowed the choice from three to one based on (a) maturity, (b) generality (litellm fronts 100+ providers, so v1 substrate becomes forward-compatible without further design), and (c) failure-escape semantics (workflow-level `env:` lets operators repoint a single workflow at a different proxy without changing the rest). The empirical "≥90% tool-use success" criterion explicitly requires runtime evidence and a representative test harness — doing it in this inception would consume a half-session AND produce a recommendation no more valuable than the paper version (which proxy to install first). Doing it at v1 build time, where the harness already exists (the dispatch-substrate consumer is the test), is more honest.
+
+A-3 was validated empirically in this inception (ollama at 192.168.10.107:11434 reachable from anchor; models list includes `qwen2.5-coder-32b`, `gpt-oss:20b`, `qwen3:14b` — all tool-use-capable candidates).
+
+A-1, A-2, A-4 are deferred to v1 build (each requires a real proxy install + dispatch).
+
+**Evidence:**
+- `docs/reports/T-1691-proxy-comparison.md` — paper comparison across 9 dimensions
+- `curl -sf http://192.168.10.107:11434/api/tags` returns 12 models, validates A-3
+- litellm install path documented: `pip install litellm[proxy]` then `litellm --model ollama/qwen2.5-coder-32b --host 192.168.10.107:11434 --port 4000 --anthropic_api_format`
+- Substrate (`env:` workflow field, Resolver env-merge) is proxy-agnostic — choice ratchets up to "what to install first," not "what to design around"
+
+**v1 build task scope (after GO):**
+1. Install litellm: `pip install litellm[proxy]` + write systemd unit (or `fw watchtower` companion service) for the proxy daemon
+2. Configure: `litellm --config .context/litellm-config.yaml --port 4000 --anthropic_api_format` mapping `claude-3-5-sonnet-*` to `ollama/qwen2.5-coder-32b` etc.
+3. Add `fw doctor` checks: proxy-reachable (curl :4000/health) + ollama-reachable (conditional like pi check in T-1694)
+4. Ship one `ollama-research.yaml` workflow that uses `env: ANTHROPIC_BASE_URL=http://localhost:4000`
+5. Run 10 dispatches via that workflow, each with a tool-use prompt (Read+Bash); measure success rate
+6. **Decision gate:** if success rate <90%, swap to claude-code-router and re-run. If both fail, file follow-up inception; ship multi-provider via pi only and mark TermLink+ollama path as v2.
+7. Latency measurement: median + p95 of (dispatch-start → first-tool-call)
+8. Env-leak test: workflow A sets `ANTHROPIC_BASE_URL=foo`; verify parent env unchanged after dispatch returns; verify workflow B (no env override) hits real Anthropic API
+
+**Caveats:**
+- This recommendation is a paper choice, not an empirical one. The v1 build task may need to pivot to claude-code-router — that's expected and the substrate accommodates it.
+- Subscription-backed inference via pi (T-1692) is a parallel path; ollama-via-proxy is for cost-optimized non-subscription work.
+- ollama models tested are local LAN — production deployment may need to route the proxy through a VPN/proxy if dispatch hosts move off-LAN.
+
+## Decisions
+
+### 2026-05-03 — Proxy choice: litellm
+
+- **Chose:** litellm as v1 default ollama proxy.
+- **Why:** Most mature (5K+ stars, multi-year production history), broadest backend coverage (100+ providers — same proxy can later front OpenAI/Groq/OpenRouter), well-documented Anthropic-format mode, single install + config pattern.
+- **Rejected:** claude-code-router — designed specifically for Claude Code, but smaller community = longer time-to-fix when issues hit. Holding as fallback if litellm fails empirical validation.
+- **Rejected:** claude-bridge — sparsest documentation, smallest community. Last resort.
+
+### 2026-05-03 — Defer empirical validation to v1 build
+
+- **Chose:** Ship the substrate (`env:` workflow field, Resolver env-merge, `fw doctor` integration design) at v1; validate proxy choice empirically when the build task has the dispatch harness loaded.
+- **Why:** Empirical validation requires a representative test harness which IS the v1 build task. Doing it in inception would either (a) duplicate the harness or (b) cut corners and produce a less reliable recommendation than the paper version.
+- **Rejected:** Hold inception open until empirical validation lands — would block T-1689's downstream consumers (T-1691 is one of them) for a phase that doesn't change the substrate design.
 
 ## Decisions
 
@@ -121,3 +155,6 @@ TermLink Worker via `ANTHROPIC_BASE_URL` redirect (Q11) needs a proxy that trans
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-03T08:18:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
