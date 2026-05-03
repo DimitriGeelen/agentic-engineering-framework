@@ -3161,6 +3161,13 @@ EOF
         # via the shell shim. See docs/reports/T-1689-resolver-inception.md.
         exec "$FW_LIB_DIR/resolver.sh" "$@"
         ;;
+    outcome)
+        # T-1697: default outcome evaluator + append-only back-prop.
+        # Hook fires from update-task.sh on --status work-completed.
+        # Reads dispatches.jsonl (append-only), writes dispatch-outcomes.jsonl
+        # (also append-only). v2 read-path joins by dispatch_id.
+        exec "$FW_LIB_DIR/outcome.sh" "$@"
+        ;;
     promote)
         source "$FW_LIB_DIR/promote.sh"
         do_promote "$@"

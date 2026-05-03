@@ -601,6 +601,15 @@ if [ -n "$NEW_STATUS" ]; then
                         fi
                     fi
                 fi
+
+                # T-1697: outcome back-prop into dispatch-outcomes.jsonl (best-effort).
+                # Skips verification because the P-011 gate already ran the same
+                # commands above; --skip-verification just counts AC ticks. Failure
+                # of this hook never blocks task completion (decoupled by design).
+                FW_BIN="$FRAMEWORK_ROOT/bin/fw"
+                if [ -x "$FW_BIN" ] && [ -f "$PROJECT_ROOT/.context/dispatches.jsonl" ]; then
+                    PROJECT_ROOT="$PROJECT_ROOT" "$FW_BIN" outcome backprop "$TASK_ID" --skip-verification >/dev/null 2>&1 || true
+                fi
             else
                 echo -e "${YELLOW}Still $ALL_UNCHECKED/$ALL_TOTAL ACs unchecked — task stays in active/${NC}"
                 echo "Check human ACs in the task file, then re-run this command."
