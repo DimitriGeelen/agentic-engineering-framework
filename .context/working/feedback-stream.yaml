@@ -4548,3 +4548,54 @@ scan_id: R-51a147d1
 task_id: T-1662
 payload:
   task_file: .tasks/active/T-1662-phase-2-watchtower-arcsid-generic-arc-su.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T07:56:39Z'
+scan_id: R-45433751
+task_id: T-1693
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T07:56:39Z'
+scan_id: R-45433751
+task_id: T-1693
+payload:
+  task_file: .tasks/active/T-1693-ship-baseline-workflow-files-default--in.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T07:58:18Z'
+scan_id: R-da8a1c32
+task_id: T-1695
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T07:58:18Z'
+scan_id: R-da8a1c32
+task_id: T-1695
+payload:
+  task_file: .tasks/active/T-1695-fw-orchestrator-improve-cli-stub--reserv.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T08:07:54Z'
+scan_id: R-6412da39
+task_id: T-1694
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T08:07:54Z'
+scan_id: R-6412da39
+task_id: T-1694
+payload:
+  task_file: .tasks/active/T-1694-fw-doctor-extensions--pi-installed-check.md

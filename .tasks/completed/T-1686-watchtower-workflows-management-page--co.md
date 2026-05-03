@@ -4,7 +4,7 @@ name: "Watchtower /workflows management page — configurable workflow_type→(m
 description: >
   Inception: Watchtower /workflows management page — configurable workflow_type→(model,thinking_level,cost-cap) + per-workflow telemetry
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-02T18:54:36Z
-last_update: 2026-05-02T18:55:18Z
-date_finished: null
+last_update: 2026-05-03T07:09:54Z
+date_finished: 2026-05-03T07:09:54Z
 ---
 
 # T-1686: Watchtower /workflows management page — configurable workflow_type→(model,thinking_level,cost-cap) + per-workflow telemetry
@@ -46,15 +46,15 @@ date_finished: null
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -116,7 +116,26 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — but with explicit honesty about what this does and does not solve.
+
+Rationale: Real product feature. Real user request. Reversible. Modest scope (~880 LOC across 6 new + 2 modified files; 1.5–2 sessions). Two-phase split lets Phase 2a (schema + resolver + tests) ship independently of Phase 2b (page + telemetry). Makes the existing orchestrator substrate meaningfully more useful by giving it a configurable surface that today doesn't exist (today it can only learn what it observes; post-T-1686 an operator can pin "inception always uses opus" and observe per-workflow cost).
+
+Caveat (load-bearing): Does NOT autonomously close G-064. T-1686 makes the substrate a configurable product; it does not make anything use the product autonomously. G-064 closure still requires either (a) a production caller emerging naturally (someone configures and `fw inception start` is wired to dispatch), OR (b) explicit acceptance that the orchestrator is opt-in only.
+
+Note (post-T-1687 Q2 collapse): The original scope `(model, thinking_level, cost_cap)` table needs to expand post-CONTEXT.md collapse — the Agent IS the orchestrator, so the management page configures the Delegation Envelope schema (worker_kind, model, prompt template, context_pack composition, cwd), not just routing knobs. Phase 2a should reflect this broader scope.
+
+Evidence:
+- Full Phase 1 spike at `docs/reports/T-1686-workflow-management-page.md`
+- Resolver-wiring approach: workflows.yaml consulted before route_cache (deterministic override beats learned defaults)
+- LOC estimate based on existing `/orchestrator` blueprint (T-1647) as reference shape
+- Two-phase split mirrors T-1647's incremental delivery (route_cache resolver shipped before the page)
+- T-1688 sibling survey confirms management page is most concrete in-progress orchestrator-arc work after retrofit ruled out
+
+On dependencies: GO on Phase 2a should not be blocked by T-1688 decision. Phase 2a is independently valuable regardless of which G-064 closure path the human picks.
+
+**Date**: 2026-05-03T07:09:54Z
 
 ## Updates
 
@@ -125,3 +144,36 @@ date_finished: null
 
 ### 2026-05-02T18:55:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-03T07:09:54Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — but with explicit honesty about what this does and does not solve.
+
+Rationale: Real product feature. Real user request. Reversible. Modest scope (~880 LOC across 6 new + 2 modified files; 1.5–2 sessions). Two-phase split lets Phase 2a (schema + resolver + tests) ship independently of Phase 2b (page + telemetry). Makes the existing orchestrator substrate meaningfully more useful by giving it a configurable surface that today doesn't exist (today it can only learn what it observes; post-T-1686 an operator can pin "inception always uses opus" and observe per-workflow cost).
+
+Caveat (load-bearing): Does NOT autonomously close G-064. T-1686 makes the substrate a configurable product; it does not make anything use the product autonomously. G-064 closure still requires either (a) a production caller emerging naturally (someone configures and `fw inception start` is wired to dispatch), OR (b) explicit acceptance that the orchestrator is opt-in only.
+
+Note (post-T-1687 Q2 collapse): The original scope `(model, thinking_level, cost_cap)` table needs to expand post-CONTEXT.md collapse — the Agent IS the orchestrator, so the management page configures the Delegation Envelope schema (worker_kind, model, prompt template, context_pack composition, cwd), not just routing knobs. Phase 2a should reflect this broader scope.
+
+Evidence:
+- Full Phase 1 spike at `docs/reports/T-1686-workflow-management-page.md`
+- Resolver-wiring approach: workflows.yaml consulted before route_cache (deterministic override beats learned defaults)
+- LOC estimate based on existing `/orchestrator` blueprint (T-1647) as reference shape
+- Two-phase split mirrors T-1647's incremental delivery (route_cache resolver shipped before the page)
+- T-1688 sibling survey confirms management page is most concrete in-progress orchestrator-arc work after retrofit ruled out
+
+On dependencies: GO on Phase 2a should not be blocked by T-1688 decision. Phase 2a is independently valuable regardless of which G-064 closure path the human picks.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d8b18f8a
+- **Timestamp:** 2026-05-03T07:09:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T07:09:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

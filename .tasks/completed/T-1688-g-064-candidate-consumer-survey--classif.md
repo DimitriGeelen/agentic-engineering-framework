@@ -4,7 +4,7 @@ name: "G-064 candidate-consumer survey — classify every autonomous workload fo
 description: >
   G-064 candidate-consumer survey — classify every autonomous workload for orchestrator retrofit
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [gap-consumer, arc:orchestrator-rethink]
 components: []
 related_tasks: []
 created: 2026-05-02T21:05:48Z
-last_update: 2026-05-02T21:09:09Z
-date_finished: null
+last_update: 2026-05-03T07:10:15Z
+date_finished: 2026-05-03T07:10:15Z
 ---
 
 # T-1688: G-064 candidate-consumer survey — classify every autonomous workload for orchestrator retrofit
@@ -51,7 +51,7 @@ None new — survey is read-only.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated — survey enumerates every cron in `.context/cron/agentic-audit.crontab` and classifies each
+- [x] Problem statement validated — survey enumerates every cron in `.context/cron/agentic-audit.crontab` and classifies each
 - [ ] All 18 autonomous workloads classified on three axes (workload kind, LLM-amenability, retrofit difficulty)
 - [ ] Code-wide scan for `claude -p` / `termlink dispatch` invocations completed and reported
 - [ ] Recommendation written with cited evidence (file paths, line numbers, route_cache state)
@@ -59,7 +59,7 @@ None new — survey is read-only.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -117,7 +117,22 @@ T-1684 (cron health-check) stays captured as the "if 4 stalls" fallback.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO on option 1 + 4 — accept G-064 as long-term reality (orchestrator is a developer-facing tool today) AND file a child inception for `escalation-scan v0.5` (LLM-augmented escalation scan as the planned real consumer).
+
+Rationale: The survey rules out retrofit. None of the 18 existing autonomous workloads is LLM-amenable today; the two plausible candidates (reviewer v2.x, escalation-scan v0.5) are both genuine future work, not "ship this week" retrofits. Option 1 is honest; option 4 turns G-064 from "watching" to "mitigating" via the smallest concrete real-consumer path with internal source-code precedent (`tools/escalation-scan-v0.py:1` calls itself a v0 spike, lines 6–10 say "intentionally simple").
+
+Evidence:
+- 18 cron jobs surveyed in `.context/cron/agentic-audit.crontab` — all classified in `docs/reports/T-1688-candidate-consumer-survey.md`
+- `grep -rln "claude -p\|fw termlink dispatch\|termlink dispatch" agents/ lib/ tools/` returns 4 files, none autonomous
+- `lib/reviewer/static_scan.py:18-19` — explicit deferred consumer ("Orchestrator routing (v3+)")
+- `tools/escalation-scan-v0.py:1,6-10` — explicit v0 spike with named successor
+- Route cache state: 5 keys, all `last_used: 2026-05-02` (today), confirms cold-cache concern in G-064 description
+
+T-1684 (cron health-check) stays captured as the "if 4 stalls" fallback.
+
+**Date**: 2026-05-03T07:10:14Z
 
 ## Updates
 
@@ -129,3 +144,32 @@ T-1684 (cron health-check) stays captured as the "if 4 stalls" fallback.
 
 ### 2026-05-02T21:09:09Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
+
+### 2026-05-03T07:10:14Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO on option 1 + 4 — accept G-064 as long-term reality (orchestrator is a developer-facing tool today) AND file a child inception for `escalation-scan v0.5` (LLM-augmented escalation scan as the planned real consumer).
+
+Rationale: The survey rules out retrofit. None of the 18 existing autonomous workloads is LLM-amenable today; the two plausible candidates (reviewer v2.x, escalation-scan v0.5) are both genuine future work, not "ship this week" retrofits. Option 1 is honest; option 4 turns G-064 from "watching" to "mitigating" via the smallest concrete real-consumer path with internal source-code precedent (`tools/escalation-scan-v0.py:1` calls itself a v0 spike, lines 6–10 say "intentionally simple").
+
+Evidence:
+- 18 cron jobs surveyed in `.context/cron/agentic-audit.crontab` — all classified in `docs/reports/T-1688-candidate-consumer-survey.md`
+- `grep -rln "claude -p\|fw termlink dispatch\|termlink dispatch" agents/ lib/ tools/` returns 4 files, none autonomous
+- `lib/reviewer/static_scan.py:18-19` — explicit deferred consumer ("Orchestrator routing (v3+)")
+- `tools/escalation-scan-v0.py:1,6-10` — explicit v0 spike with named successor
+- Route cache state: 5 keys, all `last_used: 2026-05-02` (today), confirms cold-cache concern in G-064 description
+
+T-1684 (cron health-check) stays captured as the "if 4 stalls" fallback.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-3f19ef9e
+- **Timestamp:** 2026-05-03T07:10:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T07:10:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

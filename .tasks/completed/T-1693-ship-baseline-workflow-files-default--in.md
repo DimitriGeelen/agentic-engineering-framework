@@ -4,16 +4,16 @@ name: "Ship baseline workflow files (default + inception/grilling/design-dialogu
 description: >
   Ship the four baseline workflow files per CONTEXT.md (Q12): .context/project/workflows/default.yaml (TermLink + sonnet + medium + standard tools), inception.yaml + grilling.yaml + design-dialogue.yaml (all marked inline: true). Operator can override by editing these files. Build task — content is fully spec'd in CONTEXT.md, no scoping decisions remain.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink]
-components: []
+components: [prompts/default.md]
 related_tasks: [T-1687]
 created: 2026-05-02T22:56:11Z
-last_update: 2026-05-03T07:53:51Z
-date_finished: null
+last_update: 2026-05-03T07:56:39Z
+date_finished: 2026-05-03T07:56:39Z
 ---
 
 # T-1693: Ship baseline workflow files (default + inception/grilling/design-dialogue marked inline)
@@ -111,3 +111,15 @@ grep -q "worker_kind: TermLink" .context/project/workflows/default.yaml
 
 ### 2026-05-03T07:53:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-45433751
+- **Timestamp:** 2026-05-03T07:56:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T07:56:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

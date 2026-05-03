@@ -4,16 +4,16 @@ name: "fw orchestrator improve CLI stub — reserve namespace, exit with v2-pend
 description: >
   Per CONTEXT.md (ADR-0003 v2-readiness): ship a stub 'fw orchestrator improve' that exits 0 with 'v2: not yet implemented; data is being captured at .context/dispatches.jsonl and .context/dispatch-blobs/'. Reserves the CLI namespace so it can't be claimed by an unrelated feature; gives operators visibility into the v2 path. Trivial build task — ~15 lines.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, cli]
-components: []
+components: [bin/fw]
 related_tasks: [T-1687]
 created: 2026-05-02T22:56:20Z
-last_update: 2026-05-03T07:56:48Z
-date_finished: null
+last_update: 2026-05-03T07:58:18Z
+date_finished: 2026-05-03T07:58:18Z
 ---
 
 # T-1695: fw orchestrator improve CLI stub — reserve namespace, exit with v2-pending message
@@ -100,3 +100,20 @@ bin/fw orchestrator improve
 
 ### 2026-05-03T07:56:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-da8a1c32
+- **Timestamp:** 2026-05-03T07:58:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Output mentions "v2", "not yet implemented", AND the data paths (`.context/dispatches.jsonl`, `.context/dispatch-blobs/`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatches.jsonl in: Output mentions "v2", "not yet implemented", AND the data paths (`.context/dispatches.jsonl`, `.context/dispatch-blobs/`)`
+
+### 2026-05-03T07:58:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

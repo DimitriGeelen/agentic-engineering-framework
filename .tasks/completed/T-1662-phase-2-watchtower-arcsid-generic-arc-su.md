@@ -4,16 +4,16 @@ name: "Phase 2: Watchtower /arcs/<id> generic arc surface page (generalize T-164
 description: >
   Generalize the orchestrator-specific /orchestrator page (T-1647) into a generic /arcs/<id> surface that works for any arc registered in .context/arcs/. Each arc gets: header (id, name, status, decision), constituent task table with status badges, three-question section Arc Completion Discipline checklist, link to anchor task, fw arc close CLI snippet. /orchestrator becomes a 302 redirect to /arcs/orchestrator-rethink for back-compat. Closes the user's original 'absolutely unclear what kind of use this page should be' feedback by making the surface generic and reusable. Picks up after orchestrator-rethink arc closure unblocks (T-1643 cross-repo dependency).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [watchtower, arcs, phase-2, from-T-1653]
-components: []
+components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py, web/blueprints/__init__.py, web/shared.py, web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/orchestrator.html]
 related_tasks: [T-1647, T-1661, T-1653]
 created: 2026-05-01T19:34:55Z
-last_update: 2026-05-01T19:53:42Z
-date_finished: null
+last_update: 2026-05-03T07:43:15Z
+date_finished: 2026-05-03T07:43:15Z
 ---
 
 # T-1662: Phase 2: Watchtower /arcs/<id> generic arc surface page (generalize T-1647 /orchestrator)
@@ -34,7 +34,7 @@ Phase 2 of the T-1653 inception arc. T-1661 shipped Phase 1 (Arc system MVP — 
 - [x] **Tests:** `tests/unit/test_arcs_routes.py` pins index + detail + 404 + empty state via Flask test_client. ≥4 tests (6 shipped).
 
 ### Human
-- [ ] [REVIEW] /arcs index and /arcs/orchestrator-rethink detail are useful at a glance
+- [x] [REVIEW] /arcs index and /arcs/orchestrator-rethink detail are useful at a glance
   **Steps:**
   1. Open `http://192.168.10.107:3000/arcs` — verify orchestrator-rethink listed with its constituent count
   2. Click through to `http://192.168.10.107:3000/arcs/orchestrator-rethink` — verify task table renders with status badges, three-question check is visible, anchor link works
@@ -102,3 +102,16 @@ python3 -m pytest tests/unit/test_arcs_routes.py -q 2>&1 | tail -3
 ### 2026-05-01T19:53:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-51a147d1
+- **Timestamp:** 2026-05-03T07:43:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T07:43:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)
