@@ -85,6 +85,43 @@ bash -n agents/context/check-project-boundary.sh
 bats tests/unit/check_project_boundary.bats
 bats tests/unit/test_boundary_hook_arguments.bats
 
+## Recommendation
+
+**Recommendation:** SHIP-WITH-CAVEAT — Stream 1 (read-side block) ready for human
+review; Stream 2 (doctor scope tags) deferred to T-1707, G-065 stays open until both ship.
+
+**Rationale:**
+The original incident that prompted G-065 was the agent running
+`du /root/.agentic-framework`, `find /root/x`, `grep -r ... /root/x` after the
+`cd` was already blocked. Pattern 4 closes that exact hole:
+
+- 28 new bats tests cover TPs (du/find/grep/cat/ls/cp on outside paths),
+  allowlist hits (/tmp, /etc, /usr, /var/log, /var/cache, /proc, /sys,
+  /root/.local, /root/.claude, PROJECT_ROOT), multi-arg commands, and FP
+  controls (quoted paths, heredoc bodies, regex literals).
+- 7 existing bats tests still pass — no regression.
+- Heredoc body stripping added so `cat > /tmp/x <<EOF\n/opt/other\nEOF`
+  doesn't false-positive on body content.
+
+The doctor scope-tagging stream is sizable (touches ~20+ checks across
+do_doctor) and is hygiene rather than urgent bug fix. Splitting follows
+"one bug = one task" — Stream 1 is the actual bug fix; Stream 2 is the
+diagnostic ergonomics improvement.
+
+**Evidence:**
+- `agents/context/check-project-boundary.sh` Pattern 4 + heredoc strip — commit `91eeacdbb`
+- `tests/unit/test_boundary_hook_arguments.bats` — 28/28 pass
+- `tests/unit/check_project_boundary.bats` — 7/7 still pass (no regression)
+- T-1707 filed for Stream 2 (captured, horizon: next, arc:orchestrator-rethink)
+
+**G-065 closure:** stays open. Closes when T-1707 (doctor scope tags) ships.
+
+**Pre-existing test note:** `tests/integration/check_project_boundary.bats`
+test 16 "Bash redirect to /etc: blocked" was already failing on master before
+this commit — `/etc/cron.d/` is whitelisted in Pattern 3 (T-603/T-1191) but
+the test asserts block. Not introduced by this change; logged for separate
+fix or test-correction.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
