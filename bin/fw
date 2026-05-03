@@ -644,6 +644,20 @@ do_doctor() {
 
     local issues=0
     local warnings=0
+    local host_warnings=0
+
+    # T-1707: host-scope findings can't be fixed from this project session —
+    # they live at the machine level (system installs, ~/.gitconfig,
+    # ~/.local/bin shims, ~/.claude/settings.json). Tagging them makes the
+    # boundary unambiguous so an agent doesn't bundle them into project
+    # housekeeping. Project-scope is the default; only host findings carry
+    # the [host] prefix and explanatory suffix.
+    _doctor_warn_host() {
+        echo -e "  ${YELLOW}WARN${NC}  [host] $1"
+        echo -e "         (host-level — handle from a session at that root)"
+        warnings=$((warnings + 1))
+        host_warnings=$((host_warnings + 1))
+    }
 
     # Check 1: Framework directory
     if [ -d "$FRAMEWORK_ROOT/agents" ] && [ -f "$FRAMEWORK_ROOT/FRAMEWORK.md" ]; then
@@ -662,15 +676,13 @@ do_doctor() {
             ;;
         global)
             if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
-                echo -e "  ${YELLOW}WARN${NC}  Active mode: global ($FRAMEWORK_ROOT) — vendored copy exists at $PROJECT_ROOT/.agentic-framework but was not selected"
-                warnings=$((warnings + 1))
+                _doctor_warn_host "Active mode: global ($FRAMEWORK_ROOT) — vendored copy exists at $PROJECT_ROOT/.agentic-framework but was not selected"
             else
                 echo -e "  ${CYAN}INFO${NC}  Active mode: global ($FRAMEWORK_ROOT)"
             fi
             ;;
         *)
-            echo -e "  ${YELLOW}WARN${NC}  Active mode: $_mode ($FRAMEWORK_ROOT)"
-            warnings=$((warnings + 1))
+            _doctor_warn_host "Active mode: $_mode ($FRAMEWORK_ROOT)"
             ;;
     esac
 
@@ -778,9 +790,8 @@ do_doctor() {
     git_email=$(git -C "$PROJECT_ROOT" config user.email 2>/dev/null || true)
     git_name=$(git -C "$PROJECT_ROOT" config user.name 2>/dev/null || true)
     if [ -z "$git_email" ] || [ -z "$git_name" ]; then
-        echo -e "  ${YELLOW}WARN${NC}  Git user identity not configured (commits will fail)"
-        echo -e "         Run: git config user.email 'you@example.com' && git config user.name 'Your Name'"
-        warnings=$((warnings + 1))
+        _doctor_warn_host "Git user identity not configured (commits will fail)"
+        echo -e "         Run: git config --global user.email 'you@example.com' && git config --global user.name 'Your Name'"
     fi
 
     # Check 6: Claude Code hooks — validate paths resolve (G-021 path isolation)
@@ -884,10 +895,9 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
             if [ -n "$dup_pairs" ]; then
                 local dup_count
                 dup_count=$(echo "$dup_pairs" | tr '|' '\n' | wc -l)
-                echo -e "  ${YELLOW}WARN${NC}  Duplicate framework hook(s) in $user_settings_file: $dup_count overlap"
-                echo -e "        Pairs: $(echo "$dup_pairs" | tr '|' ' ')"
-                echo -e "        Both fire on every Claude Code event (cause of OBS-023). Recommend removing duplicates from $user_settings_file."
-                warnings=$((warnings + 1))
+                _doctor_warn_host "Duplicate framework hook(s) in $user_settings_file: $dup_count overlap"
+                echo -e "         Pairs: $(echo "$dup_pairs" | tr '|' ' ')"
+                echo -e "         Both fire on every Claude Code event (cause of OBS-023). Recommend removing duplicates from $user_settings_file."
             fi
         fi
     else
@@ -963,15 +973,13 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
                 warnings=$((warnings + 1))
             fi
         else
-            echo -e "  ${YELLOW}WARN${NC}  bats not installed (run: git clone https://github.com/bats-core/bats-core && ./install.sh /usr/local)"
-            warnings=$((warnings + 1))
+            _doctor_warn_host "bats not installed (run: git clone https://github.com/bats-core/bats-core && ./install.sh /usr/local)"
         fi
 
         if command -v shellcheck >/dev/null 2>&1; then
             echo -e "  ${GREEN}OK${NC}  ShellCheck linter"
         else
-            echo -e "  ${YELLOW}WARN${NC}  shellcheck not installed"
-            warnings=$((warnings + 1))
+            _doctor_warn_host "shellcheck not installed (run: apt install shellcheck  # or brew install shellcheck)"
         fi
     else
         echo -e "  ${CYAN}SKIP${NC}  Test infrastructure (consumer project — tests live in framework repo)"
@@ -985,8 +993,7 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
                    grep -cE "(npm exec.*(mcp|context7|playwright))|(node .*(mcp|context7))" || echo 0)
     orphan_count=$(echo "$orphan_count" | tr -d '[:space:]')
     if [ "$orphan_count" -gt 0 ]; then
-        echo -e "  ${YELLOW}WARN${NC}  $orphan_count orphaned MCP process(es) detected — run 'fw mcp reap'"
-        warnings=$((warnings + 1))
+        _doctor_warn_host "$orphan_count orphaned MCP process(es) detected — run 'fw mcp reap'"
     else
         echo -e "  ${GREEN}OK${NC}  No orphaned MCP processes"
     fi
@@ -1035,9 +1042,8 @@ print(f'{total}|{\",\".join(missing)}')
             local link_target
             link_target=$(readlink -f "$local_fw" 2>/dev/null || echo "")
             if [[ "$link_target" == *".agentic-framework/bin/fw"* ]]; then
-                echo -e "  ${YELLOW}WARN${NC}  Global install: ~/.local/bin/fw symlinks to stale $global_dir"
-                echo -e "        Migrate: run install.sh or fw upgrade (installs project-detecting shim)"
-                warnings=$((warnings + 1))
+                _doctor_warn_host "Global install: ~/.local/bin/fw symlinks to stale $global_dir"
+                echo -e "         Migrate: run install.sh or fw upgrade (installs project-detecting shim)"
             else
                 echo -e "  ${GREEN}OK${NC}  fw shim installed (global install at $global_dir is unused)"
             fi
@@ -1274,8 +1280,7 @@ for e in d.get('errors',[])[:3]:
         tl_version=$(termlink --version 2>/dev/null | head -1)
         echo -e "  ${GREEN}OK${NC}  TermLink ($tl_version)"
     else
-        echo -e "  ${YELLOW}WARN${NC}  TermLink not installed (cargo install termlink)"
-        warnings=$((warnings + 1))
+        _doctor_warn_host "TermLink not installed (cargo install termlink)"
     fi
 
     # Check: pi (Pi mono coding-agent — optional, ADR-0003 worker_kind=pi)
@@ -1289,9 +1294,8 @@ for e in d.get('errors',[])[:3]:
         # Only warn if some workflow uses worker_kind: pi
         if [ -d "$PROJECT_ROOT/.context/project/workflows" ] && \
            grep -lE "^worker_kind:\s*pi\b" "$PROJECT_ROOT/.context/project/workflows/"*.yaml >/dev/null 2>&1; then
-            echo -e "  ${YELLOW}WARN${NC}  pi not installed; workflows declaring worker_kind: pi will fail"
+            _doctor_warn_host "pi not installed; workflows declaring worker_kind: pi will fail"
             echo -e "         Install: npm install -g @badlogic/pi-mono  (or see github.com/badlogic/pi-mono)"
-            warnings=$((warnings + 1))
         else
             echo -e "  ${CYAN}INFO${NC}  pi not installed (no workflows require it)"
         fi
@@ -1321,8 +1325,7 @@ for e in d.get('errors',[])[:3]:
                 echo -e "  ${GREEN}OK${NC}  TypeScript build (${#_ts_files[@]} source(s))"
             fi
         else
-            echo -e "  ${YELLOW}WARN${NC}  Node.js not found (TS hooks will use Python fallback)"
-            warnings=$((warnings + 1))
+            _doctor_warn_host "Node.js not found (TS hooks will use Python fallback)"
         fi
     fi
 
@@ -1515,9 +1518,8 @@ else:
         local _global_mb
         _global_mb=$(du -sm "$_global_dir" 2>/dev/null | cut -f1 || echo "0")
         if [ "${_global_mb:-0}" -gt 100 ]; then
-            echo -e "  ${YELLOW}WARN${NC}  Global install at $_global_dir is ${_global_mb}MB (expected <60MB)"
+            _doctor_warn_host "Global install at $_global_dir is ${_global_mb}MB (expected <60MB)"
             echo -e "         Consider: rm -rf $_global_dir (shim-based dispatch obsoletes it)"
-            warnings=$((warnings + 1))
         fi
     fi
 
@@ -1751,7 +1753,7 @@ files = sorted(glob.glob(os.path.join(wf_dir, "*.yaml")))
 
 INLINE_FORBIDDEN = {"worker_kind","model","effort","prompt_template","prompt_strategy","meta_model","meta_template","allowed_tools","cost_cap_usd","cwd","provider","variants","outcome_evaluator","env"}
 DISPATCH_REQUIRED = {"task_type","worker_kind","model","effort","prompt_template","allowed_tools","cost_cap_usd","cwd"}
-VALID_WORKER_KINDS = {"Task","TermLink","pi"}
+VALID_WORKER_KINDS = {"Task","TermLink","pi","ollama-loop"}
 VALID_STRATEGIES = {"static","assembled","meta-prompted"}
 
 errors = []
@@ -1823,14 +1825,18 @@ PYEOF
         echo -e "  ${CYAN}INFO${NC}  No .context/project/workflows/ — orchestrator v1 not yet provisioned"
     fi
 
-    # Summary
+    # Summary (T-1707: break out host_warnings count when > 0)
+    local _scope_breakdown=""
+    if [ "$host_warnings" -gt 0 ]; then
+        _scope_breakdown=" ($host_warnings host-level)"
+    fi
     echo ""
     if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then
         echo -e "${GREEN}All checks passed${NC}"
     elif [ $issues -eq 0 ]; then
-        echo -e "${YELLOW}$warnings warning(s), no failures${NC}"
+        echo -e "${YELLOW}$warnings warning(s)$_scope_breakdown, no failures${NC}"
     else
-        echo -e "${RED}$issues failure(s), $warnings warning(s)${NC}"
+        echo -e "${RED}$issues failure(s), $warnings warning(s)$_scope_breakdown${NC}"
         exit 2
     fi
 }

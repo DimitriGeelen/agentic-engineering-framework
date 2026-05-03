@@ -4,15 +4,15 @@ name: "fw doctor scope tagging — split project vs host findings (T-1702 Stream
 description: >
   T-1702 deferred: every fw doctor finding gets a scope: tag (project | host). Host-scope findings include explanatory text. Closes G-065 alongside T-1702 Stream 1 (already shipped 91eeacdbb).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:orchestrator-rethink]
 components: []
-related_tasks: []
+related_tasks: [T-1702]
 created: 2026-05-03T22:05:43Z
-last_update: 2026-05-03T22:06:07Z
+last_update: 2026-05-04T00:00:00Z
 date_finished: null
 ---
 
@@ -20,78 +20,61 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Stream 2 of T-1702. The original incident: an agent in a project session bundled
+host-level `fw doctor` warnings (e.g. "git user identity not configured",
+"bats not installed") into project housekeeping. Those findings can only be
+fixed from a session at the host root (`~/.gitconfig`, system package install).
+Tagging host findings makes the boundary unambiguous in the output.
+
+**Design:**
+- `project` is the default (most checks). No visual change for project findings.
+- `host` findings get `[host]` prefix + explanatory suffix
+  `(host-level — handle from a session at that root)`.
+- Summary line breaks out host warning count if any.
+- 10 host-level emits identified: mode=global, git user identity, bats/shellcheck
+  not installed, orphaned MCP, global install stale symlink, duplicate hooks in
+  user settings, TermLink/pi/node not installed.
+
+Closes G-065 alongside T-1702 Pattern 4 (already shipped commit 91eeacdbb).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `bin/fw do_doctor` defines `_doctor_warn_host` helper that emits `[host]` prefix
+      + "(host-level — handle from a session at that root)" suffix, increments
+      both `warnings` and `host_warnings` counters.
+- [ ] All 10 identified host-scope WARN emits route through the helper:
+      mode=global; git user identity; bats not installed; shellcheck not installed;
+      orphaned MCP; global install stale; duplicate hooks in user settings;
+      TermLink not installed; pi not installed; Node.js not found.
+- [ ] Project-scope emits unchanged (no regression in normal output).
+- [ ] Summary line shows host warning count when nonzero:
+      `"$warnings warning(s) ($host_warnings host-level), no failures"`.
+- [ ] `bash -n bin/fw` parses clean.
+- [ ] `bin/fw doctor` runs without errors on this project.
+- [ ] New bats unit test `tests/unit/test_doctor_scope_tags.bats` exercises at
+      least 2 host-scope conditions and asserts `[host]` tag + summary breakdown.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Output reads correctly — host-level warnings unambiguous,
+      project warnings still clean.
+      **Steps:**
+      1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor 2>&1 | head -80`
+      2. Look for `[host]` tags on findings that need attention from `/root` session
+      3. Check summary line if host count > 0
+      **Expected:** `[host]` only appears on machine-level findings (not project ones).
+      **If not:** Note any miscategorized check and the right scope.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
-## Decisions
-
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+bash -n bin/fw
+bin/fw doctor 2>&1 > /dev/null
+bats tests/unit/test_doctor_scope_tags.bats
 
 ## Updates
 
 ### 2026-05-03T22:05:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1707-fw-doctor-scope-tagging--split-project-v.md
-- **Context:** Initial task creation
 
-### 2026-05-03T22:06:07Z — status-update [task-update-agent]
-- **Change:** tags: +arc:orchestrator-rethink
-
-### 2026-05-03T22:06:07Z — status-update [task-update-agent]
-- **Change:** horizon: now → next
-- **Change:** status: started-work → captured (auto-sync)
+### 2026-05-04T00:00:00Z — ac-population
+- Real ACs written; status started-work; horizon now.
