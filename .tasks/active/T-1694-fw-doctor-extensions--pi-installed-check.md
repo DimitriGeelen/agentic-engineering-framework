@@ -4,7 +4,7 @@ name: "fw doctor extensions — pi-installed check (Q13) + workflow schema linte
 description: >
   Extend fw doctor to (Q13) report 'pi not installed; workflows declaring worker_kind: pi will fail' with install command, no auto-install — and (Q14) lint all .context/project/workflows/*.yaml for schema correctness: required fields per tier, worker_kind in enum, prompt_template resolves to existing file, meta_model set iff prompt_strategy=meta-prompted, inline:true exclusive of dispatch fields, soft-warn if default.yaml missing. Build task — ACs are clear from CONTEXT.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [arc:orchestrator-rethink, doctor]
 components: []
 related_tasks: [T-1687]
 created: 2026-05-02T22:56:15Z
-last_update: 2026-05-02T22:56:15Z
+last_update: 2026-05-03T07:59:18Z
 date_finished: null
 ---
 
@@ -95,3 +95,6 @@ test -d .context/project/workflows && bin/fw doctor 2>&1 | grep -qE "(workflow|p
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1694-fw-doctor-extensions--pi-installed-check.md
 - **Context:** Initial task creation
+
+### 2026-05-03T07:59:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

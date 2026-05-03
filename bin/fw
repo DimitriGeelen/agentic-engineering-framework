@@ -1278,6 +1278,25 @@ for e in d.get('errors',[])[:3]:
         warnings=$((warnings + 1))
     fi
 
+    # Check: pi (Pi mono coding-agent — optional, ADR-0003 worker_kind=pi)
+    # T-1694 (Q13): warn-only, no auto-install. Operator runs the install
+    # command consciously if any workflow declares worker_kind: pi.
+    if command -v pi >/dev/null 2>&1; then
+        local pi_version
+        pi_version=$(pi --version 2>/dev/null | head -1 || echo "(version unknown)")
+        echo -e "  ${GREEN}OK${NC}  pi ($pi_version)"
+    else
+        # Only warn if some workflow uses worker_kind: pi
+        if [ -d "$PROJECT_ROOT/.context/project/workflows" ] && \
+           grep -lE "^worker_kind:\s*pi\b" "$PROJECT_ROOT/.context/project/workflows/"*.yaml >/dev/null 2>&1; then
+            echo -e "  ${YELLOW}WARN${NC}  pi not installed; workflows declaring worker_kind: pi will fail"
+            echo -e "         Install: npm install -g @badlogic/pi-mono  (or see github.com/badlogic/pi-mono)"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${CYAN}INFO${NC}  pi not installed (no workflows require it)"
+        fi
+    fi
+
     # Check: TypeScript build health (optional)
     if [ -d "$FRAMEWORK_ROOT/lib/ts/src" ]; then
         shopt -s nullglob
@@ -1706,6 +1725,103 @@ else:
         rm -f "$_origin_dump"
     fi
     set -e
+
+    # Check: Workflow file schema linter (T-1694 / Q14)
+    # Lints all .context/project/workflows/*.yaml against ADR-0003 schema:
+    #   - inline:true workflows must NOT carry dispatch fields
+    #   - non-inline workflows require: task_type, worker_kind, model, effort,
+    #     prompt_template, allowed_tools, cost_cap_usd, cwd
+    #   - worker_kind in {Task, TermLink, pi}
+    #   - prompt_template must resolve to an existing file
+    #   - meta_model required iff prompt_strategy == meta-prompted
+    #   - default.yaml missing → soft warning
+    if [ -d "$PROJECT_ROOT/.context/project/workflows" ]; then
+        local _wf_lint_out _wf_errors _wf_warnings _wf_count
+        _wf_lint_out=$(python3 - "$PROJECT_ROOT" <<'PYEOF' 2>&1
+import sys, os, glob
+try:
+    import yaml
+except ImportError:
+    print("FAIL|python3 yaml module missing")
+    sys.exit(0)
+
+project_root = sys.argv[1]
+wf_dir = os.path.join(project_root, ".context/project/workflows")
+files = sorted(glob.glob(os.path.join(wf_dir, "*.yaml")))
+
+INLINE_FORBIDDEN = {"worker_kind","model","effort","prompt_template","prompt_strategy","meta_model","meta_template","allowed_tools","cost_cap_usd","cwd","provider","variants","outcome_evaluator","env"}
+DISPATCH_REQUIRED = {"task_type","worker_kind","model","effort","prompt_template","allowed_tools","cost_cap_usd","cwd"}
+VALID_WORKER_KINDS = {"Task","TermLink","pi"}
+VALID_STRATEGIES = {"static","assembled","meta-prompted"}
+
+errors = []
+count = 0
+has_default = False
+
+for f in files:
+    rel = os.path.relpath(f, project_root)
+    count += 1
+    if os.path.basename(f) == "default.yaml":
+        has_default = True
+    try:
+        with open(f) as fh:
+            data = yaml.safe_load(fh) or {}
+    except yaml.YAMLError as e:
+        errors.append(f"{rel}: YAML parse error: {e}")
+        continue
+    if not isinstance(data, dict):
+        errors.append(f"{rel}: root must be a mapping")
+        continue
+    if "task_type" not in data:
+        errors.append(f"{rel}: missing required key 'task_type'")
+    if data.get("inline") is True:
+        offenders = INLINE_FORBIDDEN & set(data.keys())
+        if offenders:
+            errors.append(f"{rel}: inline:true cannot co-exist with dispatch fields: {sorted(offenders)}")
+        continue
+    missing = DISPATCH_REQUIRED - set(data.keys())
+    if missing:
+        errors.append(f"{rel}: missing required key(s): {sorted(missing)}")
+        continue
+    wk = data.get("worker_kind")
+    if wk not in VALID_WORKER_KINDS:
+        errors.append(f"{rel}: worker_kind={wk!r} not in {sorted(VALID_WORKER_KINDS)}")
+    pt = data.get("prompt_template")
+    if pt and not os.path.isfile(os.path.join(project_root, pt)):
+        errors.append(f"{rel}: prompt_template={pt!r} does not resolve to an existing file")
+    ps = data.get("prompt_strategy", "assembled")
+    if ps not in VALID_STRATEGIES:
+        errors.append(f"{rel}: prompt_strategy={ps!r} not in {sorted(VALID_STRATEGIES)}")
+    if ps == "meta-prompted" and "meta_model" not in data:
+        errors.append(f"{rel}: prompt_strategy=meta-prompted requires meta_model")
+    if ps != "meta-prompted" and "meta_model" in data:
+        errors.append(f"{rel}: meta_model set but prompt_strategy={ps!r} (must be meta-prompted)")
+
+if errors:
+    for e in errors:
+        print(f"ERROR|{e}")
+if not has_default and count > 0:
+    print("WARN|default.yaml missing — Q12 fallback will hard-error if any task_type lacks a workflow")
+print(f"COUNT|{count}")
+PYEOF
+)
+        _wf_errors=$(echo "$_wf_lint_out" | grep -c '^ERROR|' || true)
+        _wf_warnings=$(echo "$_wf_lint_out" | grep -c '^WARN|' || true)
+        _wf_count=$(echo "$_wf_lint_out" | grep '^COUNT|' | head -1 | sed 's/^COUNT|//' || echo 0)
+        if [ "${_wf_errors:-0}" -gt 0 ]; then
+            echo -e "  ${RED}FAIL${NC}  Workflow schema: $_wf_errors error(s) across $_wf_count file(s)"
+            echo "$_wf_lint_out" | grep '^ERROR|' | sed 's/^ERROR|/         /'
+            issues=$((issues + _wf_errors))
+        elif [ "${_wf_warnings:-0}" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Workflow schema: $_wf_count file(s) clean, $_wf_warnings warning(s)"
+            echo "$_wf_lint_out" | grep '^WARN|' | sed 's/^WARN|/         /'
+            warnings=$((warnings + _wf_warnings))
+        else
+            echo -e "  ${GREEN}OK${NC}  Workflow schema: $_wf_count file(s) lint clean"
+        fi
+    else
+        echo -e "  ${CYAN}INFO${NC}  No .context/project/workflows/ — orchestrator v1 not yet provisioned"
+    fi
 
     # Summary
     echo ""
