@@ -1,0 +1,27 @@
+model_list:
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: ollama_chat/qwen3:14b
+      api_base: http://192.168.10.107:11434
+
+  - model_name: claude-3-5-sonnet
+    litellm_params:
+      model: ollama_chat/qwen3:14b
+      api_base: http://192.168.10.107:11434
+
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: ollama_chat/gemma4:latest
+      api_base: http://192.168.10.107:11434
+
+  - model_name: claude-sonnet-coder
+    litellm_params:
+      model: ollama_chat/krith/qwen2.5-coder-32b-instruct:IQ2_M
+      api_base: http://192.168.10.107:11434
+
+litellm_settings:
+  drop_params: true
+  set_verbose: false
+
+general_settings:
+  master_key: sk-litellm-local-dev

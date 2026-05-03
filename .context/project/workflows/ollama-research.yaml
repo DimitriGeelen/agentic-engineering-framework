@@ -1,0 +1,11 @@
+task_type: ollama-research
+worker_kind: TermLink
+model: claude-3-5-sonnet-20241022
+effort: medium
+prompt_template: prompts/default.md
+allowed_tools: [Read, Bash, Grep]
+cost_cap_usd: 0.0
+cwd: $PROJECT_ROOT
+env:
+  ANTHROPIC_BASE_URL: http://localhost:4000
+  ANTHROPIC_API_KEY: sk-litellm-local-dev

@@ -1829,3 +1829,69 @@ concerns:
   last_reviewed: 2026-05-02
   related_task: T-1683
   related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682, T-1684, T-1688]
+- id: G-065
+  type: gap
+  title: "Boundary hook is read-blind — only blocks `cd` to outside paths, not commands with outside-path arguments"
+  description: >
+    `agents/context/check-project-boundary.sh` (PreToolUse on Bash) detects
+    `cd /outside/...` and blocks it. It does NOT match commands whose
+    *arguments* point outside PROJECT_ROOT — e.g. `du /root/x`,
+    `find /root/x`, `grep -r ... /root/x`, `cat /root/x/file`.
+
+    The mechanical enforcement surface is therefore narrower than the
+    policy it claims to enforce ("no cross-project work without TermLink").
+    Read-side cross-boundary access has been undetected for as long as the
+    hook has existed.
+
+    Compounding factor: existing path-isolation memories
+    (`feedback_no_cross_repo_edits.md`,
+    `feedback_path_isolation_cross_machine_prompts.md`) are framed around
+    edits/writes/cross-machine prompts. None say "even du/grep/cat outside
+    pwd is a violation." Mental rule + hook rule are both write-only.
+    Both layers had to fail for the incident to ship — and both did.
+  spec_reference: "T-559 (Project Boundary Enforcement); CLAUDE.md §No Cross-Repo Edits"
+  severity: medium
+  trigger_fired: true
+  trigger_event: |
+    2026-05-03 housekeeping session: fw doctor surfaced WARN for
+    /root/.agentic-framework (legacy global install, 346MB, outside project
+    root). Agent bundled it into housekeeping list and ran du/find/grep
+    against /root/.agentic-framework while rooted at
+    /opt/999-Agentic-Engineering-Framework. Boundary hook blocked one
+    `cd /root/.agentic-framework` attempt; agent worked around it with
+    absolute-path commands. User caught violation: "but why where we
+    looking at it as its not poart oif our rtepo and we should have full
+    path isolation".
+  status: watching
+  what_works_now: |
+    - `cd <outside>` is blocked correctly (T-559 base behaviour)
+    - Hook fires PreToolUse on Bash, before the command executes
+    - User has memory feedback (feedback_path_isolation_strict.md) that
+      generalises the rule to reads + writes
+  what_remains: |
+    - Hook should match Bash commands whose ARGUMENTS resolve to absolute
+      paths outside PROJECT_ROOT (not just `cd`).
+    - Sensible exceptions list: /tmp/, /usr/, /etc/ (read-only system
+      queries), /root/.local/ (shim path), ~/.claude/ (memory writes),
+      $HOME/.claude/ (handover artefacts). Arguments matching these
+      should pass through.
+    - `fw doctor` should tag findings by scope (project vs host) so
+      out-of-scope warnings are visually distinct and not bundled by
+      agents into "housekeeping" lists.
+  recommendation: |
+    1. Extend `agents/context/check-project-boundary.sh` to scan command
+       arguments for absolute paths starting outside PROJECT_ROOT, with
+       a small allowlist for system/HOME paths.
+    2. Tag `fw doctor` findings by scope:
+         - scope: project   → in-list, actionable
+         - scope: host      → display only, "handle from a host session"
+       Agents should only consume scope:project entries when listing
+       housekeeping.
+    3. Update CLAUDE.md to make the rule explicit: "doctor warnings about
+       paths outside `pwd` are out-of-scope — flag, never bundle into
+       work lists." Memory feedback_path_isolation_strict.md already
+       covers the agent-side rule.
+  created: 2026-05-03
+  last_reviewed: 2026-05-03
+  related_task: T-1702
+
