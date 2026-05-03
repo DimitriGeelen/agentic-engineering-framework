@@ -1,6 +1,6 @@
 task_type: ollama-research
-worker_kind: TermLink
-model: claude-3-5-sonnet-20241022
+worker_kind: ollama-loop
+model: claude-3-5-sonnet-hermes3
 effort: medium
 prompt_template: prompts/default.md
 allowed_tools: [Read, Bash, Grep]
@@ -9,3 +9,7 @@ cwd: $PROJECT_ROOT
 env:
   ANTHROPIC_BASE_URL: http://localhost:4000
   ANTHROPIC_API_KEY: sk-litellm-local-dev
+# T-1706: switched from worker_kind: TermLink (claude -p, 0% real tool_use)
+# to ollama-loop (curated litellm direct, 100% real tool_use). See
+# docs/reports/T-1706-tool-loop-probe.md for empirical evidence.
+# Model alias claude-3-5-sonnet-hermes3 → ollama_chat/hermes3:8b via litellm.

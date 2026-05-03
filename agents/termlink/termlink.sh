@@ -493,7 +493,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools=""
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind=""
     # T-1700: workflow `env:` plumb-through. Repeatable --env KEY=VAL pairs are
     # injected into the spawned worker's shell so `claude -p` honors per-workflow
     # overrides like ANTHROPIC_BASE_URL=http://localhost:4000 (litellm proxy)
@@ -522,9 +522,18 @@ cmd_dispatch() {
                 # T-1703: comma-separated tool list passed to claude -p --tools.
                 # No validation here — claude -p validates against its built-in set.
                 tools="$2"; shift 2 ;;
+            --worker-kind)
+                # T-1706: select worker implementation. Default empty → claude -p.
+                # `ollama-loop` → tools/ollama-tool-loop.py (curated litellm direct).
+                worker_kind="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
+
+    case "$worker_kind" in
+        ""|claude|ollama-loop) : ;;
+        *) die "Unknown --worker-kind: $worker_kind (allowed: claude, ollama-loop)" ;;
+    esac
 
     [ -z "$name" ] && die "Missing --name"
     [ -z "$task" ] && die "Missing --task — TermLink workers require a task reference for governance (T-652, T-630)"
@@ -585,6 +594,15 @@ cmd_dispatch() {
         done
         env_keys_json="[${_key_list%,}]"
     fi
+
+    # T-1706: worker_kind selection. Empty/claude → claude -p. ollama-loop →
+    # tools/ollama-tool-loop.py (curated litellm /v1/messages direct).
+    # File presence is the routing signal in run.sh (heredoc'd, no var interp).
+    if [ -n "$worker_kind" ] && [ "$worker_kind" != "claude" ]; then
+        printf '%s\n' "$worker_kind" > "$wdir/worker_kind.txt"
+    fi
+    local worker_kind_json="null"
+    [ -n "$worker_kind" ] && worker_kind_json="\"$worker_kind\""
 
     # T-1703: workflow allowed_tools plumb-through. Write tools.txt read by run.sh
     # to construct --tools flag. Empty when no --tools passed (claude -p default).
@@ -657,28 +675,60 @@ if [ -f "$WDIR/tools.txt" ] && [ -s "$WDIR/tools.txt" ]; then
     TOOLS_FLAG="--tools $(cat "$WDIR/tools.txt")"
 fi
 
-# Background process + kill watchdog (macOS has no `timeout` command)
-# T-1663: stream-json preserves forensic trail when watchdog kills the worker — text format
-# buffers everything until completion, leaving an empty result.md on timeout (T-1643 found
-# this twice consecutively on U-005 dispatches). result.jsonl is the live trail; result.md
-# carries the final assistant text extracted on clean exit (backward-compat with `fw termlink result`).
-claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
-CLAUDE_PID=$!
-(sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
-WATCHDOG_PID=$!
-wait "$CLAUDE_PID" 2>/dev/null
-EXIT_CODE=$?
-kill "$WATCHDOG_PID" 2>/dev/null || true
+# T-1706: worker_kind dispatch routing. If worker_kind.txt requests ollama-loop,
+# run the thin tool-loop worker (curated litellm direct, ~150 LOC python). The
+# python worker writes result.jsonl + result.md + exit_code itself, so we skip
+# the claude -p branch entirely.
+WORKER_KIND=""
+[ -f "$WDIR/worker_kind.txt" ] && WORKER_KIND=$(cat "$WDIR/worker_kind.txt")
 
-# Extract final assistant text into result.md for backward-compat. On timeout the result event
-# never arrived, result.md stays empty — operators read result.jsonl directly for forensic trail.
-if [ -s "$WDIR/result.jsonl" ] && command -v jq >/dev/null 2>&1; then
-    jq -r 'select(.type=="result") | .result // empty' "$WDIR/result.jsonl" > "$WDIR/result.md" 2>/dev/null || : > "$WDIR/result.md"
+if [ "$WORKER_KIND" = "ollama-loop" ]; then
+    # Resolve project's ollama-tool-loop.py — prefer FRAMEWORK_ROOT if vendored,
+    # else PROJECT_ROOT/tools (framework repo case).
+    LOOP_BIN=""
+    for cand in "$FRAMEWORK_ROOT/tools/ollama-tool-loop.py" "$PROJECT_DIR/tools/ollama-tool-loop.py"; do
+        if [ -x "$cand" ]; then LOOP_BIN="$cand"; break; fi
+    done
+    if [ -z "$LOOP_BIN" ]; then
+        echo "FATAL: ollama-tool-loop.py not found" > "$WDIR/stderr.log"
+        echo 1 > "$WDIR/exit_code"
+    else
+        # Pass model alias as OLLAMA_LOOP_MODEL when --model was supplied.
+        [ -n "$MODEL" ] && export OLLAMA_LOOP_MODEL="$MODEL"
+        ( python3 "$LOOP_BIN" --wdir "$WDIR" >"$WDIR/stdout.log" 2>"$WDIR/stderr.log" ) &
+        LOOP_PID=$!
+        (sleep "$TIMEOUT" && kill "$LOOP_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
+        WATCHDOG_PID=$!
+        wait "$LOOP_PID" 2>/dev/null
+        EXIT_CODE=$?
+        kill "$WATCHDOG_PID" 2>/dev/null || true
+        # Worker already wrote exit_code; respect it. If absent, fall back.
+        [ ! -f "$WDIR/exit_code" ] && echo "$EXIT_CODE" > "$WDIR/exit_code"
+    fi
 else
-    : > "$WDIR/result.md"
-fi
+    # Background process + kill watchdog (macOS has no `timeout` command)
+    # T-1663: stream-json preserves forensic trail when watchdog kills the worker — text format
+    # buffers everything until completion, leaving an empty result.md on timeout (T-1643 found
+    # this twice consecutively on U-005 dispatches). result.jsonl is the live trail; result.md
+    # carries the final assistant text extracted on clean exit (backward-compat with `fw termlink result`).
+    claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
+    CLAUDE_PID=$!
+    (sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
+    WATCHDOG_PID=$!
+    wait "$CLAUDE_PID" 2>/dev/null
+    EXIT_CODE=$?
+    kill "$WATCHDOG_PID" 2>/dev/null || true
 
-echo "$EXIT_CODE" > "$WDIR/exit_code"
+    # Extract final assistant text into result.md for backward-compat. On timeout the result event
+    # never arrived, result.md stays empty — operators read result.jsonl directly for forensic trail.
+    if [ -s "$WDIR/result.jsonl" ] && command -v jq >/dev/null 2>&1; then
+        jq -r 'select(.type=="result") | .result // empty' "$WDIR/result.jsonl" > "$WDIR/result.md" 2>/dev/null || : > "$WDIR/result.md"
+    else
+        : > "$WDIR/result.md"
+    fi
+
+    echo "$EXIT_CODE" > "$WDIR/exit_code"
+fi
 FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "$FINISHED_AT" > "$WDIR/finished_at"
 
