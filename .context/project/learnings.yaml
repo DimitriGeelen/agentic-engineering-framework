@@ -2682,3 +2682,10 @@ X'` returning empty group."
   date: 2026-05-03
   context: Added via context agent
   application: TBD
+- id: L-346
+  learning: "claude -p exit=0 is NOT a tool-use signal. Worker emits stop_reason: end_turn after producing text alone — the model can describe a tool without calling it, exit cleanly, and pass any 'did dispatch succeed?' check. For real tool-use validation, parse result.jsonl assistant content blocks for type=tool_use events. Origin: T-1700 N=10 harness reported 100% pass on exit codes; audit revealed 0/10 actual tool calls on qwen3:14b, 1/3 on gpt-oss:20b — both well below T-1691 90% threshold. Open-weight 8-32B models calibrated for 'general assistance' describe-instead-of-call when given claude -p's wide tool catalogue."
+  source: T-1700
+  task: T-1700
+  date: 2026-05-03
+  context: Added via context agent
+  application: TBD
