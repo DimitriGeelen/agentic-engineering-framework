@@ -838,6 +838,12 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 - `fw cron generate|status|list|run|pause|resume <job-id>`
 - `fw config set|get|list|overrides` — persistent `.framework.yaml` settings
 
+**Orchestrator and resolver (v1 dispatch substrate, T-1687 arc):**
+- `fw orchestrator improve` — namespace stub for v2 self-improvement (not yet implemented)
+- `fw resolver workflows` — list configured workflow files
+- `fw resolver dispatch <task_id> <task_type> [--dry-run] [--json]` — build dispatch envelope (workflow → assemble → telemetry)
+- `fw resolver explain <dispatch_id>` — forensics for a captured dispatch (reads `.context/dispatches.jsonl`)
+
 **Reviewer (anti-pattern static scan, T-1443):**
 - `fw reviewer T-XXX` — scan one task; writes verdict to `## Reviewer Verdict` block
 - `fw reviewer audit` — Layer 3 daily Pass-B re-scan of all completed tasks

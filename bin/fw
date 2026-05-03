@@ -3154,6 +3154,13 @@ EOF
                 ;;
         esac
         ;;
+    resolver)
+        # T-1696: workflow lookup + prompt assembly + telemetry capture.
+        # Spawn-side primitive consumed by T-1697 (outcome enrichment),
+        # T-1698 (litellm proxy), T-1699 (pi backend). Routes to lib/resolver.py
+        # via the shell shim. See docs/reports/T-1689-resolver-inception.md.
+        exec "$FW_LIB_DIR/resolver.sh" "$@"
+        ;;
     promote)
         source "$FW_LIB_DIR/promote.sh"
         do_promote "$@"
