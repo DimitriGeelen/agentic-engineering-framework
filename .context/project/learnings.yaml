@@ -2689,3 +2689,10 @@ X'` returning empty group."
   date: 2026-05-03
   context: Added via context agent
   application: TBD
+- id: L-347
+  learning: "Catalogue restriction does NOT rescue tool-use on generalist 8-10B ollama models. T-1703 N=18 across 6 cells (gemma4:8b × {wide,narrow,Read-only}, qwen3.5:9.7B × same): 0/18 real tool_use events. Failure mode is structural — models emit prose/code-blocks instead of tool_use JSON. Implication: function-calling fine-tuning is a hard prerequisite; catalogue size hypothesis is closed. v3 needs a tool-use-tuned model (hermes-3:8b, xlam:7b) before any further substrate work."
+  source: P-001
+  task: T-1703
+  date: 2026-05-03
+  context: Added via context agent
+  application: TBD

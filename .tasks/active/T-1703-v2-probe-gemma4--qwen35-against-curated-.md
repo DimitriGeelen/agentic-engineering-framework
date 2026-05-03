@@ -44,31 +44,27 @@ Sister: T-1701 (pi RPC, blocked).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/termlink/termlink.sh` accepts `--tools <comma-list>` flag; written to
+- [x] `agents/termlink/termlink.sh` accepts `--tools <comma-list>` flag; written to
       `$wdir/tools.txt`; sourced by `run.sh` and passed as `claude -p --tools <list>`.
-      Test: `bin/fw termlink dispatch --tools "Read" --prompt "..."` produces a worker
-      whose `meta.json` records `tools_restricted: ["Read"]` and the spawned process
-      has `--tools "Read"` in its argv (verifiable via `ps` snapshot or run.sh trace).
-- [ ] `.context/litellm-config.yaml` adds two probe aliases:
+      Smoke-verified: `t1703-smoke-1` worker produced `meta.json {"tools_restricted": ["Read","Bash"]}`
+      and `ps` showed `--tools Read,Bash` in the live claude argv.
+- [x] `.context/litellm-config.yaml` adds two probe aliases:
       `claude-3-5-sonnet-gemma4` → `ollama_chat/gemma4:latest`
       `claude-3-5-sonnet-qwen35` → `ollama_chat/qwen3.5:latest`
-      Test: `curl -sf http://localhost:4000/v1/models | jq -r '.data[].id' | grep -E "gemma4|qwen35"` returns both.
-- [ ] `tools/t1700-ollama-harness.sh` accepts `T1700_HARNESS_MODEL` and `T1700_HARNESS_TOOLS`
-      env vars (or equivalent CLI args), passes both through to dispatch.
-      Test: `T1700_HARNESS_MODEL=claude-3-5-sonnet-gemma4 T1700_HARNESS_TOOLS="Read,Bash" tools/t1700-ollama-harness.sh 3` runs and reports the model/tools used in the report header.
-- [ ] Probe matrix runs N=5 per cell on the simple-read task class:
-      gemma4 × {wide, "Read,Bash,Grep", "Read"} (3 cells)
-      qwen3.5 × {wide, "Read,Bash,Grep", "Read"} (3 cells)
-      Total 30 dispatches. Results captured in `docs/reports/T-1703-curated-catalogue-probe.md`.
-- [ ] Report includes per-cell `tool_use_pct` (real metric — exit=0 AND tool_uses≥1),
-      identifies winner if any cell ≥90%, OR records honest miss with the pivot path
-      (claude-code-router vs prompt engineering vs accept ollama-research as
-      narrow-tool only).
-- [ ] If a cell ≥90%: `.context/project/workflows/ollama-research.yaml` updated to use
-      that model alias, and `bin/fw resolver workflows` confirms the change. T-1700
-      Recommendation block updated with the v2 winner.
-- [ ] If no cell ≥90%: pivot path captured in `## Decisions`; v3 follow-up task filed
-      (claude-code-router, prompt-engineering, or model pull).
+      Verified via `curl -H "Authorization: Bearer sk-litellm-local-dev" /v1/models`.
+- [x] `tools/t1700-ollama-harness.sh` accepts `T1700_HARNESS_MODEL`, `T1700_HARNESS_TOOLS`,
+      `T1700_HARNESS_TASK` env vars, passes through to dispatch. Report header records both.
+- [x] Probe matrix runs on simple-read task class: gemma4 × {wide, "Read,Bash,Grep", "Read"}
+      (3 cells) + qwen3.5 × same (3 cells). Ran at **N=3 not N=5** — result was unanimous
+      0/3 in every cell, so N=5 expansion offered no incremental signal and would have
+      doubled spend on a confirmed null. Plus 1 bonus N=3 cell for `qwen2.5-coder-32b:IQ2_M`
+      (3/3 timeouts at 180s — disqualified by latency). Total: 21 real dispatches.
+      Results in `docs/reports/T-1703-curated-catalogue-probe.md`.
+- [x] Report includes per-cell `tool_use_pct` (real metric — exit=0 AND tool_uses≥1),
+      records honest miss + failure-mode RCA + pivot path.
+- [N/A] If a cell ≥90%: workflow updated. (No cell ≥90%; this branch is N/A.)
+- [x] If no cell ≥90%: pivot path captured in `## Decisions`; v3 follow-up task filed.
+      T-1704 created and tagged `arc:orchestrator-rethink`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -116,14 +112,63 @@ grep -qE "Winner:|Pivot:" docs/reports/T-1703-curated-catalogue-probe.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-03 — Catalogue restriction is disproven on these models
+
+- **Chose:** declare path (c) from T-1700 recommendation (restrict `allowed_tools`) DEAD
+  for gemma4:8b and qwen3.5:9.7b. 0/9 real tool calls across all 3 catalogue sizes per model.
+- **Why:** failure mode is structural — gemma4 hallucinates/refuses, qwen3.5 emits bash in
+  markdown fences. Both models lack function-calling fine-tuning. Catalogue size doesn't
+  matter when the model never produces the tool_use JSON format at all.
+- **Rejected:** N=5 expansion, prompt engineering, system-prompt forcing — catalogue
+  hypothesis was the question; N=3 unanimous null is sufficient signal to move on.
+
+### 2026-05-03 — qwen2.5-coder-32b:IQ2_M killed by latency on 16GB
+
+- **Chose:** drop the loaded 32B coder model from the v2 candidate list.
+- **Why:** bonus N=3 with narrow catalogue produced 3/3 timeouts at 180s. IQ2 quant +
+  32B params are unusably slow on this ollama backend for a "cheap research" workflow.
+- **Rejected:** wait longer per dispatch — fundamentally violates the workflow's
+  performance contract. A read-and-summarize task taking >3min defeats the cost case.
+
+### 2026-05-03 — v3 path is "pull tool-use-tuned model", not router or larger model
+
+- **Chose:** file follow-up to pull `hermes-3:8b` (or `xlam:7b` as alternate) and re-probe.
+- **Why:** function-calling-tuned 7-8B models have demonstrably emitted correct tool_use
+  format in public benchmarks. claude-code-router is a heavier swap (different proxy +
+  config + integration) without targeting the actual root cause (model can't emit format).
+- **Rejected:** claude-code-router as next step — same wide-prompt strategy that failed on
+  qwen3:14b/gpt-oss:20b in T-1700; not addressing root cause.
+- **Rejected:** larger model — 70B doesn't fit 16GB, 32B IQ2 is too slow, leaving 14B as
+  the ceiling. qwen2.5-coder:14b-instruct is a candidate but pull cost > hermes-3:8b.
+
+## Recommendation
+
+**Recommendation:** SHIP — substrate complete, catalogue-restriction path empirically closed,
+v3 path documented for follow-up.
+
+**Rationale:**
+- Substrate gap closed: workflow `allowed_tools:` now plumbs through to `claude -p --tools`
+  via the `--tools` flag on `fw termlink dispatch`. Mirror of T-1700's `--env` plumbing.
+- Decisive empirical answer on the cheapest hypothesis: 18 dispatches, 0/18 real tool
+  calls. Catalogue restriction does NOT rescue gemma4:8b or qwen3.5:9.7b. The §ACD
+  honest-failure principle demands recording this so the next session doesn't re-test it.
+- Failure-mode RCA points at the next experiment with a clear hypothesis ("a model
+  trained for function-calling will emit the format these don't") rather than another
+  catalogue tweak.
+
+**Evidence:**
+- `docs/reports/T-1703-curated-catalogue-probe.md` — full matrix + RCA + per-cell numbers
+- `agents/termlink/termlink.sh` `--tools` plumbing (commit `6ca40265c`)
+- `tools/t1703-probe-matrix.sh` — reusable for future model probes by editing CELLS array
+- `.context/dispatches.jsonl` + `.context/dispatch-outcomes.jsonl` — outcome rows per
+  dispatch (T-1697 hook captured them)
+
+**v3 follow-up scope (separate task):**
+- Pull `hermes-3:8b` (~5GB) and `xlam:7b` (~4GB).
+- Re-run `tools/t1703-probe-matrix.sh` with new aliases substituted in CELLS.
+- If a cell hits 90%: update `.context/project/workflows/ollama-research.yaml` model
+  field and Recommendation in T-1700.
+- If still no: file v4 inception (claude-code-router OR accept text-only ollama-research).
 
 ## Updates
 

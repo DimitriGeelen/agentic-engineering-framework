@@ -173,10 +173,22 @@ What FAILS (and is honestly captured):
 - `.context/dispatch-outcomes.jsonl` — outcome rows back-propagated by T-1697 evaluator
 
 **v2 follow-up scope (file as separate inception → build):**
-- Pick fitness path: ≥70B model | claude-code-router | restricted allowed_tools.
+- ~~Pick fitness path: ≥70B model | claude-code-router | restricted allowed_tools.~~
+  **Updated 2026-05-03 after T-1703:**
+  - ≥70B model — dead on 16GB hardware (40GB Q4, IQ1/IQ2 unusable quality).
+  - Restricted `allowed_tools` — disproven by T-1703 (0/18 across gemma4:8b, qwen3.5:9.7B
+    with wide/narrow/Read-only catalogues). Failure is structural: models emit prose
+    or markdown code-blocks instead of tool_use JSON. See L-347.
+  - Remaining paths: pull a function-calling-tuned model (hermes-3:8b, xlam:7b) OR
+    claude-code-router (different prompt strategy) OR accept text-only narrow workflow.
 - AC group 2 (`fw doctor` checks) — small, can ship in same v2 task or alongside.
 - AC group 6 (env-leak test) — small, can ship now or in v2.
 - systemd hardening for litellm daemon.
+
+**Substrate completed since v1 ship:**
+- T-1703 added `--tools` plumbing on `fw termlink dispatch` (mirrors `--env`). Workflow
+  `allowed_tools:` field now propagates to `claude -p --tools` flag. Closed a second
+  resolver-envelope-captured-but-unread gap (first was `env:`, closed in T-1700 itself).
 
 ## Updates
 
