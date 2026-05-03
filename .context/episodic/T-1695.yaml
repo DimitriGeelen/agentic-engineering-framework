@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1695: fw orchestrator improve CLI stub — reserve namespace, exit with v2-pending message
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T07:58:22Z
+# ============================================================================
+
+task_id: T-1695
+task_name: "fw orchestrator improve CLI stub — reserve namespace, exit with v2-pending message"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-02T22:56:20Z
+completed: 2026-05-03T07:58:18Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-03T09:58:14+02:00
+last_commit: 2026-05-03T09:58:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw orchestrator improve CLI stub — reserve v2 namespace
+
+# Key outcomes
+outcomes:
+  - "`bin/fw orchestrator improve` is wired into the fw command router"
+  - "Running it exits 0"
+  - "Output mentions \"v2\", \"not yet implemented\", AND the data paths (`.context/dispatches.jsonl`, `.context/dispatch-blobs/`)"
+  - "Appears in `fw orchestrator --help` (or `fw help orchestrator`) output"
+  - "Does NOT actually read or analyze any dispatch data (it's a stub)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1695-fw-orchestrator-improve-cli-stub--reserv.md"
+  - ".tasks/completed/T-1693-ship-baseline-workflow-files-default--in.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T09:58:14"
+    action: "T-1695: fw orchestrator improve CLI stub — reserve v2 namespace"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 541 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 541
+  commits: 1
+  files_changed: 3
+  lines_added: 69
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1695-fw-orchestrator-improve-cli-stub--reserv.md
+generated_by: context-agent-hybrid

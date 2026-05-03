@@ -471,3 +471,24 @@ decisions:
     date: 2026-05-03
     task: T-1065
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-070
+    decision: "Ship `prompts/default.md` as a real Tier-2 assembled prompt (not a stub)."
+    scope: project
+    date: 2026-05-03
+    task: T-1693
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-071
+    decision: "INFO when pi is missing AND no workflow uses worker_kind:pi; WARN only when at least one workflow needs it."
+    scope: project
+    date: 2026-05-03
+    task: T-1694
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-072
+    decision: "Inline Python heredoc in `bin/fw do_doctor()`, matching the existing settings.json validator pattern."
+    scope: project
+    date: 2026-05-03
+    task: T-1694
+    rationale: "Auto-captured from task file on completion"

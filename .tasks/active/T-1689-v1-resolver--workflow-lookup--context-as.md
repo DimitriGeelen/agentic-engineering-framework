@@ -4,7 +4,7 @@ name: "v1 Resolver — workflow lookup + context assembly + variant selection + 
 description: >
   v1 implementation of the Resolver: the Agent-side function that turns a Workflow + live task context into a Delegation envelope. Per CONTEXT.md+ADR-0003: workflow lookup with default.yaml fallback, three-tier prompt construction (static/assembled/meta-prompted), variant selection, dispatch_id+blob capture, template-SHA recording. Highest-complexity new component in v1 — worth its own scoped inception to nail down implementation choices, ACs, and validation strategy.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [arc:orchestrator-rethink, resolver]
 components: []
 related_tasks: [T-1687, T-1686]
 created: 2026-05-02T22:55:52Z
-last_update: 2026-05-02T22:55:52Z
+last_update: 2026-05-03T08:08:18Z
 date_finished: null
 ---
 
@@ -94,15 +94,53 @@ The Resolver is the load-bearing new component for v1 dispatch. CONTEXT.md + ADR
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Substrate works end-to-end at 5.3 ms avg per dispatch (NO-GO threshold >500 ms — two orders of magnitude clear). All four assumptions testable in this inception (A-1, A-2, A-3, A-5) validated; A-4 (Tier 3 latency) intentionally deferred to v1 build because it requires a paid LLM call AND the substrate is unconditional regardless of Tier 3's runtime decision. The spike caught a real concurrency bug in the back-prop path (A-5 fixed-tmp race) before any production code shipped — exactly what spikes are for. The resolver fits one Python module (~290 LOC spike → ~400 LOC production estimate). Three of the four GO criteria are MET; the fourth (Tier 3 runtime bound) is wired as substrate and runtime-validated by the v1 build task.
+
+**Evidence:**
+- `docs/reports/T-1689-spikes/resolver_spike.py` runs to completion: `Spike S-1 + S-2: ALL CHECKS PASS`
+  - Q12 fallback verified: non-existent task_type resolves to `default.yaml` with `_resolved_via=default-fallback`
+  - JSONL round-trip verified: dispatch_id, workflow_sha (commit hash), template_sha, blob_dir all captured
+  - Inline-workflow rejection: `inception.yaml` correctly raises ResolverError per ADR-0002
+  - End-to-end latency: 5.3ms avg, max 6.3ms across 10 dispatches
+  - Variant distribution (10000 draws, weights {A:0.7, B:0.2, C:0.1}): observed {7023, 1997, 980} all within 3σ tolerance
+  - `select_variant()` returns None when no `variants:` block — default path preserved
+- `docs/reports/T-1689-spikes/backprop_spike.py` runs to completion: `✓ Spike A-5: no JSON corruption under concurrent back-prop`
+  - 50 rows preserved across 5 concurrent back-prop threads
+  - **Critical finding:** the naive shared-`.tmp` rewrite-then-rename pattern (used by lib/learning.sh + lib/decision.sh) does NOT survive concurrent writers — first run produced FileNotFoundError + corrupt JSON. Per-call unique tmp filename (`.jsonl.tmp.<pid>.<tid>`) fixes it. T-1690 build task must implement this.
+- `git rev-parse HEAD:<path>` measured at ~2.1ms per call on the framework repo (10-call avg) — well under A-2's 50ms budget.
+
+**Research artifact:** `docs/reports/T-1689-resolver-inception.md` (full findings + module sizing analysis + v1 build task scope).
+
+**v1 build task scope (to file after GO):**
+1. Port spike → `lib/resolver.py` (~400 LOC) + `lib/resolver.sh` shim (~30 LOC)
+2. Wire `bin/fw resolver` for debugging + as the spawn-side primitive consumed by T-1691/T-1692
+3. Real `_recent_dispatches_summary` (currently a stub) — tail JSONL for last-N matching task_type
+4. Real `HEALING_PATTERNS` injection — pull from `patterns.yaml`
+5. Few-shot example loader (`prompts/examples/<task_type>/*.md`)
+6. Tier 3 (`meta-prompted`) implementation — first real consumer is the build task itself; if latency >30s OR cost >$0.05/dispatch fails the runtime check, mark Tier 3 substrate-only and defer the actual call to v2
+7. Per-call unique tmp pattern in any modify-in-place path (T-1690 inheritance)
+8. CLI: `fw resolver dispatch <task_id> <task_type>` for dry-run + `fw resolver explain <dispatch_id>` for forensics
+
+**Caveats:**
+- A-4 (Tier 3 latency) intentionally not validated in this inception; substrate ships unconditionally
+- Spike used synthetic `_recent_dispatches_summary` and `HEALING_PATTERNS` stubs — production assembled-tier quality depends on those being properly wired in the build task
+- Concurrent back-prop is not race-free at the application level; T-1690 must accept last-writer-wins semantics (acceptable because back-prop fires per-task-completion, not per-dispatch)
+
+## Decisions
+
+### 2026-05-03 — Module structure (single Python + shell shim vs split)
+
+- **Chose:** Single `lib/resolver.py` (~400 LOC) + thin `lib/resolver.sh` (~30 LOC) shim.
+- **Why:** 290-LOC spike does not split naturally. The five concerns (workflow lookup, prompt assembly, variant selection, telemetry, env merge) are tightly coupled — they share the workflow dict and dispatch_id throughout. Splitting would create artificial seams that hurt readability without reducing complexity.
+- **Rejected:** lib/resolver/{workflow.py, assemble.py, telemetry.py, variants.py} package — premature factoring, would force inter-module data plumbing for ~50-LOC pieces.
+
+### 2026-05-03 — Atomic back-prop pattern
+
+- **Chose:** Per-call unique tmp filename (`.jsonl.tmp.<pid>.<tid>`) for ALL modify-in-place paths in T-1690.
+- **Why:** Spike A-5 caught the shared-`.tmp` race on first run. The framework's existing lib/learning.sh / lib/decision.sh use shared `.tmp` and have not corrupted in 1500+ tasks — but those are sequentially called from a single agent process; back-prop hooks may fire concurrently across multiple completing tasks.
+- **Rejected:** Application-level lockfile — adds complexity without solving the last-writer-wins semantic, which is acceptable for back-prop frequency.
 
 ## Decisions
 
@@ -123,3 +161,6 @@ The Resolver is the load-bearing new component for v1 dispatch. CONTEXT.md + ADR
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-03T08:08:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

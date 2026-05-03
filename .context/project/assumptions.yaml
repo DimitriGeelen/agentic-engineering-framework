@@ -249,3 +249,61 @@ assumptions:
   linked_task: T-1404
   created: '2026-04-23'
   resolved_date: null
+- id: A-027
+  statement: 'A-1: A single Python module (lib/resolver.py) + small shell shim is
+    the right structural fit — matches existing patterns'
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: Spike resolver_spike.py 290 LOC; no natural module split; matches lib/bus.sh
+      + lib/dispatch.sh sizing pattern
+    date: '2026-05-03'
+  linked_task: T-1689
+  created: '2026-05-03'
+  resolved_date: '2026-05-03'
+- id: A-028
+  statement: 'A-2: git rev-parse HEAD:<path> at dispatch time has acceptable latency
+    (<50ms) for both workflow files and templates'
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: git rev-parse HEAD:<path> measured at 2.1ms/call avg over 10 invocations
+      on framework repo; well under 50ms budget
+    date: '2026-05-03'
+  linked_task: T-1689
+  created: '2026-05-03'
+  resolved_date: '2026-05-03'
+- id: A-029
+  statement: 'A-3: .context/dispatch-blobs/ is structurally separate from .context/bus/blobs/
+    — no path collision risk'
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: .context/bus/blobs/ exists; .context/dispatch-blobs/ now created at sibling
+      path; different parent dirs, no path collision possible
+    date: '2026-05-03'
+  linked_task: T-1689
+  created: '2026-05-03'
+  resolved_date: '2026-05-03'
+- id: A-030
+  statement: 'A-4: Tier 3 (meta-prompted) latency 5-30s haiku→sonnet meta-step is
+    acceptable for opt-in workflows'
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1689
+  created: '2026-05-03'
+  resolved_date: null
+- id: A-031
+  statement: 'A-5: dispatches.jsonl modify-in-place for back-prop (T-1690) is achievable
+    atomically (rewrite-then-rename)'
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: 'Spike backprop_spike.py: 50 rows preserved across 5 concurrent back-prop
+      threads with per-call unique tmp; naive shared-tmp pattern caught corrupting
+      on first run'
+    date: '2026-05-03'
+  linked_task: T-1689
+  created: '2026-05-03'
+  resolved_date: '2026-05-03'

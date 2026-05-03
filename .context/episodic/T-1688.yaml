@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1688: G-064 candidate-consumer survey — classify every autonomous workload for orchestrator retrofit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T07:10:18Z
+# ============================================================================
+
+task_id: T-1688
+task_name: "G-064 candidate-consumer survey — classify every autonomous workload for orchestrator retrofit"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T21:05:48Z
+completed: 2026-05-03T07:10:15Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-05-02T23:09:30+02:00
+last_commit: 2026-05-02T23:11:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-064 candidate-consumer survey — classify all autonomous workloads. G-064 update — retrofit search exhausted, escalation-scan v0.5 named as preferred path
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated — survey enumerates every cron in `.context/cron/agentic-audit.crontab` and classifies each"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/arcs/orchestrator-rethink.yaml"
+  - ".context/project/concerns.yaml"
+  - "docs/reports/T-1688-candidate-consumer-survey.md"
+  - ".fabric/components/docs-reports-T-1688-candidate-consumer-survey.yaml"
+  - ".tasks/active/T-1688-g-064-candidate-consumer-survey--classif.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T23:09:30"
+    action: "T-1688: G-064 candidate-consumer survey — classify all autonomous workloads"
+  - time: "2026-05-02T23:11:49"
+    action: "T-1688: G-064 update — retrofit search exhausted, escalation-scan v0.5 named as preferred path"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 604 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [gap-consumer, arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 604
+  commits: 2
+  files_changed: 5
+  lines_added: 279
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1688-g-064-candidate-consumer-survey--classif.md
+generated_by: context-agent-hybrid

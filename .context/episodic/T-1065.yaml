@@ -1,0 +1,131 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1065: Multi-LLM routing — task-aware model selection via TermLink dispatch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T07:42:42Z
+# ============================================================================
+
+task_id: T-1065
+task_name: "Multi-LLM routing — task-aware model selection via TermLink dispatch"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-08T05:32:25Z
+completed: 2026-05-03T07:42:38Z
+duration_days: 25
+updates_count: 6
+first_commit: 2026-04-08T07:32:49+02:00
+last_commit: 2026-04-28T21:59:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1061: Create follow-up build tasks from inception GO — phases 1-5. T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies. T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing. Add learnings — cross-project dispatch pattern and timeout handling. Update with TermLink results — model passthrough already implemented. T-1061: Version bump to 1.5.91 — all 5 inception phases executed. Add --model flag to fw termlink dispatch. Add --model to dispatch quick reference in CLAUDE.md. Version bump to 1.5.92 — model flag + framework integration. close scope-split — flip DEFER→GO citing T-1590 Phase 4b shipment
+
+# Key outcomes
+outcomes:
+  - "`termlink_dispatch` MCP tool accepts `model` parameter (e.g., \"opus\", \"sonnet\", \"haiku\")"
+  - "Dispatch system spawns workers with model-specific configuration"
+  - "Route cache tracks model -> task-type success rates — shipped via T-1590 Phase 4b (record_model_success/failure, best_model_for, ModelStats with #[serde(default)] for persistence)"
+  - "Circuit breaker handles model unavailability with fallback to next model — shipped via T-1590 Phase 4b (ModelCircuitBreaker::resolve_model + DEFAULT_MODEL_FALLBACK chain wired into termlink_dispatch)"
+  - "Default behavior (no model specified) is unchanged"
+  - "Tests: model dispatch (3 tests pass: opus, sonnet, absent)"
+  - "All existing tests pass (`cargo test`) — 480/0 in T-1590 Phase 4b verification (278 hub + 103 mcp unit + 99 mcp integration)"
+  - "Resolver picks correct model per task_type from live cache. Verified 2026-05-02T11:xx live (`_resolve_dispatch_model_and_fallback`): build→haiku, design→sonnet, inception→opus, unknown→none. Trace pinned at `docs/reports/orchestrator-rethink-demo/resolver-trace.txt`; live-update evidence in `cache-04-2026-05-02-1100Z-still-firing.json`."
+  - "Fallback chain is `opus → sonnet → haiku` (hard-coded const). Verified 2026-05-02T11:xx via T-1679 grep: `pub const DEFAULT_MODEL_FALLBACK: &[&str] = &[\"opus\", \"sonnet\", \"haiku\"];` at `/opt/termlink/crates/termlink-hub/src/circuit_breaker.rs:114`."
+  - "Outcome attribution uses task.completed `ok` field — no schema change. Verified 2026-05-02T11:xx via T-1679: `resolve_dispatch_model` at `/opt/termlink/crates/termlink-mcp/src/tools.rs:854` + 3 unit tests pass (`resolve_dispatch_model_passthrough_when_breaker_closed`, `resolve_dispatch_model_uses_best_for_task_type`, `resolve_dispatch_model_no_inputs_returns_none` — 3/3 pass)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Model passthrough first, routing intelligence later"
+    rationale: "Model passthrough is the foundation. Route cache model tracking and circuit breaker fallback are separate concerns that build on it."
+    alternatives_rejected: ["Implementing full model routing in one task (timed out on first attempt, scope too large)"]
+    chose: "Mark the 2 originally-deferred ACs as satisfied by T-1590 (Phase 4b)"
+    rationale: "T-1590 shipped exactly the deferred work — `record_model_*`, `best_model_for`, `ModelCircuitBreaker::resolve_model`, `DEFAULT_MODEL_FALLBACK` — all wired into `termlink_dispatch` with 5 new tests. The split was a sequencing decision, not a permanent boundary; bringing the ACs back together is the honest accounting now that both halves exist."
+    alternatives_rejected: ["Leaving the 2 ACs unchecked indefinitely — would misrepresent the integrated system as still partial; reviewer would re-flag them on every Pass-A scan."]
+    chose: "Ship mechanism now; defer cost-weighting to T-1637"
+    rationale: "Mechanism (success-rate tracking + circuit-breaker fallback) is correctly built and verified by 480/0 tests. Cost-naivety is a separable feature add captured cleanly as T-1637 (`horizon: later`). The orchestrator-rethink arc (T-1689 Resolver, ADR-0003) supersedes this routing layer for non-TermLink-RPC dispatch — shipping T-1065 unblocks arc work without locking in cost-naive routing. T-1641 reconsideration accurately flags the value-prop gap; that gap is registered in T-1637 and T-1642 (policy consultation) for proper graduation."
+    alternatives_rejected: ["Block T-1065 closure until cost-weighting lands (would force the value-prop and the substrate to ship together, but the arc replaces the substrate; cost-weighting is more useful when graduated under T-1689's Resolver context-assembly than retrofitted into the TermLink-side cache)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/termlink/termlink.sh"
+  - "CLAUDE.md"
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md"
+  - ".tasks/active/T-1063-mcp-level-governance--task-gate-checks-i.md"
+  - ".tasks/active/T-1064-extend-orchestratorroute-with-task-type-.md"
+  - ".tasks/active/T-1065-multi-llm-routing--task-aware-model-sele.md"
+  - ".tasks/active/T-1066-data-plane-governance-subscriber--post-h.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-08T07:32:49"
+    action: "T-1061: Create follow-up build tasks from inception GO — phases 1-5"
+  - time: "2026-04-08T07:32:49"
+    action: "T-1061: Create follow-up build tasks from inception GO — phases 1-5"
+  - time: "2026-04-08T07:45:55"
+    action: "T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies"
+  - time: "2026-04-08T07:45:55"
+    action: "T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies"
+  - time: "2026-04-08T08:56:25"
+    action: "T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing"
+  - time: "2026-04-08T08:56:25"
+    action: "T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing"
+  - time: "2026-04-08T09:07:51"
+    action: "T-1065: Add learnings — cross-project dispatch pattern and timeout handling"
+  - time: "2026-04-08T09:07:51"
+    action: "T-1065: Add learnings — cross-project dispatch pattern and timeout handling"
+  - time: "2026-04-08T09:13:17"
+    action: "T-1065: Update with TermLink results — model passthrough already implemented"
+  - time: "2026-04-08T09:13:17"
+    action: "T-1065: Update with TermLink results — model passthrough already implemented"
+  - time: "2026-04-08T09:13:44"
+    action: "T-1061: Version bump to 1.5.91 — all 5 inception phases executed"
+  - time: "2026-04-08T09:13:44"
+    action: "T-1061: Version bump to 1.5.91 — all 5 inception phases executed"
+  - time: "2026-04-08T09:18:33"
+    action: "T-1065: Add --model flag to fw termlink dispatch"
+  - time: "2026-04-08T09:18:33"
+    action: "T-1065: Add --model flag to fw termlink dispatch"
+  - time: "2026-04-08T09:18:53"
+    action: "T-1065: Add --model to dispatch quick reference in CLAUDE.md"
+  - time: "2026-04-08T09:18:53"
+    action: "T-1065: Add --model to dispatch quick reference in CLAUDE.md"
+  - time: "2026-04-08T09:19:12"
+    action: "T-1065: Version bump to 1.5.92 — model flag + framework integration"
+  - time: "2026-04-08T09:19:12"
+    action: "T-1065: Version bump to 1.5.92 — model flag + framework integration"
+  - time: "2026-04-28T21:59:47"
+    action: "T-1065: close scope-split — flip DEFER→GO citing T-1590 Phase 4b shipment"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 20 commit(s), 36130 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, multi-llm, routing]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36130
+  commits: 20
+  files_changed: 9
+  lines_added: 1071
+  lines_removed: 259
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1065-multi-llm-routing--task-aware-model-sele.md
+generated_by: context-agent-hybrid

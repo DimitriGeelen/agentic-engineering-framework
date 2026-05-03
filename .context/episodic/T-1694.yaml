@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1694: fw doctor extensions — pi-installed check (Q13) + workflow schema linter (Q14)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T08:07:57Z
+# ============================================================================
+
+task_id: T-1694
+task_name: "fw doctor extensions — pi-installed check (Q13) + workflow schema linter (Q14)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T22:56:15Z
+completed: 2026-05-03T08:07:13Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-03T10:06:35+02:00
+last_commit: 2026-05-03T10:07:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw doctor extensions — pi-installed check (Q13) + workflow lint (Q14). tick ACs + write Recommendation block
+
+# Key outcomes
+outcomes:
+  - "`fw doctor` reports \"pi not installed\" when the `pi` binary is absent from PATH (verified — INFO when no workflow uses `worker_kind: pi`, WARN with install command when one does)"
+  - "`fw doctor` does NOT auto-install pi — only warns and prints the install command (`npm install -g @badlogic/pi-mono`)"
+  - "`fw doctor` lints every file matching `.context/project/workflows/*.yaml` (verified — count message reports file total)"
+  - "A deliberately broken workflow file (missing required field) produces an error with file path + key reference (verified: `_bad-test.yaml: missing required key(s): ['allowed_tools', 'cost_cap_usd', ...]`)"
+  - "`fw doctor` exits 0 when all workflow files are valid AND optional dependencies (pi) are present (verified — exit=0 with current shipped workflows)"
+  - "`fw doctor` exits non-zero when at least one workflow file fails schema validation (verified — exit=2 with broken file)"
+  - "`fw doctor` warns (does not error) when `default.yaml` is missing (verified: WARN, not FAIL)"
+  - "`fw doctor` flags `inline: true` co-existing with dispatch fields (`worker_kind`, `model`, etc.) as a schema error (verified: `inline:true cannot co-exist with dispatch fields: ['model', 'worker_kind']`)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "INFO when pi is missing AND no workflow uses worker_kind:pi; WARN only when at least one workflow needs it."
+    rationale: "Most consumers won't use pi. Hard-warning every doctor run trains operators to ignore it. Conditional severity respects \"actionable errors only.\""
+    alternatives_rejected: ["Always-WARN-when-missing — matches TermLink pattern but creates noise where pi has no current consumer."]
+    chose: "Inline Python heredoc in `bin/fw do_doctor()`, matching the existing settings.json validator pattern."
+    rationale: "~80 lines, single-call, no public API surface to maintain. T-1689 Resolver will read these files for dispatch (different access pattern), not for validation."
+    alternatives_rejected: ["Standalone `lib/workflow-lint.py` — premature factoring."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1694-fw-doctor-extensions--pi-installed-check.md"
+  - ".tasks/completed/T-1695-fw-orchestrator-improve-cli-stub--reserv.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T10:06:35"
+    action: "T-1694: fw doctor extensions — pi-installed check (Q13) + workflow lint (Q14)"
+  - time: "2026-05-03T10:07:13"
+    action: "T-1694: tick ACs + write Recommendation block"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 550 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, doctor]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 550
+  commits: 2
+  files_changed: 3
+  lines_added: 153
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1694-fw-doctor-extensions--pi-installed-check.md
+generated_by: context-agent-hybrid

@@ -111,11 +111,138 @@ Not full validation (see A-4 above). Just wire the data flow:
 
 ## Findings
 
-(filled as spikes complete)
+### Spike S-1 — End-to-end Tier-2 resolver
+
+`docs/reports/T-1689-spikes/resolver_spike.py` (~280 LOC) implements:
+- `load_workflow(task_type)` — Q12 fallback with `_resolved_via` flag
+- `assemble_prompt(workflow, task_context)` — `$VAR` substitution with resolver-injected context (`PROJECT_ROOT`, `RECENT_DISPATCHES`, `HEALING_PATTERNS`)
+- `git_sha(path)` — `git rev-parse HEAD:<path>` with `mtime:`-prefixed fallback for uncommitted files
+- `select_variant(workflow)` — weighted-random pick or None
+- `capture_dispatch(...)` — generates `dispatch_id`, writes JSONL row + creates `dispatch-blobs/<YYYY-MM>/<id>/prompt.txt`
+- `resolve(task_id, task_type, task_context)` — main entry; rejects `inline:true` workflows per ADR-0002
+
+End-to-end measurements (10 dispatches against shipped `default.yaml`):
+- avg latency: **5.3 ms**
+- min: 4.5 ms / max: 6.3 ms
+- well below NO-GO threshold (>500ms)
+
+Telemetry round-trip verified: JSONL row matches dispatch_id, blob_dir exists,
+prompt.txt is 1425 bytes, both `workflow_sha` (commit hash) and `template_sha`
+captured.
+
+Inline-workflow rejection verified for `inception.yaml` (correctly raises
+`ResolverError`).
+
+Q12 fallback path verified: requesting non-existent `task_type` resolves to
+`default.yaml`, sets `_resolved_via=default-fallback` and `_original_task_type`
+in the JSONL row so default-routed dispatches don't blur into one telemetry
+bucket.
+
+### Spike S-2 — Variant selection
+
+10000-draw distribution test against weights {A:0.7, B:0.2, C:0.1}:
+
+| variant | expected | observed | 3σ tolerance | pass |
+|---------|----------|----------|--------------|------|
+| A | 7000 | 7023 | ±137 | ✓ |
+| B | 2000 | 1997 | ±120 | ✓ |
+| C | 1000 | 980 | ±90 | ✓ |
+
+`select_variant()` returns `None` when no `variants:` block — default-no-variants
+path preserved.
+
+### Spike S-3 — Tier 3 substrate
+
+Spike harness wires the data flow:
+- workflow's `prompt_strategy` recorded in JSONL (5.3ms latency unchanged whether
+  strategy is `assembled` or `meta-prompted` — meta-LLM call is the heavy step,
+  not the substrate)
+- `meta_template`, `meta_model`, `meta_prompt_text` schema slots present in
+  resolver — Tier 3 build task wires the actual haiku call without retrofitting
+
+A-4 latency (5–30s for haiku meta-step) NOT validated in this spike — requires
+a real LLM call. **Deferred** to v1 build task: if Tier 3 latency exceeds the
+30s threshold OR cost exceeds $0.05/dispatch, defer Tier 3 to v2 and ship only
+Tiers 1+2 in v1. Substrate is unconditional.
+
+### Spike A-5 — Concurrent back-prop atomicity
+
+`docs/reports/T-1689-spikes/backprop_spike.py`:
+- 50 pending rows appended
+- 5 threads concurrently back-prop alternating outcomes (success/failed)
+- All 50 rows preserved, **zero JSON corruption** with per-call unique tmp
+  filename (`.jsonl.tmp.<pid>.<tid>`)
+- Last-writer-wins via filesystem rename — some back-prop writes lost
+  (38 pending after concurrent run vs expected ≤25 if all writes landed)
+
+**Critical finding:** the naive "rewrite-then-rename to fixed `.tmp`" pattern
+that lib/learning.sh + lib/decision.sh use **does not survive concurrent
+writers**. Spike caught this on first run (initial implementation produced
+`FileNotFoundError` + corrupt JSON line). Production resolver MUST use
+per-call unique tmp filenames.
+
+For T-1690's use case this is acceptable: back-prop fires once per task
+completion, not every dispatch, so concurrency is rare in practice. But this
+is a load-bearing detail T-1690 must implement correctly. Recorded.
+
+### Module sizing
+
+Spike resolver: 290 LOC Python total. Production version will add structured
+logging + better error context; estimate **~400 LOC**. Single-module hypothesis
+(A-1) holds — the resolver does NOT split naturally into smaller pieces. The
+shell shim is trivial: `~30 LOC` to expose `fw resolver <task_id> <task_type>`
+for debugging + dispatch-from-bash callers.
 
 ## Recommendation
 
-(filled at end)
+**Recommendation:** GO
+
+**Rationale:** Substrate works end-to-end. All four assumptions testable in this
+inception (A-1, A-2, A-3, A-5) are validated. A-4 is the only deferred test —
+intentionally, because it requires a paid LLM call and the substrate is
+unconditional regardless of Tier 3 latency outcome. The end-to-end latency
+(5.3ms avg) is two orders of magnitude below the NO-GO threshold. The module
+is small enough (~400 LOC) that single-module sizing holds. Crucially, the
+spike caught a real concurrency bug (A-5 fixed-tmp race) before any
+production code shipped — exactly what inception spikes are for.
+
+The four go/no-go criteria from the task body:
+
+| Criterion | Result |
+|-----------|--------|
+| GO if S-1 works end-to-end (Tiers 1+2) with full telemetry round-trip | **MET** — 5.3ms avg, JSONL + blob_dir + sha capture verified |
+| GO if S-2 confirms Tier 3 latency bounded + cost acceptable | **DEFERRED** — substrate wired; runtime validation in v1 build task |
+| GO if S-3 confirms variant slot works without breaking default-no-variants | **MET** — 10k-draw distribution at 3σ; None returned for no-variants |
+| GO if Resolver fits a single Python module | **MET** — 290 LOC spike → ~400 LOC production; single module |
+
+| NO-GO check | Result |
+|-------------|--------|
+| Telemetry creates >500ms latency overhead | **PASS** — 5.3ms |
+| JSONL modify-in-place unsafe under concurrent dispatches | **PASS WITH NOTE** — per-call unique tmp required (T-1690 must implement) |
+| Tier 3 latency unusable | **PASS (substrate)** — runtime bound in v1 build |
+| Resolver requires more than one Python module | **PASS** — 290 LOC, no natural split |
+
+**Evidence:**
+- `docs/reports/T-1689-spikes/resolver_spike.py` runs to completion: `Spike S-1 + S-2: ALL CHECKS PASS`
+- `docs/reports/T-1689-spikes/backprop_spike.py` runs to completion: `✓ Spike A-5: no JSON corruption under concurrent back-prop`
+- 5.3ms avg end-to-end latency (10-dispatch sample)
+- A-2 measured: ~2.1ms per `git rev-parse HEAD:<path>` call
+- 10000-draw variant distribution within 3σ of declared weights
+
+**v1 build task scope (to file after GO):**
+1. Port spike → `lib/resolver.py` + `lib/resolver.sh` shim
+2. Wire `bin/fw resolver` for debugging (and use as the spawn-side-of-dispatch primitive consumed by T-1691/T-1692)
+3. Real `_recent_dispatches_summary` (currently a stub) — tail JSONL for last-N matching task_type
+4. Real `HEALING_PATTERNS` injection (currently `(none matched)`) — pull from `patterns.yaml`
+5. Few-shot example loader (`prompts/examples/<task_type>/*.md`)
+6. Tier 3 (`meta-prompted`) implementation — first real consumer is the build task itself; if latency or cost fails the runtime check, mark Tier 3 as substrate-only and defer the actual call to v2
+7. Per-call unique tmp pattern in any future modify-in-place path
+8. CLI: `fw resolver dispatch <task_id> <task_type>` for dry-run + `fw resolver explain <dispatch_id>` for forensics
+
+**Caveats:**
+- A-4 (Tier 3 latency) intentionally not validated; substrate ships unconditionally, runtime decision is on the v1 build task
+- Spike used a synthetic `_recent_dispatches_summary` and `HEALING_PATTERNS` stub — production assembled-tier quality depends on those being properly wired
+- Concurrent back-prop is not race-free at the application level; T-1690 must use per-call unique tmp filenames AND should accept last-writer-wins semantics (acceptable because back-prop fires per-task-completion, not per-dispatch)
 
 ## Dialogue Log
 

@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1662: Phase 2: Watchtower /arcs/<id> generic arc surface page (generalize T-1647 /orchestrator)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T07:43:21Z
+# ============================================================================
+
+task_id: T-1662
+task_name: "Phase 2: Watchtower /arcs/<id> generic arc surface page (generalize T-1647 /orchestrator)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T19:34:55Z
+completed: 2026-05-03T07:43:15Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-05-01T21:59:22+02:00
+last_commit: 2026-05-01T22:00:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  /arcs and /arcs/<id> generic arc surface (Phase 2 of T-1653). register fabric cards for arcs blueprint + templates + tests
+
+# Key outcomes
+outcomes:
+  - "**Index route:** `GET /arcs` returns 200 with a list of every arc registered in `.context/arcs/*.yaml`. Each row shows id, name, status, decision (if any), constituent task count, focus indicator. Empty state when registry empty."
+  - "**Detail route:** `GET /arcs/<arc_id>` returns 200 for any registered arc. Shows arc metadata (name, status, decision, anchor, created/closed timestamps), constituent task table with status badges, three-question §Arc Completion Discipline checklist, link to anchor task, copy-pasteable `fw arc close <id> --decision \"...\"` snippet (only for in-progress arcs). 404 with friendly message for unregistered arcs."
+  - "**Cross-link:** `/orchestrator` page gains a top-of-page link to `/arcs/orchestrator-rethink` so the operator can flip between the specialized and generic views."
+  - "**Index nav:** `/arcs` is reachable from the Watchtower top nav (under Architecture or similar group)."
+  - "**Tests:** `tests/unit/test_arcs_routes.py` pins index + detail + 404 + empty state via Flask test_client. ≥4 tests (6 shipped)."
+  - "[REVIEW] /arcs index and /arcs/orchestrator-rethink detail are useful at a glance"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-test_arcs_routes.yaml"
+  - ".fabric/components/web-blueprints-arcs.yaml"
+  - ".fabric/components/web-templates-arc_detail.yaml"
+  - ".fabric/components/web-templates-arcs_index.yaml"
+  - ".tasks/active/T-1662-phase-2-watchtower-arcsid-generic-arc-su.md"
+  - "tests/unit/test_arcs_routes.py"
+  - "web/blueprints/arcs.py"
+  - "web/blueprints/__init__.py"
+  - "web/shared.py"
+  - "web/templates/arc_detail.html"
+  - "web/templates/arcs_index.html"
+  - "web/templates/orchestrator.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T21:59:22"
+    action: "T-1662: /arcs and /arcs/<id> generic arc surface (Phase 2 of T-1653)"
+  - time: "2026-05-01T22:00:16"
+    action: "T-1662: register fabric cards for arcs blueprint + templates + tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2168 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, arcs, phase-2, from-T-1653]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2168
+  commits: 3
+  files_changed: 15
+  lines_added: 826
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1662-phase-2-watchtower-arcsid-generic-arc-su.md
+generated_by: context-agent-hybrid

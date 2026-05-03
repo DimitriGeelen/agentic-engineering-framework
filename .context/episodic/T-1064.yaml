@@ -1,0 +1,107 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1064: Extend orchestrator.route with task-type routing and model-aware specialist selection
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T07:42:06Z
+# ============================================================================
+
+task_id: T-1064
+task_name: "Extend orchestrator.route with task-type routing and model-aware specialist selection"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-08T05:32:16Z
+completed: 2026-05-03T07:42:02Z
+duration_days: 25
+updates_count: 3
+first_commit: 2026-04-08T07:32:49+02:00
+last_commit: 2026-04-08T09:13:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1061: Create follow-up build tasks from inception GO — phases 1-5. T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies. Update with TermLink dispatch results — orchestrator task-type routing. T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing. T-1061: Version bump to 1.5.91 — all 5 inception phases executed
+
+# Key outcomes
+outcomes:
+  - "`orchestrator.route` accepts optional `task_type` field in route requests"
+  - "Route cache learns task-type -> specialist mappings alongside method -> specialist"
+  - "Bypass registry considers task-type in promotion decisions"
+  - "Existing routing (method-based) continues to work unchanged when task_type is absent"
+  - "Tests: task-type routing selects correct specialist, fallback to method routing when no type match"
+  - "All existing tests pass (`cargo test`) — 155 hub tests pass"
+  - "/opt/termlink termlink-hub compiles clean (no regressions). Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-hub/Cargo.toml --no-run` succeeded; broader 480/0 confirmed in T-1590 Phase 4b verification (per supplementary review below)."
+  - "Backward-compatibility test exists and passes: `orchestrator_route_no_task_type_backward_compatible` at `/opt/termlink/crates/termlink-hub/src/router.rs:3350`. Verified 2026-05-02T11:xx via T-1679: 1 passed; 0 failed."
+  - "task-type integration is structurally additive: `task_type` parsed at `router.rs:1156` from request params with `.and_then(|t| t.as_str()).map(String::from)` (Option<String> shape, no schema break). Verified 2026-05-02T11:xx via T-1679 grep."
+  - "`routing_key` shape verified clean and additive: `\"method::task_type\"` single string concat at `/opt/termlink/crates/termlink-hub/src/router.rs:1156-1170` — co-located with existing routing chain, no parallel pipeline."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Composite key `method::task_type` for cache and bypass registry"
+    rationale: "Separates task-type-specific routes without new data structures, independent promotion tracking"
+    alternatives_rejected: ["Separate task_type field in cache entries (adds schema complexity for no benefit)"]
+    chose: "Ship-now with T-1636 as the graduation path"
+    rationale: "Composite key `\"method::task_type\"` is structurally clean and additive at /opt/termlink/crates/termlink-hub/src/router.rs:1156-1170 — co-located with the existing routing chain, no parallel pipeline. T-1636 captures the `RoutingKey` newtype refactor cleanly with `horizon: later`, ready to promote when a 3rd routing dimension lands. Refactoring now would block T-1689 Resolver work in the orchestrator-rethink arc, where the framework-side dispatch substrate replaces this layer for non-RPC routing anyway."
+    alternatives_rejected: ["Block T-1064 closure until T-1636 newtype refactor lands (premature — no 3rd dimension is queued; refactor before the need is over-engineering and blocks arc work)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md"
+  - ".tasks/active/T-1063-mcp-level-governance--task-gate-checks-i.md"
+  - ".tasks/active/T-1064-extend-orchestratorroute-with-task-type-.md"
+  - ".tasks/active/T-1065-multi-llm-routing--task-aware-model-sele.md"
+  - ".tasks/active/T-1066-data-plane-governance-subscriber--post-h.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-08T07:32:49"
+    action: "T-1061: Create follow-up build tasks from inception GO — phases 1-5"
+  - time: "2026-04-08T07:32:49"
+    action: "T-1061: Create follow-up build tasks from inception GO — phases 1-5"
+  - time: "2026-04-08T07:45:55"
+    action: "T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies"
+  - time: "2026-04-08T07:45:55"
+    action: "T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies"
+  - time: "2026-04-08T08:54:34"
+    action: "T-1064: Update with TermLink dispatch results — orchestrator task-type routing"
+  - time: "2026-04-08T08:54:34"
+    action: "T-1064: Update with TermLink dispatch results — orchestrator task-type routing"
+  - time: "2026-04-08T08:56:25"
+    action: "T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing"
+  - time: "2026-04-08T08:56:25"
+    action: "T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing"
+  - time: "2026-04-08T09:13:44"
+    action: "T-1061: Version bump to 1.5.91 — all 5 inception phases executed"
+  - time: "2026-04-08T09:13:44"
+    action: "T-1061: Version bump to 1.5.91 — all 5 inception phases executed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 36129 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, routing, orchestrator]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36129
+  commits: 11
+  files_changed: 6
+  lines_added: 986
+  lines_removed: 226
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1064-extend-orchestratorroute-with-task-type-.md
+generated_by: context-agent-hybrid

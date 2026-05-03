@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1066: Data plane governance subscriber — post-hoc pattern detection on PTY output
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T07:42:33Z
+# ============================================================================
+
+task_id: T-1066
+task_name: "Data plane governance subscriber — post-hoc pattern detection on PTY output"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-08T05:32:32Z
+completed: 2026-05-03T07:42:29Z
+duration_days: 25
+updates_count: 5
+first_commit: 2026-04-08T07:32:49+02:00
+last_commit: 2026-04-08T09:13:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1061: Create follow-up build tasks from inception GO — phases 1-5. T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies. T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing. Update with TermLink dispatch results — data plane governance subscriber. T-1061: Version bump to 1.5.91 — all 5 inception phases executed
+
+# Key outcomes
+outcomes:
+  - "New Governance frame type (0x8) added to binary frame protocol"
+  - "Data plane subscriber can receive Output frames and match configurable patterns"
+  - "Pattern matches emit Governance frames back to the session"
+  - "Subscriber is opt-in (not attached by default)"
+  - "Subscriber does NOT block data plane throughput (async, non-blocking)"
+  - "Tests: pattern matching, governance frame emission, throughput non-regression"
+  - "All existing tests pass (`cargo test`) — 250 session + 92 protocol pass"
+  - "Subscriber is structurally non-blocking. Verified 2026-05-02T11:xx via T-1679 grep: `pub async fn run(&self, mut output_rx: broadcast::Receiver<Vec<u8>>, governance_tx: mpsc::Sender<Frame>)` at `/opt/termlink/crates/termlink-session/src/governance_subscriber.rs:54-58`. `broadcast::Receiver::resubscribe()` gives a copy stream (no gate on primary). Bounded mpsc(256) with `try_send` drops on full → backpressure cannot propagate to data plane."
+  - "Governance frame 0x8 protocol is pinned by regression test. Verified 2026-05-02T11:xx via T-1679: `python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -q` → 4 passed in 0.04s."
+  - "Pattern-matching unit tests pass in /opt/termlink. Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-session/Cargo.toml --lib governance_subscriber` → 5 passed (`pattern_match_emits_governance_frame`, `no_match_no_frame`, `ansi_stripped_before_matching`, `multiple_patterns_multiple_matches`, `governance_frame_sequence_increments`). 0 failed."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Broadcast channel for input, bounded mpsc (256) for output"
+    rationale: "Broadcast gives subscriber a copy without blocking data plane; bounded mpsc prevents memory leak if nobody reads governance frames"
+    alternatives_rejected: ["Unbounded channels (memory risk), direct write to data plane (blocking risk)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md"
+  - ".tasks/active/T-1063-mcp-level-governance--task-gate-checks-i.md"
+  - ".tasks/active/T-1064-extend-orchestratorroute-with-task-type-.md"
+  - ".tasks/active/T-1065-multi-llm-routing--task-aware-model-sele.md"
+  - ".tasks/active/T-1066-data-plane-governance-subscriber--post-h.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-08T07:32:49"
+    action: "T-1061: Create follow-up build tasks from inception GO — phases 1-5"
+  - time: "2026-04-08T07:32:49"
+    action: "T-1061: Create follow-up build tasks from inception GO — phases 1-5"
+  - time: "2026-04-08T07:45:55"
+    action: "T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies"
+  - time: "2026-04-08T07:45:55"
+    action: "T-1062: Scope all T-1061 follow-up tasks — real ACs, repo assignment, dependencies"
+  - time: "2026-04-08T08:56:25"
+    action: "T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing"
+  - time: "2026-04-08T08:56:25"
+    action: "T-1063: Version bump to 1.5.90 — MCP governance + orchestrator routing"
+  - time: "2026-04-08T09:06:43"
+    action: "T-1066: Update with TermLink dispatch results — data plane governance subscriber"
+  - time: "2026-04-08T09:06:43"
+    action: "T-1066: Update with TermLink dispatch results — data plane governance subscriber"
+  - time: "2026-04-08T09:13:44"
+    action: "T-1061: Version bump to 1.5.91 — all 5 inception phases executed"
+  - time: "2026-04-08T09:13:44"
+    action: "T-1061: Version bump to 1.5.91 — all 5 inception phases executed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 13 commit(s), 36129 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, data-plane, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36129
+  commits: 13
+  files_changed: 7
+  lines_added: 1049
+  lines_removed: 270
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1066-data-plane-governance-subscriber--post-h.md
+generated_by: context-agent-hybrid
