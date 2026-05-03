@@ -1156,6 +1156,19 @@ with open(path, 'w') as f:
         fi
     fi
 
+    # T-1697/T-1698: outcome back-prop into dispatch-outcomes.jsonl (best-effort).
+    # T-1697 added this hook to the partial-complete re-run branch only (line ~605);
+    # fresh first-time completions go through this Trigger 2 path and need the same
+    # hook here. Both branches must stay in sync. Failure of the hook never blocks
+    # task completion (decoupled by design). T-1698 RCA captures the duplicate-branch
+    # design and the verification gap that allowed T-1697 to ship half-wired.
+    if [ "${PARTIAL_COMPLETE:-false}" = false ]; then
+        FW_BIN="$FRAMEWORK_ROOT/bin/fw"
+        if [ -x "$FW_BIN" ] && [ -f "$PROJECT_ROOT/.context/dispatches.jsonl" ]; then
+            PROJECT_ROOT="$PROJECT_ROOT" "$FW_BIN" outcome backprop "$TASK_ID" --skip-verification >/dev/null 2>&1 || true
+        fi
+    fi
+
     # === Learning capture check for bugfix tasks (T-692, G-016, T-1192) ===
     # 0% of bugfix tasks captured learnings (G-016 threshold: 35%).
     # Enhanced prompt: pre-filled command, guidance questions, visual box.
