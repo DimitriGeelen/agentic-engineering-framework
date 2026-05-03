@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1704: v3 ollama-research: pull function-calling-tuned model (hermes-3:8b OR xlam:7b) and re-probe
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T20:35:12Z
+# ============================================================================
+
+task_id: T-1704
+task_name: "v3 ollama-research: pull function-calling-tuned model (hermes-3:8b OR xlam:7b) and re-probe"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-03T19:58:50Z
+completed: 2026-05-03T20:35:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-05-03T22:35:01+02:00
+last_commit: 2026-05-03T22:35:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  bottleneck is claude -p, not model. Curated-direct 3/3, claude -p 0/9. Filed T-1705.
+
+# Key outcomes
+outcomes:
+  - "`hermes3:8b` pulled to ollama at 192.168.10.107:11434."
+  - "`.context/litellm-config.yaml` adds `claude-3-5-sonnet-hermes3` →"
+  - "`tools/t1704-hermes3-probe.sh` exists, mirrors T-1703 shape (3 cells × N=3 simple-read)."
+  - "Probe report `docs/reports/T-1704-hermes3-probe.md` exists, captures per-cell"
+  - "If best cell = 0%: full negative captured as L-348; v4 inception **T-1705** filed."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "declare path \"function-calling-tuned model fixes ollama-research\" DEAD."
+    rationale: "the comparison isolates the bottleneck above the model layer. claude -p's"
+    alternatives_rejected: ["running xlam:7b — would test the same hypothesis on a different model"]
+    chose: "scope T-1705 inception with \"thin tool-loop\" as the default-recommendation."
+    rationale: "all the substrate work (litellm proxy, --env plumbing, --tools plumbing, harness,"
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1703.yaml"
+  - ".context/litellm-config.yaml"
+  - ".context/project/assumptions.yaml"
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-1704-hermes3-probe.md"
+  - ".fabric/components/tools-t1704-hermes3-probe.yaml"
+  - ".tasks/active/T-1704-v3-ollama-research-pull-function-calling.md"
+  - ".tasks/active/T-1705-ollama-research-v4-model-works-via-curat.md"
+  - ".tasks/completed/T-1703-v2-probe-gemma4--qwen35-against-curated-.md"
+  - "tools/t1704-hermes3-probe.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T22:35:01"
+    action: "T-1704: bottleneck is claude -p, not model. Curated-direct 3/3, claude -p 0/9. Filed T-1705."
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [v3-prep]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36
+  commits: 1
+  files_changed: 11
+  lines_added: 792
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1704-v3-ollama-research-pull-function-calling.md
+generated_by: context-agent-hybrid

@@ -42,3 +42,7 @@ lib/ts/node_modules/
 # But track documentation screenshots
 !docs/screenshots/*.png
 datetime
+
+# T-1700/T-1705 working dirs — proxy logs, model pull logs (runtime state)
+.context/working/litellm/
+.context/working/ollama-pulls/

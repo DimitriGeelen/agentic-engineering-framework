@@ -4,16 +4,16 @@ name: "ollama-research v4: model works via curated API but not via claude -p. Ar
 description: >
   Inception: ollama-research v4: model works via curated API but not via claude -p. Architectural choice: thin tool-loop vs claude-code-router vs accept text-only
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: [v4-inception]
-components: []
+components: [tools/t1704-hermes3-probe.sh]
 related_tasks: []
 created: 2026-05-03T20:30:32Z
-last_update: 2026-05-03T20:34:21Z
-date_finished: null
+last_update: 2026-05-03T20:36:20Z
+date_finished: 2026-05-03T20:36:20Z
 ---
 
 # T-1705: ollama-research v4: model works via curated API but not via claude -p. Architectural choice: thin tool-loop vs claude-code-router vs accept text-only
@@ -100,15 +100,15 @@ the wrong client.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -201,7 +201,28 @@ Spike A surprisingly regresses.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The empirical evidence in T-1704 already validates A-T1705-1 at N=3: hermes3:8b
+on direct litellm `/v1/messages` with a 1-tool def emits perfect tool_use 100%
+of the time. The full Spike A is therefore a high-confidence validation of
+something we already saw work, plus building the loop scaffold around it.
+
+Option 1 is the smallest surface change because:
+- All substrate (litellm proxy, --env plumbing, --tools plumbing, harness, alias
+  config, dispatch envelope, outcome back-prop hook) is reusable.
+- The new code is bounded: tool execution loop + result.jsonl writer.
+- hermes3:8b is already loaded and proven.
+
+Option 2 (claude-code-router) carries the same risk profile as v3 — adding
+another proxy without validating it addresses the actual root cause
+(claude -p prompt format).
+
+Option 3 (text-only) is a defensible last-resort but contradicts the
+orchestrator-rethink arc's premise. Filing it as the explicit fallback if
+Spike A surprisingly regresses.
+
+**Date**: 2026-05-03T20:36:20Z
 
 ## Updates
 
@@ -210,3 +231,42 @@ Spike A surprisingly regresses.
 
 ### 2026-05-03T20:34:21Z — status-update [task-update-agent]
 - **Change:** tags: +v4-inception
+
+### 2026-05-03T20:36:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The empirical evidence in T-1704 already validates A-T1705-1 at N=3: hermes3:8b
+on direct litellm `/v1/messages` with a 1-tool def emits perfect tool_use 100%
+of the time. The full Spike A is therefore a high-confidence validation of
+something we already saw work, plus building the loop scaffold around it.
+
+Option 1 is the smallest surface change because:
+- All substrate (litellm proxy, --env plumbing, --tools plumbing, harness, alias
+  config, dispatch envelope, outcome back-prop hook) is reusable.
+- The new code is bounded: tool execution loop + result.jsonl writer.
+- hermes3:8b is already loaded and proven.
+
+Option 2 (claude-code-router) carries the same risk profile as v3 — adding
+another proxy without validating it addresses the actual root cause
+(claude -p prompt format).
+
+Option 3 (text-only) is a defensible last-resort but contradicts the
+orchestrator-rethink arc's premise. Filing it as the explicit fallback if
+Spike A surprisingly regresses.
+
+### 2026-05-03T20:36:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-cfc4630a
+- **Timestamp:** 2026-05-03T20:36:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T20:36:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

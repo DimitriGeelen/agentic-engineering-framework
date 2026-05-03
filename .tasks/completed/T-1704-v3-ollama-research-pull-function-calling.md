@@ -4,16 +4,16 @@ name: "v3 ollama-research: pull function-calling-tuned model (hermes-3:8b OR xla
 description: >
   T-1703 disproved that catalogue restriction rescues tool-use on generalist 8-10B models (0/18 across gemma4:8b, qwen3.5:9.7B). Failure mode is structural — models emit prose/code instead of tool_use JSON. v3: pull a function-calling-tuned model (hermes-3:8b or xlam:7b, both ≤5GB), add litellm alias, re-run tools/t1703-probe-matrix.sh with the new alias substituted in CELLS array. If ≥90% on simple-read: update ollama-research.yaml + T-1700 Recommendation. If not: file v4 inception (claude-code-router OR accept text-only narrow workflow). Predecessors: T-1700 (substrate), T-1703 (catalogue probe + L-347).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [v3-prep]
-components: []
+components: [tools/t1704-hermes3-probe.sh]
 related_tasks: []
 created: 2026-05-03T19:58:50Z
-last_update: 2026-05-03T20:23:28Z
-date_finished: null
+last_update: 2026-05-03T20:35:08Z
+date_finished: 2026-05-03T20:35:08Z
 ---
 
 # T-1704: v3 ollama-research: pull function-calling-tuned model (hermes-3:8b OR xlam:7b) and re-probe
@@ -165,3 +165,20 @@ v4 inception filed with default-recommendation.
 ### 2026-05-03T20:23:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-8b115bf2
+- **Timestamp:** 2026-05-03T20:35:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `.context/litellm-config.yaml` adds `claude-3-5-sonnet-hermes3` →
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/litellm-config.yaml in: `.context/litellm-config.yaml` adds `claude-3-5-sonnet-hermes3` →`
+
+### 2026-05-03T20:35:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
