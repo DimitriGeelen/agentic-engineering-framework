@@ -1,10 +1,19 @@
 model_list:
+  # T-1700 RCA 2026-05-03: qwen3:14b passes API-direct tool-use but
+  # describes-instead-of-calls when faced with claude -p's wide tool prompt.
+  # 0/10 real tool_use events. Pivoting primary alias to gpt-oss:20b for
+  # comparison run. qwen3:14b kept under -qwen3 alias for opt-in regression tests.
   - model_name: claude-3-5-sonnet-20241022
     litellm_params:
-      model: ollama_chat/qwen3:14b
+      model: ollama_chat/gpt-oss:20b
       api_base: http://192.168.10.107:11434
 
   - model_name: claude-3-5-sonnet
+    litellm_params:
+      model: ollama_chat/gpt-oss:20b
+      api_base: http://192.168.10.107:11434
+
+  - model_name: claude-3-5-sonnet-qwen3
     litellm_params:
       model: ollama_chat/qwen3:14b
       api_base: http://192.168.10.107:11434
@@ -12,6 +21,30 @@ model_list:
   - model_name: claude-3-5-haiku-20241022
     litellm_params:
       model: ollama_chat/gemma4:latest
+      api_base: http://192.168.10.107:11434
+
+  # claude -p uses haiku-4-5 for sub-tasks (compaction, sub-agent prompts).
+  # Map to gemma4 — fast, no thinking-mode token waste.
+  - model_name: claude-haiku-4-5-20251001
+    litellm_params:
+      model: ollama_chat/gemma4:latest
+      api_base: http://192.168.10.107:11434
+
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: ollama_chat/gemma4:latest
+      api_base: http://192.168.10.107:11434
+
+  # claude -p also pings opus-4-7 for some calls (likely the model probe).
+  # Map to qwen3:14b for parity with sonnet.
+  - model_name: claude-opus-4-7
+    litellm_params:
+      model: ollama_chat/qwen3:14b
+      api_base: http://192.168.10.107:11434
+
+  - model_name: claude-opus-4-7-20250101
+    litellm_params:
+      model: ollama_chat/qwen3:14b
       api_base: http://192.168.10.107:11434
 
   - model_name: claude-sonnet-coder

@@ -494,6 +494,11 @@ cmd_cleanup() {
 cmd_dispatch() {
     ensure_termlink
     local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type=""
+    # T-1700: workflow `env:` plumb-through. Repeatable --env KEY=VAL pairs are
+    # injected into the spawned worker's shell so `claude -p` honors per-workflow
+    # overrides like ANTHROPIC_BASE_URL=http://localhost:4000 (litellm proxy)
+    # without requiring caller to set them in parent env first.
+    local -a envs=()
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -505,6 +510,12 @@ cmd_dispatch() {
             --timeout) timeout="$2"; shift 2 ;;
             --model) model="$2"; shift 2 ;;
             --task-type) task_type="$2"; shift 2 ;;
+            --env)
+                # Validate KEY=VALUE shape early; KEY must match [A-Z_][A-Z0-9_]*
+                if [[ ! "$2" =~ ^[A-Z_][A-Z0-9_]*= ]]; then
+                    die "--env expects KEY=VALUE with KEY matching [A-Z_][A-Z0-9_]* (got: $2)"
+                fi
+                envs+=("$2"); shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
@@ -551,7 +562,26 @@ cmd_dispatch() {
     # Save prompt, task tag, and metadata (from tl-dispatch.sh pattern)
     echo "$prompt" > "$wdir/prompt.md"
     [ -n "$task" ] && echo "$task" > "$wdir/task"
+
+    # T-1700: workflow env: plumb-through. Write env.sh sourced by run.sh.
+    # Keys validated at parse time (KEY=VAL with KEY ∈ [A-Z_][A-Z0-9_]*).
+    # Values are written verbatim with shell-quoted form so spaces/specials survive.
+    : > "$wdir/env.sh"
+    local env_keys_json="[]"
+    if [ "${#envs[@]}" -gt 0 ]; then
+        local _key_list=""
+        for kv in "${envs[@]}"; do
+            local k="${kv%%=*}"
+            local v="${kv#*=}"
+            # printf %q produces a shell-safe single-token; export honors it.
+            printf 'export %s=%q\n' "$k" "$v" >> "$wdir/env.sh"
+            _key_list+="\"$k\","
+        done
+        env_keys_json="[${_key_list%,}]"
+    fi
+
     # T-1643/W4 + T-1664: meta.json includes task_type, model_used, fallback_used.
+    # T-1700: env_keys lists the env var names injected (values not stored — possible secrets).
     # model_used / fallback_used now populated at dispatch time when resolution succeeds;
     # remain null when no model resolves (DISPATCH_MODEL_DEFAULT unset and no per-type pin).
     cat > "$wdir/meta.json" <<METAEOF
@@ -565,6 +595,7 @@ cmd_dispatch() {
   "model_used": $model_used_json,
   "fallback_used": $fallback_used_json,
   "resolution_source": "${resolution_source:-none}",
+  "env_keys": $env_keys_json,
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -588,6 +619,13 @@ fi
 
 # T-576: Unset CLAUDECODE to allow nested claude sessions from within Claude Code
 unset CLAUDECODE 2>/dev/null || true
+
+# T-1700: Source per-workflow env overrides written by cmd_dispatch (e.g.
+# ANTHROPIC_BASE_URL=http://localhost:4000 for litellm/ollama dispatch).
+# File contains `export KEY=value` lines, one per --env arg, escaped with %q.
+# Empty when no --env passed. Sourced AFTER PROJECT_ROOT/FRAMEWORK_ROOT so those
+# can be overridden too if a workflow needs it.
+[ -f "$WDIR/env.sh" ] && . "$WDIR/env.sh"
 
 # T-1065: Build model flag if specified
 MODEL_FLAG=""

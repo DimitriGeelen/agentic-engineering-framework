@@ -129,14 +129,54 @@ test -f .context/dispatch-outcomes.jsonl && grep -q "T-1700" .context/dispatch-o
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+See full report: `docs/reports/T-1700-litellm-build.md` Decisions section.
+
+Summary:
+
+### 2026-05-03 — Install via pipx (not system pip)
+litellm is a daemon, not a project library; PEP 668 + multi-project use → pipx.
+
+### 2026-05-03 — `--env KEY=VAL` flag on `fw termlink dispatch` (T-1700 plumbing)
+Smallest surface change to consume workflow `env:`. Validated KEY shape; injected via sourced env.sh; meta.json records env_keys (not values).
+
+### 2026-05-03 — `exit=0` is not a tool-use signal (RCA)
+Initial harness reported 100% pass on exit codes alone — that was dishonest. claude -p exits cleanly when model hallucinates text. Updated harness counts real `tool_use` events. True rates: qwen3:14b 0/10, gpt-oss:20b 1/3. Generalisation: any "did the model do X?" check against claude -p must inspect assistant content blocks, not exit codes.
+
+### 2026-05-03 — Defer empirical pass to v2; ship substrate
+Substrate (proxy, workflow, --env plumbing, harness, report) ships. The 90% real tool-use bar is missed — open-weight 8-32B models describe-instead-of-call on claude -p's wide tool prompt. Path forward: v2 task picks one of (a) ≥70B model, (b) claude-code-router, (c) restricted allowed_tools per workflow. Honoring §ACD by acknowledging the miss instead of declaring false success.
+
+## Recommendation
+
+**Recommendation:** SHIP-WITH-CAVEAT — substrate complete, pivot path documented for v2
+
+**Rationale:**
+The substrate work that T-1691 GO'd is complete and end-to-end verified:
+- litellm proxy translates Anthropic ↔ ollama bidirectionally with tool_use shape preserved (curated 1-tool API call: 100% — 2 models tested)
+- Workflow `env:` field is now plumbed through `fw termlink dispatch --env KEY=VAL` into the spawned worker (gap closed; was captured in resolver envelope but unread)
+- Harness exists and is cron-runnable; produces an honest `tool_use_pct` metric
+
+What this enables RIGHT NOW (before v2):
+- Any consumer can dispatch through ollama-research workflow with full substrate plumbing.
+- The first end-to-end real dispatch (qwen3:14b on simple prompt) returned the correct `"hostname is ring20-112"` — the path WORKS for narrow, well-scoped prompts.
+- G-064 has its first non-synthetic substrate exercise. The substrate-vs-deliverable gap has narrowed: there's a real ollama-driven autonomous workload path, even if the model fitness for full claude -p use is a v2 question.
+
+What FAILS (and is honestly captured):
+- Wide-tool-prompt fitness: 0% (qwen3:14b) / 33% (gpt-oss:20b), well below T-1691's 90% threshold.
+- Pretending we hit the bar would be exactly the §ACD substrate-vs-deliverable conflation that's defined this arc's pain. The README/handover would say "ollama-research ships v1" while real consumers would silently get hallucinated answers in production.
+
+**Evidence:**
+- `docs/reports/T-1700-litellm-build.md` — full report with model-by-model harness data, RCA on exit-code signal, four decisions captured
+- `docs/reports/T-1700-harness-results.md` — latest batch (regenerated each run)
+- Commit `8b7d73193` — initial config + workflow + smoke proof
+- The `--env` flag commit (this commit) — substrate plumbing
+- `.context/dispatches.jsonl` — all dispatch envelopes recorded
+- `.context/dispatch-outcomes.jsonl` — outcome rows back-propagated by T-1697 evaluator
+
+**v2 follow-up scope (file as separate inception → build):**
+- Pick fitness path: ≥70B model | claude-code-router | restricted allowed_tools.
+- AC group 2 (`fw doctor` checks) — small, can ship in same v2 task or alongside.
+- AC group 6 (env-leak test) — small, can ship now or in v2.
+- systemd hardening for litellm daemon.
 
 ## Updates
 
