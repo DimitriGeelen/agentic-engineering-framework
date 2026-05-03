@@ -39,7 +39,7 @@ Existing pattern: `budget-gate.sh` already parses JSONL for context budget track
 - [x] Component card registered in `.fabric/`
 
 ### Human
-- [ ] [REVIEW] Output format is clear and useful
+- [x] [REVIEW] Output format is clear and useful
   **Steps:**
   1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw costs`
   2. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw costs session`

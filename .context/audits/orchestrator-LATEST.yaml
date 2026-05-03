@@ -2,7 +2,7 @@ audit: orchestrator-mcp-scan
 task: T-1646
 parent_arc: T-1644
 origin: T-1641
-last_run: '2026-05-02T17:35:29Z'
+last_run: '2026-05-03T06:02:04Z'
 baseline_count: 75
 current_count: 75
 gated_baseline: 4

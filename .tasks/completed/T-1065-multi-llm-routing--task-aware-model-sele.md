@@ -4,16 +4,16 @@ name: "Multi-LLM routing — task-aware model selection via TermLink dispatch"
 description: >
   Phase 4 from T-1061: Task-aware model selection with dispatch system spawning per-model workers. Extends Phase 3 orchestrator routing. 2-3 months.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [termlink, multi-llm, routing]
-components: []
+components: [agents/termlink/termlink.sh, tests/unit/test_termlink_dispatch_task_type.py]
 related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:25Z
-last_update: 2026-04-28T17:31:57Z
-date_finished: null
+last_update: 2026-05-03T07:42:38Z
+date_finished: 2026-05-03T07:42:38Z
 ---
 
 # T-1065: Multi-LLM routing — task-aware model selection via TermLink dispatch
@@ -136,8 +136,8 @@ test -f .tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-46652acb
-- **Timestamp:** 2026-05-02T11:47:09Z
+- **Scan ID:** R-34dc1c27
+- **Timestamp:** 2026-05-03T07:42:39Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -151,3 +151,7 @@ test -f .tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-hub/src/circuit_breaker.rs in: Fallback chain is `opus → sonnet → haiku` (hard-coded const). Verified 2026-05-02T11:xx via T-1679 grep: `pub const DEFAULT_MODEL_FALLBACK: &[&str] = `
 - **AC#3 (Agent (T-1679 split — mechanical halves of the original routing-design review))** — Outcome attribution uses task.completed `ok` field — no schema change. Verified 2026-05-02T11:xx via T-1679: `resolve_dispatch_model` at `/opt/termlink/crates/termlink-mcp/src/tools.rs:854` + 3 unit t
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-mcp/src/tools.rs in: Outcome attribution uses task.completed `ok` field — no schema change. Verified 2026-05-02T11:xx via T-1679: `resolve_dispatch_model` at `/opt/termlin`
+
+### 2026-05-03T07:42:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

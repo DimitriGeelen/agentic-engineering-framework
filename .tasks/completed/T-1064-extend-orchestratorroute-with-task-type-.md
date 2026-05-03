@@ -4,16 +4,16 @@ name: "Extend orchestrator.route with task-type routing and model-aware speciali
 description: >
   Phase 3 from T-1061: Extend orchestrator.route chain with task-type-based routing and model-aware specialist selection. Natural evolution of existing router.rs code. 2-4 weeks.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [termlink, routing, orchestrator]
-components: []
+components: [agents/task-create/update-task.sh, agents/termlink/termlink.sh, tests/unit/test_termlink_dispatch_task_type.py, tests/unit/update_task.bats]
 related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:16Z
-last_update: 2026-04-28T17:31:41Z
-date_finished: null
+last_update: 2026-05-03T07:42:02Z
+date_finished: 2026-05-03T07:42:02Z
 ---
 
 # T-1064: Extend orchestrator.route with task-type routing and model-aware specialist selection
@@ -120,8 +120,8 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-cd3ce9af
-- **Timestamp:** 2026-05-02T11:46:18Z
+- **Scan ID:** R-a54e3068
+- **Timestamp:** 2026-05-03T07:42:02Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -133,3 +133,7 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-hub/Cargo.toml in: /opt/termlink termlink-hub compiles clean (no regressions). Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/ter`
 - **AC#2 (Agent (T-1679 split — mechanical halves of the original Routing design review))** — Backward-compatibility test exists and passes: `orchestrator_route_no_task_type_backward_compatible` at `/opt/termlink/crates/termlink-hub/src/router.rs:3350`. Verified 2026-05-02T11:xx via T-1679: 1 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-hub/src/router.rs in: Backward-compatibility test exists and passes: `orchestrator_route_no_task_type_backward_compatible` at `/opt/termlink/crates/termlink-hub/src/router.`
+
+### 2026-05-03T07:42:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

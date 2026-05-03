@@ -32,7 +32,7 @@ Follow-up from T-802 (Watchtower /costs page). Adds a compact token usage widget
 - [x] Landing page loads without errors
 
 ### Human
-- [ ] [REVIEW] Token widget looks good on landing page
+- [x] [REVIEW] Token widget looks good on landing page
   **Steps:**
   1. Open http://192.168.10.107:3000/ in browser
   2. Look for token usage widget near the top of the page

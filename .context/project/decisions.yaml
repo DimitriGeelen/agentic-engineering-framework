@@ -429,3 +429,45 @@ decisions:
     date: 2026-05-01
     task: T-1650
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-064
+    decision: "Composite key `method::task_type` for cache and bypass registry"
+    scope: project
+    date: 2026-05-03
+    task: T-1064
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-065
+    decision: "Ship-now with T-1636 as the graduation path"
+    scope: project
+    date: 2026-05-03
+    task: T-1064
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-066
+    decision: "Broadcast channel for input, bounded mpsc (256) for output"
+    scope: project
+    date: 2026-05-03
+    task: T-1066
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-067
+    decision: "Model passthrough first, routing intelligence later"
+    scope: project
+    date: 2026-05-03
+    task: T-1065
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-068
+    decision: "Mark the 2 originally-deferred ACs as satisfied by T-1590 (Phase 4b)"
+    scope: project
+    date: 2026-05-03
+    task: T-1065
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-069
+    decision: "Ship mechanism now; defer cost-weighting to T-1637"
+    scope: project
+    date: 2026-05-03
+    task: T-1065
+    rationale: "Auto-captured from task file on completion"

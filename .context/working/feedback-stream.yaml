@@ -4446,3 +4446,105 @@ scan_id: R-bd190e12
 task_id: T-1683
 payload:
   task_file: .tasks/active/T-1683-g-064-register-orchestrator-substrate-no.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T07:09:54Z'
+scan_id: R-d8b18f8a
+task_id: T-1686
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T07:09:54Z'
+scan_id: R-d8b18f8a
+task_id: T-1686
+payload:
+  task_file: .tasks/active/T-1686-watchtower-workflows-management-page--co.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T07:10:15Z'
+scan_id: R-3f19ef9e
+task_id: T-1688
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T07:10:15Z'
+scan_id: R-3f19ef9e
+task_id: T-1688
+payload:
+  task_file: .tasks/active/T-1688-g-064-candidate-consumer-survey--classif.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T07:42:02Z'
+scan_id: R-a54e3068
+task_id: T-1064
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T07:42:02Z'
+scan_id: R-a54e3068
+task_id: T-1064
+payload:
+  task_file: .tasks/active/T-1064-extend-orchestratorroute-with-task-type-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T07:42:29Z'
+scan_id: R-a1305b70
+task_id: T-1066
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T07:42:29Z'
+scan_id: R-a1305b70
+task_id: T-1066
+payload:
+  task_file: .tasks/active/T-1066-data-plane-governance-subscriber--post-h.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T07:42:39Z'
+scan_id: R-34dc1c27
+task_id: T-1065
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T07:42:39Z'
+scan_id: R-34dc1c27
+task_id: T-1065
+payload:
+  task_file: .tasks/active/T-1065-multi-llm-routing--task-aware-model-sele.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T07:43:18Z'
+scan_id: R-51a147d1
+task_id: T-1662
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T07:43:18Z'
+scan_id: R-51a147d1
+task_id: T-1662
+payload:
+  task_file: .tasks/active/T-1662-phase-2-watchtower-arcsid-generic-arc-su.md

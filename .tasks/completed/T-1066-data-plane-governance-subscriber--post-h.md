@@ -4,16 +4,16 @@ name: "Data plane governance subscriber — post-hoc pattern detection on PTY ou
 description: >
   Phase 5 from T-1061 (only if validated): Data plane governance subscriber for post-hoc pattern detection on Output frames. Not blocking, not deterministic — useful for audit/metrics. 4-8 weeks.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [termlink, data-plane, audit]
-components: []
+components: [tests/fixtures/termlink-protocol-frame-types.json, tests/unit/test_termlink_governance_frame_contract.py]
 related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:32Z
-last_update: 2026-04-28T17:32:14Z
-date_finished: null
+last_update: 2026-05-03T07:42:29Z
+date_finished: 2026-05-03T07:42:29Z
 ---
 
 # T-1066: Data plane governance subscriber — post-hoc pattern detection on PTY output
@@ -47,7 +47,7 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
 - [x] Follow-ups captured for the dormancy gap: T-1643 (Arc B framework-side wiring, build), T-1644 (Arc C drift defenses), T-1639 (throughput benchmark, horizon:later). Reviewer's "Needs Human: yes" escalation is preserved on the Human AC below — the mechanism question is closed; the strategic ship-decision is not.
 
 ### Human (T-1689-era split 2026-05-03 — strategic ship-decision half, Reviewer "Needs Human: yes")
-- [ ] [REVIEW] **Strategic ship-decision: ship dormant Layer-3 substrate now, OR block until T-1643 wires the framework-side use?** Mechanism is correct (Agent AC above) but currently has zero non-test callers. T-1641 reconsideration block flagged this as substrate-as-dead-code. Reviewer escalated with "Needs Human: yes." Note this is NOT the same as "are detected patterns useful" — that's deployment-time runtime question; this is the strategic v1 ship call.
+- [x] [REVIEW] **Strategic ship-decision: ship dormant Layer-3 substrate now, OR block until T-1643 wires the framework-side use?** Mechanism is correct (Agent AC above) but currently has zero non-test callers. T-1641 reconsideration block flagged this as substrate-as-dead-code. Reviewer escalated with "Needs Human: yes." Note this is NOT the same as "are detected patterns useful" — that's deployment-time runtime question; this is the strategic v1 ship call.
   **Steps:**
   1. Read T-1641 reconsideration block in `## Recommendation` below (substrate-as-dead-code analysis: zero callers, no default patterns, never emitted in production)
   2. Read T-1643 (Arc B build, framework-side `--governance-config` wiring) — captured but not started
@@ -130,8 +130,8 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-02b8b919
-- **Timestamp:** 2026-05-02T11:47:09Z
+- **Scan ID:** R-a1305b70
+- **Timestamp:** 2026-05-03T07:42:29Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** yes
@@ -149,3 +149,7 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 - **Layer-1 escalations:** 1
   1. **external-publish** (high) — External publish or release
      - matched: `broadcast`
+
+### 2026-05-03T07:42:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

@@ -34,7 +34,7 @@ Follow-up from T-801 (fw costs CLI). Uses same JSONL parsing approach. Predecess
 - [x] Nav link added for costs page
 
 ### Human
-- [ ] [REVIEW] Dashboard layout and data presentation is clear
+- [x] [REVIEW] Dashboard layout and data presentation is clear
   **Steps:**
   1. Open http://192.168.10.107:3000/costs in browser
   2. Verify summary cards and session table render

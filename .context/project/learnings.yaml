@@ -2675,3 +2675,10 @@ X'` returning empty group."
   date: 2026-05-02
   context: Added via context agent
   application: TBD
+- id: L-345
+  learning: "Agent must not OFFER to complete human-owned tasks even when Agent ACs are all green. Per ADR-0002 + lib/inception.sh CLAUDECODE=1 guard, the framework refuses agent-side closure on owner:human tasks; the Watchtower stamp is the only path. Offering 'I do it' invites the gate to fire and confuses the user about authority. Correct framing is always 'Decisions logged, Agent ACs ticked; ready for your stamp at <URL>'."
+  source: P-001
+  task: T-1687
+  date: 2026-05-03
+  context: Added via context agent
+  application: TBD
