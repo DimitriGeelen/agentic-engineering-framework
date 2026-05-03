@@ -1,12 +1,12 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-04-28T03:23:02.108035+00:00
-**Corpus:** 1487 completed tasks
-**Bug-class identified:** 323 (21%)
+**Run:** 2026-05-03T03:23:01.976246+00:00
+**Corpus:** 1618 completed tasks
+**Bug-class identified:** 348 (21%)
 
 ## H1 — Bug-class tasks with no `## RCA` section
 
-**Flagged:** 316 / 323 bug-class tasks (97%)
+**Flagged:** 323 / 348 bug-class tasks (92%)
 
 **Last 30 days sample (FP triage candidates):**
 
@@ -35,29 +35,29 @@
 - `T-1133-pickup-gnu-date--d-in-framework-shell-sc` — Pickup: GNU date -d in framework shell scripts fails silently on macOS — causes 
 - `T-1143-t-1102-build-context-aware-fw-path-helpe` — T-1102 build: context-aware fw path helper (_fw_cmd) and fix 3 hardcoded bin/fw 
 - `T-1150-rca-recommendation-text-truncation-in-mu` — RCA: recommendation text truncation in multiple surfaces — fix + inception for r
-- ... +181 more in last 30 days
+- ... +170 more in last 30 days
 
 ## H2 — Learning IDs referenced across ≥3 tasks within 30 days
 
-- `P-010` — referenced by 99 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
-- `P-011` — referenced by 75 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
+- `P-011` — referenced by 134 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
+- `P-010` — referenced by 109 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
+- `L-291` — referenced by 64 tasks: T-1518-approvals-page-surface-deferred-inceptio, T-1521-extend-fw-doctor-vendor-drift-glob-to-co, T-1522-self-lock-in-handoversh-to-prevent-concu, T-1523-update-tasksh-git-stage-both-sides-of-ac, T-1524-t-1523-throwaway-test …
 - `L-006` — referenced by 54 tasks: T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou …
 - `L-001` — referenced by 38 tasks: T-011-define-practice-graduation-criteria, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le …
 - `PL-007` — referenced by 24 tasks: T-1141-pickup-pl-007-never-dump-terminal-comman, T-1141-pickup-pl-007-never-dump-terminal-comman, T-1141-pickup-pl-007-never-dump-terminal-comman, T-1146-pickup-critical-rca-agent-command-amnesi, T-1146-pickup-critical-rca-agent-command-amnesi …
-- `L-293` — referenced by 18 tasks: T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1528-t-1528-defensive-h2-terminator-on-recomm …
-- `L-291` — referenced by 16 tasks: T-1518-approvals-page-surface-deferred-inceptio, T-1521-extend-fw-doctor-vendor-drift-glob-to-co, T-1522-self-lock-in-handoversh-to-prevent-concu, T-1523-update-tasksh-git-stage-both-sides-of-ac, T-1524-t-1523-throwaway-test …
+- `L-293` — referenced by 23 tasks: T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1528-t-1528-defensive-h2-terminator-on-recomm …
 - `L-002` — referenced by 13 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
+- `L-298` — referenced by 13 tasks: T-1540-three-sequential-blind-reviewer-validati, T-1540-three-sequential-blind-reviewer-validati, T-1540-three-sequential-blind-reviewer-validati, T-1577-f10--extend-no-rec-distinction-to-landin, T-1577-f10--extend-no-rec-distinction-to-landin …
+- `L-316` — referenced by 13 tasks: T-1584-surface-recommendation--reviewer-verdict, T-1584-surface-recommendation--reviewer-verdict, T-1584-surface-recommendation--reviewer-verdict, T-1585-surface-reviewer-verdict-on-inceptiont-x, T-1585-surface-reviewer-verdict-on-inceptiont-x …
+- `P-002` — referenced by 12 tasks: T-001-define-success-metrics, T-001-define-success-metrics, T-004-install-pre-commit-hook-for-task-enforce, T-011-define-practice-graduation-criteria, T-014-improve-audit-agent-to-measure-quality-n …
 - `P-001` — referenced by 12 tasks: T-001-define-success-metrics, T-014-improve-audit-agent-to-measure-quality-n, T-018-enrich-low-quality-episodic-summaries, T-044-backfill-episodic-tags-with-controlled-v, T-1258-rca-fw-context-add-learning-truncates-le …
 - `PL-003` — referenced by 12 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
 - `PL-005` — referenced by 12 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
 - `PL-006` — referenced by 12 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
-- `P-002` — referenced by 11 tasks: T-001-define-success-metrics, T-001-define-success-metrics, T-004-install-pre-commit-hook-for-task-enforce, T-011-define-practice-graduation-criteria, T-014-improve-audit-agent-to-measure-quality-n …
-- `PL-004` — referenced by 11 tasks: T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session, T-1129-pickup-4-learnings-from-termlink-session …
-- `L-237` — referenced by 10 tasks: T-1280-fix-inception-decide-on-consumer-project, T-1357-pickup-claudemd-template-instructs-use-b, T-1357-pickup-claudemd-template-instructs-use-b, T-1365-pickup-multi-agent-dispatch-safety-model, T-1365-pickup-multi-agent-dispatch-safety-model …
 
 ## H3 — Bug-class with no RCA AND no learning captured
 
-**Flagged:** 262 / 323 (81%)
+**Flagged:** 268 / 348 (77%)
 
 This is the strongest symptom-fix signal: fix shipped, no root cause stated, no learning captured for next time.
 
@@ -71,12 +71,12 @@ T-1548 (the inception that birthed this scan): bug_class=False has_rca=False lea
 
 | Metric | Value |
 |---|---|
-| Total completed tasks | 1487 |
-| Bug-class tasks | 323 (21%) |
-| H1 flagged | 316 |
-| H2 repeat-learning patterns | 50 |
-| H3 flagged (strongest signal) | 262 |
-| Last-30-days bug-class | 206 |
+| Total completed tasks | 1618 |
+| Bug-class tasks | 348 (21%) |
+| H1 flagged | 323 |
+| H2 repeat-learning patterns | 65 |
+| H3 flagged (strongest signal) | 268 |
+| Last-30-days bug-class | 195 |
 
 ## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
 

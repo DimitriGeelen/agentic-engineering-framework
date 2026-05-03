@@ -451,7 +451,14 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
     </select>
     {% endif %}
     <input type="hidden" name="view" value="{{ view }}">
-    {% if search_query or owner_filter or horizon_filter or tag_filter %}
+    {% if arc_filter %}
+    <span style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--pico-secondary-background); font-size: 0.78rem; font-weight: 600;">
+        arc: {{ arc_filter }}
+        <a href="/tasks?view={{ view }}" hx-get="/tasks?view={{ view }}" hx-target="#content" hx-push-url="true"
+           title="Clear arc filter" style="text-decoration: none; color: inherit;">&times;</a>
+    </span>
+    {% endif %}
+    {% if search_query or owner_filter or horizon_filter or tag_filter or arc_filter %}
     <a href="/tasks?view={{ view }}" hx-get="/tasks?view={{ view }}" hx-target="#content" hx-push-url="true"
        style="font-size: 0.75rem; color: var(--pico-muted-color); text-decoration: none; cursor: pointer;">&times; Clear filters</a>
     {% endif %}

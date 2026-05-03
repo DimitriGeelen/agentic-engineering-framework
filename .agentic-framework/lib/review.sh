@@ -16,6 +16,64 @@
 # Source watchtower helper for URL detection (T-1154: single source of truth)
 source "${FRAMEWORK_ROOT:-.}/lib/watchtower.sh"
 
+# T-1657: G-062 mechanism #3 — arc-parent gate.
+# When `fw task review T-XXX` is invoked on a task that anchors an arc OR
+# carries an explicit arc-parent tag, print the three §Arc Completion Discipline
+# questions BEFORE the Watchtower URL. Non-blocking — last visible reminder.
+_arc_parent_gate() {
+    local task_id="$1"
+    local task_file="$2"
+    local arcs_dir="$PROJECT_ROOT/.context/arcs"
+
+    # Detection 1: task_id is the anchor of an in-progress arc.
+    local anchor_arc=""
+    if [ -d "$arcs_dir" ]; then
+        for af in "$arcs_dir"/*.yaml; do
+            [ -f "$af" ] || continue
+            local anchor status
+            anchor=$(awk -F': ' '/^anchor_task:/ {print $2; exit}' "$af" | tr -d ' "')
+            status=$(awk -F': ' '/^status:/ {print $2; exit}' "$af")
+            if [ "$anchor" = "$task_id" ] && [ "$status" = "in-progress" ]; then
+                anchor_arc=$(awk -F': ' '/^id:/ {print $2; exit}' "$af" | tr -d ' "')
+                break
+            fi
+        done
+    fi
+
+    # Detection 2: explicit arc-parent tag on the task.
+    local has_tag=0
+    if [ -n "$task_file" ] && [ -f "$task_file" ]; then
+        if grep -qE "^tags:.*arc-parent" "$task_file"; then
+            has_tag=1
+        fi
+    fi
+
+    if [ -z "$anchor_arc" ] && [ "$has_tag" = "0" ]; then
+        return 0  # not an arc-parent — skip gate
+    fi
+
+    local label="${anchor_arc:-arc-parent}"
+    cat <<BANNER
+${YELLOW:-}=== ARC COMPLETION CHECK (T-1657 / G-062 mechanism #3) ===${NC:-}
+This task anchors arc: ${label}
+Before recommending GO, you MUST be able to answer all three:
+
+  1. Did the integrated system run end-to-end on a fresh substrate?
+     (Wire-level observation, not "tests pass" or "AC checked".)
+
+  2. Did any silently-defaulted constants escape human review?
+     (Routing thresholds, taxonomies, fallback chains, retry counts...)
+
+  3. Does the framework that built the arc actually USE the arc?
+     (Framework-side dispatch/audit/handover paths exercise the substrate.)
+
+See CLAUDE.md §Arc Completion Discipline for the full test.
+${YELLOW:-}========================================================${NC:-}
+
+BANNER
+    return 0
+}
+
 emit_review() {
     local task_id="${1:-}"
     local task_file="${2:-}"
@@ -40,6 +98,9 @@ emit_review() {
     if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
         return 1
     fi
+
+    # T-1657: arc-parent gate — print three-question check before the URL.
+    _arc_parent_gate "$task_id" "$task_file" || true
 
     # Determine Watchtower URL via shared helper (T-1154: single chokepoint)
     local base_url

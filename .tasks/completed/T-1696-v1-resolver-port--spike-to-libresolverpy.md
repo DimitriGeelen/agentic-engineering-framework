@@ -4,16 +4,16 @@ name: "v1 Resolver port — spike to lib/resolver.py + lib/resolver.sh + bin/fw 
 description: >
   v1 Resolver port — spike to lib/resolver.py + lib/resolver.sh + bin/fw resolver
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/resolver.py, tests/unit/test_resolver.py]
 related_tasks: []
 created: 2026-05-03T12:49:43Z
-last_update: 2026-05-03T12:49:43Z
-date_finished: null
+last_update: 2026-05-03T12:57:55Z
+date_finished: 2026-05-03T12:57:55Z
 ---
 
 # T-1696: v1 Resolver port — spike to lib/resolver.py + lib/resolver.sh + bin/fw resolver
@@ -106,3 +106,22 @@ bin/fw doctor
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1696-v1-resolver-port--spike-to-libresolverpy.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ad7a126e
+- **Timestamp:** 2026-05-03T12:58:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#8 (Agent)** — Telemetry round-trip: dispatch writes a row to `.context/dispatches.jsonl` containing dispatch_id, workflow_sha, template_sha, task_type, task_id, ts_start
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatches.jsonl in: Telemetry round-trip: dispatch writes a row to `.context/dispatches.jsonl` containing dispatch_id, workflow_sha, template_sha, task_type, task_id, ts_`
+- **AC#10 (Agent)** — `HEALING_PATTERNS` injection pulls from `.context/project/patterns.yaml` when present
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/patterns.yaml in: `HEALING_PATTERNS` injection pulls from `.context/project/patterns.yaml` when present`
+
+### 2026-05-03T12:57:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

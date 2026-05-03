@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1699: fw orchestrator status — substrate observability (dispatch counts + enrichment ratio)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T13:15:05Z
+# ============================================================================
+
+task_id: T-1699
+task_name: "fw orchestrator status — substrate observability (dispatch counts + enrichment ratio)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-03T13:11:47Z
+completed: 2026-05-03T13:14:30Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-03T15:14:24+02:00
+last_commit: 2026-05-03T15:14:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw orchestrator status — substrate observability
+
+# Key outcomes
+outcomes:
+  - "`fw orchestrator status` exits 0 and prints a multi-section summary"
+  - "`fw orchestrator status --json` emits structured JSON"
+  - "Output includes: dispatch_total, outcome_total, enrichment_ratio, by_task_type, by_worker_kind, recent (last 5)"
+  - "Empty state: when neither file exists, prints \"no dispatches captured yet\" and exits 0 (not an error — fresh project)"
+  - "CLAUDE.md Quick Reference updated to mention `fw orchestrator status`"
+  - "No regression: bin/fw doctor exit 0"
+  - "`fw orchestrator --help` lists `status` alongside `improve`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "CLAUDE.md"
+  - ".tasks/active/T-1699-fw-orchestrator-status--substrate-observ.md"
+  - ".tasks/completed/T-1698-t-1697-hook-fires-only-on-partial-comple.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T15:14:24"
+    action: "T-1699: fw orchestrator status — substrate observability"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 221
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1699-fw-orchestrator-status--substrate-observ.md
+generated_by: context-agent-hybrid

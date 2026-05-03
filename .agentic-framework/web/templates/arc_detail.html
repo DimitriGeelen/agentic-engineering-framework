@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .arc-header { padding: 1rem; border-left: 4px solid var(--pico-primary); margin-bottom: 1rem; }
+    .arc-header.closed { border-left-color: var(--pico-muted-color); }
+    .stats-strip { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+    .stat-box { padding: 0.6rem 1rem; background: var(--pico-card-background-color); border-radius: 4px; min-width: 140px; }
+    .stat-box .v { font-size: 1.4rem; font-weight: bold; }
+    .stat-box .l { font-size: 0.8rem; color: var(--pico-muted-color); }
+    .badge { display: inline-block; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; }
+    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary); }
+    .badge-ok { background: var(--pico-form-element-valid-active-border-color, #2e7d32); color: white; }
+    .badge-warn { background: #f9a825; color: white; }
+    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+    .completion-check { padding: 0.5rem 1rem; background: var(--pico-card-sectioning-background-color); border-radius: 4px; margin: 0.5rem 0; }
+    .completion-check ol { margin: 0.3em 0 0 1em; }
+    .focus-pill { background: var(--pico-primary); color: white; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; vertical-align: middle; }
+    .missing { color: var(--pico-muted-color); font-style: italic; }
+</style>
+
+<p><a href="/arcs">← All arcs</a></p>
+
+<article class="arc-header {% if arc.status == 'closed' %}closed{% endif %}">
+    <h1>
+        {{ arc.get('name', arc_id) }}
+        {% if focused %}<span class="focus-pill">FOCUSED</span>{% endif %}
+    </h1>
+    <p class="muted">id: <code>{{ arc_id }}</code></p>
+    {% if arc.get('description') %}<p>{{ arc.description }}</p>{% endif %}
+    <p>
+        status:
+        {% if arc.status == 'in-progress' %}<span class="badge badge-info">{{ arc.status }}</span>
+        {% elif arc.status == 'closed' %}<span class="badge badge-ok">{{ arc.status }}{% if arc.decision %} / {{ arc.decision }}{% endif %}</span>
+        {% else %}<span class="badge badge-muted">{{ arc.status }}</span>{% endif %}
+        {% if arc.anchor_task %} · anchor: <a href="/tasks/{{ arc.anchor_task }}">{{ arc.anchor_task }}</a>{% endif %}
+        {% if arc.created %} · created: <small>{{ arc.created }}</small>{% endif %}
+        {% if arc.closed_at %} · closed: <small>{{ arc.closed_at }}</small>{% endif %}
+    </p>
+</article>
+
+<div class="stats-strip">
+    <div class="stat-box">
+        <div class="v">{{ stats.completed }} / {{ stats.total }}</div>
+        <div class="l">Completed / Total</div>
+    </div>
+    <div class="stat-box">
+        <div class="v">{{ "%.0f%%" % (stats.ratio * 100) }}</div>
+        <div class="l">Completion ratio</div>
+    </div>
+    <div class="stat-box">
+        <div class="v">
+            {% if arc.status == 'closed' %}<span class="badge badge-ok">closed</span>
+            {% elif stats.ratio >= 0.80 %}<span class="badge badge-warn">audit warns ≥80%</span>
+            {% else %}<span class="badge badge-info">below threshold</span>{% endif %}
+        </div>
+        <div class="l">Audit detective (G-062 / T-1656)</div>
+    </div>
+</div>
+
+{% if has_specialized_view %}
+<p><strong>Specialized view available:</strong> <a href="/orchestrator">→ /orchestrator</a> (MCP audit, live sessions, recent dispatches).</p>
+{% endif %}
+
+{% if reports %}
+<h2>Reports &amp; evidence</h2>
+<p class="muted">Arc-keyed reports under <code>docs/reports/{{ arc_id }}-*.md</code>:</p>
+<ul>
+    {% for r in reports %}
+    <li><a href="/file/{{ r.path }}"><code>{{ r.name }}</code></a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h2>Constituent tasks</h2>
+{% if constituents %}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Horizon</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in constituents %}
+        <tr>
+            <td>{% if c.missing %}<span class="missing">{{ c.id }}</span>{% else %}<a href="/tasks/{{ c.id }}">{{ c.id }}</a>{% endif %}</td>
+            <td>{% if c.missing %}<span class="missing">{{ c.name }}</span>{% else %}{{ c.name }}{% endif %}</td>
+            <td>{{ c.type }}</td>
+            <td>
+                {% if c.completed %}<span class="badge badge-ok">work-completed</span>
+                {% elif c.status == 'started-work' %}<span class="badge badge-info">{{ c.status }}</span>
+                {% elif c.status == 'issues' %}<span class="badge badge-warn">{{ c.status }}</span>
+                {% else %}<span class="badge badge-muted">{{ c.status }}</span>{% endif %}
+            </td>
+            <td>{{ c.horizon }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="muted">No constituent tasks. Tag tasks with <code>arc:{{ arc_id }}</code> or run <code>fw arc tag {{ arc_id }} T-XXXX</code>.</p>
+{% endif %}
+
+{% if arc.status != 'closed' %}
+<h2>§Arc Completion Discipline — three-question check</h2>
+<p class="muted">Per CLAUDE.md, before declaring this arc shipped, you MUST be able to answer all three with concrete evidence — not by argument:</p>
+<div class="completion-check">
+    <ol>
+        <li><strong>Did the integrated system run end-to-end on a fresh substrate?</strong>
+            (A wire-level observation, not "tests pass" or "AC checked".)</li>
+        <li><strong>Did any silently-defaulted constants escape human review?</strong>
+            (Routing thresholds, taxonomies, fallback chains, retry counts...)</li>
+        <li><strong>Does the framework that built the arc actually USE the arc?</strong>
+            (Framework-side dispatch / audit / handover paths exercise the substrate.)</li>
+    </ol>
+</div>
+<p>When you can answer all three with evidence, close the arc:</p>
+<pre><code>cd {{ project_root }} && bin/fw arc close {{ arc_id }} \
+    --demo &lt;path-to-wire-evidence&gt; \
+    --decision "&lt;success|partial|failed|cancelled&gt; — &lt;one-line summary&gt;"</code></pre>
+<p class="muted">
+    <strong>§ACD/G-062 gates:</strong>
+    <code>--demo</code> is REQUIRED (T-1668) — supply a path or URL whose content
+    references the arc id <code>{{ arc_id }}</code> or one of its constituent
+    tasks (<code>.json</code>, <code>.jsonl</code>, <code>.yaml</code>, <code>.md</code>,
+    <code>.cast</code>, <code>.png</code>, <code>.html</code>, etc., ≥256 bytes).
+    For arcs with no runtime mechanic, use <code>--demo none --justification
+    "&lt;≥30 chars&gt;"</code> (logged to <code>.context/audits/arc-bypass.jsonl</code>).
+    <br>
+    <strong>Closure verb is human-only (T-1671).</strong> Under <code>$CLAUDECODE=1</code>
+    the command refuses; agents must redirect to <code>fw task review
+    {{ arc.anchor_task }}</code>. Overrides: <code>--i-am-human</code> (rare
+    human-typing-into-agent-session), <code>--from-watchtower</code> (used by
+    Flask backend when Watchtower closes the arc on the human's behalf).
+</p>
+{% if arc.demo_evidence %}
+<p class="muted"><small><strong>Latest demo on file:</strong> <code>{{ arc.demo_evidence }}</code> — preserved across any aborted close attempts.</small></p>
+{% endif %}
+{% else %}
+<h2>Arc closed</h2>
+<p>Decision: <strong>{{ arc.decision or 'unspecified' }}</strong>{% if arc.closed_at %} · {{ arc.closed_at }}{% endif %}</p>
+{% endif %}
+
+{% endblock %}

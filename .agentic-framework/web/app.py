@@ -262,24 +262,30 @@ def create_app() -> Flask:
     def health():
         """Health check for load balancers and deployment verification.
 
-        Returns JSON with component status. HTTP 200 if app is healthy,
-        503 if critical dependencies (Ollama) are unreachable.
+        Returns JSON with component status. HTTP 200 when the webapp is
+        responsive — Ollama is an optional embedding integration, its
+        absence reports as `package-not-installed` or `unreachable` in
+        the body but does NOT mark the webapp itself unhealthy. (T-746:
+        was crashing /health with ModuleNotFoundError when ollama package
+        wasn't installed, surfacing as "watchtower down" in consumer
+        dashboards. Builds on T-1010 timeout fix.)
         """
-        import ollama as ollama_client
-
         result = {"app": "ok"}
         healthy = True
 
-        # Check Ollama connectivity (3s timeout prevents /health from hanging)
+        # Check Ollama connectivity — optional, never fails health
+        # 3s timeout prevents /health from hanging (T-1010)
         import concurrent.futures
         try:
+            import ollama as ollama_client
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                 future = executor.submit(ollama_client.list)
                 future.result(timeout=3)
             result["ollama"] = "ok"
+        except ModuleNotFoundError:
+            result["ollama"] = "package-not-installed"
         except (concurrent.futures.TimeoutError, Exception):
             result["ollama"] = "unreachable"
-            healthy = False
 
         # Check embedding index (lightweight — never trigger rebuild)
         try:
@@ -431,7 +437,7 @@ def main():
         if socketio:
             socketio.run(app, host=host, port=port, debug=args.debug, allow_unsafe_werkzeug=True)
         else:
-            app.run(host=host, port=port, debug=args.debug)
+            app.run(host=host, port=port, debug=args.debug, threaded=True)
     except OSError as exc:
         if "Address already in use" in str(exc) or "address already in use" in str(exc):
             print(

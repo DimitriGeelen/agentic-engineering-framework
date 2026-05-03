@@ -4,16 +4,16 @@ name: "T-1697 hook fires only on partial-complete re-run, not fresh completion p
 description: >
   T-1697 hook fires only on partial-complete re-run, not fresh completion path
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, bin/fw, lib/resolver.py, tests/unit/test_resolver.py]
 related_tasks: []
 created: 2026-05-03T13:08:30Z
-last_update: 2026-05-03T13:08:30Z
-date_finished: null
+last_update: 2026-05-03T13:10:17Z
+date_finished: 2026-05-03T13:10:17Z
 ---
 
 # T-1698: T-1697 hook fires only on partial-complete re-run, not fresh completion path
@@ -89,3 +89,15 @@ bin/fw doctor
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1698-t-1697-hook-fires-only-on-partial-comple.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1f799184
+- **Timestamp:** 2026-05-03T13:10:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T13:10:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

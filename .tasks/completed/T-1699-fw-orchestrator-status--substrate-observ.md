@@ -4,16 +4,16 @@ name: "fw orchestrator status — substrate observability (dispatch counts + enr
 description: >
   fw orchestrator status — substrate observability (dispatch counts + enrichment ratio)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/resolver.py, tests/unit/test_resolver.py]
 related_tasks: []
 created: 2026-05-03T13:11:47Z
-last_update: 2026-05-03T13:11:47Z
-date_finished: null
+last_update: 2026-05-03T13:14:30Z
+date_finished: 2026-05-03T13:14:30Z
 ---
 
 # T-1699: fw orchestrator status — substrate observability (dispatch counts + enrichment ratio)
@@ -104,3 +104,20 @@ bin/fw doctor
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1699-fw-orchestrator-status--substrate-observ.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-60866a67
+- **Timestamp:** 2026-05-03T13:15:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw orchestrator status >/dev/null`
+
+### 2026-05-03T13:14:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

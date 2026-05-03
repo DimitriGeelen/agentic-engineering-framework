@@ -706,6 +706,26 @@ DRIFTEOF
     fi
 fi
 
+# T-1631 (B-3b of T-1626): Hook-failure threshold check.
+# Reads .hook-counter + .hook-failure-counter (T-1628 telemetry) and
+# warns if any hook is failing in production over threshold. Does NOT
+# auto-register here — that's --register. Audit surfaces the signal;
+# operator runs `fw concerns scan-hooks --register` (or cron job) to
+# materialize G-entries.
+HOOK_THRESHOLD_HELPER="$FRAMEWORK_ROOT/lib/hook-threshold.py"
+HOOK_COUNTER_FILE="$PROJECT_ROOT/.context/working/.hook-counter"
+if [ -f "$HOOK_THRESHOLD_HELPER" ] && [ -f "$HOOK_COUNTER_FILE" ]; then
+    hook_threshold_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$HOOK_THRESHOLD_HELPER" 2>/dev/null)
+    if [ -n "$hook_threshold_out" ]; then
+        hook_failing=$(echo "$hook_threshold_out" | grep -c "^FAIL|" || true)
+        warn "Hook threshold: $hook_failing hook(s) failing over threshold (T-1626)" \
+             "$hook_threshold_out" \
+             "Run: python3 $FRAMEWORK_ROOT/lib/hook-threshold.py --register (or fw upgrade if witness pattern)"
+    else
+        pass "Hook threshold: no hooks failing over threshold"
+    fi
+fi
+
 echo ""
 fi # end structure
 
@@ -1808,7 +1828,7 @@ for task_file in "$TASKS_DIR/active"/*.md "$TASKS_DIR/completed"/*.md; do
     task_commits=$(git -C "$PROJECT_ROOT" log --oneline --all --grep="$task_id" 2>/dev/null | wc -l | tr -d ' ')
     if [ "$task_commits" -gt 2 ]; then
         # Check for decision
-        has_decision=$(grep -c "inception-decision\|fw inception decide\|Decision:.*GO\|Decision:.*NO-GO\|Decision\*\*: DEFER\|Decision: DEFER" "$task_file" 2>/dev/null || true)
+        has_decision=$(grep -c "inception-decision\|fw inception decide\|Decision:.*GO\|Decision:.*NO-GO\|Decision\*\*: DEFER\|Decision: DEFER\|Decision\*\*: SUPERSEDED\|Decision: SUPERSEDED" "$task_file" 2>/dev/null || true)
         has_decision=$(echo "$has_decision" | tr -d '[:space:]')
         # Check for bypass log entries
         has_bypass=$(grep -c "$task_id" "$CONTEXT_DIR/bypass-log.yaml" 2>/dev/null || true)
@@ -3180,6 +3200,125 @@ fi
 
 echo ""
 fi # end deployment
+
+# ============================================
+# ORCHESTRATOR ARC CHECKS (T-1646 — drift defense for MCP-tool task_id enforcement)
+# Origin: T-1641 W10. Probes /opt/termlink, classifies MCP tools, surfaces drift.
+# ============================================
+if should_run_section "orchestrator"; then
+echo "=== ORCHESTRATOR ARC CHECKS ==="
+
+ORCH_SCRIPT="$FRAMEWORK_ROOT/agents/audit/orchestrator-mcp-scan.sh"
+ORCH_LATEST="$CONTEXT_DIR/audits/orchestrator-LATEST.yaml"
+
+if [ ! -x "$ORCH_SCRIPT" ]; then
+    warn "Orchestrator scan: $ORCH_SCRIPT not executable" \
+         "$ORCH_SCRIPT missing or not +x" \
+         "chmod +x $ORCH_SCRIPT"
+elif ! [ -d "${FW_TERMLINK_REPO:-/opt/termlink}/crates/termlink-mcp/src" ] && ! command -v termlink >/dev/null 2>&1; then
+    info "Orchestrator scan: skipped — TermLink repo unreachable on this host"
+else
+    if bash "$ORCH_SCRIPT" >/dev/null 2>&1; then
+        ORCH_STATUS=$(grep -oE '^status: [a-z]+' "$ORCH_LATEST" 2>/dev/null | awk '{print $2}')
+        ORCH_GATED=$(grep -oE '^gated_current: [0-9]+' "$ORCH_LATEST" 2>/dev/null | awk '{print $2}')
+        ORCH_TOTAL=$(grep -oE '^current_count: [0-9]+' "$ORCH_LATEST" 2>/dev/null | awk '{print $2}')
+        pass "Orchestrator-arc MCP scan: $ORCH_STATUS — $ORCH_GATED/$ORCH_TOTAL tools gated"
+    else
+        ORCH_EXIT=$?
+        if [ "$ORCH_EXIT" = "1" ]; then
+            ORCH_WARNS=$(awk '/^warnings:/{flag=1; next} /^errors:/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
+            # T-1649: tag-format drift uses a different remediation path than baseline drift.
+            if echo "$ORCH_WARNS" | grep -q "TAG-FORMAT-DRIFT"; then
+                warn "Orchestrator-arc tag-format drift: live sessions carry non-canonical prefixes" \
+                     "${ORCH_WARNS:-see $ORCH_LATEST}" \
+                     "Fix at source: update spawn callers (see /orchestrator) or add validator (T-1649 cross-repo half)"
+            else
+                warn "Orchestrator-arc MCP scan: drift detected" \
+                     "${ORCH_WARNS:-see $ORCH_LATEST}" \
+                     "Update .context/audits/orchestrator-mcp-baseline.yaml or investigate ratchet/new-tool"
+            fi
+        elif [ "$ORCH_EXIT" = "2" ]; then
+            ORCH_ERRS=$(awk '/^errors:/{flag=1; next} /^[a-z]/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
+            fail "Orchestrator-arc MCP scan: regression — gated tool lost its check_task_governance" \
+                 "${ORCH_ERRS:-see $ORCH_LATEST}" \
+                 "Restore the gate or update baseline if removal was intentional (commit body must explain)"
+        else
+            warn "Orchestrator-arc MCP scan: probe failed (exit $ORCH_EXIT)" \
+                 "Cannot reach /opt/termlink via direct read or termlink interact" \
+                 "Check FW_TERMLINK_REPO and TermLink session availability"
+        fi
+    fi
+fi
+
+echo ""
+fi # end orchestrator
+
+# ============================================
+# ARC-COMPLETION CHECK (T-1656 / G-062 mechanism #2)
+# Detect arcs whose constituent tasks are mostly completed but where the arc
+# itself was never explicitly closed. Catches the "shipped without three-question
+# check" failure mode codified in CLAUDE.md §Arc Completion Discipline.
+# ============================================
+if should_run_section "arc-completion" || should_run_section "oe-daily"; then
+echo "=== ARC-COMPLETION CHECKS ==="
+
+ARC_DIR="$CONTEXT_DIR/arcs"
+if [ ! -d "$ARC_DIR" ] || ! ls "$ARC_DIR"/*.yaml >/dev/null 2>&1; then
+    info "Arc registry empty — no arcs to evaluate"
+else
+    threshold="${FW_ARC_COMPLETION_THRESHOLD:-0.80}"
+    for arc_yaml in "$ARC_DIR"/*.yaml; do
+        # Parse arc fields (id, status, constituent_tasks).
+        # Use python to avoid yaml-library coupling — simple line scan suffices.
+        eval "$(python3 - "$arc_yaml" <<'PY'
+import re, sys
+text = open(sys.argv[1]).read()
+def grab(field, default=""):
+    m = re.search(rf'^{field}:\s*(.*?)$', text, re.MULTILINE)
+    return m.group(1).strip() if m else default
+arc_id = grab("id")
+status = grab("status")
+ct_line = grab("constituent_tasks", "[]")
+m = re.match(r'\[(.*?)\]', ct_line)
+items = []
+if m and m.group(1).strip():
+    items = [s.strip().strip('"').strip("'") for s in m.group(1).split(",") if s.strip()]
+print(f'ARC_ID={arc_id!r}')
+print(f'ARC_STATUS={status!r}')
+print(f'ARC_TASKS=({" ".join(items)})')
+PY
+)"
+        # Skip closed arcs and empty arcs.
+        if [ "$ARC_STATUS" != "in-progress" ]; then continue; fi
+        total="${#ARC_TASKS[@]}"
+        if [ "$total" -eq 0 ]; then continue; fi
+
+        # Count tasks at status work-completed across active+completed dirs.
+        completed=0
+        for tid in "${ARC_TASKS[@]}"; do
+            tf=$({ ls "$PROJECT_ROOT"/.tasks/{active,completed}/"$tid"-*.md 2>/dev/null || true; } | head -1)
+            if [ -n "$tf" ] && grep -qE "^status:[[:space:]]*work-completed" "$tf"; then
+                completed=$((completed+1))
+            fi
+        done
+
+        # Compute ratio in shell using awk (portable; no bc dependency).
+        ratio=$(awk -v c="$completed" -v t="$total" 'BEGIN { printf "%.4f", c/t }')
+        # Compare ratio >= threshold (awk again).
+        ge=$(awk -v r="$ratio" -v th="$threshold" 'BEGIN { print (r+0 >= th+0) ? "1" : "0" }')
+
+        if [ "$ge" = "1" ]; then
+            warn "Arc '${ARC_ID}': ${completed}/${total} tasks completed (${ratio}) but arc still in-progress" \
+                 "Threshold ${threshold} reached — code-complete without explicit closure (G-062 signature)" \
+                 "Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close ${ARC_ID} --demo <path|url> --decision \"...\""
+        else
+            pass "Arc '${ARC_ID}': ${completed}/${total} (${ratio}) — below threshold ${threshold}, no closure pressure"
+        fi
+    done
+fi
+
+echo ""
+fi # end arc-completion
 
 # ============================================
 # SUMMARY (always runs)

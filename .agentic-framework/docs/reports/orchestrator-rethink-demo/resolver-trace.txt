@@ -1,0 +1,15 @@
+T-1669 demo — resolver trace against seeded cache
+==================================================
+Cache state at the time of these resolutions:
+  haiku:build: successes=6 failures=1 rate=86%
+  opus:build: successes=1 failures=3 rate=25%
+  sonnet:design: successes=4 failures=0 rate=100%
+  haiku:design: successes=1 failures=2 rate=33%
+  opus:inception: successes=5 failures=1 rate=83%
+
+Resolution calls (no --model flag, only --task-type):
+
+  task_type=build         → haiku|true|route_cache
+  task_type=design        → sonnet|true|route_cache
+  task_type=inception     → opus|true|route_cache
+  task_type=nonexistent   → ||none

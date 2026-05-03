@@ -4667,3 +4667,71 @@ scan_id: R-561d3f52
 task_id: T-1692
 payload:
   task_file: .tasks/active/T-1692-v1-pi-backend-integration--rpc-mode-wrap.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T12:58:41Z'
+scan_id: R-ad7a126e
+task_id: T-1696
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T12:58:41Z'
+scan_id: R-ad7a126e
+task_id: T-1696
+payload:
+  task_file: .tasks/active/T-1696-v1-resolver-port--spike-to-libresolverpy.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T13:06:25Z'
+scan_id: R-367ba067
+task_id: T-1697
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T13:06:25Z'
+scan_id: R-367ba067
+task_id: T-1697
+payload:
+  task_file: .tasks/active/T-1697-v1-outcome-enrichment--default-evaluator.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T13:10:59Z'
+scan_id: R-1f799184
+task_id: T-1698
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T13:10:59Z'
+scan_id: R-1f799184
+task_id: T-1698
+payload:
+  task_file: .tasks/active/T-1698-t-1697-hook-fires-only-on-partial-comple.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T13:15:01Z'
+scan_id: R-60866a67
+task_id: T-1699
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T13:15:01Z'
+scan_id: R-60866a67
+task_id: T-1699
+payload:
+  task_file: .tasks/active/T-1699-fw-orchestrator-status--substrate-observ.md

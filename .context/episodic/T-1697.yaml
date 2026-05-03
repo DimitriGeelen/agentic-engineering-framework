@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1697: v1 Outcome enrichment — default evaluator + back-prop hook + append-only dispatch-outcomes.jsonl
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T13:06:28Z
+# ============================================================================
+
+task_id: T-1697
+task_name: "v1 Outcome enrichment — default evaluator + back-prop hook + append-only dispatch-outcomes.jsonl"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-03T12:59:11Z
+completed: 2026-05-03T13:05:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-03T15:05:21+02:00
+last_commit: 2026-05-03T15:05:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ship v1 outcome enrichment — append-only design pivot
+
+# Key outcomes
+outcomes:
+  - "`lib/outcome.py` exists, parses cleanly with `python3 -c \"import ast; ast.parse(open('lib/outcome.py').read())\"`"
+  - "`lib/outcome.sh` shim exists and is executable"
+  - "`bin/fw outcome --help` exits 0 and lists evaluate, backprop, read, list subcommands"
+  - "`bin/fw outcome evaluate T-1696 --json` returns JSON with verification_passed, ac_satisfied, ac_total, ac_checked"
+  - "`bin/fw outcome backprop T-1696` appends N rows to `.context/dispatch-outcomes.jsonl` where N = count of T-1696 dispatch rows in dispatches.jsonl"
+  - "Append-only invariant: backprop NEVER modifies `dispatches.jsonl` (verified via SHA256 unchanged after backprop)"
+  - "Read-path join: `bin/fw outcome read <dispatch_id>` returns merged row when both files contain matching entries"
+  - "No-match case: backprop on a task_id with no dispatches exits 0 and writes nothing"
+  - "Hook latency: backprop with no matching dispatch completes in <200ms via CLI (`time bin/fw outcome backprop ...`). NOTE: Python cold-start dominates; in-process call is <10ms per spike. Hook fires once per task completion (cold path)."
+  - "update-task.sh wires the hook on `--status work-completed`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - "bin/fw"
+  - ".fabric/components/lib-outcome.yaml"
+  - ".fabric/components/tests-unit-test_outcome.yaml"
+  - ".gitignore"
+  - "lib/outcome.py"
+  - "lib/outcome.sh"
+  - ".tasks/active/T-1697-v1-outcome-enrichment--default-evaluator.md"
+  - ".tasks/completed/T-1696-v1-resolver-port--spike-to-libresolverpy.md"
+  - "tests/unit/test_outcome.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T15:05:21"
+    action: "T-1697: ship v1 outcome enrichment — append-only design pivot"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 10
+  lines_added: 860
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1697-v1-outcome-enrichment--default-evaluator.md
+generated_by: context-agent-hybrid

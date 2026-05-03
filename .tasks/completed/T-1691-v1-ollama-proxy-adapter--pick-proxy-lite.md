@@ -4,7 +4,7 @@ name: "v1 Ollama proxy adapter — pick proxy (litellm vs claude-code-router vs 
 description: >
   v1 multi-provider path for the TermLink Worker via ANTHROPIC_BASE_URL env redirect. Per CONTEXT.md (Q11): Claude Code supports endpoint redirection (52 binary refs in claude 2.1.126); workflows declare env: ANTHROPIC_BASE_URL=http://localhost:PORT pointing at a proxy fronting ollama / OpenAI / OpenRouter. Inception decides WHICH proxy ships as default, how it integrates into fw doctor, and validation against a real ollama instance.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:orchestrator-rethink, multi-provider, ollama]
 components: []
 related_tasks: [T-1687]
 created: 2026-05-02T22:56:02Z
-last_update: 2026-05-03T08:18:08Z
-date_finished: null
+last_update: 2026-05-03T08:29:35Z
+date_finished: 2026-05-03T08:29:35Z
 ---
 
 # T-1691: v1 Ollama proxy adapter — pick proxy (litellm vs claude-code-router vs claude-bridge) + per-workflow env-redirect plumbing
@@ -50,15 +50,15 @@ TermLink Worker via `ANTHROPIC_BASE_URL` redirect (Q11) needs a proxy that trans
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -149,7 +149,15 @@ A-1, A-2, A-4 are deferred to v1 build (each requires a real proxy install + dis
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: This inception narrowed the choice from three to one based on (a) maturity, (b) generality (litellm fronts 100+ providers, so v1 substrate becomes forward-compatible without further design), and (c) failure-escape semantics (workflow-level `env:` lets operators repoint a single workflow at a different proxy without changing the rest). The empirical "≥90% tool-use success" criterion explicitly requires runtime evidence and a representative test harness — doing it in this inception would consume a half-session AND produce a recommendation no more valuable than the paper version (which proxy to install first). Doing it at v1 build time, where the harness already exists (the dispatch-substrate consumer is the test), is more honest.
+
+A-3 was validated empirically in this inception (ollama at 192.168.10.107:11434 reachable from anchor; models list includes `qwen2.5-coder-32b`, `gpt-oss:20b`, `qwen3:14b` — all tool-use-capable candidates).
+
+A-1, A-2, A-4 are deferred to v1 build (each requires a real proxy install + dispatch).
+
+**Date**: 2026-05-03T08:29:35Z
 
 ## Updates
 
@@ -158,3 +166,25 @@ A-1, A-2, A-4 are deferred to v1 build (each requires a real proxy install + dis
 
 ### 2026-05-03T08:18:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-03T08:29:35Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** This inception narrowed the choice from three to one based on (a) maturity, (b) generality (litellm fronts 100+ providers, so v1 substrate becomes forward-compatible without further design), and (c) failure-escape semantics (workflow-level `env:` lets operators repoint a single workflow at a different proxy without changing the rest). The empirical "≥90% tool-use success" criterion explicitly requires runtime evidence and a representative test harness — doing it in this inception would consume a half-session AND produce a recommendation no more valuable than the paper version (which proxy to install first). Doing it at v1 build time, where the harness already exists (the dispatch-substrate consumer is the test), is more honest.
+
+A-3 was validated empirically in this inception (ollama at 192.168.10.107:11434 reachable from anchor; models list includes `qwen2.5-coder-32b`, `gpt-oss:20b`, `qwen3:14b` — all tool-use-capable candidates).
+
+A-1, A-2, A-4 are deferred to v1 build (each requires a real proxy install + dispatch).
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a3e3c03c
+- **Timestamp:** 2026-05-03T08:29:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T08:29:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

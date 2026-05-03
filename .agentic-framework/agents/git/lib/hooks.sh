@@ -54,7 +54,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.7
+# VERSION=1.8
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -360,10 +360,64 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement + lightweight-tag rejection (T-1593)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity (T-1593, T-1603)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.2
+# VERSION=1.3
+
+# T-1603: VERSION monotonicity check.
+# Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
+# ~440 patch versions dropped) as a side-effect of `git checkout` against a stale
+# ref. 12 consumers paid the cost (pins ahead of HEAD for 4 days). Block any push
+# that decreases VERSION on a branch (compare local-being-pushed vs remote
+# currently-at). Read git's stdin format: "<local-ref> <local-sha> <remote-ref> <remote-sha>"
+_zero="0000000000000000000000000000000000000000"
+_block_lines=""
+# Need to capture stdin once; tee to FD 9 so the lightweight-tag loop below
+# can re-read it via /dev/fd/9 (mkfifo not portable enough across hosts).
+_stdin_buf=$(cat)
+while IFS=' ' read -r _local_ref _local_sha _remote_ref _remote_sha; do
+    [ -z "$_local_ref" ] && continue
+    # Skip deletions (local_sha is all zeros)
+    [ "$_local_sha" = "$_zero" ] && continue
+    # Only check branch refs — tags carry their own version meaning
+    case "$_local_ref" in refs/heads/*) ;; *) continue ;; esac
+    # Read VERSION from local commit being pushed
+    _local_ver=$(git show "$_local_sha:VERSION" 2>/dev/null | tr -d '[:space:]')
+    [ -z "$_local_ver" ] && continue
+    # Read VERSION from remote tip if known; if remote_sha is zero, this is a
+    # new branch — fall back to comparing against $_local_sha~1's VERSION.
+    if [ "$_remote_sha" = "$_zero" ]; then
+        _remote_ver=$(git show "$_local_sha~1:VERSION" 2>/dev/null | tr -d '[:space:]')
+    else
+        _remote_ver=$(git show "$_remote_sha:VERSION" 2>/dev/null | tr -d '[:space:]')
+    fi
+    [ -z "$_remote_ver" ] && continue
+    # Equal is OK — no change. Higher is OK — bump.
+    [ "$_local_ver" = "$_remote_ver" ] && continue
+    # Lower fails: sort -V says first is lower-or-equal; if remote sorts BEFORE
+    # local, local is higher → ok. If local sorts before remote, local is lower → block.
+    _first=$(printf '%s\n%s\n' "$_local_ver" "$_remote_ver" | sort -V | head -1)
+    if [ "$_first" = "$_local_ver" ]; then
+        _block_lines="${_block_lines}${_block_lines:+
+}  ${_local_ref#refs/heads/}: VERSION ${_local_ver} < remote ${_remote_ver}"
+    fi
+done <<EOF
+${_stdin_buf}
+EOF
+if [ -n "$_block_lines" ]; then
+    echo "" >&2
+    echo "ERROR: Push blocked — VERSION monotonicity violation:" >&2
+    printf '%s\n' "$_block_lines" >&2
+    echo "" >&2
+    echo "VERSION rolled back without authorization (T-1603)." >&2
+    echo "Origin: T-1602 surfaced cc38e98f5 silent rollback (1.5.463 → 1.5.19)." >&2
+    echo "" >&2
+    echo "If this is intentional (rare — major-version reset, etc.):" >&2
+    echo "  Bypass: git push --no-verify (Tier 0 protected, logged)" >&2
+    echo "" >&2
+    exit 1
+fi
 
 # T-1593 (T-1591/T-1592 RCA Prevention #2): Reject lightweight tag pushes.
 # Annotated-vs-lightweight tag SHA mismatch caused 22h+ of broken AEF→GitHub
@@ -371,6 +425,7 @@ HOOK_EOF
 # tag objects with their own SHA. Mixing them across remotes guarantees mirror
 # failure on force=false, and silent SHA-drift even on force=true.
 # Read git's stdin format: "<local-ref> <local-sha> <remote-ref> <remote-sha>"
+# stdin already consumed into $_stdin_buf above (T-1603); re-feed via heredoc.
 _lw_tags=""
 while IFS=' ' read -r _local_ref _local_sha _remote_ref _remote_sha; do
     [ -z "$_local_ref" ] && continue
@@ -384,7 +439,9 @@ while IFS=' ' read -r _local_ref _local_sha _remote_ref _remote_sha; do
             fi
             ;;
     esac
-done
+done <<EOF
+${_stdin_buf}
+EOF
 
 if [ -n "$_lw_tags" ]; then
     echo "" >&2
@@ -406,6 +463,41 @@ fi
 # Find project root (where .git is) and export for audit script
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 export PROJECT_ROOT
+
+# T-1610: YAML well-formedness gate for tracked .context/project/*.yaml.
+# Origin: T-1599 surfaced concerns.yaml corruption (consumer-local writer landed
+# `- id: G-XXX` outside parent mapping) — survived all gates until downstream
+# loaders failed silently. Block at push so corruption can't cross-fan-out to
+# consumers. yaml.safe_load with sys.argv path (not f-string interpolation) so
+# odd characters in paths don't break the check.
+_yaml_failures=""
+for _y in "$PROJECT_ROOT"/.context/project/*.yaml; do
+    [ -f "$_y" ] || continue
+    if ! python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$_y" 2>/dev/null; then
+        _err=$(python3 -c "
+import yaml, sys
+try:
+    yaml.safe_load(open(sys.argv[1]))
+except yaml.YAMLError as e:
+    msg = str(e).splitlines()[0] if str(e) else 'unknown YAML error'
+    print(msg)
+" "$_y" 2>&1 | head -1)
+        _yaml_failures="${_yaml_failures}
+  - ${_y##*/}: ${_err}"
+    fi
+done
+if [ -n "$_yaml_failures" ]; then
+    echo "" >&2
+    echo "ERROR: Push blocked — YAML parse failure in tracked project file(s):" >&2
+    printf '%s\n' "$_yaml_failures" >&2
+    echo "" >&2
+    echo "Origin: T-1599/T-1610 — silent .context/project/*.yaml corruption" >&2
+    echo "must not cross-fan-out to consumer projects." >&2
+    echo "" >&2
+    echo "Fix the YAML, then push again." >&2
+    echo "Bypass: git push --no-verify (Tier 0 protected, logged)" >&2
+    exit 1
+fi
 
 # Resolve audit script. Priority (T-1396):
 #   1. .framework.yaml -> framework_path (explicit consumer config)

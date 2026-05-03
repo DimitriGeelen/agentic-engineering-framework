@@ -123,6 +123,17 @@ if [ -f "$FOCUS_FILE" ]; then
     fi
 fi
 
+# T-1661: Current arc focus (single arc, mirrors task focus model).
+ARC_FOCUS_FILE="$PROJECT_ROOT/.context/working/arc-focus.yaml"
+if [ -f "$ARC_FOCUS_FILE" ]; then
+    CURRENT_ARC=$(grep "^current_arc:" "$ARC_FOCUS_FILE" 2>/dev/null | cut -d: -f2 | tr -d ' "')
+    if [ -n "$CURRENT_ARC" ] && [ "$CURRENT_ARC" != "null" ]; then
+        CONTEXT="${CONTEXT}
+## Current Arc: ${CURRENT_ARC}
+"
+    fi
+fi
+
 # Active tasks summary
 TASK_SUMMARY=""
 for f in "$PROJECT_ROOT/.tasks/active"/*.md; do
@@ -187,6 +198,35 @@ for f in items:
 ## Discovery Findings (WARN/FAIL)
 ${DISC_SUMMARY}
 "
+    fi
+fi
+
+# T-1630 (B-4 of T-1626): Hook health probe on session resume.
+# Re-uses the lib/doctor-hook-exercise.py helper (B-3a / T-1629) to invoke
+# every PreToolUse/PostToolUse hook from /tmp and surface any whose path
+# doesn't resolve. Catches the T-1626 witness scenario (bare-relative
+# .agentic-framework/bin/fw paths that break under cd) at the moment the
+# agent's session resumes — not contingent on a real tool call firing.
+# Silent on healthy hooks. Probe failure is non-fatal (degrades to no-op).
+HOOK_EXERCISE_HELPER="${FW_DOCTOR_HOOK_EXERCISE:-$FRAMEWORK_ROOT/lib/doctor-hook-exercise.py}"
+SETTINGS_FILE="$PROJECT_ROOT/.claude/settings.json"
+if [ -f "$HOOK_EXERCISE_HELPER" ] && [ -f "$SETTINGS_FILE" ]; then
+    HOOK_PROBE=$(SETTINGS_FILE="$SETTINGS_FILE" python3 "$HOOK_EXERCISE_HELPER" 2>/dev/null || echo "")
+    if [ -n "$HOOK_PROBE" ]; then
+        HOOK_PROBE_FAIL=$(echo "$HOOK_PROBE" | head -1 | cut -d'|' -f2)
+        if [ "${HOOK_PROBE_FAIL:-0}" -gt 0 ]; then
+            HOOK_PROBE_DETAIL=$(echo "$HOOK_PROBE" | tail -n +2 | sed 's/^FAIL|/- /' | sed 's/|/ \/ /g')
+            CONTEXT="${CONTEXT}
+
+## Broken Hook Warning (T-1630)
+
+The framework probed your hook configuration from /tmp (foreign CWD that mimics agent cd-drift) and found ${HOOK_PROBE_FAIL} hook(s) failed to resolve. This is the T-1626 witness pattern — these hooks will silently fail on every tool call until fixed.
+
+${HOOK_PROBE_DETAIL}
+
+**Action:** Run \`fw upgrade\` (regenerates hook paths to absolute form) or \`fw doctor\` for the full check.
+"
+        fi
     fi
 fi
 

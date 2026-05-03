@@ -4,16 +4,16 @@ name: "v1 Resolver — workflow lookup + context assembly + variant selection + 
 description: >
   v1 implementation of the Resolver: the Agent-side function that turns a Workflow + live task context into a Delegation envelope. Per CONTEXT.md+ADR-0003: workflow lookup with default.yaml fallback, three-tier prompt construction (static/assembled/meta-prompted), variant selection, dispatch_id+blob capture, template-SHA recording. Highest-complexity new component in v1 — worth its own scoped inception to nail down implementation choices, ACs, and validation strategy.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, resolver]
-components: []
+components: [prompts/default.md]
 related_tasks: [T-1687, T-1686]
 created: 2026-05-02T22:55:52Z
-last_update: 2026-05-03T08:08:18Z
-date_finished: null
+last_update: 2026-05-03T08:28:39Z
+date_finished: 2026-05-03T08:28:39Z
 ---
 
 # T-1689: v1 Resolver — workflow lookup + context assembly + variant selection + telemetry capture
@@ -51,15 +51,15 @@ The Resolver is the load-bearing new component for v1 dispatch. CONTEXT.md + ADR
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -155,7 +155,11 @@ The Resolver is the load-bearing new component for v1 dispatch. CONTEXT.md + ADR
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Substrate works end-to-end at 5.3 ms avg per dispatch (NO-GO threshold >500 ms — two orders of magnitude clear). All four assumptions testable in this inception (A-1, A-2, A-3, A-5) validated; A-4 (Tier 3 latency) intentionally deferred to v1 build because it requires a paid LLM call AND the substrate is unconditional regardless of Tier 3's runtime decision. The spike caught a real concurrency bug in the back-prop path (A-5 fixed-tmp race) before any production code shipped — exactly what spikes are for. The resolver fits one Python module (~290 LOC spike → ~400 LOC production estimate). Three of the four GO criteria are MET; the fourth (Tier 3 runtime bound) is wired as substrate and runtime-validated by the v1 build task.
+
+**Date**: 2026-05-03T08:28:39Z
 
 ## Updates
 
@@ -164,3 +168,21 @@ The Resolver is the load-bearing new component for v1 dispatch. CONTEXT.md + ADR
 
 ### 2026-05-03T08:08:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-03T08:28:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Substrate works end-to-end at 5.3 ms avg per dispatch (NO-GO threshold >500 ms — two orders of magnitude clear). All four assumptions testable in this inception (A-1, A-2, A-3, A-5) validated; A-4 (Tier 3 latency) intentionally deferred to v1 build because it requires a paid LLM call AND the substrate is unconditional regardless of Tier 3's runtime decision. The spike caught a real concurrency bug in the back-prop path (A-5 fixed-tmp race) before any production code shipped — exactly what spikes are for. The resolver fits one Python module (~290 LOC spike → ~400 LOC production estimate). Three of the four GO criteria are MET; the fourth (Tier 3 runtime bound) is wired as substrate and runtime-validated by the v1 build task.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-26b303e9
+- **Timestamp:** 2026-05-03T08:28:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T08:28:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

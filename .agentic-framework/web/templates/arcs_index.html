@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .arc-row { padding: 1rem; margin-bottom: 0.75rem; border-left: 3px solid var(--pico-primary); border-radius: 4px; background: var(--pico-card-background-color); }
+    .arc-row.closed { border-left-color: var(--pico-muted-color); opacity: 0.7; }
+    .arc-row.focused { border-left-color: var(--pico-primary); border-left-width: 6px; }
+    .arc-row a.arc-name { font-size: 1.1rem; font-weight: bold; }
+    .arc-meta { font-size: 0.85rem; color: var(--pico-muted-color); margin-top: 0.25rem; }
+    .focus-dot { display: inline-block; width: 0.6em; height: 0.6em; border-radius: 50%; margin-right: 0.3em; vertical-align: middle; }
+    .focus-dot.on { background: var(--pico-primary); }
+    .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
+    .badge { display: inline-block; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; }
+    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary); }
+    .badge-ok { background: var(--pico-form-element-valid-active-border-color, #2e7d32); color: white; }
+    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+</style>
+
+<header>
+    <h1>Arcs</h1>
+    <p>Multi-task workspaces grouping work by theme. Each arc has constituent tasks and an explicit closure decision.
+    Run <code>fw arc create</code> to register one. See <a href="/docs/CLAUDE">CLAUDE.md</a> §Arc Completion Discipline for the closure check.</p>
+</header>
+
+{% if arcs %}
+<p class="muted">{{ arcs|length }} arc(s) registered. <strong>Bold dot</strong> = currently focused.</p>
+{% for a in arcs %}
+<article class="arc-row {% if a.status == 'closed' %}closed{% endif %} {% if a.focused %}focused{% endif %}">
+    <div>
+        <span class="focus-dot {% if a.focused %}on{% else %}off{% endif %}" title="{% if a.focused %}Focused (fw arc focus){% else %}Not focused{% endif %}"></span>
+        <a class="arc-name" href="/arcs/{{ a.id }}">{{ a.id }}</a>
+        — {{ a.name }}
+    </div>
+    <div class="arc-meta">
+        status:
+        {% if a.status == 'in-progress' %}<span class="badge badge-info">{{ a.status }}</span>
+        {% elif a.status == 'closed' %}<span class="badge badge-ok">{{ a.status }}{% if a.decision %} / {{ a.decision }}{% endif %}</span>
+        {% else %}<span class="badge badge-muted">{{ a.status }}</span>{% endif %}
+        · {{ a.task_count }} constituent task(s)
+        {% if a.anchor_task %} · anchor: <a href="/tasks/{{ a.anchor_task }}">{{ a.anchor_task }}</a>{% endif %}
+        {% if a.created %} · created: <small>{{ a.created }}</small>{% endif %}
+    </div>
+</article>
+{% endfor %}
+{% else %}
+<article>
+    <p>No arcs registered. Create one with:</p>
+    <pre><code>cd {{ project_root }} && bin/fw arc create &lt;id&gt; --name "Description" --anchor T-XXXX</code></pre>
+</article>
+{% endif %}
+
+<p style="margin-top:1.5rem;"><em>See also:</em> <a href="/orchestrator">/orchestrator</a> for the orchestrator-arc-specific drill-down (MCP audit, live sessions, recent dispatches).</p>
+
+{% endblock %}

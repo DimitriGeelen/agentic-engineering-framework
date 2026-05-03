@@ -164,6 +164,8 @@ FW_CONFIG_REGISTRY=(
     "HANDOVER_DEDUP_COOLDOWN|300|Seconds between duplicate handover detection"
     "INCEPTION_COMMIT_LIMIT|2|Max exploration commits before inception decision gate"
     "CONSUMER_SCAN_DIRS|/opt|Colon-separated directories to scan for consumer projects"
+    "DISPATCH_MODEL_DEFAULT||Default LLM model for fw termlink dispatch when --model omitted (e.g. sonnet, haiku, opus). T-1643/W3."
+    "ARC_COMPLETION_THRESHOLD|0.80|Ratio of completed children at which fw audit warns an in-progress arc (G-062 mechanism #2). T-1656."
 )
 
 # fw_config_registry — Print all known settings with current values

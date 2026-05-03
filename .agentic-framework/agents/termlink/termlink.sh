@@ -32,6 +32,218 @@ TERMLINK_WORKER_TIMEOUT=$(fw_config_int "TERMLINK_WORKER_TIMEOUT" 600)
 
 die() { echo -e "${RED}ERROR:${NC} $1" >&2; exit 1; }
 
+# --- Orchestrator-substrate awareness (T-1643, T-1669) ---
+
+# T-1669 — route_cache.json path (matches /opt/termlink runtime_dir resolution).
+_route_cache_path() {
+    if [ -n "${TERMLINK_RUNTIME_DIR:-}" ]; then
+        echo "${TERMLINK_RUNTIME_DIR}/route-cache.json"
+    elif [ -n "${XDG_RUNTIME_DIR:-}" ]; then
+        echo "${XDG_RUNTIME_DIR}/termlink/route-cache.json"
+    else
+        echo "/var/lib/termlink/route-cache.json"
+    fi
+}
+
+# T-1669 Step 1 — query route_cache for best model for a task_type.
+# Echoes "<model>" if a stat exists (highest success_rate, ties broken by
+# total volume) or empty when no data / file missing / parse failure.
+# Never errors. Pure read; the cache file is JSON written by /opt/termlink hub.
+_route_cache_query_best_model() {
+    local task_type="$1"
+    [ -n "$task_type" ] || return 0
+    local cache_file
+    cache_file=$(_route_cache_path)
+    [ -f "$cache_file" ] || return 0
+    python3 - "$cache_file" "$task_type" <<'PY' 2>/dev/null || true
+import json, sys
+try:
+    cache = json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(0)
+tt = sys.argv[2]
+stats = cache.get("model_stats") or {}
+best = None
+for s in stats.values():
+    if s.get("task_type") != tt:
+        continue
+    succ = s.get("successes", 0)
+    fail = s.get("failures", 0)
+    total = succ + fail
+    if total <= 0:
+        continue
+    rate = succ / total
+    cand = (rate, total, s.get("model"))
+    if best is None or cand > best:
+        best = cand
+if best:
+    print(best[2])
+PY
+}
+
+# _derive_task_type — read the active task's workflow_type from focus.yaml.
+# Echoes the derived value (e.g. "build", "inception") or empty if no focus
+# or the focused task file cannot be read. Never errors — failures are silent
+# (caller treats empty as "no derivation").
+_derive_task_type() {
+    local project_root="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    local focus_file="$project_root/.context/working/focus.yaml"
+    [ -f "$focus_file" ] || return 0
+    local current_task
+    current_task=$(awk -F': ' '/^current_task:/ {print $2; exit}' "$focus_file" 2>/dev/null | tr -d ' "')
+    [ -n "$current_task" ] && [ "$current_task" != "null" ] || return 0
+    local task_file
+    task_file=$({ ls "$project_root"/.tasks/{active,completed}/"$current_task"-*.md 2>/dev/null || true; } | head -1)
+    [ -n "$task_file" ] && [ -f "$task_file" ] || return 0
+    awk -F': ' '/^workflow_type:/ {print $2; exit}' "$task_file" 2>/dev/null | tr -d ' "'
+    return 0
+}
+
+# _resolve_dispatch_model — when --model not passed, fall back to
+# DISPATCH_MODEL_FOR_<TASK_TYPE> then DISPATCH_MODEL_DEFAULT (W3).
+# Echoes a single line for backward-compat (model only).
+_resolve_dispatch_model() {
+    local explicit="$1" task_type="$2"
+    if [ -n "$explicit" ]; then
+        echo "$explicit"
+        return 0
+    fi
+    if [ -n "$task_type" ]; then
+        local key="DISPATCH_MODEL_FOR_$(echo "$task_type" | tr '[:lower:]' '[:upper:]')"
+        local v
+        v=$(fw_config "$key" "" 2>/dev/null || true)
+        if [ -n "$v" ]; then
+            echo "$v"
+            return 0
+        fi
+    fi
+    fw_config "DISPATCH_MODEL_DEFAULT" "" 2>/dev/null || true
+    return 0
+}
+
+# _resolve_dispatch_model_and_fallback — returns "<model>|<fallback_used>|<source>".
+# Resolution order (T-1669 closes T-1641):
+#   1. --model explicit                   → source: "explicit",      fallback_used: false
+#   2. route_cache.best_model_for(tt)     → source: "route_cache",   fallback_used: true
+#   3. FW_DISPATCH_MODEL_FOR_<TYPE> env   → source: "env-per-type",  fallback_used: true
+#   4. FW_DISPATCH_MODEL_DEFAULT env      → source: "env-default",   fallback_used: true
+#   5. (none)                             → source: "none",          fallback_used: false  → "||none"
+#
+# Pre-T-1669 the framework dispatch path did 3+4 only — env-var lookup, no
+# learned routing. T-1669 inserts step 2: read route-cache.json (written by
+# /opt/termlink hub + this framework's own outcome reports) and pick the
+# model with best historical success_rate for the task_type.
+# T-1669 Step 2 — record dispatch outcome into route_cache.
+# Atomic JSON update (file lock + tmpfile rename) so concurrent dispatches
+# from this framework and /opt/termlink hub don't lose updates. Silent on
+# permission errors / missing python3 — recording is best-effort, never
+# fatal to the dispatch itself.
+#
+# Key shape mirrors /opt/termlink RouteCache (route_cache.rs):
+#   model_stats["<model>:<task_type>"] = {model, task_type, successes,
+#                                          failures, last_used}
+_route_cache_record_outcome() {
+    local model="$1" task_type="$2" exit_code="$3"
+    [ -n "$model" ] && [ -n "$task_type" ] && [ -n "$exit_code" ] || return 0
+    command -v python3 >/dev/null 2>&1 || return 0
+    local cache_file
+    cache_file=$(_route_cache_path)
+    local cache_dir
+    cache_dir=$(dirname "$cache_file")
+    mkdir -p "$cache_dir" 2>/dev/null || return 0
+    [ -w "$cache_dir" ] || return 0
+    python3 - "$cache_file" "$model" "$task_type" "$exit_code" <<'PY' 2>/dev/null || true
+import fcntl, json, os, sys, tempfile
+from datetime import datetime, timezone
+
+cache_file, model, task_type, exit_code = (
+    sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+)
+key = f"{model}:{task_type}"
+ok = (exit_code == "0")
+
+lock_path = cache_file + ".lock"
+lock_fd = open(lock_path, "w")
+try:
+    fcntl.flock(lock_fd, fcntl.LOCK_EX)
+    cache = {"entries": {}, "model_stats": {}}
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file) as f:
+                loaded = json.load(f)
+            if isinstance(loaded, dict):
+                cache = loaded
+        except Exception:
+            pass  # corrupt → reset
+    if not isinstance(cache.get("model_stats"), dict):
+        cache["model_stats"] = {}
+    if not isinstance(cache.get("entries"), dict):
+        cache["entries"] = {}
+    stat = cache["model_stats"].get(key)
+    if not isinstance(stat, dict):
+        stat = {
+            "model": model, "task_type": task_type,
+            "successes": 0, "failures": 0, "last_used": None,
+        }
+    if ok:
+        stat["successes"] = int(stat.get("successes", 0) or 0) + 1
+    else:
+        stat["failures"] = int(stat.get("failures", 0) or 0) + 1
+    stat["model"] = model
+    stat["task_type"] = task_type
+    stat["last_used"] = datetime.now(timezone.utc).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    cache["model_stats"][key] = stat
+
+    cache_dir = os.path.dirname(cache_file) or "."
+    fd, tmp = tempfile.mkstemp(dir=cache_dir, prefix=".route-cache-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(cache, f, indent=2)
+        os.replace(tmp, cache_file)
+    except Exception:
+        try: os.unlink(tmp)
+        except Exception: pass
+        raise
+finally:
+    try: fcntl.flock(lock_fd, fcntl.LOCK_UN)
+    except Exception: pass
+    lock_fd.close()
+PY
+}
+
+_resolve_dispatch_model_and_fallback() {
+    local explicit="$1" task_type="$2"
+    if [ -n "$explicit" ]; then
+        echo "${explicit}|false|explicit"
+        return 0
+    fi
+    if [ -n "$task_type" ]; then
+        local cached
+        cached=$(_route_cache_query_best_model "$task_type" 2>/dev/null || true)
+        if [ -n "$cached" ]; then
+            echo "${cached}|true|route_cache"
+            return 0
+        fi
+        local key="DISPATCH_MODEL_FOR_$(echo "$task_type" | tr '[:lower:]' '[:upper:]')"
+        local v
+        v=$(fw_config "$key" "" 2>/dev/null || true)
+        if [ -n "$v" ]; then
+            echo "${v}|true|env-per-type"
+            return 0
+        fi
+    fi
+    local d
+    d=$(fw_config "DISPATCH_MODEL_DEFAULT" "" 2>/dev/null || true)
+    if [ -n "$d" ]; then
+        echo "${d}|true|env-default"
+    else
+        echo "||none"
+    fi
+    return 0
+}
+
 # --- Prerequisite check ---
 
 ensure_termlink() {
@@ -63,17 +275,23 @@ cmd_check() {
 
 cmd_spawn() {
     ensure_termlink
-    local task="" name=""
+    local task="" name="" task_type=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --task) task="$2"; shift 2 ;;
             --name) name="$2"; shift 2 ;;
+            --task-type) task_type="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
 
     [ -z "$name" ] && name="worker-$(date +%s)"
+
+    # T-1643/W2: derive task_type from active-task workflow_type when omitted.
+    if [ -z "$task_type" ]; then
+        task_type=$(_derive_task_type)
+    fi
 
     local wdir="$DISPATCH_DIR/$name"
     mkdir -p "$wdir"
@@ -83,12 +301,22 @@ cmd_spawn() {
     # timing, and wait-for-registration natively. (GH #9: the old code
     # reimplemented these primitives and introduced two bugs.)
     local spawn_args=(--name "$name" --wait --wait-timeout 30)
-    [ -n "$task" ] && spawn_args+=(--tags "task=$task")
+    # T-1654: canonical tag prefix is `task:` (colon), per
+    # tests/fixtures/termlink-list-schema.json + T-1649 audit. Older code
+    # produced `task=` (equals) which trips the orchestrator-arc tag-format
+    # drift warning the framework emits against itself.
+    local tags=""
+    [ -n "$task" ] && tags="task:$task"
+    if [ -n "$task_type" ]; then
+        [ -n "$tags" ] && tags="$tags,task-type:$task_type" || tags="task-type:$task_type"
+    fi
+    [ -n "$tags" ] && spawn_args+=(--tags "$tags")
     spawn_args+=(--shell)
 
     termlink spawn "${spawn_args[@]}"
     echo -e "${GREEN}OK${NC}  Session '$name' registered"
     [ -n "$task" ] && echo "  Tagged: $task"
+    [ -n "$task_type" ] && echo "  Task-type: $task_type"
 }
 
 cmd_exec() {
@@ -265,7 +493,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model=""
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -276,6 +504,7 @@ cmd_dispatch() {
             --project) project_dir="$2"; shift 2 ;;
             --timeout) timeout="$2"; shift 2 ;;
             --model) model="$2"; shift 2 ;;
+            --task-type) task_type="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
@@ -289,6 +518,32 @@ cmd_dispatch() {
         prompt=$(cat "$prompt_file")
     fi
 
+    # T-1643/W1: auto-derive task_type from focus.yaml when omitted.
+    if [ -z "$task_type" ]; then
+        task_type=$(_derive_task_type)
+    fi
+
+    # T-1643/W3 + T-1664 + T-1669: resolve model.
+    # Pre-T-1669: env-var lookup only.
+    # T-1669: route_cache.best_model_for(task_type) consulted FIRST, env-var as fallback.
+    # Returns "<model>|<fallback_used>|<source>".
+    local _resolved
+    _resolved=$(_resolve_dispatch_model_and_fallback "$model" "$task_type")
+    local resolution_source
+    IFS='|' read -r model fallback_used resolution_source <<< "$_resolved"
+    # JSON-safe: empty resolution → null (not the string "null"); non-empty model → quoted string.
+    local model_used_json
+    if [ -n "$model" ]; then
+        model_used_json="\"$model\""
+    else
+        model_used_json="null"
+    fi
+    local fallback_used_json
+    case "$fallback_used" in
+        true|false) fallback_used_json="$fallback_used" ;;
+        *)          fallback_used_json="null" ;;
+    esac
+
     project_dir="${project_dir:-$(pwd)}"
     local wdir="$DISPATCH_DIR/$name"
     mkdir -p "$wdir"
@@ -296,13 +551,20 @@ cmd_dispatch() {
     # Save prompt, task tag, and metadata (from tl-dispatch.sh pattern)
     echo "$prompt" > "$wdir/prompt.md"
     [ -n "$task" ] && echo "$task" > "$wdir/task"
+    # T-1643/W4 + T-1664: meta.json includes task_type, model_used, fallback_used.
+    # model_used / fallback_used now populated at dispatch time when resolution succeeds;
+    # remain null when no model resolves (DISPATCH_MODEL_DEFAULT unset and no per-type pin).
     cat > "$wdir/meta.json" <<METAEOF
 {
   "name": "$name",
   "project": "$project_dir",
   "timeout": $timeout,
   "task": "${task:-}",
+  "task_type": "${task_type:-}",
   "model": "${model:-}",
+  "model_used": $model_used_json,
+  "fallback_used": $fallback_used_json,
+  "resolution_source": "${resolution_source:-none}",
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -313,6 +575,7 @@ METAEOF
     cat > "$wdir/run.sh" <<'RUNEOF'
 #!/bin/bash
 WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"
+TASK_TYPE="$6"; FW_BIN="$7"
 cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"; exit 1; }
 
 # T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
@@ -333,16 +596,52 @@ if [ -n "$MODEL" ]; then
 fi
 
 # Background process + kill watchdog (macOS has no `timeout` command)
-claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG --output-format text > "$WDIR/result.md" 2>"$WDIR/stderr.log" &
+# T-1663: stream-json preserves forensic trail when watchdog kills the worker — text format
+# buffers everything until completion, leaving an empty result.md on timeout (T-1643 found
+# this twice consecutively on U-005 dispatches). result.jsonl is the live trail; result.md
+# carries the final assistant text extracted on clean exit (backward-compat with `fw termlink result`).
+claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
 CLAUDE_PID=$!
-(sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" > "$WDIR/stderr.log") &
+(sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
 WATCHDOG_PID=$!
 wait "$CLAUDE_PID" 2>/dev/null
 EXIT_CODE=$?
 kill "$WATCHDOG_PID" 2>/dev/null || true
 
+# Extract final assistant text into result.md for backward-compat. On timeout the result event
+# never arrived, result.md stays empty — operators read result.jsonl directly for forensic trail.
+if [ -s "$WDIR/result.jsonl" ] && command -v jq >/dev/null 2>&1; then
+    jq -r 'select(.type=="result") | .result // empty' "$WDIR/result.jsonl" > "$WDIR/result.md" 2>/dev/null || : > "$WDIR/result.md"
+else
+    : > "$WDIR/result.md"
+fi
+
 echo "$EXIT_CODE" > "$WDIR/exit_code"
-date -u +%Y-%m-%dT%H:%M:%SZ > "$WDIR/finished_at"
+FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+echo "$FINISHED_AT" > "$WDIR/finished_at"
+
+# T-1681: rewrite meta.json post-exit so `fw termlink dispatch_status` reflects
+# reality. Pre-patch behaviour: meta.json was written at spawn with
+# status:running and never updated, so dispatch_status reported running forever
+# even though exit_code/finished_at/record-outcome had all fired. Best-effort —
+# skipped silently when jq is unavailable (same pattern as result.md extraction).
+if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ]; then
+    NEW_STATUS=$([ "$EXIT_CODE" -eq 0 ] && echo done || echo failed)
+    jq --arg s "$NEW_STATUS" --argjson ec "$EXIT_CODE" --arg fa "$FINISHED_AT" \
+       '.status = $s | .exit_code = $ec | .ended = $fa' \
+       "$WDIR/meta.json" > "$WDIR/meta.json.tmp" 2>/dev/null \
+        && mv "$WDIR/meta.json.tmp" "$WDIR/meta.json" \
+        || rm -f "$WDIR/meta.json.tmp"
+fi
+
+# T-1669 Step 2: record outcome into route_cache so future dispatches can
+# learn from it. Best-effort — missing model / task_type / fw skips silently.
+if [ -n "$MODEL" ] && [ -n "$TASK_TYPE" ] && [ -n "$FW_BIN" ] && [ -x "$FW_BIN" ]; then
+    "$FW_BIN" termlink record-outcome \
+        --model "$MODEL" --task-type "$TASK_TYPE" --exit-code "$EXIT_CODE" \
+        >/dev/null 2>&1 || true
+fi
+
 termlink event emit "$WORKER_NAME" worker.done \
     -p "{\"exit_code\":$EXIT_CODE,\"result\":\"$WDIR/result.md\"}" 2>/dev/null || true
 
@@ -352,12 +651,17 @@ echo "Result: $WDIR/result.md"
 RUNEOF
     chmod +x "$wdir/run.sh"
 
-    # Spawn terminal session
-    cmd_spawn ${task:+--task "$task"} --name "$name"
+    # Spawn terminal session — propagate task_type so the long-lived session
+    # carries the task-type:X tag (T-1643/W2).
+    cmd_spawn ${task:+--task "$task"} ${task_type:+--task-type "$task_type"} --name "$name"
 
     # Inject worker script via pty inject (fire-and-forget, NOT interact — claude takes minutes)
     sleep 1
-    termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model'" --enter >/dev/null 2>&1
+    # T-1669 Step 2: pass task_type + fw binary path so the worker can
+    # record outcome into route_cache after it exits.
+    local fw_bin="${FRAMEWORK_ROOT:-$(dirname "$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")")}/bin/fw"
+    [ -x "$fw_bin" ] || fw_bin=""
+    termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model' '$task_type' '$fw_bin'" --enter >/dev/null 2>&1
 
     echo "Worker spawned: $name (wdir: $wdir)"
 }
@@ -504,21 +808,41 @@ cmd_help() {
     echo "  fw termlink cleanup"
 }
 
+# T-1669 Step 2 — `fw termlink record-outcome --model X --task-type Y --exit-code N`
+# Called from dispatch run.sh after the worker exits, and usable directly for
+# tests / manual replay. No-op on missing args (best-effort recording).
+cmd_record_outcome() {
+    local model="" task_type="" exit_code=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --model) model="$2"; shift 2 ;;
+            --task-type) task_type="$2"; shift 2 ;;
+            --exit-code) exit_code="$2"; shift 2 ;;
+            *) die "Unknown option: $1" ;;
+        esac
+    done
+    _route_cache_record_outcome "$model" "$task_type" "$exit_code"
+}
+
 # --- Main routing ---
+# T-1643/W1: skip main routing when sourced (e.g. by tests).
+# `${BASH_SOURCE[0]} != $0` indicates we're being sourced, not executed.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    subcmd="${1:-help}"
+    shift 2>/dev/null || true
 
-subcmd="${1:-help}"
-shift 2>/dev/null || true
-
-case "$subcmd" in
-    check)    cmd_check "$@" ;;
-    spawn)    cmd_spawn "$@" ;;
-    exec)     cmd_exec "$@" ;;
-    status)   cmd_status "$@" ;;
-    cleanup)  cmd_cleanup "$@" ;;
-    dispatch) cmd_dispatch "$@" ;;
-    wait)     cmd_wait "$@" ;;
-    result)   cmd_result "$@" ;;
-    update)   cmd_update "$@" ;;
-    help|--help|-h) cmd_help ;;
-    *) die "Unknown subcommand: $subcmd (run 'fw termlink help')" ;;
-esac
+    case "$subcmd" in
+        check)    cmd_check "$@" ;;
+        spawn)    cmd_spawn "$@" ;;
+        exec)     cmd_exec "$@" ;;
+        status)   cmd_status "$@" ;;
+        cleanup)  cmd_cleanup "$@" ;;
+        dispatch) cmd_dispatch "$@" ;;
+        wait)     cmd_wait "$@" ;;
+        result)   cmd_result "$@" ;;
+        update)   cmd_update "$@" ;;
+        record-outcome) cmd_record_outcome "$@" ;;
+        help|--help|-h) cmd_help ;;
+        *) die "Unknown subcommand: $subcmd (run 'fw termlink help')" ;;
+    esac
+fi

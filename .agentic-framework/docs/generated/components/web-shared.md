@@ -10,7 +10,7 @@
 
 Path resolution
 
-## Used By (46)
+## Used By (47)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -60,6 +60,7 @@ Path resolution
 | `web/blueprints/pending.py` | called_by |
 | `web/blueprints/fleet.py` | called_by |
 | `web/blueprints/reviewer.py` | called_by |
+| `web/blueprints/escalation.py` | called_by |
 
 ## Related
 

@@ -4,7 +4,7 @@ name: "v1 Outcome enrichment hook + task-completion back-propagation into dispat
 description: >
   v1 implementation of the post-dispatch outcome evaluator and the task-lifecycle back-propagation. Per CONTEXT.md+ADR-0003: workflows declare optional outcome_evaluator script; default evaluator checks Verification+Agent ACs; when a task transitions to work-completed/issues AFTER a dispatch ran for it, resolver back-fills task_completion_outcome into the matching dispatches.jsonl rows. Couples task lifecycle (Agent slice 1) to dispatch telemetry (Agent slice 3). Inception because the coupling needs careful scoping.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:orchestrator-rethink, telemetry]
 components: []
 related_tasks: [T-1687]
 created: 2026-05-02T22:55:57Z
-last_update: 2026-05-03T08:15:52Z
-date_finished: null
+last_update: 2026-05-03T08:29:11Z
+date_finished: 2026-05-03T08:29:11Z
 ---
 
 # T-1690: v1 Outcome enrichment hook + task-completion back-propagation into dispatches.jsonl
@@ -50,15 +50,15 @@ date_finished: null
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -148,7 +148,11 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Default evaluator works (282ms to parse + run all Verification commands for T-1693, 6/6 Agent ACs detected as satisfied). Back-prop hook is fast on the unmatched path (0.3ms — far below the 10ms NO-GO threshold). Spike passes all functional tests. **Critical finding:** the modify-in-place pattern that T-1689 validated for *single-row* updates does NOT compose under cross-row concurrency — when two back-props run in parallel on different task_ids, the second rename overwrites the first writer's enrichments (last-writer-wins at the FILE level, not the row level). Spike measured 15/50 enrichments preserved when 10 threads enriched distinct task_ids concurrently. This is a CHANGE from T-1689's sub-spike A-5, which only proved no-corruption — not no-overwrite.
+
+**Date**: 2026-05-03T08:29:11Z
 
 ## Updates
 
@@ -157,3 +161,21 @@ date_finished: null
 
 ### 2026-05-03T08:15:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-03T08:29:11Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Default evaluator works (282ms to parse + run all Verification commands for T-1693, 6/6 Agent ACs detected as satisfied). Back-prop hook is fast on the unmatched path (0.3ms — far below the 10ms NO-GO threshold). Spike passes all functional tests. **Critical finding:** the modify-in-place pattern that T-1689 validated for *single-row* updates does NOT compose under cross-row concurrency — when two back-props run in parallel on different task_ids, the second rename overwrites the first writer's enrichments (last-writer-wins at the FILE level, not the row level). Spike measured 15/50 enrichments preserved when 10 threads enriched distinct task_ids concurrently. This is a CHANGE from T-1689's sub-spike A-5, which only proved no-corruption — not no-overwrite.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-6c0f946a
+- **Timestamp:** 2026-05-03T08:29:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T08:29:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

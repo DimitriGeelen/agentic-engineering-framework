@@ -290,7 +290,22 @@ do_port() {
 }
 
 do_url() {
-    if [ -f "$URL_FILE" ]; then
+    # T-1622: when running, regenerate LAN URL from current detect_lan_ip — the
+    # cached URL_FILE goes stale on DHCP IP rotation (T-1621). Witness: this host
+    # bounced between .123 and .107 8x in one day, file kept first-write value
+    # for hours, every emitted review URL 404'd from LAN clients. File remains
+    # the fallback for the stopped state, so handover artefacts still surface
+    # "where it WAS running."
+    if is_running; then
+        local p lan_ip
+        p=$(do_port)
+        lan_ip=$(detect_lan_ip)
+        if [ -n "$lan_ip" ]; then
+            echo "http://${lan_ip}:${p}"
+        else
+            echo "http://localhost:${p}"
+        fi
+    elif [ -f "$URL_FILE" ]; then
         cat "$URL_FILE"
     else
         local p

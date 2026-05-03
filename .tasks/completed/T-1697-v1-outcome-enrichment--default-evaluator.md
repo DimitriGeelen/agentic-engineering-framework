@@ -4,16 +4,16 @@ name: "v1 Outcome enrichment — default evaluator + back-prop hook + append-onl
 description: >
   v1 Outcome enrichment — default evaluator + back-prop hook + append-only dispatch-outcomes.jsonl
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, bin/fw, lib/outcome.py, lib/resolver.py, tests/unit/test_outcome.py, tests/unit/test_resolver.py]
 related_tasks: []
 created: 2026-05-03T12:59:11Z
-last_update: 2026-05-03T12:59:11Z
-date_finished: null
+last_update: 2026-05-03T13:07:23Z
+date_finished: 2026-05-03T13:05:28Z
 ---
 
 # T-1697: v1 Outcome enrichment — default evaluator + back-prop hook + append-only dispatch-outcomes.jsonl
@@ -127,3 +127,22 @@ bin/fw doctor
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1697-v1-outcome-enrichment--default-evaluator.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-367ba067
+- **Timestamp:** 2026-05-03T13:06:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `bin/fw outcome backprop T-1696` appends N rows to `.context/dispatch-outcomes.jsonl` where N = count of T-1696 dispatch rows in dispatches.jsonl
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatch-outcomes.jsonl in: `bin/fw outcome backprop T-1696` appends N rows to `.context/dispatch-outcomes.jsonl` where N = count of T-1696 dispatch rows in dispatches.jsonl`
+- **AC#12 (Agent)** — `.gitignore` excludes `.context/dispatch-outcomes.jsonl`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatch-outcomes.jsonl in: `.gitignore` excludes `.context/dispatch-outcomes.jsonl``
+
+### 2026-05-03T13:05:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

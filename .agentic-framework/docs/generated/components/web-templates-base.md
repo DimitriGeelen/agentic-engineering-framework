@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -15,6 +15,7 @@
 | `web/templates/config.html` | rendered_by |
 | `web/templates/reviewer_audit.html` | extended_by |
 | `web/templates/reviewer_overrides.html` | extended_by |
+| `web/templates/escalation_drift.html` | extended_by |
 
 ## Related
 

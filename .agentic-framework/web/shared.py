@@ -89,6 +89,7 @@ NAV_GROUPS = [
     ("Architecture", [
         ("Fabric",      "fabric.fabric_overview",   None),
         ("Explorer",    "fabric.fabric_graph",      None),
+        ("Arcs",        "arcs.arcs_index",          None),
         ("Terminal",    "terminal.terminal_page",    None),
         ("Sessions",    "sessions_page.sessions_page", None),
     ]),
@@ -97,6 +98,7 @@ NAV_GROUPS = [
         ("Directives",    "core.directives",                       None),
         ("Enforcement",   "enforcement.enforcement_dashboard",     None),
         ("Discoveries",   "discoveries_bp.discoveries_dashboard",  None),
+        ("Hooks",         "hooks.hooks_page",                      None),
         ("Risks",         "risks.risk_register",                   None),
         ("Gaps",          "discovery.gaps",                        None),
         ("Quality",       "quality.quality_gate",                  None),

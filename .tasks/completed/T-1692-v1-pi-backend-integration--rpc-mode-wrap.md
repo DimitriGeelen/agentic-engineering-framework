@@ -4,7 +4,7 @@ name: "v1 Pi backend integration — RPC mode wrapper for worker_kind=pi"
 description: >
   v1 third-flavour Worker integration. Per CONTEXT.md (Q11): pi (github.com/badlogic/pi-mono) spawned in RPC mode (LF-delimited JSONL stdin/stdout); 23+ providers via API keys plus subscription-backed inference (Anthropic Pro/Max, OpenAI Plus/Pro, GitHub Copilot — $0/call on subscription quotas); built-in tools only, no native MCP. Inception scopes the RPC wrapper, error handling, telemetry parity with TermLink path, fw doctor pi-installed check (Q13).
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:orchestrator-rethink, pi, multi-provider]
 components: []
 related_tasks: [T-1687]
 created: 2026-05-02T22:56:06Z
-last_update: 2026-05-03T08:20:02Z
-date_finished: null
+last_update: 2026-05-03T08:30:12Z
+date_finished: 2026-05-03T08:30:12Z
 ---
 
 # T-1692: v1 Pi backend integration — RPC mode wrapper for worker_kind=pi
@@ -50,15 +50,15 @@ pi (github.com/badlogic/pi-mono) is the third Worker flavour for **subscription-
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -148,7 +148,13 @@ A-1, A-3, A-4 paper-validated. A-2 (quota error parsing) needs actual install + 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: pi RPC protocol is well-documented and stable (LF-delimited JSONL, explicit framing rules calling out Node `readline` as non-compliant — that level of edge-case awareness is a maturity signal). Built-in toolset (`read`, `write`, `edit`, `bash`) matches the TermLink default toolset, validating A-3's ≥80% coverage claim. Auth path (`~/.pi/agent/`) does not collide with framework credentials. Wrapper design is straightforward: subprocess.Popen with line-buffered I/O + JSONL framing (~50-100 LOC for the worker class). Telemetry parity is mechanical — same `dispatches.jsonl` schema modulo `mcp_config` (absent) plus `pi_session_id` (added).
+
+A-1, A-3, A-4 paper-validated. A-2 (quota error parsing) needs actual install + dispatch — deferred to v1 build for the same reason as T-1691 (the build task IS the test harness).
+
+**Date**: 2026-05-03T08:30:12Z
 
 ## Updates
 
@@ -157,3 +163,23 @@ A-1, A-3, A-4 paper-validated. A-2 (quota error parsing) needs actual install + 
 
 ### 2026-05-03T08:20:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-03T08:30:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** pi RPC protocol is well-documented and stable (LF-delimited JSONL, explicit framing rules calling out Node `readline` as non-compliant — that level of edge-case awareness is a maturity signal). Built-in toolset (`read`, `write`, `edit`, `bash`) matches the TermLink default toolset, validating A-3's ≥80% coverage claim. Auth path (`~/.pi/agent/`) does not collide with framework credentials. Wrapper design is straightforward: subprocess.Popen with line-buffered I/O + JSONL framing (~50-100 LOC for the worker class). Telemetry parity is mechanical — same `dispatches.jsonl` schema modulo `mcp_config` (absent) plus `pi_session_id` (added).
+
+A-1, A-3, A-4 paper-validated. A-2 (quota error parsing) needs actual install + dispatch — deferred to v1 build for the same reason as T-1691 (the build task IS the test harness).
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-561d3f52
+- **Timestamp:** 2026-05-03T08:30:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T08:30:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

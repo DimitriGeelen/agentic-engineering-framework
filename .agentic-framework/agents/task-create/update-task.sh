@@ -601,6 +601,15 @@ if [ -n "$NEW_STATUS" ]; then
                         fi
                     fi
                 fi
+
+                # T-1697: outcome back-prop into dispatch-outcomes.jsonl (best-effort).
+                # Skips verification because the P-011 gate already ran the same
+                # commands above; --skip-verification just counts AC ticks. Failure
+                # of this hook never blocks task completion (decoupled by design).
+                FW_BIN="$FRAMEWORK_ROOT/bin/fw"
+                if [ -x "$FW_BIN" ] && [ -f "$PROJECT_ROOT/.context/dispatches.jsonl" ]; then
+                    PROJECT_ROOT="$PROJECT_ROOT" "$FW_BIN" outcome backprop "$TASK_ID" --skip-verification >/dev/null 2>&1 || true
+                fi
             else
                 echo -e "${YELLOW}Still $ALL_UNCHECKED/$ALL_TOTAL ACs unchecked — task stays in active/${NC}"
                 echo "Check human ACs in the task file, then re-run this command."
@@ -1144,6 +1153,19 @@ with open(path, 'w') as f:
         else
             echo -e "${YELLOW}Context agent not found${NC}"
             echo "Run manually: $(_emit_user_command "context generate-episodic $TASK_ID")"
+        fi
+    fi
+
+    # T-1697/T-1698: outcome back-prop into dispatch-outcomes.jsonl (best-effort).
+    # T-1697 added this hook to the partial-complete re-run branch only (line ~605);
+    # fresh first-time completions go through this Trigger 2 path and need the same
+    # hook here. Both branches must stay in sync. Failure of the hook never blocks
+    # task completion (decoupled by design). T-1698 RCA captures the duplicate-branch
+    # design and the verification gap that allowed T-1697 to ship half-wired.
+    if [ "${PARTIAL_COMPLETE:-false}" = false ]; then
+        FW_BIN="$FRAMEWORK_ROOT/bin/fw"
+        if [ -x "$FW_BIN" ] && [ -f "$PROJECT_ROOT/.context/dispatches.jsonl" ]; then
+            PROJECT_ROOT="$PROJECT_ROOT" "$FW_BIN" outcome backprop "$TASK_ID" --skip-verification >/dev/null 2>&1 || true
         fi
     fi
 

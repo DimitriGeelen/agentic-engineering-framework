@@ -17,6 +17,7 @@ Singleton adapter for backward compatibility
 ## Related
 
 ### Tasks
+- T-967: Session profiles + provider registry for orchestrator readiness (T-962 Phase 4)
 - T-991: Fix web test failures — update monkeypatch paths after subprocess_utils refactor
 
 ---
