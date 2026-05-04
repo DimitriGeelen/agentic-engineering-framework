@@ -1301,6 +1301,35 @@ for e in d.get('errors',[])[:3]:
         fi
     fi
 
+    # Check: litellm proxy reachable (T-1700 v1 ollama dispatch substrate).
+    # Skip-if-no-consumer: only fires when a workflow declares
+    # ANTHROPIC_BASE_URL: http://localhost:4000 (the litellm proxy port).
+    # Mirrors T-1694 pi pattern.
+    local _wf_dir="$PROJECT_ROOT/.context/project/workflows"
+    if [ -d "$_wf_dir" ] && \
+       grep -lE "ANTHROPIC_BASE_URL:\s*http://localhost:4000" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
+        if curl -sf --max-time 2 http://localhost:4000/health >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  litellm-proxy reachable (http://localhost:4000)"
+        else
+            _doctor_warn_host "litellm-proxy not reachable on http://localhost:4000; workflow(s) declaring ANTHROPIC_BASE_URL will fail"
+            echo -e "         Start: pipx run litellm --config .context/litellm-config.yaml --port 4000  (or systemd unit)"
+        fi
+    fi
+
+    # Check: ollama reachable (T-1700 v1 ollama dispatch substrate).
+    # Skip-if-no-consumer: only fires when a workflow declares
+    # worker_kind: ollama-loop. Hard-codes the upstream URL the workflows
+    # currently target (192.168.10.107:11434). If a workflow points
+    # elsewhere, this check needs widening.
+    if [ -d "$_wf_dir" ] && \
+       grep -lE "^worker_kind:\s*ollama-loop\b" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
+        if curl -sf --max-time 2 http://192.168.10.107:11434/api/tags >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  ollama reachable (http://192.168.10.107:11434)"
+        else
+            _doctor_warn_host "ollama not reachable on http://192.168.10.107:11434; ollama-loop workflows will fail"
+        fi
+    fi
+
     # Check: TypeScript build health (optional)
     if [ -d "$FRAMEWORK_ROOT/lib/ts/src" ]; then
         shopt -s nullglob

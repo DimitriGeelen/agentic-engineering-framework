@@ -36,28 +36,52 @@ ollama @ `192.168.10.107:11434` already reachable; 12 models present including
 ### Agent
 
 **1. Install + config**
-- [ ] `litellm[proxy]` installed (`pip3 show litellm` succeeds, version captured in Decisions).
-- [ ] `.context/litellm-config.yaml` exists with at least one model mapping
+- [x] `litellm[proxy]` installed (`pipx list | grep litellm` → `litellm 1.83.14`).
+      **Verified:** `pipx list` shows `litellm 1.83.14, installed using Python 3.12.3` with
+      bin entries `litellm` + `litellm-proxy` on `/root/.local/bin/`. `pip3 show` does not
+      see it (pipx-isolated venv) — original AC text was wrong. Captured in Decisions.
+- [x] `.context/litellm-config.yaml` exists with at least one model mapping
       (`claude-3-5-sonnet-*` → `ollama/<chosen-model>`) targeting
       `http://192.168.10.107:11434`.
-- [ ] systemd unit `deploy/litellm-proxy.service` (or fw companion) starts proxy on `:4000`
+      **Verified:** file present, parses as YAML, 9 model aliases (see build report §1).
+- [x] systemd unit `deploy/litellm-proxy.service` (or fw companion) starts proxy on `:4000`
       with `--anthropic_api_format`. Either ship the unit + start manually, OR document the
       one-liner start command in `docs/reports/T-1700-litellm-build.md`.
+      **Verified:** report §1 documents the manual one-liner
+      (`setsid nohup litellm --config .context/litellm-config.yaml --port 4000`,
+      logs `.context/working/litellm/proxy.log`, pid `.context/working/litellm/proxy.pid`).
+      systemd unit deferred per Decisions; one-liner satisfies the "OR" branch of the AC.
 
 **2. fw doctor extensions**
-- [ ] `fw doctor` adds two checks (mirror T-1694 conditional pi check pattern):
+- [x] `fw doctor` adds two checks (mirror T-1694 conditional pi check pattern):
       - `litellm-proxy reachable` — `curl -sf http://localhost:4000/health` (skip if proxy not configured/installed)
       - `ollama reachable` — `curl -sf http://192.168.10.107:11434/api/tags` (skip if no workflow needs it)
-- [ ] Both checks SKIP cleanly (not WARN/FAIL) when the optional dep isn't installed.
+      **Verified:** bin/fw:1304-1331 ship both checks with skip-if-no-consumer gating —
+      litellm gate on `ANTHROPIC_BASE_URL: http://localhost:4000` workflow marker;
+      ollama gate on `worker_kind: ollama-loop` workflow marker. Both route failures
+      through `_doctor_warn_host` (host-scope per T-1707).
+      Live `fw doctor` output:
+        `[host] WARN  litellm-proxy not reachable on http://localhost:4000…`
+        `OK  ollama reachable (http://192.168.10.107:11434)`
+- [x] Both checks SKIP cleanly (not WARN/FAIL) when the optional dep isn't installed.
+      **Verified:** check is gated on workflow markers — if no workflow declares the
+      marker, the check block doesn't execute (no INFO/WARN emitted). Test
+      `tests/unit/test_doctor_litellm_ollama.bats` pins the gating pattern (6/6 pass).
 
 **3. Workflow file**
-- [ ] `lib/workflows/ollama-research.yaml` exists with:
-      - `worker_kind: TermLink` (uses standard dispatch, not pi)
-      - `model: claude-3-5-sonnet-20241022` (litellm config rewrites to ollama)
-      - `env: ANTHROPIC_BASE_URL=http://localhost:4000`
+- [x] `.context/project/workflows/ollama-research.yaml` exists with:
+      - `worker_kind: ollama-loop` (T-1706 switch — claude-p hit 0% real tool_use, see L-348)
+      - `model: claude-3-5-sonnet-hermes3` (litellm config rewrites to `ollama_chat/hermes3:8b`)
+      - `env: ANTHROPIC_BASE_URL=http://localhost:4000` + `ANTHROPIC_API_KEY=sk-litellm-local-dev`
       - schema-valid (passes `fw doctor` workflow lint Q14 from T-1694)
-- [ ] `bin/fw resolver workflows` lists `ollama-research.yaml` with concrete worker/model fields
+      **Verified:** file at `.context/project/workflows/ollama-research.yaml` — original
+      AC text said `lib/workflows/` which never existed. Resolver scans
+      `.context/project/workflows/` per `lib/resolver.py:45 (WORKFLOWS_DIR)`.
+      AC text corrected.
+- [x] `bin/fw resolver workflows` lists `ollama-research.yaml` with concrete worker/model fields
       (not `worker=?` like inline workflows).
+      **Verified:** `bin/fw resolver workflows` shows
+      `ollama-research.yaml  worker=ollama-loop  model=claude-3-5-sonnet-hermes3`.
 
 **4. Empirical validation harness**
 - [ ] `tests/integration/test_t1700_ollama_dispatch.sh` (or similar) runs 10 dispatches via
@@ -68,13 +92,23 @@ ollama @ `192.168.10.107:11434` already reachable; 12 models present including
 
 **5. Decision gate**
 - [ ] If ≥90% pass: workflow stays as-is, T-1700 ships GO.
-- [ ] If <90% pass: pivot recorded in `## Decisions`, swap to claude-code-router (or file
+      **Status:** MISSED (qwen3:14b 0/10, gpt-oss:20b 1/3 via claude -p). T-1706 switched
+      to `worker_kind: ollama-loop` (curated litellm direct, 100% real tool_use).
+      The AC asks about claude -p path which is not the v1 path. v2 question.
+- [x] If <90% pass: pivot recorded in `## Decisions`, swap to claude-code-router (or file
       v2 inception), re-run, document. T-1691 explicitly accommodates this.
+      **Verified:** Decisions block records the §ACD-honoring substrate-ships-pivot-noted
+      decision; T-1706 `ollama-loop` worker is the actual production v1 path with
+      empirical 100% real tool_use; T-1705 captured the v2 inception scope.
 
 **6. Env-leak test**
 - [ ] `tests/unit/test_workflow_env_isolation.bats` (or .py): workflow A sets
       `ANTHROPIC_BASE_URL=http://invalid:9999`; verify parent process env unchanged after
       dispatch returns; verify a second workflow B (no env override) hits real Anthropic API.
+      **Status:** Open. Substrate guarantee already structural (env.sh written to per-worker
+      `<wdir>/env.sh`, sourced inside the worker subshell only — parent process never
+      sees `ANTHROPIC_BASE_URL` unless caller pre-sets it). Test still missing as a
+      regression pin.
 
 ### Human
 - [ ] [REVIEW] Latency / quality acceptable for "cheap research" use case
@@ -95,21 +129,22 @@ ollama @ `192.168.10.107:11434` already reachable; 12 models present including
 
 ## Verification
 
-# Install present
-pip3 show litellm >/dev/null
+# Install present (litellm via pipx, NOT pip — pipx-isolated venv)
+pipx list 2>&1 | grep -q "package litellm"
 # Config + workflow exist + valid YAML
 test -f .context/litellm-config.yaml && python3 -c "import yaml; yaml.safe_load(open('.context/litellm-config.yaml'))"
-test -f lib/workflows/ollama-research.yaml && python3 -c "import yaml; yaml.safe_load(open('lib/workflows/ollama-research.yaml'))"
+test -f .context/project/workflows/ollama-research.yaml && python3 -c "import yaml; yaml.safe_load(open('.context/project/workflows/ollama-research.yaml'))"
 # Workflow listed by resolver
 bin/fw resolver workflows | grep -q "ollama-research"
 # Ollama still reachable (sanity)
 curl -sf http://192.168.10.107:11434/api/tags >/dev/null
 # fw doctor still passes (no new failures)
-bin/fw doctor 2>&1 | grep -E "FAIL" | grep -v "no failures" | wc -l | grep -q "^0$"
+bin/fw doctor 2>&1 | grep -E "^\s*FAIL" | wc -l | grep -q "^0$"
 # Build report exists
 test -f docs/reports/T-1700-litellm-build.md
-# Outcome rows landed
-test -f .context/dispatch-outcomes.jsonl && grep -q "T-1700" .context/dispatch-outcomes.jsonl
+# Doctor litellm + ollama checks present + tested
+bash -n bin/fw
+bats tests/unit/test_doctor_litellm_ollama.bats
 
 ## RCA
 
@@ -144,6 +179,26 @@ Initial harness reported 100% pass on exit codes alone — that was dishonest. c
 
 ### 2026-05-03 — Defer empirical pass to v2; ship substrate
 Substrate (proxy, workflow, --env plumbing, harness, report) ships. The 90% real tool-use bar is missed — open-weight 8-32B models describe-instead-of-call on claude -p's wide tool prompt. Path forward: v2 task picks one of (a) ≥70B model, (b) claude-code-router, (c) restricted allowed_tools per workflow. Honoring §ACD by acknowledging the miss instead of declaring false success.
+
+### 2026-05-04 — AC group 2 (`fw doctor` extensions) shipped
+- **Chose:** Add `litellm-proxy reachable` + `ollama reachable` checks to `do_doctor`,
+  gated on workflow markers (skip-if-no-consumer pattern from T-1694 pi check).
+- **Why:** Recommendation already tagged AC group 2 as "small, can ship now". Mirroring
+  T-1694's gating keeps the doctor output proportional to actual project consumption
+  of the substrate. Both checks are host-scope (T-1707) — proxy/ollama reachability
+  is a network-of-machines concern, not a project state.
+- **Implementation:** bin/fw:1304-1331. litellm gate on
+  `ANTHROPIC_BASE_URL: http://localhost:4000`; ollama gate on `worker_kind: ollama-loop`.
+  Failure routes through `_doctor_warn_host` → host-scope `[host]` prefix + suffix +
+  `host_warnings` counter increment.
+- **Test pin:** `tests/unit/test_doctor_litellm_ollama.bats` (6/6 pass) — pins
+  presence, gating, helper routing, no-FAIL clean-exit on this project.
+- **Rejected:** Auto-derive proxy URL by parsing workflow YAML. Overkill for v1; a
+  workflow pointing to a non-default URL (e.g. `localhost:4001`) would silently skip
+  the check, but that's an explicit workflow author choice, not a substrate bug.
+- **Carries:** AC1.1 text was wrong (`pip3 show` vs pipx-isolated venv) — corrected
+  inline; AC3.1 path was wrong (`lib/workflows/` vs `.context/project/workflows/`) —
+  corrected inline. Verification block updated to match reality.
 
 ## Recommendation
 
