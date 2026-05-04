@@ -8,11 +8,11 @@ status: started-work
 workflow_type: inception
 owner: human
 horizon: now
-tags: []
+tags: [arc:embeddings-strategy, arc:orchestrator-rethink, T-1715-family, G-064-closure-pilot, T-679-family, structural-fix]
 components: []
-related_tasks: []
+related_tasks: [T-1715, T-1716, T-263, T-269, T-1696, T-1697, T-1698, T-1700, T-1443, T-704, T-679, T-1718]
 created: 2026-05-04T12:25:28Z
-last_update: 2026-05-04T12:26:22Z
+last_update: 2026-05-04T15:03:13Z
 date_finished: null
 ---
 
@@ -275,3 +275,6 @@ the two arcs as evidence warrants.
 
 ### 2026-05-04T12:26:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-04T15:03:13Z — status-update [task-update-agent]
+- **Change:** tags: +arc:embeddings-strategy

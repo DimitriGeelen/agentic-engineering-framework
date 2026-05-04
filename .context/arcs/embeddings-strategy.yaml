@@ -1,0 +1,14 @@
+id: embeddings-strategy
+name: Embeddings generation strategy — retrieval as arc-coherence support
+description: 
+status: in-progress
+anchor_task: T-1717
+constituent_tasks: ["T-1717", "T-1718"]
+headline_mechanic: "Agent issues fw recall \u2192 resolver routes to optimal embedding provider for query\
+  \ class \u2192 returns chunks with provenance \u2192 outcome enrichment captures\
+  \ happiness rating \u2192 next routing decision improves. User-visible: amnesia\
+  \ incidents drop, arc-coherence telemetry trends positive across the orchestrator-arc."
+demo_evidence: null
+created: 2026-05-04T15:02:56Z
+closed_at: null
+decision: null

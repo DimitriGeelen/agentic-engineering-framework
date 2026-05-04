@@ -8,11 +8,11 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: []
+tags: [arc:embeddings-strategy, structural-gate, T-1716-family, dogfood-prerequisite, §ACD-prevention]
 components: []
-related_tasks: []
+related_tasks: [T-1717, T-1550, T-1716, T-1671, T-1259, T-1260, G-062, G-066]
 created: 2026-05-04T14:50:48Z
-last_update: 2026-05-04T14:50:48Z
+last_update: 2026-05-04T15:03:14Z
 date_finished: null
 ---
 
@@ -88,3 +88,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1718-evolution-gate--vertical-slice-disciplin.md
 - **Context:** Initial task creation
+
+### 2026-05-04T15:03:14Z — status-update [task-update-agent]
+- **Change:** tags: +arc:embeddings-strategy

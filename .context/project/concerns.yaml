@@ -1981,3 +1981,47 @@ concerns:
   related_task: T-1709
   related_tasks_extra: [T-1442, T-1443, T-1668, T-1671, G-062]
 
+- id: G-067
+  type: gap
+  title: "Arc-coherence retrieval is advisory (CLAUDE.md text), not structural — agent cannot mechanically retrieve arc context, leading to focus loss and arc drift (T-1717 inception finding)"
+  description: >
+    CLAUDE.md establishes arc-coherence rules (G-062 §ACD discipline,
+    arc anchor task with headline_mechanic, vertical-slice expectations)
+    as advisory text. Retrieval (`fw recall`, `fw ask`, task-briefing,
+    SessionStart context injection) returns text-similar chunks via
+    sqlite-vec hybrid search — none of which are arc-aware. The agent
+    cannot mechanically retrieve "what arc is this part of, what's the
+    headline mechanic, what have we shipped, what's the next coherent
+    step" because that wiring does not exist in the embedding/retrieval
+    substrate.
+
+    Evidence (T-1717 grill, 2026-05-04):
+      - Human Phase 3 Q1c: "losing focus on purpose/goals, not completing
+        arcs, pivoting to low-value stuff" — confirmed as the headline pain
+        of the embeddings strategy inception.
+      - On-disk evidence: .context/working/fw-vec-index.db mtime
+        2026-03-10 (~2 months stale on this host).
+      - Substrate is global-flat: no per-arc/per-task scoping in vector
+        layer; no boost for in-scope chunks; no fabric-edge expansion.
+      - 12 inceptions pending decision — circumstantial evidence of
+        arc-coherence drift at scale.
+
+    Same shape as L-300 (advisory-text-fails-to-fix-recurring-patterns)
+    and the T-1715→T-1716 family (advisory text in CLAUDE.md required
+    a structural enforcement to actually work).
+
+    Closure path: T-1717's GO Recommendation specifies five vertical
+    slices; full closure of G-067 requires Slices 1+3 minimum (post-write
+    incremental embedding fixes the freshness staleness; scope-aware
+    retrieval with boost-not-filter and fabric-edge expansion fixes the
+    arc-blindness). Slice 1's 7-day falsifier is the first decision point.
+  spec_reference: "CLAUDE.md §Arc Completion Discipline (G-062); CLAUDE.md §Inception Discipline; CLAUDE.md §Sub-Agent Dispatch Protocol (retrieval-quality dependent)"
+  severity: high
+  trigger_fired: true
+  trigger_event: "T-1717 inception (2026-05-04) Phase 3 grill identified arc-coherence failure as headline pain; human confirmed (a) major catastrophic amnesia, (c) arc drift / pivot to low-value as the most important signal."
+  resolution_status: in-progress
+  resolution_path: "T-1717 build (Slices 1, 3 minimum) + T-1718 Evolution-gate prerequisite"
+  created: 2026-05-04
+  last_reviewed: 2026-05-04
+  related_task: T-1717
+  related_tasks_extra: [T-1718, T-1715, T-1716, T-679, T-263, T-269, T-1696, T-1697, T-1698, T-1700, T-1443, T-704, G-064, G-066]
