@@ -1034,6 +1034,25 @@ print(f'{total}|{\",\".join(missing)}')
         warnings=$((warnings + 1))
     fi
 
+    # Check: Playwright (T-1725) — two surfaces, both essential for UI work
+    #   1. pip package (pytest-playwright) — drives fw test playwright / regression suite
+    #   2. MCP server (@playwright/mcp) — drives agent UI verification via Claude Code
+    # MCP is auto-managed by fw upgrade; pip needs manual install.
+    if python3 -c "import playwright" 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  Playwright pip package (test runner)"
+    else
+        echo -e "  ${YELLOW}WARN${NC}  Playwright pip package missing — UI regression tests can't run"
+        echo -e "         Install: pip install playwright pytest-playwright && playwright install chromium"
+        warnings=$((warnings + 1))
+    fi
+    if [ -f "$mcp_json" ] && grep -q '"playwright"' "$mcp_json" 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  Playwright MCP server (agent UI verification)"
+    else
+        echo -e "  ${YELLOW}WARN${NC}  Playwright MCP server not in .mcp.json"
+        echo -e "         Run: fw upgrade  # auto-adds the MCP block"
+        warnings=$((warnings + 1))
+    fi
+
     # Check: Global install deprecation (T-666/T-662)
     local global_dir="$HOME/.agentic-framework"
     local local_fw="$HOME/.local/bin/fw"
@@ -5288,13 +5307,26 @@ PYPREDICT
                     echo -e "${YELLOW}SKIP: pytest not installed${NC}"
                 fi
 
-                # 4. Playwright UI tests (T-969)
-                if python3 -c "import playwright" 2>/dev/null && [ -d "$FRAMEWORK_ROOT/tests/playwright" ]; then
-                    echo -e "${BOLD}--- Playwright UI Tests ---${NC}"
-                    cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
-                    echo ""
+                # 4. Playwright UI tests (T-969, T-1725)
+                # T-1725: split the SKIP into actionable cases — pip-missing vs tests-missing
+                # are different problems with different fixes. Also look in PROJECT_ROOT first
+                # so consumer projects' own UI tests run.
+                _pw_dir=""
+                if [ -d "$PROJECT_ROOT/tests/playwright" ]; then
+                    _pw_dir="$PROJECT_ROOT/tests/playwright"
+                elif [ -d "$FRAMEWORK_ROOT/tests/playwright" ]; then
+                    _pw_dir="$FRAMEWORK_ROOT/tests/playwright"
+                fi
+                if ! python3 -c "import playwright" 2>/dev/null; then
+                    echo -e "${YELLOW}SKIP: pytest-playwright not installed (essential for UI regression tests)${NC}"
+                    echo -e "       Install: ${BOLD}pip install playwright pytest-playwright && playwright install chromium${NC}"
+                    echo -e "       Note: this is the pip package — separate from the @playwright/mcp npm server"
+                elif [ -z "$_pw_dir" ]; then
+                    echo -e "${YELLOW}SKIP: no tests/playwright/ found in project or framework${NC}"
                 else
-                    echo -e "${YELLOW}SKIP: playwright not installed or tests/playwright/ missing${NC}"
+                    echo -e "${BOLD}--- Playwright UI Tests (${_pw_dir#$PROJECT_ROOT/}) ---${NC}"
+                    cd "$PROJECT_ROOT" && python3 -m pytest "$_pw_dir" -v || _test_exit=1
+                    echo ""
                 fi
                 ;;
             *)
