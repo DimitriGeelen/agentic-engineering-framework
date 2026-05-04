@@ -1599,6 +1599,24 @@ if [ -f "$CHECKPOINT_LOG" ]; then
     echo "       C-003 checkpoint prompts today: $today_prompts"
 fi
 
+# C-006 OE (T-1716): Active inceptions with template-only Recommendation
+# Detective for the T-679 rule decay pattern (T-1715 meta-RCA). Catches
+# drift between filing-time gate sweeps. See lib/inception_recommendation.sh
+# for the extracted check function (testable in isolation).
+source "$FRAMEWORK_ROOT/lib/inception_recommendation.sh" 2>/dev/null || true
+c006_missing=0
+while IFS= read -r task_id; do
+    [ -z "$task_id" ] && continue
+    warn "C-006: Inception $task_id has template-only Recommendation block" \
+         "T-679 rule decay (T-1715 family); agent filed without recommendation" \
+         "Retrofit: fill in **Recommendation:** GO|NO-GO|DEFER + rationale + evidence; OR re-file via 'fw inception start --recommendation X --rationale ...' (T-1716 gate)"
+    c006_missing=$((c006_missing + 1))
+done < <(find_inceptions_without_recommendation "$PROJECT_ROOT/.tasks/active" 2>/dev/null)
+
+if [ "$c006_missing" -eq 0 ]; then
+    pass "C-006: All active inceptions have a real Recommendation block"
+fi
+
 echo ""
 fi # end oe-research
 

@@ -96,12 +96,12 @@ useful.
   entry point either).
 - [x] **A4** Override flag `--i-am-human` allows scripted/test filing
   without the gate, and is logged via `log_gate_bypass`.
-- [ ] **A5** `fw audit` (Stream B) emits WARN for any active inception
+- [x] **A5** `fw audit` (Stream B) emits WARN for any active inception
   with template-only Recommendation body.
 - [ ] **A6** `fw inception sweep` (Stream C) lists all such inceptions
   and produces a diff; `--apply` mutates files; without `--apply` it
   is read-only.
-- [ ] **A7** Bats coverage: ≥1 test per AC, written and passing.
+- [x] **A7** Bats coverage: ≥1 test per AC, written and passing.
 - [ ] **A8** Sweep amendment self-check: after this task ships, `fw
   audit` reports zero active inceptions with template-only
   Recommendation bodies.
