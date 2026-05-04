@@ -123,6 +123,22 @@ useful.
 bats tests/unit/inception_start_recommendation_gate.bats
 CLAUDECODE=1 bin/fw inception start "verify-gate-fires" 2>&1 | grep -qE "recommendation.*required|--recommendation"
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 8 Agent ACs ship structurally — gate is in place at `fw inception start` with mandatory `--recommendation`/`--rationale` pair under `$CLAUDECODE=1`, plus the `--i-am-human` bypass for tests/scripts (logged), plus `fw audit` detective for template-only Recommendation bodies, plus `fw inception sweep` for retroactive cleanup. The 14-test bats suite passes. Live verification confirms the gate fires with an actionable error message that names the missing flags. This closes the T-679 family at filing-time symmetric to the T-1259/T-1260 decide-time gate — the agent now cannot file an inception without an opinion on the way in.
+
+**Evidence:**
+- `lib/inception.sh` — `do_inception_start` requires `--recommendation` + `--rationale` under `$CLAUDECODE=1`, with `--i-am-human` bypass logged via `log_gate_bypass`.
+- `tests/unit/inception_start_recommendation_gate.bats` — 14 tests, all pass (verified at task review time).
+- Live test: `CLAUDECODE=1 bin/fw inception start "verify-gate-fires"` exits non-zero, prints `ERROR: --recommendation and --rationale required when filing under $CLAUDECODE=1 (T-1715, T-679)` plus the actionable example.
+- `fw audit` Stream B detective — emits WARN for active inceptions with template-only Recommendation body.
+- `fw inception sweep` Stream C — lists offending inceptions, `--apply` mutates files.
+- Sweep self-check (A8): post-shipment `fw audit` reports zero active inceptions with template-only Recommendation.
+
+**What still needs human review:** Whether the gate's error message is actionable rather than punitive — that's the [REVIEW] Human AC. Steps in the task file. No code change pending; only the UX call.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches

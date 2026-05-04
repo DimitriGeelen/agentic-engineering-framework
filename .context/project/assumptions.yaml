@@ -362,3 +362,35 @@ assumptions:
   linked_task: T-1721
   created: '2026-05-04'
   resolved_date: null
+- id: A-038
+  statement: LLM-graded triage adds signal beyond v0 heuristics (≥10% disagreement)
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1726
+  created: '2026-05-04'
+  resolved_date: null
+- id: A-039
+  statement: Daily cadence is right granularity for v0.5 scans
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1726
+  created: '2026-05-04'
+  resolved_date: null
+- id: A-040
+  statement: Per-scan LLM cost is bounded (≤/bin/bash.50/day)
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1726
+  created: '2026-05-04'
+  resolved_date: null
+- id: A-041
+  statement: ollama-local quality is sufficient for triage
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1726
+  created: '2026-05-04'
+  resolved_date: null
