@@ -3207,12 +3207,27 @@ def _read_jsonl(p: Path):
     return rows
 
 
-dispatches = _read_jsonl(DISPATCHES)
+dispatches_all = _read_jsonl(DISPATCHES)
 outcomes = _read_jsonl(OUTCOMES)
 dispatch_ids_with_outcomes = {o.get("dispatch_id") for o in outcomes if o.get("dispatch_id")}
 
+
+# T-1712: split synthetic stress rows from real dispatches. Synthetic rows
+# (task_id ^T-stress-) inflate the enrichment denominator and pollute the
+# task_type / worker_kind breakdowns with "?" values. They have no outcome
+# telemetry possible (task_type/worker_kind null), so excluding them keeps
+# the headline metric tied to real arc-substrate signal.
+def _is_synthetic(row):
+    tid = row.get("task_id") or ""
+    return tid.startswith("T-stress-")
+
+
+dispatches = [d for d in dispatches_all if not _is_synthetic(d)]
+synthetic = [d for d in dispatches_all if _is_synthetic(d)]
+
 stats = {
     "dispatch_total": len(dispatches),
+    "synthetic_total": len(synthetic),
     "outcome_total": len(outcomes),
     "enriched_dispatches": sum(1 for d in dispatches if d.get("dispatch_id") in dispatch_ids_with_outcomes),
     "enrichment_ratio": 0.0,
@@ -3223,7 +3238,8 @@ stats = {
 if stats["dispatch_total"]:
     stats["enrichment_ratio"] = round(stats["enriched_dispatches"] / stats["dispatch_total"], 3)
 
-# Last 5 dispatches with outcome status
+# Last 5 dispatches with outcome status (real only — synthetic rows have
+# no telemetry so they're dropped from "recent" too).
 for d in dispatches[-5:]:
     did = d.get("dispatch_id", "?")
     matched = [o for o in outcomes if o.get("dispatch_id") == did]
@@ -3242,7 +3258,7 @@ if emit_json:
     print(json.dumps(stats, indent=2))
     sys.exit(0)
 
-if stats["dispatch_total"] == 0 and stats["outcome_total"] == 0:
+if stats["dispatch_total"] == 0 and stats["outcome_total"] == 0 and stats["synthetic_total"] == 0:
     print("no dispatches captured yet")
     print(f"(write path: {DISPATCHES.relative_to(PROJECT_ROOT)})")
     sys.exit(0)
@@ -3250,8 +3266,13 @@ if stats["dispatch_total"] == 0 and stats["outcome_total"] == 0:
 print(f"Dispatch substrate (T-1687 arc, v1)")
 print(f"  Dispatches:        {stats['dispatch_total']}")
 print(f"  Outcome events:    {stats['outcome_total']}")
-print(f"  Enriched:          {stats['enriched_dispatches']}/{stats['dispatch_total']} "
-      f"({stats['enrichment_ratio']*100:.0f}%)")
+if stats["dispatch_total"]:
+    print(f"  Enriched:          {stats['enriched_dispatches']}/{stats['dispatch_total']} "
+          f"({stats['enrichment_ratio']*100:.0f}%)")
+else:
+    print(f"  Enriched:          0/0 (no real dispatches yet)")
+if stats["synthetic_total"]:
+    print(f"  Synthetic:         {stats['synthetic_total']} (T-stress-* — excluded from headline)")
 print()
 print("By task_type:")
 for k, v in stats["by_task_type"].items():
