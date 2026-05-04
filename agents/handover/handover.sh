@@ -851,7 +851,11 @@ See gaps register above.
 $(python3 -c "
 import glob, re, os
 tasks_dir = '$TASKS_DIR/active'
-# Find first started-work task in horizon:now/next, prefer agent-owned
+# Find first started-work task in horizon:now/next, prefer agent-owned.
+# T-1724: skip inception tasks with a recorded DEFER decision — those are
+# parked under 'Watching for Recurrence', not actionable. Without this
+# guard, the same DEFERed inception (e.g. T-1611) gets recommended every
+# session even though it explicitly chose to wait.
 candidates = []
 for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
     with open(f) as fh:
@@ -860,6 +864,11 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
         continue
     h = re.search(r'^horizon:\s*(.+)', content, re.M)
     if not h or h.group(1).strip() not in ('now', 'next'):
+        continue
+    # T-1724: an inception with a recorded DEFER is parked, not active work.
+    # Look for a literal '**Decision**: DEFER' line (the inception-decide
+    # canonical marker).
+    if re.search(r'^\*\*Decision\*\*:\s*DEFER', content, re.M):
         continue
     tid = re.search(r'^id:\s*(.+)', content, re.M)
     tname = re.search(r'^name:\s*(.+)', content, re.M)

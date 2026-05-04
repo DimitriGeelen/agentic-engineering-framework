@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1724: fix: handover Suggested First Action ignores DEFER-decided inception tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-04T19:26:15Z
+# ============================================================================
+
+task_id: T-1724
+task_name: "fix: handover Suggested First Action ignores DEFER-decided inception tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-04T19:22:36Z
+completed: 2026-05-04T19:26:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-04T21:24:20+02:00
+last_commit: 2026-05-04T21:24:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Checkpoint handover S-2026-0504-2124
+
+# Key outcomes
+outcomes:
+  - "`agents/handover/handover.sh` — Suggested First Action python block excludes tasks that have a `**Decision**: DEFER` line in the body (in addition to current filters)."
+  - "Verification: T-1611 (DEFER inception, started-work, horizon:now) is NOT recommended; instead some other started-work non-inception task is."
+  - "Existing logic preserved: agent-owned + horizon:now still preferred over horizon:next + human-owned."
+  - "Bash parse OK: `bash -n agents/handover/handover.sh`."
+  - "Run the inline python block in isolation against current task state — picked task is NOT T-1611. (--checkpoint uses a different template, so we test the python directly.)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/handovers/CHECKPOINT-S-2026-0504-2124.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-04T21:24:20"
+    action: "T-1724: Checkpoint handover S-2026-0504-2124"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, handover, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 1
+  lines_added: 63
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1724-fix-handover-suggested-first-action-igno.md
+generated_by: context-agent-hybrid

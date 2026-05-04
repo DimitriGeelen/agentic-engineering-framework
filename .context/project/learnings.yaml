@@ -2710,3 +2710,10 @@ X'` returning empty group."
   date: 2026-05-04
   context: Added via context agent
   application: TBD
+- id: L-350
+  learning: "When a handover/cron/dashboard filter recommends 'started-work' tasks, also exclude inception tasks with **Decision**: DEFER — DEFERed inceptions stay started-work by design (lib/inception.sh:712) but are parked, not actionable. T-1611 was wrongly suggested for 5 days because of this."
+  source: P-002
+  task: T-1724
+  date: 2026-05-04
+  context: Added via context agent
+  application: TBD
