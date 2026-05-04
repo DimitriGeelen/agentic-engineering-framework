@@ -88,7 +88,7 @@ T-1710 (failure-mode discrimination — distinguish "as-designed signal" from
 bash -n bin/fw
 bin/fw orchestrator status --json | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['dispatch_total'] == 3, f'expected 3 real, got {d[\"dispatch_total\"]}'; assert d['synthetic_total'] == 50, f'expected 50 synthetic, got {d[\"synthetic_total\"]}'; assert d['enriched_dispatches'] == 3, f'expected 3 enriched, got {d[\"enriched_dispatches\"]}'; assert d['enrichment_ratio'] == 1.0, f'expected 100% enriched, got {d[\"enrichment_ratio\"]}'"
 bin/fw orchestrator status | grep -E "Dispatches:.*3$"
-bin/fw orchestrator status | grep -E "Synthetic:.*50$"
+bin/fw orchestrator status | grep -E "Synthetic:\s+50\s+\(T-stress"
 bats tests/unit/test_orchestrator_status_synthetic_filter.bats
 
 ## RCA
