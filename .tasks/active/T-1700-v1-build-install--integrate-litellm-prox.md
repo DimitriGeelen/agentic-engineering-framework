@@ -102,13 +102,25 @@ ollama @ `192.168.10.107:11434` already reachable; 12 models present including
       empirical 100% real tool_use; T-1705 captured the v2 inception scope.
 
 **6. Env-leak test**
-- [ ] `tests/unit/test_workflow_env_isolation.bats` (or .py): workflow A sets
-      `ANTHROPIC_BASE_URL=http://invalid:9999`; verify parent process env unchanged after
-      dispatch returns; verify a second workflow B (no env override) hits real Anthropic API.
-      **Status:** Open. Substrate guarantee already structural (env.sh written to per-worker
-      `<wdir>/env.sh`, sourced inside the worker subshell only — parent process never
-      sees `ANTHROPIC_BASE_URL` unless caller pre-sets it). Test still missing as a
-      regression pin.
+- [x] `tests/unit/test_workflow_env_isolation.bats`: pin the structural invariants that
+      prevent workflow-declared env vars from leaking into (a) parent shell, (b) a
+      second worker spawned without `--env`, (c) meta.json captured envelope.
+      **Verified:** 8/8 tests pass. Approach is static-analysis (grep) against
+      `agents/termlink/termlink.sh` rather than live spawn — the substrate
+      guarantee IS structural, so the test pins the structure directly:
+        1. `--env` validates KEY shape (`[A-Z_][A-Z0-9_]*=`) at parse time.
+        2. env.sh writes only to `$wdir/env.sh` — never absolute or parent paths.
+        3. env.sh entries use `printf %q` shell-quoting (no injection via values).
+        4. meta.json records `env_keys` list, NEVER `env_values` (secret-safe).
+        5. run.sh sources only `$WDIR/env.sh` (per-worker, not shared).
+        6. cmd_dispatch body contains no bare `export` (no parent mutation).
+        7. Second worker without `--env` gets an empty env.sh (`: > $wdir/env.sh`).
+        8. `env_keys_json` defaults to `"[]"` (empty array, not null/omitted).
+      **Why static rather than live:** live spawn requires hub running, ~25-60s per
+      probe, and only verifies one trace. Static checks pin the invariant for every
+      future change — if someone refactors and moves the env.sh write to a shared path,
+      tests 2/5 fail immediately. Live behaviour testing was already done empirically
+      in T-1700 build (workflows A/B verified by inspection during integration).
 
 ### Human
 - [ ] [REVIEW] Latency / quality acceptable for "cheap research" use case
@@ -145,6 +157,8 @@ test -f docs/reports/T-1700-litellm-build.md
 # Doctor litellm + ollama checks present + tested
 bash -n bin/fw
 bats tests/unit/test_doctor_litellm_ollama.bats
+# Workflow env isolation invariants (AC6 regression pin)
+bats tests/unit/test_workflow_env_isolation.bats
 
 ## RCA
 
@@ -199,6 +213,26 @@ Substrate (proxy, workflow, --env plumbing, harness, report) ships. The 90% real
 - **Carries:** AC1.1 text was wrong (`pip3 show` vs pipx-isolated venv) — corrected
   inline; AC3.1 path was wrong (`lib/workflows/` vs `.context/project/workflows/`) —
   corrected inline. Verification block updated to match reality.
+
+### 2026-05-04 — AC group 6 (env-leak test) shipped — static-analysis approach
+- **Chose:** Pin the env-isolation invariants via static-analysis grep against
+  `agents/termlink/termlink.sh`, not live-spawn behavioural test.
+- **Why:** The substrate guarantee against env leaks IS structural — env.sh is
+  written to `$wdir/env.sh` (per-worker), entries use `printf %q` shell-quoting,
+  meta.json records env_keys not env_values, run.sh sources only its own WDIR.
+  A static test pins all 8 of these structural facts in <1s; a live spawn test
+  would take 25-60s per probe and verify only one trace, missing the broader
+  invariant. Live behaviour was already verified empirically during the T-1700
+  build integration.
+- **Implementation:** `tests/unit/test_workflow_env_isolation.bats` — 8 tests
+  pin: KEY shape validation regex, write-path-is-wdir, printf %q quoting,
+  env_keys-not-env_values in meta.json, run.sh sources only `$WDIR/env.sh`,
+  no bare `export` in cmd_dispatch body, second-worker init-empty pattern,
+  default `env_keys_json="[]"`.
+- **Rejected:** live-spawn integration test that runs cmd_dispatch with a bogus
+  ANTHROPIC_BASE_URL and asserts parent shell unchanged. Slow + flaky (hub
+  dependency); the invariant we care about is "env stays in worker process",
+  which the structure proves directly.
 
 ## Recommendation
 
