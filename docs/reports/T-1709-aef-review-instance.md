@@ -176,3 +176,73 @@ If you say "agent self-ticks except high-risk" and the agent self-ticks somethin
 - **(c) Human-tunable** — human reviews self-tick log periodically, marks "shouldn't have self-ticked these", classifier learns.
 
 This determines whether self-tick is a one-way ratchet (drifts more permissive over time) or self-correcting.
+
+---
+
+### 2026-05-04 — Round 2 grill answers
+
+| Q | User answer | Synthesis |
+|---|-------------|-----------|
+| Q7 | **(c) — but check prior work** | T-1442/T-1443 already shipped the classifier as 3-layer model: `policy/escalation-patterns.yaml` (Layer 1 mechanical) + frontmatter `risk`/`human_signoff` (Layer 2) + audit cron Pass B (Layer 3 false-negative net). `policy/anti-patterns.yaml` carries detection_confidence × lie_severity catalogue. The reviewer reads all of these and decides. **Not in dialogue — already decided.** |
+| Q8 | **(a) extend — but check prior work** | T-1442 Decision #7 explicitly: *"Extension of existing controls — T-954, P-011, fw verify-acs, fw fabric, fw cron, docs/reports/ reusable; no replacement."* Confirmed. The extension is: TermLink-dispatch (relocating reviewer to review-instance) + auto-tick gated by reviewer verdict + classifier. **Not in dialogue — already decided.** |
+| Q9 | **steelman/strawman vs 4 directives** | Two-instance design resolves: review-instance uses **(a)** (clone-this-repo + SHA-pin), test-instance uses **(b)** (GitHub mirror, matches consumer reality). Reject (c) — Reliability gain doesn't outweigh Antifragility/Usability cost. |
+| Q10 | **balanced (a)+(b)+(c)** | Error Escalation Ladder applied to auto-tick: Level A first miss = log learning; Level B recurrence = hard gate in that class until human re-confirms; Level C periodic cron review = human-tunable feedback; Level D structural change = de-eligibility of the AC class. |
+
+### Verification of prior-work claims
+
+**Searched:**
+- `docs/reports/T-1442-ac-validation-default-flip.md` — full inception artifact, dialogue log, decisions
+- `docs/reports/T-1443-independent-reviewer-agent.md` — reviewer agent design with policy file refs
+- `policy/escalation-patterns.yaml` — Layer 1 mechanical triggers (destructive-action, external-publish, etc.)
+- `policy/anti-patterns.yaml` — anti-pattern catalogue (tautology, etc.) with detection_confidence × lie_severity axes
+
+**Confirmed shipped:**
+- 3-layer classifier policy files
+- `lib/reviewer/static_scan.py` writing verdicts
+- `bin/fw reviewer` CLI
+- `bin/fw reviewer audit` daily cron Pass A/B (drift + escalation)
+
+**Confirmed NOT shipped (the gap T-1709 closes):**
+- TermLink-dispatched reviewer (lives in review instance, not in-process)
+- Auto-tick when verdict says clean AND AC is mechanically classified AND classifier doesn't match Layer 1/2
+
+## Locked design (synthesis — reads as the proposed GO)
+
+### A. Two instances
+
+- **`/opt/ttt-AEF-Review-instance/`** — durable-ish; agent shreds when relevant; init source = clone this repo + checkout the SHA the calling task is reviewing.
+- **`/opt/ttt-AEF-Test-instance/`** — ephemeral; shred at start of every install/upgrade flow run; init source = GitHub mirror (matches what `fw upgrade` consumers see).
+- Neither is git-tracked.
+- Both reachable from this framework agent **only via TermLink** (PROJECT_ROOT path isolation enforced by Pattern 4 — that's the design intent, not a workaround).
+
+### B. Reviewer extension (closes T-1442/T-1443 wiring gap)
+
+Three deltas to existing reviewer:
+
+1. **TermLink dispatch shape** — `bin/fw reviewer T-XXX` adds `--via-termlink-instance <name>` flag. When set, dispatches the reviewer code via `fw termlink dispatch` into the named review instance. Reviewer reads task file + evidence + policy files (synced from this repo into the instance) and emits verdict.
+2. **Auto-tick** — when reviewer verdict is `CLEAN`, AND the AC is `### Agent` or `[RUBBER-STAMP]`, AND the AC's parent task does NOT match Layer 1 escalation-patterns.yaml, AND the task frontmatter does NOT carry `risk: high` or `human_signoff: required`, the reviewer ticks the AC checkbox in the task file and posts a tick-receipt to `.context/working/.auto-tick-log.jsonl`.
+3. **Sovereignty preserved** — the `### Human` carve-out remains absolute for any AC that survives the gauntlet above. `[REVIEW]` Human ACs never auto-tick.
+
+### C. Auto-tick failure handling (Q10 ladder)
+
+- Append every auto-tick to `.context/working/.auto-tick-log.jsonl` with reviewer verdict digest, classifier inputs, AC class, timestamp.
+- Weekly cron (`fw reviewer self-tick-audit`) generates Watchtower page. Human reviews log, marks "shouldn't have self-ticked." Marks feed Layer 1 catalogue tuning + classifier threshold updates.
+- 2 misses in same class within 7 days → hard gate; auto-tick disabled in that class until human re-confirms classifier rules.
+- Persistent failure across multiple gate-resets → Level D: that AC class moves out of mechanical-tick eligibility (back to Human-only).
+
+### D. Implementation sequence (build tasks if GO)
+
+1. `fw review-instance init <name> --shape review|test --source clone|mirror --sha <sha>` — creates and initialises the named instance in `/opt/ttt-AEF-<Name>-instance`. Idempotent; shreds and reinits if instance exists.
+2. `fw review-instance shred <name>` — explicit teardown.
+3. `fw review-instance dispatch <name> <command>` — wraps `fw termlink dispatch` with the instance's working directory.
+4. Extend `bin/fw reviewer` with `--via-termlink-instance` + `--auto-tick` flags.
+5. Implement classifier-gate logic in `lib/reviewer/auto_tick.py` (new file) consuming existing `policy/escalation-patterns.yaml` + `policy/anti-patterns.yaml` + frontmatter.
+6. `.context/working/.auto-tick-log.jsonl` schema + weekly cron + Watchtower self-tick-audit page.
+7. T-1710 (Q6 spinoff) failure-mode discrimination — canary command before each scenario; health-probe; runs before any auto-tick gate fires.
+
+### E. Out of scope (file as separate inceptions if needed)
+
+- Re-classifying every existing Human AC backlog (T-1442 Decision #8: "incremental, not bulk").
+- Cross-machine review-instance federation.
+- Replacing `fw reviewer` (T-1442 Decision #7: extension only).
+- Multi-tenant review instances (one host, one instance per shape; v2+ if needed).

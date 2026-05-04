@@ -86,15 +86,29 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:**
+
+Two convergent reasons:
+
+1. **It closes a real recurring blind spot.** Three tasks shipped this session (T-1700, T-1702, T-1707) all carry Human ACs the agent here structurally cannot verify (path isolation + sovereignty). Without a review instance, every one of those is "hand off and wait" with no way for the agent to do the legwork while the human stays the decider. The pattern repeats on every framework-internal change touching paths/hooks/install flow. T-1635 (fresh-machine install simulation) hand-waves on "should test in clean container" because there is no permanent rig. T-1709 makes the rig.
+
+2. **It closes the T-1442/T-1443 wiring gap.** Those inceptions reached GO with explicit confirmed-yes for *"Reviewer agent may auto-tick Agent ACs"* and *"TermLink-dispatched, evidence-gated reviewer."* What shipped: in-process verdict-writer with hard-coded "NEVER modifies AC checkboxes" guard. The auto-tick + TermLink-dispatch halves never wired. T-1709 is precisely that wiring — same authority, same policy files (`policy/escalation-patterns.yaml`, `policy/anti-patterns.yaml`), TermLink runs in the review instance which is the structurally clean place for it to live.
+
+**Evidence:**
+
+- Inception artifact: `docs/reports/T-1709-aef-review-instance.md` — full grill log (10 questions across 2 rounds, all answered or verified-as-prior-decided), steelman/strawman vs 4 directives for Q9, locked design synthesis (5 sections).
+- Prior-work verification: T-1442 + T-1443 both `work-completed`; `lib/reviewer/static_scan.py` ships with explicit "NEVER modifies AC checkboxes" comment; `agents/reviewer/` does not exist; auto-tick + TermLink-dispatch halves of GO never wired. User claim verified.
+- 7 build tasks decomposed in `## Locked design — D. Implementation sequence` of the artifact. Bounded; first 3 (instance init/shred/dispatch CLI) are foundational, next 3 (reviewer extension + auto-tick + log) extend existing code, final 1 is the T-1710 spinoff.
+- Q1 (b) two instances; Q2 (c with carve-outs); Q3-5 agent-judgment; Q6 spun out as T-1710; Q7 already-decided (3-layer classifier shipped); Q8 already-decided (extension, not replacement); Q9 review→clone+SHA, test→GitHub mirror; Q10 ladder maps onto Error Escalation Ladder doctrine.
+- Spinoff already filed: T-1710 (failure-mode discrimination — canary vs broken instance).
+
+**Risk acknowledged:**
+
+- Auto-tick is a one-way door if Q10 ladder isn't built before tick is enabled. Mitigation: build sequence puts log + cron + ladder in steps 5-6 BEFORE tick is allowed in step 4. Auto-tick flag stays off until cron + log are in place.
+- Drift between policy files and reviewer behaviour. Mitigation: existing `fw reviewer audit` Pass A/B daily already covers this surface.
+- Two more `/opt/ttt-*` directories to maintain. Acceptable cost — neither is git-tracked, both are shred-and-reinit, drift is bounded.
 
 ## Decisions
 
