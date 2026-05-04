@@ -22,6 +22,9 @@ do_inception() {
         sweep)
             do_inception_sweep "$@"
             ;;
+        retrofit-rec|retrofit-recommendations)
+            do_inception_retrofit_recommendations "$@"
+            ;;
         ""|-h|--help)
             show_inception_help
             ;;
@@ -42,6 +45,9 @@ show_inception_help() {
     echo "  decide <T-XXX> go|no-go|defer     Record go/no-go decision"
     echo "  sweep [--dry-run]                 Retroactively finalize inceptions with"
     echo "                                    recorded decisions but unchecked Human ACs"
+    echo "  retrofit-rec [--apply]            T-1716 retrofit: scan active inceptions"
+    echo "                                    with template-only Recommendation blocks"
+    echo "                                    and inject DEFER stubs (read-only by default)"
     echo ""
     echo -e "${BOLD}Options:${NC}"
     echo "  start --owner <owner>             Set task owner (default: human)"
@@ -783,5 +789,106 @@ do_inception_sweep() {
             echo -e "${YELLOW}Tasks with other Human ACs still pending (tick patterns didn't cover them):${NC}"
             echo "$skipped" | sed 's/^/  /'
         fi
+    fi
+}
+
+# T-1716 Stream C: retrofit retroactive sweep
+# Scans active inceptions for template-only Recommendation blocks and
+# injects a DEFER stub with rationale 'captured pre-T-1716 gate'. Read-only
+# by default (shows diff); --apply mutates files.
+do_inception_retrofit_recommendations() {
+    local apply=false
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --apply) apply=true ;;
+            -h|--help)
+                echo "fw inception retrofit-rec [--apply]"
+                echo ""
+                echo "Scan .tasks/active/ for inception tasks with template-only"
+                echo "Recommendation blocks. Without --apply: print one-per-line list"
+                echo "+ proposed retrofit per task. With --apply: mutate files."
+                echo ""
+                echo "Origin: T-1716 (T-1715 implementation, prevention Path 8)."
+                return 0
+                ;;
+        esac
+        shift
+    done
+
+    source "$FRAMEWORK_ROOT/lib/inception_recommendation.sh" 2>/dev/null || true
+
+    local active_dir="$PROJECT_ROOT/.tasks/active"
+    [ -d "$active_dir" ] || { echo "No active tasks directory"; return 1; }
+
+    local missing
+    missing=$(find_inceptions_without_recommendation "$active_dir")
+    if [ -z "$missing" ]; then
+        echo -e "${GREEN}No active inceptions need Recommendation retrofit.${NC}"
+        return 0
+    fi
+
+    local count=0
+    while IFS= read -r task_id; do
+        [ -z "$task_id" ] && continue
+        count=$((count + 1))
+        local task_file
+        task_file=$(find "$active_dir" -maxdepth 1 -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
+        [ -z "$task_file" ] && continue
+
+        local task_name
+        task_name=$( { grep '^name:' "$task_file" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//; s/^"//; s/"$//')
+
+        echo -e "${YELLOW}[$task_id]${NC} $task_name"
+        echo "  File: $task_file"
+        echo "  Action: inject DEFER stub Recommendation"
+
+        if [ "$apply" = true ]; then
+            REC=DEFER \
+                RAT="Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'." \
+                python3 - "$task_file" <<'PYRETROFIT'
+import os, re, sys
+fp = sys.argv[1]
+rec = os.environ.get('REC', 'DEFER')
+rat = os.environ.get('RAT', '')
+with open(fp) as f:
+    content = f.read()
+# Match template-comment Recommendation OR empty Recommendation
+template_pat = re.compile(
+    r'(## Recommendation\n)\s*<!--.*?-->[ \t]*\n+(?=##|\Z)',
+    re.DOTALL
+)
+empty_pat = re.compile(
+    r'(## Recommendation\n)\s*\n+(?=##|\Z)'
+)
+new_block = (
+    f"\n**Recommendation:** {rec}\n\n"
+    f"**Rationale:**\n\n{rat}\n\n"
+    f"**Evidence:**\n\n"
+    "<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->\n\n"
+)
+m = template_pat.search(content)
+if not m:
+    m = empty_pat.search(content)
+if not m:
+    print(f"  SKIP: Recommendation block not found in template/empty form", file=sys.stderr)
+    sys.exit(0)
+new_content = content[:m.start()] + "## Recommendation\n" + new_block + content[m.end():]
+with open(fp, 'w') as f:
+    f.write(new_content)
+print(f"  WROTE: DEFER stub")
+PYRETROFIT
+        else
+            echo "  (read-only — pass --apply to mutate)"
+        fi
+        echo ""
+    done <<< "$missing"
+
+    echo "---"
+    if [ "$apply" = true ]; then
+        echo -e "${GREEN}Retrofit applied: $count task(s)${NC}"
+        echo "Review changes and edit each Recommendation to match the actual decision (DEFER → GO/NO-GO if applicable)."
+    else
+        echo -e "${CYAN}Read-only: $count task(s) would be retrofitted${NC}"
+        echo "Run with --apply to mutate."
     fi
 }

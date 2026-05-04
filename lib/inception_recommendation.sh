@@ -23,8 +23,23 @@ _FW_INCEPTION_RECOMMENDATION_LOADED=1
 has_real_recommendation() {
     local task_file="$1"
     [ -f "$task_file" ] || return 1
-    awk '/^## Recommendation/{flag=1;next} flag && /^## /{flag=0} flag' "$task_file" \
-        | grep -qE '^\*\*Recommendation:\*\*[[:space:]]+(GO|NO-GO|DEFER)\b'
+    # Strip HTML comments from the Recommendation section, then check for a
+    # real recommendation line. Accepts bare ('**Recommendation:** GO'),
+    # bulleted ('- **Recommendation:** GO'), or indented variants. The
+    # comment-strip avoids false positives from the template's literal
+    # '**Recommendation:** GO / NO-GO / DEFER' format-hint text.
+    python3 - "$task_file" <<'PYHASRE'
+import re, sys
+with open(sys.argv[1]) as f:
+    content = f.read()
+m = re.search(r'^## Recommendation\s*\n(.*?)(?=^##\s|\Z)', content, re.DOTALL | re.MULTILINE)
+if not m:
+    sys.exit(1)
+body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
+if re.search(r'(?m)^[\-\*\s]*\*\*Recommendation:\*\*\s+(GO|NO-GO|DEFER)\b', body):
+    sys.exit(0)
+sys.exit(1)
+PYHASRE
 }
 
 find_inceptions_without_recommendation() {

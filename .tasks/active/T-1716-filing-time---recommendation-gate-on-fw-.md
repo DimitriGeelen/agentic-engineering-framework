@@ -98,11 +98,11 @@ useful.
   without the gate, and is logged via `log_gate_bypass`.
 - [x] **A5** `fw audit` (Stream B) emits WARN for any active inception
   with template-only Recommendation body.
-- [ ] **A6** `fw inception sweep` (Stream C) lists all such inceptions
+- [x] **A6** `fw inception sweep` (Stream C) lists all such inceptions
   and produces a diff; `--apply` mutates files; without `--apply` it
   is read-only.
 - [x] **A7** Bats coverage: ≥1 test per AC, written and passing.
-- [ ] **A8** Sweep amendment self-check: after this task ships, `fw
+- [x] **A8** Sweep amendment self-check: after this task ships, `fw
   audit` reports zero active inceptions with template-only
   Recommendation bodies.
 
