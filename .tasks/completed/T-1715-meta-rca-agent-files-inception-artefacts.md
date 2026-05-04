@@ -4,7 +4,7 @@ name: "Meta-RCA: agent files inception artefacts without ## Recommendation block
 description: >
   Inception: Meta-RCA: agent files inception artefacts without ## Recommendation block, forcing human to decide on incomplete advisory (T-679 rule recurring violation)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [meta-RCA, governance-rule-decay, T-679-family, recurring]
 components: []
 related_tasks: [T-679, T-1259, T-1260, T-1713, T-1714]
 created: 2026-05-04T08:13:50Z
-last_update: 2026-05-04T08:17:52Z
-date_finished: null
+last_update: 2026-05-04T09:56:18Z
+date_finished: 2026-05-04T09:56:18Z
 ---
 
 # T-1715: Meta-RCA: agent files inception artefacts without ## Recommendation block, forcing human to decide on incomplete advisory (T-679 rule recurring violation)
@@ -175,15 +175,15 @@ OUT of scope:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -278,6 +278,60 @@ Three convergent reasons:
   similarly) is the bigger worry. Mitigation: T-1715 NO-GO/DEFER paths
   explicitly route to a meta-meta-inception if drift is broader.
 
+## Post-Decision Amendment — 2026-05-04 (sweep finding)
+
+After T-1715 was decided GO at 09:56 UTC, the human's next-session
+sweep flagged T-1710 + T-1713 *still* missing real Recommendation
+blocks (template-only). Pattern continued firing post-RCA-filing.
+
+**Meta-meta-lesson:** Filing an RCA inception is itself subject to the
+§ACD substrate-vs-deliverable pattern (G-066). The RCA is substrate
+(future-prevention proposal); the actual deliverable (zero in-flight
+inceptions in the queue with template-only Recommendation blocks) was
+never produced. Filing T-1715 was treated as the corrective action.
+T-1714 was retrofitted only because the human named it specifically;
+T-1710 and T-1713 — filed earlier in the same arc — were never swept.
+
+**Sub-causes identified:**
+1. **No sweep-on-RCA-filing.** When T-1715 was filed, the agent did
+   not enumerate `.tasks/active/T-*.md` for inceptions matching the
+   pattern and retrofit them.
+2. **Local fix instead of class fix.** When retrofitting T-1714, the
+   agent had hard evidence the pattern was recurring (T-1715's own
+   dialogue table cited T-1713). It did not generalise.
+3. **Watchtower has no visual marker** distinguishing real vs template-
+   only Recommendation. Template-only inceptions look identical in the
+   inception list to ones with real Recommendations.
+4. **Handover emits URLs without validating Recommendation presence.**
+   "Awaiting Decision" list passes any inception with the
+   `## Recommendation` heading regardless of body.
+
+**Added prevention paths (extending Section 6 above):**
+
+- **Path 5 — Sweep step (immediate, manual).** When this RCA is
+  filed/decided, the agent MUST scan all active inceptions for
+  template-only Recommendation blocks and retrofit them, before
+  declaring the RCA complete. Performed manually 2026-05-04 during
+  this amendment: T-1710 + T-1713 retrofitted in the same commit.
+- **Path 6 — Audit detective (continuous).** `fw audit` should add
+  a check: any active inception with `## Recommendation` whose body
+  is template-only (matches `<!-- REQUIRED before fw inception
+  decide`) emits a WARN. Catches drift between sweeps.
+- **Path 7 — Watchtower visual marker.** Inception list page should
+  show a "no recommendation" badge when the Recommendation body is
+  template-only. Closes the handover-emit blind spot.
+- **Path 8 — Retroactive retrofit on structural shipment.** When the
+  filing-time gate (Path 1) ships, it should ALSO sweep existing
+  inceptions in `active/` and either retrofit (DEFER with rationale
+  "captured pre-gate, no exploration done") or flag for human review.
+  Forward-only enforcement leaves the existing pile broken.
+
+**Generalisation:** L-300 ("advisory text fails → need structural
+enforcement") needs an addendum: "even *filing* a structural-
+enforcement RCA fails if the immediate sweep is missing." Filing the
+RCA is not the corrective action; the corrective action is the
+sweep + the structural fix together.
+
 ## Decisions
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go|defer --rationale "..." -->
@@ -292,3 +346,43 @@ Three convergent reasons:
 
 ### 2026-05-04T08:17:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-04T09:56:17Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three convergent reasons:
+
+1. **In-session evidence is overwhelming.** Same session, same agent,
+   same conversation: T-1709 included the Recommendation block; T-1713
+   skipped it; T-1714 skipped it and had to be retrofitted after human
+   pushback. The rule was applied 1/3 times in 30 minutes despite being
+   in active CLAUDE.md context. L-300 ("advisory text fails to fix
+   recurring patterns") generalises here cleanly.
+
+2. **The fix mirrors existing structural-gate patterns.** T-1668 added
+   `--headline-mechanic` at `fw arc create`; T-1671 added CLAUDECODE
+   refusal at `fw arc close`; T-1259/T-1260 added the `fw inception
+   decide` agent-refusal gate. T-1715's filing-time gate is the missing
+   left-bracket of the pair: agent sets `--recommendation` /
+   `--rationale` at filing, human decides at decide-time. Symmetric.
+
+3. **Cost is bounded; alternative is recurrence.** Path 1 (filing-time
+   gate) is ~50 LOC in `lib/inception.sh do_inception_start` plus
+   `fw work-on --type inception` plumb-through. Path 4 (Watchtower
+   visual gate) is templated banner — ~10 LOC. Either one closes the
+   pattern. Without structural enforcement, every future "incept this"
+   instruction has a >50% chance of producing a Recommendation-less
+   artefact.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-b8a351f1
+- **Timestamp:** 2026-05-04T09:56:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-04T09:56:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

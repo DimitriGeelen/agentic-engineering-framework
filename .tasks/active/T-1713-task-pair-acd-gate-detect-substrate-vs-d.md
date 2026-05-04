@@ -4,7 +4,7 @@ name: "Task-pair §ACD gate: detect substrate-vs-deliverable conflation at work-
 description: >
   Inception: Task-pair §ACD gate: detect substrate-vs-deliverable conflation at work-completed time (G-066 prong 2)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: [arc:orchestrator-rethink, ACD, G-062-family, governance-gate]
 components: []
 related_tasks: [T-1442, T-1443, T-1668, T-1671, T-1709, T-1711]
 created: 2026-05-04T06:43:45Z
-last_update: 2026-05-04T06:43:45Z
+last_update: 2026-05-04T10:45:20Z
 date_finished: null
 ---
 
@@ -166,15 +166,71 @@ OUT of scope:
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:**
+
+Three convergent reasons:
+
+1. **G-066 evidence is hard.** T-1442 (inception, GO) + T-1443 (build,
+   work-completed) closed clean while two of three GO-promised
+   deliverables silently dropped (auto-tick + TermLink-dispatch reviewer
+   halves never wired). The §ACD substrate-vs-deliverable conflation
+   that defined the orchestrator-rethink arc fires at task-pair level,
+   not just arc level. Mitigation today is recovery-only (T-1709 wires
+   one of the missing halves months later); prevention belongs in the
+   gate per G-019 doctrine.
+
+2. **The fix mirrors existing structural-gate patterns.** T-1668 added
+   `--headline-mechanic` at `fw arc create`; T-1671 refused
+   `fw arc close` under `$CLAUDECODE=1`; T-1259/T-1260 added agent
+   refusal at `fw inception decide`. T-1713's gate at
+   `update-task.sh --status work-completed` for build tasks whose
+   `related_tasks` reference an inception-with-GO is the missing
+   per-task counterpart of T-1671's per-arc gate. Symmetric.
+
+3. **Cost is bounded; spike thresholds are falsifiable.** Three time-boxed
+   spikes (parser, comparison, insertion-point) with hard pass/fail
+   bars (≥80% parser agreement, ≤1 false positive across 5 cleanly-
+   shipped tasks, no P-010/P-011 contract break). Each spike is
+   approximately one session. NO-GO criteria honest — if parser cannot
+   reach 80% on free-text Recommendation blocks, this inception itself
+   becomes evidence that Recommendation-format structural enforcement
+   (T-1715) must ship first.
+
+**Evidence:**
+
+- G-066 documented in `.context/project/concerns.yaml` with T-1442/
+  T-1443 as origin pair.
+- T-1709 (one prong of G-066 fix) currently captured awaiting GO —
+  recovery-only path, does not prevent recurrence of the broader
+  pattern.
+- `lib/update-task.sh` already runs P-010 (AC checkbox check) + P-011
+  (verification block) before `work-completed` transition. Insertion
+  point exists with established gate-shape contract.
+- Existing Tier-2 bypass pattern (`--scope-reduction-acknowledged`
+  flag → `.context/working/.gate-bypass-log.yaml`) reuses
+  `log_gate_bypass` machinery already used by `--skip-sovereignty` and
+  similar. Zero new bypass plumbing.
+
+**Risk acknowledged:**
+
+- **False-positive harm > false-negative harm.** If gate trips on
+  legitimate-as-designed scope reductions, operators will reflexively
+  use `--force` and the gate becomes worse than nothing. Spike 2's
+  ≤1-false-positive threshold is the load-bearing test.
+- **Parser dependency on free-text Recommendation format.** If
+  Recommendation blocks are unstructured prose, mechanical extraction
+  fails. T-1715 (filing-time format gate) is the dependency — if T-1715
+  ships first, T-1713's parser becomes trivial. Sequencing matters.
+- **Coupling to inception/build pair convention.** Tasks that ship
+  deliverables outside the inception→build pair shape (e.g. refactor +
+  test pair) won't be covered. Scope fence accepts this; OUT-of-scope
+  generalisation tracked separately if recurrence demands it.
+
+**Sequencing note (added during T-1715 sweep):** T-1715 should ship
+before T-1713 — Recommendation structure normalisation makes T-1713's
+parser spike straightforward instead of NLP-heavy.
 
 ## Decisions
 
@@ -195,3 +251,6 @@ OUT of scope:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-04T10:45:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -1,0 +1,70 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1715: Meta-RCA: agent files inception artefacts without ## Recommendation block, forcing human to decide on incomplete advisory (T-679 rule recurring violation)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-04T09:56:22Z
+# ============================================================================
+
+task_id: T-1715
+task_name: "Meta-RCA: agent files inception artefacts without ## Recommendation block, forcing human to decide on incomplete advisory (T-679 rule recurring violation)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-04T08:13:50Z
+completed: 2026-05-04T09:56:18Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 102 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [meta-RCA, governance-rule-decay, T-679-family, recurring]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 102
+  commits: 1
+  files_changed: 4
+  lines_added: 466
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1715-meta-rca-agent-files-inception-artefacts.md
+generated_by: context-agent-hybrid

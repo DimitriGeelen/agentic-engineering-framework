@@ -4,7 +4,7 @@ name: "Substrate bypass: fw termlink dispatch ducks under fw resolver dispatch, 
 description: >
   Inception: Substrate bypass: fw termlink dispatch ducks under fw resolver dispatch, leaving substrate at zero real-consumer telemetry (T-1700 AC4.3 RCA)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:orchestrator-rethink, G-064, substrate-bypass, RCA]
 components: []
 related_tasks: [T-1684, T-1685, T-1688, T-1689, T-1696, T-1697, T-1700]
 created: 2026-05-04T08:05:46Z
-last_update: 2026-05-04T08:17:14Z
-date_finished: null
+last_update: 2026-05-04T09:56:32Z
+date_finished: 2026-05-04T09:56:32Z
 ---
 
 # T-1714: Substrate bypass: fw termlink dispatch ducks under fw resolver dispatch, leaving substrate at zero real-consumer telemetry (T-1700 AC4.3 RCA)
@@ -183,15 +183,15 @@ OUT of scope:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -305,7 +305,36 @@ Three convergent reasons:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three convergent reasons:
+
+1. **The bypass is structural, not isolated.** RCA shows two parallel
+   write surfaces (`lib/resolver.py` envelope writer vs `agents/termlink/
+   termlink.sh:cmd_dispatch` direct writer with `meta.json` only). T-1700
+   harness is the smoking gun, but the structural condition affects every
+   future consumer that needs flags resolver doesn't yet pass through.
+   Bypass survey spike (#1) will quantify, but the structural pattern is
+   already evident in code at HEAD.
+
+2. **G-064 is structurally blocked until this closes.** The arc's
+   headline mechanic is "agent dispatches → orchestrator picks model →
+   user observes the routing decision live on /orchestrator". Bypass
+   dispatches don't appear on /orchestrator. Until termlink-dispatch
+   bypass is either eliminated or counted as `direct-bypass`,
+   "first real production consumer" claims for the substrate are
+   uninhabited regardless of how many real consumers we add. T-1684
+   (daily health-check cron) and any other G-064 candidate inherit this
+   blocker if they pick the wrong path.
+
+3. **The fix is bounded.** Three Prevention paths catalogued in RCA;
+   the cheapest (envelope-from-bypass with `workflow_resolved_via:
+   "direct-bypass"`) is ~30 LOC in `cmd_dispatch` plus a regression test.
+   The append-only contract is preserved. Outcome back-prop (T-1697
+   hook) keys off task_id and would pick up bypass envelopes without
+   changes (assumption A4 to be confirmed).
+
+**Date**: 2026-05-04T09:56:32Z
 
 ## Updates
 
@@ -314,3 +343,46 @@ Three convergent reasons:
 
 ### 2026-05-04T08:17:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-04T09:56:32Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three convergent reasons:
+
+1. **The bypass is structural, not isolated.** RCA shows two parallel
+   write surfaces (`lib/resolver.py` envelope writer vs `agents/termlink/
+   termlink.sh:cmd_dispatch` direct writer with `meta.json` only). T-1700
+   harness is the smoking gun, but the structural condition affects every
+   future consumer that needs flags resolver doesn't yet pass through.
+   Bypass survey spike (#1) will quantify, but the structural pattern is
+   already evident in code at HEAD.
+
+2. **G-064 is structurally blocked until this closes.** The arc's
+   headline mechanic is "agent dispatches → orchestrator picks model →
+   user observes the routing decision live on /orchestrator". Bypass
+   dispatches don't appear on /orchestrator. Until termlink-dispatch
+   bypass is either eliminated or counted as `direct-bypass`,
+   "first real production consumer" claims for the substrate are
+   uninhabited regardless of how many real consumers we add. T-1684
+   (daily health-check cron) and any other G-064 candidate inherit this
+   blocker if they pick the wrong path.
+
+3. **The fix is bounded.** Three Prevention paths catalogued in RCA;
+   the cheapest (envelope-from-bypass with `workflow_resolved_via:
+   "direct-bypass"`) is ~30 LOC in `cmd_dispatch` plus a regression test.
+   The append-only contract is preserved. Outcome back-prop (T-1697
+   hook) keys off task_id and would pick up bypass envelopes without
+   changes (assumption A4 to be confirmed).
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-e335d45d
+- **Timestamp:** 2026-05-04T09:56:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-04T09:56:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
