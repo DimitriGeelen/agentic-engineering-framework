@@ -100,10 +100,79 @@ How do we distinguish? Health-check probe before each scenario? Canary command (
 ### 2026-05-04 — Initial framing
 - **User proposed:** Permanent disposable AEF instance at /opt/ttt-AEF-Review-instance, TermLink-driven, dual purpose (review + install testing), shred-and-reinit lifecycle.
 - **User authority delegated:** "you can actually do" T-1702 review work using this pattern.
-- **Agent response:** Filed inception T-1709, six grill questions before proceeding to a decision. Awaiting answers.
+- **Agent response:** Filed inception T-1709, six grill questions before proceeding to a decision.
 
-(Future entries: each user response → captured here, my read of it → captured, course corrections → captured.)
+### 2026-05-04 — Round 1 grill answers
+
+| Q | User answer | Agent reading |
+|---|-------------|---------------|
+| Q1 | **(b)** two instances | Confirmed. Review-instance durable-ish; Test-instance ephemeral. |
+| Q2 | **(c) except high-impact UX + high-risk** | Agent self-ticks Agent ACs — and the previously-Human ACs that are mechanically evidenceable — for everything *except* high-impact UX changes and high-risk changes. Those still need human. **Validation channel:** TermLink agent (a separate reviewer agent in the review instance) checks the calling agent's evidence before tick. **Critical claim:** "we incepted this, GO was granted, but seems not to be wired or used." |
+| Q3 | "two instances, but when relevant agent shreds" | Per-task or per-need, agent-driven. Not blanket cadence. |
+| Q4 | "persistence where relevant, ephemeral where relevant" | Agent picks per use case. Likely: review = persistent named session; test = spawn-per-run. |
+| Q5 | "situational relevant" | Master vs. tag vs. pinned commit picked per task. T-1702 review → pin to commit under review. Install-flow test → tagged release. Live-development review → master. |
+| Q6 | **"incept that"** | Failure-mode discrimination (canary vs scenario-trigger) is its own design problem. Spinning out as separate inception. |
+
+### 2026-05-04 — Verification of "we incepted this, GO was granted, but not wired"
+
+**Found:**
+- **T-1442** (AC Validation Default-Flip) — `work-completed`. Inception artifact at `docs/reports/T-1442-ac-validation-default-flip.md`.
+- **T-1443** (Independent reviewer agent — TermLink-dispatched, evidence-gated, can auto-tick Agent ACs) — `work-completed`. Confirmed-yes locked: *"Reviewer agent (I-B) **may auto-tick Agent ACs** and only escalate Human ACs when reviewer says 'needs human.'"*
+
+**What actually shipped:**
+- `lib/reviewer/` — in-process Python reviewer. Writes a `## Reviewer Verdict` block to the task file.
+- `bin/fw reviewer T-XXX` — invokes it.
+- **Explicit constraint in code:** `lib/reviewer/static_scan.py` carries the comment *"Sovereignty: NEVER modifies AC checkboxes (##{2,}Human or ### Agent)"*. So the verdict-writer ships; the auto-tick half does NOT.
+- `agents/reviewer/` — does not exist. The reviewer is not TermLink-dispatched; runs in-process.
+
+**Conclusion:** User's claim is correct. The inception GO authorised both auto-tick and TermLink-dispatch; the implementation shipped neither. What was specced as friction-removal became another verdict to read. The review-instance pattern proposed in T-1709 is the wiring that closes that loop — and it surfaces a question of its own: are we **extending** `fw reviewer` (adding auto-tick + relocating it to the review instance) or **replacing** it (parallel pattern)?
 
 ## Decisions
 
-(none yet — pending grill answers)
+### 2026-05-04 — Two instances locked
+- **Chose:** `/opt/ttt-AEF-Review-instance/` (durable) + `/opt/ttt-AEF-Test-instance/` (ephemeral).
+- **Why:** Q1 answered (b). The two purposes pull in opposite directions on persistence.
+- **Rejected:** Single instance, both purposes — accumulated review state corrupts install-flow tests; shred mid-review wipes evidence.
+
+### 2026-05-04 — Auto-tick policy: agent self-ticks except high-impact UX / high-risk
+- **Chose:** Agent self-ticks Agent ACs and mechanically-evidenceable previously-Human ACs. High-impact UX and high-risk changes still require human. Termlink agent in review instance validates before tick.
+- **Why:** Q2 answered (c with carve-outs). Maps onto T-1442/T-1443 GO that wasn't fully wired.
+- **Open:** what counts as "high-impact UX" and "high-risk"? Boundary not yet defined — see Round 2 grill.
+- **Rejected:** (a) scripted-evidence-only, human always ticks — that's the status quo, doesn't move friction needle.
+
+## Round 2 grill — needed before GO
+
+### Q7 — High-impact / high-risk classifier
+
+You carved out "high-impact UX and high-risk changes" from agent-self-tick. We need a bright line so the agent doesn't drift into self-ticking things you'd want to see. Three candidate definitions:
+
+- **(a) Tag-based:** task carries `risk:high` or `ui:visual` or similar. Agent reads the tag, escalates to human.
+- **(b) Diff-shape based:** PR touches `web/templates/` (UI), or `agents/context/check-*.sh` (security boundary), or anything in `lib/inception.sh` (governance) → escalate. Static rule list.
+- **(c) Reviewer-judgment:** the TermLink reviewer agent decides each AC: "this is mechanical, tick" vs "this needs human". Authority delegated to the reviewer profile.
+
+(c) is the most flexible but moves the failure mode — now the reviewer's classifier is the thing that has to be right. (b) is rigid but auditable. (a) needs disciplined task-tagging.
+
+### Q8 — Extend `fw reviewer` or new pattern?
+
+The existing `lib/reviewer/static_scan.py` writes verdicts but won't touch checkboxes by design. Two options:
+
+- **(a) Extend** — add `--auto-tick` flag to `fw reviewer`, gate by reviewer verdict + AC classification, run inside the review instance via TermLink dispatch. The "Sovereignty: NEVER modifies AC checkboxes" comment becomes "NEVER modifies AC checkboxes UNLESS the verdict says clean and the AC is mechanically classified". Same code, expanded mandate.
+- **(b) New** — leave `fw reviewer` as the local static-scanner. Build a separate `agents/reviewer-instance/` profile that runs in the review instance, auto-ticks under the policy. Two reviewers with different mandates.
+
+### Q9 — Initialisation source-of-truth
+
+When `/opt/ttt-AEF-Review-instance` reinits to review T-1702, it needs commit `0da71bafd`. Where from?
+
+- **(a)** Clone this repo, checkout the SHA. Risk: review instance reads dev-tip if the agent forgets to checkout.
+- **(b)** Use the GitHub mirror (T-1594, mirror sync). Risk: depends on mirror lag.
+- **(c)** A separate origin (not this repo, not GitHub) — review instance has its own remote. Cleanest isolation; most ceremony.
+
+### Q10 — High-risk carveout enforcement
+
+If you say "agent self-ticks except high-risk" and the agent self-ticks something the post-hoc human review reveals was high-risk, what's the consequence?
+
+- **(a) Soft** — agent logs an L-class learning, refines the classifier.
+- **(b) Hard** — gate fires, future self-ticks blocked until human re-confirms classifier rules.
+- **(c) Human-tunable** — human reviews self-tick log periodically, marks "shouldn't have self-ticked these", classifier learns.
+
+This determines whether self-tick is a one-way ratchet (drifts more permissive over time) or self-correcting.
