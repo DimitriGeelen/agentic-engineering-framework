@@ -228,6 +228,24 @@ Substrate (proxy, workflow, --env plumbing, harness, report) ships. The 90% real
   inline; AC3.1 path was wrong (`lib/workflows/` vs `.context/project/workflows/`) —
   corrected inline. Verification block updated to match reality.
 
+### 2026-05-04 — Human approval: SHIP-WITH-CAVEAT + manual one-liner
+
+- **Approved by:** human via chat, 2026-05-04 ("approved as suggested").
+- **Scope of approval:**
+  1. Recommendation framing accepted: substrate ships, ≥90% claude-p bar
+     missed by design, T-1706 ollama-loop pivot is the production path.
+  2. Human AC2 [RUBBER-STAMP]: manual one-liner is the chosen startup
+     path (no systemd unit). Documented in `docs/reports/T-1700-litellm-build.md` §1.
+  3. Human AC1 [REVIEW]: skipped per agent's recommendation — measures
+     claude-p path superseded by T-1706 pivot; reviewing the data tells
+     nothing actionable. Human accepted skip framing.
+- **What this approval does NOT cover:**
+  - It does not auto-tick the Human AC checkboxes (per CLAUDE.md
+    §Agent/Human AC Split: only the human ticks). The Watchtower review
+    surface is where the formal click happens.
+  - It does not authorise `--force` bypass of the still-open Agent AC
+    4.3 (outcome rows in dispatch-outcomes.jsonl, v2 follow-up).
+
 ### 2026-05-04 — AC group 6 (env-leak test) shipped — static-analysis approach
 - **Chose:** Pin the env-isolation invariants via static-analysis grep against
   `agents/termlink/termlink.sh`, not live-spawn behavioural test.
