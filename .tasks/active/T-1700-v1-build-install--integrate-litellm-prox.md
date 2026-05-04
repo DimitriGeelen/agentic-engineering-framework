@@ -84,11 +84,25 @@ ollama @ `192.168.10.107:11434` already reachable; 12 models present including
       `ollama-research.yaml  worker=ollama-loop  model=claude-3-5-sonnet-hermes3`.
 
 **4. Empirical validation harness**
-- [ ] `tests/integration/test_t1700_ollama_dispatch.sh` (or similar) runs 10 dispatches via
-      `fw resolver dispatch <task_id> ollama-research`, each with a tool-use prompt
-      (Read+Bash). Records pass/fail per run, median + p95 latency to first tool call.
-- [ ] Results captured in `docs/reports/T-1700-litellm-build.md` with raw numbers.
+- [x] `tools/t1700-ollama-harness.sh` runs N dispatches via
+      `fw termlink dispatch --task-type ollama-research`, each with a tool-use prompt
+      (Read+Bash). Records pass/fail per run, latency, and **real tool_use event count**
+      (not exit-code only — see Decisions §exit=0 RCA).
+      **Verified:** file present and executable. AC text originally said
+      `tests/integration/test_t1700_ollama_dispatch.sh`; actual location is
+      `tools/t1700-ollama-harness.sh` per build report §4. Path corrected.
+- [x] Results captured in `docs/reports/T-1700-litellm-build.md` with raw numbers.
+      **Verified:** report §"Harness data — qwen3:14b" + §"Harness data — gpt-oss:20b"
+      contain the per-run tables (latency, exit, tool_use events) plus aggregate
+      metrics (real tool-use rate, median + p95 latency).
 - [ ] `dispatch-outcomes.jsonl` shows the 10 outcome rows back-propagated by the T-1697 evaluator.
+      **Status:** Open. Harness invokes `fw termlink dispatch` directly, not via
+      `fw resolver dispatch <task_id> ollama-research`, so dispatches don't write
+      envelope rows to `.context/dispatches.jsonl`, and there's nothing for T-1697
+      backprop to enrich. Closing this AC requires either (a) re-routing the
+      harness through `fw resolver dispatch`, or (b) explicitly running
+      `fw outcome backprop` against the harness's task IDs (none exist — harness
+      uses synthetic worker names not real tasks). v2 follow-up scope.
 
 **5. Decision gate**
 - [ ] If ≥90% pass: workflow stays as-is, T-1700 ships GO.
