@@ -1894,4 +1894,90 @@ concerns:
   created: 2026-05-03
   last_reviewed: 2026-05-03
   related_task: T-1702
+- id: G-066
+  type: gap
+  title: "T-1442/T-1443 closed work-completed while half of GO scope (auto-tick + TermLink-dispatch reviewer) never wired — §ACD pattern at task level (G-062 family)"
+  description: >
+    T-1442 (inception, GO) and T-1443 (build, work-completed) reached an
+    explicit GO on three deliverables:
+      1. 3-layer escalation classifier (mechanical patterns + frontmatter
+         risk/human_signoff + audit cron Pass-B re-scan).
+      2. Reviewer auto-ticks Agent ACs from machine-verifiable evidence.
+      3. Reviewer dispatches via TermLink (evidence-gated, isolated process).
+
+    Verified 2026-05-04: only deliverable (1) shipped. policy/escalation-patterns.yaml
+    (schema_version 1, v1.1-seed) and policy/anti-patterns.yaml (schema_version 2,
+    v1.3-seed) ship, lib/reviewer/static_scan.py performs Pass-B audit re-scan.
+    Deliverables (2) and (3) silently dropped: static_scan.py carries the explicit
+    guard `# Sovereignty: NEVER modifies AC checkboxes (##{2,}Human or ### Agent)`,
+    and `agents/reviewer/` does not exist (reviewer runs in-process under the
+    parent session).
+
+    This is the §ACD substrate-vs-deliverable conflation pattern that defined
+    the orchestrator-rethink arc — happening at the per-task level rather than
+    the arc level. T-1668/T-1671 added §ACD gates to ARC closures
+    (`--headline-mechanic` at create, `--demo` at close, CLAUDECODE refusal on
+    `fw arc close`). A regular `fw task update --status work-completed` against
+    an inception/build pair has no equivalent gate. Substrate-half ships, GO is
+    declared, the deliverable-half is forgotten until someone reads
+    static_scan.py and notices the comment.
+  spec_reference: "T-1442 (inception); T-1443 (build); CLAUDE.md §Arc Completion Discipline; G-062 (arc-level §ACD)"
+  severity: medium
+  trigger_fired: true
+  trigger_event: |
+    2026-05-04 verification during T-1709 inception (permanent disposable AEF
+    review instance). Round 1 grill answer Q3 ("we incepted this, GO was
+    granted, but seems not to be wired or used") triggered a prior-work check.
+    grep against `lib/reviewer/static_scan.py` confirmed the auto-tick guard
+    comment; `ls agents/reviewer/` returned No such file or directory.
+    User-claim that halves of T-1442/T-1443 GO never wired was verified;
+    captured in `docs/reports/T-1709-aef-review-instance.md` "Verification of
+    prior-work claims" section.
+  status: watching
+  what_works_now: |
+    - 3-layer escalation classifier ships and runs daily via cron Pass-B
+      (T-1665 wired).
+    - policy/escalation-patterns.yaml + policy/anti-patterns.yaml ship with
+      versioned schemas; `lib/reviewer/static_scan.py` writes
+      `## Reviewer Verdict` blocks into task files.
+    - `fw reviewer` CLI exists for one-off + audit modes.
+    - The substrate IS useful — agent verdict-writing is the part that worked.
+  what_remains: |
+    - GO scope (2): auto-tick Agent ACs from machine-verifiable evidence.
+      static_scan.py's "NEVER modifies AC checkboxes" guard makes this
+      structurally impossible without an explicit lift.
+    - GO scope (3): TermLink-dispatched, evidence-gated reviewer agent.
+      `agents/reviewer/` directory missing entirely.
+    - Generalisation: there is no per-task §ACD gate. An inception with
+      multi-deliverable GO can ship one deliverable + close work-completed,
+      and the framework provides no detection. The audit cron's Pass-B
+      re-scan looks for AC verdict drift, not for "GO scope vs. shipped
+      scope" drift.
+  recommendation: |
+    Two-pronged:
+
+    1. Wire the missing halves. T-1709 (permanent disposable AEF review
+       instance) is the proposed implementation path — auto-tick + TermLink-
+       dispatched reviewer live in the review instance, where path-isolation
+       respect is structural. T-1709 is in inception phase (awaiting human
+       GO/NO-GO/DEFER decision). On GO, the 7-step build sequence in
+       `docs/reports/T-1709-aef-review-instance.md` §D wires both halves.
+
+    2. Detect the pattern structurally. Mirror G-062's arc-level §ACD gates
+       at the task-pair level: when a build task closes work-completed under
+       an inception parent (related_tasks chain), the gate compares the
+       inception's GO Recommendation deliverables list against shipped
+       artefacts. If a named deliverable is missing, refuse closure or
+       require explicit `--scope-reduction-acknowledged` flag with logged
+       rationale. This would have caught T-1442/T-1443 at the moment of
+       closure rather than ~3 months later during a related inception.
+
+    Closure of G-066 requires either both prongs OR explicit acceptance that
+    (1) is sufficient and (2) is intentionally deferred (filed as separate
+    inception). DO NOT close on (1) alone — that would repeat the pattern
+    G-066 documents.
+  created: 2026-05-04
+  last_reviewed: 2026-05-04
+  related_task: T-1709
+  related_tasks_extra: [T-1442, T-1443, T-1668, T-1671, G-062]
 
