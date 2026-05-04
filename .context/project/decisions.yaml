@@ -569,3 +569,24 @@ decisions:
     date: 2026-05-03
     task: T-1703
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-084
+    decision: "declare path \"function-calling-tuned model fixes ollama-research\" DEAD."
+    scope: project
+    date: 2026-05-03
+    task: T-1704
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-085
+    decision: "scope T-1705 inception with \"thin tool-loop\" as the default-recommendation."
+    scope: project
+    date: 2026-05-03
+    task: T-1704
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-086
+    decision: "In-place filter in `fw orchestrator status` (Python) using"
+    scope: project
+    date: 2026-05-04
+    task: T-1712
+    rationale: "Auto-captured from task file on completion"
