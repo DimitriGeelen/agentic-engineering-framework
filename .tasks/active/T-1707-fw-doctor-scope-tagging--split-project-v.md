@@ -79,7 +79,9 @@ Closes G-065 alongside T-1702 Pattern 4 (already shipped commit 91eeacdbb).
 ## Verification
 
 bash -n bin/fw
-bin/fw doctor 2>&1 > /dev/null
+# Assert doctor produces the host-scope summary breakdown (T-1707's headline behaviour),
+# not just that it exits 0. Tag should appear when host findings exist.
+bin/fw doctor 2>&1 | grep -qE "warning\(s\) \([0-9]+ host-level\)"
 bats tests/unit/test_doctor_scope_tags.bats
 
 ## Recommendation
@@ -146,3 +148,12 @@ T-1702 allowlist (still pending) and T-1707 output (this task).
 
 ### 2026-05-04T00:00:00Z — ac-population
 - Real ACs written; status started-work; horizon now.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-cb8417dc
+- **Timestamp:** 2026-05-04T16:18:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

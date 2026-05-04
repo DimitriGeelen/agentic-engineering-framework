@@ -162,8 +162,8 @@ test -f .context/litellm-config.yaml && python3 -c "import yaml; yaml.safe_load(
 test -f .context/project/workflows/ollama-research.yaml && python3 -c "import yaml; yaml.safe_load(open('.context/project/workflows/ollama-research.yaml'))"
 # Workflow listed by resolver
 bin/fw resolver workflows | grep -q "ollama-research"
-# Ollama still reachable (sanity)
-curl -sf http://192.168.10.107:11434/api/tags >/dev/null
+# Ollama still reachable (sanity) — assert response shape, not just exit
+curl -sf http://192.168.10.107:11434/api/tags | grep -q '"models"'
 # fw doctor still passes (no new failures)
 bin/fw doctor 2>&1 | grep -E "^\s*FAIL" | wc -l | grep -q "^0$"
 # Build report exists
@@ -321,3 +321,22 @@ What FAILS (and is honestly captured):
 ### 2026-05-03T18:26:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-8d79432e
+- **Timestamp:** 2026-05-04T16:18:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#8 (Agent)** — `tools/t1700-ollama-harness.sh` runs N dispatches via
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/t1700-ollama-harness.sh in: `tools/t1700-ollama-harness.sh` runs N dispatches via`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/test_doctor_litellm_ollama.bats`
