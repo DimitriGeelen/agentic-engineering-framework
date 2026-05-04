@@ -8,7 +8,14 @@ import yaml
 from flask import Blueprint, abort, redirect, request, url_for
 from markupsafe import Markup
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata
+from web.shared import (
+    PROJECT_ROOT,
+    _auto_link_files,
+    get_all_task_metadata,
+    parse_frontmatter,
+    render_page,
+    task_id_sort_key,
+)
 
 logger = logging.getLogger(__name__)
 from web.subprocess_utils import run_fw_command
@@ -22,6 +29,8 @@ def _md(text):
     text = re_mod.sub(r"([^\n])\n(- )", r"\1\n\n\2", text)
     text = re_mod.sub(r"([^\n])\n(\d+\. )", r"\1\n\n\2", text)
     html = markdown2.markdown(text, extras=["fenced-code-blocks", "tables"])
+    # T-1723: artefact paths → /file/ anchors (existence-gated, idempotent).
+    html = _auto_link_files(html)
     return Markup(html)
 
 

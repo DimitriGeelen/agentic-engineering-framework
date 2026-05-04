@@ -10,6 +10,7 @@ from web.context_loader import load_concerns, load_decisions, load_directives, l
 from web.shared import (
     PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan,
     parse_frontmatter, load_latest_audit, get_all_task_metadata,
+    _auto_link_files,
 )
 from web.subprocess_utils import run_git_command
 
@@ -550,6 +551,8 @@ def project_doc(doc):
     html_content = markdown2.markdown(
         content_md, extras=["tables", "fenced-code-blocks", "code-friendly"]
     )
+    # T-1723: artefact paths → /file/ anchors (existence-gated, idempotent).
+    html_content = _auto_link_files(html_content)
 
     return render_page(
         "project_doc.html", page_title=doc_path.stem, doc_name=doc_path.stem, html_content=html_content
