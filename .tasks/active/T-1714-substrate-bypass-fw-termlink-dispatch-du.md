@@ -4,7 +4,7 @@ name: "Substrate bypass: fw termlink dispatch ducks under fw resolver dispatch, 
 description: >
   Inception: Substrate bypass: fw termlink dispatch ducks under fw resolver dispatch, leaving substrate at zero real-consumer telemetry (T-1700 AC4.3 RCA)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: [arc:orchestrator-rethink, G-064, substrate-bypass, RCA]
 components: []
 related_tasks: [T-1684, T-1685, T-1688, T-1689, T-1696, T-1697, T-1700]
 created: 2026-05-04T08:05:46Z
-last_update: 2026-05-04T08:05:46Z
+last_update: 2026-05-04T08:17:14Z
 date_finished: null
 ---
 
@@ -223,28 +223,74 @@ OUT of scope:
 - T-1709 (review instance) GO turns out to require resolver-flag-parity
   changes anyway → fold T-1714 into that scope.
 
-## Verification
-
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
-#
-# Toolchain hint (L-291): if a GO decision will mean editing *.vbproj/*.csproj/*.xaml,
-# *.go, Cargo.toml, tsconfig.json, or pom.xml in the build task, plan to add the
-# matching build command (dotnet build / go build / cargo check / tsc --noEmit /
-# mvn compile) to that build task's ## Verification — P-011 only runs what you write.
-
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:**
+
+Three convergent reasons:
+
+1. **The bypass is structural, not isolated.** RCA shows two parallel
+   write surfaces (`lib/resolver.py` envelope writer vs `agents/termlink/
+   termlink.sh:cmd_dispatch` direct writer with `meta.json` only). T-1700
+   harness is the smoking gun, but the structural condition affects every
+   future consumer that needs flags resolver doesn't yet pass through.
+   Bypass survey spike (#1) will quantify, but the structural pattern is
+   already evident in code at HEAD.
+
+2. **G-064 is structurally blocked until this closes.** The arc's
+   headline mechanic is "agent dispatches → orchestrator picks model →
+   user observes the routing decision live on /orchestrator". Bypass
+   dispatches don't appear on /orchestrator. Until termlink-dispatch
+   bypass is either eliminated or counted as `direct-bypass`,
+   "first real production consumer" claims for the substrate are
+   uninhabited regardless of how many real consumers we add. T-1684
+   (daily health-check cron) and any other G-064 candidate inherit this
+   blocker if they pick the wrong path.
+
+3. **The fix is bounded.** Three Prevention paths catalogued in RCA;
+   the cheapest (envelope-from-bypass with `workflow_resolved_via:
+   "direct-bypass"`) is ~30 LOC in `cmd_dispatch` plus a regression test.
+   The append-only contract is preserved. Outcome back-prop (T-1697
+   hook) keys off task_id and would pick up bypass envelopes without
+   changes (assumption A4 to be confirmed).
+
+**Evidence:**
+
+- `lib/resolver.py:cmd_dispatch` writes envelope row to `dispatches.jsonl`
+  including `workflow_id`, `workflow_sha`, `task_type`, `worker_kind`,
+  `model`, `prompt_template`, `template_sha`. Verified at HEAD.
+- `agents/termlink/termlink.sh:cmd_dispatch` (lines 494-636) writes
+  `meta.json` to per-worker `<wdir>` only. No envelope write. Verified
+  at HEAD.
+- T-1700 harness `tools/t1700-ollama-harness.sh` invokes
+  `fw termlink dispatch --task-type ollama-research`, not
+  `fw resolver dispatch`. Verified at HEAD.
+- `fw orchestrator status` post-T-1712 fix shows 3 real dispatches —
+  all from `fw resolver dispatch` calls during T-1696/T-1697/T-1698
+  development. T-1700 harness's 13 real-traffic dispatches don't appear.
+  Verified live.
+- Outcome enrichment fires from `lib/update-task.sh` on `--status
+  work-completed`, calling `fw outcome backprop <task_id>` which joins
+  outcomes against `.context/dispatches.jsonl` by `task_id`. With no
+  envelope row, the join produces zero rows. Verified by code reading.
+
+**Risk acknowledged:**
+
+- The structural fix may surface a flood of historical bypass dispatches
+  if applied retroactively. Forward-only application proposed; the
+  forensic record of "we couldn't see X" is itself analytics-relevant.
+- A test harness writing real envelope rows would pollute analytics.
+  Mitigation: `FW_DISPATCH_TEST_MODE=1` env var that skips envelope
+  writes when set; tests opt in; production callers don't.
+- Fixing this does NOT close G-064 — new consumers (T-1684 etc) still
+  needed. T-1714 just removes the structural reason existing consumers
+  silently don't count.
+
+## Verification
+
+# Inception — no shell verification required.
 
 ## Decisions
 
@@ -265,3 +311,6 @@ OUT of scope:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-04T08:17:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
