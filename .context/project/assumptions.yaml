@@ -334,3 +334,31 @@ assumptions:
   linked_task: T-1705
   created: '2026-05-03'
   resolved_date: null
+- id: A-035
+  statement: Watchtower already serves /docs/reports, /tasks/T-NNNN, /fabric/<id>,
+    /episodic/T-NNNN, /review/T-NNNN — extension only needs renderer work, not new
+    routes
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1721
+  created: '2026-05-04'
+  resolved_date: null
+- id: A-036
+  statement: Flask request.host_url gives the correct port-aware base URL per request
+    — no shell-out, no startup cache, no triple-file read at render time
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1721
+  created: '2026-05-04'
+  resolved_date: null
+- id: A-037
+  statement: Path-shape regex (known-prefix + .md/.yaml/.py/.sh suffix OR known-directory
+    match) has acceptable false-positive rate on existing rendered content
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-1721
+  created: '2026-05-04'
+  resolved_date: null
