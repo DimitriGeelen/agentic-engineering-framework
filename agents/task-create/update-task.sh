@@ -346,6 +346,70 @@ PYRCA
     esac
 }
 
+# Evolution-log Gate (T-1718, structural counter to §ACD/G-062 family)
+# Fires on --status work-completed for arc-tagged build tasks IF the task
+# body already contains a `## Evolution` section (template opt-in: tasks
+# created before T-1718 don't have the section, aren't gated). Requires
+# at least one substantive (≥30 chars, comment-stripped, non-heading) line
+# in the section body.
+#
+# Origin: T-1717 grill Q4 — "the understanding of what we need and want
+# evolves with the process of materialisation." Same shape as T-1550 RCA
+# gate: advisory CLAUDE.md text → structural enforcement.
+check_evolution_log() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    local task_type task_tags
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//')
+
+    # Only build tasks
+    [ "$task_type" = "build" ] || return 0
+
+    # Only arc-tagged
+    echo "$task_tags" | grep -q 'arc:' || return 0
+
+    # Source detection helper
+    local lib_path="$FRAMEWORK_ROOT/lib/evolution_log.sh"
+    [ -f "$lib_path" ] || return 0
+    # shellcheck source=/dev/null
+    source "$lib_path"
+
+    # Backward-compat: if section absent, no-op
+    has_evolution_section "$TASK_FILE" || return 0
+
+    # Section exists — must be substantive
+    if has_real_evolution_log "$TASK_FILE"; then
+        echo -e "${GREEN}Evolution log: substantive ✓${NC}"
+        return 0
+    fi
+
+    if [ "$SKIP_EVOLUTION" = true ]; then
+        echo -e "${YELLOW}WARNING: Evolution log empty/template-only (--skip-evolution bypass)${NC}"
+        log_gate_bypass "--skip-evolution" "check_evolution_log"
+        return 0
+    fi
+
+    echo -e "${RED}ERROR: Cannot complete arc-tagged build task — ## Evolution section is empty/template-only.${NC}" >&2
+    echo "" >&2
+    echo "T-1718 (CLAUDE.md / T-1717 grill Q4): arc-tagged build tasks must capture how" >&2
+    echo "understanding evolved during build. Spec-vs-build drift must be visible, not silent." >&2
+    echo "" >&2
+    echo "Add an entry to the ## Evolution section in $TASK_FILE:" >&2
+    echo "" >&2
+    echo "  ### YYYY-MM-DD — [topic]" >&2
+    echo "  - **What changed:** [what we learned that we didn't know at filing]" >&2
+    echo "  - **Plan impact:** [what in the plan no longer fits]" >&2
+    echo "  - **Triggered:** [new sub-task / pivot / scope cut, with task ID]" >&2
+    echo "" >&2
+    echo "At least one substantive entry (≥30 chars on at least one line) is required." >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  1. Add the Evolution entry, then retry" >&2
+    echo "  2. Use --skip-evolution to bypass (logged Tier-2, T-1718)" >&2
+    exit 1
+}
+
 # Verification Gate (P-011)
 # Runs shell commands from ## Verification section before allowing work-completed.
 run_verification_commands() {
@@ -449,6 +513,7 @@ SKIP_VERIFICATION=false
 SKIP_HUMAN_OWNERSHIP=false
 SKIP_RECOMMENDATION=false
 SKIP_RCA=false
+SKIP_EVOLUTION=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -465,6 +530,7 @@ while [[ $# -gt 0 ]]; do
         --skip-human-ownership) SKIP_HUMAN_OWNERSHIP=true; shift ;;
         --skip-recommendation) SKIP_RECOMMENDATION=true; shift ;;
         --skip-rca) SKIP_RCA=true; shift ;;
+        --skip-evolution) SKIP_EVOLUTION=true; shift ;;
         --force|-f)
             echo -e "${YELLOW}DEPRECATED: --force will be removed. Use narrow flags instead:${NC}" >&2
             echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)" >&2
@@ -472,8 +538,9 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-verification          Bypass verification gate (P-011)" >&2
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)" >&2
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
+            echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -491,6 +558,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-verification          Bypass verification gate (P-011)"
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)"
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)"
+            echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)"
             echo "  --skip-human-ownership       Bypass human ownership reassignment"
             echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
             echo "  -h, --help    Show this help"
@@ -698,6 +766,14 @@ if [ -n "$NEW_STATUS" ]; then
         # Bug-class tasks must capture root cause before completion.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_rca_for_bugfix
+        fi
+
+        # === Evolution-log Gate (T-1718, T-1717 grill Q4 remediation) ===
+        # Arc-tagged build tasks with a ## Evolution section must capture
+        # spec-vs-build drift before completion. Backward-compat: tasks
+        # without the section aren't gated.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_evolution_log
         fi
 
         # === Reviewer Static-Scan (T-1443 v1.0) ===

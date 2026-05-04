@@ -4,15 +4,15 @@ name: "Evolution-gate + vertical-slice discipline for inception → build transi
 description: >
   Structural mechanism that makes spec-vs-build drift visible during build. Surfaced from T-1717 Phase 3 grill (Q4) — 'understanding of what we need and want evolves with the process of materialisation'. Adds (a) mandatory ## Evolution section in build tasks populated at slice boundaries; (b) update-task.sh gate refusing slice-progress with empty Evolution log (same shape as T-1550 RCA gate); (c) vertical-slice discipline — smallest end-to-end deliverable before parallel streams; (d) fw inception revise affordance for mid-build pivots without abandoning the task. Prerequisite for T-1717 GO if approved. Sibling structural fix surfaced from T-1717 grill, not part of T-1717 scope.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:embeddings-strategy, structural-gate, T-1716-family, dogfood-prerequisite, §ACD-prevention]
 components: []
 related_tasks: [T-1717, T-1550, T-1716, T-1671, T-1259, T-1260, G-062, G-066]
 created: 2026-05-04T14:50:48Z
-last_update: 2026-05-04T15:03:14Z
+last_update: 2026-05-04T15:19:43Z
 date_finished: null
 ---
 
@@ -20,40 +20,80 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Surfaced from T-1717 Phase 3 grill (Q4) — *"the understanding of what we
+need and want, evolves with the process of materialisation"*. This task
+ships the structural counter-pattern: build tasks must capture the
+**evolution of understanding** during build (not just at end), making
+spec-vs-build drift visible rather than silent. Same shape as T-1550
+RCA gate (advisory CLAUDE.md text → structural enforcement).
+
+**Slice 1 (this scope):** smallest end-to-end vertical that proves the
+loop. Adds `## Evolution` section to default build template (opt-in
+backward-compat), implements detection helper, wires gate into
+`update-task.sh` for `--status work-completed` on tasks that already
+have the section. `--skip-evolution` Tier-2 bypass exists.
+
+**Slices 2+ (future):** mandatory mid-build entries at slice boundaries,
+`fw inception revise` affordance, mandatory population on tasks that
+declare `slices: N` in frontmatter.
+
+See T-1717 grill artifact `docs/reports/T-1717-embeddings-strategy-grill.md`
+§ "Q4 — *how to get adaptive guidance without rigidity*".
 
 ## Acceptance Criteria
 
-### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+### Agent (Slice 1)
+- [x] **A1** `lib/evolution_log.sh` exists with `has_real_evolution_log()`
+  + `find_arc_tasks_without_evolution_log()` (mirror of
+  `lib/inception_recommendation.sh` from T-1716).
+- [x] **A2** `## Evolution` section added to `.tasks/templates/default.md`
+  build template with format hint comment block.
+- [x] **A3** `agents/task-create/update-task.sh` extended with
+  `check_evolution_log()` function. Fires on `--status work-completed`
+  when task body already contains `## Evolution` heading. Refuses with
+  actionable error if section is empty / template-only.
+  `--skip-evolution` flag bypasses with logged Tier-2 entry.
+- [x] **A4** Bats coverage in `tests/unit/evolution_log_gate.bats`:
+  17/17 passing (helper unit tests + arc-task discovery + backward-compat
+  no-op + non-arc / non-build skip).
+- [x] **A5** Self-application: this task (T-1718) carries a populated
+  `## Evolution` section. Eats own dogfood from day 1.
+- [x] **A6** `lib/evolution_log.sh` registered in fabric
+  (`.fabric/components/lib-evolution_log.yaml`).
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+### Human (Slice 1)
+- [ ] [REVIEW] Confirm gate UX on a synthetic task is actionable, not
+  punitive. Symmetric to T-1716 review.
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1718`
+  2. Observe gate fires on a synthetic build task with empty Evolution log
+  3. Verify error message names the section, suggests fix, references T-1718
+  **Expected:** Error message points to `## Evolution`, includes example
+  format (a slice-boundary entry), references `--skip-evolution` bypass.
+  **If not:** flag missing/confusing element; agent reworks.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+bats tests/unit/evolution_log_gate.bats
+test -f lib/evolution_log.sh
+grep -q "^## Evolution" .tasks/templates/default.md
+grep -q "check_evolution_log" agents/task-create/update-task.sh
+grep -q "T-1718" lib/evolution_log.sh
+
+## Evolution
+
+### 2026-05-04 — Slice 1 kickoff
+- **Slice scope:** opt-in backward-compatible gate (fires only on tasks
+  whose body already contains `## Evolution`). Avoids retroactively
+  blocking 38 in-flight tasks.
+- **Insight from T-1717 grill Q4:** rigidity ≠ structural enforcement.
+  Structural enforcement of *recording the evolution* is the opposite
+  of rigid — it forces the spec-mutation to be **visible** rather than
+  silent.
+- **Pattern source:** T-1716 (`lib/inception_recommendation.sh` +
+  `update-task.sh` gate) is direct precedent. Mirror the exact shape:
+  detection helper extracted to lib/, gate function in update-task.sh,
+  bypass flag with logged Tier-2 entry, bats tests.
 
 ## RCA
 
@@ -91,3 +131,7 @@ date_finished: null
 
 ### 2026-05-04T15:03:14Z — status-update [task-update-agent]
 - **Change:** tags: +arc:embeddings-strategy
+
+### 2026-05-04T15:19:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
