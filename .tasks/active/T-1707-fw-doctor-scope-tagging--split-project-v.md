@@ -84,7 +84,7 @@ bats tests/unit/test_doctor_scope_tags.bats
 
 ## Recommendation
 
-**Recommendation:** SHIP — closes G-065 alongside T-1702 Stream 1.
+**Recommendation:** GO — closes G-065 alongside T-1702 Stream 1.
 
 **Rationale:**
 The original incident (2026-05-03 housekeeping) was an agent bundling

@@ -87,7 +87,7 @@ bats tests/unit/test_boundary_hook_arguments.bats
 
 ## Recommendation
 
-**Recommendation:** SHIP-WITH-CAVEAT — Stream 1 (read-side block) ready for human
+**Recommendation:** GO — ship with caveat: Stream 1 (read-side block) ready for human
 review; Stream 2 (doctor scope tags) deferred to T-1707, G-065 stays open until both ship.
 
 **Rationale:**

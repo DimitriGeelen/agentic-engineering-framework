@@ -268,7 +268,7 @@ Substrate (proxy, workflow, --env plumbing, harness, report) ships. The 90% real
 
 ## Recommendation
 
-**Recommendation:** SHIP-WITH-CAVEAT — substrate complete, pivot path documented for v2
+**Recommendation:** GO — ship with caveat: substrate complete, pivot path documented for v2
 
 **Rationale:**
 The substrate work that T-1691 GO'd is complete and end-to-end verified:
