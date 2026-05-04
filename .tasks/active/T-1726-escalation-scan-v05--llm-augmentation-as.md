@@ -44,6 +44,20 @@ Two spikes, time-boxed.
 - Inspect the dispatch envelope, run the worker (ollama-local), capture the outcome row.
 - Question answered: does the substrate work end-to-end for this workload?
 
+**Spike 1 first-pass result (2026-05-04, dry-run only, this session):**
+`fw resolver dispatch T-1075 default --dry-run --json` succeeds end-to-end.
+Envelope ships with prompt (assembled from task frontmatter + recent dispatches +
+matched healing patterns), model=sonnet, worker_kind=TermLink, allowed_tools,
+cost_cap_usd=1.5, blob_dir, cwd boundary guard. Substrate proven at envelope level.
+
+**Open from Spike 1:**
+- `ollama-research` workflow has `worker_kind: ollama-loop` which isn't in
+  the validator's `valid: ['Task', 'TermLink', 'pi']` list. v0.5 needs either
+  worker_kind=TermLink (with ollama prompt routing) or a new ollama-loop
+  enum entry. Resolver-side validator change is small (~1 LOC + tests).
+- Default prompt template emits `<!-- resolver: unresolved $VARs: ['VAR'] -->` —
+  pre-existing template bug, irrelevant to v0.5 but worth filing.
+
 **Spike 2 — disagreement rate on a small backlog** (~30 min):
 - Run v0.5 prototype on the last 30 days of completed tasks.
 - Compare LLM verdict vs heuristic verdict on overlapping candidates.
@@ -138,6 +152,7 @@ T-1688 surveyed all 18 autonomous workloads and concluded option 4 — file v0.5
 - Dispatch substrate: `lib/resolver.py`, `lib/outcome.py`, `.context/dispatches.jsonl`, `.context/dispatch-outcomes.jsonl` — all live (T-1689/1690/1691/1692 shipped). Outcome enrichment proven by T-1697.
 - Sister-arc precedent: T-1700 (litellm proxy) is in human review and proves the v1 substrate's other half works. v0.5 is the workload; T-1700 is the dispatch path.
 - G-064 description in concerns.yaml: "high" severity, watching since arc decision; T-1688 confirmed retrofit is exhausted.
+- **Spike 1 dry-run executed this session**: `fw resolver dispatch T-1075 default --dry-run --json` produces a full dispatch envelope (prompt, model, worker_kind, allowed_tools, cost_cap, blob_dir, cwd) — substrate proven at envelope level. Two minor open items captured in Exploration Plan above (worker_kind validator + template `$VAR` leak).
 
 **Risk acknowledged:**
 
