@@ -12,31 +12,21 @@ from flask import Blueprint, abort, request
 
 logger = logging.getLogger(__name__)
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+from web.shared import (
+    FRAMEWORK_ROOT,
+    PROJECT_ROOT,
+    _ARTEFACT_PATH_RE as _FILE_REF_RE,  # back-compat alias
+    _auto_link_files,
+    render_page,
+)
 
 # Safe directories for file viewer (relative to PROJECT_ROOT)
 _VIEWABLE_DIRS = ("docs/", ".tasks/", ".context/handovers/", ".context/episodic/")
 
-# Regex for file references that should become clickable links (T-633)
-_FILE_REF_RE = re_mod.compile(
-    r'(?<!href=")'           # Not already inside an href
-    r'(?<!/file/)'           # Not already a /file/ link
-    r'(`?)'                  # Optional opening backtick
-    r'((?:docs/reports/|\.tasks/(?:active|completed)/|\.context/(?:handovers|episodic)/)'
-    r'[A-Za-z0-9_/.-]+\.(?:md|yaml))'  # File path
-    r'(`?)'                  # Optional closing backtick
-)
-
-
-def _auto_link_files(html):
-    """Convert file path references in rendered HTML to clickable /file/ links (T-633)."""
-    def _replace(m):
-        tick1, path, tick2 = m.group(1), m.group(2), m.group(3)
-        # Verify file exists before linking
-        if (PROJECT_ROOT / path).exists():
-            return f'<a href="/file/{path}">{tick1}{path}{tick2}</a>'
-        return m.group(0)
-    return _FILE_REF_RE.sub(_replace, html)
+# T-633 / T-1722: file-path linkifier promoted to web/shared.py so every
+# Markdown surface (review, tasks, approvals, inception) gets one-click
+# artefact navigation. Re-exported here as `_FILE_REF_RE` / `_auto_link_files`
+# for back-compat with the existing call site below.
 
 bp = Blueprint("docs", __name__)
 

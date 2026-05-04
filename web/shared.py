@@ -260,6 +260,60 @@ _TASK_REF_RE_SHARED = re_mod.compile(r"(?<![\w/-])(T-\d{3,5})(?![\w/-])")
 _BARE_URL_RE_SHARED = re_mod.compile(r"(?<![\(\[\"'`])(https?://[^\s<>'\"`)\]]+)")
 _CODE_URL_HTML_RE_SHARED = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
 
+# T-1722: artefact path linkifier — promoted from web/blueprints/docs.py (T-633)
+# and extended. Matches paths under known artefact prefixes ending in a known
+# extension. The (PROJECT_ROOT/path).exists() guard in _auto_link_files refuses
+# to link non-existent paths — eliminates false positives from natural prose
+# that happens to share a prefix.
+_ARTEFACT_PATH_RE = re_mod.compile(
+    # Three guards to keep idempotent and avoid wrapping an already-linked path:
+    #   (?<!href=")  — path is not the href target of an existing <a>
+    #   (?<!/file/)  — path is not the suffix of an already-built /file/<...> URL
+    #   (?<!">)      — path is not the link text immediately following an anchor's closing `">`
+    r'(?<!href=")'
+    r'(?<!/file/)'
+    r'(?<!">)'
+    r'(`?)'
+    r'('
+    r'(?:docs/reports/|'
+    r'\.tasks/(?:active|completed)/|'
+    r'\.context/(?:handovers|episodic|audits|project|working|arcs)/|'
+    r'\.fabric/components/|'
+    r'(?:web|lib|bin|agents|tests|tools|prompts|policy|deploy)/'
+    r')'
+    r'[A-Za-z0-9_/.-]+\.(?:md|yaml|yml|py|sh|json|toml)'
+    r')'
+    r'(`?)'
+)
+
+
+def _auto_link_files(html: str) -> str:
+    """Convert artefact-path references in rendered HTML to clickable /file/ links.
+
+    Existence-gated: only paths that resolve under PROJECT_ROOT become anchors;
+    non-matching prose stays untouched. Backticks (``code spans``) are preserved
+    around the link, mirroring the T-1575 contract for backticked URLs.
+
+    Origin: T-633 (introduced in web/blueprints/docs.py for component-doc pages).
+    Promoted here in T-1722 so /review, /tasks, /approvals, /inception — every
+    Markdown surface — gets one-click artefact navigation.
+    """
+    if not html:
+        return html
+
+    def _replace(m):
+        tick1, path, tick2 = m.group(1), m.group(2), m.group(3)
+        if (PROJECT_ROOT / path).exists():
+            inner = f"{tick1}{path}{tick2}" if (tick1 or tick2) else path
+            # Wrap inside <code>…</code> when backticked, mirroring the
+            # T-1575 codified shape for backticked URLs.
+            if tick1 and tick2:
+                return f'<a href="/file/{path}"><code>{path}</code></a>'
+            return f'<a href="/file/{path}">{inner}</a>'
+        return m.group(0)
+
+    return _ARTEFACT_PATH_RE.sub(_replace, html)
+
 
 def render_markdown_safe(text: str) -> str:
     """Render Markdown to HTML with safe_mode='escape', auto-link T-XXX refs
@@ -290,6 +344,10 @@ def render_markdown_safe(text: str) -> str:
         lambda m: f'<a href="{m.group(1)}"><code>{m.group(1)}</code></a>',
         html,
     )
+    # T-1722: artefact paths (docs/reports/*, .tasks/*, .fabric/components/*, etc.)
+    # become clickable /file/ links. Existence-gated; same rendering-layer
+    # contract as the T-1575 URL/T-NNNN shape — agent need not pre-format.
+    html = _auto_link_files(html)
     return html
 
 

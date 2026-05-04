@@ -4,7 +4,7 @@ name: "Frictionless artefact links — auto-render docs/path/report references i
 description: >
   Inception: Frictionless artefact links — auto-render docs/path/report references in tasks and approvals as clickable Watchtower URLs (dynamic port-aware)
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:orchestrator-rethink, ux, watchtower]
 components: [web/shared.py, web/blueprints/tasks.py]
 related_tasks: [T-1575, T-1257, T-885, T-1287, T-1376]
 created: 2026-05-04T17:15:16Z
-last_update: 2026-05-04T17:15:16Z
-date_finished: null
+last_update: 2026-05-04T17:18:22Z
+date_finished: 2026-05-04T17:18:22Z
 ---
 
 # T-1721: Frictionless artefact links — auto-render docs/path/report references in tasks and approvals as clickable Watchtower URLs (dynamic port-aware)
@@ -94,15 +94,15 @@ Decide IN this spike, no implementation.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -165,9 +165,35 @@ Recurring friction observed this session and prior: agent has to manually transl
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recurring friction observed this session and prior: agent has to manually translate 'docs/reports/T-1700-litellm-build.md' into 'http://192.168.10.107:3000/docs/reports/T-1700-litellm-build' for every human-review handoff. Watchtower already renders bare T-NNNN as clickable (per T-1575 rendering contract); extending the same to file paths (.md, /docs/reports/, .tasks/, .context/, .fabric/) is a low-risk renderer-side enhancement that eliminates a class of friction. Port already resolved per-project via watchtower.url triple-file (T-885/T-1287/T-1376) so dynamic generation is essentially free. Scope: extend web/shared.py:render_markdown_safe and the inline renderers in web/blueprints/tasks.py. Risk: low — additive regex matcher with whitelist of known artefact-path prefixes; no behaviour change for non-matching content. Fits naturally with existing rendering-guarantee tests at tests/unit/test_extract_recommendation.py.
+
+**Date**: 2026-05-04T17:18:22Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-04T17:18:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recurring friction observed this session and prior: agent has to manually translate 'docs/reports/T-1700-litellm-build.md' into 'http://192.168.10.107:3000/docs/reports/T-1700-litellm-build' for every human-review handoff. Watchtower already renders bare T-NNNN as clickable (per T-1575 rendering contract); extending the same to file paths (.md, /docs/reports/, .tasks/, .context/, .fabric/) is a low-risk renderer-side enhancement that eliminates a class of friction. Port already resolved per-project via watchtower.url triple-file (T-885/T-1287/T-1376) so dynamic generation is essentially free. Scope: extend web/shared.py:render_markdown_safe and the inline renderers in web/blueprints/tasks.py. Risk: low — additive regex matcher with whitelist of known artefact-path prefixes; no behaviour change for non-matching content. Fits naturally with existing rendering-guarantee tests at tests/unit/test_extract_recommendation.py.
+
+### 2026-05-04T17:18:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-4f599ad0
+- **Timestamp:** 2026-05-04T17:18:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-04T17:18:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
