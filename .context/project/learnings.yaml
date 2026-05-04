@@ -2703,3 +2703,10 @@ X'` returning empty group."
   date: 2026-05-03
   context: Added via context agent
   application: TBD
+- id: L-349
+  learning: "Post-grill governance discipline: when an inception's grill converges and a Recommendation is written, the closure is incomplete until the arc is created (with headline-mechanic from the Recommendation), tags + related_tasks are populated on the inception task, and any build prerequisites (sibling structural fixes, downstream Slice-1 tasks) are pre-filed even if blocked on human GO. Origin: T-1717 inception filed without arc/tags/related_tasks; human caught it with 'have we created an arc, are we following framework governance???' Corrective fix shipped as T-1717/T-1718/G-067 commit a19790b8a. The §ACD pattern doesn't only apply to substrate-vs-deliverable at the arc level — it also applies to closure-vs-anchoring at the inception level. Closure ≠ Recommendation written; closure = Recommendation written + structurally anchored."
+  source: P-002
+  task: T-1717
+  date: 2026-05-04
+  context: Added via context agent
+  application: TBD
