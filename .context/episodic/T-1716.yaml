@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1716: Filing-time --recommendation gate on fw inception start (T-1715 implementation)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-04T21:56:53Z
+# ============================================================================
+
+task_id: T-1716
+task_name: "Filing-time --recommendation gate on fw inception start (T-1715 implementation)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-04T10:47:53Z
+completed: 2026-05-04T21:56:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-04T13:00:31+02:00
+last_commit: 2026-05-04T23:36:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Stream A — filing-time --recommendation gate on fw inception start. Stream B — audit detective C-006 for template-only Recommendations. Stream C — fw inception retrofit-rec retroactive sweep. write GO Recommendation block + hand to human review
+
+# Key outcomes
+outcomes:
+  - "**A1** `fw inception start \"name\"` without `--recommendation` /"
+  - "**A2** `fw inception start \"name\" --recommendation GO --rationale \"...\"`"
+  - "**A3** `fw work-on \"name\" --type inception` plumbs through Stream"
+  - "**A4** Override flag `--i-am-human` allows scripted/test filing"
+  - "**A5** `fw audit` (Stream B) emits WARN for any active inception"
+  - "**A6** `fw inception sweep` (Stream C) lists all such inceptions"
+  - "**A7** Bats coverage: ≥1 test per AC, written and passing."
+  - "**A8** Sweep amendment self-check: after this task ships, `fw"
+  - "[REVIEW] Confirm filing-time gate UX is not too noisy (review"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "bin/fw"
+  - ".context/project/assumptions.yaml"
+  - ".fabric/components/lib-inception_recommendation.yaml"
+  - "lib/inception_recommendation.sh"
+  - "lib/inception.sh"
+  - ".tasks/active/T-1716-filing-time---recommendation-gate-on-fw-.md"
+  - ".tasks/active/T-1726-escalation-scan-v05--llm-augmentation-as.md"
+  - "tests/unit/audit_c006_recommendation_block.bats"
+  - "tests/unit/inception_retrofit_rec.bats"
+  - "tests/unit/inception_start_recommendation_gate.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-04T13:00:31"
+    action: "T-1716: Stream A — filing-time --recommendation gate on fw inception start"
+  - time: "2026-05-04T13:11:46"
+    action: "T-1716: Stream B — audit detective C-006 for template-only Recommendations"
+  - time: "2026-05-04T13:16:03"
+    action: "T-1716: Stream C — fw inception retrofit-rec retroactive sweep"
+  - time: "2026-05-04T23:36:58"
+    action: "T-1716: write GO Recommendation block + hand to human review"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 668 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, T-679-family, structural-gate, T-1715-implementation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 668
+  commits: 5
+  files_changed: 16
+  lines_added: 1796
+  lines_removed: 91
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1716-filing-time---recommendation-gate-on-fw-.md
+generated_by: context-agent-hybrid

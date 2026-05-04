@@ -22,6 +22,9 @@ do_inception() {
         sweep)
             do_inception_sweep "$@"
             ;;
+        retrofit-rec|retrofit-recommendations)
+            do_inception_retrofit_recommendations "$@"
+            ;;
         ""|-h|--help)
             show_inception_help
             ;;
@@ -42,16 +45,22 @@ show_inception_help() {
     echo "  decide <T-XXX> go|no-go|defer     Record go/no-go decision"
     echo "  sweep [--dry-run]                 Retroactively finalize inceptions with"
     echo "                                    recorded decisions but unchecked Human ACs"
+    echo "  retrofit-rec [--apply]            T-1716 retrofit: scan active inceptions"
+    echo "                                    with template-only Recommendation blocks"
+    echo "                                    and inject DEFER stubs (read-only by default)"
     echo ""
     echo -e "${BOLD}Options:${NC}"
     echo "  start --owner <owner>             Set task owner (default: human)"
+    echo "  start --recommendation GO|NO-GO|DEFER   Required under \$CLAUDECODE=1 (T-1715)"
+    echo "  start --rationale '<reason>'      Required under \$CLAUDECODE=1 (T-1715)"
+    echo "  start --i-am-human                Bypass filing-time gate (logged)"
     echo "  decide --rationale '<reason>'     Required: explain the decision"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
-    echo "  fw inception start 'Evaluate notification system'"
+    echo "  fw inception start 'Evaluate notification system' \\"
+    echo "    --recommendation DEFER --rationale 'Captured for later, no exploration done'"
     echo "  fw inception status"
     echo "  fw inception decide T-085 go --rationale 'All assumptions validated'"
-    echo "  fw inception decide T-085 no-go --rationale 'Cost exceeds value'"
 }
 
 do_inception_start() {
@@ -59,18 +68,72 @@ do_inception_start() {
     shift || true
 
     if [ -z "$name" ]; then
-        echo -e "${RED}Usage: fw inception start '<name>' [--owner <owner>]${NC}"
+        echo -e "${RED}Usage: fw inception start '<name>' [--owner <owner>] \\${NC}"
+        echo -e "${RED}         --recommendation GO|NO-GO|DEFER --rationale '<reason>'${NC}"
         exit 1
     fi
 
-    # Parse optional args
+    # Parse args
     local owner="human"
+    local recommendation=""
+    local rationale=""
+    local i_am_human=false
     while [[ $# -gt 0 ]]; do
         case $1 in
             --owner) owner="$2"; shift 2 ;;
+            --recommendation) recommendation="$2"; shift 2 ;;
+            --rationale) rationale="$2"; shift 2 ;;
+            --i-am-human) i_am_human=true; shift ;;
             *) shift ;;
         esac
     done
+
+    # Validate --recommendation value if provided
+    if [ -n "$recommendation" ]; then
+        case "$recommendation" in
+            GO|NO-GO|DEFER) ;;
+            *)
+                echo -e "${RED}Invalid --recommendation: '$recommendation' (must be GO, NO-GO, or DEFER)${NC}" >&2
+                exit 1
+                ;;
+        esac
+    fi
+
+    # Filing-time recommendation gate (T-1715/T-1716): under $CLAUDECODE=1,
+    # require --recommendation + --rationale so the agent's advisory is captured
+    # at filing time rather than recurring "blank decision for human" pattern.
+    # Override: --i-am-human (scripts/tests/Watchtower) — logged.
+    if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ]; then
+        if [ -z "$recommendation" ] || [ -z "$rationale" ]; then
+            echo -e "${RED}ERROR: --recommendation and --rationale required when filing under \$CLAUDECODE=1 (T-1715, T-679)${NC}" >&2
+            echo "" >&2
+            echo -e "Filing an inception under an agent session must include the agent's recommendation." >&2
+            echo -e "The human is the decision-maker; the agent is the advisory." >&2
+            echo "" >&2
+            echo -e "Correct invocation:" >&2
+            echo -e "  fw inception start '$name' \\" >&2
+            echo -e "    --recommendation GO|NO-GO|DEFER \\" >&2
+            echo -e "    --rationale '<one-paragraph reason citing evidence>'" >&2
+            echo "" >&2
+            echo -e "Acceptable values: GO, NO-GO, DEFER. Use DEFER if you don't yet have evidence." >&2
+            echo -e "See CLAUDE.md §Presenting Work for Human Review (T-679)." >&2
+            exit 1
+        fi
+    fi
+
+    # Log bypass if --i-am-human used (T-1716)
+    if [ "$i_am_human" = true ]; then
+        local _log_file="${PROJECT_ROOT}/.context/working/.gate-bypass-log.yaml"
+        local _ts
+        _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        {
+            echo "- timestamp: '$_ts'"
+            echo "  task: '<filing: $name>'"
+            echo "  flag: '--i-am-human'"
+            echo "  caller: 'do_inception_start'"
+            echo "  reason: 'filing-time recommendation gate (T-1715/T-1716)'"
+        } >> "$_log_file"
+    fi
 
     # Create inception task using create-task.sh
     # T-554: Inception tasks start as captured (not started-work).
@@ -88,6 +151,11 @@ do_inception_start() {
     local task_id
     task_id=$(echo "$output" | grep "^ID:" | sed 's/ID:[[:space:]]*//')
     if [ -n "$task_id" ]; then
+        # Inject Recommendation block if provided (T-1715/T-1716)
+        if [ -n "$recommendation" ] && [ -n "$rationale" ]; then
+            _inject_recommendation_block "$task_id" "$recommendation" "$rationale"
+        fi
+
         "$AGENTS_DIR/context/context.sh" focus "$task_id"
         echo ""
         echo -e "${YELLOW}Next steps:${NC}"
@@ -98,6 +166,55 @@ do_inception_start() {
         echo "4. Record decision via Watchtower:"
         echo "     fw task review $task_id"
     fi
+}
+
+# Replace the template Recommendation comment block with a real Recommendation
+# section using the provided recommendation + rationale. T-1715/T-1716.
+_inject_recommendation_block() {
+    local task_id="$1"
+    local recommendation="$2"
+    local rationale="$3"
+
+    local task_file
+    task_file=$(find_task_file "$task_id" active)
+    if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
+        echo -e "${YELLOW}WARNING: Could not find task file for $task_id; Recommendation NOT injected${NC}" >&2
+        return 1
+    fi
+
+    REC="$recommendation" RAT="$rationale" python3 - "$task_file" <<'PYINJECT'
+import os, re, sys
+fp = sys.argv[1]
+rec = os.environ['REC']
+rat = os.environ['RAT']
+with open(fp) as f:
+    content = f.read()
+
+# Match the template comment block under ## Recommendation, terminating
+# at the next "##" heading or end-of-file. Use non-greedy .*? with DOTALL.
+pattern = re.compile(
+    r'(## Recommendation\n)\s*<!--.*?-->[ \t]*\n+(?=##|\Z)',
+    re.DOTALL
+)
+new_block = (
+    f"\n**Recommendation:** {rec}\n\n"
+    f"**Rationale:**\n\n{rat}\n\n"
+    f"**Evidence:**\n\n"
+    "<!-- Add evidence bullets as exploration progresses (file paths,\n"
+    "     commit hashes, test results). The filing-time recommendation\n"
+    "     can be revised before fw inception decide. -->\n\n"
+)
+
+m = pattern.search(content)
+if not m:
+    print(f"WARNING: Recommendation template-comment not found in {fp}; skipping inject", file=sys.stderr)
+    sys.exit(0)
+
+new_content = content[:m.start()] + "## Recommendation\n" + new_block + content[m.end():]
+with open(fp, 'w') as f:
+    f.write(new_content)
+print(f"Injected Recommendation: {rec}")
+PYINJECT
 }
 
 do_inception_status() {
@@ -672,5 +789,106 @@ do_inception_sweep() {
             echo -e "${YELLOW}Tasks with other Human ACs still pending (tick patterns didn't cover them):${NC}"
             echo "$skipped" | sed 's/^/  /'
         fi
+    fi
+}
+
+# T-1716 Stream C: retrofit retroactive sweep
+# Scans active inceptions for template-only Recommendation blocks and
+# injects a DEFER stub with rationale 'captured pre-T-1716 gate'. Read-only
+# by default (shows diff); --apply mutates files.
+do_inception_retrofit_recommendations() {
+    local apply=false
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --apply) apply=true ;;
+            -h|--help)
+                echo "fw inception retrofit-rec [--apply]"
+                echo ""
+                echo "Scan .tasks/active/ for inception tasks with template-only"
+                echo "Recommendation blocks. Without --apply: print one-per-line list"
+                echo "+ proposed retrofit per task. With --apply: mutate files."
+                echo ""
+                echo "Origin: T-1716 (T-1715 implementation, prevention Path 8)."
+                return 0
+                ;;
+        esac
+        shift
+    done
+
+    source "$FRAMEWORK_ROOT/lib/inception_recommendation.sh" 2>/dev/null || true
+
+    local active_dir="$PROJECT_ROOT/.tasks/active"
+    [ -d "$active_dir" ] || { echo "No active tasks directory"; return 1; }
+
+    local missing
+    missing=$(find_inceptions_without_recommendation "$active_dir")
+    if [ -z "$missing" ]; then
+        echo -e "${GREEN}No active inceptions need Recommendation retrofit.${NC}"
+        return 0
+    fi
+
+    local count=0
+    while IFS= read -r task_id; do
+        [ -z "$task_id" ] && continue
+        count=$((count + 1))
+        local task_file
+        task_file=$(find "$active_dir" -maxdepth 1 -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
+        [ -z "$task_file" ] && continue
+
+        local task_name
+        task_name=$( { grep '^name:' "$task_file" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//; s/^"//; s/"$//')
+
+        echo -e "${YELLOW}[$task_id]${NC} $task_name"
+        echo "  File: $task_file"
+        echo "  Action: inject DEFER stub Recommendation"
+
+        if [ "$apply" = true ]; then
+            REC=DEFER \
+                RAT="Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'." \
+                python3 - "$task_file" <<'PYRETROFIT'
+import os, re, sys
+fp = sys.argv[1]
+rec = os.environ.get('REC', 'DEFER')
+rat = os.environ.get('RAT', '')
+with open(fp) as f:
+    content = f.read()
+# Match template-comment Recommendation OR empty Recommendation
+template_pat = re.compile(
+    r'(## Recommendation\n)\s*<!--.*?-->[ \t]*\n+(?=##|\Z)',
+    re.DOTALL
+)
+empty_pat = re.compile(
+    r'(## Recommendation\n)\s*\n+(?=##|\Z)'
+)
+new_block = (
+    f"\n**Recommendation:** {rec}\n\n"
+    f"**Rationale:**\n\n{rat}\n\n"
+    f"**Evidence:**\n\n"
+    "<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->\n\n"
+)
+m = template_pat.search(content)
+if not m:
+    m = empty_pat.search(content)
+if not m:
+    print(f"  SKIP: Recommendation block not found in template/empty form", file=sys.stderr)
+    sys.exit(0)
+new_content = content[:m.start()] + "## Recommendation\n" + new_block + content[m.end():]
+with open(fp, 'w') as f:
+    f.write(new_content)
+print(f"  WROTE: DEFER stub")
+PYRETROFIT
+        else
+            echo "  (read-only — pass --apply to mutate)"
+        fi
+        echo ""
+    done <<< "$missing"
+
+    echo "---"
+    if [ "$apply" = true ]; then
+        echo -e "${GREEN}Retrofit applied: $count task(s)${NC}"
+        echo "Review changes and edit each Recommendation to match the actual decision (DEFER → GO/NO-GO if applicable)."
+    else
+        echo -e "${CYAN}Read-only: $count task(s) would be retrofitted${NC}"
+        echo "Run with --apply to mutate."
     fi
 }

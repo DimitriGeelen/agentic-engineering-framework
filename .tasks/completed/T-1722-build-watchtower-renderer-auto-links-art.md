@@ -4,16 +4,16 @@ name: "Build: Watchtower renderer auto-links artefact paths (T-1721 implementati
 description: >
   Build: Watchtower renderer auto-links artefact paths (T-1721 implementation)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, ux, watchtower]
-components: [web/shared.py, web/blueprints/docs.py, web/blueprints/tasks.py]
+components: [web/blueprints/docs.py, web/blueprints/tasks.py, web/shared.py]
 related_tasks: [T-1721, T-1575, T-633]
 created: 2026-05-04T17:18:51Z
-last_update: 2026-05-04T17:18:51Z
-date_finished: null
+last_update: 2026-05-04T19:06:16Z
+date_finished: 2026-05-04T19:06:16Z
 ---
 
 # T-1722: Build: Watchtower renderer auto-links artefact paths (T-1721 implementation)
@@ -60,7 +60,7 @@ regardless of port.
 - [x] Live verification: `curl -sf $(bin/fw watchtower url)/review/T-1700 | grep -q 'href="/file/docs/reports/T-1700-litellm-build.md"'` — the rendered page contains a real anchor for the previously-bare path.
 
 ### Human
-- [ ] [REVIEW] One-click reading verified — open `http://192.168.10.107:3000/review/T-1700`, click on the rendered `docs/reports/T-1700-litellm-build.md` reference; the report opens. No URL hand-construction needed.
+- [x] [REVIEW] One-click reading verified — open `http://192.168.10.107:3000/review/T-1700`, click on the rendered `docs/reports/T-1700-litellm-build.md` reference; the report opens. No URL hand-construction needed.
   **Steps:**
   1. Open http://192.168.10.107:3000/review/T-1700
   2. Click any `docs/reports/...` reference in the rendered Recommendation/Evidence/AC body
@@ -204,3 +204,15 @@ no behaviour change.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1722-build-watchtower-renderer-auto-links-art.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-f7f00e23
+- **Timestamp:** 2026-05-04T19:19:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+### 2026-05-04T19:06:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

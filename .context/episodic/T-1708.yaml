@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1708: worker_kind drift regression test — pin validator + dispatcher in sync
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-03T23:53:37Z
+# ============================================================================
+
+task_id: T-1708
+task_name: "worker_kind drift regression test — pin validator + dispatcher in sync"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-03T22:44:23Z
+completed: 2026-05-03T23:38:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-04T01:07:31+02:00
+last_commit: 2026-05-04T01:38:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  worker_kind drift regression test — validator + dispatcher in sync. tick Agent ACs, add Recommendation + RCA, register fabric
+
+# Key outcomes
+outcomes:
+  - "New test file `tests/unit/test_worker_kind_drift.bats` exists with 4+ tests."
+  - "All new tests pass."
+  - "No regression: `bats tests/unit/test_doctor_scope_tags.bats` (10) and"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-test_worker_kind_drift.yaml"
+  - ".tasks/active/T-1708-workerkind-drift-regression-test--pin-va.md"
+  - "tests/unit/test_worker_kind_drift.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-04T01:07:31"
+    action: "T-1708: worker_kind drift regression test — validator + dispatcher in sync"
+  - time: "2026-05-04T01:38:40"
+    action: "T-1708: tick Agent ACs, add Recommendation + RCA, register fabric"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 54 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 54
+  commits: 2
+  files_changed: 3
+  lines_added: 194
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1708-workerkind-drift-regression-test--pin-va.md
+generated_by: context-agent-hybrid

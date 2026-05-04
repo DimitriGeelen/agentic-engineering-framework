@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1723: T-1722 follow-up: extend artefact linkifier to inception._md and core project-doc renderers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-04T19:14:16Z
+# ============================================================================
+
+task_id: T-1723
+task_name: "T-1722 follow-up: extend artefact linkifier to inception._md and core project-doc renderers"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-04T19:10:31Z
+completed: 2026-05-04T19:14:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-04T21:13:33+02:00
+last_commit: 2026-05-04T21:13:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  extend artefact linkifier to inception._md and project_doc renderers
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/inception.py:_md()` calls `_auto_link_files(html)` before returning Markup."
+  - "`web/blueprints/core.py:project_doc()` calls `_auto_link_files(html_content)` after the markdown→HTML conversion."
+  - "Both blueprints import `_auto_link_files` from `web.shared`."
+  - "Existing T-1722 + T-1575 test suites still pass: `tests/unit/test_render_artefact_paths.py` (12) + `tests/unit/test_extract_recommendation.py` (24)."
+  - "Live verification: `curl -sf $(bin/fw watchtower url)/inception/T-1717` contains `href=\"/file/docs/reports/T-1717-embeddings-strategy-grill.md\"` (or another artefact-path anchor on a known inception page)."
+  - "Live verification: `curl -sf $(bin/fw watchtower url)/project/CLAUDE` contains at least one `href=\"/file/\"` anchor (CLAUDE.md cross-references many artefact paths). Route is `/project/<doc>` per `web/blueprints/core.py:524`."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1723-t-1722-follow-up-extend-artefact-linkifi.md"
+  - ".tasks/completed/T-1722-build-watchtower-renderer-auto-links-art.md"
+  - "web/blueprints/core.py"
+  - "web/blueprints/inception.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-04T21:13:33"
+    action: "T-1723: extend artefact linkifier to inception._md and project_doc renderers"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, ux, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 4
+  lines_added: 160
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1723-t-1722-follow-up-extend-artefact-linkifi.md
+generated_by: context-agent-hybrid

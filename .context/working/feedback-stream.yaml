@@ -4735,3 +4735,445 @@ scan_id: R-60866a67
 task_id: T-1699
 payload:
   task_file: .tasks/active/T-1699-fw-orchestrator-status--substrate-observ.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T20:00:15Z'
+scan_id: R-f535ac95
+task_id: T-1703
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T20:00:15Z'
+scan_id: R-f535ac95
+task_id: T-1703
+payload:
+  task_file: .tasks/active/T-1703-v2-probe-gemma4--qwen35-against-curated-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T20:35:08Z'
+scan_id: R-8b115bf2
+task_id: T-1704
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T20:35:08Z'
+scan_id: R-8b115bf2
+task_id: T-1704
+payload:
+  task_file: .tasks/active/T-1704-v3-ollama-research-pull-function-calling.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T20:36:20Z'
+scan_id: R-cfc4630a
+task_id: T-1705
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T20:36:20Z'
+scan_id: R-cfc4630a
+task_id: T-1705
+payload:
+  task_file: .tasks/active/T-1705-ollama-research-v4-model-works-via-curat.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T21:57:02Z'
+scan_id: R-341c93f7
+task_id: T-1706
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T21:57:02Z'
+scan_id: R-341c93f7
+task_id: T-1706
+payload:
+  task_file: .tasks/active/T-1706-v4-build-thin-tool-loop-worker-for-ollam.md
+---
+kind: scan_emitted
+timestamp: '2026-05-03T23:53:33Z'
+scan_id: R-1a30d0d4
+task_id: T-1708
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-03T23:53:33Z'
+scan_id: R-1a30d0d4
+task_id: T-1708
+payload:
+  task_file: .tasks/active/T-1708-workerkind-drift-regression-test--pin-va.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T06:35:27Z'
+scan_id: R-67dd0330
+task_id: T-1711
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T06:35:27Z'
+scan_id: R-67dd0330
+task_id: T-1711
+payload:
+  task_file: .tasks/active/T-1711-register-acd-concern-g-066-t-1442t-1443-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T06:43:26Z'
+scan_id: R-bc0f4004
+task_id: T-1712
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T06:43:26Z'
+scan_id: R-bc0f4004
+task_id: T-1712
+payload:
+  task_file: .tasks/active/T-1712-fw-orchestrator-status-filter-t-stress--.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T07:12:24Z'
+scan_id: R-147d3782
+task_id: T-1709
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T07:12:24Z'
+scan_id: R-147d3782
+task_id: T-1709
+payload:
+  task_file: .tasks/active/T-1709-permanent-disposable-aef-review-instance.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T09:56:18Z'
+scan_id: R-b8a351f1
+task_id: T-1715
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T09:56:18Z'
+scan_id: R-b8a351f1
+task_id: T-1715
+payload:
+  task_file: .tasks/active/T-1715-meta-rca-agent-files-inception-artefacts.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T09:56:32Z'
+scan_id: R-e335d45d
+task_id: T-1714
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T09:56:32Z'
+scan_id: R-e335d45d
+task_id: T-1714
+payload:
+  task_file: .tasks/active/T-1714-substrate-bypass-fw-termlink-dispatch-du.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T12:04:23Z'
+scan_id: R-7be036fa
+task_id: T-1713
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T12:04:23Z'
+scan_id: R-7be036fa
+task_id: T-1713
+payload:
+  task_file: .tasks/active/T-1713-task-pair-acd-gate-detect-substrate-vs-d.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T16:16:08Z'
+scan_id: R-82732381
+task_id: T-1700
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T16:16:08Z'
+scan_id: R-82732381
+task_id: T-1700
+payload:
+  task_file: .tasks/active/T-1700-v1-build-install--integrate-litellm-prox.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T16:16:16Z'
+scan_id: R-50e4ef6e
+task_id: T-1702
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T16:16:16Z'
+scan_id: R-50e4ef6e
+task_id: T-1702
+payload:
+  task_file: .tasks/active/T-1702-boundary-hook-extend-to-outside-path-arg.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T16:16:16Z'
+scan_id: R-e15f1dc2
+task_id: T-1707
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T16:16:16Z'
+scan_id: R-e15f1dc2
+task_id: T-1707
+payload:
+  task_file: .tasks/active/T-1707-fw-doctor-scope-tagging--split-project-v.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T16:18:12Z'
+scan_id: R-8d79432e
+task_id: T-1700
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T16:18:12Z'
+scan_id: R-8d79432e
+task_id: T-1700
+payload:
+  task_file: .tasks/active/T-1700-v1-build-install--integrate-litellm-prox.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T16:18:12Z'
+scan_id: R-cb8417dc
+task_id: T-1707
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T16:18:12Z'
+scan_id: R-cb8417dc
+task_id: T-1707
+payload:
+  task_file: .tasks/active/T-1707-fw-doctor-scope-tagging--split-project-v.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T16:49:07Z'
+scan_id: R-974e00ce
+task_id: T-1717
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T16:49:07Z'
+scan_id: R-974e00ce
+task_id: T-1717
+payload:
+  task_file: .tasks/active/T-1717-embeddings-generation-strategy-for-conte.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T17:18:23Z'
+scan_id: R-4f599ad0
+task_id: T-1721
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T17:18:23Z'
+scan_id: R-4f599ad0
+task_id: T-1721
+payload:
+  task_file: .tasks/active/T-1721-frictionless-artefact-links--auto-render.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T19:06:17Z'
+scan_id: R-0d811ef6
+task_id: T-1722
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T19:06:17Z'
+scan_id: R-0d811ef6
+task_id: T-1722
+payload:
+  task_file: .tasks/active/T-1722-build-watchtower-renderer-auto-links-art.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T19:14:12Z'
+scan_id: R-ecb0a36e
+task_id: T-1723
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T19:14:12Z'
+scan_id: R-ecb0a36e
+task_id: T-1723
+payload:
+  task_file: .tasks/active/T-1723-t-1722-follow-up-extend-artefact-linkifi.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T19:19:52Z'
+scan_id: R-f7f00e23
+task_id: T-1722
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T19:19:52Z'
+scan_id: R-f7f00e23
+task_id: T-1722
+payload:
+  task_file: .tasks/completed/T-1722-build-watchtower-renderer-auto-links-art.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T19:19:52Z'
+scan_id: R-56bd383d
+task_id: T-1723
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T19:19:52Z'
+scan_id: R-56bd383d
+task_id: T-1723
+payload:
+  task_file: .tasks/completed/T-1723-t-1722-follow-up-extend-artefact-linkifi.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T19:26:11Z'
+scan_id: R-1c8246cd
+task_id: T-1724
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T19:26:11Z'
+scan_id: R-1c8246cd
+task_id: T-1724
+payload:
+  task_file: .tasks/active/T-1724-fix-handover-suggested-first-action-igno.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T20:51:33Z'
+scan_id: R-afae4229
+task_id: T-1725
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T20:51:33Z'
+scan_id: R-afae4229
+task_id: T-1725
+payload:
+  task_file: .tasks/active/T-1725-fw-test-playwright-skip-misleading--fw-d.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T21:53:12Z'
+scan_id: R-705868a1
+task_id: T-1726
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T21:53:12Z'
+scan_id: R-705868a1
+task_id: T-1726
+payload:
+  task_file: .tasks/active/T-1726-escalation-scan-v05--llm-augmentation-as.md
+---
+kind: scan_emitted
+timestamp: '2026-05-04T21:56:27Z'
+scan_id: R-fad4390b
+task_id: T-1716
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-04T21:56:27Z'
+scan_id: R-fad4390b
+task_id: T-1716
+payload:
+  task_file: .tasks/active/T-1716-filing-time---recommendation-gate-on-fw-.md

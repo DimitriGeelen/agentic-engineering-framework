@@ -4,16 +4,16 @@ name: "Embeddings generation strategy for context and component fabric"
 description: >
   Inception: Embeddings generation strategy for context and component fabric
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: [arc:embeddings-strategy, arc:orchestrator-rethink, T-1715-family, G-064-closure-pilot, T-679-family, structural-fix]
-components: []
+components: [agents/task-create/update-task.sh, bin/fw, lib/evolution_log.sh, lib/inception.sh, tests/unit/evolution_log_gate.bats]
 related_tasks: [T-1715, T-1716, T-263, T-269, T-1696, T-1697, T-1698, T-1700, T-1443, T-704, T-679, T-1718]
 created: 2026-05-04T12:25:28Z
-last_update: 2026-05-04T15:03:13Z
-date_finished: null
+last_update: 2026-05-04T16:49:07Z
+date_finished: 2026-05-04T16:49:07Z
 ---
 
 # T-1717: Embeddings generation strategy for context and component fabric
@@ -125,15 +125,15 @@ on Slice 1.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -266,7 +266,97 @@ the two arcs as evidence warrants.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Three convergent reasons.
+
+(1) The pain is real, sustained, and high-cost. Catastrophic agent
+amnesia (Q1a) and arc-coherence failure (Q1c) are damaging existing
+work — confirmed by the human in Phase 3 ("often occurring damaging,
+sometimes catastrophic"). On-disk evidence corroborates: index file
+mtime is 2026-03-10, ~2 months stale, meaning the production substrate
+has been blind to recent learnings/decisions/episodics. Live, daily
+failure — not a hypothetical optimisation.
+
+(2) The substrate exists; this is integration, not greenfield.
+sqlite-vec + Ollama + RRF + cross-encoder rerank shipped (T-263, T-269).
+litellm proxy shipped (T-1700). Resolver + outcome enrichment + dispatch
+envelopes shipped (T-1696/97/98). Reviewer agent shipped (T-1443). What's
+missing is the connections — feedback loop, routing layer, freshness
+mechanism. Composition of existing primitives.
+
+(3) The fit is structurally aligned. T-1717 simultaneously (a) fixes
+the headline pain, (b) closes G-064 (orchestrator with zero production
+consumers — embeddings + LLM become consumer #1), (c) provides the
+validation deliverable for the orchestrator-arc's headline mechanic.
+Three structural problems addressed by one coherent build, sequenced via
+vertical slices to prevent §ACD substrate-vs-deliverable conflation.
+
+GO is conditional on four prerequisites at decide-time:
+
+- (i) T-1718 Evolution-gate lands first OR commits to land in
+  parallel with Slice 1. Eats our dogfood: T-1717 must not be the first
+  §ACD victim of an unfixed framework gap that the inception itself
+  surfaced.
+- (ii) Vertical-slice discipline applied — Slice 1 ships end-to-end
+  with 7 days of real usage and falsifier check before Slice 2 commits.
+  No parallel multi-stream build. Each slice gets a populated Evolution
+  log entry before the next begins.
+- (iii) Headline mechanic stated as user-visible result, not substrate.
+  Build task must declare:
+  "Agent issues `fw recall` → resolver routes to optimal embedding
+  provider for query class → returns chunks with provenance → outcome
+  enrichment captures happiness rating → next routing decision improves.
+  User-visible: amnesia incidents drop, arc-coherence telemetry trends
+  positive across the orchestrator-arc."
+- (iv) Orchestrator coupling explicit — build task declares itself
+  the pilot consumer of the orchestrator-arc and references G-064
+  closure as a co-deliverable.
+
+Evidence:
+
+- Live failure: `.context/working/fw-vec-index.db` mtime 2026-03-10 →
+  retrieval ~2 months stale on disk. Run `stat -c '%y' .context/working/fw-vec-index.db` to verify.
+- Pain confirmed (Phase 3 dialogue log, T-1717 grill artifact lines
+  ~250-260).
+- Substrate exists: see `.context/litellm-config.yaml` (T-1700);
+  `lib/resolver.py` 25kLOC; `lib/outcome.py` 14kLOC;
+  `.context/dispatches.jsonl` (3 real dispatches, 100% enrichment ratio
+  per `bin/fw orchestrator status`); reviewer 3-layer cron at 04:37.
+- G-064 open and citable in concerns register.
+- Scale: ~21,292 chunks across ~1,380 files; 75 MB index; minutes to
+  regenerate.
+- Pattern precedent: T-1715 → T-1716 demonstrates structural enforcement
+  > advisory text. Same shape applies here — arc-coherence rules in
+  CLAUDE.md exist as advice; T-1717 makes them mechanical via retrieval.
+
+Risk acknowledged:
+
+- Scope-by-blast-radius is unproven hypothesis — Slice 3 telemetry is
+  the falsifier; boost-not-filter design limits breakdown blast.
+- Cloud providers introduce cost variance — mitigated by routing log +
+  cost cap + manual override.
+- Reviewer AC-classification noise is separate concern (filed for
+  capture) — not blocking T-1717.
+- Cross-machine freshness deferred to T-704; arc covers same-machine
+  A1/B1 only.
+- T-1718 prerequisite is itself unbuilt — honest meta-risk: T-1717 GO
+  conditions on a sibling structural fix that hasn't shipped. Acceptable
+  only if (a) T-1718 ships first OR (b) human accepts the §ACD risk
+  consciously and logs it as Tier-2 bypass at Slice 1 commit.
+
+Sequencing recommendation: T-1718 Slice 1 → T-1717 Slice 1 →
+evaluate via 7-day falsifier → subsequent slices alternating between
+the two arcs as evidence warrants.
+
+Full Phase 1–5 dialogue, findings, and design analysis:
+[`docs/reports/T-1717-embeddings-strategy-grill.md`](../../../docs/reports/T-1717-embeddings-strategy-grill.md)
+
+**Date**: 2026-05-04T16:49:06Z
 
 ## Updates
 
@@ -278,3 +368,107 @@ the two arcs as evidence warrants.
 
 ### 2026-05-04T15:03:13Z — status-update [task-update-agent]
 - **Change:** tags: +arc:embeddings-strategy
+
+### 2026-05-04T16:49:06Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Three convergent reasons.
+
+(1) The pain is real, sustained, and high-cost. Catastrophic agent
+amnesia (Q1a) and arc-coherence failure (Q1c) are damaging existing
+work — confirmed by the human in Phase 3 ("often occurring damaging,
+sometimes catastrophic"). On-disk evidence corroborates: index file
+mtime is 2026-03-10, ~2 months stale, meaning the production substrate
+has been blind to recent learnings/decisions/episodics. Live, daily
+failure — not a hypothetical optimisation.
+
+(2) The substrate exists; this is integration, not greenfield.
+sqlite-vec + Ollama + RRF + cross-encoder rerank shipped (T-263, T-269).
+litellm proxy shipped (T-1700). Resolver + outcome enrichment + dispatch
+envelopes shipped (T-1696/97/98). Reviewer agent shipped (T-1443). What's
+missing is the connections — feedback loop, routing layer, freshness
+mechanism. Composition of existing primitives.
+
+(3) The fit is structurally aligned. T-1717 simultaneously (a) fixes
+the headline pain, (b) closes G-064 (orchestrator with zero production
+consumers — embeddings + LLM become consumer #1), (c) provides the
+validation deliverable for the orchestrator-arc's headline mechanic.
+Three structural problems addressed by one coherent build, sequenced via
+vertical slices to prevent §ACD substrate-vs-deliverable conflation.
+
+GO is conditional on four prerequisites at decide-time:
+
+- (i) T-1718 Evolution-gate lands first OR commits to land in
+  parallel with Slice 1. Eats our dogfood: T-1717 must not be the first
+  §ACD victim of an unfixed framework gap that the inception itself
+  surfaced.
+- (ii) Vertical-slice discipline applied — Slice 1 ships end-to-end
+  with 7 days of real usage and falsifier check before Slice 2 commits.
+  No parallel multi-stream build. Each slice gets a populated Evolution
+  log entry before the next begins.
+- (iii) Headline mechanic stated as user-visible result, not substrate.
+  Build task must declare:
+  "Agent issues `fw recall` → resolver routes to optimal embedding
+  provider for query class → returns chunks with provenance → outcome
+  enrichment captures happiness rating → next routing decision improves.
+  User-visible: amnesia incidents drop, arc-coherence telemetry trends
+  positive across the orchestrator-arc."
+- (iv) Orchestrator coupling explicit — build task declares itself
+  the pilot consumer of the orchestrator-arc and references G-064
+  closure as a co-deliverable.
+
+Evidence:
+
+- Live failure: `.context/working/fw-vec-index.db` mtime 2026-03-10 →
+  retrieval ~2 months stale on disk. Run `stat -c '%y' .context/working/fw-vec-index.db` to verify.
+- Pain confirmed (Phase 3 dialogue log, T-1717 grill artifact lines
+  ~250-260).
+- Substrate exists: see `.context/litellm-config.yaml` (T-1700);
+  `lib/resolver.py` 25kLOC; `lib/outcome.py` 14kLOC;
+  `.context/dispatches.jsonl` (3 real dispatches, 100% enrichment ratio
+  per `bin/fw orchestrator status`); reviewer 3-layer cron at 04:37.
+- G-064 open and citable in concerns register.
+- Scale: ~21,292 chunks across ~1,380 files; 75 MB index; minutes to
+  regenerate.
+- Pattern precedent: T-1715 → T-1716 demonstrates structural enforcement
+  > advisory text. Same shape applies here — arc-coherence rules in
+  CLAUDE.md exist as advice; T-1717 makes them mechanical via retrieval.
+
+Risk acknowledged:
+
+- Scope-by-blast-radius is unproven hypothesis — Slice 3 telemetry is
+  the falsifier; boost-not-filter design limits breakdown blast.
+- Cloud providers introduce cost variance — mitigated by routing log +
+  cost cap + manual override.
+- Reviewer AC-classification noise is separate concern (filed for
+  capture) — not blocking T-1717.
+- Cross-machine freshness deferred to T-704; arc covers same-machine
+  A1/B1 only.
+- T-1718 prerequisite is itself unbuilt — honest meta-risk: T-1717 GO
+  conditions on a sibling structural fix that hasn't shipped. Acceptable
+  only if (a) T-1718 ships first OR (b) human accepts the §ACD risk
+  consciously and logs it as Tier-2 bypass at Slice 1 commit.
+
+Sequencing recommendation: T-1718 Slice 1 → T-1717 Slice 1 →
+evaluate via 7-day falsifier → subsequent slices alternating between
+the two arcs as evidence warrants.
+
+Full Phase 1–5 dialogue, findings, and design analysis:
+[`docs/reports/T-1717-embeddings-strategy-grill.md`](../../../docs/reports/T-1717-embeddings-strategy-grill.md)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-974e00ce
+- **Timestamp:** 2026-05-04T16:49:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-04T16:49:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

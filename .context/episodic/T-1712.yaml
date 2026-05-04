@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1712: fw orchestrator status: filter T-stress-* synthetic data from enrichment metric
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-04T06:43:29Z
+# ============================================================================
+
+task_id: T-1712
+task_name: "fw orchestrator status: filter T-stress-* synthetic data from enrichment metric"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-04T06:39:54Z
+completed: 2026-05-04T06:43:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-04T08:43:07+02:00
+last_commit: 2026-05-04T08:43:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filter T-stress-* synthetic rows from orchestrator status headline. fix Verification regex to match Synthetic line full content
+
+# Key outcomes
+outcomes:
+  - "`fw orchestrator status` excludes `T-stress-*` task IDs from `Dispatches`"
+  - "Counter buckets (`by_task_type`, `by_worker_kind`) also exclude stress"
+  - "`--json` output reflects the same split: `dispatch_total` and"
+  - "`tests/unit/test_orchestrator_status_synthetic_filter.bats` pins the"
+  - "`bin/fw orchestrator status` continues to show 100% real-enrichment on"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix Verification regex to match Synthetic line full content"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "In-place filter in `fw orchestrator status` (Python) using"
+    rationale: "The substrate already records `task_id` per dispatch; routing"
+    alternatives_rejected: ["Move stress rows to `.context/dispatches-stress.jsonl`."]
+    alternatives_rejected: ["Add a `synthetic: true` flag at write time. Same blast"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1712-fw-orchestrator-status-filter-t-stress--.md"
+  - "tests/unit/test_orchestrator_status_synthetic_filter.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-04T08:43:07"
+    action: "T-1712: filter T-stress-* synthetic rows from orchestrator status headline"
+  - time: "2026-05-04T08:43:24"
+    action: "T-1712: fix Verification regex to match Synthetic line full content"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 3
+  lines_added: 321
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1712-fw-orchestrator-status-filter-t-stress--.md
+generated_by: context-agent-hybrid

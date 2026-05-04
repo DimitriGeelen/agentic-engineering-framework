@@ -2717,3 +2717,10 @@ X'` returning empty group."
   date: 2026-05-04
   context: Added via context agent
   application: TBD
+- id: L-351
+  learning: "Verification commands that pipe a command-expected-to-fail into a check-grep need pipefail-safe form. update-task.sh's verification gate runs each line under set -euo pipefail; a pipe like 'cmd-that-errors 2>&1 | grep -q expected-error-text' returns the failing LHS exit code under pipefail, even when grep matches. Use brace-group + ||true: '{ cmd 2>&1 || true; } | grep -qE \"...\"'. Manual shells without pipefail mask the bug. Origin: T-1716 — the filing-time recommendation gate's live-fire verification was correctly testing that bin/fw inception start exits non-zero with the right error, but the gate blocked completion because pipefail propagated the (correct) non-zero exit. Bats covered the same path so functionally fine, but the verification line itself was broken."
+  source: P-011
+  task: T-1716
+  date: 2026-05-04
+  context: Added via context agent
+  application: TBD

@@ -4,7 +4,7 @@ name: "Task-pair §ACD gate: detect substrate-vs-deliverable conflation at work-
 description: >
   Inception: Task-pair §ACD gate: detect substrate-vs-deliverable conflation at work-completed time (G-066 prong 2)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:orchestrator-rethink, ACD, G-062-family, governance-gate]
 components: []
 related_tasks: [T-1442, T-1443, T-1668, T-1671, T-1709, T-1711]
 created: 2026-05-04T06:43:45Z
-last_update: 2026-05-04T10:45:20Z
-date_finished: null
+last_update: 2026-05-04T12:04:23Z
+date_finished: 2026-05-04T12:04:23Z
 ---
 
 # T-1713: Task-pair §ACD gate: detect substrate-vs-deliverable conflation at work-completed time (G-066 prong 2)
@@ -113,15 +113,15 @@ OUT of scope:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -245,7 +245,37 @@ parser spike straightforward instead of NLP-heavy.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three convergent reasons:
+
+1. **G-066 evidence is hard.** T-1442 (inception, GO) + T-1443 (build,
+   work-completed) closed clean while two of three GO-promised
+   deliverables silently dropped (auto-tick + TermLink-dispatch reviewer
+   halves never wired). The §ACD substrate-vs-deliverable conflation
+   that defined the orchestrator-rethink arc fires at task-pair level,
+   not just arc level. Mitigation today is recovery-only (T-1709 wires
+   one of the missing halves months later); prevention belongs in the
+   gate per G-019 doctrine.
+
+2. **The fix mirrors existing structural-gate patterns.** T-1668 added
+   `--headline-mechanic` at `fw arc create`; T-1671 refused
+   `fw arc close` under `$CLAUDECODE=1`; T-1259/T-1260 added agent
+   refusal at `fw inception decide`. T-1713's gate at
+   `update-task.sh --status work-completed` for build tasks whose
+   `related_tasks` reference an inception-with-GO is the missing
+   per-task counterpart of T-1671's per-arc gate. Symmetric.
+
+3. **Cost is bounded; spike thresholds are falsifiable.** Three time-boxed
+   spikes (parser, comparison, insertion-point) with hard pass/fail
+   bars (≥80% parser agreement, ≤1 false positive across 5 cleanly-
+   shipped tasks, no P-010/P-011 contract break). Each spike is
+   approximately one session. NO-GO criteria honest — if parser cannot
+   reach 80% on free-text Recommendation blocks, this inception itself
+   becomes evidence that Recommendation-format structural enforcement
+   (T-1715) must ship first.
+
+**Date**: 2026-05-04T12:04:22Z
 
 ## Updates
 
@@ -254,3 +284,47 @@ parser spike straightforward instead of NLP-heavy.
 
 ### 2026-05-04T10:45:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-04T12:04:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three convergent reasons:
+
+1. **G-066 evidence is hard.** T-1442 (inception, GO) + T-1443 (build,
+   work-completed) closed clean while two of three GO-promised
+   deliverables silently dropped (auto-tick + TermLink-dispatch reviewer
+   halves never wired). The §ACD substrate-vs-deliverable conflation
+   that defined the orchestrator-rethink arc fires at task-pair level,
+   not just arc level. Mitigation today is recovery-only (T-1709 wires
+   one of the missing halves months later); prevention belongs in the
+   gate per G-019 doctrine.
+
+2. **The fix mirrors existing structural-gate patterns.** T-1668 added
+   `--headline-mechanic` at `fw arc create`; T-1671 refused
+   `fw arc close` under `$CLAUDECODE=1`; T-1259/T-1260 added agent
+   refusal at `fw inception decide`. T-1713's gate at
+   `update-task.sh --status work-completed` for build tasks whose
+   `related_tasks` reference an inception-with-GO is the missing
+   per-task counterpart of T-1671's per-arc gate. Symmetric.
+
+3. **Cost is bounded; spike thresholds are falsifiable.** Three time-boxed
+   spikes (parser, comparison, insertion-point) with hard pass/fail
+   bars (≥80% parser agreement, ≤1 false positive across 5 cleanly-
+   shipped tasks, no P-010/P-011 contract break). Each spike is
+   approximately one session. NO-GO criteria honest — if parser cannot
+   reach 80% on free-text Recommendation blocks, this inception itself
+   becomes evidence that Recommendation-format structural enforcement
+   (T-1715) must ship first.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7be036fa
+- **Timestamp:** 2026-05-04T12:04:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-04T12:04:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

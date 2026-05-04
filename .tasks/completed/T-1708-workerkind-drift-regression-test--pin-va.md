@@ -4,16 +4,16 @@ name: "worker_kind drift regression test — pin validator + dispatcher in sync"
 description: >
   Pin the worker_kind drift class. T-1706 added `ollama-loop` to the termlink dispatcher's `--worker-kind` flag but missed `VALID_WORKER_KINDS` in `bin/fw`'s workflow validator → `fw doctor` silently failed on the new workflow until T-1707 caught it. Test asserts the validator set and the dispatcher case-statement stay in sync, so the next worker_kind addition can't ship half-wired.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink]
-components: []
+components: [tests/unit/test_worker_kind_drift.bats]
 related_tasks: [T-1706, T-1707]
 created: 2026-05-03T22:44:23Z
-last_update: 2026-05-04T00:30:00Z
-date_finished: null
+last_update: 2026-05-03T23:38:43Z
+date_finished: 2026-05-03T23:38:43Z
 ---
 
 # T-1708: worker_kind drift regression test — pin validator + dispatcher in sync
@@ -83,3 +83,15 @@ The narrower fix (T-1707's bonus commit pulling `ollama-loop` into `VALID_WORKER
 
 ### 2026-05-03T22:44:23Z — task-created
 - Filed as antifragile follow-up to drift caught in T-1707.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1a30d0d4
+- **Timestamp:** 2026-05-03T23:53:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-03T23:38:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

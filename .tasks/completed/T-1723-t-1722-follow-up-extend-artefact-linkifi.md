@@ -4,16 +4,16 @@ name: "T-1722 follow-up: extend artefact linkifier to inception._md and core pro
 description: >
   T-1722 follow-up: extend artefact linkifier to inception._md and core project-doc renderers
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, ux, watchtower]
-components: [web/blueprints/inception.py, web/blueprints/core.py]
+components: [web/blueprints/core.py, web/blueprints/inception.py]
 related_tasks: [T-1722, T-1721, T-1575, T-633]
 created: 2026-05-04T19:10:31Z
-last_update: 2026-05-04T19:10:31Z
-date_finished: null
+last_update: 2026-05-04T19:14:11Z
+date_finished: 2026-05-04T19:14:11Z
 ---
 
 # T-1723: T-1722 follow-up: extend artefact linkifier to inception._md and core project-doc renderers
@@ -54,7 +54,8 @@ test -f web/blueprints/inception.py
 test -f web/blueprints/core.py
 python3 -c "from web.blueprints.inception import _md; assert callable(_md); print('inception OK')"
 PROJECT_ROOT=$(pwd) python3 -m pytest tests/unit/test_render_artefact_paths.py tests/unit/test_extract_recommendation.py -q
-curl -sf "$(bin/fw watchtower url)/project/CLAUDE" | grep -qE 'href="/file/(docs|agents|web|lib|bin)/'
+# curl into file (avoids SIGPIPE/exit 23 when grep -q closes pipe early under pipefail)
+curl -sf "$(bin/fw watchtower url)/project/CLAUDE" -o /tmp/t1723-claude.html && grep -qE 'href="/file/(docs|agents|web|lib|bin)/' /tmp/t1723-claude.html
 
 ## Recommendation
 
@@ -145,3 +146,14 @@ No new tests needed — coverage is in `tests/unit/test_render_artefact_paths.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1723-t-1722-follow-up-extend-artefact-linkifi.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-56bd383d
+- **Timestamp:** 2026-05-04T19:19:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+### 2026-05-04T19:14:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
