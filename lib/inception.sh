@@ -45,13 +45,16 @@ show_inception_help() {
     echo ""
     echo -e "${BOLD}Options:${NC}"
     echo "  start --owner <owner>             Set task owner (default: human)"
+    echo "  start --recommendation GO|NO-GO|DEFER   Required under \$CLAUDECODE=1 (T-1715)"
+    echo "  start --rationale '<reason>'      Required under \$CLAUDECODE=1 (T-1715)"
+    echo "  start --i-am-human                Bypass filing-time gate (logged)"
     echo "  decide --rationale '<reason>'     Required: explain the decision"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
-    echo "  fw inception start 'Evaluate notification system'"
+    echo "  fw inception start 'Evaluate notification system' \\"
+    echo "    --recommendation DEFER --rationale 'Captured for later, no exploration done'"
     echo "  fw inception status"
     echo "  fw inception decide T-085 go --rationale 'All assumptions validated'"
-    echo "  fw inception decide T-085 no-go --rationale 'Cost exceeds value'"
 }
 
 do_inception_start() {
@@ -59,18 +62,72 @@ do_inception_start() {
     shift || true
 
     if [ -z "$name" ]; then
-        echo -e "${RED}Usage: fw inception start '<name>' [--owner <owner>]${NC}"
+        echo -e "${RED}Usage: fw inception start '<name>' [--owner <owner>] \\${NC}"
+        echo -e "${RED}         --recommendation GO|NO-GO|DEFER --rationale '<reason>'${NC}"
         exit 1
     fi
 
-    # Parse optional args
+    # Parse args
     local owner="human"
+    local recommendation=""
+    local rationale=""
+    local i_am_human=false
     while [[ $# -gt 0 ]]; do
         case $1 in
             --owner) owner="$2"; shift 2 ;;
+            --recommendation) recommendation="$2"; shift 2 ;;
+            --rationale) rationale="$2"; shift 2 ;;
+            --i-am-human) i_am_human=true; shift ;;
             *) shift ;;
         esac
     done
+
+    # Validate --recommendation value if provided
+    if [ -n "$recommendation" ]; then
+        case "$recommendation" in
+            GO|NO-GO|DEFER) ;;
+            *)
+                echo -e "${RED}Invalid --recommendation: '$recommendation' (must be GO, NO-GO, or DEFER)${NC}" >&2
+                exit 1
+                ;;
+        esac
+    fi
+
+    # Filing-time recommendation gate (T-1715/T-1716): under $CLAUDECODE=1,
+    # require --recommendation + --rationale so the agent's advisory is captured
+    # at filing time rather than recurring "blank decision for human" pattern.
+    # Override: --i-am-human (scripts/tests/Watchtower) — logged.
+    if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ]; then
+        if [ -z "$recommendation" ] || [ -z "$rationale" ]; then
+            echo -e "${RED}ERROR: --recommendation and --rationale required when filing under \$CLAUDECODE=1 (T-1715, T-679)${NC}" >&2
+            echo "" >&2
+            echo -e "Filing an inception under an agent session must include the agent's recommendation." >&2
+            echo -e "The human is the decision-maker; the agent is the advisory." >&2
+            echo "" >&2
+            echo -e "Correct invocation:" >&2
+            echo -e "  fw inception start '$name' \\" >&2
+            echo -e "    --recommendation GO|NO-GO|DEFER \\" >&2
+            echo -e "    --rationale '<one-paragraph reason citing evidence>'" >&2
+            echo "" >&2
+            echo -e "Acceptable values: GO, NO-GO, DEFER. Use DEFER if you don't yet have evidence." >&2
+            echo -e "See CLAUDE.md §Presenting Work for Human Review (T-679)." >&2
+            exit 1
+        fi
+    fi
+
+    # Log bypass if --i-am-human used (T-1716)
+    if [ "$i_am_human" = true ]; then
+        local _log_file="${PROJECT_ROOT}/.context/working/.gate-bypass-log.yaml"
+        local _ts
+        _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        {
+            echo "- timestamp: '$_ts'"
+            echo "  task: '<filing: $name>'"
+            echo "  flag: '--i-am-human'"
+            echo "  caller: 'do_inception_start'"
+            echo "  reason: 'filing-time recommendation gate (T-1715/T-1716)'"
+        } >> "$_log_file"
+    fi
 
     # Create inception task using create-task.sh
     # T-554: Inception tasks start as captured (not started-work).
@@ -88,6 +145,11 @@ do_inception_start() {
     local task_id
     task_id=$(echo "$output" | grep "^ID:" | sed 's/ID:[[:space:]]*//')
     if [ -n "$task_id" ]; then
+        # Inject Recommendation block if provided (T-1715/T-1716)
+        if [ -n "$recommendation" ] && [ -n "$rationale" ]; then
+            _inject_recommendation_block "$task_id" "$recommendation" "$rationale"
+        fi
+
         "$AGENTS_DIR/context/context.sh" focus "$task_id"
         echo ""
         echo -e "${YELLOW}Next steps:${NC}"
@@ -98,6 +160,55 @@ do_inception_start() {
         echo "4. Record decision via Watchtower:"
         echo "     fw task review $task_id"
     fi
+}
+
+# Replace the template Recommendation comment block with a real Recommendation
+# section using the provided recommendation + rationale. T-1715/T-1716.
+_inject_recommendation_block() {
+    local task_id="$1"
+    local recommendation="$2"
+    local rationale="$3"
+
+    local task_file
+    task_file=$(find_task_file "$task_id" active)
+    if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
+        echo -e "${YELLOW}WARNING: Could not find task file for $task_id; Recommendation NOT injected${NC}" >&2
+        return 1
+    fi
+
+    REC="$recommendation" RAT="$rationale" python3 - "$task_file" <<'PYINJECT'
+import os, re, sys
+fp = sys.argv[1]
+rec = os.environ['REC']
+rat = os.environ['RAT']
+with open(fp) as f:
+    content = f.read()
+
+# Match the template comment block under ## Recommendation, terminating
+# at the next "##" heading or end-of-file. Use non-greedy .*? with DOTALL.
+pattern = re.compile(
+    r'(## Recommendation\n)\s*<!--.*?-->[ \t]*\n+(?=##|\Z)',
+    re.DOTALL
+)
+new_block = (
+    f"\n**Recommendation:** {rec}\n\n"
+    f"**Rationale:**\n\n{rat}\n\n"
+    f"**Evidence:**\n\n"
+    "<!-- Add evidence bullets as exploration progresses (file paths,\n"
+    "     commit hashes, test results). The filing-time recommendation\n"
+    "     can be revised before fw inception decide. -->\n\n"
+)
+
+m = pattern.search(content)
+if not m:
+    print(f"WARNING: Recommendation template-comment not found in {fp}; skipping inject", file=sys.stderr)
+    sys.exit(0)
+
+new_content = content[:m.start()] + "## Recommendation\n" + new_block + content[m.end():]
+with open(fp, 'w') as f:
+    f.write(new_content)
+print(f"Injected Recommendation: {rec}")
+PYINJECT
 }
 
 do_inception_status() {

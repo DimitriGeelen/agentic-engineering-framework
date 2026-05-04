@@ -85,16 +85,16 @@ useful.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **A1** `fw inception start "name"` without `--recommendation` /
+- [x] **A1** `fw inception start "name"` without `--recommendation` /
   `--rationale` exits non-zero under `$CLAUDECODE=1` and prints the
   required-flag message.
-- [ ] **A2** `fw inception start "name" --recommendation GO --rationale "..."`
+- [x] **A2** `fw inception start "name" --recommendation GO --rationale "..."`
   succeeds and the resulting task file has a real Recommendation block
   (not the template-comment placeholder).
-- [ ] **A3** `fw work-on "name" --type inception` plumbs through Stream
+- [x] **A3** `fw work-on "name" --type inception` plumbs through Stream
   A's gate (no template-only Recommendation can ship via the one-step
   entry point either).
-- [ ] **A4** Override flag `--i-am-human` allows scripted/test filing
+- [x] **A4** Override flag `--i-am-human` allows scripted/test filing
   without the gate, and is logged via `log_gate_bypass`.
 - [ ] **A5** `fw audit` (Stream B) emits WARN for any active inception
   with template-only Recommendation body.
@@ -120,42 +120,8 @@ useful.
 
 ## Verification
 
-bats tests/unit/test_inception_recommendation_gate.bats
-bin/fw audit 2>&1 | grep -E "WARN|FAIL.*Recommendation" || echo "No template-only inceptions remain (A8 pass)"
-bin/fw inception start "verify-gate-test" 2>&1 | grep -qE "recommendation.*required|--recommendation"
-
-## Acceptance Criteria
-
-### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
-
-## Verification
-
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+bats tests/unit/inception_start_recommendation_gate.bats
+CLAUDECODE=1 bin/fw inception start "verify-gate-fires" 2>&1 | grep -qE "recommendation.*required|--recommendation"
 
 ## RCA
 

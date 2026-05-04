@@ -3993,10 +3993,45 @@ PYREVQ
             # Build default args, then let explicit args override
             wo_has_desc=false
             wo_has_owner=false
-            for wo_arg in "$@"; do
-                [ "$wo_arg" = "--description" ] && wo_has_desc=true
-                [ "$wo_arg" = "--owner" ] && wo_has_owner=true
+            wo_is_inception=false
+            for wo_arg_idx in "$@"; do
+                [ "$wo_arg_idx" = "--description" ] && wo_has_desc=true
+                [ "$wo_arg_idx" = "--owner" ] && wo_has_owner=true
             done
+            # Detect --type inception and route through inception_start (T-1716):
+            # the filing-time --recommendation/--rationale gate fires there.
+            wo_prev=""
+            for wo_arg_idx in "$@"; do
+                if [ "$wo_prev" = "--type" ] && [ "$wo_arg_idx" = "inception" ]; then
+                    wo_is_inception=true
+                fi
+                wo_prev="$wo_arg_idx"
+            done
+            if [ "$wo_is_inception" = true ]; then
+                # Strip --type inception (and --description default) from args, then
+                # forward remaining flags (--owner, --recommendation, --rationale,
+                # --i-am-human) to inception start which enforces T-1716 gate.
+                wo_inc_args=()
+                wo_skip_next=false
+                for wo_arg_idx in "$@"; do
+                    if [ "$wo_skip_next" = true ]; then
+                        wo_skip_next=false
+                        continue
+                    fi
+                    if [ "$wo_arg_idx" = "--type" ]; then
+                        wo_skip_next=true
+                        continue
+                    fi
+                    if [ "$wo_arg_idx" = "--description" ]; then
+                        wo_skip_next=true
+                        continue
+                    fi
+                    wo_inc_args+=("$wo_arg_idx")
+                done
+                source "$FW_LIB_DIR/inception.sh"
+                do_inception_start "$wo_target" "${wo_inc_args[@]}"
+                exit $?
+            fi
             wo_defaults=()
             [ "$wo_has_desc" = false ] && wo_defaults+=(--description "$wo_target")
             [ "$wo_has_owner" = false ] && wo_defaults+=(--owner agent)
