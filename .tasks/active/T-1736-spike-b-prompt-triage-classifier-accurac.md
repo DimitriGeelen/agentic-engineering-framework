@@ -4,15 +4,15 @@ name: "Spike B: prompt-triage classifier accuracy on 30-day backlog (T-1733 sibl
 description: >
   T-1733 Spike A proved substrate; classifier defaulted GO across 3 samples (1/3 accuracy). Spike B: harvest 30 days of user prompts from session JSONLs (~/.claude/projects/), label each with manual GO/NO-GO/DEFER ground truth (~50-100 samples), run prompt-triage workflow, compute precision/recall per class. Decide: keep hermes3, switch model (qwen3, gemma4), revise prompt template (calibration examples), or accept under-precision under safety-first defaulting.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
-tags: []
+horizon: now
+tags: [spike, arc:orchestrator-rethink]
 components: []
-related_tasks: []
+related_tasks: [T-1733, T-1737]
 created: 2026-05-05T07:36:42Z
-last_update: 2026-05-05T07:38:48Z
+last_update: 2026-05-05T08:03:58Z
 date_finished: null
 ---
 
@@ -25,9 +25,11 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Harvest script extracts ≥30 deduplicated, real user prompts from `~/.claude/projects/*/*.jsonl` (last 30 days), written to `.context/spikes/T-1736-prompts.jsonl` (one JSON object per line, fields: id, source, text)
+- [x] Ground-truth labels for every harvested prompt in `.context/spikes/T-1736-labels.yaml` (each entry: id, label ∈ {GO, NO-GO, DEFER}, optional note)
+- [x] Run-harness script invokes prompt-triage classifier (litellm:4000 → ollama hermes3:8b) per prompt, captures `verdict|rationale|confidence`, writes `.context/spikes/T-1736-results.jsonl`
+- [x] Per-class precision/recall + 3×3 confusion matrix + class distribution computed and rendered in `docs/reports/T-1736-spike-b.md`
+- [x] Task `## Recommendation` block names a concrete next-step decision: keep hermes3, switch model (qwen3/gemma4), revise prompt template (calibration examples), or accept under-precision under safety-first defaulting — with rationale citing the measured numbers
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -54,6 +56,17 @@ date_finished: null
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+
+test -f .context/spikes/T-1736-prompts.jsonl
+test "$(wc -l < .context/spikes/T-1736-prompts.jsonl)" -ge 30
+test -f .context/spikes/T-1736-labels.yaml
+python3 -c "import yaml; d = yaml.safe_load(open('.context/spikes/T-1736-labels.yaml')); assert len(d) >= 30; assert all(e['label'] in ('GO','NO-GO','DEFER') for e in d)"
+test -f .context/spikes/T-1736-results.jsonl
+test "$(wc -l < .context/spikes/T-1736-results.jsonl)" -ge 30
+test -f docs/reports/T-1736-spike-b.md
+grep -q -i "confusion" docs/reports/T-1736-spike-b.md
+grep -q -i "precision" docs/reports/T-1736-spike-b.md
+grep -q "## Recommendation" .tasks/active/T-1736-spike-b-prompt-triage-classifier-accurac.md
 
 ## RCA
 
@@ -95,7 +108,15 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-## Decisions
+### 2026-05-05 — classifier under-precision is *opposite of safety-first*
+- **What changed:** Spike A's all-GO bias on 3 hand-crafted prompts predicted classifier conservatism. Spike B on 50 real prompts shows the *opposite* pattern: GO recall 0.39, classifier predicts NO-GO for 15/33 true-GO prompts. The model interprets "create or focus a task" literally — direct commands like "Run: bin/fw upgrade ...", "Commit the changes ...", "T-198: check verdict ..." are read as "no new task needed, just execute" → predicted NO-GO. The correct framing per template definition is "substantive change to code/config/infra" → GO.
+- **Plan impact:** Spike B's listed decision options (keep/switch model/revise prompt/accept) collapse to "the prompt template itself misframes GO". Switching model alone (Option B) is unlikely to fix a semantic-definition gap. Accepting under-precision under safety-first (Option D) is invalid because the bias direction is *anti*-safety: defaulting NO-GO means tasks don't get created when they should, downstream agents skip the gate, governance silently degrades.
+- **Triggered:** T-1740 (prompt template revision: add direct-command-GO calibration examples + re-run Spike B). T-1741 (model-switch evaluation, gated on T-1740 outcome). T-1737 (Slice 2 UserPromptSubmit hook) **NOT** unblocked yet — must wait for accuracy ≥ 80% on a re-run.
+
+### 2026-05-05 — confidence is uncalibrated, gating won't save it
+- **What changed:** Mean confidence on correct = 0.915, on wrong = 0.880. Gap of +0.035. The score is essentially flat — there is no threshold above which "the classifier is reliably right" and below which "fall through to GO". This rules out the obvious mitigation of `if confidence < 0.7: GO`.
+- **Plan impact:** Slice 2 hook design must NOT use confidence-based fallback. If we ship the classifier, we need a different escape valve (e.g. agent override syntax, structural retry on disagreement with prior turn).
+- **Triggered:** Note in T-1737 scope: do not implement confidence-thresholded fallback.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -106,6 +127,20 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+- **Recommendation:** **NO-GO on production rollout** of `prompt-triage` workflow with the current `claude-3-5-sonnet-hermes3` model + current prompt template. Spike B Slice 2 (T-1737 UserPromptSubmit hook integration) is **NOT** unblocked.
+- **Rationale:** On 50 real user prompts harvested across 30 days from 19+ consumer projects:
+  - Classifier accuracy 40% (20/50). **Always-GO baseline is 66%.** Shipping the classifier would *reduce* correctness by 26 percentage points vs the trivial fallback.
+  - Macro F1 0.357. GO recall 0.39 (catastrophic — misses 60% of substantive work requests). NO-GO precision 0.23 (most NO-GO predictions are wrong).
+  - Failure direction is *anti-safety*: defaults to NO-GO on direct commands ("Run X", "Commit Y", "T-198: check verdict"), meaning tasks would NOT be created when they should, governance degrades silently.
+  - Confidence is uncalibrated (gap correct vs wrong = +0.035) — confidence-thresholded fallback ("if conf<0.7 → GO") is not viable.
+- **Evidence:** `docs/reports/T-1736-spike-b.md` (full confusion matrix + per-class metrics + 10 sample disagreements). Raw data in `.context/spikes/T-1736-{prompts,sampled,labels.yaml,results.jsonl}`. Inference run at 1171ms p50, $0 cost (ollama-local), 0 errors, 0 parse failures across 50 prompts.
+- **Two follow-up tasks pre-filed (per L-349):**
+  - **T-1740** — Revise prompt template with direct-command-GO calibration examples ("Run: ...", "Commit: ...", "T-XXX: ...", agent-dispatch worker prompts). Re-run Spike B harness on the same 50-prompt benchmark to measure delta. Cheaper, single-variable change, attempted first.
+  - **T-1741** — Evaluate alternative model (qwen3 / gemma4) on the same benchmark. Gated on T-1740 outcome — only run if template revision alone doesn't reach ≥80% accuracy.
+- **What this is NOT:** This is not a bug in the substrate (T-1733 closed substrate gap; T-1734 closed worker-kinds drift). The substrate works perfectly: 50/50 dispatches, 0 errors, sub-2-second latency. The problem is calibration of model + prompt template — exactly what Spike B was designed to measure.
+
 ## Updates
 
 ### 2026-05-05T07:36:42Z — task-created [task-create-agent]
@@ -115,3 +150,13 @@ date_finished: null
 
 ### 2026-05-05T07:38:48Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-05-05T08:02:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-05-05T08:03:51Z — status-update [task-update-agent]
+- **Change:** tags: +spike
+
+### 2026-05-05T08:03:58Z — status-update [task-update-agent]
+- **Change:** tags: +arc:orchestrator-rethink

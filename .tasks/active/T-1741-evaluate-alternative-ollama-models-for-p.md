@@ -1,28 +1,26 @@
 ---
-id: T-1737
-name: "Slice 2: UserPromptSubmit hook + $PROMPT_UNDER_TRIAGE substitution (T-1733 sibling)"
+id: T-1741
+name: "Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) — gated on T-1740 outcome (Spike D)"
 description: >
-  T-1733 Slice 1 proved substrate but resolver does not substitute $PROMPT_UNDER_TRIAGE — Slice 2 wires the UserPromptSubmit hook to dispatch with the actual prompt and surface verdict via additionalContext on GO. Substrate (Spike A) and accuracy (Spike B) are prerequisites.
+  If T-1740 prompt-template revision fails to reach >=80% accuracy on the T-1736 50-prompt benchmark, evaluate whether switching the underlying ollama model rescues the classifier. Models to test: claude-3-5-sonnet-qwen3, claude-3-5-sonnet-qwen35, claude-3-5-sonnet-gemma4 (all already exposed via litellm:4000). Same harness (.context/spikes/T-1736-runharness.py with --model flag), same benchmark, same metrics. Decision: keep best model + revised template, or escalate to NO-GO on whole prompt-triage workflow.
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: later
-tags: []
+tags: [spike, arc:orchestrator-rethink, follow-up]
 components: []
-related_tasks: []
-created: 2026-05-05T07:36:46Z
-last_update: 2026-05-05T07:36:46Z
+related_tasks: [T-1736, T-1740, T-1737]
+created: 2026-05-05T08:13:04Z
+last_update: 2026-05-05T08:13:04Z
 date_finished: null
 ---
 
-# T-1737: Slice 2: UserPromptSubmit hook + $PROMPT_UNDER_TRIAGE substitution (T-1733 sibling)
+# T-1741: Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) — gated on T-1740 outcome (Spike D)
 
 ## Context
 
-**BLOCKED on classifier accuracy** (2026-05-05): T-1736 Spike B measured 40% accuracy (vs 66% always-GO baseline) — classifier under-predicts GO on direct commands, anti-safety bias direction. Confidence is uncalibrated (gap +0.035) so confidence-thresholded fallback is not viable. Slice 2 must NOT ship until accuracy ≥80% on the T-1736 benchmark. Unblocking requires T-1740 (prompt-template revision) and possibly T-1741 (model switch).
-
-When unblocked: the resolver `--var KEY=VALUE` plumbing landed in T-1738; this task only needs the hook integration + envelope substitution, not new resolver work.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
@@ -110,7 +108,7 @@ When unblocked: the resolver `--var KEY=VALUE` plumbing landed in T-1738; this t
 
 ## Updates
 
-### 2026-05-05T07:36:46Z — task-created [task-create-agent]
+### 2026-05-05T08:13:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1737-slice-2-userpromptsubmit-hook--promptund.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1741-evaluate-alternative-ollama-models-for-p.md
 - **Context:** Initial task creation

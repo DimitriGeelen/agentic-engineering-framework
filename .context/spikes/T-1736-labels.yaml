@@ -1,0 +1,157 @@
+# T-1736 ground-truth labels (hand-labeled by agent under Spike B)
+# label ∈ {GO, NO-GO, DEFER}; see prompts/prompt-triage.md
+# GO = substantive change requested; NO-GO = read-only/conversational; DEFER = genuinely ambiguous
+#
+# Caveat: single-rater (sole labeler is the framework agent), labeled with the
+# benefit of the verdict definitions. Not blind. Spike-grade signal, not
+# production-grade ground truth. Sufficient to detect gross classifier bias.
+- id: d946ed2e76ea
+  label: GO
+  preview: "pickup with 3 SPA bugs to fix — substantive change"
+- id: '987787fcc79c'
+  label: DEFER
+  preview: "user correcting context — needs clarification before action"
+- id: ab30e5805ca7
+  label: GO
+  preview: "run fw upgrade — substantive change to consumer project"
+- id: c99b76674cb2
+  label: GO
+  preview: "commit fw upgrade changes — substantive write"
+- id: d638e2b9f582
+  label: GO
+  preview: "agent dispatch — commit upgrade artefacts"
+- id: 585c43be9fcf
+  label: GO
+  preview: "novis api simulator + proxy design+build"
+- id: 2d84d0501238
+  label: GO
+  preview: "agent dispatch — commit upgrade in vinix24"
+- id: ad8a3e7c5a93
+  label: NO-GO
+  preview: "sharing a linkedin draft message — no code/config change"
+- id: 2dbe8e9437b4
+  label: GO
+  preview: "fix this mcp parse error — substantive fix"
+- id: '9985198ef357'
+  label: GO
+  preview: "card formatting bug — substantive fix"
+- id: 56b7fc6a6ee1
+  label: DEFER
+  preview: "asking why version is 0.9.0 — could be question or fix request"
+- id: d2750c50b6f1
+  label: GO
+  preview: "run fw upgrade kcp — substantive change"
+- id: 36c0982c430b
+  label: GO
+  preview: "check verdict + close T-198 — substantive task work"
+- id: 6aa328b0b57f
+  label: GO
+  preview: "commit fw upgrade — substantive write"
+- id: 7272209e64d9
+  label: GO
+  preview: "agent dispatch — commit upgrade kosten"
+- id: 656a153aceee
+  label: GO
+  preview: "run fw upgrade kosten — substantive change"
+- id: '4055034191c6'
+  label: GO
+  preview: "DNS records updated cross-machine work — substantive"
+- id: a5ba54483e4b
+  label: GO
+  preview: "frustrated user demanding fix to broken open-drawing feature"
+- id: ecd02ce733ad
+  label: DEFER
+  preview: "sovereignty gate output pasted — unclear what user wants"
+- id: 550d9cbdc7d5
+  label: GO
+  preview: "investigate prompt stall — substantive RCA work"
+- id: f0f0a2b8c105
+  label: GO
+  preview: "agent dispatch — commit upgrade kcp"
+- id: 5d4cc29f2c12
+  label: GO
+  preview: "fabric subsystem dropdown bug — substantive fix"
+- id: '90f6292f0602'
+  label: NO-GO
+  preview: "is 4-hour stall explainable by that — analytic question"
+- id: eb93edb7cb43
+  label: GO
+  preview: "steelman+strawman analysis — substantive research+capture"
+- id: d2b2c5d28714
+  label: NO-GO
+  preview: "why is 1.1.15 update not in release notes — meta question"
+- id: c9345d718e22
+  label: NO-GO
+  preview: "shared a curl install.sh command — informational"
+- id: '5860893fe711'
+  label: GO
+  preview: "are the learnings worth recording — substantive capture work"
+- id: 8c0897c2d5b7
+  label: NO-GO
+  preview: "why 60d not incremental — analytic question"
+- id: daf4c9e1f884
+  label: NO-GO
+  preview: "termlink remote list cmd — read-only listing"
+- id: '481d92bdc98e'
+  label: GO
+  preview: "investigate work-on hang — substantive RCA"
+- id: c6ae6e9b4ee9
+  label: NO-GO
+  preview: "should this also be infra task — meta question"
+- id: 319f60966fdf
+  label: GO
+  preview: "send files to LAN listener — substantive action"
+- id: 5005dd3d69cb
+  label: NO-GO
+  preview: "clarification on skills endpoint level — discussion"
+- id: d20eedd6270c
+  label: GO
+  preview: "verify email forwarding — substantive verification (may need config)"
+- id: 5cdea26d5b23
+  label: NO-GO
+  preview: "read VERSION, state version — read-only"
+- id: 2e5562bc13ee
+  label: NO-GO
+  preview: "does this have power consumption impact — question"
+- id: 2a9141ff535f
+  label: DEFER
+  preview: "URL share with no context — ambiguous"
+- id: 2db6beb7d80c
+  label: GO
+  preview: "framework consultation on SSH-denied deploy — substantive fix"
+- id: 6a21feeeb9a0
+  label: GO
+  preview: "critically reflect on prompt quality across 1500 tasks — research+capture"
+- id: 1976f6ed9841
+  label: GO
+  preview: "agent dispatch — assess pickup, plan SPA CI/CD"
+- id: 731c7994f32c
+  label: GO
+  preview: "resend email to vincent — substantive action"
+- id: ea1f797a5483
+  label: DEFER
+  preview: "ring20-manager reservation lifecycle — unclear ask"
+- id: '4f940fc33ecf'
+  label: GO
+  preview: "agent dispatch — commit upgrade ntfy"
+- id: a49485545999
+  label: GO
+  preview: "run fw upgrade vinix24 — substantive change"
+- id: 00678a034f6b
+  label: GO
+  preview: "watchtower fabric server error — substantive fix"
+- id: 262eb356d6c6
+  label: NO-GO
+  preview: "evaluate past command output — analysis"
+- id: c11ece8da535
+  label: GO
+  preview: "still error t158 inception-decide — substantive fix"
+- id: 884db539f311
+  label: GO
+  preview: "additional context on prior fw inception decide error — fix continuation"
+- id: a7c821b1ceaf
+  label: GO
+  preview: "missing rationale+recommendation for all inceptions — substantive fix"
+- id: '05321a9d05e9'
+  label: NO-GO
+  preview: "evaluate past inception decide error output — analysis"
