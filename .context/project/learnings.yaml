@@ -2752,3 +2752,10 @@ X'` returning empty group."
   date: 2026-05-05
   context: Added via context agent
   application: TBD
+- id: L-356
+  learning: "Verification commands referencing the task's own file by .tasks/active/<file>.md path silently break on completion when the task moves to .tasks/completed/. CTL-013 re-runs catch this as a daily warning, but the task itself was already work-completed under the (then-correct) path. Pattern fix: use path-agnostic L-351-safe form '{ cat .tasks/active/<file>.md .tasks/completed/<file>.md 2>/dev/null || true; } | grep -q PATTERN'. cat with mixed existing/missing files writes existing to stdout and errors to stderr (suppressed); '|| true' keeps LHS pipefail-safe; single non-empty file on either side passes. Origin: T-1736/T-1740/T-1741 each shipped this anti-pattern via the Spike-arc; CTL-013 detected on 2026-05-05; closed 3 of 31 audit warnings. Future Verification authors should default to the path-agnostic form when grepping the task file for '## Recommendation', '## Evolution', or any other section marker."
+  source: P-001
+  task: T-1741
+  date: 2026-05-05
+  context: Added via context agent
+  application: TBD
