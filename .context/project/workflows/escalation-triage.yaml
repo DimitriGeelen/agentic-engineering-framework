@@ -1,0 +1,28 @@
+task_type: escalation-triage
+worker_kind: ollama-loop
+model: claude-3-5-sonnet-hermes3
+effort: low
+prompt_template: prompts/escalation-triage.md
+allowed_tools: [Read]
+cost_cap_usd: 0.0
+cwd: $PROJECT_ROOT
+env:
+  ANTHROPIC_BASE_URL: http://localhost:4000
+  ANTHROPIC_API_KEY: sk-litellm-local-dev
+# T-1727: G-064 first real consumer — escalation-scan v0.5 LLM augmentation.
+# Per-candidate triage: heuristic v0 flags a completed task as a possible
+# symptom-fix (bug-class with no RCA, no learning capture). v0.5 dispatches
+# this workflow once per candidate; the LLM emits a verdict (real_symptom_fix
+# vs false_positive) + reasoning. v0.5 writes the verdict alongside the v0
+# heuristic verdict; the disagreement rate is the headline signal.
+#
+# allowed_tools=[Read] only: classifier MUST NOT mutate state. Verdict-emission
+# only. Read access is sufficient — the task body lives in the prompt envelope
+# and the prompt invites optional Read on .tasks/completed/<TID>.md if more
+# context is needed.
+#
+# cost_cap_usd=0.0: ollama-local only. Per L-355 the 7-8B local ceiling is
+# ~76-79% accuracy — design-tolerable for an advisory queue (false positives
+# are cheap, the static layer mitigates false negatives). Cloud fallback is
+# explicitly OFF here; if hermes3 is unreachable the dispatch logs an outcome
+# row with verdict=ERROR and v0.5 continues to the next candidate.

@@ -2,7 +2,7 @@
 
 You are a Worker dispatched by the Agent on the Agentic Engineering Framework.
 This is the fallback prompt template used when a task_type has no explicit
-workflow file. Tier 2 (`assembled`) — the resolver substitutes `$VAR` slots
+workflow file. Tier 2 (`assembled`) — the resolver substitutes named slots
 below from task frontmatter, recent `dispatches.jsonl` outcomes, and matched
 `patterns.yaml` healing hints.
 

@@ -1,0 +1,370 @@
+#!/usr/bin/env python3
+"""
+T-1727 — Layer B v0.5: per-candidate LLM augmentation of escalation-scan v0.
+
+Reads .context/working/escalation-drift-LATEST.yaml (heuristic verdict from
+v0). For each H1-flagged candidate in the last N days, dispatches one
+escalation-triage workflow call via lib/resolver, executes the LLM call via
+direct litellm POST (same path ollama-tool-loop.py uses), parses the YAML
+verdict envelope, writes the merged result to escalation-drift-LATEST-v0.5.yaml,
+and back-props the outcome to dispatch-outcomes.jsonl.
+
+Idempotency: a candidate is skipped if it already has a v0.5 verdict in the
+output YAML newer than IDEMPOTENCY_DAYS (default 7). Override with
+ESCALATION_V05_FORCE=1.
+
+Failure semantics (per workflow.cost_cap_usd=0.0): if the LLM call fails,
+the candidate is recorded with verdict=ERROR and the scan continues. v0's
+report (escalation-drift-LATEST.yaml) is never modified.
+
+Output contract:
+  .context/working/escalation-drift-LATEST-v0.5.yaml
+  .context/dispatches.jsonl                 (one row per candidate dispatched)
+  .context/dispatch-outcomes.jsonl          (one row per candidate with verdict)
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import time
+import urllib.error
+import urllib.request
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd())).resolve()
+sys.path.insert(0, str(ROOT / "lib"))
+
+import resolver  # noqa: E402
+import outcome  # noqa: E402
+
+V0_LATEST = ROOT / ".context" / "working" / "escalation-drift-LATEST.yaml"
+V05_LATEST = ROOT / ".context" / "working" / "escalation-drift-LATEST-v0.5.yaml"
+COMPLETED = ROOT / ".tasks" / "completed"
+
+DEFAULT_BASE = "http://localhost:4000"
+DEFAULT_KEY = "sk-litellm-local-dev"
+DEFAULT_MODEL = "claude-3-5-sonnet-hermes3"
+LLM_TIMEOUT = 60
+IDEMPOTENCY_DAYS = int(os.environ.get("ESCALATION_V05_IDEMPOTENCY_DAYS", "7"))
+MAX_CANDIDATES_PER_RUN = int(os.environ.get("ESCALATION_V05_MAX", "200"))
+CANDIDATE_BODY_TRUNCATE = 6000  # chars; keeps prompts under ~8K tokens
+
+
+def load_v0_yaml() -> dict:
+    if not V0_LATEST.exists():
+        sys.stderr.write(
+            f"v0.5: {V0_LATEST.relative_to(ROOT)} missing — run "
+            f"escalation-scan-v0.py first\n"
+        )
+        sys.exit(2)
+    return yaml.safe_load(V0_LATEST.read_text()) or {}
+
+
+def load_existing_v05() -> dict:
+    if not V05_LATEST.exists():
+        return {"candidates": []}
+    try:
+        return yaml.safe_load(V05_LATEST.read_text()) or {"candidates": []}
+    except yaml.YAMLError:
+        return {"candidates": []}
+
+
+def find_candidate_path(tid_full: str) -> Path | None:
+    """tid_full is the full slug-form id like 'T-1014-fix-...'. Try exact stem
+    first, then prefix on plain T-XXX form."""
+    direct = COMPLETED / f"{tid_full}.md"
+    if direct.exists():
+        return direct
+    short = tid_full.split("-")[0] + "-" + tid_full.split("-")[1]
+    matches = sorted(COMPLETED.glob(f"{short}-*.md"))
+    return matches[0] if matches else None
+
+
+def read_candidate_body(tid_full: str) -> tuple[str, str]:
+    """Return (short_id, body_truncated). short_id is 'T-XXX', body is the
+    candidate task content with frontmatter stripped, truncated for prompt fit."""
+    short = tid_full.split("-")[0] + "-" + tid_full.split("-")[1]
+    path = find_candidate_path(tid_full)
+    if not path:
+        return short, ""
+    text = path.read_text(encoding="utf-8")
+    if text.startswith("---"):
+        end = text.find("\n---", 4)
+        if end > 0:
+            text = text[end + 4 :]
+    text = text.strip()
+    if len(text) > CANDIDATE_BODY_TRUNCATE:
+        text = text[:CANDIDATE_BODY_TRUNCATE] + "\n\n[...body truncated for triage prompt...]"
+    return short, text
+
+
+def is_recent_enough(verdict_ts: str) -> bool:
+    """True if the recorded verdict is within IDEMPOTENCY_DAYS — caller skips."""
+    try:
+        ts = datetime.fromisoformat(verdict_ts.replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return False
+    cutoff = datetime.now(timezone.utc) - timedelta(days=IDEMPOTENCY_DAYS)
+    return ts >= cutoff
+
+
+def call_litellm(prompt: str, *, base: str, key: str, model: str) -> dict:
+    """POST to litellm /v1/messages with the rendered prompt. Returns:
+      {ok: bool, text: str, error: str|None, latency_s: float}"""
+    payload = {
+        "model": model,
+        "max_tokens": 1024,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        f"{base}/v1/messages",
+        data=data,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {key}",
+            "anthropic-version": "2023-06-01",
+        },
+    )
+    t0 = time.time()
+    try:
+        with urllib.request.urlopen(req, timeout=LLM_TIMEOUT) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+        latency = time.time() - t0
+        text = ""
+        for block in body.get("content", []):
+            if block.get("type") == "text":
+                text += block.get("text", "")
+        return {"ok": True, "text": text, "error": None, "latency_s": latency}
+    except urllib.error.HTTPError as e:
+        return {
+            "ok": False,
+            "text": "",
+            "error": f"http {e.code}: {e.read().decode('utf-8', 'replace')[:200]}",
+            "latency_s": time.time() - t0,
+        }
+    except (urllib.error.URLError, OSError, json.JSONDecodeError) as e:
+        return {
+            "ok": False,
+            "text": "",
+            "error": f"{type(e).__name__}: {e}",
+            "latency_s": time.time() - t0,
+        }
+
+
+def parse_verdict_envelope(text: str) -> dict:
+    """Find the fenced YAML block in the LLM response, parse verdict +
+    rationale + confidence. Returns {} on parse failure."""
+    if not text:
+        return {}
+    fenced = None
+    in_fence = False
+    buf: list[str] = []
+    for line in text.splitlines():
+        if line.strip().startswith("```yaml"):
+            in_fence = True
+            continue
+        if line.strip().startswith("```") and in_fence:
+            fenced = "\n".join(buf)
+            break
+        if in_fence:
+            buf.append(line)
+    if not fenced and buf:
+        fenced = "\n".join(buf)
+    if not fenced:
+        return {}
+    try:
+        parsed = yaml.safe_load(fenced) or {}
+    except yaml.YAMLError:
+        return {}
+    if not isinstance(parsed, dict):
+        return {}
+    verdict = str(parsed.get("verdict", "")).strip()
+    rationale = str(parsed.get("rationale", "")).strip()
+    try:
+        confidence = float(parsed.get("confidence", 0.0))
+    except (TypeError, ValueError):
+        confidence = 0.0
+    return {"verdict": verdict, "rationale": rationale, "confidence": confidence}
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="v0.5: per-candidate LLM triage of v0 heuristic flags."
+    )
+    parser.add_argument("--limit", type=int, default=MAX_CANDIDATES_PER_RUN,
+                        help=f"max candidates per run (default {MAX_CANDIDATES_PER_RUN})")
+    parser.add_argument("--force", action="store_true",
+                        help="re-dispatch even if a recent v0.5 verdict exists")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="print what would dispatch but make no LLM calls")
+    args = parser.parse_args()
+    force = args.force or os.environ.get("ESCALATION_V05_FORCE") == "1"
+
+    v0 = load_v0_yaml()
+    existing = load_existing_v05()
+    existing_by_id: dict[str, dict] = {
+        c.get("task_id"): c for c in existing.get("candidates", []) if c.get("task_id")
+    }
+
+    candidates_in = v0.get("recent_sample", []) or []
+    if not candidates_in:
+        sys.stdout.write("v0.5: no recent_sample candidates in v0 — nothing to triage\n")
+        # Emit empty-but-valid file so the verification gate passes.
+        write_output({"corpus": v0.get("corpus_total", 0), "dispatched": 0,
+                      "skipped_idempotent": 0, "errors": 0, "candidates": []})
+        return 0
+
+    base = os.environ.get("ANTHROPIC_BASE_URL", DEFAULT_BASE)
+    key = os.environ.get("ANTHROPIC_API_KEY", DEFAULT_KEY)
+    model = os.environ.get("ESCALATION_V05_MODEL", DEFAULT_MODEL)
+
+    out_candidates: list[dict] = []
+    dispatched = 0
+    skipped_idempotent = 0
+    errors = 0
+
+    for entry in candidates_in[: args.limit]:
+        tid_full = entry.get("tid", "")
+        name = entry.get("name", "")
+        if not tid_full:
+            continue
+        short_id, body = read_candidate_body(tid_full)
+
+        # Idempotency: skip if recent verdict exists.
+        prior = existing_by_id.get(short_id)
+        if prior and not force and is_recent_enough(prior.get("ts", "")):
+            skipped_idempotent += 1
+            out_candidates.append(prior)
+            continue
+
+        if not body:
+            out_candidates.append({
+                "task_id": short_id, "tid_full": tid_full, "name": name,
+                "ts": datetime.now(timezone.utc).isoformat(),
+                "verdict": "ERROR", "rationale": "task body not found in completed/",
+                "confidence": 0.0, "dispatch_id": None,
+            })
+            errors += 1
+            continue
+
+        # Build envelope via resolver (writes dispatches.jsonl + blob).
+        task_context = resolver.load_task_frontmatter(short_id) or {}
+        task_context.setdefault("TASK_ID", short_id)
+        task_context.setdefault("TASK_TYPE", "escalation-triage")
+        task_context.setdefault("TASK_NAME", name)
+        task_context.setdefault("TASK_DESCRIPTION", "")
+        task_context.setdefault("ACCEPTANCE_CRITERIA", "(none)")
+        task_context["CANDIDATE_BODY"] = body
+
+        try:
+            envelope, _row = resolver.resolve(
+                short_id, "escalation-triage", task_context, dry_run=args.dry_run,
+            )
+        except resolver.ResolverError as e:
+            out_candidates.append({
+                "task_id": short_id, "tid_full": tid_full, "name": name,
+                "ts": datetime.now(timezone.utc).isoformat(),
+                "verdict": "ERROR", "rationale": f"resolver: {e}",
+                "confidence": 0.0, "dispatch_id": None,
+            })
+            errors += 1
+            continue
+
+        dispatch_id = envelope.get("dispatch_id")
+        prompt_text = envelope.get("rendered_prompt") or envelope.get("prompt") or ""
+
+        if args.dry_run:
+            sys.stdout.write(
+                f"v0.5: would dispatch {short_id} dispatch_id={dispatch_id} "
+                f"prompt={len(prompt_text)}c\n"
+            )
+            out_candidates.append({
+                "task_id": short_id, "tid_full": tid_full, "name": name,
+                "ts": datetime.now(timezone.utc).isoformat(),
+                "verdict": "DRY-RUN", "rationale": "dry-run requested",
+                "confidence": 0.0, "dispatch_id": dispatch_id,
+            })
+            continue
+
+        result = call_litellm(prompt_text, base=base, key=key, model=model)
+        ts = datetime.now(timezone.utc).isoformat()
+        if not result["ok"]:
+            out_candidates.append({
+                "task_id": short_id, "tid_full": tid_full, "name": name,
+                "ts": ts, "verdict": "ERROR",
+                "rationale": result["error"][:200], "confidence": 0.0,
+                "latency_s": round(result["latency_s"], 3),
+                "dispatch_id": dispatch_id,
+            })
+            errors += 1
+            # Best-effort outcome row so the dispatch shows ERROR upstream too.
+            try:
+                outcome.backprop_outcome(short_id, {
+                    "evaluator": "escalation-scan-v0.5",
+                    "verdict": "ERROR",
+                    "rationale": result["error"][:200],
+                    "confidence": 0.0,
+                })
+            except Exception:
+                pass
+            continue
+
+        parsed = parse_verdict_envelope(result["text"])
+        verdict = parsed.get("verdict") or "PARSE-FAIL"
+        rationale = parsed.get("rationale") or result["text"][:200]
+        confidence = parsed.get("confidence", 0.0)
+
+        out_candidates.append({
+            "task_id": short_id, "tid_full": tid_full, "name": name,
+            "ts": ts, "verdict": verdict, "rationale": rationale,
+            "confidence": confidence,
+            "latency_s": round(result["latency_s"], 3),
+            "dispatch_id": dispatch_id,
+        })
+        dispatched += 1
+
+        try:
+            outcome.backprop_outcome(short_id, {
+                "evaluator": "escalation-scan-v0.5",
+                "verdict": verdict,
+                "rationale": rationale,
+                "confidence": confidence,
+            })
+        except Exception as e:
+            sys.stderr.write(f"v0.5: backprop failed for {short_id}: {e}\n")
+
+    summary = {
+        "generated": datetime.now(timezone.utc).isoformat(),
+        "v0_source": str(V0_LATEST.relative_to(ROOT)),
+        "v0_corpus_total": v0.get("corpus_total", 0),
+        "v0_h1_flagged": v0.get("h1_flagged", 0),
+        "model": model,
+        "idempotency_days": IDEMPOTENCY_DAYS,
+        "dispatched": dispatched,
+        "skipped_idempotent": skipped_idempotent,
+        "errors": errors,
+        "candidates": out_candidates,
+    }
+    write_output(summary)
+    sys.stdout.write(
+        f"v0.5: dispatched={dispatched} skipped_idempotent={skipped_idempotent} "
+        f"errors={errors} → {V05_LATEST.relative_to(ROOT)}\n"
+    )
+    return 0
+
+
+def write_output(summary: dict) -> None:
+    V05_LATEST.parent.mkdir(parents=True, exist_ok=True)
+    tmp = V05_LATEST.with_suffix(".yaml.tmp")
+    tmp.write_text(yaml.safe_dump(summary, sort_keys=False, allow_unicode=True))
+    tmp.replace(V05_LATEST)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
