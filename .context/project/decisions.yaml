@@ -590,3 +590,17 @@ decisions:
     date: 2026-05-04
     task: T-1712
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-087
+    decision: "Implement drift-target extraction via `[[ \"$BASH_CMD\" =~ ... ]]` with `BASH_REMATCH`."
+    scope: project
+    date: 2026-05-05
+    task: T-1730
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-088
+    decision: "Write to `.context/working/.gate-bypass-log.yaml` (existing T-1142 path used by `log_gate_bypass`)."
+    scope: project
+    date: 2026-05-05
+    task: T-1730
+    rationale: "Auto-captured from task file on completion"

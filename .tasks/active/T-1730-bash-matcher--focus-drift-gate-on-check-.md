@@ -4,16 +4,16 @@ name: "Bash matcher + focus-drift gate on check-active-task (T-1729 sibling 1)"
 description: >
   Close G1 (Bash matcher gap) + G3 (focus-target drift) from T-1729 meta-RCA. Add Bash to check-active-task matcher in settings.json; augment hook to detect target-vs-focus drift on fw task update T-X / fw context add-* --task T-X / git commit -m T-X. --switch-focus override logged via log_gate_bypass. Bats coverage pins both the gap and the post-fix wiring per docs/reports/T-1729-meta-rca.md sections 7 + 5.1.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:orchestrator-rethink, meta-rca:T-1729, structural-gate, governance-bypass-prevention]
-components: []
+components: [agents/context/check-active-task.sh, C-009, lib/init.sh, tests/unit/focus_drift_gate.bats]
 related_tasks: [T-1729, T-1671, T-1259]
 created: 2026-05-05T05:41:36Z
-last_update: 2026-05-05T06:48:38Z
-date_finished: null
+last_update: 2026-05-05T07:08:19Z
+date_finished: 2026-05-05T07:08:19Z
 ---
 
 # T-1730: Bash matcher + focus-drift gate on check-active-task (T-1729 sibling 1)
@@ -85,19 +85,19 @@ python3 -c "import re; src=open('lib/init.sh').read(); m=re.search(r'\"matcher\"
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** Agent ran `bin/fw task update T-1716`, `bin/fw context add-learning`, `git commit -m "T-1716: ..."`, and other framework-state-mutating Bash commands while focus was T-1727 (stale). No gate fired. The breakdown was caught only by user inspection ("MAJOR BREAKDOWN EVENT — tools calls were fired without a task"). See T-1729 meta-RCA for the full forensic trace.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Two cumulative structural gaps:
+- **G1**: `.claude/settings.json:44-52` matches `check-active-task` on `Write|Edit` only. Bash routes solely to `check-tier0` (destructive-ops). The hook source `agents/context/check-active-task.sh:50-82` has full Bash handling code, but the matcher excludes Bash so the code is dead.
+- **G3**: When the active-task gate does fire (Write/Edit), it verifies *some* task is focused. It does not verify the action targets the focused task. So `Edit` on T-1716's file while focus was T-1727 was allowed.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The Bash matcher gap (G1) is the original sin. Whoever set up settings.json scoped the active-task gate narrowly to Write/Edit because they reasoned that "creating files is the substantive work, Bash is mostly diagnostics". That assumption was wrong: framework-state-mutating Bash (`fw task update`, `fw context add-*`, `git commit`) is at least as substantive as Edit. The gap then went undetected because no audit checked which surfaces actually went through the gate vs. which were nominally covered.
+
+**Prevention:** Two changes ship in this task:
+1. `lib/init.sh:636` matcher generator now emits `Write|Edit|Bash` (was `Write|Edit`); `.claude/settings.json` updated to match.
+2. `agents/context/check-active-task.sh` Bash branch detects focus-target drift on three command shapes (`fw task update T-X`, `fw context add-* --task T-X`, `git commit -m "T-X: ..."`); blocks under `$CLAUDECODE=1` with `--switch-focus` override (logged).
+
+Pinned by `tests/unit/focus_drift_gate.bats` tests #14 (settings.json wiring) and #15 (lib/init.sh source-of-truth). Any future revert to the broken matcher fails CI.
 
 ## Evolution
 
@@ -168,3 +168,20 @@ beyond pre-existing baseline.
 
 ### 2026-05-05T06:48:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-072513d7
+- **Timestamp:** 2026-05-05T07:08:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/focus_drift_gate.bats`
+
+### 2026-05-05T07:08:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -5211,3 +5211,20 @@ scan_id: R-285aed82
 task_id: T-1732
 payload:
   task_file: .tasks/active/T-1732-prompt-triage-as-g-064-first-real-consum.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T07:08:24Z'
+scan_id: R-072513d7
+task_id: T-1730
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T07:08:24Z'
+scan_id: R-072513d7
+task_id: T-1730
+payload:
+  task_file: .tasks/active/T-1730-bash-matcher--focus-drift-gate-on-check-.md

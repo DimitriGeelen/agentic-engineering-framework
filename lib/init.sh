@@ -642,6 +642,15 @@ generate_claude_code_config() {
         ]
       },
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-human-ac-tick"
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {

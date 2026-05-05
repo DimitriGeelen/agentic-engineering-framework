@@ -51,6 +51,15 @@
         ]
       },
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-human-ac-tick"
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
