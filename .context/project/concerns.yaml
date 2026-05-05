@@ -1825,10 +1825,15 @@ concerns:
     4. Do not declare this gap mitigated by "we have ACs and tests" — the
        gap is the absence of an autonomous consumer. Tests verify the
        substrate; only autonomous workload verifies the deliverable.
+       Mechanical closure check available via
+       `python3 tools/g064-readiness.py` (T-1750) — reads dispatches.jsonl,
+       reports READY/NOT_READY against the ≥3 distinct cron-firing dates
+       threshold. Use this as the closure-decision input on 2026-05-08
+       rather than reading the JSONL by hand.
   created: 2026-05-02
   last_reviewed: 2026-05-05
   related_task: T-1683
-  related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682, T-1684, T-1688, T-1727]
+  related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682, T-1684, T-1688, T-1727, T-1750]
   status_notes: |
     2026-05-05 — T-1727 shipped v0.5 of escalation-scan with LLM augmentation
     via fw resolver dispatch (workflow=escalation-triage, worker_kind=ollama-loop).
@@ -1838,9 +1843,21 @@ concerns:
 
     Per recommendation #4 ("Do not declare mitigated by tests; only autonomous
     workload verifies"), keeping status as watching until cron has fired
-    naturally for ≥3 consecutive days. Re-evaluate 2026-05-08 — if route_cache
-    shows escalation-triage entries with last_used spread across the daily
-    cron schedule (not all from manual T-1727 run), then close.
+    naturally for ≥3 consecutive days. Re-evaluate 2026-05-08.
+
+    SUBSTRATE NOTE (2026-05-05, T-1750): the closure-precondition artefact is
+    .context/dispatches.jsonl (rows with task_type=escalation-triage and ts
+    inside the 5:33 UTC ±5 min cron window), NOT route_cache.json. The
+    route_cache.json file does not exist on disk on this host — substrate
+    consolidated post-T-1687/T-1697; outcome quality is surfaced via
+    `fw orchestrator status --outcomes` (T-1749).
+
+    CLOSURE GAUGE (2026-05-05, T-1750): run `python3 tools/g064-readiness.py`
+    for a mechanical READY/NOT_READY verdict. The script reads dispatches.jsonl,
+    distinguishes natural cron firings from manual --force re-runs and the
+    T-1727 backfill, excludes synthetic T-stress-* dispatches, and reports
+    against the ≥3 distinct cron-firing dates threshold. `--json` for machine
+    consumption; `--strict` exits 1 when not ready.
 - id: G-065
   type: gap
   title: "Boundary hook is read-blind — only blocks `cd` to outside paths, not commands with outside-path arguments"
