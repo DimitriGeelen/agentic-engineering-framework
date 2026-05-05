@@ -62,7 +62,8 @@ test "$(wc -l < .context/spikes/T-1740-results.jsonl)" -ge 50
 test -f docs/reports/T-1740-spike-c.md
 grep -q -i "confusion" docs/reports/T-1740-spike-c.md
 grep -q -i "delta" docs/reports/T-1740-spike-c.md
-grep -q "## Recommendation" .tasks/active/T-1740-revise-prompt-triage-template--direct-co.md
+# Path-agnostic — task may be in active/ or completed/ at re-run time
+{ cat .tasks/active/T-1740-revise-prompt-triage-template--direct-co.md .tasks/completed/T-1740-revise-prompt-triage-template--direct-co.md 2>/dev/null || true; } | grep -q "## Recommendation"
 
 ## RCA
 

@@ -66,7 +66,8 @@ test "$(wc -l < .context/spikes/T-1736-results.jsonl)" -ge 30
 test -f docs/reports/T-1736-spike-b.md
 grep -q -i "confusion" docs/reports/T-1736-spike-b.md
 grep -q -i "precision" docs/reports/T-1736-spike-b.md
-grep -q "## Recommendation" .tasks/active/T-1736-spike-b-prompt-triage-classifier-accurac.md
+# Path-agnostic — task may be in active/ or completed/ at re-run time
+{ cat .tasks/active/T-1736-spike-b-prompt-triage-classifier-accurac.md .tasks/completed/T-1736-spike-b-prompt-triage-classifier-accurac.md 2>/dev/null || true; } | grep -q "## Recommendation"
 
 ## RCA
 

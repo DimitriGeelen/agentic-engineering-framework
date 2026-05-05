@@ -4,16 +4,16 @@ name: "Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) —
 description: >
   If T-1740 prompt-template revision fails to reach >=80% accuracy on the T-1736 50-prompt benchmark, evaluate whether switching the underlying ollama model rescues the classifier. Models to test: claude-3-5-sonnet-qwen3, claude-3-5-sonnet-qwen35, claude-3-5-sonnet-gemma4 (all already exposed via litellm:4000). Same harness (.context/spikes/T-1736-runharness.py with --model flag), same benchmark, same metrics. Decision: keep best model + revised template, or escalate to NO-GO on whole prompt-triage workflow.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [spike, arc:orchestrator-rethink, follow-up]
-components: []
+components: [bin/fw]
 related_tasks: [T-1736, T-1740, T-1737]
 created: 2026-05-05T08:13:04Z
-last_update: 2026-05-05T08:35:09Z
-date_finished: null
+last_update: 2026-05-05T09:26:28Z
+date_finished: 2026-05-05T09:26:28Z
 ---
 
 # T-1741: Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) — gated on T-1740 outcome (Spike D)
@@ -67,7 +67,8 @@ test -f docs/reports/T-1741-spike-d.md
 grep -q -i "confusion" docs/reports/T-1741-spike-d.md
 grep -q -i "qwen3" docs/reports/T-1741-spike-d.md
 grep -q -i "gemma4" docs/reports/T-1741-spike-d.md
-grep -q "## Recommendation" .tasks/active/T-1741-evaluate-alternative-ollama-models-for-p.md
+# Path-agnostic — task may be in active/ or completed/ at re-run time
+{ cat .tasks/active/T-1741-evaluate-alternative-ollama-models-for-p.md .tasks/completed/T-1741-evaluate-alternative-ollama-models-for-p.md 2>/dev/null || true; } | grep -q "## Recommendation"
 
 ## RCA
 
@@ -173,3 +174,15 @@ grep -q "## Recommendation" .tasks/active/T-1741-evaluate-alternative-ollama-mod
 ### 2026-05-05T08:22:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-4135eab8
+- **Timestamp:** 2026-05-05T09:26:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T09:26:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
