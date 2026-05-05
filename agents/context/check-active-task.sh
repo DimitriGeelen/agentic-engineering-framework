@@ -219,6 +219,73 @@ if [ -n "$CURRENT_SESSION" ] && [ -n "$FOCUS_SESSION" ] && [ "$FOCUS_SESSION" !=
     exit 2
 fi
 
+# --- Focus-target drift detection (T-1730, closes G3 from T-1729 meta-RCA) ---
+# When a Bash command targets a specific task that differs from the focused task,
+# block under $CLAUDECODE=1 with --switch-focus override (logged).
+# Only inspects fw task update / fw context add-* --task / git commit -m "T-X: ...".
+# Does NOT gate fw work-on / fw context focus / fw inception decide / fw task review|show
+# (those are intentional state transitions or read-only).
+if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; then
+    TARGET_TASK=""
+    # Bash built-in regex (no subprocess fork — keeps hook fast).
+    # Pattern 1: fw task update T-NNNN (mutation)
+    if [[ "$BASH_CMD" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+task[[:space:]]+update[[:space:]]+(T-[0-9]+) ]]; then
+        TARGET_TASK="${BASH_REMATCH[3]}"
+    # Pattern 2: fw context add-* --task T-NNNN
+    elif [[ "$BASH_CMD" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+context[[:space:]]+add- ]] && \
+         [[ "$BASH_CMD" =~ --task[[:space:]=]+(T-[0-9]+) ]]; then
+        TARGET_TASK="${BASH_REMATCH[1]}"
+    # Pattern 3: git commit ... T-NNNN: (the canonical T-XXX: prefix marker)
+    elif [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit ]] && \
+         [[ "$BASH_CMD" =~ (T-[0-9]+): ]]; then
+        TARGET_TASK="${BASH_REMATCH[1]}"
+    fi
+
+    # If a target was identified and differs from focused task: drift
+    if [ -n "$TARGET_TASK" ] && [ "$TARGET_TASK" != "$CURRENT_TASK" ]; then
+        # --switch-focus override allows + logs (mirrors T-1671 closure-gate pattern)
+        if [[ "$BASH_CMD" =~ (^|[[:space:]])--switch-focus([[:space:]]|=|$) ]]; then
+            BYPASS_LOG="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+            mkdir -p "$(dirname "$BYPASS_LOG")"
+            {
+                echo "- timestamp: '$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+                echo "  task: '$CURRENT_TASK'"
+                echo "  flag: '--switch-focus'"
+                echo "  caller: 'check-active-task focus-drift'"
+                echo "  target: '$TARGET_TASK'"
+                echo "  command: '$(echo "$BASH_CMD" | head -c 200 | tr -d "'")'"
+            } >> "$BYPASS_LOG" 2>/dev/null || true
+            # Allow with informational note on stderr
+            echo "NOTE: focus-drift override (--switch-focus) — target $TARGET_TASK ≠ focus $CURRENT_TASK. Logged." >&2
+        elif [ "${CLAUDECODE:-}" = "1" ]; then
+            echo "" >&2
+            echo "══════════════════════════════════════════════════════════" >&2
+            echo "  FOCUS-DRIFT — Action targets a different task" >&2
+            echo "══════════════════════════════════════════════════════════" >&2
+            echo "" >&2
+            echo "  Current focus: $CURRENT_TASK" >&2
+            echo "  Action target: $TARGET_TASK" >&2
+            echo "" >&2
+            echo "  Framework rule: actions on a task should run with focus on" >&2
+            echo "  that task. To proceed, either:" >&2
+            echo "" >&2
+            echo "    1. Switch focus first:" >&2
+            echo "       $(_fw_cmd) context focus $TARGET_TASK" >&2
+            echo "" >&2
+            echo "    2. Append --switch-focus to the command (logged Tier 2)." >&2
+            echo "" >&2
+            echo "  Attempting to run: $(echo "$BASH_CMD" | head -c 120)" >&2
+            echo "  Policy: T-1730 (Focus-Target Drift Gate, closes G3 from T-1729)" >&2
+            echo "══════════════════════════════════════════════════════════" >&2
+            echo "" >&2
+            exit 2
+        else
+            # Not under CLAUDECODE — advisory only
+            echo "NOTE: focus-drift detected: target $TARGET_TASK ≠ focus $CURRENT_TASK. (Not blocking — \$CLAUDECODE not set.)" >&2
+        fi
+    fi
+fi
+
 # Verify task is actually active (not completed/archived) — G-013
 ACTIVE_FILE=$(find_task_file "$CURRENT_TASK" active)
 if [ -z "$ACTIVE_FILE" ]; then

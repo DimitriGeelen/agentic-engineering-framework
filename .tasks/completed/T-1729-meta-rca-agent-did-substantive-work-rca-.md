@@ -4,7 +4,7 @@ name: "meta-rca: agent did substantive work (RCA, diagnostics, edits) without a 
 description: >
   Inception: meta-rca: agent did substantive work (RCA, diagnostics, edits) without a task — multiple breakdown points in single session
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:orchestrator-rethink, meta-rca-anchor]
 components: []
 related_tasks: [T-1730, T-1731, T-1732, T-1716, T-1726, T-1727]
 created: 2026-05-04T22:03:56Z
-last_update: 2026-05-05T05:42:29Z
-date_finished: null
+last_update: 2026-05-05T06:47:06Z
+date_finished: 2026-05-05T06:47:06Z
 ---
 
 # T-1729: meta-rca: agent did substantive work (RCA, diagnostics, edits) without a task — multiple breakdown points in single session
@@ -98,15 +98,15 @@ Three time-boxed deliverables, each its own task. Each ships independently.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -173,7 +173,11 @@ User-flagged MAJOR BREAKDOWN: agent (a) wrote stale-budget RCA in chat without a
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: User-flagged MAJOR BREAKDOWN: agent (a) wrote stale-budget RCA in chat without a task, (b) ran Bash diagnostics + Edits to investigate verification gate failure under stale focus T-1727 not T-1716, (c) was about to RCA the breakdown itself without a task. Need to identify which structural gates failed vs which were absent vs which were correctly working but bypassable. Recommendation GO because the violations are concrete, the failure-class is recurrent (G-018 family — rule+no-enforcement decay), and the user has explicitly named it as a high-severity event.
+
+**Date**: 2026-05-05T06:47:06Z
 
 ## Updates
 
@@ -188,3 +192,21 @@ User-flagged MAJOR BREAKDOWN: agent (a) wrote stale-budget RCA in chat without a
 
 ### 2026-05-05T05:42:29Z — status-update [task-update-agent]
 - **Change:** tags: +meta-rca-anchor
+
+### 2026-05-05T06:47:06Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** User-flagged MAJOR BREAKDOWN: agent (a) wrote stale-budget RCA in chat without a task, (b) ran Bash diagnostics + Edits to investigate verification gate failure under stale focus T-1727 not T-1716, (c) was about to RCA the breakdown itself without a task. Need to identify which structural gates failed vs which were absent vs which were correctly working but bypassable. Recommendation GO because the violations are concrete, the failure-class is recurrent (G-018 family — rule+no-enforcement decay), and the user has explicitly named it as a high-severity event.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7c301379
+- **Timestamp:** 2026-05-05T06:47:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T06:47:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

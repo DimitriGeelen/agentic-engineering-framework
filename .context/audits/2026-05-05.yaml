@@ -1,0 +1,826 @@
+# Audit Results - 2026-05-05-0856
+timestamp: 2026-05-05T06:56:37Z
+summary:
+  pass: 366
+  warn: 29
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "No duplicate task IDs across active/ and completed/"
+  - level: PASS
+    check: "All 10 project YAML files parse correctly"
+  - level: PASS
+    check: "Fabric: 530 registered, 0 unregistered"
+  - level: WARN
+    check: "Fabric: 88/531 cards have no edges"
+    mitigation: "Run: fw fabric enrich"
+  - level: PASS
+    check: "Fabric drift: All watched source files registered (530 cards)"
+  - level: PASS
+    check: "Hook threshold: no hooks failing over threshold"
+  - level: PASS
+    check: "All 44 active tasks are valid"
+  - level: PASS
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "Git traceability: 99% (4110/4150 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
+  - level: PASS
+    check: "All commit task refs resolve to actual tasks"
+  - level: PASS
+    check: "Bypass log exists"
+  - level: WARN
+    check: "Gate-bypass log: 24 bypasses in last 7 days"
+    mitigation: "Review .context/working/.gate-bypass-log.yaml — investigate caller distribution"
+  - level: PASS
+    check: "Commit-msg hook installed"
+  - level: PASS
+    check: "No Tier 0 violations detected"
+  - level: PASS
+    check: "Practices documented: 7 practice(s) in 015-Practices.md"
+  - level: PASS
+    check: "All practices have traceable origins"
+  - level: PASS
+    check: "All practice origins resolve to actual tasks"
+  - level: PASS
+    check: "Bugfix-learning coverage: 80% (297/371 bugfixes have learnings)"
+  - level: PASS
+    check: "All completed tasks have episodic summaries"
+  - level: PASS
+    check: "All 1657 episodic summaries have quality content"
+  - level: PASS
+    check: "No orphaned episodic files"
+  - level: PASS
+    check: "Observation inbox clean (0 pending)"
+  - level: PASS
+    check: "Gaps register: 9 watching, no triggers fired"
+  - level: PASS
+    check: "Handover open questions: none (section empty or template placeholder)"
+  - level: PASS
+    check: "Graduation pipeline: 0 learnings (threshold: 20)"
+  - level: WARN
+    check: "Inception task T-1617 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1617-*.md"
+  - level: WARN
+    check: "Inception task T-1444 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1444-*.md"
+  - level: WARN
+    check: "Inception task T-1621 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1621-*.md"
+  - level: WARN
+    check: "Inception task T-1376 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1376-*.md"
+  - level: WARN
+    check: "Inception task T-1616 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1616-*.md"
+  - level: WARN
+    check: "Inception task T-1372 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1372-*.md"
+  - level: WARN
+    check: "Inception task T-1506 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1506-*.md"
+  - level: WARN
+    check: "Inception task T-1732 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1732-*.md"
+  - level: WARN
+    check: "Inception task T-1626 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1626-*.md"
+  - level: WARN
+    check: "Inception task T-1507 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1507-*.md"
+  - level: WARN
+    check: "Inception task T-1713 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-1713-*.md"
+  - level: WARN
+    check: "C-001: Inception T-1265 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-1265-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-1710 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-1710-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-682 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-682-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-704 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-704-*.md — the thinking trail IS the artifact"
+  - level: PASS
+    check: "C-002: commit-msg hook has research artifact check"
+  - level: PASS
+    check: "C-002: No research warnings logged (clean or first run)"
+  - level: PASS
+    check: "C-003: Research checkpoint logic present in checkpoint.sh"
+  - level: PASS
+    check: "C-006: All active inceptions have a real Recommendation block"
+  - level: PASS
+    check: "CTL-001: Focus file has active task (T-1730)"
+  - level: PASS
+    check: "CTL-003: Budget status file fresh (< 5min old)"
+  - level: PASS
+    check: "CTL-004: Tool counter at 29 (last commit: 75 minutes ago)"
+  - level: PASS
+    check: "CTL-018: Budget status valid JSON (level: ok)"
+  - level: PASS
+    check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
+  - level: PASS
+    check: "CTL-020: 4 cron audit file(s) in last hour"
+  - level: PASS
+    check: "CTL-002: Tier 0 guard installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-005: Error watchdog installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-006: Handover coverage for compactions (790 handovers, 388 compactions)"
+  - level: PASS
+    check: "CTL-007: Post-compact resume hook configured in settings.json"
+  - level: PASS
+    check: "CTL-009: Inception T-1265 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1271 has decision (13 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1309 has decision (12 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1611 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1685 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-550 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-558 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-682 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-704 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-705 has decision (16 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-844 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-084 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-097 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1017 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1061 has decision (23 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1067 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-107 has decision (54 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1084 has decision (11 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1092 has decision (17 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-109 has decision (64 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1100 has decision (18 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1101 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1102 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1103 has decision (11 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1104 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1105 has decision (30 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1106 has decision (22 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1107 has decision (23 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1109 has decision (26 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-110 has decision (71 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1110 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1111 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1112 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1115 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1119 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-111 has decision (63 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1120 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1121 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1122 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1123 has decision (11 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1124 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1125 has decision (17 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1126 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1127 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1129 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1130 has decision (15 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1131 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1132 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1133 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1134 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1135 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1136 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1138 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1139 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1140 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1141 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1145 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1146 has decision (16 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1151 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1178 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-118 has decision (33 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1200 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-120 has decision (58 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1212 has decision (13 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1213 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-122 has decision (41 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-124 has decision (46 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1251 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1252 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1253 has decision (12 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1255 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1258 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1260 has decision (15 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1261 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1268 has decision (13 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1270 has decision (14 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1272 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1276 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1283 has decision (17 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1284 has decision (18 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1296 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1297 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1298 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1299 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1300 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1302 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1303 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1304 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1305 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-130 has decision (44 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1311 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1312 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1313 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1314 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1315 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1316 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1319 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-131 has decision (37 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1321 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1322 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1326 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-132 has decision (45 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1330 has decision (11 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1332 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1333 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1337 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-133 has decision (41 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1345 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1346 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1348 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1353 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1355 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1359 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1365 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1372 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1376 has decision (12 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1388 has decision (16 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-138 has decision (30 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1404 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-140 has decision (34 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1420 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1442 has decision (13 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1443 has decision (17 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1444 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1451 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1452 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1455 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1459 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1460 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1482 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1499 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1501 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1505 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1506 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1507 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1513 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1538 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1544 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1548 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-154 has decision (44 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-155 has decision (33 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1565 has decision (13 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-156 has decision (25 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-157 has decision (50 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-158 has decision (33 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1601 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1616 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1617 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1626 has decision (14 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1633 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1641 has decision (16 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1642 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1645 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-164 has decision (52 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1653 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1660 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1666 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1667 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1670 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1675 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1686 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1688 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1689 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-168 has decision (41 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1690 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1691 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1692 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1705 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1709 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1713 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1714 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1715 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1717 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1721 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-1726 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-174 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-178 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-179 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-181 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-190 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-191 has decision (14 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-194 has decision (23 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-200 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-222 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-235 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-254 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-261 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-292 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-294 has decision (23 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-305 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-306 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-307 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-316 has decision (11 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-325 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-339 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-356 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-358 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-362 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-375 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-411 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-432 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-433 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-434 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-435 has decision (14 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-436 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-445 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-455 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-468 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-469 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-473 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-477 has decision (12 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-479 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-482 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-487 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-488 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-489 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-490 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-495 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-502 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-513 has decision (14 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-532 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-533 has decision (12 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-534 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-548 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-549 has decision (24 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-561 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-567 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-568 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-569 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-570 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-571 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-578 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-579 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-580 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-581 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-582 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-583 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-584 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-585 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-586 has decision (20 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-589 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-598 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-599 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-600 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-601 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-603 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-607 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-608 has decision (12 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-614 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-625 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-629 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-630 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-635 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-636 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-644 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-662 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-678 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-679 has decision (24 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-697 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-698 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-699 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-700 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-701 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-702 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-703 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-707 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-726 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-772 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-792 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-799 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-800 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-815 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-816 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-817 has decision (10 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-818 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-823 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-830 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-835 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-837 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-856 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-860 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-864 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-866 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-877 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-878 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-882 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-885 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-954 has decision (9 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-962 has decision (12 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-968 has decision (16 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-993 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-027: Inception T-1265 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-1271 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-1309 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-1611 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-1685 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-1710 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-550 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-558 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-682 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-704 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-705 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-027: Inception T-844 has Recommendation + Decision sections"
+  - level: PASS
+    check: "CTL-010: Bypass log has 13 entries (post-commit detector working)"
+  - level: PASS
+    check: "CTL-011: pre-push hook installed and executable"
+  - level: WARN
+    check: "CTL-012: Completed task T-1548 has unchecked AC"
+    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: WARN
+    check: "CTL-012: Completed task T-1688 has unchecked AC"
+    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: WARN
+    check: "CTL-012: Completed task T-678 has unchecked AC"
+    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: WARN
+    check: "CTL-012: Completed task T-436 has unchecked AC"
+    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: WARN
+    check: "CTL-013: T-1716 verification re-run: 1 command(s) failing"
+    mitigation: "Review T-1716 — environment may have changed"
+  - level: WARN
+    check: "CTL-013: T-1725 verification re-run: 1 command(s) failing"
+    mitigation: "Review T-1725 — environment may have changed"
+  - level: PASS
+    check: "CTL-013: T-1724 verification re-run: 2/2 pass"
+  - level: PASS
+    check: "CTL-019: claude-fw wrapper installed and executable"
+  - level: PASS
+    check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
+  - level: PASS
+    check: "D1: Episodic quality — 1% [TODO] (18/1657)"
+  - level: PASS
+    check: "D2: Human review queue — no pending items"
+  - level: PASS
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - level: PASS
+    check: "D8b: Handover archive — 0/10 recent handovers have [TODO]s"
+  - level: WARN
+    check: "D10: Decision-without-dialogue — 13 task(s): T-815 T-1151 T-608 T-586 T-993"
+    mitigation: "Review flagged tasks — human dialogue may have been skipped"
+  - level: PASS
+    check: "D11: Gap register staleness — all gaps fresh"
+  - level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - level: WARN
+    check: "D5: Task lifecycle — 14 anomaly(s): T-1372(4min,human) T-544(44d-active) T-682(37d-active) T-801(31d-active) T-332(61d-active) T-464(53d-active) T-704(36d-active) T-334(61d-active) T-1274(19d-active) T-1265(19d-active) (+4 more)"
+    mitigation: "Review flagged tasks for process issues"
+  - level: WARN
+    check: "D13: Inception limbo — 7 task(s): A=0/B=7 T-1265(B) T-1309(B) T-1611(B) T-1685(B) T-1710(B) T-682(B) T-704(B)"
+    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
+  - level: WARN
+    check: "D3: Commit velocity — WARN drop today=1 avg=59 ratio=0.0x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
+  - level: PASS
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 41_commits_24h)"
+  - level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=12.7 earlier=27.0)"
+  - level: PASS
+    check: "D12: Bypass log — no log file"
+  - level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
+  - level: PASS
+    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
+  - level: PASS
+    check: "D15: Inception limbo state — none (PASS no_limbo)"
+  - level: PASS
+    check: "CTL-016: No failure patterns recorded"
+  - level: PASS
+    check: "Orchestrator-arc MCP scan: pass — 4/75 tools gated"
+  - level: PASS
+    check: "Arc 'embeddings-strategy': 1/3 (0.3333) — below threshold 0.80, no closure pressure"
+  - level: WARN
+    check: "Arc 'orchestrator-rethink': 28/31 tasks completed (0.9032) but arc still in-progress"
+    mitigation: "Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close orchestrator-rethink --demo <path"
+  - level: PASS
+    check: "Arc 'project-shape-resilience': 3/6 (0.5000) — below threshold 0.80, no closure pressure"

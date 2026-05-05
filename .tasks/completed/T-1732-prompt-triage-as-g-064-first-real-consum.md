@@ -4,7 +4,7 @@ name: "prompt-triage as G-064 first real consumer — orchestrator-driven user-p
 description: >
   Inception: prompt-triage as G-064 first real consumer — orchestrator-driven user-prompt classifier (T-1729 sibling 3)
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:orchestrator-rethink, meta-rca:T-1729, G-064-closure, supersedes-T-17
 components: []
 related_tasks: [T-1729, T-1726, T-1727, T-1689, T-1690, T-1691, T-1692, T-1697]
 created: 2026-05-05T05:42:02Z
-last_update: 2026-05-05T05:42:29Z
-date_finished: null
+last_update: 2026-05-05T06:47:22Z
+date_finished: 2026-05-05T06:47:22Z
 ---
 
 # T-1732: prompt-triage as G-064 first real consumer — orchestrator-driven user-prompt classifier (T-1729 sibling 3)
@@ -46,15 +46,15 @@ date_finished: null
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -111,7 +111,11 @@ Layer-1 mitigation from T-1729 meta-RCA: UserPromptSubmit hook routes user messa
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Layer-1 mitigation from T-1729 meta-RCA: UserPromptSubmit hook routes user message through fw resolver dispatch with prompt-triage workflow (ollama-local default, cloud fallback, fail-OPEN, latency target <500ms p95, cost cap $0.001/call). Verdict: GO/NO-GO/DEFER on whether prompt requires task creation. On GO, surface additionalContext warning the agent. Closes G4 (text output has no surface for governance) which structural fixes 1+2 cannot reach. Promotes to v0.5 over T-1726 escalation-scan because: higher severity (governance bypass > symptom-fix), hot-path (per-prompt vs daily), visible win on every prevented breakdown. T-1726 demoted to v0.6 (same envelope shape, near-zero incremental cost). Recommendation GO because spike path is bounded (Spike A: latency/cost; Spike B: precision/recall on 30-day backlog), substrate (T-1689/1690/1691/1692) is shipped, and the failure class is recurring.
+
+**Date**: 2026-05-05T06:47:22Z
 
 ## Updates
 
@@ -129,3 +133,25 @@ Layer-1 mitigation from T-1729 meta-RCA: UserPromptSubmit hook routes user messa
 
 ### 2026-05-05T05:42:29Z — status-update [task-update-agent]
 - **Change:** tags: +supersedes-T-1726-as-v0.5
+
+### 2026-05-05T06:47:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Layer-1 mitigation from T-1729 meta-RCA: UserPromptSubmit hook routes user message through fw resolver dispatch with prompt-triage workflow (ollama-local default, cloud fallback, fail-OPEN, latency target <500ms p95, cost cap $0.001/call). Verdict: GO/NO-GO/DEFER on whether prompt requires task creation. On GO, surface additionalContext warning the agent. Closes G4 (text output has no surface for governance) which structural fixes 1+2 cannot reach. Promotes to v0.5 over T-1726 escalation-scan because: higher severity (governance bypass > symptom-fix), hot-path (per-prompt vs daily), visible win on every prevented breakdown. T-1726 demoted to v0.6 (same envelope shape, near-zero incremental cost). Recommendation GO because spike path is bounded (Spike A: latency/cost; Spike B: precision/recall on 30-day backlog), substrate (T-1689/1690/1691/1692) is shipped, and the failure class is recurring.
+
+### 2026-05-05T06:47:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-285aed82
+- **Timestamp:** 2026-05-05T06:47:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T06:47:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
