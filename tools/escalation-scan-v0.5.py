@@ -240,9 +240,58 @@ def call_litellm(prompt: str, *, base: str, key: str, model: str) -> dict:
         }
 
 
+VALID_VERDICTS = ("real_symptom_fix", "false_positive", "defer")
+
+
+def _regex_fallback(text: str) -> dict:
+    """Regex-extract verdict/rationale/confidence from sloppy LLM output.
+
+    Activated when fenced+yaml parsing yields nothing OR when yaml.safe_load
+    raises on syntactically intentful but unquoted output (e.g. `rationale:
+    This is a fix: a clear bug response` — a colon in the rationale value
+    aborts yaml). Per T-1748 / T-1727 5.9% PARSE-FAIL: the verdict word is
+    sitting right there in plain text — extracting it is more useful than
+    discarding the entire envelope.
+
+    Returns {} when no valid verdict word is found (input is unsalvageable).
+    """
+    if not text:
+        return {}
+    # Verdict: constrained to the three valid words. Refusing arbitrary words
+    # ("verdict: maybe") is the AC contract — better PARSE-FAIL than drift.
+    verdict = ""
+    m = re.search(
+        r"verdict\s*[:=]\s*[\"']?(real_symptom_fix|false_positive|defer)\b",
+        text, flags=re.IGNORECASE,
+    )
+    if m:
+        verdict = m.group(1).lower()
+    if not verdict:
+        return {}
+    confidence = 0.0
+    cm = re.search(r"confidence\s*[:=]\s*([0-9]*\.?[0-9]+)", text, flags=re.IGNORECASE)
+    if cm:
+        try:
+            confidence = float(cm.group(1))
+        except ValueError:
+            confidence = 0.0
+        confidence = max(0.0, min(1.0, confidence))
+    rationale = ""
+    rm = re.search(
+        r"rationale\s*[:=]\s*[\"']?(.+?)(?:\n\s*(?:confidence|verdict)\s*[:=]|\Z)",
+        text, flags=re.IGNORECASE | re.DOTALL,
+    )
+    if rm:
+        rationale = rm.group(1).strip().strip('"\'').strip()
+    return {"verdict": verdict, "rationale": rationale, "confidence": confidence}
+
+
 def parse_verdict_envelope(text: str) -> dict:
     """Find the fenced YAML block in the LLM response, parse verdict +
-    rationale + confidence. Returns {} on parse failure."""
+    rationale + confidence. Falls back to regex extraction when YAML parsing
+    fails on syntactically intentful but unquoted output (T-1748). Returns
+    {} only when nothing can be extracted at all (true PARSE-FAIL).
+    """
     if not text:
         return {}
     fenced = None
@@ -257,23 +306,33 @@ def parse_verdict_envelope(text: str) -> dict:
             break
         if in_fence:
             buf.append(line)
-    if not fenced and buf:
+    if fenced is None and buf:
+        # Missing closing fence — use whatever we collected.
         fenced = "\n".join(buf)
-    if not fenced:
-        return {}
-    try:
-        parsed = yaml.safe_load(fenced) or {}
-    except yaml.YAMLError:
-        return {}
-    if not isinstance(parsed, dict):
-        return {}
-    verdict = str(parsed.get("verdict", "")).strip()
-    rationale = str(parsed.get("rationale", "")).strip()
-    try:
-        confidence = float(parsed.get("confidence", 0.0))
-    except (TypeError, ValueError):
-        confidence = 0.0
-    return {"verdict": verdict, "rationale": rationale, "confidence": confidence}
+    # Try strict YAML first.
+    if fenced:
+        try:
+            parsed = yaml.safe_load(fenced) or {}
+        except yaml.YAMLError:
+            parsed = None
+        if isinstance(parsed, dict):
+            verdict = str(parsed.get("verdict", "")).strip()
+            # Constrain verdict to known set even on the YAML path — a
+            # rationale that started with "verdict: maybe" inside a fenced
+            # YAML block could otherwise leak through.
+            if verdict not in VALID_VERDICTS:
+                verdict = ""
+            rationale = str(parsed.get("rationale", "")).strip()
+            try:
+                confidence = float(parsed.get("confidence", 0.0))
+            except (TypeError, ValueError):
+                confidence = 0.0
+            confidence = max(0.0, min(1.0, confidence))
+            if verdict:
+                return {"verdict": verdict, "rationale": rationale, "confidence": confidence}
+    # Fall through to regex extraction — applied to the full text, not just
+    # the fence content, so plain-text-no-fence inputs are handled too.
+    return _regex_fallback(text)
 
 
 def main() -> int:
