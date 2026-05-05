@@ -2731,3 +2731,10 @@ X'` returning empty group."
   date: 2026-05-05
   context: Added via context agent
   application: TBD
+- id: L-353
+  learning: "Spike A's all-GO bias on 3 synthetic prompts predicted classifier conservatism; Spike B on 50 real prompts measured the OPPOSITE — under-prediction of GO. Lesson: small synthetic cohorts cannot diagnose calibration bias direction, only substrate liveness. Substrate-vs-calibration are independent failure surfaces requiring independent benchmarks."
+  source: T-1736
+  task: T-1740
+  date: 2026-05-05
+  context: Added via context agent
+  application: TBD

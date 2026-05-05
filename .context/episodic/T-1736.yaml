@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1736: Spike B: prompt-triage classifier accuracy on 30-day backlog (T-1733 sibling)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T08:14:13Z
+# ============================================================================
+
+task_id: T-1736
+task_name: "Spike B: prompt-triage classifier accuracy on 30-day backlog (T-1733 sibling)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-05T07:36:42Z
+completed: 2026-05-05T08:14:09Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-05-05T10:13:57+02:00
+last_commit: 2026-05-05T10:13:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Spike B — prompt-triage classifier accuracy bench
+
+# Key outcomes
+outcomes:
+  - "Harvest script extracts ≥30 deduplicated, real user prompts from `~/.claude/projects/*/*.jsonl` (last 30 days), written to `.context/spikes/T-1736-prompts.jsonl` (one JSON object per line, fields: id, source, text)"
+  - "Ground-truth labels for every harvested prompt in `.context/spikes/T-1736-labels.yaml` (each entry: id, label ∈ {GO, NO-GO, DEFER}, optional note)"
+  - "Run-harness script invokes prompt-triage classifier (litellm:4000 → ollama hermes3:8b) per prompt, captures `verdict|rationale|confidence`, writes `.context/spikes/T-1736-results.jsonl`"
+  - "Per-class precision/recall + 3×3 confusion matrix + class distribution computed and rendered in `docs/reports/T-1736-spike-b.md`"
+  - "Task `## Recommendation` block names a concrete next-step decision: keep hermes3, switch model (qwen3/gemma4), revise prompt template (calibration examples), or accept under-precision under safety-first defaulting — with rationale citing the measured numbers"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/spikes/T-1736-labels.yaml"
+  - ".context/spikes/T-1736-prompts.jsonl"
+  - ".context/spikes/T-1736-results.jsonl"
+  - ".context/spikes/T-1736-runharness.log"
+  - ".context/spikes/T-1736-sampled.jsonl"
+  - ".context/spikes/T-1736-smoke.jsonl"
+  - "docs/reports/T-1736-spike-b.md"
+  - "scripts/spikes/T-1736-harvest.py"
+  - "scripts/spikes/T-1736-metrics.py"
+  - "scripts/spikes/T-1736-runharness.py"
+  - "scripts/spikes/T-1736-sample.py"
+  - ".tasks/active/T-1736-spike-b-prompt-triage-classifier-accurac.md"
+  - ".tasks/active/T-1737-slice-2-userpromptsubmit-hook--promptund.md"
+  - ".tasks/active/T-1740-revise-prompt-triage-template--direct-co.md"
+  - ".tasks/active/T-1741-evaluate-alternative-ollama-models-for-p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T10:13:57"
+    action: "T-1736: Spike B — prompt-triage classifier accuracy bench"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [spike, arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 37
+  commits: 1
+  files_changed: 15
+  lines_added: 4434
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1736-spike-b-prompt-triage-classifier-accurac.md
+generated_by: context-agent-hybrid
