@@ -1833,7 +1833,8 @@ concerns:
   created: 2026-05-02
   last_reviewed: 2026-05-05
   related_task: T-1683
-  related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682, T-1684, T-1688, T-1727, T-1750]
+  related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682, T-1684, T-1688, T-1727, T-1750, T-1752]
+  closure_check_command: "python3 tools/g064-readiness.py --json"
   status_notes: |
     2026-05-05 — T-1727 shipped v0.5 of escalation-scan with LLM augmentation
     via fw resolver dispatch (workflow=escalation-triage, worker_kind=ollama-loop).
