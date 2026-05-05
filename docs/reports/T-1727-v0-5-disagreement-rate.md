@@ -78,14 +78,14 @@ This closes G-064 (orchestrator first real consumer): the substrate is now wired
 ## Read-out — AC status
 
 - ✅ **A6 satisfied.** Disagreement rate (64.7%) ≫ threshold (10%). Signal confirmed.
-- ⚠ **PARSE-FAIL rate 5.9% (10/170).** Acceptable for spike-class but should improve if v0.5 promotes — either tighten the prompt's output contract or harden `parse_verdict_envelope` to handle unclosed fences.
+- ✅ **PARSE-FAIL rate 5.9% (10/170) — addressed by T-1748 (commit 1aa123abb).** Layered parser with regex fallback now handles unquoted colons, missing fences, plain-text-no-fence inputs. Verdict word constrained to known set on both YAML and regex paths. Live validation 2026-05-05: 20-candidate `--force` re-run produced **0/20 PARSE-FAIL** (sample-size caveat applies; see test_escalation_v05_parser.py for unit-pinned coverage of all three failure modes). Will re-baseline against next 30-day cron firing.
 - ⚠ **Per-call accuracy unmeasured.** L-355 cap is 76–79%; aggregate is robust but individual verdicts should NOT be treated as ground truth (e.g. don't auto-close tasks based on `false_positive`).
 
 ## Promotion criteria for v1 (informational)
 
 If v0.5 ships and accumulates 90 days of outcome data, v1 should consider:
 1. **Manual triage of 30 disagreement cases** to estimate true precision/recall.
-2. **PARSE-FAIL hardening** — either retry once with a stricter prompt or fall back to a regex extractor.
+2. ~~**PARSE-FAIL hardening**~~ — **shipped in T-1748** (regex fallback in parser, verdict-word gating on both paths, 15-test regression suite). Re-baseline at next cron firing.
 3. **Confidence threshold experiment** — does filtering verdicts to `confidence ≥ 0.8` materially improve precision?
 4. **Cross-model comparison** — re-run on qwen3:14b or gpt-oss:20b for an aggregate-vs-aggregate sanity check (L-355 named gpt-oss:20b as a likely ceiling-extender).
 
