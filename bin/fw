@@ -1801,6 +1801,7 @@ files = sorted(glob.glob(os.path.join(wf_dir, "*.yaml")))
 
 INLINE_FORBIDDEN = {"worker_kind","model","effort","prompt_template","prompt_strategy","meta_model","meta_template","allowed_tools","cost_cap_usd","cwd","provider","variants","outcome_evaluator","env"}
 DISPATCH_REQUIRED = {"task_type","worker_kind","model","effort","prompt_template","allowed_tools","cost_cap_usd","cwd"}
+# NOTE: keep in sync with lib/resolver.py:VALID_WORKER_KINDS (T-1734).
 VALID_WORKER_KINDS = {"Task","TermLink","pi","ollama-loop"}
 VALID_STRATEGIES = {"static","assembled","meta-prompted"}
 

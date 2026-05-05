@@ -53,7 +53,10 @@ TASKS_COMPLETED = PROJECT_ROOT / ".tasks" / "completed"
 DISPATCH_SCHEMA_VERSION = 1
 VAR_PAT = re.compile(r"\$([A-Z][A-Z0-9_]*)")
 
-VALID_WORKER_KINDS = {"Task", "TermLink", "pi"}
+# NOTE: keep in sync with bin/fw:1804 (T-1734). Two tables drifted before: bin/fw
+# accepted "ollama-loop" while this one didn't, so workflows listed cleanly but
+# failed at dispatch. If you add a worker_kind here, add it there too (and vice versa).
+VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop"}
 VALID_PROMPT_STRATEGIES = {"static", "assembled", "meta-prompted"}
 
 
