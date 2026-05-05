@@ -98,6 +98,13 @@ grep -q "## Recommendation" .tasks/active/T-1743-spike-d-off-ramp-re-score-4-mod
 
 ## Evolution
 
+### 2026-05-05 — DEFER wasn't the problem; noise floor is architectural
+- **What changed:** Going in, the hypothesis was "DEFER class is under-represented (5/50) and dragging accuracy — collapse to binary and the picture changes." Result: accuracy lifted modestly (qwen35: 76.74% → 79.07%, hermes3: 70% → 70%, qwen3: 66% → 70%, gemma4: 68% → 74%) but **no model clears 90%** even on the easier binary task. GO precision tightens because the FP rate doesn't improve when DEFER→NON_GO collapse moves more truth-NON_GO into the same bucket. The DEFER class was contributing some confusion (~2-6pp accuracy drag depending on model) but the underlying noise floor isn't a class-structure artifact.
+- **Plan impact:** T-1741 Recommendation listed three off-ramps with "T-1743 cheapest first." That's now decided: T-1743 ran, NO-GO. Updated guidance: skip T-1742 (qwen35 max_tokens spike — marginal even at optimistic ceiling) and promote T-1744 (different G-064 first-consumer). The architectural concern propagates from 3-class to 2-class, so model-level fixes (more tokens, different model) won't move the needle enough.
+- **Triggered:** No new task. The off-ramp tree from T-1741 is now traversed: T-1743 NO-GO → T-1744 is the live path. T-1742 stays captured/later (could be useful as a smaller-scope experiment but not the main route).
+
+
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
