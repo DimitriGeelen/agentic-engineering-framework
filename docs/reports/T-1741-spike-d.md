@@ -26,6 +26,8 @@ identical 50-prompt benchmark from `.context/spikes/T-1736-sampled.jsonl`.
 - latency p50: 1432ms · errors: 0 · parse-fails: 0
 - threshold check: acc≥80% **False** · GO recall≥0.85 **True** · DEFER F1≥0.50 **False**
 
+**Confusion matrix:**
+
 | truth ↓ / pred → | GO | NO-GO | DEFER |
 |---|---|---|---|
 | **GO** | 32 | 1 | 0 |
@@ -45,6 +47,8 @@ identical 50-prompt benchmark from `.context/spikes/T-1736-sampled.jsonl`.
 - conf-gap: +0.091  (>0 = more confident when right)
 - latency p50: 15844ms · errors: 0 · parse-fails: 0
 - threshold check: acc≥80% **False** · GO recall≥0.85 **False** · DEFER F1≥0.50 **False**
+
+**Confusion matrix:**
 
 | truth ↓ / pred → | GO | NO-GO | DEFER |
 |---|---|---|---|
@@ -66,6 +70,8 @@ identical 50-prompt benchmark from `.context/spikes/T-1736-sampled.jsonl`.
 - latency p50: 39673ms · errors: 0 · parse-fails: 7
 - threshold check: acc≥80% **False** · GO recall≥0.85 **True** · DEFER F1≥0.50 **False**
 
+**Confusion matrix:**
+
 | truth ↓ / pred → | GO | NO-GO | DEFER |
 |---|---|---|---|
 | **GO** | 26 | 2 | 2 |
@@ -85,6 +91,8 @@ identical 50-prompt benchmark from `.context/spikes/T-1736-sampled.jsonl`.
 - conf-gap: +0.015  (>0 = more confident when right)
 - latency p50: 8853ms · errors: 0 · parse-fails: 0
 - threshold check: acc≥80% **False** · GO recall≥0.85 **False** · DEFER F1≥0.50 **True**
+
+**Confusion matrix:**
 
 | truth ↓ / pred → | GO | NO-GO | DEFER |
 |---|---|---|---|
