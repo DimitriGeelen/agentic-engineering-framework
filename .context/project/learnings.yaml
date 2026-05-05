@@ -2738,3 +2738,10 @@ X'` returning empty group."
   date: 2026-05-05
   context: Added via context agent
   application: TBD
+- id: L-354
+  learning: "When a classifier's headline accuracy improves but confidence calibration regresses (correct minus wrong gap shrinks toward 0 or negative), suspect the model is defaulting to one class with confabulated rationales rather than actually distinguishing classes. Check disagreement rationales for hallucinated content from the prompt template calibration examples. T-1740 saw +30pp accuracy with calibration regression -0.037; root cause was hermes3:8b confusing template examples with the prompt-under-triage."
+  source: T-1740
+  task: T-1740
+  date: 2026-05-05
+  context: Added via context agent
+  application: TBD

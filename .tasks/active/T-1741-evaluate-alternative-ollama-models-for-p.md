@@ -4,15 +4,15 @@ name: "Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) —
 description: >
   If T-1740 prompt-template revision fails to reach >=80% accuracy on the T-1736 50-prompt benchmark, evaluate whether switching the underlying ollama model rescues the classifier. Models to test: claude-3-5-sonnet-qwen3, claude-3-5-sonnet-qwen35, claude-3-5-sonnet-gemma4 (all already exposed via litellm:4000). Same harness (.context/spikes/T-1736-runharness.py with --model flag), same benchmark, same metrics. Decision: keep best model + revised template, or escalate to NO-GO on whole prompt-triage workflow.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [spike, arc:orchestrator-rethink, follow-up]
 components: []
 related_tasks: [T-1736, T-1740, T-1737]
 created: 2026-05-05T08:13:04Z
-last_update: 2026-05-05T08:13:04Z
+last_update: 2026-05-05T08:22:17Z
 date_finished: null
 ---
 
@@ -25,9 +25,11 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Run T-1736 harness against the **revised** prompt template (T-1740 baseline) with `--model claude-3-5-sonnet-qwen3` on the same 50-prompt benchmark, output to `.context/spikes/T-1741-qwen3-results.jsonl`
+- [ ] Same with `--model claude-3-5-sonnet-qwen35` → `.context/spikes/T-1741-qwen35-results.jsonl`
+- [ ] Same with `--model claude-3-5-sonnet-gemma4` → `.context/spikes/T-1741-gemma4-results.jsonl`
+- [ ] Comparison report `docs/reports/T-1741-spike-d.md` with confusion matrix + per-class P/R/F1 + accuracy + GO recall + DEFER discrimination + confidence calibration gap for all four models (hermes3 from T-1740, plus three alternatives) side-by-side
+- [ ] Task `## Recommendation` block names whether T-1737 (Slice 2 hook) is unblocked, citing the best-performing model + delta vs T-1740 baseline; success threshold unchanged: accuracy ≥ 80% AND GO recall ≥ 0.85 AND DEFER F1 ≥ 0.5
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -54,6 +56,18 @@ date_finished: null
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+
+test -f .context/spikes/T-1741-qwen3-results.jsonl
+test "$(wc -l < .context/spikes/T-1741-qwen3-results.jsonl)" -ge 50
+test -f .context/spikes/T-1741-qwen35-results.jsonl
+test "$(wc -l < .context/spikes/T-1741-qwen35-results.jsonl)" -ge 50
+test -f .context/spikes/T-1741-gemma4-results.jsonl
+test "$(wc -l < .context/spikes/T-1741-gemma4-results.jsonl)" -ge 50
+test -f docs/reports/T-1741-spike-d.md
+grep -q -i "confusion" docs/reports/T-1741-spike-d.md
+grep -q -i "qwen3" docs/reports/T-1741-spike-d.md
+grep -q -i "gemma4" docs/reports/T-1741-spike-d.md
+grep -q "## Recommendation" .tasks/active/T-1741-evaluate-alternative-ollama-models-for-p.md
 
 ## RCA
 
@@ -112,3 +126,11 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1741-evaluate-alternative-ollama-models-for-p.md
 - **Context:** Initial task creation
+
+### 2026-05-05T08:21:23Z — status-update [task-update-agent]
+- **Change:** horizon: later → next
+- **Reason:** T-1740 finding promoted: hermes3:8b hit calibration ceiling, model swap is now necessary, not optional
+
+### 2026-05-05T08:22:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

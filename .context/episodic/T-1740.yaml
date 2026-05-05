@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1740: Revise prompt-triage template — direct-command-GO calibration examples (T-1736 follow-up Spike C)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T08:21:41Z
+# ============================================================================
+
+task_id: T-1740
+task_name: "Revise prompt-triage template — direct-command-GO calibration examples (T-1736 follow-up Spike C)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-05T08:12:52Z
+completed: 2026-05-05T08:21:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-05T10:18:43+02:00
+last_commit: 2026-05-05T10:18:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Spike C — revise prompt-triage template (calibration examples)
+
+# Key outcomes
+outcomes:
+  - "`prompts/prompt-triage.md` gains ≥6 new calibration examples covering direct-command-GO patterns (\"Run: ...\", \"Commit: ...\", \"T-XXX: <verb>\", \"fw <verb> ...\", agent-dispatch worker prompts starting with \"You are working in ...\") — 7→28 examples"
+  - "Re-run T-1736 harness (`scripts/spikes/T-1736-runharness.py`) against the **same** 50-prompt benchmark (`.context/spikes/T-1736-sampled.jsonl`), output written to `.context/spikes/T-1740-results.jsonl`"
+  - "Metrics report `docs/reports/T-1740-spike-c.md` rendered with confusion matrix + per-class precision/recall/F1 + side-by-side delta vs T-1736 baseline (40% accuracy)"
+  - "Task `## Recommendation` block names whether T-1737 (Slice 2 hook) is unblocked, citing the new accuracy + GO recall — success threshold: accuracy ≥ 80% AND GO recall ≥ 0.85; partial pass (one met) is DEFER; failure is NO-GO and triggers T-1741"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1736.yaml"
+  - ".context/project/learnings.yaml"
+  - "prompts/prompt-triage.md"
+  - "scripts/spikes/T-1740-metrics.py"
+  - ".tasks/active/T-1740-revise-prompt-triage-template--direct-co.md"
+  - ".tasks/completed/T-1736-spike-b-prompt-triage-classifier-accurac.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T10:18:43"
+    action: "T-1740: Spike C — revise prompt-triage template (calibration examples)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [spike, arc:orchestrator-rethink, follow-up]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 6
+  lines_added: 406
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1740-revise-prompt-triage-template--direct-co.md
+generated_by: context-agent-hybrid
