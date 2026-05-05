@@ -20,7 +20,7 @@
 # /opt/termlink is outside PROJECT_ROOT and unreadable from here, so handler-level
 # verification is deferred — human can correct miscategorisations on review.
 
-baseline_count: 134
+baseline_count: 136
 last_verified: 2026-05-06
 
 gated:
@@ -86,7 +86,7 @@ mutators_ungated:
 
 readonly_exempt:
   description: "Passive/observational — gating optional. Adding new entries here requires an explicit reason in the commit body."
-  count: 88
+  count: 90
   tools:
     - termlink_ping
     - termlink_status
@@ -179,3 +179,7 @@ readonly_exempt:
     - termlink_agent_unanswered
     - termlink_agent_unread
     - termlink_agent_who_is
+    # T-1755 follow-up: 2 tools that surfaced minutes after first classification
+    # (upstream TermLink is actively shipping). Both read-shaped stats names.
+    - termlink_agent_activity_rhythm
+    - termlink_agent_peer_engagement
