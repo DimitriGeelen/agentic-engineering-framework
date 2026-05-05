@@ -3263,19 +3263,23 @@ EOF
                 ;;
             status)
                 # T-1699: substrate observability — dispatch + outcome summary.
+                # T-1749: --outcomes flag adds per-task-type outcome quality view.
                 shift
                 _emit_json=0
+                _emit_outcomes=0
                 for _arg in "$@"; do
                     [ "$_arg" = "--json" ] && _emit_json=1
+                    [ "$_arg" = "--outcomes" ] && _emit_outcomes=1
                 done
-                python3 - "$_emit_json" <<'PYEOF'
+                python3 - "$_emit_json" "$_emit_outcomes" <<'PYEOF'
 import json
 import os
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 emit_json = sys.argv[1] == "1"
+emit_outcomes = sys.argv[2] == "1"
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 DISPATCHES = PROJECT_ROOT / ".context" / "dispatches.jsonl"
 OUTCOMES = PROJECT_ROOT / ".context" / "dispatch-outcomes.jsonl"
@@ -3327,6 +3331,58 @@ stats = {
 }
 if stats["dispatch_total"]:
     stats["enrichment_ratio"] = round(stats["enriched_dispatches"] / stats["dispatch_total"], 3)
+
+
+# T-1749: per-task-type outcome quality aggregation. Routes by outcome
+# shape, not hardcoded evaluator name — verdict-style (escalation-scan-v0.5)
+# and verification-style (default evaluator) are both surfaced.
+def _aggregate_outcomes_by_task_type():
+    # Map dispatch_id → task_type for non-synthetic dispatches.
+    did_to_type = {
+        d.get("dispatch_id"): (d.get("task_type") or "?")
+        for d in dispatches if d.get("dispatch_id")
+    }
+    by_type: dict = defaultdict(lambda: {
+        "evaluators": Counter(),
+        "verdicts": Counter(),
+        "verification_passed": Counter(),
+        "ac_satisfied": Counter(),
+        "outcome_total": 0,
+    })
+    for o in outcomes:
+        did = o.get("dispatch_id")
+        if did not in did_to_type:
+            continue  # Outcome for synthetic or unknown dispatch — skip.
+        ttype = did_to_type[did]
+        outcome_body = o.get("outcome", {}) or {}
+        bucket = by_type[ttype]
+        bucket["outcome_total"] += 1
+        ev = outcome_body.get("evaluator")
+        if ev:
+            bucket["evaluators"][ev] += 1
+        # Shape detection — verdict-style or verification-style.
+        verdict = outcome_body.get("verdict")
+        if verdict:
+            bucket["verdicts"][verdict] += 1
+        if "verification_passed" in outcome_body:
+            bucket["verification_passed"][bool(outcome_body["verification_passed"])] += 1
+        if "ac_satisfied" in outcome_body:
+            bucket["ac_satisfied"][bool(outcome_body["ac_satisfied"])] += 1
+    # Convert Counters to dicts for JSON serializability.
+    return {
+        ttype: {
+            "evaluators": dict(b["evaluators"]),
+            "verdicts": dict(b["verdicts"]),
+            "verification_passed": {str(k): v for k, v in b["verification_passed"].items()},
+            "ac_satisfied": {str(k): v for k, v in b["ac_satisfied"].items()},
+            "outcome_total": b["outcome_total"],
+        }
+        for ttype, b in by_type.items()
+    }
+
+
+if emit_outcomes:
+    stats["by_task_type_outcomes"] = _aggregate_outcomes_by_task_type()
 
 # Last 5 dispatches with outcome status (real only — synthetic rows have
 # no telemetry so they're dropped from "recent" too).
@@ -3381,6 +3437,32 @@ for r in stats["recent"]:
         flag = "✗"
     print(f"  {flag} {r['ts']} [{r['dispatch_id']}] "
           f"task={r['task_id']} type={r['task_type']} worker={r['worker_kind']}")
+
+# T-1749: --outcomes view — per-task-type outcome quality.
+if emit_outcomes:
+    by_type_outcomes = stats.get("by_task_type_outcomes", {})
+    print()
+    print("Outcome quality (by task_type):")
+    if not by_type_outcomes:
+        print("  (no outcomes captured yet)")
+    else:
+        for ttype in sorted(by_type_outcomes.keys()):
+            b = by_type_outcomes[ttype]
+            evals = ", ".join(f"{k}({v})" for k, v in b["evaluators"].items()) or "—"
+            print(f"  {ttype} — {b['outcome_total']} outcomes, evaluators: {evals}")
+            if b["verdicts"]:
+                # Sort by count desc for readability.
+                for v, n in sorted(b["verdicts"].items(), key=lambda x: -x[1]):
+                    pct = 100.0 * n / b["outcome_total"] if b["outcome_total"] else 0.0
+                    print(f"      verdict {v:<25s} {n:>4d} ({pct:5.1f}%)")
+            if b["verification_passed"]:
+                t = b["verification_passed"].get("True", 0)
+                f = b["verification_passed"].get("False", 0)
+                print(f"      verification_passed: True={t} False={f}")
+            if b["ac_satisfied"]:
+                t = b["ac_satisfied"].get("True", 0)
+                f = b["ac_satisfied"].get("False", 0)
+                print(f"      ac_satisfied:        True={t} False={f}")
 PYEOF
                 exit $?
                 ;;
