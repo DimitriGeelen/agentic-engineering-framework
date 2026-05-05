@@ -4,16 +4,16 @@ name: "resolver dispatch: --var KEY=VALUE for custom prompt-template substitutio
 description: >
   T-1737 needs to pass user prompt through dispatch; resolver currently only knows TASK_ID/NAME/TYPE/DESCRIPTION/AC. Add --var KEY=VALUE flag (repeatable) to inject arbitrary UPPERCASE vars into task_context before _assembled_substitute. Enables prompt-triage to receive $PROMPT_UNDER_TRIAGE without overloading TASK_DESCRIPTION.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, prompt-triage, resolver]
-components: []
+components: [lib/resolver.py]
 related_tasks: [T-1737, T-1733, T-1689]
 created: 2026-05-05T07:42:18Z
-last_update: 2026-05-05T07:42:18Z
-date_finished: null
+last_update: 2026-05-05T07:44:30Z
+date_finished: 2026-05-05T07:44:30Z
 ---
 
 # T-1738: resolver dispatch: --var KEY=VALUE for custom prompt-template substitution (T-1737 prep)
@@ -66,8 +66,8 @@ consume it from the UserPromptSubmit hook.
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 bin/fw resolver dispatch --help 2>&1 | grep -q -- "--var"
 bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var PROMPT_UNDER_TRIAGE="test prompt" 2>&1 | grep -q "dispatch_id"
-bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var lowercase=bad 2>&1 | grep -q "UPPERCASE"
-bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var BADFORMAT 2>&1 | grep -q "KEY=VALUE"
+{ bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var lowercase=bad 2>&1 || true; } | grep -q "UPPERCASE"
+{ bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var BADFORMAT 2>&1 || true; } | grep -q "KEY=VALUE"
 bin/fw resolver dispatch T-1738 prompt-triage --dry-run 2>&1 | grep -q "dispatch_id"
 
 ## RCA
@@ -133,3 +133,31 @@ bin/fw resolver dispatch T-1738 prompt-triage --dry-run 2>&1 | grep -q "dispatch
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1738-resolver-dispatch---var-keyvalue-for-cus.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-509c195e
+- **Timestamp:** 2026-05-05T07:44:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 5
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/resolver.py:cmd_dispatch` accepts repeated `--var KEY=VALUE`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/resolver.py in: `lib/resolver.py:cmd_dispatch` accepts repeated `--var KEY=VALUE``
+
+**Verification-level findings:**
+
+  1. **skip-as-pass** (severe, deterministic) @ Verification:line 10
+     - evidence: `bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var PROMPT_UNDER_TRIAGE="test prompt" 2>&1 | grep -q "dispatch_id"`
+  2. **skip-as-pass** (severe, deterministic) @ Verification:line 11
+     - evidence: `{ bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var lowercase=bad 2>&1 || true; } | grep -q "UPPERCASE"`
+  3. **skip-as-pass** (severe, deterministic) @ Verification:line 12
+     - evidence: `{ bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var BADFORMAT 2>&1 || true; } | grep -q "KEY=VALUE"`
+  4. **skip-as-pass** (severe, deterministic) @ Verification:line 13
+     - evidence: `bin/fw resolver dispatch T-1738 prompt-triage --dry-run 2>&1 | grep -q "dispatch_id"`
+
+### 2026-05-05T07:44:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
