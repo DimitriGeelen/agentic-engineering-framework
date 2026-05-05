@@ -2,17 +2,22 @@
 id: T-1727
 name: "v0.5 build — escalation-scan with LLM augmentation (T-1726 GO conditional)"
 description: >
-  v0.5 build — escalation-scan with LLM augmentation (T-1726 GO conditional)
+  v0.5 build — implements T-1726 GO decision: escalation-scan v0 augmented with LLM verdict
+  per candidate, dispatched via orchestrator (worker_kind=ollama-loop default + cloud fallback,
+  cost-capped). Wires fw resolver dispatch into oe-daily cron, captures outcomes via T-1697
+  back-prop hook, surfaces dispatches on /orchestrator. Closes G-064 (orchestrator first real
+  consumer) via T-1688 option 4. Now ready: T-1726 GO recorded; T-1741/T-1743 confirmed
+  prompt-triage NO-GO; T-1744 inception names this task as the live G-064 mitigation path.
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [blocked-on-t-1726-go, arc:orchestrator-rethink, T-1726-implementation, G-064-closure-pilot]
+tags: [arc:orchestrator-rethink, T-1726-implementation, G-064-closure-pilot, ready-on-t-1744-go]
 components: []
-related_tasks: []
+related_tasks: [T-1688, T-1726, T-1741, T-1743, T-1744, T-1737]
 created: 2026-05-04T21:39:23Z
-last_update: 2026-05-04T21:39:58Z
+last_update: 2026-05-05T10:48:46Z
 date_finished: null
 ---
 
@@ -88,11 +93,61 @@ mechanic locked from T-1726 filing:
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+
+# A1 — workflow file exists, validator-clean
+test -f prompts/escalation-triage.md || test -f prompts/escalation-triage.yaml
+{ bin/fw doctor 2>&1 || true; } | grep -q "workflow.*escalation-triage" && \
+  ! { bin/fw doctor 2>&1 || true; } | grep -q "INVALID.*escalation-triage"
+
+# A2 — tool exists and parses
+test -f tools/escalation-scan-v0.5.py
+python3 -c "import ast; ast.parse(open('tools/escalation-scan-v0.5.py').read())"
+
+# A2/A3 — running tool against fixture writes expected output + idempotency guard fires
+test -f .context/working/escalation-drift-LATEST-v0.5.yaml
+python3 -c "import yaml; yaml.safe_load(open('.context/working/escalation-drift-LATEST-v0.5.yaml'))"
+
+# A4 — oe-daily cron wires v0.5 (additive)
+grep -q "escalation-scan-v0.5" .context/cron/agentic-audit.crontab || \
+  grep -rq "escalation-scan-v0.5" agents/cron/ 2>/dev/null
+
+# A5 — Watchtower surface (Playwright per T-1575: element-presence grep forbidden)
+test -f tests/playwright/test_escalation_v05.py
+{ bin/fw test playwright -k escalation_v05 2>&1 || true; } | grep -q "passed"
+
+# A6 — disagreement-rate report exists with required content
+test -f docs/reports/T-1727-v0-5-disagreement-rate.md
+grep -q -i "disagreement" docs/reports/T-1727-v0-5-disagreement-rate.md
+grep -q -i "30-day" docs/reports/T-1727-v0-5-disagreement-rate.md
+
+# A7 — Evolution log populated (T-1718 gate)
+grep -q "## Evolution" .tasks/active/T-1727-v05-build--escalation-scan-with-llm-augm.md
+python3 -c "
+import re, sys
+body = open('.tasks/active/T-1727-v05-build--escalation-scan-with-llm-augm.md').read()
+m = re.search(r'## Evolution\s*\n(.+?)(?=\n## |\Z)', body, re.DOTALL)
+sys.exit(0 if m and re.search(r'###\s*\d{4}-\d{2}-\d{2}', m.group(1)) else 1)
+"
+
+# A8 — Bats tests + fabric registration + fw audit clean
+test -f tests/unit/escalation_scan_v05.bats
+{ bats tests/unit/escalation_scan_v05.bats 2>&1 || true; } | grep -q -E "[0-9]+ tests, 0 failures"
+{ bin/fw fabric drift 2>&1 || true; } | grep -q -i "no.*unregistered" || \
+  ! { bin/fw fabric drift 2>&1 || true; } | grep -q -i "T-1727\|escalation-scan-v0.5"
+{ bin/fw audit 2>&1 || true; } | grep -q -E "Fail: 0"
+
+# A9 — pre-existing items resolved (T-1726 Spike 1 leftovers)
+# 9a: ollama-loop accepted by validator (already fixed in T-1689 — keep as regression pin)
+python3 -c "
+import sys; sys.path.insert(0, 'lib')
+from resolver import VALID_WORKER_KINDS
+sys.exit(0 if 'ollama-loop' in VALID_WORKER_KINDS else 1)
+"
+# 9b: prompts/default.md no longer leaks unresolved-vars marker on dispatch
+! grep -q "resolver: unresolved" prompts/default.md
+
+# Toolchain hint (L-291): no compileable artefacts here (Python only).
+# tsc/dotnet/cargo/go not relevant. Python parse-checks above cover syntax.
 
 ## RCA
 
@@ -164,3 +219,6 @@ mechanic locked from T-1726 filing:
 
 ### 2026-05-04T21:39:58Z — status-update [task-update-agent]
 - **Change:** tags: +G-064-closure-pilot
+
+### 2026-05-05T10:48:46Z — status-update [task-update-agent]
+- **Change:** tags: +ready-on-t-1744-go
