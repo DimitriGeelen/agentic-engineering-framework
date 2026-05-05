@@ -219,9 +219,28 @@ if [ -n "$CURRENT_SESSION" ] && [ -n "$FOCUS_SESSION" ] && [ "$FOCUS_SESSION" !=
     exit 2
 fi
 
+# --- Agent-control detection (T-1739) -------------------------------------
+# Multi-signal helper: returns true if any indicator suggests we're under
+# agent (Claude Code, etc.) control. Witnessed T-1738 commit: CLAUDECODE was
+# unset in the actual PreToolUse env even though the parent shell had it.
+# Single-signal CLAUDECODE check would silently degrade the drift gate.
+#
+# Signals (in preference order — most reliable first):
+#   1. CLAUDECODE=1            — Claude Code's documented contract
+#   2. AI_AGENT non-empty      — broader agent-runtime convention
+# We deliberately do NOT use stdin-shape (TOOL_NAME extracted) as a signal
+# because tests/dev environments legitimately pipe JSON to the script and
+# would degrade to blocking. If both env vars get stripped by the host
+# runtime, the advisory log entry surfaces it via .gate-bypass-log.yaml.
+_under_agent_control() {
+    [ "${CLAUDECODE:-}" = "1" ] && return 0
+    [ -n "${AI_AGENT:-}" ] && return 0
+    return 1
+}
+
 # --- Focus-target drift detection (T-1730, closes G3 from T-1729 meta-RCA) ---
 # When a Bash command targets a specific task that differs from the focused task,
-# block under $CLAUDECODE=1 with --switch-focus override (logged).
+# block under agent control with --switch-focus override (logged).
 # Only inspects fw task update / fw context add-* --task / git commit -m "T-X: ...".
 # Does NOT gate fw work-on / fw context focus / fw inception decide / fw task review|show
 # (those are intentional state transitions or read-only).
@@ -257,7 +276,7 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
             } >> "$BYPASS_LOG" 2>/dev/null || true
             # Allow with informational note on stderr
             echo "NOTE: focus-drift override (--switch-focus) — target $TARGET_TASK ≠ focus $CURRENT_TASK. Logged." >&2
-        elif [ "${CLAUDECODE:-}" = "1" ]; then
+        elif _under_agent_control; then
             echo "" >&2
             echo "══════════════════════════════════════════════════════════" >&2
             echo "  FOCUS-DRIFT — Action targets a different task" >&2
@@ -280,8 +299,8 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
             echo "" >&2
             exit 2
         else
-            # Not under CLAUDECODE — advisory only
-            echo "NOTE: focus-drift detected: target $TARGET_TASK ≠ focus $CURRENT_TASK. (Not blocking — \$CLAUDECODE not set.)" >&2
+            # No agent-control signal — advisory only (test/dev shell)
+            echo "NOTE: focus-drift detected: target $TARGET_TASK ≠ focus $CURRENT_TASK. (Not blocking — no agent-control signal: CLAUDECODE/AI_AGENT/TOOL_NAME all empty.)" >&2
         fi
     fi
 fi

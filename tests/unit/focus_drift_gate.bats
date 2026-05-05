@@ -161,14 +161,28 @@ run_hook_with_bash_cmd() {
     [ "$status" -eq 0 ]
 }
 
-@test "Bash drift: no CLAUDECODE — advisory only, does not block" {
+@test "Bash drift: no agent-control signal — advisory only, does not block" {
+    set_focus T-1730
+    create_task T-1730
+    create_task T-1716
+    # T-1739: multi-signal agent-control check now considers AI_AGENT too.
+    # Unset both to drop into advisory-only mode.
+    unset CLAUDECODE
+    unset AI_AGENT
+    run_hook_with_bash_cmd "bin/fw task update T-1716 --add-tag x"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "focus-drift detected"
+}
+
+@test "Bash drift: AI_AGENT set but CLAUDECODE empty — blocks (T-1739 multi-signal)" {
     set_focus T-1730
     create_task T-1730
     create_task T-1716
     unset CLAUDECODE
+    export AI_AGENT="claude-code/2.1.126/agent"
     run_hook_with_bash_cmd "bin/fw task update T-1716 --add-tag x"
-    [ "$status" -eq 0 ]
-    echo "$output" | grep -q "focus-drift detected"
+    [ "$status" -eq 2 ]
+    echo "$output" | grep -q "FOCUS-DRIFT"
 }
 
 @test "Bash drift: bare bash with no T-X target — passes (no drift to detect)" {

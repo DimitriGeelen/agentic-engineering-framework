@@ -178,8 +178,20 @@ def main() -> int:
         )
         return 0
 
-    # Block under CLAUDECODE=1
-    if os.environ.get("CLAUDECODE") == "1":
+    # T-1739: multi-signal agent-control detection. CLAUDECODE alone proved
+    # unreliable (T-1738 commit witnessed CLAUDECODE empty in PreToolUse env
+    # despite shell having CLAUDECODE=1). Use either of: CLAUDECODE=1 or
+    # AI_AGENT non-empty. We deliberately do NOT key on payload.tool_name
+    # because tests legitimately supply tool JSON and would degrade to
+    # blocking. See agents/context/check-active-task.sh:_under_agent_control
+    # for the bash-side mirror.
+    under_agent_control = (
+        os.environ.get("CLAUDECODE") == "1"
+        or bool(os.environ.get("AI_AGENT", "").strip())
+    )
+
+    # Block under agent control
+    if under_agent_control:
         sys.stderr.write("\n")
         sys.stderr.write("══════════════════════════════════════════════════════════\n")
         sys.stderr.write("  HUMAN-AC TICK BLOCKED — Only the human may toggle\n")
@@ -209,9 +221,11 @@ def main() -> int:
         sys.stderr.write("\n")
         return 2
 
-    # No CLAUDECODE — advisory only (allow interactive human editing)
+    # No agent-control signal — advisory only (allow interactive human editing
+    # in test/dev shell). Same multi-signal logic as the block branch but inverted.
     sys.stderr.write(
-        f"NOTE: Human-AC checkbox toggle detected (advisory only — $CLAUDECODE not set). "
+        f"NOTE: Human-AC checkbox toggle detected (advisory only — no agent-control "
+        f"signal: CLAUDECODE/AI_AGENT/tool_name all empty). "
         f"Task: {task_id}, toggles: {toggles}\n"
     )
     return 0

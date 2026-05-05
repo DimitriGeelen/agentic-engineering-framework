@@ -124,13 +124,25 @@ print(json.dumps({'tool_name':'Write','tool_input':{'file_path':sys.argv[1],'con
     grep -q "T-9999" "$TEST_ROOT/.context/working/.gate-bypass-log.yaml"
 }
 
-@test "No CLAUDECODE — advisory only, does not block" {
+@test "No agent-control signal — advisory only, does not block" {
+    # T-1739: multi-signal check considers AI_AGENT too.
     unset CLAUDECODE
+    unset AI_AGENT
     run_hook_edit "$TASK_FILE" \
         "- [ ] [REVIEW] Human AC one" \
         "- [x] [REVIEW] Human AC one"
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "advisory only"
+}
+
+@test "AI_AGENT set but CLAUDECODE empty — blocks (T-1739 multi-signal)" {
+    unset CLAUDECODE
+    export AI_AGENT="claude-code/2.1.126/agent"
+    run_hook_edit "$TASK_FILE" \
+        "- [ ] [REVIEW] Human AC one" \
+        "- [x] [REVIEW] Human AC one"
+    [ "$status" -eq 2 ]
+    echo "$output" | grep -q "HUMAN-AC TICK BLOCKED"
 }
 
 @test "Task file with no Human section — passes" {
