@@ -31,7 +31,7 @@ date_finished: null
 
 Threshold (3-class): accuracy ≥ 80% AND GO recall ≥ 0.85 AND DEFER F1 ≥ 0.5.
 Threshold (binary): accuracy ≥ 90% AND GO recall ≥ 0.85 AND GO precision ≥ 0.85.
-**No model under any prompt template clears either bar.** Architectural ceiling: 7-8B local ollama models can't reliably gate user prompts at production quality. T-1742 (qwen35 max_tokens=4096) remains captured as a marginal experiment but is unlikely to lift the ceiling enough.
+**No model under any prompt template clears either bar.** Architectural ceiling captured as **L-355**: 7-8B local ollama models can't reliably gate user prompts at production quality. T-1742 (qwen35 max_tokens=4096) remains captured as a marginal experiment but is unlikely to lift the ceiling enough — see L-355.
 
 **Off-ramp:** T-1744 (different G-064 first-consumer; escalation-scan v0.5 / T-1727 named as preferred) sidesteps prompt-triage entirely. This task stays parked until either (a) human picks T-1744 → T-1737 stays parked indefinitely, (b) human picks a heavier classifier (e.g. cloud LLM) → T-1737 reopens with a different worker_kind, or (c) human picks T-1742 + the re-run clears the bar.
 

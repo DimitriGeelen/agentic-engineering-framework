@@ -20,7 +20,24 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Status: captured/later — likely OBSOLETE per L-355.**
+
+Spike D (T-1741) found 7/50 parse-fails for qwen35 at max_tokens=2048. This task
+proposes re-running with max_tokens=4096 to recover those. **L-355 (architectural
+ceiling)** now indicates this is unlikely to be worthwhile: even if all 7
+parse-fails are recovered as correct labels, the upper bound on qwen35 binary
+accuracy is ~93% (43/50 + 7/7 = 50/50 in best case; realistically ~83-86%), still
+short of the 90% binary threshold. The 3-class formulation has a separate DEFER F1
+ceiling that more tokens cannot fix.
+
+**Decision criteria for promotion:**
+- Run only if a future agent specifically needs to know whether the 7 parse-fails
+  were correct (e.g. to validate a benchmark fixture) — not as a path to clearing
+  the threshold.
+- If T-1744 GO promotes T-1727 as the orchestrator's first consumer, this spike
+  becomes irrelevant and can be moved to NO-GO.
+- If T-1744 NO-GO and a different LLM-augmented consumer is sought, this spike
+  is still unlikely to identify a viable model — see L-355.
 
 ## Acceptance Criteria
 
