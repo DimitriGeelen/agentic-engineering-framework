@@ -15,9 +15,13 @@
 #
 # Source code reference: /opt/termlink/crates/termlink-mcp/src/tools.rs
 # Provenance: snapshot 2026-05-01 from T-1641 W03 + this scan.
+# Update 2026-05-06 (T-1755): added 59 termlink_agent_* tools (chat/threads/reactions
+# primitives) classified by naming convention (action verb → mutator; read suffix → readonly).
+# /opt/termlink is outside PROJECT_ROOT and unreadable from here, so handler-level
+# verification is deferred — human can correct miscategorisations on review.
 
-baseline_count: 75
-last_verified: 2026-05-01
+baseline_count: 134
+last_verified: 2026-05-06
 
 gated:
   description: "Enforces check_task_governance() — TERMLINK_TASK_GOVERNANCE=1 requires task_id"
@@ -33,7 +37,7 @@ mutators_ungated:
     Tools with side effects that bypass governance. Gating-target list — every entry
     here is a candidate for moving to `gated` (handled by T-1643/Arc B framework wiring
     + /opt/termlink-side handler edits). FAIL if list grows; ratchet down as items move.
-  count: 29
+  count: 42
   tools:
     - termlink_inject              # PTY write → executes commands
     - termlink_run                 # ephemeral exec
@@ -64,10 +68,25 @@ mutators_ungated:
     - termlink_hub_stop            # hub control
     - termlink_token_create        # auth token mutation
     - termlink_tofu_clear          # TOFU state mutation
+    # T-1755: termlink_agent_* mutators — chat/threads/reactions primitives.
+    # Classified by naming convention; handler-level verification deferred.
+    - termlink_agent_ack           # creates ack message
+    - termlink_agent_edit          # edits an existing message
+    - termlink_agent_pin           # pins message
+    - termlink_agent_poll_start    # creates poll
+    - termlink_agent_poll_end      # ends poll
+    - termlink_agent_poll_vote     # casts vote
+    - termlink_agent_post          # posts message
+    - termlink_agent_quote         # creates quoted message
+    - termlink_agent_react         # adds reaction
+    - termlink_agent_redact        # redacts message
+    - termlink_agent_reply         # creates reply message
+    - termlink_agent_star          # stars message
+    - termlink_agent_typing        # ephemeral but observable side effect
 
 readonly_exempt:
   description: "Passive/observational — gating optional. Adding new entries here requires an explicit reason in the commit body."
-  count: 42
+  count: 88
   tools:
     - termlink_ping
     - termlink_status
@@ -111,3 +130,52 @@ readonly_exempt:
     - termlink_tofu_list
     - termlink_agent_ask
     - termlink_batch_ping       # benign mass-ping, no exec
+    # T-1755: termlink_agent_* read-only primitives — history/search/state/threads.
+    # Reason: all return data without writing. Naming convention: read-suffix nouns
+    # (_history, _summary, _stats, _state, _info) and search verbs (_search*, _digest).
+    - termlink_agent_ack_history
+    - termlink_agent_ack_status
+    - termlink_agent_active_in_thread
+    - termlink_agent_active_now
+    - termlink_agent_ancestors
+    - termlink_agent_busiest_threads
+    - termlink_agent_describe
+    - termlink_agent_digest
+    - termlink_agent_edits_of
+    - termlink_agent_emoji_stats
+    - termlink_agent_envelope
+    - termlink_agent_followups
+    - termlink_agent_followups_to
+    - termlink_agent_help
+    - termlink_agent_history
+    - termlink_agent_info
+    - termlink_agent_on_thread
+    - termlink_agent_peers
+    - termlink_agent_pin_history
+    - termlink_agent_pinned
+    - termlink_agent_pinned_by
+    - termlink_agent_pinned_history
+    - termlink_agent_reaction_summary
+    - termlink_agent_reactions
+    - termlink_agent_reactions_by
+    - termlink_agent_recent
+    - termlink_agent_recent_decisions
+    - termlink_agent_redactions
+    - termlink_agent_search
+    - termlink_agent_search_by
+    - termlink_agent_search_thread
+    - termlink_agent_silent_senders
+    - termlink_agent_starred
+    - termlink_agent_starred_by
+    - termlink_agent_starred_history
+    - termlink_agent_state
+    - termlink_agent_thread_path
+    - termlink_agent_thread_summary
+    - termlink_agent_threads
+    - termlink_agent_threads_by
+    - termlink_agent_top_repliers
+    - termlink_agent_topic_metadata_history
+    - termlink_agent_topic_stats
+    - termlink_agent_unanswered
+    - termlink_agent_unread
+    - termlink_agent_who_is
