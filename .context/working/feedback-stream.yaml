@@ -5228,3 +5228,20 @@ scan_id: R-072513d7
 task_id: T-1730
 payload:
   task_file: .tasks/active/T-1730-bash-matcher--focus-drift-gate-on-check-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T07:16:27Z'
+scan_id: R-744b0ecb
+task_id: T-1731
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T07:16:27Z'
+scan_id: R-744b0ecb
+task_id: T-1731
+payload:
+  task_file: .tasks/active/T-1731-human-ac-tick-guard--block-agent-from-ch.md

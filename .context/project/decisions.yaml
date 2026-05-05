@@ -604,3 +604,24 @@ decisions:
     date: 2026-05-05
     task: T-1730
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-089
+    decision: "Implement diff logic in Python (`check-human-ac-tick.py`); use bash wrapper to satisfy `fw hook` dispatcher's `.sh` extension expectation."
+    scope: project
+    date: 2026-05-05
+    task: T-1731
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-090
+    decision: "Override via environment variable."
+    scope: project
+    date: 2026-05-05
+    task: T-1731
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-091
+    decision: "Write override events to `.context/working/.gate-bypass-log.yaml` (T-1142 path used by `log_gate_bypass`)."
+    scope: project
+    date: 2026-05-05
+    task: T-1731
+    rationale: "Auto-captured from task file on completion"

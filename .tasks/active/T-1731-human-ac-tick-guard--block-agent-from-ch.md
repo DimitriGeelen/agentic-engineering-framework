@@ -4,16 +4,16 @@ name: "Human-AC tick guard — block agent from checking Human ACs (T-1729 sibli
 description: >
   Close G2 (path exemption non-diff-aware) from T-1729 meta-RCA. PreToolUse hook on Write/Edit to .tasks/* files: parse old-vs-new diff, detect [ ] toggle [x] under ### Human heading. Block under CLAUDECODE=1 with --i-am-human override (mirrors T-1671 pattern). Origin: T-1716 [REVIEW] checkbox ticked by agent on basis of verbal user waiver — CLAUDE.md says NEVER check Human ACs but no hook enforced it. See docs/reports/T-1729-meta-rca.md sections 2.3 + 5.1.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:orchestrator-rethink, meta-rca:T-1729, structural-gate, governance-bypass-prevention]
-components: []
+components: [agents/context/check-human-ac-tick.sh, C-009, lib/init.sh]
 related_tasks: [T-1729, T-1716, T-1671]
 created: 2026-05-05T05:41:58Z
-last_update: 2026-05-05T07:09:26Z
-date_finished: null
+last_update: 2026-05-05T07:16:25Z
+date_finished: 2026-05-05T07:16:25Z
 ---
 
 # T-1731: Human-AC tick guard — block agent from checking Human ACs (T-1729 sibling 2)
@@ -180,3 +180,15 @@ The advisory mode (no-CLAUDECODE) preserves interactive human edits via vi/IDE �
 
 ### 2026-05-05T07:09:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-744b0ecb
+- **Timestamp:** 2026-05-05T07:16:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T07:16:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
