@@ -718,6 +718,15 @@ do_doctor() {
         echo -e "  ${CYAN}SKIP${NC}  .framework.yaml (running from framework repo)"
     fi
 
+    # Check 2c (T-1747, G-069): Stray /.framework.yaml at filesystem root.
+    # A stray marker at / causes web._discover_project_root to silently resolve
+    # PROJECT_ROOT=/ when no env var is set, breaking every Watchtower route
+    # that reads project-relative content. Host-scope — handled at machine level.
+    if [ -f "/.framework.yaml" ]; then
+        _doctor_warn_host "Stray /.framework.yaml at filesystem root — remove it (causes silent PROJECT_ROOT=/ resolution)"
+        echo -e "         Run: sudo rm /.framework.yaml"
+    fi
+
     # Check 2b (T-1434): Vendored-source drift — framework repo only.
     # Consumer projects don't have both copies; their .agentic-framework IS the framework.
     # Drift = consumers pulling via `fw upgrade` get stale hooks/libs (T-1432, T-1433).

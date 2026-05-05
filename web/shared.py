@@ -24,19 +24,46 @@ FRAMEWORK_ROOT = APP_DIR.parent
 def _discover_project_root(start: Path) -> Path | None:
     """Walk up from `start` looking for `.framework.yaml` (consumer marker).
 
-    Returns the first ancestor containing `.framework.yaml`, or None if
-    filesystem root is reached. Matches bash `paths.sh` behaviour (T-1310).
+    Returns the first ancestor containing `.framework.yaml`, or None if no
+    valid marker is found.
+
+    Bound (T-1747, G-069): when `start` is inside FRAMEWORK_ROOT, the walk
+    stops at FRAMEWORK_ROOT itself. The framework repo IS the framework — it
+    has no `.framework.yaml` marker and shouldn't pretend to be a consumer of
+    itself, and it MUST NOT climb past FRAMEWORK_ROOT into ancestors. A stray
+    `/.framework.yaml` (filesystem-root pollution) once caused PROJECT_ROOT
+    to silently resolve to `/`, breaking every Watchtower route that read
+    project-relative content.
+
+    For consumer-style starts (cwd outside FRAMEWORK_ROOT), the walk continues
+    to filesystem root as before.
     """
     try:
         cur = Path(start).resolve()
     except OSError:
         return None
+    try:
+        framework_root = FRAMEWORK_ROOT.resolve()
+    except OSError:
+        framework_root = FRAMEWORK_ROOT
+    in_framework = _is_within(cur, framework_root)
     while True:
         if (cur / ".framework.yaml").is_file():
             return cur
+        if in_framework and cur == framework_root:
+            return None
         if cur.parent == cur:
             return None
         cur = cur.parent
+
+
+def _is_within(child: Path, parent: Path) -> bool:
+    """Return True if `child` is `parent` or a descendant of it."""
+    try:
+        child.relative_to(parent)
+        return True
+    except ValueError:
+        return False
 
 
 def _resolve_project_root() -> tuple[Path, str]:
