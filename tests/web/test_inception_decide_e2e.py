@@ -433,25 +433,20 @@ def test_t1746_rc2_accepts_both_decision_marker_formats():
             shutil.rmtree(d, ignore_errors=True)
 
 
-def test_t1746_rc3_warning_param_redirects_through_warning_path():
+def test_t1746_rc3_warning_banner_renders_for_active_inception(consumer_project, monkeypatch):
     """RC3 wiring: when fw fails AND primary_landed=True (real side-effect
-    failure), the handler must redirect with ?warning= (not silent reload,
-    not ?error=). The template separately renders ?warning= as a yellow
-    banner; this test checks the redirect plumbing.
+    failure), the handler redirects with ?warning=. The template must render
+    the yellow banner when ?warning= is present on an active inception detail
+    page. Self-contained — uses a fresh fixture inception in active/ to avoid
+    depending on the live state of any real task.
     """
-    # We can't easily trigger primary_landed=True with a mock without
-    # writing into the task — instead we verify the route's redirect logic
-    # by inducing a side-effect failure scenario via the existing E2E machinery.
-    # The error-path test (test_inception_decide_failure_redirects_with_error_param)
-    # already pins ?error=. Here we pin that the template renders ?warning= when set.
+    _make_inception_task(consumer_project, "T-9986")
     from web.app import app
-
     client = app.test_client()
-    resp = client.get("/inception/T-1745?warning=test+warning+message")
-    # Page must include the warning banner copy from inception_detail.html
-    assert resp.status_code in (200, 404)  # 404 if T-1745 doesn't exist in this run
-    if resp.status_code == 200:
-        assert b"Decision recorded with warning" in resp.data, (
-            "RC3 regression: ?warning= banner not rendered. "
-            "inception_detail.html must show a yellow alert when ?warning= present."
-        )
+    resp = client.get("/inception/T-9986?warning=side+effect+warning")
+    assert resp.status_code == 200, f"unexpected status {resp.status_code}"
+    assert b"Decision recorded with warning" in resp.data, (
+        "RC3 regression: ?warning= banner not rendered. "
+        "inception_detail.html must show a yellow alert when ?warning= present "
+        "for an active inception."
+    )
