@@ -52,18 +52,9 @@ and (C) re-runs enrich to flush the gain. Targets reduction from 84 → ≤30 ed
 
 ## Verification
 
-bin/fw test unit tests/unit/test_enrich_bats_parser.py 2>/dev/null || python3 -m pytest tests/unit/test_enrich_bats_parser.py -q 2>&1 | tail -5
+python3 -m pytest tests/unit/test_enrich_bats_parser.py -q
 bin/fw fabric drift
-test "$(python3 -c "
-import os, yaml
-n = 0
-for f in os.listdir('.fabric/components'):
-    if not f.endswith('.yaml'): continue
-    d = yaml.safe_load(open(os.path.join('.fabric/components', f))) or {}
-    if not (d.get('depends_on') or []) and not (d.get('depended_by') or []):
-        n += 1
-print(n)
-")" -lt 45
+test "$(python3 -c "import os,yaml; n=sum(1 for f in os.listdir('.fabric/components') if f.endswith('.yaml') and (lambda d: not (d.get('depends_on') or []) and not (d.get('depended_by') or []))(yaml.safe_load(open(os.path.join('.fabric/components', f))) or {})); print(n)")" -lt 45
 
 ## RCA
 
