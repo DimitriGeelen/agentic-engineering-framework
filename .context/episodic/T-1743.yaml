@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1743: Spike D off-ramp: re-score 4-model results as binary GO / non-GO (drop DEFER class)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T09:30:05Z
+# ============================================================================
+
+task_id: T-1743
+task_name: "Spike D off-ramp: re-score 4-model results as binary GO / non-GO (drop DEFER class)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T09:25:32Z
+completed: 2026-05-05T09:30:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-05T11:29:41+02:00
+last_commit: 2026-05-05T11:30:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  binary reframe NO-GO — architectural ceiling confirmed. add Evolution entry — DEFER not the bottleneck, noise floor is architectural
+
+# Key outcomes
+outcomes:
+  - "Write `scripts/spikes/T-1743-binary-rescore.py` that loads `.context/spikes/T-1736-labels.yaml` + the 4 result files (T-1740 hermes3 + T-1741 qwen3/qwen35/gemma4), collapses DEFER → NO-GO in both truth and predictions, computes binary accuracy + GO P/R/F1 + NON_GO F1 + macro F1 per model"
+  - "Render `docs/reports/T-1743-binary-rescore.md` with side-by-side headline + per-model binary confusion + verdict (binary thresholds: accuracy ≥ 0.90 AND GO recall ≥ 0.85 AND GO precision ≥ 0.85)"
+  - "Task `## Recommendation` block names whether T-1737 unblocks under binary formulation, citing best-model accuracy + which threshold(s) it clears or fails"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1743-binary-rescore.md"
+  - "scripts/spikes/T-1743-binary-rescore.py"
+  - ".tasks/active/T-1743-spike-d-off-ramp-re-score-4-model-result.md"
+  - ".tasks/completed/T-1741-evaluate-alternative-ollama-models-for-p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T11:29:41"
+    action: "T-1743: binary reframe NO-GO — architectural ceiling confirmed"
+  - time: "2026-05-05T11:30:01"
+    action: "T-1743: add Evolution entry — DEFER not the bottleneck, noise floor is architectural"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [spike, arc:orchestrator-rethink, follow-up]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 3
+  files_changed: 17
+  lines_added: 1295
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1743-spike-d-off-ramp-re-score-4-model-result.md
+generated_by: context-agent-hybrid

@@ -660,3 +660,17 @@ decisions:
     date: 2026-05-05
     task: T-1749
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-097
+    decision: "Standalone `tools/g064-readiness.py` (run via `python3 tools/g064-readiness.py`), not a new `fw orchestrator g064-status` subcommand."
+    scope: project
+    date: 2026-05-05
+    task: T-1750
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-098
+    decision: "Mechanical threshold = ≥3 distinct dates with at least one cron-window firing each."
+    scope: project
+    date: 2026-05-05
+    task: T-1750
+    rationale: "Auto-captured from task file on completion"

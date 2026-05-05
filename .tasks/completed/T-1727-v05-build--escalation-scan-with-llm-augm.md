@@ -9,16 +9,16 @@ description: >
   consumer) via T-1688 option 4. Now ready: T-1726 GO recorded; T-1741/T-1743 confirmed
   prompt-triage NO-GO; T-1744 inception names this task as the live G-064 mitigation path.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, T-1726-implementation, G-064-closure-pilot, ready-on-t-1744-go]
-components: []
+components: [prompts/default.md, prompts/escalation-triage.md, tests/playwright/test_escalation_v05.py, tests/unit/escalation_scan_v05.bats, tools/escalation-scan-v0.5.py, web/blueprints/escalation.py, web/templates/escalation_drift.html]
 related_tasks: [T-1688, T-1726, T-1741, T-1743, T-1744, T-1737]
 created: 2026-05-04T21:39:23Z
-last_update: 2026-05-05T16:20:36Z
-date_finished: null
+last_update: 2026-05-05T16:50:22Z
+date_finished: 2026-05-05T16:50:22Z
 ---
 
 # T-1727: v0.5 build — escalation-scan with LLM augmentation (T-1726 GO conditional)
@@ -318,3 +318,20 @@ gate v0.5 completion.
 ### 2026-05-05T16:20:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-6f5711c4
+- **Timestamp:** 2026-05-05T16:50:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent (locked at T-1726 filing — do not modify without ## Evolution entry))** — **A1** New workflow file `prompts/escalation-triage.yaml` (or
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=prompts/escalation-triage.yaml in: **A1** New workflow file `prompts/escalation-triage.yaml` (or`
+
+### 2026-05-05T16:50:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

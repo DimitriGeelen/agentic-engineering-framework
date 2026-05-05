@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1739: T-1730 follow-up: focus-drift gate's CLAUDECODE check fails as PreToolUse hook (advisory-only when should block)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T07:53:30Z
+# ============================================================================
+
+task_id: T-1739
+task_name: "T-1730 follow-up: focus-drift gate's CLAUDECODE check fails as PreToolUse hook (advisory-only when should block)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T07:46:47Z
+completed: 2026-05-05T07:53:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-05T09:53:15+02:00
+last_commit: 2026-05-05T09:53:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  multi-signal agent-control check (T-1730 + T-1731 robustness)
+
+# Key outcomes
+outcomes:
+  - "`agents/context/check-active-task.sh` drift-gate decision uses a helper `_under_agent_control` that returns true when ANY of: `CLAUDECODE=1`, `AI_AGENT` non-empty (TOOL_NAME-stdin-shape signal was considered but rejected as a false-positive vector for tests; AI_AGENT covers the realistic non-CLAUDECODE agent runtimes)"
+  - "Same multi-signal logic mirrored in T-1731's `check-human-ac-tick.py` (Python equivalent — kept structurally parallel rather than sharing a literal helper, since one is bash and the other is Python)"
+  - "Test: hook invocation with `CLAUDECODE` unset but `AI_AGENT=claude-code/...` still exits 2 on drift (new bats test #12 in focus_drift_gate.bats; new test #11 in human_ac_tick_guard.bats)"
+  - "Test: hook invocation with all signals unset falls back to advisory-only (existing tests revised to unset both CLAUDECODE and AI_AGENT)"
+  - "All T-1730 + T-1731 bats tests pass (16 + 14 = 30 tests, all green)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-active-task.sh"
+  - "agents/context/check-human-ac-tick.py"
+  - ".tasks/active/T-1739-t-1730-follow-up-focus-drift-gates-claud.md"
+  - "tests/unit/focus_drift_gate.bats"
+  - "tests/unit/human_ac_tick_guard.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T09:53:15"
+    action: "T-1739: multi-signal agent-control check (T-1730 + T-1731 robustness)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, T-1730-followup, hook-env, robustness]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 5
+  lines_added: 239
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1739-t-1730-follow-up-focus-drift-gates-claud.md
+generated_by: context-agent-hybrid

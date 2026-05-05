@@ -4,16 +4,16 @@ name: "G-064 closure-readiness mechanical gauge — substrate-aware check + conc
 description: >
   G-064's status_notes name route_cache.json as the closure precondition artefact — that file doesn't exist on disk; the substrate is .context/dispatches.jsonl. T-1727 cron fires 5:33 UTC daily; we need a mechanical helper that reads dispatches.jsonl, distinguishes natural cron firings (around 5:33 UTC) from the manual T-1727 backfill (16:26 UTC), and reports readiness for closure on 2026-05-08. Bundles two deliverables: (1) tools/g064-readiness.py mechanical check + (2) refresh G-064 status_notes/recommendation to point at dispatches.jsonl. Direct orchestrator-arc work — makes the 2026-05-08 review a paste-and-decide instead of YAML grep.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, governance, observability]
-components: []
+components: [tests/unit/test_g064_readiness.py, tools/g064-readiness.py]
 related_tasks: [T-1687, T-1727, T-1749, T-1688]
 created: 2026-05-05T19:15:25Z
-last_update: 2026-05-05T19:15:25Z
-date_finished: null
+last_update: 2026-05-05T19:21:01Z
+date_finished: 2026-05-05T19:21:01Z
 ---
 
 # T-1750: G-064 closure-readiness mechanical gauge — substrate-aware check + concerns text refresh
@@ -127,3 +127,25 @@ test -x tools/g064-readiness.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1750-g-064-closure-readiness-mechanical-gauge.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1dcfcc86
+- **Timestamp:** 2026-05-05T19:21:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `tools/g064-readiness.py` exists, is executable, and runs without error against the live `.context/dispatches.jsonl`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatches.jsonl in: `tools/g064-readiness.py` exists, is executable, and runs without error against the live `.context/dispatches.jsonl``
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 1
+     - evidence: `python3 tools/g064-readiness.py >/dev/null`
+
+### 2026-05-05T19:21:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

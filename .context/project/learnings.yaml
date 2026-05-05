@@ -2773,3 +2773,10 @@ X'` returning empty group."
   date: 2026-05-05
   context: Added via context agent
   application: TBD
+- id: L-359
+  learning: "Gap-text substrate references decay as the underlying system evolves. G-064 named route_cache.json as the closure-precondition artefact (T-1683 era); that file no longer exists on disk after T-1687/T-1697 consolidated substrate to .context/dispatches.jsonl + dispatch-outcomes.jsonl. Gap-watching status was structurally fine but the closure check pointed at a stale path. Pattern: when substrate paths or files are renamed or consolidated sweep concerns.yaml watching-status text along with the code. Closure-readiness checks should re-verify the substrate path each time; if missing update gap text first then run the actual check. T-1750 shipped tools/g064-readiness.py + refreshed G-064 status_notes inline."
+  source: P-001
+  task: T-1750
+  date: 2026-05-05
+  context: Added via context agent
+  application: TBD

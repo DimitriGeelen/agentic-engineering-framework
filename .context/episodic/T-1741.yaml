@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1741: Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) — gated on T-1740 outcome (Spike D)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T09:26:33Z
+# ============================================================================
+
+task_id: T-1741
+task_name: "Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) — gated on T-1740 outcome (Spike D)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-05T08:13:04Z
+completed: 2026-05-05T09:26:28Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-05-05T10:23:17+02:00
+last_commit: 2026-05-05T11:26:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  stage Spike D — alternative ollama model evaluation. close T-1735 — fw doctor Worker-kinds parity check. Spike D NO-GO — 4-model bench, no model clears thresholds. add 'Confusion matrix' header to render — verification grep target
+
+# Key outcomes
+outcomes:
+  - "Run T-1736 harness against the **revised** prompt template (T-1740 baseline) with `--model claude-3-5-sonnet-qwen3` on the same 50-prompt benchmark, output to `.context/spikes/T-1741-qwen3-results.jsonl`"
+  - "Same with `--model claude-3-5-sonnet-qwen35` → `.context/spikes/T-1741-qwen35-results.jsonl`"
+  - "Same with `--model claude-3-5-sonnet-gemma4` → `.context/spikes/T-1741-gemma4-results.jsonl`"
+  - "Comparison report `docs/reports/T-1741-spike-d.md` with confusion matrix + per-class P/R/F1 + accuracy + GO recall + DEFER discrimination + confidence calibration gap for all four models (hermes3 from T-1740, plus three alternatives) side-by-side"
+  - "Task `## Recommendation` block names whether T-1737 (Slice 2 hook) is unblocked, citing the best-performing model + delta vs T-1740 baseline; success threshold unchanged: accuracy ≥ 80% AND GO recall ≥ 0.85 AND DEFER F1 ≥ 0.5"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/episodic/T-1735.yaml"
+  - ".context/episodic/T-1740.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/spikes/T-1740-results.jsonl"
+  - ".context/spikes/T-1740-runharness.log"
+  - ".context/spikes/T-1741-gemma4-results.jsonl"
+  - ".context/spikes/T-1741-gemma4-runharness.log"
+  - ".context/spikes/T-1741-progress.log"
+  - ".context/spikes/T-1741-qwen35-results.jsonl"
+  - ".context/spikes/T-1741-qwen35-runharness.log"
+  - ".context/spikes/T-1741-qwen3-results.jsonl"
+  - ".context/spikes/T-1741-qwen3-runharness.log"
+  - "docs/reports/T-1740-spike-c.md"
+  - "docs/reports/T-1741-spike-d.md"
+  - "scripts/spikes/T-1736-runharness.py"
+  - "scripts/spikes/T-1741-metrics.py"
+  - ".tasks/active/T-1741-evaluate-alternative-ollama-models-for-p.md"
+  - ".tasks/active/T-1742-spike-d-follow-up-re-run-qwen35-with---m.md"
+  - ".tasks/active/T-1743-spike-d-off-ramp-re-score-4-model-result.md"
+  - ".tasks/active/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md"
+  - ".tasks/completed/T-1735-fw-doctor-assert-validworkerkinds-parity.md"
+  - ".tasks/completed/T-1740-revise-prompt-triage-template--direct-co.md"
+  - "tests/unit/worker_kinds_parity.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T10:23:17"
+    action: "T-1741: stage Spike D — alternative ollama model evaluation"
+  - time: "2026-05-05T10:35:54"
+    action: "T-1741: close T-1735 — fw doctor Worker-kinds parity check"
+  - time: "2026-05-05T11:26:08"
+    action: "T-1741: Spike D NO-GO — 4-model bench, no model clears thresholds"
+  - time: "2026-05-05T11:26:28"
+    action: "T-1741: add 'Confusion matrix' header to render — verification grep target"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 73 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [spike, arc:orchestrator-rethink, follow-up]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 73
+  commits: 4
+  files_changed: 23
+  lines_added: 1676
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1741-evaluate-alternative-ollama-models-for-p.md
+generated_by: context-agent-hybrid

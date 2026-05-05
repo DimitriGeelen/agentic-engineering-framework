@@ -1,0 +1,144 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1727: v0.5 build — escalation-scan with LLM augmentation (T-1726 GO conditional)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T16:51:03Z
+# ============================================================================
+
+task_id: T-1727
+task_name: "v0.5 build — escalation-scan with LLM augmentation (T-1726 GO conditional)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-04T21:39:23Z
+completed: 2026-05-05T16:50:22Z
+duration_days: 1
+updates_count: 7
+first_commit: 2026-05-04T23:40:38+02:00
+last_commit: 2026-05-05T18:50:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-file v0.5 build sibling for T-1726 (G-064 closure pilot). queue-readiness setup — verification commands + metadata refresh. pre-flight design constraint — L-355 architectural ceiling. A1+A2+A9b — escalation-triage workflow + v0.5 tool + default-prompt leak fix. A4+A5 — cron wiring + Watchtower /escalation-drift v0.5 panel + fabric cards. A6+A7+A8 — disagreement-rate report, Evolution, bats, Playwright, Recommendation. register test fabric cards (test_escalation_v05, escalation_scan_v05). tighten Verification gate — single-line commands only (L-356). avoid SIGPIPE in Verification gate — capture to temp file then grep
+
+# Key outcomes
+outcomes:
+  - "**A1** New workflow file `prompts/escalation-triage.yaml` (or"
+  - "**A2** New tool `tools/escalation-scan-v0.5.py` (sibling of v0)"
+  - "**A3** Idempotency: re-running v0.5 on the same candidate within"
+  - "**A4** `oe-daily` cron wires v0.5 after v0 (additive, never"
+  - "**A5** Watchtower surface: either augment existing v0 panel with"
+  - "**A6** Spike 2 ground truth recorded in `docs/reports/T-1727-v0-5-disagreement-rate.md`:"
+  - "**A7** ## Evolution log populated at completion (Evolution-gate"
+  - "**A8** Bats coverage: ≥1 test per AC; new components fabric-"
+  - "**A9** Two pre-existing minor items from T-1726 Spike 1 either"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "A1+A2+A9b — escalation-triage workflow + v0.5 tool + default-prompt leak fix"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "v0.5 calls `lib/resolver.resolve()` (Python import) for envelope"
+    rationale: "Per-candidate `fw termlink dispatch` would spawn a full claude -p"
+    alternatives_rejected: ["(a) `fw termlink dispatch` per candidate — ~30x slower,"]
+    chose: "Document the `/.framework.yaml` discovery hazard in Evolution log,"
+    rationale: "Discovery-walk hitting fs root pollution is structural and affects"
+    alternatives_rejected: ["in-scope quick fix — would expand T-1727 beyond its filed"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-05-05.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/audits/orchestrator-LATEST.yaml"
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/monitors/liveness.jsonl"
+  - ".context/monitors/liveness-latest.yaml"
+  - ".context/monitors/watchtower-rss.jsonl"
+  - ".context/monitors/watchtower-rss-latest.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/project/workflows/escalation-triage.yaml"
+  - ".context/working/feedback-stream.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/.gate-bypass-log.yaml"
+  - ".context/working/.hook-counter"
+  - ".context/working/.loop-detect.json"
+  - ".context/working/.mirror-sync.log"
+  - ".context/working/.pre-compact.last-run"
+  - ".context/working/.publish-learning-bus.log"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".context/working/watchtower.pid"
+  - ".context/working/watchtower.port"
+  - ".context/working/watchtower.url"
+  - "docs/reports/T-1727-v0-5-disagreement-rate.md"
+  - ".fabric/components/prompts-escalation-triage.yaml"
+  - ".fabric/components/tests-playwright-test_escalation_v05.yaml"
+  - ".fabric/components/tests-unit-escalation_scan_v05.yaml"
+  - ".fabric/components/tools-escalation-scan-v0-5.yaml"
+  - "prompts/default.md"
+  - "prompts/escalation-triage.md"
+  - ".tasks/active/T-1700-v1-build-install--integrate-litellm-prox.md"
+  - ".tasks/active/T-1727-v05-build--escalation-scan-with-llm-augm.md"
+  - ".tasks/completed/T-1739-t-1730-follow-up-focus-drift-gates-claud.md"
+  - ".tasks/completed/T-1743-spike-d-off-ramp-re-score-4-model-result.md"
+  - ".tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md"
+  - ".tasks/completed/T-1745-watchtower-inception-decide-form-silentl.md"
+  - ".tasks/completed/T-1746-t-1745-fix-silent-failure-on-inception-d.md"
+  - "tests/playwright/test_escalation_v05.py"
+  - "tests/unit/escalation_scan_v05.bats"
+  - "tools/escalation-scan-v0.5.py"
+  - "VERSION"
+  - "web/blueprints/escalation.py"
+  - "web/templates/escalation_drift.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-04T23:40:38"
+    action: "T-1727: pre-file v0.5 build sibling for T-1726 (G-064 closure pilot)"
+  - time: "2026-05-05T12:50:00"
+    action: "T-1727: queue-readiness setup — verification commands + metadata refresh"
+  - time: "2026-05-05T13:37:52"
+    action: "T-1727: pre-flight design constraint — L-355 architectural ceiling"
+  - time: "2026-05-05T18:26:57"
+    action: "T-1727: A1+A2+A9b — escalation-triage workflow + v0.5 tool + default-prompt leak fix"
+  - time: "2026-05-05T18:34:03"
+    action: "T-1727: A4+A5 — cron wiring + Watchtower /escalation-drift v0.5 panel + fabric cards"
+  - time: "2026-05-05T18:47:29"
+    action: "T-1727: A6+A7+A8 — disagreement-rate report, Evolution, bats, Playwright, Recommendation"
+  - time: "2026-05-05T18:47:45"
+    action: "T-1727: register test fabric cards (test_escalation_v05, escalation_scan_v05)"
+  - time: "2026-05-05T18:49:16"
+    action: "T-1727: tighten Verification gate — single-line commands only (L-356)"
+  - time: "2026-05-05T18:50:21"
+    action: "T-1727: avoid SIGPIPE in Verification gate — capture to temp file then grep"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 1150 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, T-1726-implementation, G-064-closure-pilot, ready-on-t-1744-go]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1150
+  commits: 9
+  files_changed: 45
+  lines_added: 7439
+  lines_removed: 10607
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1727-v05-build--escalation-scan-with-llm-augm.md
+generated_by: context-agent-hybrid

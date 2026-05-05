@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1746: T-1745 fix: silent-failure on inception-decide form (RC1 regex + RC2 comment-strip + RC3 warning-render + integration test)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T13:57:19Z
+# ============================================================================
+
+task_id: T-1746
+task_name: "T-1745 fix: silent-failure on inception-decide form (RC1 regex + RC2 comment-strip + RC3 warning-render + integration test)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T13:25:47Z
+completed: 2026-05-05T13:57:05Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-05T15:34:46+02:00
+last_commit: 2026-05-05T15:57:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix watchtower inception-decide silent-failure (3 RCs). accept both **Decision**: and **Decision:** marker formats. clean up Verification block (single-line commands only). make RC3 warning-banner test self-contained
+
+# Key outcomes
+outcomes:
+  - "**A1 — RC1 fix:** `lib/task-audit.sh::audit_inception_recommendation` accepts `**Recommendation:** **GO**` (inner emphasis on verdict). Sibling `lib/inception_recommendation.sh::has_real_recommendation` updated identically so audit detector and decide-gate align."
+  - "**A2 — RC2 fix:** `web/blueprints/inception.py::_decision_recorded_in_task` strips HTML comments before scanning the `## Decision` body and requires a non-commented canonical decision marker (e.g., `**Decision**:` followed by the verdict). Placeholder template comments no longer cause `primary_landed=True`."
+  - "**A3 — RC3 fix:** `web/templates/inception_detail.html` renders a yellow `?warning=` banner mirroring the existing `?error=` block. User sees a banner whenever the decision flow returns warning OR error."
+  - "**A4 — Integration test:** `tests/web/test_inception_decide_e2e.py` (extended) exercises all three layers end-to-end. Four new `test_t1746_*` cases cover bold-verdict POST, false-positive comment placeholder, GO/NO-GO substring collision, and warning banner render."
+  - "**A5 — Regression pin:** A pre-fix variant of the fixture (template still containing `<!-- ... go|no-go ... -->` placeholder, no `## Decision` content) returns `primary_landed=False` when calling `_decision_recorded_in_task` — the false-positive path is closed."
+  - "**A6 — G-068 concern:** `concerns.yaml` gains G-068 entry naming the meta-pattern (G-067 was already taken — embeddings strategy). G-068 names the human-control-surface silent-failure pattern."
+  - "**A7 — Smoke test on real bug:** After fixes deployed and Watchtower :3002 restarted, human re-clicked GO at http://192.168.10.107:3002/inception/T-1744 — decision landed (`**Decision**: GO` in body, task moved to `.tasks/completed/`). `_decision_recorded_in_task('T-1744', 'go')` returns True against the real on-disk body. Latent format-mismatch caught and fixed: regex now accepts both `**Decision**:` and `**Decision:**` variants."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix watchtower inception-decide silent-failure (3 RCs)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/concerns.yaml"
+  - "lib/inception_recommendation.sh"
+  - "lib/task-audit.sh"
+  - ".tasks/active/T-1746-t-1745-fix-silent-failure-on-inception-d.md"
+  - ".tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md"
+  - ".tasks/completed/T-1745-watchtower-inception-decide-form-silentl.md"
+  - "tests/web/test_inception_decide_e2e.py"
+  - "web/blueprints/inception.py"
+  - "web/templates/inception_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T15:34:46"
+    action: "T-1746: fix watchtower inception-decide silent-failure (3 RCs)"
+  - time: "2026-05-05T15:52:48"
+    action: "T-1746: accept both **Decision**: and **Decision:** marker formats"
+  - time: "2026-05-05T15:54:04"
+    action: "T-1746: clean up Verification block (single-line commands only)"
+  - time: "2026-05-05T15:57:04"
+    action: "T-1746: make RC3 warning-banner test self-contained"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 31
+  commits: 4
+  files_changed: 8
+  lines_added: 453
+  lines_removed: 57
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1746-t-1745-fix-silent-failure-on-inception-d.md
+generated_by: context-agent-hybrid
