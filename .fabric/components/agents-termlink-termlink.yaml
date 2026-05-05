@@ -9,6 +9,8 @@ purpose: 'TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. 
 depends_on:
 - target: lib/config.sh
   type: calls
+- target: tools/ollama-tool-loop.py
+  type: calls
 depended_by:
 - target: bin/fw
   type: called_by
@@ -18,4 +20,4 @@ depended_by:
   type: called_by
 last_verified: 2026-03-23
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-05'

@@ -108,4 +108,12 @@ depended_by:
   type: called_by
 - target: web/blueprints/escalation.py
   type: called_by
-last_enriched: '2026-04-29'
+- target: tests/unit/test_project_root_discovery.py
+  type: called_by
+- target: web/blueprints/arcs.py
+  type: called_by
+- target: web/blueprints/hooks.py
+  type: called_by
+- target: web/blueprints/orchestrator.py
+  type: called_by
+last_enriched: '2026-05-05'

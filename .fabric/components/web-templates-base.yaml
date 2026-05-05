@@ -21,4 +21,10 @@ depended_by:
   type: extended_by
 - target: web/templates/escalation_drift.html
   type: extended_by
-last_enriched: '2026-04-29'
+- target: web/templates/arc_detail.html
+  type: extended_by
+- target: web/templates/arcs_index.html
+  type: extended_by
+- target: web/templates/orchestrator.html
+  type: extended_by
+last_enriched: '2026-05-05'

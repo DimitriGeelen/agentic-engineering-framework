@@ -10,6 +10,8 @@ depends_on:
   type: calls
 - target: lib/task-audit.sh
   type: calls
+- target: lib/inception_recommendation.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -32,4 +34,4 @@ depended_by:
   type: produced-by_by
 - target: tests/unit/inception_decide_ac_tick.bats
   type: called_by
-last_enriched: '2026-04-23'
+last_enriched: '2026-05-05'

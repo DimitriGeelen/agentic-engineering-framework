@@ -5,13 +5,26 @@ subsystem: orchestrator-arc
 location: /opt/termlink/crates/termlink-protocol/src/governance.rs
 cross_project: termlink
 cross_repo_url: https://github.com/DimitriGeelen/termlink/blob/master/crates/termlink-protocol/src/governance.rs
-tags: [orchestrator-arc, protocol, governance-frame, frame-0x8, t-1648-target]
-purpose: 'Data plane Governance frame (frame type 0x8) — informational audit-trail emitted by governance subscribers when pattern matches fire on Output frames. T-1066 wire format. T-1641 reconsideration flagged that frame 0x8 has zero non-test emit callers — T-1648 will pin the protocol so accidental rename breaks loud.'
+tags:
+- orchestrator-arc
+- protocol
+- governance-frame
+- frame-0x8
+- t-1648-target
+purpose: Data plane Governance frame (frame type 0x8) — informational audit-trail emitted by governance subscribers when pattern
+  matches fire on Output frames. T-1066 wire format. T-1641 reconsideration flagged that frame 0x8 has zero non-test emit
+  callers — T-1648 will pin the protocol so accidental rename breaks loud.
 depends_on: []
 depended_by:
 - target: cross-repo:termlink/crates/termlink-session/src/governance_subscriber.rs
   type: emitted_by
-related_tasks: [T-1641, T-1066, T-1648, T-1644]
+- target: cross-repo:termlink/crates/termlink-session/src/governance_subscriber.rs
+  type: emits_by
+related_tasks:
+- T-1641
+- T-1066
+- T-1648
+- T-1644
 last_verified: '2026-05-01'
 created_by: T-1652
-last_enriched: '2026-05-01'
+last_enriched: '2026-05-05'

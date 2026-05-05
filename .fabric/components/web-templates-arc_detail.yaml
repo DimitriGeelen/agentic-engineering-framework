@@ -3,18 +3,19 @@ name: arc_detail
 type: template
 subsystem: watchtower
 location: web/templates/arc_detail.html
-tags: [arcs, watchtower, t-1662]
-
-purpose: "Renders /arcs/<id> detail page — arc metadata, completion stats with G-062 audit-detective threshold call-out (matches T-1656), constituent task table with status badges, section Arc Completion Discipline three-question check inline (in-progress only), fw arc close CLI snippet."
-
+tags:
+- arcs
+- watchtower
+- t-1662
+purpose: Renders /arcs/<id> detail page — arc metadata, completion stats with G-062 audit-detective threshold call-out (matches
+  T-1656), constituent task table with status badges, section Arc Completion Discipline three-question check inline (in-progress
+  only), fw arc close CLI snippet.
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/templates/base.html
+  type: extends
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/blueprints/arcs.py
+  type: rendered_by
 last_verified: 2026-05-01
 created_by: unknown
+last_enriched: '2026-05-05'
