@@ -3336,12 +3336,25 @@ if stats["dispatch_total"]:
 # T-1749: per-task-type outcome quality aggregation. Routes by outcome
 # shape, not hardcoded evaluator name — verdict-style (escalation-scan-v0.5)
 # and verification-style (default evaluator) are both surfaced.
+# T-1757: dedupe by dispatch_id (latest ts wins) so replay-evaluator rows
+# supersede their originals in the rollup. Substrate is append-only; the
+# rollup honors supersession.
 def _aggregate_outcomes_by_task_type():
     # Map dispatch_id → task_type for non-synthetic dispatches.
     did_to_type = {
         d.get("dispatch_id"): (d.get("task_type") or "?")
         for d in dispatches if d.get("dispatch_id")
     }
+    # Dedup pass: keep only the latest outcome per dispatch_id.
+    latest_per_did: dict = {}
+    for o in outcomes:
+        did = o.get("dispatch_id")
+        if not did or did not in did_to_type:
+            continue  # Outcome for synthetic or unknown dispatch — skip.
+        ts = o.get("ts") or ""
+        prev = latest_per_did.get(did)
+        if prev is None or (o.get("ts") or "") > (prev.get("ts") or ""):
+            latest_per_did[did] = o
     by_type: dict = defaultdict(lambda: {
         "evaluators": Counter(),
         "verdicts": Counter(),
@@ -3349,10 +3362,7 @@ def _aggregate_outcomes_by_task_type():
         "ac_satisfied": Counter(),
         "outcome_total": 0,
     })
-    for o in outcomes:
-        did = o.get("dispatch_id")
-        if did not in did_to_type:
-            continue  # Outcome for synthetic or unknown dispatch — skip.
+    for did, o in latest_per_did.items():
         ttype = did_to_type[did]
         outcome_body = o.get("outcome", {}) or {}
         bucket = by_type[ttype]
