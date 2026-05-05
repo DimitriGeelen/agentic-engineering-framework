@@ -38,13 +38,13 @@ def build_user_prompt(template: str, prompt_text: str) -> str:
     return body
 
 
-def call_litellm(endpoint: str, api_key: str, model: str, user_prompt: str, timeout: int) -> tuple[str, float]:
+def call_litellm(endpoint: str, api_key: str, model: str, user_prompt: str, timeout: int, max_tokens: int = 2048) -> tuple[str, float]:
     body = json.dumps(
         {
             "model": model,
             "messages": [{"role": "user", "content": user_prompt}],
             "temperature": 0.0,
-            "max_tokens": 256,
+            "max_tokens": max_tokens,
         }
     ).encode("utf-8")
     req = urllib.request.Request(
@@ -61,7 +61,11 @@ def call_litellm(endpoint: str, api_key: str, model: str, user_prompt: str, time
         raw = resp.read().decode("utf-8")
     elapsed_ms = (time.monotonic() - t0) * 1000.0
     obj = json.loads(raw)
-    content = obj["choices"][0]["message"]["content"]
+    msg = obj["choices"][0]["message"]
+    content = msg.get("content") or ""
+    # Reasoning models (qwen3) put output in `reasoning_content` if `content` is empty
+    if not content.strip():
+        content = msg.get("reasoning_content") or ""
     return content, elapsed_ms
 
 
@@ -105,7 +109,8 @@ def main() -> int:
     ap.add_argument("--endpoint", default="http://localhost:4000/v1/chat/completions")
     ap.add_argument("--api-key", default=os.environ.get("LITELLM_API_KEY", "sk-litellm-local-dev"))
     ap.add_argument("--model", default="claude-3-5-sonnet-hermes3")
-    ap.add_argument("--timeout", type=int, default=60)
+    ap.add_argument("--timeout", type=int, default=120)
+    ap.add_argument("--max-tokens", type=int, default=2048)
     ap.add_argument("--limit", type=int, default=0, help="cap (0 = all)")
     args = ap.parse_args()
 
@@ -122,7 +127,7 @@ def main() -> int:
             user_prompt = build_user_prompt(template, p["text"])
             try:
                 content, elapsed = call_litellm(
-                    args.endpoint, args.api_key, args.model, user_prompt, args.timeout
+                    args.endpoint, args.api_key, args.model, user_prompt, args.timeout, args.max_tokens
                 )
                 env = parse_envelope(content)
                 row = {
