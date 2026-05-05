@@ -674,3 +674,10 @@ decisions:
     date: 2026-05-05
     task: T-1750
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-099
+    decision: "`*.yaml.bak` and `escalation-drift-LATEST-*.yaml` (wildcards)"
+    scope: project
+    date: 2026-05-05
+    task: T-1751
+    rationale: "Auto-captured from task file on completion"

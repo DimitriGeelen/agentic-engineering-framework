@@ -4,7 +4,7 @@ name: "gitignore ephemeral working-state files — focus.yaml.bak + escalation-d
 description: >
   Two ephemeral working-state files were accidentally tracked by git add -A in c2bf1682a (the T-1750 governance close). focus.yaml.bak is a backup created by focus-switching; escalation-drift-LATEST-v0.5.yaml is rewritten every 5:33 UTC cron firing and read by Watchtower for rendering. Both belong in .gitignore alongside .context/dispatches.jsonl and other ephemeral substrate. Untrack via git rm --cached + add gitignore patterns; future commits stay clean.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:orchestrator-rethink, hygiene, governance]
 components: []
 related_tasks: [T-1750, T-1727, T-1749]
 created: 2026-05-05T21:18:12Z
-last_update: 2026-05-05T21:18:12Z
-date_finished: null
+last_update: 2026-05-05T21:20:53Z
+date_finished: 2026-05-05T21:20:53Z
 ---
 
 # T-1751: gitignore ephemeral working-state files — focus.yaml.bak + escalation-drift-LATEST-v0.5.yaml accidentally tracked
@@ -113,3 +113,22 @@ python3 -c "import yaml; yaml.safe_load(open('.context/working/escalation-drift-
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1751-gitignore-ephemeral-working-state-files-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-96c71e13
+- **Timestamp:** 2026-05-05T21:20:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 1
+     - evidence: `git ls-files .context/working/focus.yaml.bak | grep -q . && exit 1 || true`
+  2. **swallowed-errors** (severe, deterministic) @ Verification:line 2
+     - evidence: `git ls-files .context/working/escalation-drift-LATEST-v0.5.yaml | grep -q . && exit 1 || true`
+
+### 2026-05-05T21:20:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

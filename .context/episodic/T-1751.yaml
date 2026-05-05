@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1751: gitignore ephemeral working-state files — focus.yaml.bak + escalation-drift-LATEST-v0.5.yaml accidentally tracked
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T21:20:58Z
+# ============================================================================
+
+task_id: T-1751
+task_name: "gitignore ephemeral working-state files — focus.yaml.bak + escalation-drift-LATEST-v0.5.yaml accidentally tracked"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T21:18:12Z
+completed: 2026-05-05T21:20:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-05T23:20:49+02:00
+last_commit: 2026-05-05T23:20:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  gitignore ephemeral working-state files
+
+# Key outcomes
+outcomes:
+  - "`.gitignore` contains a pattern that ignores `.context/working/*.yaml.bak` (or equivalent — covering at minimum `focus.yaml.bak`)"
+  - "`.gitignore` contains a pattern that ignores `.context/working/escalation-drift-LATEST-v0.5.yaml` (or `escalation-drift-LATEST-*.yaml` if generalized for future scan versions)"
+  - "`git ls-files .context/working/focus.yaml.bak` returns empty (file untracked)"
+  - "`git ls-files .context/working/escalation-drift-LATEST-v0.5.yaml` returns empty (file untracked)"
+  - "`git check-ignore -v .context/working/focus.yaml.bak` exits 0 (gitignore covers it)"
+  - "`git check-ignore -v .context/working/escalation-drift-LATEST-v0.5.yaml` exits 0"
+  - "After this task's commit, the working copies of those files still exist on disk (untrack, don't delete — Watchtower reads the YAML for rendering)"
+  - "No regression: `git ls-files .gitignore` confirmed; `python3 -c \"import yaml; yaml.safe_load(open('.context/working/escalation-drift-LATEST-v0.5.yaml'))\"` still parses"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "`*.yaml.bak` and `escalation-drift-LATEST-*.yaml` (wildcards)"
+    rationale: "Covers future variants without follow-up patches — matches the existing pattern `dispatches-*.jsonl` already in .gitignore."
+    alternatives_rejected: ["Literal filenames — too narrow; would re-leak when v0.6 scan ships."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/escalation-drift-LATEST-v0.5.yaml"
+  - ".context/working/focus.yaml.bak"
+  - ".gitignore"
+  - ".tasks/active/T-1751-gitignore-ephemeral-working-state-files-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T23:20:49"
+    action: "T-1751: gitignore ephemeral working-state files"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, hygiene, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 122
+  lines_removed: 258
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1751-gitignore-ephemeral-working-state-files-.md
+generated_by: context-agent-hybrid
