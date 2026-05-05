@@ -1,0 +1,24 @@
+task_type: prompt-triage
+worker_kind: ollama-loop
+model: claude-3-5-sonnet-hermes3
+effort: low
+prompt_template: prompts/prompt-triage.md
+allowed_tools: [Read]
+cost_cap_usd: 0.0
+cwd: $PROJECT_ROOT
+env:
+  ANTHROPIC_BASE_URL: http://localhost:4000
+  ANTHROPIC_API_KEY: sk-litellm-local-dev
+# T-1733 (T-1732 sibling): G-064 first real consumer.
+# Routes a user prompt through ollama-local hermes3 to classify
+# GO=needs-task / NO-GO=conversational / DEFER=ambiguous before
+# the agent acts. UserPromptSubmit hook integration is Slice 2;
+# this slice proves the substrate (resolver→litellm→ollama→envelope).
+#
+# Why allowed_tools=[Read] only: the classifier MUST NOT write or exec;
+# its job is verdict-emission, not action. Restricting prevents the
+# triage worker from drifting into doing the work it's gating.
+#
+# Why cost_cap_usd=0.0: ollama-local only. If hermes3 is unreachable
+# the dispatch should fail-OPEN (allow the prompt), not fall back to
+# cloud — cost-on-every-prompt would be unacceptable.
