@@ -4,16 +4,16 @@ name: "harden web._discover_project_root + remove stray /.framework.yaml (G-069)
 description: >
   harden web._discover_project_root + remove stray /.framework.yaml (G-069)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, bug, watchtower, path-discovery]
-components: []
+components: [bin/fw, tests/unit/test_project_root_discovery.py, web/shared.py]
 related_tasks: [T-1727, T-1310]
 created: 2026-05-05T17:57:51Z
-last_update: 2026-05-05T17:57:51Z
-date_finished: null
+last_update: 2026-05-05T18:05:58Z
+date_finished: 2026-05-05T18:05:58Z
 ---
 
 # T-1747: harden web._discover_project_root + remove stray /.framework.yaml (G-069)
@@ -115,3 +115,15 @@ The framework process running from FRAMEWORK_ROOT had no business resolving PROJ
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1747-harden-webdiscoverprojectroot--remove-st.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-2c9fb138
+- **Timestamp:** 2026-05-05T18:06:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T18:05:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

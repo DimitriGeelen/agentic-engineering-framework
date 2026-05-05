@@ -2116,8 +2116,22 @@ concerns:
     3. fw doctor host-level check: warn if /.framework.yaml exists.
     4. Regression test pinning that web.shared.PROJECT_ROOT resolves
        to FRAMEWORK_ROOT when env unset and cwd=FRAMEWORK_ROOT.
-  status: watching
+  status: resolved
   created: 2026-05-05
   last_reviewed: 2026-05-05
+  resolved: 2026-05-05
+  resolved_by: T-1747
   related_task: T-1727
-  related_tasks_extra: [T-1310]
+  related_tasks_extra: [T-1310, T-1747]
+  resolution_notes: |
+    All 4 resolution_path steps shipped in T-1747 (commit b948687aa):
+      1. /.framework.yaml deleted (verified `! test -f /.framework.yaml`).
+      2. web/shared._discover_project_root bounded — refuses to walk past
+         FRAMEWORK_ROOT when start is inside it.
+      3. fw doctor Check 2c added — host-hygiene WARN if /.framework.yaml
+         appears at filesystem root.
+      4. tests/unit/test_project_root_discovery.py — 7 regression cases
+         (bound, consumer use case, resolve fallback, direct G-069 replay).
+    Prevention: future stray markers are caught by `fw doctor` (loud WARN),
+    and refactors reintroducing the unbounded climb fail the regression test.
+    Learning: L-357 captures the bounded-walk principle for future routines.

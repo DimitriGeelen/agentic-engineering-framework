@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1747: harden web._discover_project_root + remove stray /.framework.yaml (G-069)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T18:06:28Z
+# ============================================================================
+
+task_id: T-1747
+task_name: "harden web._discover_project_root + remove stray /.framework.yaml (G-069)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T17:57:51Z
+completed: 2026-05-05T18:05:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-05T20:04:49+02:00
+last_commit: 2026-05-05T20:04:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  harden web._discover_project_root + remove stray /.framework.yaml (G-069)
+
+# Key outcomes
+outcomes:
+  - "**A1.** `/.framework.yaml` no longer exists (or, if it does, the discovery walk no longer returns `/` from FRAMEWORK_ROOT cwd). Verifiable: `! test -f /.framework.yaml || python3 -c 'import sys; sys.path.insert(0,\"web\"); from shared import _discover_project_root, FRAMEWORK_ROOT; from pathlib import Path; r=_discover_project_root(FRAMEWORK_ROOT); assert r != Path(\"/\"), f\"discovery returned {r}\"'`"
+  - "**A2.** `_discover_project_root(start)` does NOT return `/` when `start` is inside FRAMEWORK_ROOT and the only marker above FRAMEWORK_ROOT is `/.framework.yaml`. Verifiable via unit test."
+  - "**A3.** `_discover_project_root(start)` still returns the correct consumer root when called from a real consumer dir (i.e. the framework-aware bound MUST NOT break the `fw init`/consumer use case). Verifiable via unit test (mock cwd = `/tmp/<fakeconsumer>` with `.framework.yaml` present)."
+  - "**A4.** `_resolve_project_root()` from cwd=FRAMEWORK_ROOT with `PROJECT_ROOT` env unset returns `(FRAMEWORK_ROOT, \"framework\")` — NOT `(/, \"discovered\")`. Verifiable via unit test."
+  - "**A5.** `fw doctor` emits a WARN line when `/.framework.yaml` exists at filesystem root (host-hygiene check). Verifiable: `bin/fw doctor 2>&1 | grep -i 'framework\.yaml.*root\|stray.*framework'` (gated on file existing) or grep on the `--check` line in the doctor source."
+  - "**A6.** Regression test in `tests/unit/` pins A2+A3+A4 — refactors that reintroduce the unbounded climb fail the test."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Bound `_discover_project_root` to refuse walking past FRAMEWORK_ROOT when start is inside it."
+    rationale: "The framework process running from FRAMEWORK_ROOT has no semantic reason to climb into ancestors. The bound is simple, has no consumer-shape heuristics, and composes cleanly with the existing `_resolve_project_root` fallback chain (env / discovered / framework). Resolves the bug class, not just this instance."
+    alternatives_rejected: ["Marker-validation (require `bin/fw` or `.tasks/` next to the marker). Adds heuristics that need maintenance per consumer shape, and would still allow climbing if a consumer-shaped ancestor existed. Bound is structurally tighter."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".fabric/components/tests-unit-test_project_root_discovery.yaml"
+  - ".tasks/active/T-1747-harden-webdiscoverprojectroot--remove-st.md"
+  - "tests/unit/test_project_root_discovery.py"
+  - "web/shared.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T20:04:49"
+    action: "T-1747: harden web._discover_project_root + remove stray /.framework.yaml (G-069)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, bug, watchtower, path-discovery]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 5
+  lines_added: 349
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1747-harden-webdiscoverprojectroot--remove-st.md
+generated_by: context-agent-hybrid

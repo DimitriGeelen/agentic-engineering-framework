@@ -2759,3 +2759,10 @@ X'` returning empty group."
   date: 2026-05-05
   context: Added via context agent
   application: TBD
+- id: L-357
+  learning: "Path-discovery routines that walk ancestors looking for a marker file MUST be bounded — either by a known root (FRAMEWORK_ROOT for framework-internal walks) or by a domain-specific terminator (git toplevel for the bash side). An unbounded walk is one stray marker away from silently capturing the filesystem root, and Flask empty-state branches make the silent capture visually identical to a fresh project. Pin the bound with a regression test naming the incident class, not just the literal path."
+  source: P-001
+  task: T-1747
+  date: 2026-05-05
+  context: Added via context agent
+  application: TBD

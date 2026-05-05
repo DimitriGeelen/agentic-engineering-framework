@@ -625,3 +625,24 @@ decisions:
     date: 2026-05-05
     task: T-1731
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-092
+    decision: "v0.5 calls `lib/resolver.resolve()` (Python import) for envelope"
+    scope: project
+    date: 2026-05-05
+    task: T-1727
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-093
+    decision: "Document the `/.framework.yaml` discovery hazard in Evolution log,"
+    scope: project
+    date: 2026-05-05
+    task: T-1727
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-094
+    decision: "Bound `_discover_project_root` to refuse walking past FRAMEWORK_ROOT when start is inside it."
+    scope: project
+    date: 2026-05-05
+    task: T-1747
+    rationale: "Auto-captured from task file on completion"
