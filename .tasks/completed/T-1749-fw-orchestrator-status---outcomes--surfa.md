@@ -4,16 +4,16 @@ name: "fw orchestrator status --outcomes — surface per-task-type outcome quali
 description: >
   fw orchestrator status --outcomes — surface per-task-type outcome quality
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, observability, substrate]
-components: []
+components: [bin/fw, tests/unit/test_orchestrator_status_outcomes.py]
 related_tasks: [T-1727, T-1748, T-1699]
 created: 2026-05-05T18:32:49Z
-last_update: 2026-05-05T18:32:49Z
-date_finished: null
+last_update: 2026-05-05T18:37:35Z
+date_finished: 2026-05-05T18:37:35Z
 ---
 
 # T-1749: fw orchestrator status --outcomes — surface per-task-type outcome quality
@@ -104,3 +104,15 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw orchestrator status --outcom
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1749-fw-orchestrator-status---outcomes--surfa.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-e02b73b4
+- **Timestamp:** 2026-05-05T18:37:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T18:37:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

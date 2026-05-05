@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1749: fw orchestrator status --outcomes — surface per-task-type outcome quality
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T18:37:41Z
+# ============================================================================
+
+task_id: T-1749
+task_name: "fw orchestrator status --outcomes — surface per-task-type outcome quality"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T18:32:49Z
+completed: 2026-05-05T18:37:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-05T20:37:28+02:00
+last_commit: 2026-05-05T20:37:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw orchestrator status --outcomes — substrate outcome quality view
+
+# Key outcomes
+outcomes:
+  - "**A1.** `fw orchestrator status --outcomes` (without `--json`) prints a new \"Outcome quality (by task_type)\" section after the existing \"By worker_kind\" block. Each task_type lists its evaluator + counts of distinct outcome values. Verifiable: run command, inspect output structure."
+  - "**A2.** `fw orchestrator status --outcomes --json` includes a top-level `by_task_type_outcomes` dict with the same data. Verifiable: parse JSON, assert key exists with non-empty content (given live outcomes)."
+  - "**A3.** Default `fw orchestrator status` output (without `--outcomes`) is byte-identical to before — no regression. Verifiable: golden-file diff or snapshot test."
+  - "**A4.** When NO outcomes exist for a task_type's dispatches (synthetic only / pre-enrichment), the new section is skipped or shows \"(no outcomes yet)\" — does not crash. Verifiable via unit test against fixture jsonl with a dispatch but no matching outcome."
+  - "**A5.** Verdict-style outcomes (escalation-scan-v0.5) and verification-style outcomes (default evaluator) are BOTH surfaced — the aggregator routes by outcome shape, not by hardcoded evaluator name. Verifiable: against live data, both `escalation-triage` (verdict) and any other `task_type` with verification_passed/ac_satisfied are visible."
+  - "**A6.** Regression test in `tests/unit/test_orchestrator_status_outcomes.py` runs the inline Python with synthesized fixtures (no live data dependency) and asserts the aggregation contract for both shapes plus the synthetic-skip case."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Make outcome aggregation opt-in via `--outcomes` flag."
+    rationale: "Default `fw orchestrator status` output is consumed by handover/audit hooks and human eyeball checks; changing it would risk breaking downstream parsing. Opt-in keeps the default contract intact while making the new view trivially accessible (`--outcomes` is mnemonic)."
+    alternatives_rejected: ["Always-show. Cleaner UX but breaks output-stability contract — A3 would require careful migration of any consumer scripts. Not worth it for this enhancement."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".fabric/components/tests-unit-test_orchestrator_status_outcomes.yaml"
+  - ".tasks/active/T-1749-fw-orchestrator-status---outcomes--surfa.md"
+  - "tests/unit/test_orchestrator_status_outcomes.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T20:37:28"
+    action: "T-1749: fw orchestrator status --outcomes — substrate outcome quality view"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, observability, substrate]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 4
+  lines_added: 455
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1749-fw-orchestrator-status---outcomes--surfa.md
+generated_by: context-agent-hybrid
