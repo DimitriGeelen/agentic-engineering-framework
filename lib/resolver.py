@@ -519,6 +519,23 @@ def cmd_dispatch(args: argparse.Namespace) -> int:
     task_context.setdefault("TASK_DESCRIPTION", "")
     task_context.setdefault("ACCEPTANCE_CRITERIA", "(none)")
 
+    # T-1737: caller-supplied --var KEY=VALUE entries extend task_context
+    # so workflows like prompt-triage can reference custom $VARs in their
+    # prompt template (e.g. $PROMPT_UNDER_TRIAGE).
+    for kv in getattr(args, "var", []) or []:
+        if "=" not in kv:
+            print(f"resolver: --var must be KEY=VALUE, got {kv!r}", file=sys.stderr)
+            return 1
+        key, _, value = kv.partition("=")
+        if not key or not VAR_PAT.fullmatch("$" + key):
+            print(
+                f"resolver: --var KEY must be UPPERCASE [A-Z][A-Z0-9_]*, "
+                f"got {key!r}",
+                file=sys.stderr,
+            )
+            return 1
+        task_context[key] = value
+
     try:
         envelope, row = resolve(
             args.task_id, args.task_type, task_context, dry_run=args.dry_run
@@ -627,6 +644,19 @@ def main(argv: Optional[List[str]] = None) -> int:
     sp_d.add_argument("task_type", help="Workflow task_type (or 'default')")
     sp_d.add_argument("--dry-run", action="store_true", help="Skip JSONL append and blob write")
     sp_d.add_argument("--json", action="store_true", help="Emit envelope as JSON")
+    sp_d.add_argument(
+        "--var",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help=(
+            "Inject a custom $VAR into the prompt template. KEY must be "
+            "UPPERCASE (e.g. --var PROMPT_UNDER_TRIAGE='hello'). May be "
+            "repeated. Required for workflows that reference template-"
+            "specific vars beyond TASK_ID/TASK_NAME/TASK_DESCRIPTION/"
+            "TASK_TYPE/ACCEPTANCE_CRITERIA. (T-1737)"
+        ),
+    )
     sp_d.set_defaults(func=cmd_dispatch)
 
     sp_e = sub.add_parser("explain", help="Print a dispatch row by ID prefix")
