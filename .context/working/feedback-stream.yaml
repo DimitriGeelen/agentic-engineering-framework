@@ -5245,3 +5245,37 @@ scan_id: R-744b0ecb
 task_id: T-1731
 payload:
   task_file: .tasks/active/T-1731-human-ac-tick-guard--block-agent-from-ch.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T07:33:51Z'
+scan_id: R-f5bfb2fa
+task_id: T-1734
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T07:33:51Z'
+scan_id: R-f5bfb2fa
+task_id: T-1734
+payload:
+  task_file: .tasks/active/T-1734-validworkerkinds-drift-between-binfw-and.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T07:37:35Z'
+scan_id: R-f2980e23
+task_id: T-1733
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T07:37:35Z'
+scan_id: R-f2980e23
+task_id: T-1733
+payload:
+  task_file: .tasks/active/T-1733-prompt-triage-v05-spike-a--first-orchest.md

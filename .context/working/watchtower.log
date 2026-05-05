@@ -4696,3 +4696,155 @@ found unknown escape character '['
 192.168.10.107 - - [05/May/2026 09:16:09] "GET / HTTP/1.1" 200 -
 192.168.10.107 - - [05/May/2026 09:16:27] "GET /api/_identity HTTP/1.1" 200 -
 192.168.10.107 - - [05/May/2026 09:17:04] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:17:53] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:17:53] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:18:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:19:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:20:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:21:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:22:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:23:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:24:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:24:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:25:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:26:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:27:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:28:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:29:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:30:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:31:09] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:36] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:31:36] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:31:47] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:31:47] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:31:47] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:49] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:49] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:50] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:50] "GET /arcs HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:50] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:50] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:50] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:52] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:52] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:52] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:53] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:53] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [05/May/2026 09:31:54] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:54] "GET /escalation-drift HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:54] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:54] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:54] "GET /fleet HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:55] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:55] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:55] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:55] "GET /hooks HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:56] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:56] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:58] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:58] "GET /orchestrator HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:59] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:59] "GET /pending HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:59] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:59] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:59] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:59] "GET /reviewer/audit HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:59] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:31:59] "GET /risks HTTP/1.1" 200 -
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1528.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1528.yaml", line 29, column 5
+found unknown escape character 'Z'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1528.yaml", line 29, column 89
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml", line 27, column 5
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1415.yaml", line 27, column 18
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1630.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1630.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1630.yaml", line 44, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1567.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1567.yaml", line 26, column 5
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1567.yaml", line 26, column 88
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1543.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1543.yaml", line 28, column 5
+found unknown escape character 's'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1543.yaml", line 28, column 72
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1676.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1676.yaml", line 27, column 5
+found unknown escape character '|'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1676.yaml", line 27, column 267
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1369.yaml", line 43, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1628.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1628.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1628.yaml", line 47, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1530.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1530.yaml", line 39, column 12
+found unknown escape character '$'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1530.yaml", line 39, column 138
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1527.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1527.yaml", line 29, column 5
+found unknown escape character 'Z'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1527.yaml", line 29, column 125
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1454.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1454.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1454.yaml", line 45, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1629.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1629.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1629.yaml", line 50, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1552.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1552.yaml", line 29, column 5
+found unknown escape character '`'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1552.yaml", line 29, column 34
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1579.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1579.yaml", line 34, column 5
+found unknown escape character 's'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1579.yaml", line 34, column 312
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1541.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1541.yaml", line 26, column 5
+found unknown escape character 's'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1541.yaml", line 26, column 74
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1553.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1553.yaml", line 29, column 5
+found unknown escape character '`'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1553.yaml", line 29, column 221
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1679.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1679.yaml", line 26, column 5
+found unknown escape character '['
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-1679.yaml", line 26, column 327
+127.0.0.1 - - [05/May/2026 09:32:04] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:32:05] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:32:05] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [05/May/2026 09:32:05] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:32:05] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:32:05] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:32:05] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:32:05] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:32:05] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:32:09] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:32:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:33:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:34:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:35:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:36:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:36:57] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:36:57] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:37:10] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:37:15] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:37:15] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:37:27] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:37:27] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:37:39] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:37:39] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [05/May/2026 09:37:58] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:37:58] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:38:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [05/May/2026 09:39:03] "GET / HTTP/1.1" 200 -

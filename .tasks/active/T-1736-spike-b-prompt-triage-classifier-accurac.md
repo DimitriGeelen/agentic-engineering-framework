@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: build
 owner: agent
-horizon: later
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-05-05T07:36:42Z
-last_update: 2026-05-05T07:36:42Z
+last_update: 2026-05-05T07:38:48Z
 date_finished: null
 ---
 
@@ -112,3 +112,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1736-spike-b-prompt-triage-classifier-accurac.md
 - **Context:** Initial task creation
+
+### 2026-05-05T07:38:48Z — status-update [task-update-agent]
+- **Change:** horizon: later → next

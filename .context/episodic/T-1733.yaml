@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1733: prompt-triage v0.5 Spike A — first orchestrator substrate consumer end-to-end
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T07:37:39Z
+# ============================================================================
+
+task_id: T-1733
+task_name: "prompt-triage v0.5 Spike A — first orchestrator substrate consumer end-to-end"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T07:27:43Z
+completed: 2026-05-05T07:37:34Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-05T09:37:30+02:00
+last_commit: 2026-05-05T09:37:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  prompt-triage v0.5 Spike A — first orchestrator substrate consumer end-to-end
+
+# Key outcomes
+outcomes:
+  - "Workflow file `.context/project/workflows/prompt-triage.yaml` exists with `task_type: prompt-triage`, `worker_kind: ollama-loop`, `model: claude-3-5-sonnet-hermes3`, `cost_cap_usd: 0.0`, allowed_tools restricted to `[Read]` (classifier should not write/exec)"
+  - "Prompt template `prompts/prompt-triage.md` exists with classifier instructions: input is a user prompt, output is YAML envelope with `verdict: GO|NO-GO|DEFER` + `rationale` (one line) + `confidence: 0.0-1.0`"
+  - "`bin/fw resolver workflows` lists `prompt-triage.yaml` with the resolved worker/model"
+  - "`bin/fw resolver dispatch <task_id> prompt-triage --dry-run` builds an envelope without errors and shows the prompt-template path resolved"
+  - "One real dispatch run captured in `.context/dispatches.jsonl` (latest entry has `task_type: prompt-triage`)"
+  - "Latency p50 from at least 3 dispatches recorded in this task's Evolution section (one-shot proof, not statistical) — establishes order-of-magnitude before Spike B"
+  - "Cost cap honored: `cost_cap_usd: 0.0` enforced (ollama-local only); test path NOT routed through cloud provider"
+  - "No regressions: `bin/fw resolver workflows` continues to list the existing 5 workflows alongside the new one"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/workflows/prompt-triage.yaml"
+  - "prompts/prompt-triage.md"
+  - ".tasks/active/T-1733-prompt-triage-v05-spike-a--first-orchest.md"
+  - ".tasks/active/T-1736-spike-b-prompt-triage-classifier-accurac.md"
+  - ".tasks/active/T-1737-slice-2-userpromptsubmit-hook--promptund.md"
+  - ".tasks/completed/T-1734-validworkerkinds-drift-between-binfw-and.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T09:37:30"
+    action: "T-1733: prompt-triage v0.5 Spike A — first orchestrator substrate consumer end-to-end"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, G-064-closure, prompt-triage, v0.5]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 6
+  lines_added: 485
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1733-prompt-triage-v05-spike-a--first-orchest.md
+generated_by: context-agent-hybrid

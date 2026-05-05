@@ -2724,3 +2724,10 @@ X'` returning empty group."
   date: 2026-05-04
   context: Added via context agent
   application: TBD
+- id: L-352
+  learning: "G-064 (zero substrate consumers) was hiding a structural bug for 5+ months. T-1734 drift between bin/fw:VALID_WORKER_KINDS and lib/resolver.py:VALID_WORKER_KINDS only surfaced when T-1733 became the first dispatch-path consumer. General lesson: zero-consumer substrates are not 'fine' — they're invisible. Validation paths that never run cannot be trusted. Closing zero-consumer gaps reveals what was hiding behind them."
+  source: P-001
+  task: T-1733
+  date: 2026-05-05
+  context: Added via context agent
+  application: TBD

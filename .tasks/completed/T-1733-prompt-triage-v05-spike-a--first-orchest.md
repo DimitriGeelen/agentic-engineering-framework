@@ -4,16 +4,16 @@ name: "prompt-triage v0.5 Spike A — first orchestrator substrate consumer end-
 description: >
   T-1732 build slice 1: file workflow YAML + prompt template + run one dispatch to prove resolver→litellm→ollama-local→envelope works end-to-end. Closes G-064 (zero consumers) with first real consumer. Bounded scope: substrate connection only, not classification accuracy (Spike B).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, G-064-closure, prompt-triage, v0.5]
-components: []
+components: [bin/fw, lib/resolver.py]
 related_tasks: [T-1732, T-1729, T-1700, T-1689, T-1690, T-1697]
 created: 2026-05-05T07:27:43Z
-last_update: 2026-05-05T07:27:43Z
-date_finished: null
+last_update: 2026-05-05T07:37:34Z
+date_finished: 2026-05-05T07:37:34Z
 ---
 
 # T-1733: prompt-triage v0.5 Spike A — first orchestrator substrate consumer end-to-end
@@ -164,3 +164,15 @@ grep -q "GO\|NO-GO\|DEFER" prompts/prompt-triage.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1733-prompt-triage-v05-spike-a--first-orchest.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-f2980e23
+- **Timestamp:** 2026-05-05T07:37:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T07:37:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

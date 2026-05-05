@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1734: VALID_WORKER_KINDS drift between bin/fw and lib/resolver.py — ollama-loop accepted by listing but rejected by dispatch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T07:33:55Z
+# ============================================================================
+
+task_id: T-1734
+task_name: "VALID_WORKER_KINDS drift between bin/fw and lib/resolver.py — ollama-loop accepted by listing but rejected by dispatch"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T07:29:58Z
+completed: 2026-05-05T07:33:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-05T09:33:47+02:00
+last_commit: 2026-05-05T09:33:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sync VALID_WORKER_KINDS between bin/fw and lib/resolver.py
+
+# Key outcomes
+outcomes:
+  - "`lib/resolver.py:56` `VALID_WORKER_KINDS` includes `\"ollama-loop\"`"
+  - "`bin/fw resolver dispatch T-1733 prompt-triage --dry-run` builds an envelope without worker_kind error"
+  - "Both validation tables exist in only one canonical location, OR a one-line comment on each cross-references the other so the next drift is caught (lightweight — no refactor required for this slice)"
+  - "`bin/fw resolver workflows` continues listing all 6 workflows after the change"
+  - "`bin/fw doctor` does not regress (no new warnings introduced)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "lib/resolver.py"
+  - ".tasks/active/T-1734-validworkerkinds-drift-between-binfw-and.md"
+  - ".tasks/active/T-1735-fw-doctor-assert-validworkerkinds-parity.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T09:33:47"
+    action: "T-1734: sync VALID_WORKER_KINDS between bin/fw and lib/resolver.py"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, bug, validation-drift, resolver]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 4
+  lines_added: 273
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1734-validworkerkinds-drift-between-binfw-and.md
+generated_by: context-agent-hybrid
