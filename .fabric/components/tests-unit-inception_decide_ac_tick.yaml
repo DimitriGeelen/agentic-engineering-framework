@@ -3,15 +3,35 @@ name: inception_decide_ac_tick
 type: script
 subsystem: tests
 location: tests/unit/inception_decide_ac_tick.bats
-tags: [tests, unit, inception, ac-tick, T-1324, G-008, P-039]
-
-purpose: "Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever (G-008; P-039)."
-
+tags:
+- tests
+- unit
+- inception
+- ac-tick
+- T-1324
+- G-008
+- P-039
+purpose: Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after
+  fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever
+  (G-008; P-039).
 depends_on:
-  - target: lib/inception.sh
-    type: calls
-
+- target: lib/inception.sh
+  type: calls
+- target: lib/colors.sh
+  type: calls
+- target: lib/errors.sh
+  type: calls
+- target: lib/tasks.sh
+  type: calls
+- target: lib/colors.sh
+  type: tests
+- target: lib/errors.sh
+  type: tests
+- target: lib/tasks.sh
+  type: tests
+- target: lib/inception.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-19
 created_by: T-1324
+last_enriched: '2026-05-06'

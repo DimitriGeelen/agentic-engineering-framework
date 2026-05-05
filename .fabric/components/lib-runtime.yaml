@@ -17,6 +17,8 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_runtime.bats
   type: called_by
+- target: tests/unit/lib_runtime.bats
+  type: tests_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'

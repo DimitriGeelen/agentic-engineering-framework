@@ -3,15 +3,17 @@ name: lib_firewall
 type: test
 subsystem: tests
 location: tests/unit/lib_firewall.bats
-tags: [firewall, bats, unit-test]
-
-purpose: "Unit tests for lib/firewall.sh — ensure_firewall_open and UFW port management"
-
+tags:
+- firewall
+- bats
+- unit-test
+purpose: Unit tests for lib/firewall.sh — ensure_firewall_open and UFW port management
 depends_on:
-  - target: lib/firewall.sh
-    type: calls
-
+- target: lib/firewall.sh
+  type: calls
+- target: lib/firewall.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-910
+last_enriched: '2026-05-06'

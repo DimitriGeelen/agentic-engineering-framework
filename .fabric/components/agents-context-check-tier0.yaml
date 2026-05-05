@@ -30,7 +30,13 @@ depended_by:
 - target: agents/audit/audit.sh
   type: called-by
 - tests/lint/no-bare-fw-in-gate-scripts.bats
-last_enriched: '2026-04-13'
+- target: tests/lint/no-bare-fw-in-gate-scripts.bats
+  type: tests_by
+- target: tests/unit/tier0_hash_normalization.bats
+  type: called_by
+- target: tests/unit/tier0_hash_normalization.bats
+  type: tests_by
+last_enriched: '2026-05-06'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'

@@ -3,15 +3,19 @@ name: fabric
 type: test
 subsystem: tests
 location: tests/unit/fabric.bats
-tags: [fabric, bats, unit-test]
-
-purpose: "Unit tests for agents/fabric/fabric.sh (10 tests)"
-
+tags:
+- fabric
+- bats
+- unit-test
+purpose: Unit tests for agents/fabric/fabric.sh (10 tests)
 depends_on:
-  - target: agents/fabric/fabric.sh
-    type: calls
-
+- target: agents/fabric/fabric.sh
+  type: calls
+- target: agents/fabric/fabric.sh
+  type: tests
+- target: lib/config.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-931
+last_enriched: '2026-05-06'

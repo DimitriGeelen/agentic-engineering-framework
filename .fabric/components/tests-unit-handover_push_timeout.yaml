@@ -3,17 +3,26 @@ name: handover_push_timeout
 type: script
 subsystem: tests
 location: tests/unit/handover_push_timeout.bats
-tags: [tests, unit, handover, timeout, T-1277]
-
-purpose: "Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT."
-
+tags:
+- tests
+- unit
+- handover
+- timeout
+- T-1277
+purpose: Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN
+  down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT.
 depends_on:
-  - target: agents/handover/handover.sh
-    type: calls
-  - target: agents/context/checkpoint.sh
-    type: calls
-
+- target: agents/handover/handover.sh
+  type: calls
+- target: agents/context/checkpoint.sh
+  type: calls
+- target: C-008
+  type: calls
+- target: agents/handover/handover.sh
+  type: tests
+- target: C-008
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-19
 created_by: T-1277
+last_enriched: '2026-05-06'

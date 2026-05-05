@@ -3,15 +3,28 @@ name: context_focus
 type: test
 subsystem: tests
 location: tests/unit/context_focus.bats
-tags: [context, focus, bats, unit-test]
-
-purpose: "Unit tests for context focus (15 tests)"
-
+tags:
+- context
+- focus
+- bats
+- unit-test
+purpose: Unit tests for context focus (15 tests)
 depends_on:
-  - target: agents/context/context.sh
-    type: calls
-
+- target: agents/context/context.sh
+  type: calls
+- target: lib/compat.sh
+  type: calls
+- target: lib/tasks.sh
+  type: calls
+- target: agents/context/lib/focus.sh
+  type: calls
+- target: agents/context/lib/focus.sh
+  type: tests
+- target: lib/compat.sh
+  type: tests
+- target: lib/tasks.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'

@@ -3,15 +3,18 @@ name: fw_vendor
 type: test
 subsystem: framework-core
 location: tests/integration/fw_vendor.bats
-tags: [bats, integration-test, vendor, cli]
-
-purpose: "Integration tests for fw vendor CLI."
-
+tags:
+- bats
+- integration-test
+- vendor
+- cli
+purpose: Integration tests for fw vendor CLI.
 depends_on:
-  - target: bin/fw
-    type: calls
-
+- target: bin/fw
+  type: calls
+- target: bin/fw
+  type: tests
 depended_by: []
-
 last_verified: 2026-03-30
 created_by: agent
+last_enriched: '2026-05-06'

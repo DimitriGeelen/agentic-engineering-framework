@@ -34,4 +34,22 @@ depended_by:
   type: produced-by_by
 - target: tests/unit/inception_decide_ac_tick.bats
   type: called_by
-last_enriched: '2026-05-05'
+- target: tests/lint/inception-decision-exact-match.bats
+  type: tests_by
+- target: tests/unit/inception_decide_ac_tick.bats
+  type: tests_by
+- target: tests/unit/inception_decide_atomicity.bats
+  type: called_by
+- target: tests/unit/inception_decide_atomicity.bats
+  type: tests_by
+- target: tests/unit/inception_tick_decision_recorded.bats
+  type: called_by
+- target: tests/unit/inception_tick_decision_recorded.bats
+  type: tests_by
+- target: tests/unit/inception_tick_marker.bats
+  type: called_by
+- target: tests/unit/inception_tick_marker.bats
+  type: tests_by
+- target: tests/unit/lib_inception.bats
+  type: tests_by
+last_enriched: '2026-05-06'

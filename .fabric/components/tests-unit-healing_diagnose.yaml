@@ -3,15 +3,20 @@ name: healing_diagnose
 type: test
 subsystem: tests
 location: tests/unit/healing_diagnose.bats
-tags: [healing, diagnose, bats, unit-test]
-
-purpose: "Unit tests for healing diagnose (26 tests)"
-
+tags:
+- healing
+- diagnose
+- bats
+- unit-test
+purpose: Unit tests for healing diagnose (26 tests)
 depends_on:
-  - target: agents/healing/healing.sh
-    type: calls
-
+- target: agents/healing/healing.sh
+  type: calls
+- target: agents/healing/lib/diagnose.sh
+  type: calls
+- target: agents/healing/lib/diagnose.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'

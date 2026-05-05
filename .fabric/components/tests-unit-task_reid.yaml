@@ -3,16 +3,22 @@ name: task_reid
 type: script
 subsystem: tests
 location: tests/unit/task_reid.bats
-tags: [test, task-create, reid, G-052, T-1367]
-purpose: "Regression test — fw task reid safely renames a task's ID (handles
-  G-052 duplicate-ID repair). Verifies atomic rename of file + id: frontmatter
-  update, and refusal when NEW-ID already exists."
+tags:
+- test
+- task-create
+- reid
+- G-052
+- T-1367
+purpose: 'Regression test — fw task reid safely renames a task''s ID (handles G-052 duplicate-ID repair). Verifies atomic
+  rename of file + id: frontmatter update, and refusal when NEW-ID already exists.'
 depends_on:
-  - target: bin/fw
-    type: calls
-  - target: .tasks/active/
-    type: writes
+- target: bin/fw
+  type: calls
+- target: .tasks/active/
+  type: writes
+- target: bin/fw
+  type: tests
 depended_by: []
 last_verified: 2026-04-24
-last_enriched: '2026-04-24'
+last_enriched: '2026-05-06'
 created_by: T-1367

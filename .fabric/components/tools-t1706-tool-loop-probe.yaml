@@ -1,6 +1,7 @@
 id: tools/t1706-tool-loop-probe.sh
 name: t1706-tool-loop-probe
 type: script
+standalone: true  # T-1754 — by-design orphan, no framework imports
 subsystem: unknown
 location: tools/t1706-tool-loop-probe.sh
 tags: []

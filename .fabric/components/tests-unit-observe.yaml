@@ -3,15 +3,18 @@ name: observe
 type: test
 subsystem: tests
 location: tests/unit/observe.bats
-tags: [observe, note, bats, unit-test]
-
-purpose: "Unit tests for agents/observe/observe.sh (7 tests)"
-
+tags:
+- observe
+- note
+- bats
+- unit-test
+purpose: Unit tests for agents/observe/observe.sh (7 tests)
 depends_on:
-  - target: agents/observe/observe.sh
-    type: calls
-
+- target: agents/observe/observe.sh
+  type: calls
+- target: agents/observe/observe.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-932
+last_enriched: '2026-05-06'

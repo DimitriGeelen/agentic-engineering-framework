@@ -3,15 +3,25 @@ name: lib_review
 type: test
 subsystem: tests
 location: tests/unit/lib_review.bats
-tags: [review, bats, unit-test]
-
-purpose: "Unit tests for review (10 tests)"
-
+tags:
+- review
+- bats
+- unit-test
+purpose: Unit tests for review (10 tests)
 depends_on:
-  - target: lib/review.sh
-    type: calls
-
+- target: lib/review.sh
+  type: calls
+- target: lib/colors.sh
+  type: calls
+- target: lib/paths.sh
+  type: calls
+- target: lib/review.sh
+  type: tests
+- target: lib/colors.sh
+  type: tests
+- target: lib/paths.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'

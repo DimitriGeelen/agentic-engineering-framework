@@ -3,15 +3,22 @@ name: task_id_race
 type: script
 subsystem: tests
 location: tests/unit/task_id_race.bats
-tags: [test, task-create, race-condition, T-1279]
-purpose: "Regression test — concurrent fw work-on invocations must allocate
-  distinct task IDs. Prior bug: generate_id() read max_id then (later) wrote
-  the file; N parallel invocations all observed the same max_id and wrote
-  T-${max+1}. Fix: keylock around read-compute-write sequence."
+tags:
+- test
+- task-create
+- race-condition
+- T-1279
+purpose: 'Regression test — concurrent fw work-on invocations must allocate distinct task IDs. Prior bug: generate_id() read
+  max_id then (later) wrote the file; N parallel invocations all observed the same max_id and wrote T-${max+1}. Fix: keylock
+  around read-compute-write sequence.'
 depends_on:
-  - target: agents/task-create/create-task.sh
-    type: calls
+- target: agents/task-create/create-task.sh
+  type: calls
+- target: agents/task-create/create-task.sh
+  type: tests
+- target: lib/keylock.sh
+  type: tests
 depended_by: []
 last_verified: 2026-04-24
-last_enriched: '2026-04-24'
+last_enriched: '2026-05-06'
 created_by: T-1279

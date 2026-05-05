@@ -627,6 +627,8 @@ print(f'{len(registered)} {unregistered} {orphaned}')
         fi
 
         # Check for unenriched cards (no depends_on AND no depended_by edges)
+        # Cards explicitly marked `standalone: true` are excluded — these are
+        # one-shot probes/tools with no framework imports by design (T-1754).
         unenriched_count=$(python3 -c "
 import yaml, glob, os
 COMP_DIR = os.path.join('$PROJECT_ROOT', '.fabric', 'components')
@@ -636,6 +638,7 @@ for f in glob.glob(os.path.join(COMP_DIR, '*.yaml')):
     with open(f) as fh:
         d = yaml.safe_load(fh)
     if not d: continue
+    if d.get('standalone') is True: continue
     total += 1
     deps = d.get('depends_on') or []
     depby = d.get('depended_by') or []

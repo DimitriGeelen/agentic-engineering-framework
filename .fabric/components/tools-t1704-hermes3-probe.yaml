@@ -1,6 +1,7 @@
 id: tools/t1704-hermes3-probe.sh
 name: t1704-hermes3-probe
 type: script
+standalone: true  # T-1754 — by-design orphan, no framework imports
 subsystem: unknown
 location: tools/t1704-hermes3-probe.sh
 tags: []

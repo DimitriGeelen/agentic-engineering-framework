@@ -3,15 +3,19 @@ name: fw_task
 type: test
 subsystem: framework-core
 location: tests/integration/fw_task.bats
-tags: [bats, integration-test, task, cli]
-
-purpose: "Integration tests for fw task CLI — 7 tests covering create, placeholder rejection, ID increment, status update, update fail, help, list."
-
+tags:
+- bats
+- integration-test
+- task
+- cli
+purpose: Integration tests for fw task CLI — 7 tests covering create, placeholder rejection, ID increment, status update,
+  update fail, help, list.
 depends_on:
-  - target: bin/fw
-    type: calls
-
+- target: bin/fw
+  type: calls
+- target: bin/fw
+  type: tests
 depended_by: []
-
 last_verified: 2026-03-29
 created_by: agent
+last_enriched: '2026-05-06'

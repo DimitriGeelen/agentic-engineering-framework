@@ -17,7 +17,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-26'
+last_enriched: '2026-05-06'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -36,3 +36,13 @@ depended_by:
   type: called_by
 - target: tests/unit/hook_absolute_paths.bats
   type: called_by
+- target: tests/unit/focus_drift_gate.bats
+  type: called_by
+- target: tests/unit/focus_drift_gate.bats
+  type: tests_by
+- target: tests/unit/hook_absolute_paths.bats
+  type: tests_by
+- target: tests/unit/hook_enable_absolute_path.bats
+  type: tests_by
+- target: tests/unit/lib_init.bats
+  type: tests_by

@@ -16,7 +16,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -24,3 +24,5 @@ depended_by:
   type: called-by
 - target: tests/unit/lib_setup.bats
   type: called_by
+- target: tests/unit/lib_setup.bats
+  type: tests_by

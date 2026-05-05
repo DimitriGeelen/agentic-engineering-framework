@@ -9,6 +9,10 @@ depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh
   type: called_by
+- target: tests/unit/evolution_log_gate.bats
+  type: called_by
+- target: tests/unit/evolution_log_gate.bats
+  type: tests_by
 last_verified: 2026-05-04
 created_by: unknown
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-06'

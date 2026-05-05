@@ -3,15 +3,17 @@ name: resume
 type: test
 subsystem: tests
 location: tests/unit/resume.bats
-tags: [resume, bats, unit-test]
-
-purpose: "Unit tests for agents/resume/resume.sh (12 tests)"
-
+tags:
+- resume
+- bats
+- unit-test
+purpose: Unit tests for agents/resume/resume.sh (12 tests)
 depends_on:
-  - target: agents/resume/resume.sh
-    type: calls
-
+- target: agents/resume/resume.sh
+  type: calls
+- target: agents/resume/resume.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-922
+last_enriched: '2026-05-06'

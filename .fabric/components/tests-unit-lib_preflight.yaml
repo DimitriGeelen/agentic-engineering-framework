@@ -3,15 +3,17 @@ name: lib_preflight
 type: test
 subsystem: tests
 location: tests/unit/lib_preflight.bats
-tags: [preflight, bats, unit-test]
-
-purpose: "Unit tests for preflight (11 tests)"
-
+tags:
+- preflight
+- bats
+- unit-test
+purpose: Unit tests for preflight (11 tests)
 depends_on:
-  - target: lib/preflight.sh
-    type: calls
-
+- target: lib/preflight.sh
+  type: calls
+- target: lib/preflight.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'

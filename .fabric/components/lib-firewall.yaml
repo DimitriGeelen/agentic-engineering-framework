@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/firewall.sh
 tags: []
-purpose: Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive
+purpose: Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed
+  or inactive
 depends_on:
 - target: lib/firewall.sh
   type: calls
@@ -19,6 +20,8 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_firewall.bats
   type: called_by
+- target: tests/unit/lib_firewall.bats
+  type: tests_by
 last_verified: 2026-04-05
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'

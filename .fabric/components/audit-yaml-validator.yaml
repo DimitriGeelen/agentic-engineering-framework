@@ -54,6 +54,24 @@ depended_by:
   type: called_by
 - target: tests/unit/audit.bats
   type: tested_by
+- target: tests/governance/test_git_hooks.bats
+  type: called_by
+- target: tests/governance/test_git_hooks.bats
+  type: tests_by
+- target: tests/unit/audit.bats
+  type: called_by
+- target: tests/unit/audit.bats
+  type: tests_by
+- target: tests/unit/audit_flock.bats
+  type: called_by
+- target: tests/unit/audit_flock.bats
+  type: tests_by
+- target: tests/unit/audit_null_timestamp.bats
+  type: called_by
+- target: tests/unit/audit_null_timestamp.bats
+  type: tests_by
+- target: tests/unit/lib_pickup.bats
+  type: tests_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-06'

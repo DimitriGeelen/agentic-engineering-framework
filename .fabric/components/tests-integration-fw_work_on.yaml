@@ -3,15 +3,18 @@ name: fw_work_on
 type: test
 subsystem: framework-core
 location: tests/integration/fw_work_on.bats
-tags: [bats, integration-test, work-on, cli]
-
-purpose: "Integration tests for fw work-on CLI — 5 tests covering create+focus, resume, nonexistent ID, and help."
-
+tags:
+- bats
+- integration-test
+- work-on
+- cli
+purpose: Integration tests for fw work-on CLI — 5 tests covering create+focus, resume, nonexistent ID, and help.
 depends_on:
-  - target: bin/fw
-    type: calls
-
+- target: bin/fw
+  type: calls
+- target: bin/fw
+  type: tests
 depended_by: []
-
 last_verified: 2026-03-30
 created_by: agent
+last_enriched: '2026-05-06'

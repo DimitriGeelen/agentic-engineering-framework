@@ -4,11 +4,15 @@ type: script
 subsystem: context-fabric
 location: agents/context/lib/safe-commands.sh
 tags: []
-purpose: "Allowlist of safe bash commands for task gate bypass — git status, ls, cat, grep etc. that dont need an active task."
+purpose: Allowlist of safe bash commands for task gate bypass — git status, ls, cat, grep etc. that dont need an active task.
 depends_on: []
 depended_by:
 - target: agents/context/check-active-task.sh
   type: called_by
+- target: tests/unit/context_safe_commands.bats
+  type: called_by
+- target: tests/unit/context_safe_commands.bats
+  type: tests_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-05-06'

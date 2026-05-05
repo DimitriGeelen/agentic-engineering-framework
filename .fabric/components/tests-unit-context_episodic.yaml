@@ -3,15 +3,28 @@ name: context_episodic
 type: test
 subsystem: tests
 location: tests/unit/context_episodic.bats
-tags: [context, episodic, bats, unit-test]
-
-purpose: "Unit tests for context episodic (11 tests)"
-
+tags:
+- context
+- episodic
+- bats
+- unit-test
+purpose: Unit tests for context episodic (11 tests)
 depends_on:
-  - target: agents/context/context.sh
-    type: calls
-
+- target: agents/context/context.sh
+  type: calls
+- target: lib/compat.sh
+  type: calls
+- target: lib/tasks.sh
+  type: calls
+- target: agents/context/lib/episodic.sh
+  type: calls
+- target: agents/context/lib/episodic.sh
+  type: tests
+- target: lib/compat.sh
+  type: tests
+- target: lib/tasks.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'

@@ -22,6 +22,10 @@ depended_by:
   location: agents/context/context.sh:80
 - target: C-001
   type: called_by
+- target: tests/unit/context_learning.bats
+  type: called_by
+- target: tests/unit/context_learning.bats
+  type: tests_by
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-02-21'
+last_enriched: '2026-05-06'

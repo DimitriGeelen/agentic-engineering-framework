@@ -18,6 +18,16 @@ depended_by:
   type: tested_by
 - target: tests/unit/termlink.bats
   type: called_by
+- target: tests/unit/termlink.bats
+  type: tests_by
+- target: tests/unit/test_worker_kind_drift.bats
+  type: called_by
+- target: tests/unit/test_worker_kind_drift.bats
+  type: tests_by
+- target: tests/unit/test_workflow_env_isolation.bats
+  type: called_by
+- target: tests/unit/test_workflow_env_isolation.bats
+  type: tests_by
 last_verified: 2026-03-23
 created_by: unknown
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-06'

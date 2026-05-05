@@ -1,6 +1,7 @@
 id: agents/monitor/watchtower-rss-sample.sh
 name: watchtower-rss-sample
 type: script
+standalone: true  # T-1754 — by-design orphan, no framework imports
 subsystem: unknown
 location: agents/monitor/watchtower-rss-sample.sh
 tags: []

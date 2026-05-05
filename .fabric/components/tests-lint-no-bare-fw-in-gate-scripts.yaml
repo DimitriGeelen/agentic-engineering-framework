@@ -7,6 +7,27 @@ tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
 - agents/context/check-tier0.sh
+- target: agents/task-create/update-task.sh
+  type: tests
+- target: agents/context/check-tier0.sh
+  type: tests
+- target: agents/git/lib/hooks.sh
+  type: tests
+- target: agents/handover/handover.sh
+  type: tests
+- target: agents/context/check-active-task.sh
+  type: tests
+- target: C-008
+  type: tests
+- target: C-007
+  type: tests
+- target: agents/context/check-agent-dispatch.sh
+  type: tests
+- target: agents/context/check-project-boundary.sh
+  type: tests
+- target: agents/context/lib/init.sh
+  type: tests
 depended_by: []
 last_verified: 2026-04-13
 created_by: unknown
+last_enriched: '2026-05-06'

@@ -3,19 +3,27 @@ name: hook_absolute_paths
 type: script
 subsystem: tests
 location: tests/unit/hook_absolute_paths.bats
-tags: [test, hooks, settings, G-053, T-1364]
-purpose: "Regression test — .claude/settings.json hook commands must emit
-  absolute paths (canonicalized via cd && pwd at init/upgrade time), because
-  Claude Code resolves hook commands against the session CWD. Relative paths
-  cascade into tool-blocks when CWD drifts."
+tags:
+- test
+- hooks
+- settings
+- G-053
+- T-1364
+purpose: Regression test — .claude/settings.json hook commands must emit absolute paths (canonicalized via cd && pwd at init/upgrade
+  time), because Claude Code resolves hook commands against the session CWD. Relative paths cascade into tool-blocks when
+  CWD drifts.
 depends_on:
-  - target: lib/init.sh
-    type: calls
-  - target: lib/upgrade.sh
-    type: calls
-  - target: .claude/settings.json
-    type: reads
+- target: lib/init.sh
+  type: calls
+- target: lib/upgrade.sh
+  type: calls
+- target: .claude/settings.json
+  type: reads
+- target: lib/init.sh
+  type: tests
+- target: bin/fw
+  type: tests
 depended_by: []
 last_verified: 2026-04-24
-last_enriched: '2026-04-24'
+last_enriched: '2026-05-06'
 created_by: T-1364

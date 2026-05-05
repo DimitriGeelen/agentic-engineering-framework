@@ -3,15 +3,17 @@ name: lib_first_run
 type: test
 subsystem: tests
 location: tests/unit/lib_first_run.bats
-tags: [lib-first-run, bats, unit-test]
-
-purpose: "Unit tests for lib/first-run.sh (4 tests)"
-
+tags:
+- lib-first-run
+- bats
+- unit-test
+purpose: Unit tests for lib/first-run.sh (4 tests)
 depends_on:
-  - target: lib/first-run.sh
-    type: calls
-
+- target: lib/first-run.sh
+  type: calls
+- target: lib/first-run.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-06
 created_by: T-945
+last_enriched: '2026-05-06'

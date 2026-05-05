@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/config-file.sh
 tags: []
-purpose: Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments
+purpose: Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves
+  comments
 depends_on:
 - target: lib/config-file.sh
   type: calls
@@ -21,6 +22,8 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_config_file.bats
   type: called_by
+- target: tests/unit/lib_config_file.bats
+  type: tests_by
 last_verified: 2026-04-05
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'

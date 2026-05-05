@@ -17,6 +17,14 @@ depended_by:
   type: called_by
 - target: agents/task-create/create-task.sh
   type: called_by
+- target: tests/unit/keylock_subshell_close.bats
+  type: called_by
+- target: tests/unit/keylock_subshell_close.bats
+  type: tests_by
+- target: tests/unit/lib_keylock.bats
+  type: tests_by
+- target: tests/unit/task_id_race.bats
+  type: tests_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-04-23'
+last_enriched: '2026-05-06'

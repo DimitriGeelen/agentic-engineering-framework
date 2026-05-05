@@ -3,15 +3,22 @@ name: context_safe_commands
 type: test
 subsystem: tests
 location: tests/unit/context_safe_commands.bats
-tags: [context, safe_commands, bats, unit-test]
-
-purpose: "Unit tests for context safe_commands (35 tests)"
-
+tags:
+- context
+- safe_commands
+- bats
+- unit-test
+purpose: Unit tests for context safe_commands (35 tests)
 depends_on:
-  - target: agents/context/context.sh
-    type: calls
-
+- target: agents/context/context.sh
+  type: calls
+- target: agents/context/lib/safe-commands.sh
+  type: calls
+- target: agents/context/lib/safe-commands.sh
+  type: tests
+- target: bin/fw
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'

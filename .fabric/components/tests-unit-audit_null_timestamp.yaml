@@ -3,16 +3,23 @@ name: audit_null_timestamp
 type: script
 subsystem: tests
 location: tests/unit/audit_null_timestamp.bats
-tags: [test, regression, audit, T-1402]
-purpose: "Regression test — audit.sh METRICS_EOF heredoc must not crash when
-  .context/project/metrics-history.yaml contains a null timestamp. Origin:
-  handover S-2026-0423-1623 AttributeError: 'NoneType' at <stdin>:108."
+tags:
+- test
+- regression
+- audit
+- T-1402
+purpose: 'Regression test — audit.sh METRICS_EOF heredoc must not crash when .context/project/metrics-history.yaml contains
+  a null timestamp. Origin: handover S-2026-0423-1623 AttributeError: ''NoneType'' at <stdin>:108.'
 depends_on:
-  - target: agents/audit/audit.sh
-    type: calls
-  - target: .context/project/metrics-history.yaml
-    type: reads
+- target: agents/audit/audit.sh
+  type: calls
+- target: .context/project/metrics-history.yaml
+  type: reads
+- target: C-004
+  type: calls
+- target: C-004
+  type: tests
 depended_by: []
 last_verified: 2026-04-24
-last_enriched: '2026-04-24'
+last_enriched: '2026-05-06'
 created_by: T-1402

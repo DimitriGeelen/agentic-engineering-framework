@@ -3,15 +3,17 @@ name: lib_config_file
 type: test
 subsystem: tests
 location: tests/unit/lib_config_file.bats
-tags: [config, bats, unit-test]
-
-purpose: "Unit tests for lib/config-file.sh — fw config set/get/list commands"
-
+tags:
+- config
+- bats
+- unit-test
+purpose: Unit tests for lib/config-file.sh — fw config set/get/list commands
 depends_on:
-  - target: lib/config-file.sh
-    type: calls
-
+- target: lib/config-file.sh
+  type: calls
+- target: lib/config-file.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-896
+last_enriched: '2026-05-06'

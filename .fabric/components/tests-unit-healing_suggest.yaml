@@ -3,15 +3,24 @@ name: healing_suggest
 type: test
 subsystem: tests
 location: tests/unit/healing_suggest.bats
-tags: [healing, suggest, bats, unit-test]
-
-purpose: "Unit tests for healing suggest (9 tests)"
-
+tags:
+- healing
+- suggest
+- bats
+- unit-test
+purpose: Unit tests for healing suggest (9 tests)
 depends_on:
-  - target: agents/healing/healing.sh
-    type: calls
-
+- target: agents/healing/healing.sh
+  type: calls
+- target: lib/yaml.sh
+  type: calls
+- target: agents/healing/lib/suggest.sh
+  type: calls
+- target: agents/healing/lib/suggest.sh
+  type: tests
+- target: lib/yaml.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'

@@ -17,6 +17,44 @@ depended_by:
   type: called-by
 - target: tests/unit/lib_compat.bats
   type: called_by
+- target: tests/unit/context_decision.bats
+  type: called_by
+- target: tests/unit/context_decision.bats
+  type: tests_by
+- target: tests/unit/context_episodic.bats
+  type: called_by
+- target: tests/unit/context_episodic.bats
+  type: tests_by
+- target: tests/unit/context_focus.bats
+  type: called_by
+- target: tests/unit/context_focus.bats
+  type: tests_by
+- target: tests/unit/context_learning.bats
+  type: called_by
+- target: tests/unit/context_learning.bats
+  type: tests_by
+- target: tests/unit/context_pattern.bats
+  type: called_by
+- target: tests/unit/context_pattern.bats
+  type: tests_by
+- target: tests/unit/context_status.bats
+  type: called_by
+- target: tests/unit/context_status.bats
+  type: tests_by
+- target: tests/unit/git_common.bats
+  type: called_by
+- target: tests/unit/git_common.bats
+  type: tests_by
+- target: tests/unit/lib_compat.bats
+  type: tests_by
+- target: tests/unit/lib_update.bats
+  type: called_by
+- target: tests/unit/lib_update.bats
+  type: tests_by
+- target: tests/unit/lib_version.bats
+  type: called_by
+- target: tests/unit/lib_version.bats
+  type: tests_by
 last_verified: 2026-03-09
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'

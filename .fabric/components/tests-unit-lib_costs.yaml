@@ -3,15 +3,17 @@ name: lib_costs tests
 type: test
 subsystem: tests
 location: tests/unit/lib_costs.bats
-tags: [tokens, costs, testing]
-
-purpose: "26 bats unit tests for lib/costs.sh — path computation, routing, JSONL parsing, edge cases (T-807)"
-
+tags:
+- tokens
+- costs
+- testing
+purpose: 26 bats unit tests for lib/costs.sh — path computation, routing, JSONL parsing, edge cases (T-807)
 depends_on:
-  - target: lib/costs.sh
-    type: calls
-
+- target: lib/costs.sh
+  type: calls
+- target: lib/costs.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-03
 created_by: unknown
+last_enriched: '2026-05-06'

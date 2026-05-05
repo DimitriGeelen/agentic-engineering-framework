@@ -19,6 +19,8 @@ depended_by:
   type: tested_by
 - target: tests/unit/docgen_article.bats
   type: called_by
+- target: tests/unit/docgen_article.bats
+  type: tests_by
 last_verified: 2026-03-11
 created_by: T-366
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'

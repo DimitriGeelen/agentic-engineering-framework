@@ -3,15 +3,18 @@ name: docgen_article
 type: test
 subsystem: tests
 location: tests/unit/docgen_article.bats
-tags: [docgen, article, bats, unit-test]
-
-purpose: "Unit tests for agents/docgen/generate-article.sh (5 tests)"
-
+tags:
+- docgen
+- article
+- bats
+- unit-test
+purpose: Unit tests for agents/docgen/generate-article.sh (5 tests)
 depends_on:
-  - target: agents/docgen/generate-article.sh
-    type: calls
-
+- target: agents/docgen/generate-article.sh
+  type: calls
+- target: agents/docgen/generate-article.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-06
 created_by: T-942
+last_enriched: '2026-05-06'

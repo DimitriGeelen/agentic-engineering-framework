@@ -17,6 +17,16 @@ depended_by:
 - tests/integration/fw_pickup.bats
 - target: lib/pickup-channel-bridge.sh
   type: called_by_by
+- target: tests/unit/lib_pickup.bats
+  type: tests_by
+- target: tests/unit/pickup_send_remote_session.bats
+  type: called_by
+- target: tests/unit/pickup_send_remote_session.bats
+  type: tests_by
+- target: tests/unit/pickup_type_routing.bats
+  type: called_by
+- target: tests/unit/pickup_type_routing.bats
+  type: tests_by
 last_verified: 2026-03-30
 created_by: unknown
-last_enriched: '2026-04-26'
+last_enriched: '2026-05-06'

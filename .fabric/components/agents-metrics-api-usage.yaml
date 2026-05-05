@@ -1,6 +1,7 @@
 id: agents/metrics/api-usage.sh
 name: api-usage
 type: script
+standalone: true  # T-1754 — by-design orphan, no framework imports
 subsystem: unknown
 location: agents/metrics/api-usage.sh
 tags: []

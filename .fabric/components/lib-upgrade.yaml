@@ -10,7 +10,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-26'
+last_enriched: '2026-05-06'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -20,3 +20,13 @@ depended_by:
   type: called_by
 - target: tests/unit/hook_absolute_paths.bats
   type: called_by
+- target: tests/unit/lib_upgrade.bats
+  type: tests_by
+- target: tests/unit/upgrade_dedupe_user_hooks.bats
+  type: called_by
+- target: tests/unit/upgrade_dedupe_user_hooks.bats
+  type: tests_by
+- target: tests/unit/upgrade_duplicate_hook_detection.bats
+  type: called_by
+- target: tests/unit/upgrade_duplicate_hook_detection.bats
+  type: tests_by

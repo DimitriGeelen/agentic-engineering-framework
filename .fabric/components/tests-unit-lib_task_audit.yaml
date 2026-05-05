@@ -7,6 +7,11 @@ tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
 - lib/task-audit.sh
+- target: lib/task-audit.sh
+  type: calls
+- target: lib/task-audit.sh
+  type: tests
 depended_by: []
 last_verified: 2026-04-11
 created_by: unknown
+last_enriched: '2026-05-06'

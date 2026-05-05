@@ -3,15 +3,28 @@ name: git_common
 type: test
 subsystem: tests
 location: tests/unit/git_common.bats
-tags: [git, common, bats, unit-test]
-
-purpose: "Unit tests for git common (10 tests)"
-
+tags:
+- git
+- common
+- bats
+- unit-test
+purpose: Unit tests for git common (10 tests)
 depends_on:
-  - target: agents/git/git.sh
-    type: calls
-
+- target: agents/git/git.sh
+  type: calls
+- target: lib/compat.sh
+  type: calls
+- target: lib/tasks.sh
+  type: calls
+- target: agents/git/lib/common.sh
+  type: calls
+- target: agents/git/lib/common.sh
+  type: tests
+- target: lib/compat.sh
+  type: tests
+- target: lib/tasks.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'

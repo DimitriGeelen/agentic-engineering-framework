@@ -7,6 +7,9 @@ tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
 - bin/fw
+- target: bin/fw
+  type: tests
 depended_by: []
 last_verified: 2026-04-11
 created_by: unknown
+last_enriched: '2026-05-06'

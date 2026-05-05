@@ -3,15 +3,18 @@ name: fw_decisions
 type: test
 subsystem: framework-core
 location: tests/integration/fw_decisions.bats
-tags: [bats, integration-test, decisions, cli]
-
-purpose: "Integration tests for fw decisions CLI."
-
+tags:
+- bats
+- integration-test
+- decisions
+- cli
+purpose: Integration tests for fw decisions CLI.
 depends_on:
-  - target: bin/fw
-    type: calls
-
+- target: bin/fw
+  type: calls
+- target: bin/fw
+  type: tests
 depended_by: []
-
 last_verified: 2026-03-30
 created_by: agent
+last_enriched: '2026-05-06'

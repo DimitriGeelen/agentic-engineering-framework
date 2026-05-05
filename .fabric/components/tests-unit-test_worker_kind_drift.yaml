@@ -4,17 +4,19 @@ type: script
 subsystem: unknown
 location: tests/unit/test_worker_kind_drift.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/termlink/termlink.sh
+  type: calls
+- target: tools/ollama-tool-loop.py
+  type: calls
+- target: agents/termlink/termlink.sh
+  type: tests
+- target: tools/ollama-tool-loop.py
+  type: tests
+- target: bin/fw
+  type: tests
+depended_by: []
 last_verified: 2026-05-03
 created_by: unknown
+last_enriched: '2026-05-06'

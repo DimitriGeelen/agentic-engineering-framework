@@ -1,9 +1,8 @@
-id: tools/t1703-probe-matrix.sh
-name: t1703-probe-matrix
+id: tests/unit/test_enrich_bats_parser.py
+name: test_enrich_bats_parser
 type: script
-standalone: true  # T-1754 — by-design orphan, no framework imports
 subsystem: unknown
-location: tools/t1703-probe-matrix.sh
+location: tests/unit/test_enrich_bats_parser.py
 tags: []
 
 purpose: "TODO: describe what this component does"
@@ -17,5 +16,5 @@ depended_by:
   # Same format as depends_on — filled by enrich.py or manually
   []
 
-last_verified: 2026-05-03
+last_verified: 2026-05-05
 created_by: unknown

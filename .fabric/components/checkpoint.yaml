@@ -49,6 +49,16 @@ depended_by:
   type: called-by
 - target: tests/unit/checkpoint.bats
   type: called-by
+- target: tests/lint/no-bare-fw-in-gate-scripts.bats
+  type: tests_by
+- target: tests/unit/checkpoint.bats
+  type: called_by
+- target: tests/unit/checkpoint.bats
+  type: tests_by
+- target: tests/unit/handover_push_timeout.bats
+  type: called_by
+- target: tests/unit/handover_push_timeout.bats
+  type: tests_by
 writes:
 - target: .context/working/.tool-counter
   contract: Text integer, incremented on every post-tool call
@@ -65,7 +75,7 @@ shared_constants:
   note: Duplicated in C-007 (budget-gate.sh)
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

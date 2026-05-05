@@ -23,6 +23,8 @@ depended_by:
   type: called-by
 - target: tests/unit/lib_upstream.bats
   type: called_by
+- target: tests/unit/lib_upstream.bats
+  type: tests_by
 last_verified: 2026-03-12
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'

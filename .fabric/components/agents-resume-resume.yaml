@@ -17,4 +17,6 @@ depended_by:
   type: tested_by
 - target: tests/unit/resume.bats
   type: called_by
-last_enriched: '2026-04-09'
+- target: tests/unit/resume.bats
+  type: tests_by
+last_enriched: '2026-05-06'

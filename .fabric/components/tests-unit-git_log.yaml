@@ -3,15 +3,24 @@ name: git_log
 type: test
 subsystem: tests
 location: tests/unit/git_log.bats
-tags: [git, log, bats, unit-test]
-
-purpose: "Unit tests for git log (14 tests)"
-
+tags:
+- git
+- log
+- bats
+- unit-test
+purpose: Unit tests for git log (14 tests)
 depends_on:
-  - target: agents/git/git.sh
-    type: calls
-
+- target: agents/git/git.sh
+  type: calls
+- target: agents/git/lib/common.sh
+  type: calls
+- target: agents/git/lib/log.sh
+  type: calls
+- target: agents/git/lib/log.sh
+  type: tests
+- target: agents/git/lib/common.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'

@@ -3,16 +3,22 @@ name: hook-enable
 type: script
 subsystem: cli-entrypoints
 location: bin/hook-enable.sh
-tags: [hook, registration, settings]
-purpose: Register framework hooks in .claude/settings.json idempotently — adds
-  { type "command", command ".agentic-framework/bin/fw hook <name>" } entries
-  under specified event/matcher pair. Built under T-1189 to repair T-977 false-complete (G-015).
+tags:
+- hook
+- registration
+- settings
+purpose: Register framework hooks in .claude/settings.json idempotently — adds { type "command", command ".agentic-framework/bin/fw
+  hook <name>" } entries under specified event/matcher pair. Built under T-1189 to repair T-977 false-complete (G-015).
 depends_on:
-  - target: .claude/settings.json
-    type: writes
+- target: .claude/settings.json
+  type: writes
 depended_by:
-  - target: bin/fw
-    type: called_by
+- target: bin/fw
+  type: called_by
+- target: tests/unit/hook_enable_absolute_path.bats
+  type: called_by
+- target: tests/unit/hook_enable_absolute_path.bats
+  type: tests_by
 last_verified: 2026-04-24
 created_by: T-1189
-last_enriched: '2026-04-24'
+last_enriched: '2026-05-06'

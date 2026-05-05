@@ -11,4 +11,8 @@ created_by: unknown
 depended_by:
 - target: agents/healing/healing.sh
   type: called_by
-last_enriched: '2026-02-21'
+- target: tests/unit/healing_suggest.bats
+  type: called_by
+- target: tests/unit/healing_suggest.bats
+  type: tests_by
+last_enriched: '2026-05-06'

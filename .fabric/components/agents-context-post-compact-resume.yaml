@@ -14,7 +14,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-06'
 depended_by:
 - target: agents/audit/self-audit.sh
   type: read_by
@@ -22,3 +22,7 @@ depended_by:
   type: triggers_by
 - target: .claude/settings.json
   type: used-by
+- target: tests/unit/session_start_hook_warning.bats
+  type: called_by
+- target: tests/unit/session_start_hook_warning.bats
+  type: tests_by

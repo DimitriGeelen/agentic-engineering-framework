@@ -1,6 +1,7 @@
 id: tools/t1700-ollama-harness.sh
 name: t1700-ollama-harness
 type: script
+standalone: true  # T-1754 — by-design orphan, no framework imports
 subsystem: unknown
 location: tools/t1700-ollama-harness.sh
 tags: []

@@ -1,6 +1,7 @@
 id: agents/gpu-recover/recover.sh
 name: recover
 type: script
+standalone: true  # T-1754 — by-design orphan, no framework imports
 subsystem: unknown
 location: agents/gpu-recover/recover.sh
 tags: []

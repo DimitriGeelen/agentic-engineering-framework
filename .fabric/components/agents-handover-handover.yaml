@@ -24,7 +24,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-26'
+last_enriched: '2026-05-06'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by
@@ -48,6 +48,20 @@ depended_by:
   type: called_by
 - target: agents/context/session-silent-scanner.sh
   type: called_by
+- target: tests/lint/no-bare-fw-in-gate-scripts.bats
+  type: tests_by
+- target: tests/unit/handover.bats
+  type: tests_by
+- target: tests/unit/handover_push_no_origin.bats
+  type: called_by
+- target: tests/unit/handover_push_no_origin.bats
+  type: tests_by
+- target: tests/unit/handover_push_timeout.bats
+  type: tests_by
+- target: tests/unit/handover_t012_active_only.bats
+  type: called_by
+- target: tests/unit/handover_t012_active_only.bats
+  type: tests_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

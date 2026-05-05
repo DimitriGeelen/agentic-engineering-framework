@@ -11,4 +11,12 @@ created_by: unknown
 depended_by:
 - target: agents/git/git.sh
   type: called_by
-last_enriched: '2026-02-21'
+- target: tests/unit/git_common.bats
+  type: called_by
+- target: tests/unit/git_common.bats
+  type: tests_by
+- target: tests/unit/git_log.bats
+  type: called_by
+- target: tests/unit/git_log.bats
+  type: tests_by
+last_enriched: '2026-05-06'

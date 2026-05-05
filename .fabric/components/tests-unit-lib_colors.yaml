@@ -3,15 +3,17 @@ name: lib_colors
 type: test
 subsystem: tests
 location: tests/unit/lib_colors.bats
-tags: [colors, bats, unit-test]
-
-purpose: "Unit tests for colors (6 tests)"
-
+tags:
+- colors
+- bats
+- unit-test
+purpose: Unit tests for colors (6 tests)
 depends_on:
-  - target: lib/colors.sh
-    type: calls
-
+- target: lib/colors.sh
+  type: calls
+- target: lib/colors.sh
+  type: tests
 depended_by: []
-
 last_verified: 2026-04-05
 created_by: T-916
+last_enriched: '2026-05-06'
