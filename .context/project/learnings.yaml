@@ -2745,3 +2745,10 @@ X'` returning empty group."
   date: 2026-05-05
   context: Added via context agent
   application: TBD
+- id: L-355
+  learning: "4-model ollama bench (hermes3:8b, qwen3:14b, qwen35:9.7B, gemma4:9.7B) on 50-prompt prompt-triage cohort under both 3-class and binary formulations: NO model clears thresholds. Best 3-class: qwen35 76.74% / DEFER F1 0.286; threshold accuracy ≥80% AND GO recall ≥0.85 AND DEFER F1 ≥0.5. Best binary (DEFER→NON_GO collapse): qwen35 79.07% / GO precision 0.839; threshold accuracy ≥90% AND GO recall ≥0.85 AND GO precision ≥0.85. Architectural ceiling for 7-8B local ollama on production-gating classification, not a model-pick or template-tuning issue. Implication: orchestrator consumers cannot assume ≥85% LLM accuracy on 7-8B local; design must tolerate noise (advisory output, confidence-thresholded fallback, or skip-LLM-augmentation entirely). Origin: T-1741 (Spike D 4-model) + T-1743 (D' binary reframe), 2026-05-05."
+  source: P-001
+  task: T-1741
+  date: 2026-05-05
+  context: Added via context agent
+  application: TBD
