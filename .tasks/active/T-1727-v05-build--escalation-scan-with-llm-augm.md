@@ -25,10 +25,22 @@ date_finished: null
 
 ## Context
 
-**🔒 BLOCKED on T-1726 GO recording.** Task pre-filed per CLAUDE.md
+**🔒 BLOCKED on T-1744 GO recording.** Task pre-filed per CLAUDE.md
 "Post-Grill Governance Closure (L-349)" pattern: after writing
 Recommendation, the build sibling is filed at captured/horizon-next so
 it surfaces immediately on GO without a separate filing step.
+
+**Design constraint from L-355 (architectural ceiling):** 7-8B local
+ollama on prompt classification caps at ~76-79% accuracy across the
+4 models tested in Spike-D arc (T-1741, T-1743) under both 3-class
+and binary formulations. This rules out high-precision gating. For
+escalation-scan v0.5 the ceiling is design-tolerable — the workload
+surfaces candidates for human review, not blocks user prompts. False
+positives are cheap (human ignores), false negatives are mitigated by
+the existing static-scan layer. The 80% ceiling becomes a virtue:
+noisy-but-better-than-zero augmentation is what an advisory escalation
+queue needs. Build must NOT assume >85% LLM accuracy in any AC; A6
+disagreement-rate ground truth must be measured, not assumed.
 
 Implements T-1726 Recommendation if and when it reaches GO. Headline
 mechanic locked from T-1726 filing:
