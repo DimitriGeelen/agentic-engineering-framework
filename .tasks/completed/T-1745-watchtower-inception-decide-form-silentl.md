@@ -4,7 +4,7 @@ name: "Watchtower inception-decide form silently fails on bold-emphasized recomm
 description: >
   Inception: Watchtower inception-decide form silently fails on bold-emphasized recommendation — T-1744 GO un-recordable
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-05T12:58:17Z
-last_update: 2026-05-05T13:00:22Z
-date_finished: null
+last_update: 2026-05-05T13:25:08Z
+date_finished: 2026-05-05T13:25:08Z
 ---
 
 # T-1745: Watchtower inception-decide form silently fails on bold-emphasized recommendation — T-1744 GO un-recordable
@@ -72,15 +72,15 @@ No spikes, no prototypes — purely a code RCA.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -145,7 +145,11 @@ Three compounding structural bugs found via watchtower.log: (1) validator regex 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three compounding structural bugs found via watchtower.log: (1) validator regex audit_inception_recommendation in lib/task-audit.sh:154 requires [A-Za-z] immediately after '**Recommendation:**' whitespace and rejects bold-emphasized verdicts like '**GO**' which is what T-1744 uses; (2) _decision_recorded_in_task in web/blueprints/inception.py:578 captures the '## Decision' section without stripping HTML comments, so the template placeholder comment containing literal 'go|no-go' triggers false-positive primary_landed=True; (3) web/templates/inception_detail.html only renders ?error= banner, not ?warning=, so when handler routes through warning-path due to (2), the human sees no UI feedback at all — form appears successful, browser shows no banner, decision never persisted. Combined effect: human GO recorded 4 times in log, zero times on disk. Arc-blocking — T-1744 (orchestrator-rethink) cannot promote. Fix is small, scoped, and structural. Recommend GO.
+
+**Date**: 2026-05-05T13:25:08Z
 
 ## Updates
 
@@ -154,3 +158,21 @@ Three compounding structural bugs found via watchtower.log: (1) validator regex 
 
 ### 2026-05-05T13:00:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-05T13:25:08Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three compounding structural bugs found via watchtower.log: (1) validator regex audit_inception_recommendation in lib/task-audit.sh:154 requires [A-Za-z] immediately after '**Recommendation:**' whitespace and rejects bold-emphasized verdicts like '**GO**' which is what T-1744 uses; (2) _decision_recorded_in_task in web/blueprints/inception.py:578 captures the '## Decision' section without stripping HTML comments, so the template placeholder comment containing literal 'go|no-go' triggers false-positive primary_landed=True; (3) web/templates/inception_detail.html only renders ?error= banner, not ?warning=, so when handler routes through warning-path due to (2), the human sees no UI feedback at all — form appears successful, browser shows no banner, decision never persisted. Combined effect: human GO recorded 4 times in log, zero times on disk. Arc-blocking — T-1744 (orchestrator-rethink) cannot promote. Fix is small, scoped, and structural. Recommend GO.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ab8226f4
+- **Timestamp:** 2026-05-05T13:25:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T13:25:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

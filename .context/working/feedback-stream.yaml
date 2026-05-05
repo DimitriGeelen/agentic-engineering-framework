@@ -5279,3 +5279,173 @@ scan_id: R-f2980e23
 task_id: T-1733
 payload:
   task_file: .tasks/active/T-1733-prompt-triage-v05-spike-a--first-orchest.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T07:44:31Z'
+scan_id: R-509c195e
+task_id: T-1738
+payload:
+  overall: FAIL
+  finding_count: 5
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T07:44:31Z'
+scan_id: R-509c195e
+task_id: T-1738
+payload:
+  task_file: .tasks/active/T-1738-resolver-dispatch---var-keyvalue-for-cus.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T07:53:27Z'
+scan_id: R-2708e55d
+task_id: T-1739
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T07:53:27Z'
+scan_id: R-2708e55d
+task_id: T-1739
+payload:
+  task_file: .tasks/active/T-1739-t-1730-follow-up-focus-drift-gates-claud.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T08:14:09Z'
+scan_id: R-e1308770
+task_id: T-1736
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T08:14:09Z'
+scan_id: R-e1308770
+task_id: T-1736
+payload:
+  task_file: .tasks/active/T-1736-spike-b-prompt-triage-classifier-accurac.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T08:21:38Z'
+scan_id: R-2df209ba
+task_id: T-1740
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T08:21:38Z'
+scan_id: R-2df209ba
+task_id: T-1740
+payload:
+  task_file: .tasks/active/T-1740-revise-prompt-triage-template--direct-co.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T08:34:55Z'
+scan_id: R-2e2d5431
+task_id: T-1735
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T08:34:55Z'
+scan_id: R-2e2d5431
+task_id: T-1735
+payload:
+  task_file: .tasks/active/T-1735-fw-doctor-assert-validworkerkinds-parity.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T09:26:29Z'
+scan_id: R-4135eab8
+task_id: T-1741
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T09:26:29Z'
+scan_id: R-4135eab8
+task_id: T-1741
+payload:
+  task_file: .tasks/active/T-1741-evaluate-alternative-ollama-models-for-p.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T09:30:01Z'
+scan_id: R-0d0aa1b3
+task_id: T-1743
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T09:30:01Z'
+scan_id: R-0d0aa1b3
+task_id: T-1743
+payload:
+  task_file: .tasks/active/T-1743-spike-d-off-ramp-re-score-4-model-result.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T13:25:08Z'
+scan_id: R-ab8226f4
+task_id: T-1745
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T13:25:08Z'
+scan_id: R-ab8226f4
+task_id: T-1745
+payload:
+  task_file: .tasks/active/T-1745-watchtower-inception-decide-form-silentl.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T13:50:15Z'
+scan_id: R-0dfe62f0
+task_id: T-1744
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T13:50:15Z'
+scan_id: R-0dfe62f0
+task_id: T-1744
+payload:
+  task_file: .tasks/active/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T13:57:15Z'
+scan_id: R-ac936876
+task_id: T-1746
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T13:57:15Z'
+scan_id: R-ac936876
+task_id: T-1746
+payload:
+  task_file: .tasks/active/T-1746-t-1745-fix-silent-failure-on-inception-d.md

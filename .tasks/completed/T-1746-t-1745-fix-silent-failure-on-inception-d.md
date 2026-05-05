@@ -4,16 +4,16 @@ name: "T-1745 fix: silent-failure on inception-decide form (RC1 regex + RC2 comm
 description: >
   T-1745 fix: silent-failure on inception-decide form (RC1 regex + RC2 comment-strip + RC3 warning-render + integration test)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/inception_recommendation.sh, lib/task-audit.sh, web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []
 created: 2026-05-05T13:25:47Z
-last_update: 2026-05-05T13:25:47Z
-date_finished: null
+last_update: 2026-05-05T13:57:05Z
+date_finished: 2026-05-05T13:57:05Z
 ---
 
 # T-1746: T-1745 fix: silent-failure on inception-decide form (RC1 regex + RC2 comment-strip + RC3 warning-render + integration test)
@@ -135,3 +135,24 @@ test -f .tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1746-t-1745-fix-silent-failure-on-inception-d.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ac936876
+- **Timestamp:** 2026-05-05T13:57:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — **A2 — RC2 fix:** `web/blueprints/inception.py::_decision_recorded_in_task` strips HTML comments before scanning the `## Decision` body and requires a non-commented canonical decision marker (e.g., `*
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: **A2 — RC2 fix:** `web/blueprints/inception.py::_decision_recorded_in_task` strips HTML comments before scanning the `## Decision` body and requires a`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -f`
+
+### 2026-05-05T13:57:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

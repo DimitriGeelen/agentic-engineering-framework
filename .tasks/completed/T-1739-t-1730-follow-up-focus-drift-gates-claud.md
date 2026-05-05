@@ -4,16 +4,16 @@ name: "T-1730 follow-up: focus-drift gate's CLAUDECODE check fails as PreToolUse
 description: >
   T-1730's drift gate prints 'Not blocking — $CLAUDECODE not set' when running as PreToolUse hook even though Claude Code sets CLAUDECODE=1 in the parent shell. Manual invocation with CLAUDECODE=1 explicit works correctly (exit 2). Investigate whether bin/fw hook dispatcher strips CLAUDECODE from env, or whether Claude Code passes hook env via stdin envelope rather than as shell env. Witnessed during T-1738 commit on session S-2026-0505-0940.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, T-1730-followup, hook-env, robustness]
-components: []
+components: [agents/context/check-active-task.sh, tests/unit/focus_drift_gate.bats]
 related_tasks: [T-1730, T-1729]
 created: 2026-05-05T07:46:47Z
-last_update: 2026-05-05T07:48:38Z
-date_finished: null
+last_update: 2026-05-05T07:53:20Z
+date_finished: 2026-05-05T07:53:20Z
 ---
 
 # T-1739: T-1730 follow-up: focus-drift gate's CLAUDECODE check fails as PreToolUse hook (advisory-only when should block)
@@ -168,3 +168,15 @@ governance matters most.
 ### 2026-05-05T07:48:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-2708e55d
+- **Timestamp:** 2026-05-05T07:53:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T07:53:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

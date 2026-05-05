@@ -4,16 +4,16 @@ name: "Spike D off-ramp: pick a different G-064 first-consumer (drop prompt-tria
 description: >
   Spike D (T-1741) NO-GO outcome rules out prompt-triage as orchestrator's first production consumer. The systemic signal is that 3-class prompt classification on a 7-8B local model is too noisy for production gating, not that we picked the wrong model or template. T-1688 G-064 candidate survey already named escalation-scan v0.5 (T-1727) as preferred. Inception-class task to evaluate: does T-1727 belong as the orchestrator's first consumer, or is there a stronger candidate from the T-1688 survey? Decision criteria: workload that benefits from route_cache learning, doesn't require 80%+ classification accuracy, has clear success metric. Filed captured/later per L-349 — human decides.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: [inception, arc:orchestrator-rethink, follow-up]
-components: []
+components: [lib/inception_recommendation.sh, lib/task-audit.sh, web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-1741, T-1737, T-1688, T-1727]
 created: 2026-05-05T09:25:37Z
-last_update: 2026-05-05T09:33:28Z
-date_finished: null
+last_update: 2026-05-05T13:50:15Z
+date_finished: 2026-05-05T13:50:15Z
 ---
 
 # T-1744: Spike D off-ramp: pick a different G-064 first-consumer (drop prompt-triage)
@@ -55,15 +55,15 @@ No spikes. No prototypes. Pure decision artifact.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -143,7 +143,17 @@ The Spike-arc's architectural finding — 7-8B local ollama models cap at ~75-80
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three independent decisions converge on the same answer:
+
+1. **T-1688** (G-064 candidate-consumer survey, completed 2026-05-02): surveyed 18 autonomous workloads, ruled out retrofit, named T-1727 (escalation-scan v0.5) as the smallest concrete real-consumer path, with internal source-code precedent (`tools/escalation-scan-v0.py:1` calls itself a v0 spike, lines 6-10 say "intentionally simple"). Lib hook already exists (`lib/reviewer/static_scan.py:18-19` → "Orchestrator routing (v3+)").
+2. **T-1726** (escalation-scan v0.5 inception, completed 2026-05-04 with **GO** decision): explicitly approved the LLM-augmentation path. T-1727 is the build-task child of that GO.
+3. **Spike B/C/D/D′** (this week, T-1736/T-1740/T-1741/T-1743): closed prompt-triage as a viable consumer. Confirms T-1688's prediction that "none of the existing autonomous workloads is LLM-amenable today" applied to prompt-triage too — it never was a retrofit candidate, it was a green-field experiment that didn't reach quality.
+
+The Spike-arc's architectural finding — 7-8B local ollama models cap at ~75-80% accuracy on prompt classification — is **design-tolerable** for escalation-scan: the workload's purpose is to surface candidate escalations for human review, not to gate user prompts. False positives are cheap (human ignores), false negatives are mitigated by the existing static-scan layer. The 80% ceiling becomes a virtue here: noisy-but-better-than-zero augmentation is exactly what an advisory escalation queue needs.
+
+**Date**: 2026-05-05T13:50:15Z
 
 ## Updates
 
@@ -153,3 +163,27 @@ The Spike-arc's architectural finding — 7-8B local ollama models cap at ~75-80
 ### 2026-05-05T09:33:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-05-05T13:50:15Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three independent decisions converge on the same answer:
+
+1. **T-1688** (G-064 candidate-consumer survey, completed 2026-05-02): surveyed 18 autonomous workloads, ruled out retrofit, named T-1727 (escalation-scan v0.5) as the smallest concrete real-consumer path, with internal source-code precedent (`tools/escalation-scan-v0.py:1` calls itself a v0 spike, lines 6-10 say "intentionally simple"). Lib hook already exists (`lib/reviewer/static_scan.py:18-19` → "Orchestrator routing (v3+)").
+2. **T-1726** (escalation-scan v0.5 inception, completed 2026-05-04 with **GO** decision): explicitly approved the LLM-augmentation path. T-1727 is the build-task child of that GO.
+3. **Spike B/C/D/D′** (this week, T-1736/T-1740/T-1741/T-1743): closed prompt-triage as a viable consumer. Confirms T-1688's prediction that "none of the existing autonomous workloads is LLM-amenable today" applied to prompt-triage too — it never was a retrofit candidate, it was a green-field experiment that didn't reach quality.
+
+The Spike-arc's architectural finding — 7-8B local ollama models cap at ~75-80% accuracy on prompt classification — is **design-tolerable** for escalation-scan: the workload's purpose is to surface candidate escalations for human review, not to gate user prompts. False positives are cheap (human ignores), false negatives are mitigated by the existing static-scan layer. The 80% ceiling becomes a virtue here: noisy-but-better-than-zero augmentation is exactly what an advisory escalation queue needs.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0dfe62f0
+- **Timestamp:** 2026-05-05T13:50:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T13:50:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

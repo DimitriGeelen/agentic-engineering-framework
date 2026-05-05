@@ -4,7 +4,7 @@ name: "Spike D off-ramp: re-score 4-model results as binary GO / non-GO (drop DE
 description: >
   DEFER is the consistently weakest class across all 4 models in Spike D (T-1741). Truth distribution is 5/50 DEFER (10%), making it under-represented. Cheapest off-ramp: re-score existing .context/spikes/T-1741-{qwen3,qwen35,gemma4}-results.jsonl + .context/spikes/T-1740-results.jsonl by collapsing DEFER labels into NO-GO and re-running T-1741-metrics.py with a binary CLASSES tuple. ~5 min, no new inference. If binary accuracy clears 90% on any model, T-1737 unblocks with a binary classifier (still meaningful: GO unblocks the prompt, non-GO triggers framework intervention). Filed captured/later per L-349 — preferred first off-ramp per T-1741 Recommendation.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [spike, arc:orchestrator-rethink, follow-up]
 components: []
 related_tasks: [T-1741, T-1737]
 created: 2026-05-05T09:25:32Z
-last_update: 2026-05-05T09:27:06Z
-date_finished: null
+last_update: 2026-05-05T09:30:01Z
+date_finished: 2026-05-05T09:30:01Z
 ---
 
 # T-1743: Spike D off-ramp: re-score 4-model results as binary GO / non-GO (drop DEFER class)
@@ -148,3 +148,20 @@ grep -q "## Recommendation" .tasks/active/T-1743-spike-d-off-ramp-re-score-4-mod
 ### 2026-05-05T09:27:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0d0aa1b3
+- **Timestamp:** 2026-05-05T09:30:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Write `scripts/spikes/T-1743-binary-rescore.py` that loads `.context/spikes/T-1736-labels.yaml` + the 4 result files (T-1740 hermes3 + T-1741 qwen3/qwen35/gemma4), collapses DEFER → NO-GO in both trut
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/spikes/T-1736-labels.yaml in: Write `scripts/spikes/T-1743-binary-rescore.py` that loads `.context/spikes/T-1736-labels.yaml` + the 4 result files (T-1740 hermes3 + T-1741 qwen3/qw`
+
+### 2026-05-05T09:30:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

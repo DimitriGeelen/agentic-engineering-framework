@@ -113,7 +113,7 @@ mechanic locked from T-1726 filing:
 test -f prompts/escalation-triage.md
 test -f .context/project/workflows/escalation-triage.yaml
 python3 -c "import yaml; d=yaml.safe_load(open('.context/project/workflows/escalation-triage.yaml')); assert d['task_type']=='escalation-triage' and d['worker_kind']=='ollama-loop'"
-bin/fw doctor 2>&1 | grep -q "Workflow schema:.*lint clean"
+bin/fw doctor > /tmp/_t1727_doctor.out 2>&1; grep -q "Workflow schema:.*lint clean" /tmp/_t1727_doctor.out
 
 # A2 — tool exists and parses
 test -f tools/escalation-scan-v0.5.py
@@ -145,7 +145,7 @@ python3 -c "import re; body=open('.tasks/active/T-1727-v05-build--escalation-sca
 test -f tests/unit/escalation_scan_v05.bats
 bats --formatter pretty tests/unit/escalation_scan_v05.bats 2>&1 | grep -q -E "[0-9]+ tests, 0 failures"
 bin/fw fabric drift 2>&1 | grep -q -E "unregistered: 0"
-bin/fw audit --section structure 2>&1 | grep -q -E "Fail: 0"
+bin/fw audit --section structure > /tmp/_t1727_audit.out 2>&1; grep -q -E "Fail: 0" /tmp/_t1727_audit.out
 
 # A9a — ollama-loop accepted by validator (T-1689 regression pin, single-line)
 python3 -c "import sys; sys.path.insert(0,'lib'); from resolver import VALID_WORKER_KINDS; assert 'ollama-loop' in VALID_WORKER_KINDS"
