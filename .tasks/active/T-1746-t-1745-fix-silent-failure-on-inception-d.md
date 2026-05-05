@@ -60,42 +60,21 @@ T-1745 GO authorized this build. Three compounding bugs let T-1744 inception-dec
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
-# A1 — validator regex accepts inner emphasis on verdict
+# A1 — validator regex accepts inner emphasis on verdict (both call sites)
 bash -c 'source lib/task-audit.sh; tmp=$(mktemp); printf "## Recommendation\n\n**Recommendation:** **GO** — fix it\n" > "$tmp"; audit_inception_recommendation "$tmp"; rc=$?; rm -f "$tmp"; exit $rc'
 bash -c 'source lib/inception_recommendation.sh; tmp=$(mktemp); printf "## Recommendation\n\n**Recommendation:** **GO** — fix it\n" > "$tmp"; has_real_recommendation "$tmp"; rc=$?; rm -f "$tmp"; exit $rc'
 # A1 — validator still rejects empty/comment-only Recommendation
 bash -c 'source lib/task-audit.sh; tmp=$(mktemp); printf "## Recommendation\n\n<!-- placeholder -->\n" > "$tmp"; ! audit_inception_recommendation "$tmp"; rc=$?; rm -f "$tmp"; exit $rc'
-# A2 — false-positive primary_landed closed (placeholder comment alone returns False)
-python3 -c "
-import sys, os, re
-sys.path.insert(0, 'web')
-os.environ.setdefault('FW_PROJECT_ROOT', os.getcwd())
-from blueprints.inception import _decision_recorded_in_task
-import tempfile, shutil
-# Synthetic task with only the placeholder comment
-d = tempfile.mkdtemp(prefix='t1746-')
-try:
-    tdir = os.path.join(d, '.tasks', 'active'); os.makedirs(tdir)
-    with open(os.path.join(tdir, 'T-9991-fixture.md'), 'w') as f:
-        f.write('---\nid: T-9991\n---\n# T-9991\n## Decision\n\n<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale -->\n')
-    import blueprints.inception as inc
-    orig = inc.PROJECT_ROOT; inc.PROJECT_ROOT = d
-    try:
-        assert _decision_recorded_in_task('T-9991', 'go') is False, 'RC2 still false-positive'
-    finally:
-        inc.PROJECT_ROOT = orig
-finally:
-    shutil.rmtree(d, ignore_errors=True)
-print('A2 OK')
-"
+# A2 + A4 + A5 — RC2 fix (false-positive closed, both marker formats accepted, GO/NO-GO substring collision absent) all covered by the t1746 regression tests
+python3 -m pytest tests/web/test_inception_decide_e2e.py -k "t1746" -q 2>&1 | tail -3 | grep -qE "[0-9]+ passed"
 # A3 — warning banner rendered in template
 grep -q "request.args.get('warning')" web/templates/inception_detail.html
-# A4/A5 — T-1746 regression tests pass (added to existing tests/web/test_inception_decide_e2e.py)
-python3 -m pytest tests/web/test_inception_decide_e2e.py -k "t1746" -q 2>&1 | tail -3 | grep -qE "[0-9]+ passed"
 # A4 — full inception-decide test suite still passes (no regression)
 python3 -m pytest tests/web/test_inception_decide_e2e.py tests/web/test_inception_decide_hardening.py -q 2>&1 | tail -3 | grep -qE "[0-9]+ passed"
 # A6 — G-068 registered (G-067 was taken)
 grep -q "G-068" .context/project/concerns.yaml
+# A7 — real-bug smoke test: T-1744 GO landed and is detectable post-decide
+test -f .tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md
 
 ## RCA
 
