@@ -99,18 +99,93 @@
   </table>
   {% endif %}
 
-  {# ───────────────── Recent flagged sample ───────────────── #}
+  {# ───────────────── Recent flagged sample (with v0.5 triage column) ───────────────── #}
   {% if data.recent_sample %}
   <h3>Recent Flagged Tasks (sample)</h3>
-  <ul>
-    {% for entry in data.recent_sample %}
-      {% set tid = entry.tid.split('-')[0] ~ '-' ~ entry.tid.split('-')[1] %}
-      <li>
-        <a href="{{ url_for('tasks.task_detail', task_id=tid) }}">{{ tid }}</a>
-        — {{ entry.name }}
-      </li>
-    {% endfor %}
-  </ul>
+  <p><small>The <strong>Triage</strong> column shows the v0.5 LLM verdict per
+  candidate when available. <code>real_symptom_fix</code> = LLM agrees with the
+  heuristic; <code>false_positive</code> = LLM disagrees; <code>defer</code> =
+  LLM lacked context. Empty cell = candidate not yet triaged.</small></p>
+  <table data-testid="escalation-v05-table">
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Title</th>
+        <th>Triage (v0.5)</th>
+        <th class="text-center">Confidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in data.recent_sample %}
+        {% set tid = entry.tid.split('-')[0] ~ '-' ~ entry.tid.split('-')[1] %}
+        {% set v = v05_by_task.get(tid) %}
+        <tr>
+          <td><a href="{{ url_for('tasks.task_detail', task_id=tid) }}">{{ tid }}</a></td>
+          <td>{{ entry.name }}</td>
+          <td>
+            {% if v %}<code>{{ v.verdict }}</code>{% else %}—{% endif %}
+          </td>
+          <td class="text-center">
+            {% if v %}{{ '%.2f' % v.confidence }}{% else %}—{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {# ───────────────── v0.5 LLM augmentation panel (T-1727) ───────────────── #}
+  {% if v05 %}
+  <h3 data-testid="escalation-v05-panel">v0.5 LLM Augmentation</h3>
+  <p><small>Per-candidate triage by ollama-local <code>{{ v05.model or 'hermes3' }}</code>
+  via <code>fw resolver dispatch</code> (workflow <code>escalation-triage</code>).
+  Idempotency window: {{ v05.idempotency_days or 7 }} days.</small></p>
+  {% if v05_source %}
+  <p><small><strong>Source:</strong> <code>{{ v05_source }}</code></small></p>
+  {% endif %}
+  <table>
+    <thead>
+      <tr>
+        <th>Verdict</th>
+        <th class="text-center">Count</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set by_verdict = {} %}
+      {% for c in v05.candidates or [] %}
+        {% set _ = by_verdict.update({c.verdict: by_verdict.get(c.verdict, 0) + 1}) %}
+      {% endfor %}
+      <tr>
+        <td><code>real_symptom_fix</code></td>
+        <td class="text-center"><strong>{{ by_verdict.get('real_symptom_fix', 0) }}</strong></td>
+        <td>LLM confirms heuristic — true symptom fix without RCA</td>
+      </tr>
+      <tr>
+        <td><code>false_positive</code></td>
+        <td class="text-center">{{ by_verdict.get('false_positive', 0) }}</td>
+        <td>LLM disagrees — task is not a symptom fix (refactor / typo / out-of-line RCA)</td>
+      </tr>
+      <tr>
+        <td><code>defer</code></td>
+        <td class="text-center">{{ by_verdict.get('defer', 0) }}</td>
+        <td>LLM lacked context to decide</td>
+      </tr>
+      <tr>
+        <td><code>ERROR</code> / <code>PARSE-FAIL</code></td>
+        <td class="text-center">{{ by_verdict.get('ERROR', 0) + by_verdict.get('PARSE-FAIL', 0) }}</td>
+        <td>Dispatch failed or LLM output not parseable</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    <small>
+      <strong>Generated:</strong> {{ v05.generated or 'unknown' }} ·
+      <strong>Dispatched:</strong> {{ v05.dispatched or 0 }} ·
+      <strong>Skipped (idempotent):</strong> {{ v05.skipped_idempotent or 0 }} ·
+      <strong>Errors:</strong> {{ v05.errors or 0 }}
+    </small>
+  </p>
   {% endif %}
 
   {% if data.report_md %}

@@ -22,11 +22,11 @@ from web.shared import PROJECT_ROOT
 bp = Blueprint("escalation", __name__)
 
 LATEST_PATH = PROJECT_ROOT / ".context" / "working" / "escalation-drift-LATEST.yaml"
+LATEST_V05_PATH = PROJECT_ROOT / ".context" / "working" / "escalation-drift-LATEST-v0.5.yaml"
 
 
-def _load_latest() -> dict | None:
-    """Parse the latest scanner output. Return None if missing/malformed."""
-    path: Path = LATEST_PATH
+def _load_yaml(path: Path) -> dict | None:
+    """Parse a YAML file, return None on missing/malformed/non-dict."""
     if not path.exists():
         return None
     try:
@@ -42,6 +42,26 @@ def _load_latest() -> dict | None:
     return data
 
 
+def _load_latest() -> dict | None:
+    return _load_yaml(LATEST_PATH)
+
+
+def _load_v05() -> dict | None:
+    return _load_yaml(LATEST_V05_PATH)
+
+
+def _v05_by_task(v05: dict | None) -> dict[str, dict]:
+    """Index v0.5 candidates by short task id ('T-1014') for template merge."""
+    if not v05:
+        return {}
+    out: dict[str, dict] = {}
+    for c in v05.get("candidates") or []:
+        tid = c.get("task_id")
+        if tid:
+            out[tid] = c
+    return out
+
+
 def _display_path() -> str | None:
     """Return a project-relative path string when possible, otherwise the raw path."""
     if not LATEST_PATH.exists():
@@ -55,10 +75,21 @@ def _display_path() -> str | None:
 @bp.route("/escalation-drift")
 def escalation_drift():
     data = _load_latest()
+    v05 = _load_v05()
+    v05_by_task = _v05_by_task(v05)
+    v05_source = None
+    if LATEST_V05_PATH.exists():
+        try:
+            v05_source = str(LATEST_V05_PATH.relative_to(PROJECT_ROOT))
+        except ValueError:
+            v05_source = str(LATEST_V05_PATH)
     return render_template(
         "escalation_drift.html",
         page_title="Escalation Drift",
         active_endpoint="escalation.escalation_drift",
         data=data,
         source_path=_display_path(),
+        v05=v05,
+        v05_by_task=v05_by_task,
+        v05_source=v05_source,
     )
