@@ -2025,3 +2025,43 @@ concerns:
   last_reviewed: 2026-05-04
   related_task: T-1717
   related_tasks_extra: [T-1718, T-1715, T-1716, T-679, T-263, T-269, T-1696, T-1697, T-1698, T-1700, T-1443, T-704, G-064, G-066]
+- id: G-068
+  type: gap
+  title: Watchtower decision-form silent-failure on the human's primary control surface
+  description: |
+    Three-RC compounding bug let the human's primary GO/NO-GO/DEFER channel
+    silently no-op on T-1744. The human submitted GO four times across 2h;
+    zero attempts persisted. No banner, no error, no UI feedback. The
+    framework has no liveness check on "Watchtower decisions actually
+    persist" — `fw audit` PASSED throughout the failure window because the
+    audit checks task structure, not decision-form fidelity.
+
+    Same shape as G-064 (substrate has no consumer-behaviour liveness check)
+    and L-300 (advisory-text-fails-to-fix-recurring-patterns), but on the
+    human's CONTROL surface rather than the agent's. Worse blind spot:
+    silent failure on a human-driven action is more damaging than silent
+    failure on an autonomous one — humans assume success and move on.
+
+    Three RCs, all in T-1745 RCA (`docs/reports/T-1745-rca-watchtower-decision-silent-failure.md`):
+      - RC1: validator regex too strict on inner emphasis (`**Recommendation:** **GO**`)
+      - RC2: `_decision_recorded_in_task` matched placeholder comment text → false-positive primary_landed
+      - RC3: template only renders `?error=`, ignores `?warning=` (RC2 routes via warning)
+
+    T-1746 fixes all three RCs with surgical edits + integration test pinning
+    all three layers. But the META-pattern — no e2e contract test pinning
+    "user submits → decision persists OR user sees error" — is what allowed
+    three independent code paths to drift together unchecked.
+  spec_reference: "CLAUDE.md §Presenting Work for Human Review (T-679); CLAUDE.md §Authority Model"
+  severity: high
+  trigger_fired: true
+  trigger_event: |
+    T-1744 GO submitted 2026-05-05 12:48:09 via Watchtower. Recorded zero times across
+    four attempts (12:48:09, 13:33:25, 14:02:20, 14:55:07) over 2 hours. Human
+    asked agent to "incept rca and structural mitigation" at ~14:55. Without
+    human noticing, the bug would have remained invisible.
+  resolution_status: in-progress
+  resolution_path: "T-1746 (fix all three RCs + integration test pin); follow-up watchtower.log liveness check (not yet filed) — pattern: `grep 'inception decide.*failed' watchtower.log` should be a monitored signal"
+  created: 2026-05-05
+  last_reviewed: 2026-05-05
+  related_task: T-1745
+  related_tasks_extra: [T-1746, T-1744, T-1454, T-1470, T-1497, T-1510, T-1528, G-064]

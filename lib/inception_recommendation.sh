@@ -36,7 +36,10 @@ m = re.search(r'^## Recommendation\s*\n(.*?)(?=^##\s|\Z)', content, re.DOTALL | 
 if not m:
     sys.exit(1)
 body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
-if re.search(r'(?m)^[\-\*\s]*\*\*Recommendation:\*\*\s+(GO|NO-GO|DEFER)\b', body):
+# T-1746: tolerate inner emphasis on the verdict (`**GO**`, `*GO*`, plain).
+# Without `\*{0,2}` this rejected T-1744's `**Recommendation:** **GO**` which
+# was the trigger for the RC1 silent-failure (see T-1745 RCA).
+if re.search(r'(?m)^[\-\*\s]*\*\*Recommendation:\*\*\s+\*{0,2}(GO|NO-GO|DEFER)\b', body):
     sys.exit(0)
 sys.exit(1)
 PYHASRE

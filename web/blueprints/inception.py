@@ -555,7 +555,17 @@ def record_decision(task_id):
 def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
     """T-1470: Detect if `fw inception decide` recorded the decision in the
     task body, regardless of exit code. Used to separate "primary landed"
-    (return 200 + warning) from "primary failed" (return 500/error)."""
+    (return 200 + warning) from "primary failed" (return 500/error).
+
+    T-1746: previous version captured the `## Decision` section without
+    stripping HTML comments. The template placeholder
+    `<!-- ... fw inception decide T-XXX go|no-go ... -->` contains the
+    literal token "go|no-go", which after `.upper()` matched the keyword
+    check and produced false-positive `primary_landed=True`. Combined with
+    RC1 (validator regex too strict) and RC3 (template silent on
+    `?warning=`), this routed the user into a silent no-op on T-1744.
+    Origin: T-1745 RCA. Fix: strip comments AND require a non-commented
+    canonical `**Decision**:` line before honouring the keyword check."""
     import os
     import re as _re
     # Task may be in active/ (defer) or completed/ (go/no-go)
@@ -576,7 +586,27 @@ def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
             # Updates entries appended below the Decision section don't get
             # captured into the keyword check (sister bug to T-1519/T-1526).
             m = _re.search(r"^## Decision\b.*?(?=^#{2,} |\Z)", body, _re.MULTILINE | _re.DOTALL)
-            if m and decision.upper() in m.group(0).upper():
+            if not m:
+                continue
+            section = m.group(0)
+            # T-1746: strip HTML comments so template placeholder text doesn't
+            # leak into the verdict check.
+            stripped = _re.sub(r"<!--.*?-->", "", section, flags=_re.DOTALL)
+            # Require a non-commented `**Decision:** <verdict>` line and use the
+            # regex's verdict capture directly. Substring check `"GO" in "NO-GO"`
+            # is True (sub-bug from the original keyword approach) — match the
+            # verdict token explicitly instead. The canonical form emitted by
+            # `fw inception decide` is `- **Decision:** GO` (colon inside bold);
+            # accept with-or-without bullet, and tolerate inner emphasis on the
+            # verdict (mirrors the Recommendation regex in lib/task-audit.sh).
+            verdict_match = _re.search(
+                r"\*\*Decision:\*\*\s*\**(GO|NO-GO|DEFER)\**",
+                stripped,
+                _re.IGNORECASE,
+            )
+            if not verdict_match:
+                continue
+            if verdict_match.group(1).upper() == decision.upper():
                 return True
     return False
 
