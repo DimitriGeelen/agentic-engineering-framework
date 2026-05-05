@@ -52,10 +52,10 @@ None new — survey is read-only.
 ### Agent
 <!-- @auto-tick-on-decide -->
 - [x] Problem statement validated — survey enumerates every cron in `.context/cron/agentic-audit.crontab` and classifies each
-- [ ] All 18 autonomous workloads classified on three axes (workload kind, LLM-amenability, retrofit difficulty)
-- [ ] Code-wide scan for `claude -p` / `termlink dispatch` invocations completed and reported
-- [ ] Recommendation written with cited evidence (file paths, line numbers, route_cache state)
-- [ ] Research artifact at `docs/reports/T-1688-candidate-consumer-survey.md` exists and is committed
+- [x] All 18 autonomous workloads classified on three axes (workload kind, LLM-amenability, retrofit difficulty)
+- [x] Code-wide scan for `claude -p` / `termlink dispatch` invocations completed and reported
+- [x] Recommendation written with cited evidence (file paths, line numbers, route_cache state)
+- [x] Research artifact at `docs/reports/T-1688-candidate-consumer-survey.md` exists and is committed
 
 ### Human
 <!-- @auto-tick-on-decide -->
