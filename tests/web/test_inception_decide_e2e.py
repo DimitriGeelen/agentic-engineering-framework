@@ -397,6 +397,42 @@ def test_t1746_rc2_no_substring_collision_between_go_and_nogo():
         shutil.rmtree(d, ignore_errors=True)
 
 
+def test_t1746_rc2_accepts_both_decision_marker_formats():
+    """RC2 sub-bug: `fw inception decide` writes TWO marker formats:
+    - `**Decision**: GO` (colon outside bold) in the canonical ## Decision body
+    - `- **Decision:** GO` (colon inside bold) in the Updates entry
+    `_decision_recorded_in_task` must accept both. Without this test,
+    catching only one variant means real on-disk decisions (like T-1744)
+    are reported as primary_landed=False even when they really did land.
+    """
+    import os, tempfile, shutil
+    import web.blueprints.inception as inception_bp
+
+    for label, body_marker in [
+        ("colon-outside-bold", "**Decision**: GO"),  # what lib/inception.sh:556 writes
+        ("colon-inside-bold",  "**Decision:** GO"),   # what lib/inception.sh:598 writes
+        ("bulleted-inside",    "- **Decision:** GO"),
+    ]:
+        d = tempfile.mkdtemp(prefix=f"t1746-fmt-{label}-")
+        try:
+            tdir = os.path.join(d, ".tasks", "completed")
+            os.makedirs(tdir)
+            with open(os.path.join(tdir, f"T-9987-{label}.md"), "w") as f:
+                f.write(
+                    f"---\nid: T-9987\n---\n# T-9987\n## Decision\n\n{body_marker}\n\n## Updates\n"
+                )
+            orig = inception_bp.PROJECT_ROOT
+            inception_bp.PROJECT_ROOT = d
+            try:
+                assert inception_bp._decision_recorded_in_task("T-9987", "go") is True, (
+                    f"Decision marker format {label!r} ({body_marker!r}) not accepted"
+                )
+            finally:
+                inception_bp.PROJECT_ROOT = orig
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+
+
 def test_t1746_rc3_warning_param_redirects_through_warning_path():
     """RC3 wiring: when fw fails AND primary_landed=True (real side-effect
     failure), the handler must redirect with ?warning= (not silent reload,

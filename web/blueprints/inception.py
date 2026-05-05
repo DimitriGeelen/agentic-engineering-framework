@@ -592,15 +592,19 @@ def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
             # T-1746: strip HTML comments so template placeholder text doesn't
             # leak into the verdict check.
             stripped = _re.sub(r"<!--.*?-->", "", section, flags=_re.DOTALL)
-            # Require a non-commented `**Decision:** <verdict>` line and use the
-            # regex's verdict capture directly. Substring check `"GO" in "NO-GO"`
-            # is True (sub-bug from the original keyword approach) — match the
-            # verdict token explicitly instead. The canonical form emitted by
-            # `fw inception decide` is `- **Decision:** GO` (colon inside bold);
-            # accept with-or-without bullet, and tolerate inner emphasis on the
-            # verdict (mirrors the Recommendation regex in lib/task-audit.sh).
+            # Require a non-commented Decision marker line and use the regex's
+            # verdict capture directly. Substring check `"GO" in "NO-GO"` is
+            # True (sub-bug from the original keyword approach) — match the
+            # verdict token explicitly instead.
+            #
+            # `fw inception decide` writes BOTH formats in different places:
+            #   lib/inception.sh:556 — `**Decision**: GO` (colon outside bold,
+            #     in the canonical ## Decision body)
+            #   lib/inception.sh:598 — `- **Decision:** GO` (colon inside bold,
+            #     in the Updates entry)
+            # Accept either by making the inner-`:`-`**` pair optional.
             verdict_match = _re.search(
-                r"\*\*Decision:\*\*\s*\**(GO|NO-GO|DEFER)\**",
+                r"\*\*Decision(?::\*\*|\*\*:)\s*\**(GO|NO-GO|DEFER)\**",
                 stripped,
                 _re.IGNORECASE,
             )

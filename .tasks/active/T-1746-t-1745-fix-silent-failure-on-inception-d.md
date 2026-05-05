@@ -32,7 +32,7 @@ T-1745 GO authorized this build. Three compounding bugs let T-1744 inception-dec
 - [x] **A4 — Integration test:** `tests/web/test_inception_decide_e2e.py` (extended) exercises all three layers end-to-end. Four new `test_t1746_*` cases cover bold-verdict POST, false-positive comment placeholder, GO/NO-GO substring collision, and warning banner render.
 - [x] **A5 — Regression pin:** A pre-fix variant of the fixture (template still containing `<!-- ... go|no-go ... -->` placeholder, no `## Decision` content) returns `primary_landed=False` when calling `_decision_recorded_in_task` — the false-positive path is closed.
 - [x] **A6 — G-068 concern:** `concerns.yaml` gains G-068 entry naming the meta-pattern (G-067 was already taken — embeddings strategy). G-068 names the human-control-surface silent-failure pattern.
-- [ ] **A7 — Smoke test on real bug:** After fixes deployed, manually verify `bin/fw inception decide T-1744 go --rationale "..." --i-am-human --from-watchtower` succeeds against the un-modified T-1744 body (which still has `**Recommendation:** **GO**`).
+- [x] **A7 — Smoke test on real bug:** After fixes deployed and Watchtower :3002 restarted, human re-clicked GO at http://192.168.10.107:3002/inception/T-1744 — decision landed (`**Decision**: GO` in body, task moved to `.tasks/completed/`). `_decision_recorded_in_task('T-1744', 'go')` returns True against the real on-disk body. Latent format-mismatch caught and fixed: regex now accepts both `**Decision**:` and `**Decision:**` variants.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
