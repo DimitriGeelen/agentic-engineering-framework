@@ -1874,6 +1874,67 @@ PYEOF
         echo -e "  ${CYAN}INFO${NC}  No .context/project/workflows/ — orchestrator v1 not yet provisioned"
     fi
 
+    # Check (T-1735): VALID_WORKER_KINDS parity between bin/fw and lib/resolver.py.
+    # T-1734 closed a 5-month silent drift between these two tables; this check is
+    # the runtime witness that prevents recurrence.
+    local _wkp_out
+    _wkp_out=$(python3 - <<PYEOF 2>/dev/null
+import re, sys
+sys.path.insert(0, "$FW_LIB_DIR")
+try:
+    from resolver import VALID_WORKER_KINDS as resolver_set
+except Exception as e:
+    print(f"FAIL|cannot import lib/resolver.py: {e}")
+    sys.exit(0)
+fw_path = "$FRAMEWORK_ROOT/bin/fw"
+fw_set = None
+try:
+    with open(fw_path) as fh:
+        for line in fh:
+            m = re.match(r'\s*VALID_WORKER_KINDS\s*=\s*\{([^}]+)\}', line)
+            if m:
+                fw_set = {s.strip().strip('"').strip("'") for s in m.group(1).split(',') if s.strip()}
+                break
+except Exception as e:
+    print(f"FAIL|cannot read bin/fw: {e}")
+    sys.exit(0)
+if fw_set is None:
+    print("FAIL|VALID_WORKER_KINDS literal not found in bin/fw (drift detection broken)")
+    sys.exit(0)
+only_fw = fw_set - resolver_set
+only_resolver = resolver_set - fw_set
+if not only_fw and not only_resolver:
+    print(f"OK|{sorted(fw_set)}")
+else:
+    diff_parts = []
+    if only_fw:
+        diff_parts.append(f"only in bin/fw: {sorted(only_fw)}")
+    if only_resolver:
+        diff_parts.append(f"only in lib/resolver.py: {sorted(only_resolver)}")
+    print(f"WARN|drift detected — {'; '.join(diff_parts)}")
+PYEOF
+)
+    case "$_wkp_out" in
+        OK\|*)
+            local _wkp_set="${_wkp_out#OK|}"
+            echo -e "  ${GREEN}OK${NC}  Worker-kinds parity (bin/fw ↔ lib/resolver.py): $_wkp_set"
+            ;;
+        WARN\|*)
+            local _wkp_msg="${_wkp_out#WARN|}"
+            echo -e "  ${YELLOW}WARN${NC}  Worker-kinds parity: $_wkp_msg"
+            warnings=$((warnings + 1))
+            ;;
+        FAIL\|*)
+            local _wkp_err="${_wkp_out#FAIL|}"
+            echo -e "  ${RED}FAIL${NC}  Worker-kinds parity check broken: $_wkp_err"
+            issues=$((issues + 1))
+            ;;
+        *)
+            echo -e "  ${YELLOW}WARN${NC}  Worker-kinds parity check produced no output (python error?)"
+            warnings=$((warnings + 1))
+            ;;
+    esac
+
     # Summary (T-1707: break out host_warnings count when > 0)
     local _scope_breakdown=""
     if [ "$host_warnings" -gt 0 ]; then

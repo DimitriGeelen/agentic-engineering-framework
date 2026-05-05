@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1735: fw doctor: assert VALID_WORKER_KINDS parity between bin/fw and lib/resolver.py
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T08:35:01Z
+# ============================================================================
+
+task_id: T-1735
+task_name: "fw doctor: assert VALID_WORKER_KINDS parity between bin/fw and lib/resolver.py"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T07:33:16Z
+completed: 2026-05-05T08:33:42Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`fw doctor` emits a \"worker-kinds parity\" check that compares the `VALID_WORKER_KINDS` set in `bin/fw:1804` against `lib/resolver.py:VALID_WORKER_KINDS` (single source) and reports OK / WARN with concrete diff"
+  - "When the two tables match: green `OK Worker-kinds parity` line in doctor output"
+  - "When the two tables differ (test scenario): yellow `WARN` line listing the symmetric difference (members in fw-only / resolver-only)"
+  - "bats test in `tests/unit/worker_kinds_parity.bats` covering both states (parity → exit 0 OK; drift → exit non-zero or WARN line present) — 6 tests, all green"
+  - "`T-1734` learning cross-ref: comment in both `bin/fw:1804` and `lib/resolver.py:56` already exists; nothing new there — but the doctor check is the runtime witness that closes the structural gap"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 60 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 60
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1735-fw-doctor-assert-validworkerkinds-parity.md
+generated_by: context-agent-hybrid
