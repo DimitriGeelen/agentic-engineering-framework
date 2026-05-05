@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1752: fw gaps surfaces closure_check_command verdicts inline — generic substrate for mechanical gap closure
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T21:40:11Z
+# ============================================================================
+
+task_id: T-1752
+task_name: "fw gaps surfaces closure_check_command verdicts inline — generic substrate for mechanical gap closure"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T21:35:53Z
+completed: 2026-05-05T21:40:05Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-05T23:39:59+02:00
+last_commit: 2026-05-05T23:39:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw gaps surfaces closure_check_command verdicts inline
+
+# Key outcomes
+outcomes:
+  - "`.context/project/concerns.yaml` G-064 entry has a `closure_check_command:` field naming `python3 tools/g064-readiness.py --json`"
+  - "`fw gaps` runs each watching gap's `closure_check_command` (when present) with a 10-second timeout"
+  - "Gap rendering shows verdict inline: `Closure: READY` (green) / `Closure: NOT_READY (X/Y)` (yellow) / `Closure: ERROR` (red) when the field is present"
+  - "Gaps without `closure_check_command` render unchanged (backward compatible)"
+  - "Verdict line includes salient counters when present in JSON (`cron_firings`, `cron_firing_dates`, `closure_threshold_dates`)"
+  - "Command timeout / non-zero exit / invalid JSON renders as `Closure: ERROR (<reason>)` without crashing fw gaps"
+  - "`bin/fw gaps` exits 0 even when one or more closure checks fail (advisory only, never blocking)"
+  - "Live verification: `bin/fw gaps | grep -A2 'G-064' | grep -q 'NOT_READY'` succeeds (today's expected state — 0/3 cron-firing dates)"
+  - "`python3 -c \"import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))\"` parses cleanly"
+  - "`tests/unit/test_fw_gaps_closure_check.bats` exists with ≥3 cases covering: gap without field (unchanged), gap with passing field (verdict rendered), gap with failing/timeout field (ERROR rendered)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "The command MUST emit JSON to stdout with at least a `verdict` field. Optional counters (`cron_firing_dates`, `closure_threshold_dates`) are surfaced as `(have/need)`."
+    rationale: "JSON is unambiguous, parses safely, and matches what `tools/g064-readiness.py --json` already emits. Makes the contract testable and language-agnostic. Future scripts (Python, Bash, Go) all interop trivially."
+    alternatives_rejected: ["Plain-text exit-code-only — too narrow, can't surface counters. Custom DSL — over-engineered for one field."]
+    chose: "subprocess timeout 10s; failures render `Closure: ERROR (timeout/non-JSON/empty/...)` but `fw gaps` exits 0."
+    rationale: "`fw gaps` is a status query — must remain fast and non-blocking. A misbehaving check should be visible (so the human notices) but never break the listing. 10s is generous (T-1750's gauge runs in <0.1s on real data)."
+    alternatives_rejected: ["No timeout — single bad check could hang the whole listing. Re-raise — would break `fw doctor` and other callers."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/project/concerns.yaml"
+  - ".tasks/active/T-1752-fw-gaps-surfaces-closurecheckcommand-ver.md"
+  - "tests/unit/test_fw_gaps_closure_check.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T23:39:59"
+    action: "T-1752: fw gaps surfaces closure_check_command verdicts inline"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, governance, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 4
+  lines_added: 298
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1752-fw-gaps-surfaces-closurecheckcommand-ver.md
+generated_by: context-agent-hybrid

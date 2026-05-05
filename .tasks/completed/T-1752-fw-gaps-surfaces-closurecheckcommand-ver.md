@@ -4,16 +4,16 @@ name: "fw gaps surfaces closure_check_command verdicts inline — generic substr
 description: >
   Extend fw gaps to honor an optional closure_check_command field on watching gaps. When present, fw gaps shells out to run it (with timeout), parses verdict from JSON output, and renders the result inline alongside the gap (READY in green / NOT_READY in yellow / ERROR in red). First consumer: G-064, whose closure-readiness gauge tools/g064-readiness.py was shipped in T-1750. Generic so future gaps with mechanical closure checks just add the field to concerns.yaml; no code changes per gap. Direct orchestrator-arc work — turns 'human remembers to run the script' into 'human sees verdict on every fw gaps run.'
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, governance, observability]
-components: []
+components: [bin/fw, tests/unit/test_fw_gaps_closure_check.bats]
 related_tasks: [T-1750, T-1687]
 created: 2026-05-05T21:35:53Z
-last_update: 2026-05-05T21:35:53Z
-date_finished: null
+last_update: 2026-05-05T21:40:05Z
+date_finished: 2026-05-05T21:40:05Z
 ---
 
 # T-1752: fw gaps surfaces closure_check_command verdicts inline — generic substrate for mechanical gap closure
@@ -117,3 +117,25 @@ bats tests/unit/test_fw_gaps_closure_check.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1752-fw-gaps-surfaces-closurecheckcommand-ver.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-dee61a49
+- **Timestamp:** 2026-05-05T21:40:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `.context/project/concerns.yaml` G-064 entry has a `closure_check_command:` field naming `python3 tools/g064-readiness.py --json`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/g064-readiness.py in: `.context/project/concerns.yaml` G-064 entry has a `closure_check_command:` field naming `python3 tools/g064-readiness.py --json``
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw gaps >/dev/null`
+
+### 2026-05-05T21:40:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

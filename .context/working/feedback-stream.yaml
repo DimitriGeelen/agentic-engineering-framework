@@ -5551,3 +5551,20 @@ scan_id: R-96c71e13
 task_id: T-1751
 payload:
   task_file: .tasks/active/T-1751-gitignore-ephemeral-working-state-files-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T21:40:08Z'
+scan_id: R-dee61a49
+task_id: T-1752
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T21:40:08Z'
+scan_id: R-dee61a49
+task_id: T-1752
+payload:
+  task_file: .tasks/active/T-1752-fw-gaps-surfaces-closurecheckcommand-ver.md

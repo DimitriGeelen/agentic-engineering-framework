@@ -681,3 +681,17 @@ decisions:
     date: 2026-05-05
     task: T-1751
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-100
+    decision: "The command MUST emit JSON to stdout with at least a `verdict` field. Optional counters (`cron_firing_dates`, `closure_threshold_dates`) are surfaced as `(have/need)`."
+    scope: project
+    date: 2026-05-05
+    task: T-1752
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-101
+    decision: "subprocess timeout 10s; failures render `Closure: ERROR (timeout/non-JSON/empty/...)` but `fw gaps` exits 0."
+    scope: project
+    date: 2026-05-05
+    task: T-1752
+    rationale: "Auto-captured from task file on completion"
