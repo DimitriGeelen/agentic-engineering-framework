@@ -646,3 +646,10 @@ decisions:
     date: 2026-05-05
     task: T-1747
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-095
+    decision: "Harden the parsing side; leave the prompt's output contract unchanged."
+    scope: project
+    date: 2026-05-05
+    task: T-1748
+    rationale: "Auto-captured from task file on completion"

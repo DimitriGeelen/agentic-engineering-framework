@@ -2766,3 +2766,10 @@ X'` returning empty group."
   date: 2026-05-05
   context: Added via context agent
   application: TBD
+- id: L-358
+  learning: "Advisory pipelines (LLM triage, ranking, classification with downstream human review) should parse defensively: try strict structure first, fall back to regex extraction on parse failure, return the empty case ONLY when the signal word is absent. Strict-and-discard parsing is a 94% success / 6% complete-loss tradeoff; layered parsing is a 94% strict / 6% lossy-but-present tradeoff — and any signal beats none for advisory consumers. Constrain extracted values to known sets so loose parsing doesn't introduce drift."
+  source: P-001
+  task: T-1748
+  date: 2026-05-05
+  context: Added via context agent
+  application: TBD

@@ -4,16 +4,16 @@ name: "harden v0.5 parse_verdict_envelope — regex fallback for unquoted ration
 description: >
   harden v0.5 parse_verdict_envelope — regex fallback for unquoted rationales
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, escalation-scan, v0.5, parser]
-components: []
+components: [tests/unit/test_escalation_v05_parser.py, tools/escalation-scan-v0.5.py]
 related_tasks: [T-1727]
 created: 2026-05-05T18:24:26Z
-last_update: 2026-05-05T18:24:26Z
-date_finished: null
+last_update: 2026-05-05T18:28:45Z
+date_finished: 2026-05-05T18:28:45Z
 ---
 
 # T-1748: harden v0.5 parse_verdict_envelope — regex fallback for unquoted rationales
@@ -102,3 +102,15 @@ cd /opt/999-Agentic-Engineering-Framework && grep -q 'ok 14' /tmp/_t1748_bats.ou
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1748-harden-v05-parseverdictenvelope--regex-f.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a5579105
+- **Timestamp:** 2026-05-05T18:28:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T18:28:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

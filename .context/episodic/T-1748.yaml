@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1748: harden v0.5 parse_verdict_envelope — regex fallback for unquoted rationales
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T18:28:50Z
+# ============================================================================
+
+task_id: T-1748
+task_name: "harden v0.5 parse_verdict_envelope — regex fallback for unquoted rationales"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T18:24:26Z
+completed: 2026-05-05T18:28:45Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-05T20:28:39+02:00
+last_commit: 2026-05-05T20:28:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  harden v0.5 parse_verdict_envelope — regex fallback for sloppy LLM output
+
+# Key outcomes
+outcomes:
+  - "**A1.** `parse_verdict_envelope` returns a populated dict (verdict ∈ {real_symptom_fix, false_positive, defer}, confidence ∈ [0,1]) for inputs that previously returned {}: (a) unquoted colon in rationale; (b) missing closing fence; (c) no fence at all (verdict line in plain text). Verifiable via unit tests."
+  - "**A2.** When yaml.safe_load succeeds, behaviour is unchanged — no regression on the 160/170 happy-path verdicts. Verifiable via unit test pinning the existing format."
+  - "**A3.** When the regex fallback ALSO fails (input is gibberish with no `verdict:` line), `parse_verdict_envelope` returns `{}` exactly as today — PARSE-FAIL is still emitted for unsalvageable inputs, just rarer. Verifiable via unit test."
+  - "**A4.** Verdict word recognition is constrained to the three valid verdicts — the regex MUST NOT accept arbitrary words just because they sit after `verdict:` (avoid `verdict: maybe` slipping through as a real verdict). Verifiable via unit test (input \"verdict: maybe\" → PARSE-FAIL, not \"maybe\")."
+  - "**A5.** Regression test in `tests/unit/test_escalation_v05_parser.py` covers A1+A2+A3+A4 and is wired in such that future refactors of the parser fail loudly."
+  - "**A6.** Existing bats test `tests/unit/escalation_scan_v05.bats` still passes (no regression on the dispatch envelope schema or workflow contract)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Harden the parsing side; leave the prompt's output contract unchanged."
+    rationale: "(a) The prompt change is named in the v0.5 report as a v1 promotion criterion — a separate decision belonging to a v1 scope discussion. (b) Even if the prompt were perfect, ollama-loop's per-call variance (L-355: 76-79% accuracy ceiling for 7-8B) means sloppy outputs will recur regardless of prompt quality. (c) Parser-side hardening composes additively with eventual prompt tightening; prompt-side fix would have a smaller robustness margin. Better to be strict-then-tolerant than perpetually chase prompt formats."
+    alternatives_rejected: ["Prompt change (\"emit ONLY a YAML block, nothing before or after, all string values quoted\"). Would help on the margin but doesn't address the architectural ceiling, and creates promotion-criterion entanglement with the v0.5→v1 decision."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-test_escalation_v05_parser.yaml"
+  - ".tasks/active/T-1748-harden-v05-parseverdictenvelope--regex-f.md"
+  - "tests/unit/test_escalation_v05_parser.py"
+  - "tools/escalation-scan-v0.5.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T20:28:39"
+    action: "T-1748: harden v0.5 parse_verdict_envelope — regex fallback for sloppy LLM output"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, escalation-scan, v0.5, parser]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 4
+  lines_added: 407
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1748-harden-v05-parseverdictenvelope--regex-f.md
+generated_by: context-agent-hybrid
