@@ -4,15 +4,15 @@ name: "Spike D off-ramp: pick a different G-064 first-consumer (drop prompt-tria
 description: >
   Spike D (T-1741) NO-GO outcome rules out prompt-triage as orchestrator's first production consumer. The systemic signal is that 3-class prompt classification on a 7-8B local model is too noisy for production gating, not that we picked the wrong model or template. T-1688 G-064 candidate survey already named escalation-scan v0.5 (T-1727) as preferred. Inception-class task to evaluate: does T-1727 belong as the orchestrator's first consumer, or is there a stronger candidate from the T-1688 survey? Decision criteria: workload that benefits from route_cache learning, doesn't require 80%+ classification accuracy, has clear success metric. Filed captured/later per L-349 — human decides.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [inception, arc:orchestrator-rethink, follow-up]
 components: []
 related_tasks: [T-1741, T-1737, T-1688, T-1727]
 created: 2026-05-05T09:25:37Z
-last_update: 2026-05-05T09:25:37Z
+last_update: 2026-05-05T09:33:28Z
 date_finished: null
 ---
 
@@ -20,27 +20,36 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+**For:** the orchestrator-rethink arc (G-064 first-consumer question).
+**The problem:** Spike D (T-1741) and binary-reframe re-score (T-1743) both NO-GO — prompt-triage classification is below production-gating quality on every 7-8B local ollama model tested, under both 3-class and binary formulations. T-1737 (Slice 2 hook) is BLOCKED indefinitely. The orchestrator substrate (T-1689/T-1690/T-1691/T-1692) is shipped and healthy (5 real dispatches, 100% outcome enrichment per `bin/fw orchestrator status`) but has no living first consumer. **G-064 stays open until a real consumer is wired.**
+**Why now:** Spike-arc is freshly closed (B → C → D → D′, four sessions of work). Decision can be made on the same evidence that closed prompt-triage. Delaying loses context.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- **A1:** T-1727 (escalation-scan v0.5 build) is still the right consumer named by T-1688/T-1726, not invalidated by Spike-arc findings. → Validates by re-reading T-1688 conclusion (`docs/reports/T-1688-candidate-consumer-survey.md`).
+- **A2:** Promoting T-1727 to active horizon is cheaper than starting a fresh inception. → Validates by checking T-1727's existing scope.
+- **A3:** Spike D's learning ("3-class on 7-8B local can't hit 90%") generalises — T-1727's escalation-scan must tolerate ~75-80% LLM accuracy, not assume 90%+. Carry this as a design constraint.
+- **A4:** No new candidate has surfaced since T-1688 that competes with T-1727.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+This is a **promotion decision, not exploration.** The exploration was T-1688 (survey) + Spike B/C/D/D′ (eliminating prompt-triage). Work for THIS task:
+
+1. Re-read T-1688 + T-1726 conclusions — done.
+2. Verify T-1727 is build-ready: scope, ACs, Verification.
+3. Write the Recommendation: promote T-1727, DEFER, or NO-GO.
+
+No spikes. No prototypes. Pure decision artifact.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- T-1727 inherits Spike D's learning: orchestrator consumers cannot assume >85% LLM accuracy on 7-8B local models. Design must tolerate noise (confidence-thresholded fallback, non-blocking advisory output, or human-in-loop for edge cases).
+- route_cache success-rate learning needs ground truth; T-1727 design must specify how the framework verifies escalation-scan output (probably via outcome-enrichment hook → `dispatch-outcomes.jsonl`, same path T-1690 wired for prompt-triage).
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Decide whether to promote T-1727 to active horizon now. Update T-1727 frontmatter (horizon, related_tasks) if GO. Document the decision so future audit can trace G-064 mitigation.
+**OUT:** Building T-1727 (separate build, separate session). Rewriting T-1727's ACs (its inception T-1726 set them). Considering brand-new candidates (would be a new inception).
 
 ## Acceptance Criteria
 
@@ -64,14 +73,21 @@ date_finished: null
 
 ## Go/No-Go Criteria
 
-<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
-**GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+**GO if (promote T-1727 to active horizon):**
+- T-1727 was already named in T-1688 + T-1726 as the orchestrator's first real consumer (not invalidated)
+- T-1727 has an ACs/Verification scope from its inception
+- No competing candidate surfaced in the Spike arc
+- The Spike-D learning (75-80% accuracy ceiling) is design-tolerable for an escalation-scan workload, not blocking
+
+**DEFER if:**
+- T-1727's scope needs rework before it's build-ready (would imply a fresh inception, T-1726 wasn't enough)
+- A non-orchestrator priority outranks the G-064 consumer wiring this week
+- Open arc work upstream of T-1727 is unresolved (T-1718 evolution-gate, T-1722 artefact paths, etc.)
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- A stronger candidate has surfaced since T-1688 (none observed)
+- The architectural learning from Spike D rules out LLM-augmented orchestrator consumers entirely (it doesn't — only rules out 90%+ classification on 7-8B local)
+- G-064 is being closed by accepting "developer-facing tool, no production consumer" as the long-term answer (this was option 1 of T-1688's 1+4 — half-accepted, but option 4 is the live path)
 
 ## Verification
 
@@ -86,15 +102,33 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** **GO** — promote T-1727 (escalation-scan v0.5 build) from `captured/next` to `started-work/now`. Wire it as the orchestrator's first real production consumer. Close G-064 via option 4 of T-1688's 1+4 plan.
+
+**Rationale:** Three independent decisions converge on the same answer:
+
+1. **T-1688** (G-064 candidate-consumer survey, completed 2026-05-02): surveyed 18 autonomous workloads, ruled out retrofit, named T-1727 (escalation-scan v0.5) as the smallest concrete real-consumer path, with internal source-code precedent (`tools/escalation-scan-v0.py:1` calls itself a v0 spike, lines 6-10 say "intentionally simple"). Lib hook already exists (`lib/reviewer/static_scan.py:18-19` → "Orchestrator routing (v3+)").
+2. **T-1726** (escalation-scan v0.5 inception, completed 2026-05-04 with **GO** decision): explicitly approved the LLM-augmentation path. T-1727 is the build-task child of that GO.
+3. **Spike B/C/D/D′** (this week, T-1736/T-1740/T-1741/T-1743): closed prompt-triage as a viable consumer. Confirms T-1688's prediction that "none of the existing autonomous workloads is LLM-amenable today" applied to prompt-triage too — it never was a retrofit candidate, it was a green-field experiment that didn't reach quality.
+
+The Spike-arc's architectural finding — 7-8B local ollama models cap at ~75-80% accuracy on prompt classification — is **design-tolerable** for escalation-scan: the workload's purpose is to surface candidate escalations for human review, not to gate user prompts. False positives are cheap (human ignores), false negatives are mitigated by the existing static-scan layer. The 80% ceiling becomes a virtue here: noisy-but-better-than-zero augmentation is exactly what an advisory escalation queue needs.
+
+**Evidence:**
+- T-1688 Recommendation block: GO on option 1+4 (`docs/reports/T-1688-candidate-consumer-survey.md` + `.tasks/completed/T-1688-g-064-candidate-consumer-survey--classif.md`)
+- T-1726 Decision: GO on escalation-scan v0.5 (`.tasks/completed/T-1726-escalation-scan-v05--llm-augmentation-as.md`, `**Recommendation:** GO`)
+- T-1727 (build task, captured/next): `.tasks/active/T-1727-v05-build--escalation-scan-with-llm-augm.md` — ready to promote
+- Orchestrator substrate health: `bin/fw orchestrator status` reports 5 real dispatches, 100% outcome enrichment, route_cache learning live
+- Spike-D NO-GO closes prompt-triage: `docs/reports/T-1741-spike-d.md`, `docs/reports/T-1743-binary-rescore.md`
+- T-1737 (Slice 2 hook) parked: full BLOCKED context in `.tasks/active/T-1737-slice-2-userpromptsubmit-hook--promptund.md`
+
+**On the off-ramps named in T-1741:**
+- T-1742 (qwen35 max_tokens=4096): stays captured/later. Marginal even at optimistic ceiling. Run only if a future agent specifically needs to know whether the parse-fails were correct.
+- T-1743 (binary reframe): completed this session — NO-GO confirmed.
+- T-1744 (this task): named the path forward → T-1727.
+
+**Asks of the human:**
+1. Confirm the GO recommendation, OR
+2. DEFER if other work outranks this week, OR
+3. NO-GO if you'd rather close G-064 by accepting "developer-facing tool, no production consumer" (option 1 of T-1688 alone, dropping option 4).
 
 ## Decisions
 
@@ -115,3 +149,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-05T09:33:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
