@@ -1826,9 +1826,21 @@ concerns:
        gap is the absence of an autonomous consumer. Tests verify the
        substrate; only autonomous workload verifies the deliverable.
   created: 2026-05-02
-  last_reviewed: 2026-05-02
+  last_reviewed: 2026-05-05
   related_task: T-1683
-  related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682, T-1684, T-1688]
+  related_tasks_extra: [T-1641, T-1669, T-1670, T-1678, T-1680, T-1681, T-1682, T-1684, T-1688, T-1727]
+  status_notes: |
+    2026-05-05 — T-1727 shipped v0.5 of escalation-scan with LLM augmentation
+    via fw resolver dispatch (workflow=escalation-triage, worker_kind=ollama-loop).
+    Cron wired in .context/cron/agentic-audit.crontab at 5:33 UTC daily.
+    Manual run on 30-day backlog produced 170 dispatches with 0 errors,
+    164.7% disagreement-rate signal (110/170 flagged false_positive).
+
+    Per recommendation #4 ("Do not declare mitigated by tests; only autonomous
+    workload verifies"), keeping status as watching until cron has fired
+    naturally for ≥3 consecutive days. Re-evaluate 2026-05-08 — if route_cache
+    shows escalation-triage entries with last_used spread across the daily
+    cron schedule (not all from manual T-1727 run), then close.
 - id: G-065
   type: gap
   title: "Boundary hook is read-blind — only blocks `cd` to outside paths, not commands with outside-path arguments"
@@ -2065,3 +2077,47 @@ concerns:
   last_reviewed: 2026-05-05
   related_task: T-1745
   related_tasks_extra: [T-1746, T-1744, T-1454, T-1470, T-1497, T-1510, T-1528, G-064]
+- id: G-069
+  type: gap
+  title: "Framework-repo PROJECT_ROOT discovery walks past framework into fs root"
+  description: |
+    web/shared._discover_project_root(start) walks ancestors looking for
+    .framework.yaml (the consumer marker). When run from inside the framework
+    repo itself (starting Watchtower from the framework cwd without
+    PROJECT_ROOT env), the walk does NOT stop at the framework root — it
+    climbs all the way to /. On this host a stray /.framework.yaml
+    (version: 1.5.0, dated 2026-05-01) at filesystem root caused discovery
+    to return / instead of the framework dir.
+
+    Caught while wiring Watchtower /escalation-drift v0.5 panel for T-1727.
+    The watchtower process started without PROJECT_ROOT env and resolved
+    PROJECT_ROOT to /. All Watchtower routes serving project-relative
+    content (LATEST.yaml, tasks/, focus.yaml) returned empty/missing —
+    silent degradation, no error log.
+
+    The /.framework.yaml is itself an artifact of some earlier experiment
+    (whose? uncertain — file is dated 2026-05-01) and should be removed,
+    but the discovery walk is the structural flaw: a framework process
+    running from the framework root should resolve PROJECT_ROOT to the
+    framework root, not climb past it.
+  spec_reference: "web/shared.py:_discover_project_root, _resolve_project_root"
+  severity: medium
+  trigger_fired: true
+  trigger_event: |
+    2026-05-05 — Watchtower restart during T-1727 build returned
+    /escalation-drift empty page because PROJECT_ROOT resolved to /,
+    masking 170-row v0.5 LATEST.yaml. Workaround: explicit PROJECT_ROOT
+    env on launch.
+  resolution_path: |
+    1. Delete /.framework.yaml (immediate; filesystem pollution).
+    2. Harden _discover_project_root: when start is inside FRAMEWORK_ROOT,
+       refuse to walk past FRAMEWORK_ROOT — fall through to FRAMEWORK_ROOT
+       fallback explicitly.
+    3. fw doctor host-level check: warn if /.framework.yaml exists.
+    4. Regression test pinning that web.shared.PROJECT_ROOT resolves
+       to FRAMEWORK_ROOT when env unset and cwd=FRAMEWORK_ROOT.
+  status: watching
+  created: 2026-05-05
+  last_reviewed: 2026-05-05
+  related_task: T-1727
+  related_tasks_extra: [T-1310]
