@@ -53,19 +53,31 @@ test "$(jq -c 'select(.outcome.evaluator == "escalation-scan-v0.5-replay")' .con
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+(The bug-class detector matched on the word "FAIL" in the title — this task is forensic
+data recovery, not a bug fix. Filling RCA anyway because the *underlying parser failure*
+that produced the 10 PARSE-FAILs is a real bug class worth recording.)
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Symptom:** Pre-T-1748 escalation-scan-v0.5 emitted 10 PARSE-FAIL outcomes in a single
+6-minute batch on 2026-05-05 16:29-16:35 UTC. Headline rate showed 4.7% PARSE-FAIL —
+which by AC contract was supposed to be ≤5%, so it didn't trip alerts but did decay
+the data.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Root cause:** Original `parse_verdict_envelope` strict-fenced-YAML-only — when the
+LLM emitted YAML where the rationale value contained an unquoted colon (`rationale: This
+is a fix: a clear bug`), `yaml.safe_load` aborted on the second colon and the whole
+envelope was discarded. Fixed in T-1748 with a regex fallback that extracts the verdict
+word independently of YAML validity.
+
+**Why structurally allowed:** AC contract said "tolerate ≤5% PARSE-FAIL" — making 4.7%
+a "passing" rate. No alert fires because the gate is permissive. T-1748 hardened the
+parser; T-1756 closes the loop on already-emitted PARSE-FAILs.
+
+**Prevention:**
+- T-1748: regex fallback in parse_verdict_envelope (already shipped).
+- T-1756: `tools/reparse-historical-parsefails.py` (this task) — back-propagation when
+  parser hardens.
+- Future: tightening the AC threshold to 1% PARSE-FAIL would surface parser regressions
+  earlier (not in scope here; flagging for inception).
 
 ## Evolution
 
