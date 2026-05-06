@@ -4,16 +4,16 @@ name: "Failure-mode discrimination in disposable test instances — distinguish 
 description: >
   Failure-mode discrimination in disposable test instances — distinguish 'scenario triggered as designed' from 'instance is broken'
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: later
 tags: [arc:orchestrator-rethink]
 components: []
 related_tasks: []
 created: 2026-05-04T05:35:45Z
-last_update: 2026-05-04T10:46:24Z
-date_finished: null
+last_update: 2026-05-06T13:32:47Z
+date_finished: 2026-05-06T13:32:47Z
 ---
 
 # T-1710: Failure-mode discrimination in disposable test instances — distinguish 'scenario triggered as designed' from 'instance is broken'
@@ -284,3 +284,19 @@ Sequencing note (added during T-1715 sweep): filed without a
 Recommendation block on 2026-05-04; retrofitted as part of the T-1715
 in-flight sweep. DEFER honest-records "no exploration done" rather
 than fabricating a GO/NO-GO with no evidence base.
+
+### 2026-05-06T13:32:32Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: preserved at started-work (T-1589 shipping evidence)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-05085ed6
+- **Timestamp:** 2026-05-06T13:32:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-06T13:32:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
