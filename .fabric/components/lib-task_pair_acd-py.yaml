@@ -1,0 +1,27 @@
+id: lib/task_pair_acd.py
+name: task_pair_acd-py
+type: script
+subsystem: framework-core
+location: lib/task_pair_acd.py
+tags:
+- lib
+- governance-gate
+- ACD
+- G-066
+
+purpose: "Task-pair §ACD gate (P-012, T-1762) — Python core. Parses inception Recommendation->Decomposition headings, verifies promised follow-up build tasks shipped via related_tasks chain. Mirror of T-1668/T-1671 arc-level §ACD gate at task-pair level (G-066 prong 2 implementation per T-1713 GO)."
+
+depends_on:
+- target: .tasks/completed
+  type: reads
+- target: .tasks/active
+  type: reads
+
+depended_by:
+- target: lib/task_pair_acd.sh
+  type: called_by
+- target: agents/task-create/update-task.sh
+  type: called_by
+
+last_verified: 2026-05-06
+created_by: T-1762

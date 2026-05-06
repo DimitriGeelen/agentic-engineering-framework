@@ -1,0 +1,20 @@
+id: lib/task_pair_acd.sh
+name: task_pair_acd
+type: script
+subsystem: framework-core
+location: lib/task_pair_acd.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-06
+created_by: unknown

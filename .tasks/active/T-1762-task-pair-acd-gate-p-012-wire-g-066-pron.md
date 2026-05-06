@@ -126,6 +126,13 @@ bin/fw test bats tests/unit/update_task.bats
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-06 — Spike 1 (Parser) complete; Spike 2 contract met same pass
+
+- **What changed:** Built parser as `lib/task_pair_acd.{sh,py}` (Python core + Bash wrapper, mirrors `lib/inception_recommendation.sh` shape). T-1715/T-1716 prerequisite let parser key off the explicit `**Decomposition (follow-up build tasks after GO):**` heading rather than NLP-extracting prose. Conservative: no Decomposition heading → empty list → gate is no-op for that pair.
+- **Plan impact:** Spike 1 + Spike 2 collapsed into one pass. The verify path was straightforward once parser shape was settled — keyword-overlap matching against `related_tasks` chain. Both T-1713 GO thresholds met against historic fixtures: T-1442/T-1443 reports 2 missing (B2 evidence persistence + B4 Layer 2 frontmatter), T-1715/T-1716 reports 0 (clean baseline). Spike 3 (update-task.sh wiring) remains.
+- **Triggered:** SCOPE ALERT hook fired on 4-file creation — within plan, not scope creep. 4 files: `lib/task_pair_acd.sh`, `lib/task_pair_acd.py`, `tests/unit/test_task_pair_acd_parser.bats`, plus pending `test_task_pair_acd_gate.bats`.
+
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
