@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1720: Reviewer audit cron silent-failure: 5 days of missed daily audits despite cron firing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-06T13:46:36Z
+# ============================================================================
+
+task_id: T-1720
+task_name: "Reviewer audit cron silent-failure: 5 days of missed daily audits despite cron firing"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-04T16:29:04Z
+completed: 2026-05-06T13:46:30Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-05-04T18:29:29+02:00
+last_commit: 2026-05-04T18:29:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file silent-failure investigation (captured)
+
+# Key outcomes
+outcomes:
+  - "`bin/fw` cron generator (~lines 2867-2873) emits `cd \"$PROJECT_ROOT\" && PROJECT_ROOT=\"...\" \"/path/to/fw\" <subcmd>` for `fw`-commands. Currently `cd` is missing → `python3 -m lib.X` fails (cron cwd is HOME, not PROJECT_ROOT)."
+  - "Stderr no longer silently swallowed: replace `2>/dev/null` with `2>&1 | logger -t agentic-cron` so cron-time failures hit syslog. Same pattern already used by /opt/termlink cron line."
+  - "After `fw cron install`, `/etc/cron.d/agentic-audit-<slug>` reviewer-audit line includes both `cd` and `logger`. (Note: the right install command is `fw cron install`, not `fw audit schedule install` which uses a legacy hardcoded heredoc that clobbers registry entries — see RCA.)"
+  - "Manual exec of the deployed line in a cron-like minimal env (`env -i HOME=/root PATH=...`) does NOT produce `ModuleNotFoundError: No module named 'lib.reviewer'`."
+  - "`fw reviewer audit` runs cleanly under the same minimal env (proves the fix); next-morning verify `.context/audits/reviewer/2026-05-07.yaml` appears."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1720-reviewer-audit-cron-silent-failure-5-day.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-04T18:29:29"
+    action: "T-1720: file silent-failure investigation (captured)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2717 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2717
+  commits: 1
+  files_changed: 1
+  lines_added: 118
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1720-reviewer-audit-cron-silent-failure-5-day.md
+generated_by: context-agent-hybrid

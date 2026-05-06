@@ -2865,15 +2865,22 @@ for job in jobs:
     status = job.get('status', 'active')
 
     # T-1249: Resolve ALL occurrences of bare 'fw' (not just leading)
+    # T-1720: cd into PROJECT_ROOT for fw commands too — fw subcommands that
+    # invoke `python3 -m lib.X` need cwd=PROJECT_ROOT (cron's default cwd is
+    # HOME). Without this the module import fails and the line silently no-ops.
     if 'fw ' in command:
         resolved = re.sub(r'\bfw\b', f'\"{fw_path}\"', command)
-        resolved = f'PROJECT_ROOT=\"{project_root}\" {resolved}'
+        resolved = f'cd \"{project_root}\" && PROJECT_ROOT=\"{project_root}\" {resolved}'
     else:
         # All non-fw commands run from project root (relative paths need it)
         resolved = f'cd \"{project_root}\" && {command}'
 
-    if '2>/dev/null' not in resolved:
-        resolved += ' 2>/dev/null'
+    # T-1720: pipe stderr+stdout to syslog instead of /dev/null so cron-time
+    # failures are discoverable. /opt/termlink cron lines already use this.
+    if '2>&1 | logger' not in resolved and '2>/dev/null' not in resolved:
+        resolved += ' 2>&1 | logger -t agentic-cron'
+    elif '2>/dev/null' in resolved:
+        resolved = resolved.replace('2>/dev/null', '2>&1 | logger -t agentic-cron')
 
     lines.append(f'# {name}')
     if status == 'paused':
