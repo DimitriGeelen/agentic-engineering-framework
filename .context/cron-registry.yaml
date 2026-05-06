@@ -163,7 +163,7 @@ jobs:
   - id: escalation-drift-daily
     name: "Escalation drift scan (G-019 Layer B v1)"
     schedule: "23 5 * * *"
-    command: "cd /opt/999-Agentic-Engineering-Framework && python3 tools/escalation-scan-v0.py"
+    command: "python3 tools/escalation-scan-v0.py"
     source_file: agentic-audit.crontab
     origin_task: T-1555
     status: active
@@ -172,7 +172,7 @@ jobs:
   - id: escalation-scan-v0-5
     name: "Escalation drift LLM augmentation (T-1727 — v0.5 runs after v0; idempotent over 7d)"
     schedule: "33 5 * * *"
-    command: "cd /opt/999-Agentic-Engineering-Framework && python3 tools/escalation-scan-v0.5.py --window-days 30 --limit 200"
+    command: "python3 tools/escalation-scan-v0.5.py --window-days 30 --limit 200"
     source_file: agentic-audit.crontab
     origin_task: T-1727
     status: active

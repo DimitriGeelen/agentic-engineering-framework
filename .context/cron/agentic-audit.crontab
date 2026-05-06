@@ -57,10 +57,10 @@ PATH=/usr/local/bin:/usr/bin:/bin
 */15 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-mirror-sync-15m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" mirror sync --quiet' 2>&1 | logger -t agentic-cron
 
 # Escalation drift scan (G-019 Layer B v1)
-23 5 * * * root cd "/opt/999-Agentic-Engineering-Framework" && cd /opt/999-Agentic-Engineering-Framework && python3 tools/escalation-scan-v0.py 2>&1 | logger -t agentic-cron
+23 5 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 tools/escalation-scan-v0.py 2>&1 | logger -t agentic-cron
 
 # Escalation drift LLM augmentation (T-1727 — v0.5 runs after v0; idempotent over 7d)
-33 5 * * * root cd "/opt/999-Agentic-Engineering-Framework" && cd /opt/999-Agentic-Engineering-Framework && python3 tools/escalation-scan-v0.5.py --window-days 30 --limit 200 2>&1 | logger -t agentic-cron
+33 5 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 tools/escalation-scan-v0.5.py --window-days 30 --limit 200 2>&1 | logger -t agentic-cron
 
 # Watchtower RSS observation (5 min, T-1611-B)
 */5 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && /opt/999-Agentic-Engineering-Framework/agents/monitor/watchtower-rss-sample.sh 2>&1 | logger -t agentic-cron
