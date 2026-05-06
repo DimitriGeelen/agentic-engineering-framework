@@ -2787,3 +2787,10 @@ X'` returning empty group."
   date: 2026-05-06
   context: Added via context agent
   application: TBD
+- id: L-361
+  learning: "Cross-parser propagation gap (L-097 family): when a parser bug is fixed in one surface (e.g. audit.sh CTL-013 in-comment tracking, T-204), the fix often does not cross to other parsers in the same surface that share the pattern. T-1763 had to re-fix the same in-comment-blindness in web/blueprints/tasks.py::_parse_acceptance_criteria body sub-loop two years after T-204 fixed it in audit.sh. Lesson: when fixing a parser bug, grep the codebase for other parsers reading the same input shape and audit them for symmetric blindness BEFORE closing the task."
+  source: P-001
+  task: T-1763
+  date: 2026-05-06
+  context: Added via context agent
+  application: TBD

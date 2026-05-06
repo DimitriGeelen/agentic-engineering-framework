@@ -397,12 +397,38 @@ def _parse_acceptance_criteria(body_text):
                     confidence = 'review'
                     text = cm.group(1)
 
-            # Collect body lines (indented content following this AC)
+            # Collect body lines (indented content following this AC).
+            # T-1763: track HTML-comment state inside the sub-loop too —
+            # a commented-out template checkbox like
+            #   <!-- Example:
+            #          - [ ] [REVIEW] Dashboard renders correctly
+            #          **Steps:** ... -->
+            # used to leak into the body and overwrite real Steps/Expected/If-not.
+            # Body must mirror the outer loop's HTML-comment skipping so
+            # `_parse_ac_body` only sees real content.
             body_lines = []
+            body_in_comment = False
             j = i + 1
             while j < len(lines):
                 next_line = lines[j]
-                if re_mod.match(r'^- \[[ xX]\]', next_line):
+                next_stripped = next_line.strip()
+
+                # Track HTML comment open/close (state-machine, multi-line tolerant)
+                if not body_in_comment and '<!--' in next_stripped:
+                    body_in_comment = True
+                    if '-->' in next_stripped[next_stripped.index('<!--') + 4:]:
+                        # Single-line comment opens and closes on same line
+                        body_in_comment = False
+                    j += 1
+                    continue
+                if body_in_comment:
+                    if '-->' in next_stripped:
+                        body_in_comment = False
+                    j += 1
+                    continue
+
+                # Outside comment: treat as before
+                if re_mod.match(r'^\s*- \[[ xX]\]', next_line):
                     break
                 if next_line.startswith('## ') or next_line.startswith('### '):
                     break
