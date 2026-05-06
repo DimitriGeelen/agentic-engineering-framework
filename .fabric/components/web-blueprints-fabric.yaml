@@ -16,7 +16,7 @@ depends_on:
   type: renders
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -31,3 +31,7 @@ depended_by:
 - target: web/templates/fabric_explorer.html
   type: rendered_by_by
 - tests/playwright/test_fabric.py
+- target: tests/playwright/test_api_fabric_source.py
+  type: called_by
+- target: tests/playwright/test_fabric_detail.py
+  type: called_by

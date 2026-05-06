@@ -123,6 +123,8 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_validate_init.bats
   type: tests_by
+- target: tests/unit/test_enrich_bats_parser.py
+  type: called_by
 last_verified: 2026-03-10
 created_by: T-412
 last_enriched: '2026-05-06'

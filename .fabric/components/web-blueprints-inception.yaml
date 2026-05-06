@@ -16,9 +16,13 @@ depends_on:
   type: renders
 - target: web/subprocess_utils.py
   type: calls
+- target: .context/project/assumptions.yaml
+  type: calls
+- target: lib/inception.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-28'
+last_enriched: '2026-05-06'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -37,3 +41,5 @@ depended_by:
   type: called_by
 - target: web/blueprints/review.py
   type: registered_by
+- target: tests/playwright/test_api_inception.py
+  type: called_by

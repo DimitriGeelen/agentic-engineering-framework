@@ -3,16 +3,16 @@ name: test_api_ask_stream
 type: script
 subsystem: tests-playwright
 location: tests/playwright/test_api_ask_stream.py
-tags: [playwright, test]
-
-purpose: "Playwright tests for /ask/stream SSE endpoint (T-1041)."
-
+tags:
+- playwright
+- test
+purpose: Playwright tests for /ask/stream SSE endpoint (T-1041).
 depends_on:
-  - target: tests/playwright/conftest.py
-    type: calls
-
-depended_by:
-  []
-
+- target: tests/playwright/conftest.py
+  type: calls
+- target: web/blueprints/api.py
+  type: calls
+depended_by: []
 last_verified: 2026-04-07
 created_by: agent
+last_enriched: '2026-05-06'

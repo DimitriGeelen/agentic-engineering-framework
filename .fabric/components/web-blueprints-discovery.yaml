@@ -36,6 +36,8 @@ depends_on:
   type: renders
 - target: web/templates/graduation.html
   type: renders
+- target: F-002
+  type: calls
 depended_by:
 - target: web/search.py
   type: used-by
@@ -52,4 +54,4 @@ depended_by:
 - tests/playwright/test_patterns.py
 last_verified: 2026-04-05
 created_by: T-917
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'

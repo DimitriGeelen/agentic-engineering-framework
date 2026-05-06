@@ -4,13 +4,15 @@ type: route
 subsystem: watchtower
 location: web/blueprints/config.py
 tags: []
-purpose: Flask blueprint that renders the configuration settings page showing all
-  framework settings with current values and resolution sources
+purpose: Flask blueprint that renders the configuration settings page showing all framework settings with current values and
+  resolution sources
 depends_on:
 - target: web/shared.py
   type: calls
 - target: web/templates/config.html
   type: renders
+- target: lib/config.sh
+  type: calls
 depended_by:
 - target: web/templates/config.html
   type: used-by
@@ -23,4 +25,4 @@ depended_by:
 - tests/playwright/test_config.py
 last_verified: 2026-04-03
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'

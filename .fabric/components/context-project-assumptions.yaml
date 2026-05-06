@@ -6,8 +6,8 @@ location: .context/project/assumptions.yaml
 tags:
 - context
 - project-memory
-purpose: Project assumption register. Tracks assumptions made during inception and
-  build tasks, with validation status and evidence.
+purpose: Project assumption register. Tracks assumptions made during inception and build tasks, with validation status and
+  evidence.
 depends_on: []
 last_verified: 2026-03-04
 created_by: T-322
@@ -16,3 +16,6 @@ depended_by:
   type: read_by
 - target: lib/assumption.sh
   type: read_by
+- target: web/blueprints/inception.py
+  type: called_by
+last_enriched: '2026-05-06'

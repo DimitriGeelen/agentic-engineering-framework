@@ -10,7 +10,11 @@ tags:
 - navigation
 purpose: Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full
   page rendering)
-depends_on: []
+depends_on:
+- target: web/blueprints/docs.py
+  type: calls
+- target: bin/fw
+  type: calls
 last_verified: 2026-02-20
 created_by: T-227
 depended_by:
@@ -116,4 +120,4 @@ depended_by:
   type: called_by
 - target: web/blueprints/orchestrator.py
   type: called_by
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-06'

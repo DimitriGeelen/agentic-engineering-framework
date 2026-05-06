@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1758: fabric enrich — Python pathlib/literal path-ref detector (T-1754 sibling)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-06T05:42:39Z
+# ============================================================================
+
+task_id: T-1758
+task_name: "fabric enrich — Python pathlib/literal path-ref detector (T-1754 sibling)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T05:31:04Z
+completed: 2026-05-06T05:42:33Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-06T07:42:27+02:00
+last_commit: 2026-05-06T07:42:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric enrich Python path-ref detector — 36→8 edgeless cards
+
+# Key outcomes
+outcomes:
+  - "`agents/fabric/lib/enrich.py` exports `detect_python_path_refs(content, source_location, framework_root) -> list[(target, etype)]` covering pathlib-chain, literal-quoted-paths, and bare `bin/fw` patterns"
+  - "`is_python` dispatch branch in enrich.py calls `detect_python_path_refs` in addition to `detect_python_imports`"
+  - "Self-references (target == source_location) excluded; unknown targets (not on disk) skipped; (target, etype) deduped"
+  - "`tests/unit/test_enrich_python_path_refs.py` covers ≥6 patterns: pathlib slash-chain, str(pathlib_var), bare `bin/fw`, literal quoted path, dedup, self-reference exclusion, unknown-target skip"
+  - "`pytest tests/unit/test_enrich_python_path_refs.py -q` passes 100% (10/10)"
+  - "After `fw fabric enrich` run, edgeless count in `fw audit` drops below current 36 — landed at 8 (target ≤25 met, also cleared WARN threshold)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "YYYY-MM-DD — [topic]"
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/fabric/lib/enrich.py"
+  - ".fabric/components/docs-reports-T-1688-candidate-consumer-survey.yaml"
+  - ".fabric/components/lib-reviewer-audit.yaml"
+  - ".fabric/components/lib-reviewer-classifier.yaml"
+  - ".fabric/components/lib-reviewer-drift_cli.yaml"
+  - ".fabric/components/lib-reviewer-drift.yaml"
+  - ".fabric/components/lib-reviewer-__init__.yaml"
+  - ".fabric/components/lib-reviewer-override_cli.yaml"
+  - ".fabric/components/lib-reviewer-overrides.yaml"
+  - ".fabric/components/lib-reviewer-reverify_cli.yaml"
+  - ".fabric/components/lib-reviewer-reverify.yaml"
+  - ".fabric/components/lib-reviewer-static_scan.yaml"
+  - ".fabric/components/prompts-default.yaml"
+  - ".fabric/components/prompts-escalation-triage.yaml"
+  - ".tasks/active/T-1758-fabric-enrich--python-pathlibliteral-pat.md"
+  - "tests/unit/test_enrich_python_path_refs.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T07:42:27"
+    action: "T-1758: fabric enrich Python path-ref detector — 36→8 edgeless cards"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["arc:orchestrator-rethink", "fabric", "drift-defense"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 16
+  lines_added: 517
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1758-fabric-enrich--python-pathlibliteral-pat.md
+generated_by: context-agent-hybrid

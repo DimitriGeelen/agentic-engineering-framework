@@ -10,11 +10,15 @@ depends_on:
   type: calls
 - target: web/templates/orchestrator.html
   type: renders
+- target: agents/termlink/termlink.sh
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- target: tests/unit/test_termlink_list_contract.py
+  type: called_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-06'

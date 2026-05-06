@@ -18,6 +18,8 @@ depends_on:
   type: registers
 - target: web/blueprints/tasks.py
   type: registers
+- target: bin/fw
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -32,6 +34,8 @@ depended_by:
   type: called_by
 - target: tests/playwright/test_inception.py
   type: registered_by
+- target: tests/playwright/test_api_approvals.py
+  type: called_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-04-24'
+last_enriched: '2026-05-06'

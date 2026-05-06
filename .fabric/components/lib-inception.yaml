@@ -52,4 +52,6 @@ depended_by:
   type: tests_by
 - target: tests/unit/lib_inception.bats
   type: tests_by
+- target: web/blueprints/inception.py
+  type: called_by
 last_enriched: '2026-05-06'

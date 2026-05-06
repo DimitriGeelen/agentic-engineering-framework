@@ -62,6 +62,8 @@ depended_by:
   type: called_by
 - target: tests/unit/handover_t012_active_only.bats
   type: tests_by
+- target: tests/unit/test_arc_system.py
+  type: called_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

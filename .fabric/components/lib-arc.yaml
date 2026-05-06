@@ -8,7 +8,9 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: agents/task-create/update-task.sh
   type: calls
-depended_by: []
+depended_by:
+- target: tests/unit/test_arc_system.py
+  type: called_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-06'

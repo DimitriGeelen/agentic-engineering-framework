@@ -16,7 +16,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-06'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -27,3 +27,5 @@ depended_by:
 - target: web/blueprints/__init__.py
   type: registered_by
 - tests/playwright/test_quality.py
+- target: tests/playwright/test_api_quality.py
+  type: called_by

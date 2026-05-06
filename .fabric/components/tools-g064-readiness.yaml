@@ -9,6 +9,10 @@ depends_on: []
 depended_by:
 - target: tests/unit/test_fw_gaps_closure_check.bats
   type: tests_by
+- target: tests/unit/test_enrich_bats_parser.py
+  type: called_by
+- target: tests/unit/test_g064_readiness.py
+  type: called_by
 last_verified: 2026-05-05
 created_by: unknown
 last_enriched: '2026-05-06'

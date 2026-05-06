@@ -3,18 +3,17 @@ name: test_termlink_dispatch_task_type
 type: script
 subsystem: testing
 location: tests/unit/test_termlink_dispatch_task_type.py
-tags: [termlink, orchestrator, regression, t-1643]
-
-purpose: "Unit tests for fw termlink dispatch/spawn orchestrator-substrate wiring (T-1643/W1-W4) — pins _derive_task_type, _resolve_dispatch_model fallback chain, --task-type flag handlers in cmd_spawn/cmd_dispatch, and meta.json schema (task_type/model_used/fallback_used)."
-
+tags:
+- termlink
+- orchestrator
+- regression
+- t-1643
+purpose: Unit tests for fw termlink dispatch/spawn orchestrator-substrate wiring (T-1643/W1-W4) — pins _derive_task_type,
+  _resolve_dispatch_model fallback chain, --task-type flag handlers in cmd_spawn/cmd_dispatch, and meta.json schema (task_type/model_used/fallback_used).
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/termlink/termlink.sh
+  type: calls
+depended_by: []
 last_verified: 2026-05-01
 created_by: unknown
+last_enriched: '2026-05-06'

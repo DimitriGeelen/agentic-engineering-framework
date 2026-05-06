@@ -9,6 +9,8 @@ depends_on: []
 depended_by:
 - target: lib/outcome.sh
   type: called_by
+- target: tests/unit/test_outcome.py
+  type: called_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-06'

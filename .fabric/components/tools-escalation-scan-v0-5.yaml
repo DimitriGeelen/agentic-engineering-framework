@@ -11,6 +11,8 @@ depended_by:
   type: called_by
 - target: tests/unit/escalation_scan_v05.bats
   type: tests_by
+- target: tools/reparse-historical-parsefails.py
+  type: called_by
 last_verified: 2026-05-05
 created_by: unknown
 last_enriched: '2026-05-06'

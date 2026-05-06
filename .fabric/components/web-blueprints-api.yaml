@@ -4,8 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/api.py
 tags: []
-purpose: 'Watchtower API blueprint: JSON endpoints for AJAX/htmx — task data, metrics,
-  approval actions.'
+purpose: 'Watchtower API blueprint: JSON endpoints for AJAX/htmx — task data, metrics, approval actions.'
 depends_on:
 - target: web/shared.py
   type: imports
@@ -22,6 +21,14 @@ depended_by:
   type: registered_by
 - tests/playwright/test_health.py
 - tests/playwright/test_session_api.py
+- target: tests/playwright/test_api_ask_stream.py
+  type: called_by
+- target: tests/playwright/test_api_index.py
+  type: called_by
+- target: tests/playwright/test_api_search.py
+  type: called_by
+- target: tests/playwright/test_ask.py
+  type: called_by
 last_verified: 2026-03-09
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-05-06'

@@ -3,16 +3,16 @@ name: test_fabric_detail
 type: script
 subsystem: tests-playwright
 location: tests/playwright/test_fabric_detail.py
-tags: [playwright, test]
-
-purpose: "Playwright tests for fabric component detail page (T-1041)."
-
+tags:
+- playwright
+- test
+purpose: Playwright tests for fabric component detail page (T-1041).
 depends_on:
-  - target: tests/playwright/conftest.py
-    type: calls
-
-depended_by:
-  []
-
+- target: tests/playwright/conftest.py
+  type: calls
+- target: web/blueprints/fabric.py
+  type: calls
+depended_by: []
 last_verified: 2026-04-07
 created_by: agent
+last_enriched: '2026-05-06'

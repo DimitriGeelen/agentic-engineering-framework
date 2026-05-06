@@ -3,16 +3,16 @@ name: test_api_context_capture
 type: script
 subsystem: tests-playwright
 location: tests/playwright/test_api_context_capture.py
-tags: [playwright, test]
-
-purpose: "Playwright tests for context capture API endpoints (T-1030)."
-
+tags:
+- playwright
+- test
+purpose: Playwright tests for context capture API endpoints (T-1030).
 depends_on:
-  - target: tests/playwright/conftest.py
-    type: calls
-
-depended_by:
-  []
-
+- target: tests/playwright/conftest.py
+  type: calls
+- target: web/blueprints/session.py
+  type: calls
+depended_by: []
 last_verified: 2026-04-07
 created_by: agent
+last_enriched: '2026-05-06'

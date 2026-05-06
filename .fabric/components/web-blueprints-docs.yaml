@@ -4,8 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/docs.py
 tags: []
-purpose: 'Watchtower docs blueprint: file viewer for docs/reports/ and docs/articles/
-  — renders markdown with syntax highlighting.'
+purpose: 'Watchtower docs blueprint: file viewer for docs/reports/ and docs/articles/ — renders markdown with syntax highlighting.'
 depends_on:
 - target: web/shared.py
   type: imports
@@ -21,6 +20,10 @@ depended_by:
 - target: web/blueprints/__init__.py
   type: registered_by
 - tests/playwright/test_docs.py
+- target: tests/playwright/test_docs_detail.py
+  type: called_by
+- target: web/shared.py
+  type: called_by
 last_verified: 2026-03-09
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-05-06'

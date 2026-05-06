@@ -16,7 +16,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-28'
+last_enriched: '2026-05-06'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -39,3 +39,9 @@ depended_by:
   type: called_by
 - target: web/blueprints/cockpit.py
   type: registered_by
+- target: tests/playwright/test_api_task_complete.py
+  type: called_by
+- target: tests/playwright/test_api_task_inline.py
+  type: called_by
+- target: tests/playwright/test_api_task_mutations.py
+  type: called_by

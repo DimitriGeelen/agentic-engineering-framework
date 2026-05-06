@@ -3,18 +3,20 @@ name: test_arc_system
 type: script
 subsystem: testing
 location: tests/unit/test_arc_system.py
-tags: [arcs, regression, t-1661]
-
-purpose: "Unit tests for fw arc CLI (T-1661 Phase 1 MVP) — pins create/focus/list/show/tag/close/migrate verbs, anchor handling, and handover injection of ## Current Arc section."
-
+tags:
+- arcs
+- regression
+- t-1661
+purpose: 'Unit tests for fw arc CLI (T-1661 Phase 1 MVP) — pins create/focus/list/show/tag/close/migrate verbs, anchor handling,
+  and handover injection of ## Current Arc section.'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: calls
+- target: lib/arc.sh
+  type: calls
+- target: agents/handover/handover.sh
+  type: calls
+depended_by: []
 last_verified: 2026-05-01
 created_by: unknown
+last_enriched: '2026-05-06'

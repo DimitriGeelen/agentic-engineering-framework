@@ -12,9 +12,11 @@ depends_on:
   type: renders
 - target: web/context_loader.py
   type: calls
+- target: .context/project/controls.yaml
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-05-06'
 depended_by:
 - target: web/app.py
   type: called_by

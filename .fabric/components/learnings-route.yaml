@@ -50,6 +50,8 @@ depends_on:
   type: calls
 - target: web/templates/feedback_analytics.html
   type: renders
+- target: F-002
+  type: calls
 depended_by:
 - target: C-006
   type: htmx
@@ -66,4 +68,4 @@ depended_by:
   type: registered_by
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-03-28'
+last_enriched: '2026-05-06'

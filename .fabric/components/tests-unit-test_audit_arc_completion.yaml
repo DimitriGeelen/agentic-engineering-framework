@@ -3,18 +3,18 @@ name: test_audit_arc_completion
 type: script
 subsystem: testing
 location: tests/unit/test_audit_arc_completion.py
-tags: [audit, arcs, g-062, regression, t-1656]
-
-purpose: "Unit tests for fw audit --section arc-completion (T-1656, G-062 mechanism #2) — pins WARN at >=80% completion threshold for in-progress arcs, PASS below threshold, and skip behaviour for closed/empty registries."
-
+tags:
+- audit
+- arcs
+- g-062
+- regression
+- t-1656
+purpose: 'Unit tests for fw audit --section arc-completion (T-1656, G-062 mechanism #2) — pins WARN at >=80% completion threshold
+  for in-progress arcs, PASS below threshold, and skip behaviour for closed/empty registries.'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: calls
+depended_by: []
 last_verified: 2026-05-01
 created_by: unknown
+last_enriched: '2026-05-06'
