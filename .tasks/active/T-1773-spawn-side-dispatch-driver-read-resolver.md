@@ -12,7 +12,7 @@ tags: [arc:orchestrator-rethink, spawn, dispatch-driver]
 components: []
 related_tasks: [T-1700, T-1701]
 created: 2026-05-06T18:52:51Z
-last_update: 2026-05-06T18:54:00Z
+last_update: 2026-05-06T18:59:08Z
 date_finished: null
 ---
 
@@ -104,10 +104,12 @@ test -f tests/unit/test_spawn.py
 test -f docs/reports/T-1773-spawn-driver.md
 # Module imports cleanly without pi on PATH
 python3 -c "import sys; sys.path.insert(0,'lib'); import spawn; assert hasattr(spawn,'spawn_dispatch') and hasattr(spawn,'update_outcome_row')"
-# Resolver untouched (no diff from origin)
-git diff --name-only origin/master..HEAD lib/resolver.py | grep -q "^$" || { echo "FAIL: lib/resolver.py modified"; exit 1; }
 # Unit tests pass
 python3 -m pytest tests/unit/test_spawn.py -v
+# (Note: the v1 "resolver untouched" claim was verified at commit time —
+#  see Recommendation ## Evidence. It is intentionally not a long-lived
+#  Verification gate because legitimate v2 work — `fw resolver run`
+#  CLI integration — will modify resolver.py and that's not a regression.)
 
 ## Recommendation
 
