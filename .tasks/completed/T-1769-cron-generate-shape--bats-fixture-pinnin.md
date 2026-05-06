@@ -4,16 +4,16 @@ name: "cron generate shape — bats fixture pinning generator output (T-1720 fol
 description: >
   cron generate shape — bats fixture pinning generator output (T-1720 follow-up)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: ["arc:orchestrator-rethink", "cron", "T-1720-followup", "regression-test", "structural-fix"]
-components: []
+components: [tests/unit/test_cron_generate_shape.bats]
 related_tasks: ["T-1720", "T-1767", "T-1687"]
 created: 2026-05-06T16:19:39Z
-last_update: 2026-05-06T16:19:39Z
-date_finished: null
+last_update: 2026-05-06T16:23:47Z
+date_finished: 2026-05-06T16:23:47Z
 ---
 
 # T-1769: cron generate shape — bats fixture pinning generator output (T-1720 follow-up)
@@ -25,10 +25,10 @@ T-1720 found the cron generator produced unrunnable lines (`python3 -m lib.X` fa
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `tests/unit/test_cron_generate_shape.bats` exists with at least 6 cases covering: fw command shape, non-fw python3 shape, `2>/dev/null` rewrite, idempotent logger preservation, double-cd documentation, paused-job comment emission
-- [ ] All cases pass: `bats tests/unit/test_cron_generate_shape.bats` exits 0
-- [ ] Tests use isolated `TEST_PROJECT` temp dir (no mutation of real `.context/cron-registry.yaml`)
-- [ ] Each case asserts on the actual generated `.context/cron/agentic-audit.crontab` content, not just exit code (T-1700/T-1707 lesson — "tighten Verification — assert content, not just exit code")
+- [x] `tests/unit/test_cron_generate_shape.bats` exists with at least 6 cases covering: fw command shape, non-fw python3 shape, `2>/dev/null` rewrite, idempotent logger preservation, double-cd documentation, paused-job comment emission
+- [x] All cases pass: `bats tests/unit/test_cron_generate_shape.bats` exits 0
+- [x] Tests use isolated `TEST_PROJECT` temp dir (no mutation of real `.context/cron-registry.yaml`)
+- [x] Each case asserts on the actual generated `.context/cron/agentic-audit.crontab` content, not just exit code (T-1700/T-1707 lesson — "tighten Verification — assert content, not just exit code")
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -91,3 +91,20 @@ grep -q "T-1720" tests/unit/test_cron_generate_shape.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1769-cron-generate-shape--bats-fixture-pinnin.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-931a7583
+- **Timestamp:** 2026-05-06T16:23:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Tests use isolated `TEST_PROJECT` temp dir (no mutation of real `.context/cron-registry.yaml`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: Tests use isolated `TEST_PROJECT` temp dir (no mutation of real `.context/cron-registry.yaml`)`
+
+### 2026-05-06T16:23:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
