@@ -66,8 +66,37 @@ _anyone_holds_lock() {
     [[ "$out2" != *"Another audit is already running"* ]]
 }
 
-@test "audit.sh source contains the fd-200 close in watchdog (regression marker)" {
-    # If someone removes the `exec 200>&-`, this test fails — surfacing the
-    # regression at code-review time even before runtime symptoms appear.
-    grep -q 'exec 200>&-.*sleep.*AUDIT_TIMEOUT.*kill -TERM' "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+@test "audit.sh source closes all inherited fds in watchdog (not just FD 200)" {
+    # Regression marker. The first attempt at the fix only closed FD 200. The
+    # second attempt walks /proc/self/fd and closes everything >2 — necessary
+    # because bats's per-test pipe lives at FD 3 and would otherwise keep the
+    # bats orchestrator hung waiting for EOF.
+    grep -q '/proc/self/fd' "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+    grep -q 'exec \$_n>&-' "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+}
+
+@test "no fd > 2 leaks to orphan watchdog after fw audit (pipe-fd-3 regression)" {
+    # Run fw audit through a pipe so FD 3 is the pipe write end in the
+    # parent shell. If the watchdog inherits it, the pipe never closes.
+    "$FRAMEWORK_ROOT/bin/fw" audit --section structure 2>&1 | head -1 >/dev/null
+    sleep 1
+    # Find any orphan sleep with PPID=1; check none holds a non-/dev/null
+    # writable FD other than 0/1/2.
+    local leaked=""
+    while read -r pid; do
+        [ -z "$pid" ] && continue
+        for fd in /proc/$pid/fd/*; do
+            [ -e "$fd" ] || continue
+            n="${fd##*/}"
+            case "$n" in 0|1|2) continue ;; esac
+            target=$(readlink "$fd" 2>/dev/null)
+            [ -z "$target" ] && continue
+            case "$target" in /dev/null) continue ;; esac
+            leaked="$leaked $pid:fd$n→$target"
+        done
+    done < <(ps -e -o pid,ppid,cmd | awk '$2==1 && $3=="sleep" {print $1}')
+    if [ -n "$leaked" ]; then
+        echo "FAIL: orphan watchdog leaked fds:$leaked" >&2
+        return 1
+    fi
 }

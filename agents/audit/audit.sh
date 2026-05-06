@@ -329,16 +329,19 @@ if command -v flock >/dev/null 2>&1; then
         exit 0
     fi
     # Apply timeout: kill self if still running after AUDIT_TIMEOUT seconds.
-    # Detach the watchdog's stdio so it doesn't keep parent pipes open after exit
-    # (bats `run` and shell pipelines wait on every descendant FD — T-1464).
-    # T-1772: also close FD 200 (the flock fd) inside the watchdog subshell.
-    # If we don't, the `sleep` child inherits FD 200 from its parent subshell and
-    # — because sleep reparents to init when its subshell exits — keeps the flock
-    # held until sleep terminates (default 600s). This silently blocks every
-    # subsequent `fw audit` ("Another audit is already running" → exit 0 → empty
-    # stdout) and breaks pipelines like `fw audit | grep`, including bats tests
-    # that run fw audit per-case.
-    ( exec 200>&-; sleep "$AUDIT_TIMEOUT" && kill -TERM $$ 2>/dev/null ) </dev/null >/dev/null 2>&1 &
+    # T-1464 + T-1772: detach EVERY inherited fd in the watchdog subshell, not
+    # just stdio. The `sleep` child reparents to init when its subshell exits,
+    # carrying any inherited fds — including (a) FD 200, the flock fd, which
+    # silently kept the audit lock held for AUDIT_TIMEOUT (default 600s), and
+    # (b) any pipe fds from a parent shell pipeline (e.g. bats's per-test pipe
+    # at FD 3, which makes the bats orchestrator hang waiting for EOF). Walk
+    # /proc/self/fd and close everything > 2 that we don't already redirect.
+    ( for _fd in /proc/self/fd/*; do
+          _n="${_fd##*/}"
+          case "$_n" in 0|1|2) ;; *) eval "exec $_n>&-" 2>/dev/null ;; esac
+      done
+      sleep "$AUDIT_TIMEOUT" && kill -TERM $$ 2>/dev/null
+    ) </dev/null >/dev/null 2>&1 &
     AUDIT_TIMEOUT_PID=$!
     trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null; rm -f '$AUDIT_LOCK_FILE'" EXIT
 else

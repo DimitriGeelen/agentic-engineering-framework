@@ -50,10 +50,14 @@ bin/fw audit --section structure 2>&1 | grep -E "^(Pass:|Fail:)"
 2. **No regression test exercised serial `fw audit` invocations.** Every test ran one audit and exited. The `fuser`-on-lock or "two sequential audits both produce output" check that would have caught this didn't exist.
 3. **Failure mode is silent.** Audit's "another audit running" path exits 0 to stderr, so cron never logged a failure, the bats hang only manifests when `fw audit` runs >1× per test session, and the symptom (broken pipeline) looked like a different issue (grep returning empty input).
 
-**Prevention:** Three layers, all shipped this commit.
-1. **Fix:** `exec 200>&-` at the head of the watchdog subshell — sleep no longer inherits the flock.
-2. **Test:** `tests/unit/test_audit_watchdog_fd.bats` case (a) uses `fuser` to assert no process holds the lock after `fw audit` returns; case (b) runs two sequential audits and asserts both produce real output; case (c) is a grep regression marker on the source line. Any future code change that re-introduces the leak fails the fixture.
-3. **Doc:** the inline comment now explicitly cites T-1772 + the inheritance mechanism, not just the symptom (T-1464 only mentioned bats hang in passing).
+**Prevention:** Three layers, all shipped.
+1. **Fix:** the watchdog subshell now walks `/proc/self/fd` and closes every fd > 2 before forking sleep. The first attempt closed only FD 200 (the named flock) but missed bats's per-test pipe at FD 3 — the pipe-fd leak still kept bats hung waiting for EOF even after the lock was released. The second iteration generalised to "close everything inherited that isn't stdio" which fixes both classes (named fds and pipeline pipes) and is robust against future fd choices.
+2. **Test:** `tests/unit/test_audit_watchdog_fd.bats` (4 cases):
+   - Case 1: `fuser` asserts no process holds audit.lock after `fw audit` returns (FD 200 specifically).
+   - Case 2: two sequential `fw audit` calls both produce real output.
+   - Case 3: source-marker grep on `/proc/self/fd` + `exec \$_n>&-` patterns — catches removal of the broader fix at code-review time.
+   - Case 4: pipes `fw audit | head` so FD 3 is a pipe; then asserts no orphan watchdog (PPID=1 sleep) holds any non-`/dev/null` writable fd other than 0/1/2.
+3. **Doc:** the inline comment cites both T-1464 (stdio history) and T-1772 (numbered + pipe fds), and explains the inheritance mechanism by which a reparented `sleep` child can hold ANY fd from the original parent shell.
 
 ## Evolution
 
@@ -62,6 +66,12 @@ bin/fw audit --section structure 2>&1 | grep -E "^(Pass:|Fail:)"
 - **What changed:** T-1771's bats verification exposed a latent FD inheritance bug in audit.sh's watchdog. Originally diagnosed as "bats hangs on stdin", actually was "sleep child holds flock fd, blocking flock -n in subsequent fw audit". The hang's surface manifestation (bats-format-cat reading from pipe forever) and the underlying mechanism (orphan sleep with FD 200) were not the same thing — the cat hang was incidental; the lock hang was the cause.
 - **Plan impact:** None — T-1771 build pause to fix this prerequisite was bounded (~1 commit, ~50 LOC). Reasonable scope per "register first, fix second".
 - **Triggered:** No new sub-tasks. T-1771 retry gate-completion now unblocked.
+
+### 2026-05-06 — Fix scope expanded after first iteration was insufficient
+
+- **What changed:** The first commit (`8cb67f77f`) closed only FD 200 in the watchdog subshell. Re-running T-1772's own bats fixture under the verify gate revealed that orphan sleeps still inherited FD 3 — bats's per-test pipe — keeping the bats orchestrator hung on EOF even after the lock was released. So my RCA was right about the *class* of bug (FD inheritance) but wrong about its *boundaries* (it's not just named fds; it's any pipe in the parent shell's pipeline). The hang only "looked solved" because I was testing manually outside a pipe.
+- **Plan impact:** Replaced the surgical `exec 200>&-` with a `/proc/self/fd` walk that closes everything > 2. Bats fixture extended from 3 to 4 cases (case 4 specifically pipes `fw audit | head` to put FD 3 in a pipe, asserting no orphan inherits it). Two commits on T-1772 instead of one — first one was load-bearing for the diagnosis even though the fix was incomplete.
+- **Triggered:** No new sub-tasks. T-1771 retry now unblocked for real (verified by the broader bats fixture which itself was the test-case that previously hung).
 
 ## Decisions
 
