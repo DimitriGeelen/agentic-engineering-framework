@@ -57,7 +57,7 @@ date_finished: null
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
-cd /opt/999-Agentic-Engineering-Framework && python3 -c "import yaml; d=yaml.safe_load(open('.context/audits/orchestrator-mcp-baseline.yaml')); assert d['baseline_count']==154, d['baseline_count']; assert d['last_verified']=='2026-05-06', d['last_verified']"
+cd /opt/999-Agentic-Engineering-Framework && python3 -c "import yaml; d=yaml.safe_load(open('.context/audits/orchestrator-mcp-baseline.yaml')); assert d['baseline_count']==154, d['baseline_count']; assert str(d['last_verified'])=='2026-05-06', str(d['last_verified'])"
 cd /opt/999-Agentic-Engineering-Framework && bash agents/audit/orchestrator-mcp-scan.sh 2>&1 | grep -q "WARN: NEW:" && (echo "FAIL: still flagging new tools"; exit 1) || echo "drift clean"
 
 ## RCA
