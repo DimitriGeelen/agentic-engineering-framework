@@ -1,0 +1,18 @@
+task_type: cheap-research
+worker_kind: pi
+provider: anthropic
+model: claude-3-5-sonnet-latest
+effort: medium
+prompt_template: prompts/default.md
+prompt_strategy: assembled
+allowed_tools: [Read, Bash, Grep]
+cost_cap_usd: 0.0
+cwd: $PROJECT_ROOT
+# T-1701 v1 build: pi RPC subscription path. Cost=0 expected because
+# Anthropic Pro subscription is consumed by pi's host CLI auth at ~/.pi/agent/,
+# not via API key billed per-call. fw doctor (T-1694) WARNs if pi binary is
+# missing and any workflow declares worker_kind: pi.
+#
+# Provider/model pair: pi RPC accepts --provider anthropic --model
+# claude-3-5-sonnet-latest. Pi's RPC docs document subscription support for
+# Anthropic Pro/Max, OpenAI Plus/Pro, GitHub Copilot.
