@@ -5568,3 +5568,275 @@ scan_id: R-dee61a49
 task_id: T-1752
 payload:
   task_file: .tasks/active/T-1752-fw-gaps-surfaces-closurecheckcommand-ver.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T21:59:39Z'
+scan_id: R-4f4d32ed
+task_id: T-1753
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T21:59:39Z'
+scan_id: R-4f4d32ed
+task_id: T-1753
+payload:
+  task_file: .tasks/active/T-1753-fabric-enrich--close-audit-warn-on-10054.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T22:11:21Z'
+scan_id: R-b11cbda6
+task_id: T-1754
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T22:11:21Z'
+scan_id: R-b11cbda6
+task_id: T-1754
+payload:
+  task_file: .tasks/active/T-1754-fabric-enrich--add-bats-parser--standalo.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T22:26:21Z'
+scan_id: R-a228edfd
+task_id: T-1755
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T22:26:21Z'
+scan_id: R-a228edfd
+task_id: T-1755
+payload:
+  task_file: .tasks/active/T-1755-classify-59-new-termlinkagent-mcp-tools-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T22:37:39Z'
+scan_id: R-c3a021e6
+task_id: T-1756
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T22:37:39Z'
+scan_id: R-c3a021e6
+task_id: T-1756
+payload:
+  task_file: .tasks/active/T-1756-re-parse-historical-parse-fail-outcomes-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-05T22:41:50Z'
+scan_id: R-252bc933
+task_id: T-1757
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-05T22:41:50Z'
+scan_id: R-252bc933
+task_id: T-1757
+payload:
+  task_file: .tasks/active/T-1757-fw-orchestrator-status-outcomes--dedupe-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T05:42:35Z'
+scan_id: R-a2680d35
+task_id: T-1758
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T05:42:35Z'
+scan_id: R-a2680d35
+task_id: T-1758
+payload:
+  task_file: .tasks/active/T-1758-fabric-enrich--python-pathlibliteral-pat.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T06:02:22Z'
+scan_id: R-2ee47666
+task_id: T-1759
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T06:02:22Z'
+scan_id: R-2ee47666
+task_id: T-1759
+payload:
+  task_file: .tasks/active/T-1759-extend-fabric-watch-patterns--add-libpy-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T06:07:06Z'
+scan_id: R-d149751c
+task_id: T-1760
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T06:07:06Z'
+scan_id: R-d149751c
+task_id: T-1760
+payload:
+  task_file: .tasks/active/T-1760-classify-18-new-termlinkagent-analytics-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T12:11:37Z'
+scan_id: R-15b731a7
+task_id: T-1767
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T12:11:37Z'
+scan_id: R-15b731a7
+task_id: T-1767
+payload:
+  task_file: .tasks/active/T-1767-fix-escalation-scan-v05-cron-deploy-gap-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T13:32:47Z'
+scan_id: R-05085ed6
+task_id: T-1710
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T13:32:47Z'
+scan_id: R-05085ed6
+task_id: T-1710
+payload:
+  task_file: .tasks/active/T-1710-failure-mode-discrimination-in-disposabl.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T13:46:33Z'
+scan_id: R-702f18f9
+task_id: T-1720
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T13:46:33Z'
+scan_id: R-702f18f9
+task_id: T-1720
+payload:
+  task_file: .tasks/active/T-1720-reviewer-audit-cron-silent-failure-5-day.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T16:23:49Z'
+scan_id: R-931a7583
+task_id: T-1769
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T16:23:49Z'
+scan_id: R-931a7583
+task_id: T-1769
+payload:
+  task_file: .tasks/active/T-1769-cron-generate-shape--bats-fixture-pinnin.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T16:37:42Z'
+scan_id: R-db104e6c
+task_id: T-1768
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T16:37:42Z'
+scan_id: R-db104e6c
+task_id: T-1768
+payload:
+  task_file: .tasks/active/T-1768-structural-drift-detection-between-cron-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T16:52:51Z'
+scan_id: R-a7f17e04
+task_id: T-1770
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T16:52:51Z'
+scan_id: R-a7f17e04
+task_id: T-1770
+payload:
+  task_file: .tasks/active/T-1770-fix-fabricgraph-cold-load-empty-render--.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T17:53:23Z'
+scan_id: R-ba0dacd1
+task_id: T-1772
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T17:53:23Z'
+scan_id: R-ba0dacd1
+task_id: T-1772
+payload:
+  task_file: .tasks/active/T-1772-auditsh-watchdog-leaks-flock-fd-200--orp.md
+---
+kind: scan_emitted
+timestamp: '2026-05-06T17:53:47Z'
+scan_id: R-3f4afbda
+task_id: T-1771
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-06T17:53:47Z'
+scan_id: R-3f4afbda
+task_id: T-1771
+payload:
+  task_file: .tasks/active/T-1771-make-cron-drift-actionable-audit-summary.md

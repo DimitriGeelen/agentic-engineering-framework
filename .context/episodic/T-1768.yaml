@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1768: structural drift detection between cron-registry.yaml and generated crontab and deployed /etc/cron.d/ — prevent recurrence of T-1767 silent non-deploy
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-06T16:37:46Z
+# ============================================================================
+
+task_id: T-1768
+task_name: "structural drift detection between cron-registry.yaml and generated crontab and deployed /etc/cron.d/ — prevent recurrence of T-1767 silent non-deploy"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T12:14:38Z
+completed: 2026-05-06T16:37:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-06T14:17:12+02:00
+last_commit: 2026-05-06T14:21:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cron deploy gap fix (T-1767 tactical) + structural-drift inception (T-1768). inception exploration — drift detection EXISTS in fw doctor; gap is surfacing
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "cron deploy gap fix (T-1767 tactical) + structural-drift inception (T-1768)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/cron-registry.yaml"
+  - ".context/episodic/T-1767.yaml"
+  - ".context/project/concerns.yaml"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-1768-cron-drift-surfacing.md"
+  - ".tasks/active/T-1768-structural-drift-detection-between-cron-.md"
+  - ".tasks/completed/T-1767-fix-escalation-scan-v05-cron-deploy-gap-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T14:17:12"
+    action: "T-1768: cron deploy gap fix (T-1767 tactical) + structural-drift inception (T-1768)"
+  - time: "2026-05-06T14:21:51"
+    action: "T-1768: inception exploration — drift detection EXISTS in fw doctor; gap is surfacing"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 263 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["arc:orchestrator-rethink", "structural-fix", "cron", "drift-detection", "T-1767-followup", "G-064-prevention"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 263
+  commits: 2
+  files_changed: 8
+  lines_added: 574
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1768-structural-drift-detection-between-cron-.md
+generated_by: context-agent-hybrid

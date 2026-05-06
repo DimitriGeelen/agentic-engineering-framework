@@ -1,0 +1,34 @@
+# Audit Results - 2026-05-06-2016
+timestamp: 2026-05-06T18:16:05Z
+sections: "structure"
+summary:
+  pass: 10
+  warn: 2
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "No duplicate task IDs across active/ and completed/"
+  - level: PASS
+    check: "All 10 project YAML files parse correctly"
+  - level: PASS
+    check: "Fabric: 564 registered, 1 unregistered (coverage growing)"
+  - level: WARN
+    check: "Fabric: 17/555 cards have no edges"
+    mitigation: "Run: fw fabric enrich"
+  - level: WARN
+    check: "Fabric drift: 1 source file(s) have no fabric card"
+    mitigation: "Run: fw fabric scan"
+  - level: PASS
+    check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
+  - level: PASS
+    check: "Hook threshold: no hooks failing over threshold"

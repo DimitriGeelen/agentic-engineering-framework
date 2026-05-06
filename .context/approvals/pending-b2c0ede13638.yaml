@@ -1,0 +1,7 @@
+command_hash: b2c0ede136381303ff5f15115ae88c42731c79bcd81b171ed23626c5e14dd2fc
+command_preview: pkill -9 -f "task update T-1771" 2>&1; pkill -9 -f "test_audit_cron"
+  2>&1; sleep 1; pgrep -af "task update T-1771|test_audit_cron" 2>&1 || echo "clear"
+risk: 'PKILL -9: Force-kills processes by name (SIGKILL)'
+status: pending
+timestamp: '2026-05-06T17:38:01Z'
+type: tier0

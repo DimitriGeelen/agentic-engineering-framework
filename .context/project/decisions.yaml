@@ -695,3 +695,66 @@ decisions:
     date: 2026-05-05
     task: T-1752
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-102
+    decision: "Run `fw fabric enrich` once, accept residual 84 edgeless cards as a separate problem"
+    scope: project
+    date: 2026-05-05
+    task: T-1753
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-103
+    decision: "Edges from bats files use `type: \"tests\"` (semantic — this is a test of X)"
+    scope: project
+    date: 2026-05-05
+    task: T-1754
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-104
+    decision: "Audit excludes cards with `standalone: true` from edgeless count"
+    scope: project
+    date: 2026-05-05
+    task: T-1754
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-105
+    decision: "Classify by naming convention (action verb → mutator; read-suffix noun → readonly)"
+    scope: project
+    date: 2026-05-05
+    task: T-1755
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-106
+    decision: "Classify `typing` as `mutators_ungated`"
+    scope: project
+    date: 2026-05-05
+    task: T-1755
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-107
+    decision: "Replay rows are appended with `replayed_from: <original_dispatch_id>`. The"
+    scope: project
+    date: 2026-05-05
+    task: T-1756
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-108
+    decision: "Replay rows use `evaluator: escalation-scan-v0.5-replay` so the existing"
+    scope: project
+    date: 2026-05-05
+    task: T-1756
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-109
+    decision: "Substrate stays append-only; the dedup happens in `_aggregate_outcomes_by_task_type`"
+    scope: project
+    date: 2026-05-05
+    task: T-1757
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-110
+    decision: "`(o.get(\"ts\") or \"\") > (prev.get(\"ts\") or \"\")` — lexicographic compare"
+    scope: project
+    date: 2026-05-05
+    task: T-1757
+    rationale: "Auto-captured from task file on completion"

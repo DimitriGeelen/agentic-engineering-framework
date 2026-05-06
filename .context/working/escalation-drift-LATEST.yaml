@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-05-05T03:23:01.513636+00:00
-corpus_total: 1654
-bug_class_total: 352
+generated: 2026-05-06T03:23:01.559393+00:00
+corpus_total: 1680
+bug_class_total: 358
 bug_class_pct: 21
-h1_flagged: 323
+h1_flagged: 326
 h1_pct_of_bug_class: 91
-h2_repeat_patterns: 67
+h2_repeat_patterns: 69
 h3_flagged: 268
-h3_pct_of_bug_class: 76
-recent_30d_flagged: 175
+h3_pct_of_bug_class: 74
+recent_30d_flagged: 170
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-1014-fix-playwright-navigation-test-timeout--"
@@ -34,11 +34,11 @@ recent_sample:
     name: "Fix project boundary false positive — TermLink commands inside loops/pipes"
 h2_top:
   - learning: "P-011"
-    task_count: 156
+    task_count: 171
   - learning: "P-010"
-    task_count: 116
+    task_count: 120
   - learning: "L-291"
-    task_count: 79
+    task_count: 96
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"
