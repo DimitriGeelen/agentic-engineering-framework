@@ -379,7 +379,10 @@ if last_n_s == "":
     final_total = 0
     final_unattr = 0
     for d in windows:
-        _, total, legacy_total, _, _, _, legacy_unattr = stats_for_window(d)
+        # T-1619: stats_for_window returns 10 values (last_seen_callers/pids/ips
+        # appended in T-1414). All other call-sites updated; this trend-loop one
+        # was missed → ValueError on every default 'fw metrics api-usage' call.
+        _, total, legacy_total, _, _, _, legacy_unattr, _, _, _ = stats_for_window(d)
         if total == 0:
             print(f"  {d:>5d}d    {total:>8d}  {legacy_total:>8d}  {'  N/A':>9s}  --")
             continue
