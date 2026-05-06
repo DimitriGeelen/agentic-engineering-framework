@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1760: classify 18 new termlink_agent_* analytics tools (T-1755 maintenance)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-06T06:07:10Z
+# ============================================================================
+
+task_id: T-1760
+task_name: "classify 18 new termlink_agent_* analytics tools (T-1755 maintenance)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T06:03:41Z
+completed: 2026-05-06T06:07:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-06T08:05:49+02:00
+last_commit: 2026-05-06T08:07:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  classify 18 new termlink_agent_* analytics tools (T-1755 maintenance). fix verification — yaml date parses as date not str
+
+# Key outcomes
+outcomes:
+  - "All 18 tools added to `readonly_exempt:` in `.context/audits/orchestrator-mcp-baseline.yaml`"
+  - "`baseline_count: 154` (was 136); `readonly_exempt.count: 108`"
+  - "`last_verified: 2026-05-06`"
+  - "`bash agents/audit/orchestrator-mcp-scan.sh` reports no `new_unclassified_tools` (status: pass)"
+  - "YAML still parses"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix verification — yaml date parses as date not str"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "YYYY-MM-DD — [topic]"
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/orchestrator-mcp-baseline.yaml"
+  - ".tasks/active/T-1760-classify-18-new-termlinkagent-analytics-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T08:05:49"
+    action: "T-1760: classify 18 new termlink_agent_* analytics tools (T-1755 maintenance)"
+  - time: "2026-05-06T08:07:02"
+    action: "T-1760: fix verification — yaml date parses as date not str"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["arc:orchestrator-rethink", "drift-defense", "termlink-mcp"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 2
+  lines_added: 163
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1760-classify-18-new-termlinkagent-analytics-.md
+generated_by: context-agent-hybrid
