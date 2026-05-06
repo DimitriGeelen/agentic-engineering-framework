@@ -482,8 +482,13 @@ let drillSubsystem = null, selectedNode = null;
 let detailOpen = false, detailExpanded = false;
 
 // ===== D3 SETUP =====
+// T-1770: dimensions are read live + on ResizeObserver — synchronous read
+// during script parse can return 0 in Chromium when stylesheets/fonts have
+// not finished loading, producing viewBox `0 0 0 0` and a degenerate
+// user-space coordinate system (symptom: container visible, no nodes).
 const graphArea = document.getElementById('graph-area');
-const W = graphArea.clientWidth, H = graphArea.clientHeight;
+let W = graphArea.clientWidth || 800;
+let H = graphArea.clientHeight || 600;
 
 const svg = d3.select('#graph-area').append('svg')
   .attr('width', '100%').attr('height', '100%')
@@ -1479,13 +1484,45 @@ document.addEventListener('mouseup', () => {
 });
 
 // ===== WATERMARK =====
-svg.append('text')
+svg.append('text').attr('class', 'fe-watermark')
   .attr('x', W - 24).attr('y', H - 12)
   .attr('text-anchor', 'end')
   .attr('font-size', '10px').attr('fill', 'rgba(148,163,184,0.25)')
   .text('Mapped by the Agentic Engineering Framework');
 
+// ===== T-1770: live dimensions + ResizeObserver =====
+// Re-read dims and rebuild dimension-dependent SVG infrastructure when the
+// container actually has a size (covers cold-load layout race + window resize
+// + font-load layout shift).
+function _refreshCanvasDims() {
+  const newW = graphArea.clientWidth, newH = graphArea.clientHeight;
+  if (newW <= 0 || newH <= 0) return false;
+  if (newW === W && newH === H) return false;
+  W = newW; H = newH;
+  svg.attr('viewBox', `0 0 ${W} ${H}`);
+  svg.select('rect').attr('width', W).attr('height', H);
+  gridG.selectAll('*').remove();
+  for (let x = 0; x < W; x += 40) gridG.append('line').attr('x1',x).attr('y1',0).attr('x2',x).attr('y2',H).attr('stroke','rgba(99,102,241,0.03)');
+  for (let y = 0; y < H; y += 40) gridG.append('line').attr('x1',0).attr('y1',y).attr('x2',W).attr('y2',y).attr('stroke','rgba(99,102,241,0.03)');
+  svg.select('text.fe-watermark').attr('x', W - 24).attr('y', H - 12);
+  if (typeof simulation !== 'undefined' && simulation) {
+    simulation.force('center', d3.forceCenter(W/2, H/2));
+    simulation.force('x', d3.forceX(W/2).strength(0.04));
+    simulation.force('y', d3.forceY(H/2).strength(0.04));
+    simulation.alpha(0.3).restart();
+  }
+  return true;
+}
+if (typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(_refreshCanvasDims).observe(graphArea);
+}
+
 // ===== INIT =====
-buildSubsystemGraph();
+// Defer initial render to next paint frame — gives Chromium time to compute
+// stylesheet/font-driven layout before clientWidth/Height is sampled.
+requestAnimationFrame(() => {
+  _refreshCanvasDims();
+  buildSubsystemGraph();
+});
 </script>
 </div>
