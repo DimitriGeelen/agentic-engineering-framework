@@ -1,0 +1,16 @@
+id: lib/reviewer/reverify.py
+name: reverify
+type: script
+subsystem: framework-core
+location: lib/reviewer/reverify.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by:
+- target: lib/reviewer/audit.py
+  type: called_by
+- target: lib/reviewer/reverify_cli.py
+  type: called_by
+last_verified: 2026-05-06
+created_by: unknown
+last_enriched: '2026-05-06'

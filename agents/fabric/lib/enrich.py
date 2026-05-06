@@ -220,8 +220,8 @@ def detect_python_imports(content, source_location, framework_root):
     """Detect Python from/import and render_page patterns."""
     edges = []
 
-    # Pattern: from web.X import Y
-    for m in re.finditer(r'from\s+(web(?:\.\w+)+)\s+import', content):
+    # Pattern: from {web,lib,agents,tools}.X import Y (T-1758 extends to lib/agents/tools)
+    for m in re.finditer(r'from\s+((?:web|lib|agents|tools)(?:\.\w+)+)\s+import', content):
         mod_path = m.group(1).replace(".", "/")
         target = mod_path + ".py"
         if os.path.exists(os.path.join(framework_root, target)):
@@ -249,6 +249,63 @@ def detect_python_imports(content, source_location, framework_root):
             edges.append((path, "reads"))
 
     return edges
+
+
+def detect_python_path_refs(content, source_location, framework_root):
+    """Detect path references in .py files (T-1758).
+
+    Covers patterns the import-based detector misses — common in tests/tools that
+    reference framework artefacts as paths rather than importing them:
+
+      - Pathlib slash-chains: REPO_ROOT / "bin" / "fw"
+      - Literal framework paths: "agents/handover/handover.sh"
+      - Bare bin/fw references in subprocess args
+
+    Mirrors detect_bats_deps shape (T-1754) — same dedup contract, same
+    self-reference and unknown-target exclusion.
+    """
+    edges = []
+
+    # Pattern: REPO_ROOT / "seg1" / "seg2" / "seg3"
+    #          FRAMEWORK_ROOT / "lib" / "arc.sh"
+    # Capture the full chain so we can reconstruct the relative path.
+    chain_re = re.compile(
+        r'(?:REPO_ROOT|FRAMEWORK_ROOT|PROJECT_ROOT)((?:\s*/\s*"[^"]+")+)'
+    )
+    seg_re = re.compile(r'"([^"]+)"')
+    for m in chain_re.finditer(content):
+        segments = seg_re.findall(m.group(1))
+        if not segments:
+            continue
+        target = os.path.normpath("/".join(segments))
+        if os.path.exists(os.path.join(framework_root, target)):
+            if target != source_location:
+                edges.append((target, "calls"))
+
+    # Pattern: literal framework paths embedded in any string
+    # (matches the detect_bats_deps literal-path branch).
+    for m in re.finditer(
+        r'(?:["\'\s/]|^)((?:bin|lib|agents|tools|web|prompts)/[\w./-]+\.(?:sh|py))',
+        content,
+    ):
+        target = os.path.normpath(m.group(1))
+        if os.path.exists(os.path.join(framework_root, target)):
+            if target != source_location:
+                edges.append((target, "calls"))
+
+    # Pattern: bare bin/fw reference (subprocess args, etc.)
+    if re.search(r'\bbin/fw\b', content) and "bin/fw" != source_location:
+        if os.path.exists(os.path.join(framework_root, "bin/fw")):
+            edges.append(("bin/fw", "calls"))
+
+    # Dedupe by (target, etype)
+    seen = set()
+    deduped = []
+    for target, etype in edges:
+        if (target, etype) not in seen:
+            seen.add((target, etype))
+            deduped.append((target, etype))
+    return deduped
 
 
 def detect_blueprint_registration(content, source_location, framework_root):
@@ -576,6 +633,7 @@ def compute_forward_edges(cards, loc_to_id, framework_root):
             raw_edges.extend(detect_bash_sources(content, location, framework_root))
         elif is_python:
             raw_edges.extend(detect_python_imports(content, location, framework_root))
+            raw_edges.extend(detect_python_path_refs(content, location, framework_root))  # T-1758
             raw_edges.extend(detect_blueprint_registration(content, location, framework_root))
             raw_edges.extend(detect_generic_python_imports(content, location, framework_root))  # L-CONSUMER-001 prototype
         elif is_html:

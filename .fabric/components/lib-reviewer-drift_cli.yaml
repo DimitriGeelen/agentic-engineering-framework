@@ -1,0 +1,16 @@
+id: lib/reviewer/drift_cli.py
+name: drift_cli
+type: script
+subsystem: framework-core
+location: lib/reviewer/drift_cli.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: lib/reviewer/drift.py
+  type: calls
+- target: lib/reviewer/static_scan.py
+  type: calls
+depended_by: []
+last_verified: 2026-05-06
+created_by: unknown
+last_enriched: '2026-05-06'

@@ -1,14 +1,14 @@
-id: lib/reviewer/override_cli.py
-name: override_cli
+id: lib/reviewer/reverify_cli.py
+name: reverify_cli
 type: script
 subsystem: framework-core
-location: lib/reviewer/override_cli.py
+location: lib/reviewer/reverify_cli.py
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
-- target: lib/reviewer/overrides.py
+- target: lib/reviewer/reverify.py
   type: calls
 depended_by: []
-last_verified: 2026-04-25
+last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-05-06'

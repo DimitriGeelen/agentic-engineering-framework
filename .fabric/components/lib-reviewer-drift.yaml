@@ -1,0 +1,20 @@
+id: lib/reviewer/drift.py
+name: drift
+type: script
+subsystem: framework-core
+location: lib/reviewer/drift.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: bin/fw
+  type: calls
+depended_by:
+- target: lib/reviewer/audit.py
+  type: called_by
+- target: lib/reviewer/drift_cli.py
+  type: called_by
+- target: tests/unit/test_reviewer_audit_pass_a.py
+  type: called_by
+last_verified: 2026-05-06
+created_by: unknown
+last_enriched: '2026-05-06'
