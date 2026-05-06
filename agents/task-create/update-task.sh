@@ -346,6 +346,46 @@ PYRCA
     esac
 }
 
+# Inception-decision Gate (T-1626, structural remediation for G-052)
+# Fires on --status work-completed for inception tasks. Requires a
+# `**Decision**: GO|NO-GO|DEFER` line in the task body — i.e. the operator
+# has run `fw inception decide T-XXX <go|no-go|defer>`.
+#
+# Origin: G-052 (2026-04-30). T-1448 inception got silently moved active->completed
+# during an unrelated heartbeat-script commit. The commit-msg inception gate is
+# only a BLOCK-on-commit; it does not catch the lifecycle path that finalizes
+# tasks via update-task.sh. Without this gate, an inception decision queue can
+# silently empty - operator visibility into pending decisions is lost.
+check_inception_decision() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    local task_type
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    [ "$task_type" = "inception" ] || return 0
+
+    if grep -qE '^\*\*Decision\*\*:[[:space:]]*(GO|NO-GO|DEFER)\b' "$TASK_FILE"; then
+        echo -e "${GREEN}Inception decision: recorded \xE2\x9C\x93${NC}"
+        return 0
+    fi
+
+    if [ "$SKIP_INCEPTION_DECISION" = true ]; then
+        echo -e "${YELLOW}WARNING: inception decision missing (--skip-inception-decision bypass)${NC}"
+        log_gate_bypass "--skip-inception-decision" "check_inception_decision"
+        return 0
+    fi
+
+    echo -e "${RED}ERROR: Cannot complete inception task - no decision recorded.${NC}" >&2
+    echo "" >&2
+    echo "G-052 (CLAUDE.md Inception Discipline): inception tasks must produce a" >&2
+    echo "go/no-go/defer decision. Silent completion empties the operator's" >&2
+    echo "decision queue and loses visibility into pending exploration outcomes." >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  1. Record the decision: fw inception decide $(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') go|no-go|defer --rationale '...'" >&2
+    echo "  2. Use --skip-inception-decision to bypass (logged, T-1626)" >&2
+    exit 1
+}
+
 # Evolution-log Gate (T-1718, structural counter to §ACD/G-062 family)
 # Fires on --status work-completed for arc-tagged build tasks IF the task
 # body already contains a `## Evolution` section (template opt-in: tasks
@@ -629,6 +669,7 @@ SKIP_HUMAN_OWNERSHIP=false
 SKIP_RECOMMENDATION=false
 SKIP_RCA=false
 SKIP_EVOLUTION=false
+SKIP_INCEPTION_DECISION=false
 SCOPE_REDUCTION_ACK=""  # T-1762/P-012: --scope-reduction-acknowledged "rationale"
 
 while [[ $# -gt 0 ]]; do
@@ -647,6 +688,7 @@ while [[ $# -gt 0 ]]; do
         --skip-recommendation) SKIP_RECOMMENDATION=true; shift ;;
         --skip-rca) SKIP_RCA=true; shift ;;
         --skip-evolution) SKIP_EVOLUTION=true; shift ;;
+        --skip-inception-decision) SKIP_INCEPTION_DECISION=true; shift ;;
         --scope-reduction-acknowledged)
             SCOPE_REDUCTION_ACK="$2"
             if [ -z "$SCOPE_REDUCTION_ACK" ]; then
@@ -662,9 +704,10 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)" >&2
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
+            echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)" >&2
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SCOPE_REDUCTION_ACK="--force bypass"
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_INCEPTION_DECISION=true; SCOPE_REDUCTION_ACK="--force bypass"
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -683,6 +726,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)"
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)"
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)"
+            echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)"
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)"
             echo "  --skip-human-ownership       Bypass human ownership reassignment"
             echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
@@ -891,6 +935,12 @@ if [ -n "$NEW_STATUS" ]; then
         # Bug-class tasks must capture root cause before completion.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_rca_for_bugfix
+        fi
+
+        # === Inception-decision Gate (T-1626, G-052 structural remediation) ===
+        # Inception tasks must record a go/no-go/defer decision before completion.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_inception_decision
         fi
 
         # === Evolution-log Gate (T-1718, T-1717 grill Q4 remediation) ===
