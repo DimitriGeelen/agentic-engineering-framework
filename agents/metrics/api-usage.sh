@@ -140,7 +140,10 @@ with open(audit_path, "r") as f:
             from_ = entry.get("from")
             peer_pid = entry.get("peer_pid")
             peer_addr = entry.get("peer_addr")
-            entries.append((ts, method, from_, peer_pid, peer_addr))
+            # T-1622: topic captured at hub for event.broadcast residue slicing.
+            # None for non-event.broadcast methods and for pre-T-1622 lines.
+            topic = entry.get("topic")
+            entries.append((ts, method, from_, peer_pid, peer_addr, topic))
         except json.JSONDecodeError:
             malformed += 1
 
@@ -175,7 +178,7 @@ def stats_for_window(days: int):
     last_seen_callers = {}
     last_seen_pids = {}
     last_seen_ips = {}
-    for ts, method, from_, peer_pid, peer_addr in entries:
+    for ts, method, from_, peer_pid, peer_addr, _topic in entries:
         if ts < cutoff:
             continue
         counts[method] += 1
@@ -265,6 +268,43 @@ def build_legacy_callers_by_ip(legacy_ips, last_seen=None):
         out.append(row)
     return out
 
+# T-1622: separate helper for legacy topic stats. Kept OUT of stats_for_window
+# to avoid PL-152 (counter-arity drift) — that function's 10-tuple return has
+# already burned us three times. Topic data is additive: any caller wanting
+# the breakdown calls this helper explicitly. Returns (Counter, dict) of
+# (method, topic) -> count and (method, topic) -> last_ts_ms.
+def legacy_topic_stats_for_window(days: int):
+    cutoff = now_ms - days * 86400 * 1000
+    legacy_topics = Counter()
+    last_seen = {}
+    for ts, method, _from, _pid, _addr, topic in entries:
+        if ts < cutoff:
+            continue
+        if not is_legacy(method):
+            continue
+        if not topic:
+            continue
+        key = (method, topic)
+        legacy_topics[key] += 1
+        if ts > last_seen.get(key, 0):
+            last_seen[key] = ts
+    return legacy_topics, last_seen
+
+def build_legacy_topics(legacy_topics, last_seen=None):
+    """T-1622: per-(method, topic) breakdown for legacy event.broadcast residue.
+    Answers "which channels are the holdouts still broadcasting to?" — the
+    last T-1166 cut-readiness visibility gap before T-1419/T-1417 migration."""
+    last_seen = last_seen or {}
+    out = []
+    for (method, topic), count in legacy_topics.most_common(15):
+        row = {"method": method, "topic": topic, "count": count}
+        ts = last_seen.get((method, topic))
+        if ts is not None:
+            row["last_seen_ts_ms"] = ts
+            row["last_seen_iso"] = _ts_to_iso(ts)
+        out.append(row)
+    return out
+
 # T-1416: cut-ready short-circuit. Binary gate on attributable-only legacy.
 # Composes with --json (compact CI shape) or human (one-line PASS/FAIL).
 # Exits before the trend/single-window paths so the output is unambiguous.
@@ -328,6 +368,8 @@ if json_out:
             "legacy_callers": build_legacy_callers(legacy_callers_60, last_seen_callers_60),
             "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids_60, last_seen_pids_60),
             "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips_60, last_seen_ips_60),
+            # T-1622: per-(method, topic) breakdown — closes T-1166 last visibility gap.
+            "legacy_topics": build_legacy_topics(*legacy_topic_stats_for_window(60)),
             "gate": {"window_days": 60, "passing": gate_passing},
         }
         print(json.dumps(out))
@@ -358,6 +400,8 @@ if json_out:
             "legacy_callers": build_legacy_callers(legacy_callers, last_seen_callers),
             "legacy_callers_by_pid": build_legacy_callers_by_pid(legacy_pids, last_seen_pids),
             "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips, last_seen_ips),
+            # T-1622: per-(method, topic) breakdown — closes T-1166 last visibility gap.
+            "legacy_topics": build_legacy_topics(*legacy_topic_stats_for_window(last_n)),
             "gate": {"window_days": last_n, "passing": passing},
         }
         print(json.dumps(out))
@@ -433,6 +477,17 @@ if last_n_s == "":
         for (method, addr), count in legacy_ips_60.most_common(15):
             print(f"    {count:>8d}  {method:<20s}  {addr}")
 
+    # T-1622: legacy-by-topic on the 60d window — closes the last T-1166
+    # visibility gap (which channels is the residue going to?). Only lines
+    # written by post-T-1622 hubs carry topic; pre-T-1622 entries are
+    # silently absent (visible in by-method but not bucketed by topic).
+    _legacy_topics_60, _legacy_topic_seen_60 = legacy_topic_stats_for_window(60)
+    if _legacy_topics_60:
+        print()
+        print(f"  Legacy callers by topic (last 60d):")
+        for (method, topic), count in _legacy_topics_60.most_common(15):
+            print(f"    {count:>8d}  {method:<20s}  topic={topic}")
+
     print()
     print(f"  Gate threshold: {gate_pct_s:.2f}% (over 60-day window — T-1166)")
     if final_total == 0:
@@ -488,6 +543,18 @@ if legacy_ips:
     print(f"  Legacy callers by IP (last {last_n}d):")
     for (method, addr), count in legacy_ips.most_common(15):
         print(f"    {count:>8d}  {method:<20s}  {addr}")
+    print()
+
+# T-1622: legacy-by-topic — answers "which channels is the residue still
+# being broadcast to?" Last visibility gap before T-1166 cut authorization.
+# Only present for lines written post-T-1622; pre-T-1622 entries lack the
+# field and are silently absent (they show up in the by-method tally but
+# can't be sliced by topic).
+_legacy_topics, _legacy_topic_seen = legacy_topic_stats_for_window(last_n)
+if _legacy_topics:
+    print(f"  Legacy callers by topic (last {last_n}d):")
+    for (method, topic), count in _legacy_topics.most_common(15):
+        print(f"    {count:>8d}  {method:<20s}  topic={topic}")
     print()
 
 legacy_pct = (legacy_total / total) * 100 if total > 0 else 0.0
