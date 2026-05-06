@@ -331,7 +331,14 @@ if command -v flock >/dev/null 2>&1; then
     # Apply timeout: kill self if still running after AUDIT_TIMEOUT seconds.
     # Detach the watchdog's stdio so it doesn't keep parent pipes open after exit
     # (bats `run` and shell pipelines wait on every descendant FD — T-1464).
-    ( sleep "$AUDIT_TIMEOUT" && kill -TERM $$ 2>/dev/null ) </dev/null >/dev/null 2>&1 &
+    # T-1772: also close FD 200 (the flock fd) inside the watchdog subshell.
+    # If we don't, the `sleep` child inherits FD 200 from its parent subshell and
+    # — because sleep reparents to init when its subshell exits — keeps the flock
+    # held until sleep terminates (default 600s). This silently blocks every
+    # subsequent `fw audit` ("Another audit is already running" → exit 0 → empty
+    # stdout) and breaks pipelines like `fw audit | grep`, including bats tests
+    # that run fw audit per-case.
+    ( exec 200>&-; sleep "$AUDIT_TIMEOUT" && kill -TERM $$ 2>/dev/null ) </dev/null >/dev/null 2>&1 &
     AUDIT_TIMEOUT_PID=$!
     trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null; rm -f '$AUDIT_LOCK_FILE'" EXIT
 else
