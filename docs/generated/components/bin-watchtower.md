@@ -37,11 +37,13 @@ Resolution order (T-885, T-1287, T-1376):
 | `lib/config.sh` | calls |
 | `lib/firewall.sh` | calls |
 
-## Used By (1)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `tests/unit/watchtower_url_refresh.bats` | called_by |
+| `tests/unit/watchtower_url_refresh.bats` | tests_by |
 
 ## Related
 

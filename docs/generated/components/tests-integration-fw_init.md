@@ -11,11 +11,12 @@
 Integration tests for fw init subcommand
 Tests framework initialization in a fresh directory.
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_init.yaml`*

@@ -8,10 +8,14 @@
 
 Unit tests for audit scan scripts (T-961)
 
-## Dependencies (1)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
+| `agents/audit/active-task-scan.py` | calls |
+| `agents/audit/completed-task-scan.py` | calls |
+| `agents/audit/active-task-scan.py` | tests |
+| `agents/audit/completed-task-scan.py` | tests |
 
 ## Related
 

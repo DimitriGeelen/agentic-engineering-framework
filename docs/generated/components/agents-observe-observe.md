@@ -24,13 +24,14 @@ Usage:
 | `agents/task-create/create-task.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/observe.bats` | tested_by |
 | `tests/unit/observe.bats` | called_by |
+| `tests/unit/observe.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-observe-observe.yaml`*

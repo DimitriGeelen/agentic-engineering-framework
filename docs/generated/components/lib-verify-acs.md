@@ -22,7 +22,7 @@ Origin: T-823 GO decision — 63% of Human ACs can be verified programmatically.
 | `lib/config.sh` | calls |
 | `lib/watchtower.sh` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -30,6 +30,7 @@ Origin: T-823 GO decision — 63% of Human ACs can be verified programmatically.
 | `tests/unit/verify_acs.bats` | called-by |
 | `lib/verify-acs.sh` | called_by |
 | `tests/unit/verify_acs.bats` | called_by |
+| `tests/unit/verify_acs.bats` | tests_by |
 
 ## Related
 

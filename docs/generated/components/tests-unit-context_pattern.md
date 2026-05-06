@@ -15,11 +15,15 @@ Tests the do_add_pattern() function:
 - File creation and section appending
 - Mitigation (failure patterns only)
 
-## Dependencies (1)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/context.sh` | calls |
+| `lib/compat.sh` | calls |
+| `agents/context/lib/pattern.sh` | calls |
+| `agents/context/lib/pattern.sh` | tests |
+| `lib/compat.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_pattern.yaml`*

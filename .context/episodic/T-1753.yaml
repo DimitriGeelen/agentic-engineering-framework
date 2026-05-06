@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1753: fabric enrich — close audit WARN on 100/543 cards with no edges
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T21:59:43Z
+# ============================================================================
+
+task_id: T-1753
+task_name: "fabric enrich — close audit WARN on 100/543 cards with no edges"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T21:52:30Z
+completed: 2026-05-05T21:56:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-05T23:56:39+02:00
+last_commit: 2026-05-05T23:56:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric enrich — 25 cards enriched, 51 edges added (100→84 edgeless)
+
+# Key outcomes
+outcomes:
+  - "`bin/fw fabric enrich` completes without errors and writes 51 new edges"
+  - "Edgeless-card count drops below 100 (audit no longer flags `100/543`)"
+  - "`bin/fw fabric drift` exits clean (no new orphans/stale)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Run `fw fabric enrich` once, accept residual 84 edgeless cards as a separate problem"
+    rationale: "Of 84 remaining edgeless cards, 70 are `subsystem: unknown / type: script` — they need manual classification before any heuristic can find edges. T-1753's scope was the mechanical pass."
+    alternatives_rejected: ["Manually classify 70+ scripts in this task — would dilute one-deliverable rule. File as follow-up if persistent."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/agents-context-post-compact-resume.yaml"
+  - ".fabric/components/agents-task-create-update-task.yaml"
+  - ".fabric/components/agents-termlink-termlink.yaml"
+  - ".fabric/components/audit-yaml-validator.yaml"
+  - ".fabric/components/cross-repo-termlink-governance-frame.yaml"
+  - ".fabric/components/lib-arc.yaml"
+  - ".fabric/components/lib-doctor-hook-exercise.yaml"
+  - ".fabric/components/lib-evolution_log.yaml"
+  - ".fabric/components/lib-hook-threshold.yaml"
+  - ".fabric/components/lib-inception_recommendation.yaml"
+  - ".fabric/components/lib-inception.yaml"
+  - ".fabric/components/lib-outcome.yaml"
+  - ".fabric/components/lib-resolver.yaml"
+  - ".fabric/components/tests-unit-test_project_root_discovery.yaml"
+  - ".fabric/components/tools-ollama-tool-loop.yaml"
+  - ".fabric/components/web-blueprints-arcs.yaml"
+  - ".fabric/components/web-blueprints-hooks.yaml"
+  - ".fabric/components/web-blueprints-__init__.yaml"
+  - ".fabric/components/web-blueprints-orchestrator.yaml"
+  - ".fabric/components/web-shared.yaml"
+  - ".fabric/components/web-templates-arc_detail.yaml"
+  - ".fabric/components/web-templates-arcs_index.yaml"
+  - ".fabric/components/web-templates-base.yaml"
+  - ".fabric/components/web-templates-hooks.yaml"
+  - ".fabric/components/web-templates-orchestrator.yaml"
+  - ".tasks/active/T-1753-fabric-enrich--close-audit-warn-on-10054.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T23:56:39"
+    action: "T-1753: fabric enrich — 25 cards enriched, 51 edges added (100→84 edgeless)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 26
+  lines_added: 287
+  lines_removed: 185
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1753-fabric-enrich--close-audit-warn-on-10054.md
+generated_by: context-agent-hybrid

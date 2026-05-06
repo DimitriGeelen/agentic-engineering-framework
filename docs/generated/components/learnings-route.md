@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (14)
+## Dependencies (15)
 
 | Target | Relationship |
 |--------|-------------|
@@ -26,6 +26,7 @@
 | `web/search.py` | calls |
 | `web/search_utils.py` | calls |
 | `web/templates/feedback_analytics.html` | renders |
+| `F-002` | calls |
 
 ## Used By (6)
 

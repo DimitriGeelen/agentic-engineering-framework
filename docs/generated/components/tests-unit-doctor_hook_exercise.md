@@ -14,6 +14,12 @@ the T-1626 witness scenario (broken bare-relative `.agentic-framework/bin/fw`
 paths) deterministically, not contingent on a real hook firing during the
 session.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-doctor_hook_exercise.yaml`*
 *Last verified: 2026-05-01*

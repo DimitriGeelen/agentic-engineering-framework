@@ -10,11 +10,13 @@
 
 Flask URL normalization may return 404 before handler runs
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/fabric.py` | calls |
+| `bin/fw` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_fabric_source.yaml`*

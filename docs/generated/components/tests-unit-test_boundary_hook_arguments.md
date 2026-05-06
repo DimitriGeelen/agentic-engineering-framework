@@ -16,6 +16,14 @@ These tests pin Pattern 4 behaviour: outside-path arguments to ANY
 command are blocked unless the path falls under the read-side
 allowlist (system paths, /tmp, project root).
 
+## Dependencies (3)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/context/check-project-boundary.sh` | calls |
+| `agents/context/check-project-boundary.sh` | tests |
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_boundary_hook_arguments.yaml`*
 *Last verified: 2026-05-03*

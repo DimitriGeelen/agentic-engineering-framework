@@ -11,11 +11,12 @@
 The endpoint runs fw healing diagnose and returns 200 with output
 regardless of whether the task exists (diagnosis output shows the error)
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/session.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_healing.yaml`*

@@ -20,12 +20,13 @@ Agent-relevant settings:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/templates/config.html` | renders |
+| `lib/config.sh` | calls |
 
 ## Used By (5)
 

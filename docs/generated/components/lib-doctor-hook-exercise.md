@@ -6,6 +6,18 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | calls |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/context/post-compact-resume.sh` | called_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-doctor-hook-exercise.yaml`*
 *Last verified: 2026-05-01*

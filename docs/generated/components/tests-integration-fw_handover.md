@@ -14,11 +14,12 @@ fw handover            — generate handover document
 fw handover --help     — show help
 fw handover --no-commit — generate without committing
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_handover.yaml`*

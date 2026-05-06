@@ -14,12 +14,13 @@ dash-prefix format (`- id: L-XXX`).
 Before the fix, grep for `^- id: L-` missed 234 legacy entries, so every
 new add-learning call issued an ID that collided with historical IDs.
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/lib/learning.sh` | calls |
 | `.context/project/learnings.yaml` | reads |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-add_learning_id_allocator.yaml`*

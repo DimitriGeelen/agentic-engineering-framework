@@ -1,12 +1,12 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-05-05T03:23:01.513386+00:00
-**Corpus:** 1654 completed tasks
-**Bug-class identified:** 352 (21%)
+**Run:** 2026-05-06T03:23:01.559132+00:00
+**Corpus:** 1680 completed tasks
+**Bug-class identified:** 358 (21%)
 
 ## H1 — Bug-class tasks with no `## RCA` section
 
-**Flagged:** 323 / 352 bug-class tasks (91%)
+**Flagged:** 326 / 358 bug-class tasks (91%)
 
 **Last 30 days sample (FP triage candidates):**
 
@@ -35,13 +35,13 @@
 - `T-1133-pickup-gnu-date--d-in-framework-shell-sc` — Pickup: GNU date -d in framework shell scripts fails silently on macOS — causes 
 - `T-1143-t-1102-build-context-aware-fw-path-helpe` — T-1102 build: context-aware fw path helper (_fw_cmd) and fix 3 hardcoded bin/fw 
 - `T-1150-rca-recommendation-text-truncation-in-mu` — RCA: recommendation text truncation in multiple surfaces — fix + inception for r
-- ... +150 more in last 30 days
+- ... +145 more in last 30 days
 
 ## H2 — Learning IDs referenced across ≥3 tasks within 30 days
 
-- `P-011` — referenced by 156 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
-- `P-010` — referenced by 116 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
-- `L-291` — referenced by 79 tasks: T-1518-approvals-page-surface-deferred-inceptio, T-1521-extend-fw-doctor-vendor-drift-glob-to-co, T-1522-self-lock-in-handoversh-to-prevent-concu, T-1523-update-tasksh-git-stage-both-sides-of-ac, T-1524-t-1523-throwaway-test …
+- `P-011` — referenced by 171 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
+- `P-010` — referenced by 120 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
+- `L-291` — referenced by 96 tasks: T-1518-approvals-page-surface-deferred-inceptio, T-1521-extend-fw-doctor-vendor-drift-glob-to-co, T-1522-self-lock-in-handoversh-to-prevent-concu, T-1523-update-tasksh-git-stage-both-sides-of-ac, T-1524-t-1523-throwaway-test …
 - `L-006` — referenced by 54 tasks: T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou …
 - `L-001` — referenced by 38 tasks: T-011-define-practice-graduation-criteria, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le …
 - `PL-007` — referenced by 24 tasks: T-1141-pickup-pl-007-never-dump-terminal-comman, T-1141-pickup-pl-007-never-dump-terminal-comman, T-1141-pickup-pl-007-never-dump-terminal-comman, T-1146-pickup-critical-rca-agent-command-amnesi, T-1146-pickup-critical-rca-agent-command-amnesi …
@@ -57,7 +57,7 @@
 
 ## H3 — Bug-class with no RCA AND no learning captured
 
-**Flagged:** 268 / 352 (76%)
+**Flagged:** 268 / 358 (74%)
 
 This is the strongest symptom-fix signal: fix shipped, no root cause stated, no learning captured for next time.
 
@@ -71,12 +71,12 @@ T-1548 (the inception that birthed this scan): bug_class=False has_rca=False lea
 
 | Metric | Value |
 |---|---|
-| Total completed tasks | 1654 |
-| Bug-class tasks | 352 (21%) |
-| H1 flagged | 323 |
-| H2 repeat-learning patterns | 67 |
+| Total completed tasks | 1680 |
+| Bug-class tasks | 358 (21%) |
+| H1 flagged | 326 |
+| H2 repeat-learning patterns | 69 |
 | H3 flagged (strongest signal) | 268 |
-| Last-30-days bug-class | 175 |
+| Last-30-days bug-class | 170 |
 
 ## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
 

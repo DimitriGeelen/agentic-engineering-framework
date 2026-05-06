@@ -17,12 +17,14 @@ Safe directories for file viewer (relative to PROJECT_ROOT)
 | `web/templates/docs_index.html` | renders |
 | `web/templates/docs_detail.html` | renders |
 
-## Used By (3)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_docs_detail.py` | called_by |
+| `web/shared.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-docs.yaml`*

@@ -32,7 +32,7 @@ Helpers
 | `web/shared.py` | calls |
 | `web/subprocess_utils.py` | calls |
 
-## Used By (4)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -40,6 +40,9 @@ Helpers
 | `web/app.py` | registered_by |
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_api_context_capture.py` | called_by |
+| `tests/playwright/test_api_healing.py` | called_by |
+| `tests/playwright/test_api_session_init.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-session.yaml`*

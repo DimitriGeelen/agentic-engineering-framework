@@ -9,11 +9,14 @@
 Unit tests for lib/harvest.sh
 Tests do_harvest argument parsing, help, guards, and sub-functions
 
-## Dependencies (1)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/harvest.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/harvest.sh` | tests |
+| `lib/colors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_harvest.yaml`*

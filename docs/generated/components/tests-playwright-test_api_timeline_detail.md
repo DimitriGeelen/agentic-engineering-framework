@@ -10,11 +10,12 @@
 
 Episodic data renders task summary, outcomes, decisions etc
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/timeline.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_timeline_detail.yaml`*

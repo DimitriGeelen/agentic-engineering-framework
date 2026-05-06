@@ -15,6 +15,12 @@ doctor probes :4000/health.
 192.168.10.107:11434/api/tags.
 4. Both checks are host-scope (use _doctor_warn_host on failure).
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_doctor_litellm_ollama.yaml`*
 *Last verified: 2026-05-04*

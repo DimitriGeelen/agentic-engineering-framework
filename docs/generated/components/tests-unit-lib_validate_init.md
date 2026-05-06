@@ -11,11 +11,14 @@
 Unit tests for lib/validate-init.sh (fw validate-init)
 Origin: T-945
 
-## Dependencies (1)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/validate-init.sh` | calls |
+| `lib/paths.sh` | calls |
+| `lib/validate-init.sh` | tests |
+| `lib/paths.sh` | tests |
 
 ## Related
 

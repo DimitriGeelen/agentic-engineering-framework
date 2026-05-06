@@ -17,7 +17,7 @@ web/blueprints/cockpit.py
 | `web/blueprints/tasks.py` | calls |
 | `web/blueprints/tasks.py` | registers |
 
-## Used By (6)
+## Used By (8)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -27,6 +27,8 @@ web/blueprints/cockpit.py
 | `web/blueprints/core.py` | registered_by |
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_api_scan.py` | called_by |
+| `tests/playwright/test_api_scan_actions.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-cockpit.yaml`*

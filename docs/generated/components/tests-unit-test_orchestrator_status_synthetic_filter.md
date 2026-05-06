@@ -13,6 +13,12 @@ denominator and pollute task_type/worker_kind breakdowns with "?" values
 because they have no telemetry possible. The filter pins the split so the
 observability metric reflects real arc-substrate signal.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_orchestrator_status_synthetic_filter.yaml`*
 *Last verified: 2026-05-04*

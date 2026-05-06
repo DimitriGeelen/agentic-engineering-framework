@@ -70,7 +70,7 @@ When run from inside the framework repo itself, it auto-detects.
 | `lib/task-audit.sh` | calls |
 | `lib/watchtower.sh` | calls |
 
-## Used By (92)
+## Used By (180)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -165,6 +165,94 @@ When run from inside the framework repo itself, it auto-detects.
 | `agents/context/pl007-scanner.sh` | called_by |
 | `agents/context/subagent-stop.sh` | called_by |
 | `tests/unit/task_reid.bats` | called_by |
+| `tests/governance/test_pretooluse_gates.bats` | tests_by |
+| `tests/governance/test_task_lifecycle_gates.bats` | tests_by |
+| `tests/integration/audit_blocks_review_and_decide.bats` | tests_by |
+| `tests/integration/cron_install.bats` | tests_by |
+| `tests/integration/fw_approvals.bats` | tests_by |
+| `tests/integration/fw_assumption.bats` | tests_by |
+| `tests/integration/fw_audit.bats` | tests_by |
+| `tests/integration/fw_bus.bats` | tests_by |
+| `tests/integration/fw_config.bats` | tests_by |
+| `tests/integration/fw_context.bats` | tests_by |
+| `tests/integration/fw_costs.bats` | tests_by |
+| `tests/integration/fw_cron.bats` | tests_by |
+| `tests/integration/fw_decisions.bats` | tests_by |
+| `tests/integration/fw_doctor.bats` | tests_by |
+| `tests/integration/fw_fabric.bats` | tests_by |
+| `tests/integration/fw_fix_learned.bats` | tests_by |
+| `tests/integration/fw_gaps.bats` | tests_by |
+| `tests/integration/fw_git.bats` | tests_by |
+| `tests/integration/fw_handover.bats` | tests_by |
+| `tests/integration/fw_harvest.bats` | tests_by |
+| `tests/integration/fw_healing.bats` | tests_by |
+| `tests/integration/fw_help.bats` | tests_by |
+| `tests/integration/fw_hook.bats` | tests_by |
+| `tests/integration/fw_inception.bats` | tests_by |
+| `tests/integration/fw_init.bats` | tests_by |
+| `tests/integration/fw_learnings.bats` | tests_by |
+| `tests/integration/fw_metrics.bats` | tests_by |
+| `tests/integration/fw_notify.bats` | tests_by |
+| `tests/integration/fw_onboarding.bats` | tests_by |
+| `tests/integration/fw_patterns.bats` | tests_by |
+| `tests/integration/fw_pickup.bats` | tests_by |
+| `tests/integration/fw_practices.bats` | tests_by |
+| `tests/integration/fw_preflight.bats` | tests_by |
+| `tests/integration/fw_promote.bats` | tests_by |
+| `tests/integration/fw_resume.bats` | tests_by |
+| `tests/integration/fw_search.bats` | tests_by |
+| `tests/integration/fw_self_test.bats` | tests_by |
+| `tests/integration/fw_task.bats` | tests_by |
+| `tests/integration/fw_tier0.bats` | tests_by |
+| `tests/integration/fw_timeline.bats` | tests_by |
+| `tests/integration/fw_traceability.bats` | tests_by |
+| `tests/integration/fw_upstream.bats` | tests_by |
+| `tests/integration/fw_validate_init.bats` | tests_by |
+| `tests/integration/fw_vendor.bats` | tests_by |
+| `tests/integration/fw_version.bats` | tests_by |
+| `tests/integration/fw_work_on.bats` | tests_by |
+| `tests/unit/add_learning_id_allocator.bats` | tests_by |
+| `tests/unit/audit_task_tools.bats` | tests_by |
+| `tests/unit/block_task_tools.bats` | tests_by |
+| `tests/unit/context_safe_commands.bats` | tests_by |
+| `tests/unit/cron_flock_parity.bats` | tests_by |
+| `tests/unit/doctor_duplicate_hook_detection.bats` | tests_by |
+| `tests/unit/doctor_hook_exercise.bats` | tests_by |
+| `tests/unit/escalation_scan_v05.bats` | tests_by |
+| `tests/unit/focus_drift_gate.bats` | tests_by |
+| `tests/unit/hook_absolute_paths.bats` | tests_by |
+| `tests/unit/hook_enable_absolute_path.bats` | tests_by |
+| `tests/unit/hook_telemetry.bats` | tests_by |
+| `tests/unit/pickup_type_routing.bats` | tests_by |
+| `tests/unit/session_start_hook_warning.bats` | tests_by |
+| `tests/unit/task_reid.bats` | tests_by |
+| `tests/unit/test_boundary_hook_arguments.bats` | tests_by |
+| `tests/unit/test_doctor_litellm_ollama.bats` | tests_by |
+| `tests/unit/test_doctor_scope_tags.bats` | tests_by |
+| `tests/unit/test_fw_gaps_closure_check.bats` | tests_by |
+| `tests/unit/test_orchestrator_status_synthetic_filter.bats` | tests_by |
+| `tests/unit/test_worker_kind_drift.bats` | tests_by |
+| `tests/unit/upgrade_dedupe_user_hooks.bats` | tests_by |
+| `tests/unit/upgrade_duplicate_hook_detection.bats` | tests_by |
+| `tests/unit/verify_acs.bats` | tests_by |
+| `lib/doctor-hook-exercise.py` | called_by |
+| `lib/hook-threshold.py` | called_by |
+| `lib/resolver.py` | called_by |
+| `tests/playwright/test_api_fabric_source.py` | called_by |
+| `tests/playwright/test_file_viewer.py` | called_by |
+| `tests/unit/test_arc_system.py` | called_by |
+| `tests/unit/test_audit_arc_completion.py` | called_by |
+| `tests/unit/test_enrich_bats_parser.py` | called_by |
+| `tests/unit/test_fabric_drift_absolute_paths.py` | called_by |
+| `tests/unit/test_fabric_drift_performance.py` | called_by |
+| `tests/unit/test_orchestrator_outcome_dedup.py` | called_by |
+| `tests/unit/test_orchestrator_status_outcomes.py` | called_by |
+| `web/blueprints/approvals.py` | called_by |
+| `web/blueprints/cron.py` | called_by |
+| `web/shared.py` | called_by |
+| `lib/reviewer/classifier.py` | called_by |
+| `lib/reviewer/drift.py` | called_by |
+| `lib/reviewer/static_scan.py` | called_by |
 
 ## Documentation
 

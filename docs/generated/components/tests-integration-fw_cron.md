@@ -17,11 +17,12 @@ fw cron run <id>   — run a job immediately
 fw cron pause <id> — pause a job
 fw cron resume <id> — resume a paused job
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_cron.yaml`*

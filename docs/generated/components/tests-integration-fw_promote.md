@@ -14,11 +14,12 @@ fw promote           — show help
 fw promote suggest   — show promotion candidates
 fw promote status    — show all learnings with counts
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_promote.yaml`*

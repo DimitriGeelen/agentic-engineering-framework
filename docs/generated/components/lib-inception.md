@@ -21,14 +21,15 @@ When the active task has `workflow_type: inception`:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/review.sh` | calls |
 | `lib/task-audit.sh` | calls |
+| `lib/inception_recommendation.sh` | calls |
 
-## Used By (10)
+## Used By (20)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -41,6 +42,16 @@ When the active task has `workflow_type: inception`:
 | `docs/reports/T-1212-consumer-watchtower-rca.md` | produced-by_by |
 | `docs/reports/T-607-correction-refinement-loop.md` | produced-by_by |
 | `tests/unit/inception_decide_ac_tick.bats` | called_by |
+| `tests/lint/inception-decision-exact-match.bats` | tests_by |
+| `tests/unit/inception_decide_ac_tick.bats` | tests_by |
+| `tests/unit/inception_decide_atomicity.bats` | called_by |
+| `tests/unit/inception_decide_atomicity.bats` | tests_by |
+| `tests/unit/inception_tick_decision_recorded.bats` | called_by |
+| `tests/unit/inception_tick_decision_recorded.bats` | tests_by |
+| `tests/unit/inception_tick_marker.bats` | called_by |
+| `tests/unit/inception_tick_marker.bats` | tests_by |
+| `tests/unit/lib_inception.bats` | tests_by |
+| `web/blueprints/inception.py` | called_by |
 
 ## Related
 

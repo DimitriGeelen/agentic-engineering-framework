@@ -8,11 +8,12 @@
 
 ## What It Does
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `cross-repo:termlink/crates/termlink-session/src/governance_subscriber.rs` | emitted_by |
+| `cross-repo:termlink/crates/termlink-session/src/governance_subscriber.rs` | emits_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `cross-repo-termlink-governance-frame.yaml`*

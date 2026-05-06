@@ -17,6 +17,13 @@ Public functions (called from bin/fw dispatcher):
 mirror_main <subcommand> [args...]
 Subcommands:
 
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `tests/unit/test_mirror_sync.bats` | called_by |
+| `tests/unit/test_mirror_sync.bats` | tests_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-mirror.yaml`*
 *Last verified: 2026-04-28*

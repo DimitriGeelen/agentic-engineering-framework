@@ -13,11 +13,13 @@ Prior bug: generate_id() read max_id, then (later) wrote the file. N parallel
 invocations all observed the same max_id and all wrote T-${max+1}.
 Fix: keylock around the read-compute-write sequence.
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/task-create/create-task.sh` | calls |
+| `agents/task-create/create-task.sh` | tests |
+| `lib/keylock.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-task_id_race.yaml`*

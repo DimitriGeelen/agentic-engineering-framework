@@ -16,11 +16,13 @@ Tests do_init():
 - Detects first session vs existing project
 - Reports predecessor from handover
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/context.sh` | calls |
+| `agents/context/lib/init.sh` | calls |
+| `agents/context/lib/init.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_init.yaml`*

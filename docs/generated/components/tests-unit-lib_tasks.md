@@ -11,11 +11,12 @@
 Unit tests for lib/tasks.sh
 Tests find_task_file(), task_exists(), get_task_name()
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/tasks.sh` | calls |
+| `lib/tasks.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_tasks.yaml`*

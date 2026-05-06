@@ -13,11 +13,18 @@ After fw inception decide writes the Decision block, the templated
 [REVIEW] / [RUBBER-STAMP] Human AC must be ticked so the work-completed
 gate doesn't leave the task in partial-complete forever (G-008; P-039).
 
-## Dependencies (1)
+## Dependencies (8)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/inception.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/errors.sh` | calls |
+| `lib/tasks.sh` | calls |
+| `lib/colors.sh` | tests |
+| `lib/errors.sh` | tests |
+| `lib/tasks.sh` | tests |
+| `lib/inception.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-inception_decide_ac_tick.yaml`*

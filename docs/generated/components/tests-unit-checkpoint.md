@@ -19,11 +19,13 @@ When fixing a bug discovered through real-world usage (user testing, production 
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/checkpoint.sh` | calls |
+| `C-008` | calls |
+| `C-008` | tests |
 
 ## Related
 

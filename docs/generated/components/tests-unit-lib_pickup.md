@@ -9,11 +9,15 @@
 Unit tests for lib/pickup.sh
 Tests pickup pipeline: validation, dedup, ID generation, processing
 
-## Dependencies (1)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/pickup.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/pickup.sh` | tests |
+| `lib/colors.sh` | tests |
+| `C-004` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_pickup.yaml`*

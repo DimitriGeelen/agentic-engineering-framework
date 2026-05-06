@@ -17,6 +17,13 @@ agents/termlink/termlink.sh. The structural shape of env handling is what
 guarantees isolation — any change that breaks it should break a test here.
 A live spawn test is intentionally avoided (slow, requires hub running).
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/termlink/termlink.sh` | calls |
+| `agents/termlink/termlink.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_workflow_env_isolation.yaml`*
 *Last verified: 2026-05-04*

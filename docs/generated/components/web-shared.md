@@ -10,7 +10,14 @@
 
 Path resolution
 
-## Used By (47)
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/blueprints/docs.py` | calls |
+| `bin/fw` | calls |
+
+## Used By (51)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -61,6 +68,10 @@ Path resolution
 | `web/blueprints/fleet.py` | called_by |
 | `web/blueprints/reviewer.py` | called_by |
 | `web/blueprints/escalation.py` | called_by |
+| `tests/unit/test_project_root_discovery.py` | called_by |
+| `web/blueprints/arcs.py` | called_by |
+| `web/blueprints/hooks.py` | called_by |
+| `web/blueprints/orchestrator.py` | called_by |
 
 ## Related
 

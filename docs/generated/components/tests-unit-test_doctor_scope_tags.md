@@ -17,6 +17,12 @@ These tests pin:
 - 12 host-scope WARN emits route through the helper
 - The summary line shows "(N host-level)" when host_warnings > 0
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_doctor_scope_tags.yaml`*
 *Last verified: 2026-05-03*

@@ -10,10 +10,13 @@ Unit tests for agents/context/block-task-tools.sh (T-1117)
 PreToolUse hook that blocks TodoWrite/TaskCreate/TaskUpdate/TaskList/TaskGet.
 Exit code: always 2 (block). Redirects to bin/fw work-on.
 
-## Dependencies (1)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
+| `agents/context/block-task-tools.sh` | calls |
+| `agents/context/block-task-tools.sh` | tests |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-block_task_tools.yaml`*

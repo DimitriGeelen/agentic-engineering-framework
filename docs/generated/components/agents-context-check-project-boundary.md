@@ -28,11 +28,14 @@ Allowed exceptions (Bash + Write):
 | `lib/paths.sh` | calls |
 | `lib/config.sh` | calls |
 
-## Used By (1)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `.claude/settings.json` | triggers |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| `tests/unit/test_boundary_hook_arguments.bats` | called_by |
+| `tests/unit/test_boundary_hook_arguments.bats` | tests_by |
 
 ## Related
 

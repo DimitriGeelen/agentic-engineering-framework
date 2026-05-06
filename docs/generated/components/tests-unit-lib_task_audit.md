@@ -10,10 +10,12 @@ Unit tests for lib/task-audit.sh (T-1111/T-1113)
 Verifies the placeholder audit chokepoint catches literal template stubs
 and does not flag legitimate authored content.
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
+| `lib/task-audit.sh` | calls |
+| `lib/task-audit.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_task_audit.yaml`*

@@ -11,11 +11,12 @@
 Unit tests for agents/docgen/generate-component.sh
 Origin: T-942
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/docgen/generate-component.sh` | calls |
+| `agents/docgen/generate-component.sh` | tests |
 
 ## Related
 

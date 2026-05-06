@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1755: Classify 59 new termlink_agent_* MCP tools — orchestrator-mcp-scan baseline drift
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T22:26:25Z
+# ============================================================================
+
+task_id: T-1755
+task_name: "Classify 59 new termlink_agent_* MCP tools — orchestrator-mcp-scan baseline drift"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T22:22:40Z
+completed: 2026-05-05T22:26:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-06T00:26:17+02:00
+last_commit: 2026-05-06T00:26:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  classify 59 new termlink_agent_* MCP tools — close baseline drift
+
+# Key outcomes
+outcomes:
+  - "All 59 new tools classified into `mutators_ungated` (13) or `readonly_exempt` (46)"
+  - "`baseline_count` updated from 75 → 134 to match current observable count"
+  - "`last_verified` updated to 2026-05-06"
+  - "`bin/fw audit` no longer raises \"Orchestrator-arc MCP scan: drift detected\" with NEW unclassified"
+  - "Baseline YAML parses; counts match list lengths (4 + 42 + 88 = 134)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Classify by naming convention (action verb → mutator; read-suffix noun → readonly)"
+    rationale: "`/opt/termlink/crates/termlink-mcp/src/tools.rs` is outside PROJECT_ROOT and unreadable"
+    alternatives_rejected: [""]
+    chose: "Classify `typing` as `mutators_ungated`"
+    rationale: "It produces an observable side effect on the recipient (typing indicator)."
+    alternatives_rejected: ["`readonly_exempt` — the tool emits, doesn't read. \"Read-only\" must mean"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/orchestrator-mcp-baseline.yaml"
+  - ".tasks/active/T-1755-classify-59-new-termlinkagent-mcp-tools-.md"
+  - ".tasks/completed/T-1754-fabric-enrich--add-bats-parser--standalo.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T00:26:17"
+    action: "T-1755: classify 59 new termlink_agent_* MCP tools — close baseline drift"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 3
+  lines_added: 197
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1755-classify-59-new-termlinkagent-mcp-tools-.md
+generated_by: context-agent-hybrid

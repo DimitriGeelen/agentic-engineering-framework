@@ -32,7 +32,7 @@ Agent-relevant settings:
 |--------|-------------|
 | `lib/config.sh` | calls |
 
-## Used By (22)
+## Used By (27)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -58,6 +58,11 @@ Agent-relevant settings:
 | `web/templates/config.html` | read_by |
 | `agents/git/lib/hooks.sh` | called_by |
 | `agents/monitor/liveness-check.sh` | called_by |
+| `tests/unit/fabric.bats` | tests_by |
+| `tests/unit/lib_config.bats` | tests_by |
+| `tests/unit/yaml_pipefail.bats` | called_by |
+| `tests/unit/yaml_pipefail.bats` | tests_by |
+| `web/blueprints/config.py` | called_by |
 
 ## Related
 

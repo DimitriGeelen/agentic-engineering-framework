@@ -19,7 +19,7 @@ Index lives in /tmp — ephemeral, rebuilt as needed
 | `web/search_utils.py` | calls |
 | `web/shared.py` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -27,6 +27,7 @@ Index lives in /tmp — ephemeral, rebuilt as needed
 | `web/blueprints/api.py` | called_by |
 | `web/embeddings.py` | called_by |
 | `web/blueprints/discovery.py` | called_by |
+| `web/search_utils.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-search.yaml`*

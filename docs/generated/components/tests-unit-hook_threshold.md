@@ -17,6 +17,13 @@ Pins the contract that:
 7. --register is idempotent — already-open entry is skipped
 8. After human closes a concern, re-occurrence creates a new entry
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/hook-threshold.py` | calls |
+| `lib/hook-threshold.py` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_threshold.yaml`*
 *Last verified: 2026-05-01*

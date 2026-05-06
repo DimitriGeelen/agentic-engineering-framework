@@ -12,12 +12,13 @@ T-1367: fw task reid — safely rename a task's ID.
 Handles the G-052 duplicate-ID repair workflow: renames the file AND updates
 the `id:` frontmatter atomically. Refuses when NEW-ID already exists.
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
 | `.tasks/active/` | writes |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-task_reid.yaml`*

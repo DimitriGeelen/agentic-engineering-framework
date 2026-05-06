@@ -17,13 +17,14 @@ Usage:
 fw promote suggest
 fw promote status
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/lib_promote.bats` | called-by |
 | `tests/unit/lib_promote.bats` | called_by |
+| `tests/unit/lib_promote.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-promote.yaml`*

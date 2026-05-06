@@ -6,12 +6,14 @@
 
 ## What It Does
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | imports |
 | `web/shared.py` | calls |
+| `web/search.py` | calls |
+| `web/embeddings.py` | calls |
 
 ## Used By (5)
 

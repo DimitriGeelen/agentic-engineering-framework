@@ -23,6 +23,18 @@ Enforced structurally. `fw arc create` requires `--headline-mechanic "<who> <doe
 
 *(truncated — see CLAUDE.md for full section)*
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/task-create/update-task.sh` | calls |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `tests/unit/test_arc_system.py` | called_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-arc.yaml`*
 *Last verified: 2026-05-01*

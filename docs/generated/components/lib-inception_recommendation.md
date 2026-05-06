@@ -17,6 +17,13 @@ Returns 0 if file's `## Recommendation` body contains a real
 `**Recommendation:** GO|NO-GO|DEFER` line; 1 otherwise.
 find_inceptions_without_recommendation <active_dir>
 
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `C-004` | called_by |
+| `lib/inception.sh` | called_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-inception_recommendation.yaml`*
 *Last verified: 2026-05-04*

@@ -17,11 +17,12 @@ fw fabric deps      — dependencies for a file
 fw fabric search    — search by keyword
 fw fabric get       — show full component card
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_fabric.yaml`*

@@ -19,11 +19,13 @@ Output: JSON with additionalContext when banned tool detected, empty otherwise
 |--------|-------------|
 | `.claude/settings.json` | reads |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/context/block-task-tools.sh` | complements |
+| `tests/unit/audit_task_tools.bats` | called_by |
+| `tests/unit/audit_task_tools.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-audit-task-tools.yaml`*

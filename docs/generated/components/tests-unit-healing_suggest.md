@@ -11,11 +11,15 @@
 Unit tests for agents/healing/lib/suggest.sh
 Tests: do_suggest (scan for tasks with issues/blocked status)
 
-## Dependencies (1)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/healing/healing.sh` | calls |
+| `lib/yaml.sh` | calls |
+| `agents/healing/lib/suggest.sh` | calls |
+| `agents/healing/lib/suggest.sh` | tests |
+| `lib/yaml.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-healing_suggest.yaml`*

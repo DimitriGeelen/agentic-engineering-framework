@@ -28,7 +28,7 @@ When agent ACs are complete and human ACs remain:
 | `web/blueprints/inception.py` | calls |
 | `web/blueprints/inception.py` | registers |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -36,6 +36,7 @@ When agent ACs are complete and human ACs remain:
 | `web/blueprints/__init__.py` | registered_by |
 | `web/templates/_review_error.html` | used-by |
 | `web/templates/_review_error.html` | used-by_by |
+| `tests/playwright/test_review_acs.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-review.yaml`*

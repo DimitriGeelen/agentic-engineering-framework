@@ -17,6 +17,12 @@ Exit codes:
 0  baseline match
 1  drift: new unclassified tools (manual classification needed) or ratchet candidates
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `tests/unit/test_termlink_list_contract.py` | called_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-audit-orchestrator-mcp-scan.yaml`*
 *Last verified: 2026-05-01*

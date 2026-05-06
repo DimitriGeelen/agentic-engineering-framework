@@ -17,6 +17,13 @@ tests/unit/pre_push_version_monotonicity.bats (T-1603) — not duplicated here.
 Pattern (copied from T-1603's pre_push_version_monotonicity.bats):
 1. Spin a fresh temp git repo with mktemp
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `C-004` | calls |
+| `C-004` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-governance-test_git_hooks.yaml`*
 *Last verified: 2026-04-29*

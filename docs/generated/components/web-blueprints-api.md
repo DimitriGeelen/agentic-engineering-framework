@@ -15,12 +15,16 @@
 | `web/embeddings.py` | calls |
 | `web/search.py` | calls |
 
-## Used By (4)
+## Used By (8)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_api_ask_stream.py` | called_by |
+| `tests/playwright/test_api_index.py` | called_by |
+| `tests/playwright/test_api_search.py` | called_by |
+| `tests/playwright/test_ask.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-api.yaml`*

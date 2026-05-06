@@ -12,11 +12,15 @@ Unit tests for agents/git/lib/log.sh
 Tests: do_log (argument parsing, git log filtering, traceability),
 show_log_help, show_traceability
 
-## Dependencies (1)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/git/git.sh` | calls |
+| `agents/git/lib/common.sh` | calls |
+| `agents/git/lib/log.sh` | calls |
+| `agents/git/lib/log.sh` | tests |
+| `agents/git/lib/common.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-git_log.yaml`*

@@ -12,12 +12,15 @@ Project Memory - Patterns
 Accumulated patterns from working on this project.
 Grows over time as we learn from tasks.
 
-## Used By (2)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `learnings-route` | reads |
 | `C-003` | read_by |
+| `C-003` | called_by |
+| `lib/resolver.py` | called_by |
+| `web/blueprints/discovery.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `patterns-data.yaml`*

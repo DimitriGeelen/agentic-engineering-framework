@@ -11,11 +11,18 @@
 Unit tests for lib/version.sh
 Tests _read_fw_version(), do_version_bump (dry-run), do_version_check
 
-## Dependencies (1)
+## Dependencies (8)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/version.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/compat.sh` | calls |
+| `lib/errors.sh` | calls |
+| `lib/version.sh` | tests |
+| `lib/colors.sh` | tests |
+| `lib/compat.sh` | tests |
+| `lib/errors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_version.yaml`*

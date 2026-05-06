@@ -19,11 +19,13 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/fabric/fabric.sh` | calls |
+| `agents/fabric/fabric.sh` | tests |
+| `lib/config.sh` | tests |
 
 ## Related
 

@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1756: Re-parse historical PARSE-FAIL outcomes through T-1748 hardened parser
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T22:37:43Z
+# ============================================================================
+
+task_id: T-1756
+task_name: "Re-parse historical PARSE-FAIL outcomes through T-1748 hardened parser"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T22:32:50Z
+completed: 2026-05-05T22:37:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-06T00:37:05+02:00
+last_commit: 2026-05-06T00:37:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  back-prop 8 historical PARSE-FAIL outcomes via T-1748 parser. add RCA — bug-class detector triggered by PARSE-FAIL keyword
+
+# Key outcomes
+outcomes:
+  - "Tool: `tools/reparse-historical-parsefails.py` reads dispatch-outcomes.jsonl,"
+  - "Corrective outcomes are tagged distinguishably (`evaluator: escalation-scan-v0.5-replay`"
+  - "8 corrective rows present (5× false_positive: T-1123 T-1211 T-1351 T-1496 T-1729 T-985,"
+  - "Idempotent — second run reports `Idempotent: no new corrective outcomes`"
+  - "`fw orchestrator status --outcomes` shows replay evaluator separately"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "add RCA — bug-class detector triggered by PARSE-FAIL keyword"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Replay rows are appended with `replayed_from: <original_dispatch_id>`. The"
+    rationale: "Outcome substrate is event-log-shaped. Mutation breaks audit trail (can't"
+    alternatives_rejected: [""]
+    chose: "Replay rows use `evaluator: escalation-scan-v0.5-replay` so the existing"
+    rationale: "Zero changes to the aggregator code; users see at a glance how much of the"
+    alternatives_rejected: ["A `replay: true` field on the same evaluator — would require aggregator"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tools-reparse-historical-parsefails.yaml"
+  - ".tasks/active/T-1756-re-parse-historical-parse-fail-outcomes-.md"
+  - "tools/reparse-historical-parsefails.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T00:37:05"
+    action: "T-1756: back-prop 8 historical PARSE-FAIL outcomes via T-1748 parser"
+  - time: "2026-05-06T00:37:38"
+    action: "T-1756: add RCA — bug-class detector triggered by PARSE-FAIL keyword"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 3
+  lines_added: 340
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1756-re-parse-historical-parse-fail-outcomes-.md
+generated_by: context-agent-hybrid

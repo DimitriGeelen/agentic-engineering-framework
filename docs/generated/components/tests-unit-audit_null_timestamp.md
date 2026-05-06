@@ -13,12 +13,14 @@ T-1402: audit.sh METRICS_EOF heredoc must not crash when
 Origin: handover S-2026-0423-1623 emitted
 "AttributeError: 'NoneType' object has no attribute 'replace'" at <stdin>:108.
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/audit/audit.sh` | calls |
 | `.context/project/metrics-history.yaml` | reads |
+| `C-004` | calls |
+| `C-004` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_null_timestamp.yaml`*

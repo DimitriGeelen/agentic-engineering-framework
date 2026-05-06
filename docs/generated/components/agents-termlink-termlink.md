@@ -29,19 +29,27 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/config.sh` | calls |
+| `tools/ollama-tool-loop.py` | calls |
 
-## Used By (3)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/termlink.bats` | tested_by |
 | `tests/unit/termlink.bats` | called_by |
+| `tests/unit/termlink.bats` | tests_by |
+| `tests/unit/test_worker_kind_drift.bats` | called_by |
+| `tests/unit/test_worker_kind_drift.bats` | tests_by |
+| `tests/unit/test_workflow_env_isolation.bats` | called_by |
+| `tests/unit/test_workflow_env_isolation.bats` | tests_by |
+| `tests/unit/test_termlink_dispatch_task_type.py` | called_by |
+| `web/blueprints/orchestrator.py` | called_by |
 
 ## Related
 

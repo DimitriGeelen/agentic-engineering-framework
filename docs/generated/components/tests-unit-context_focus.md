@@ -13,11 +13,17 @@ Tests the do_focus() function:
 - No args: show current focus from focus.yaml
 - With arg: set focus to a task (validates existence, updates focus.yaml + session.yaml)
 
-## Dependencies (1)
+## Dependencies (7)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/context.sh` | calls |
+| `lib/compat.sh` | calls |
+| `lib/tasks.sh` | calls |
+| `agents/context/lib/focus.sh` | calls |
+| `agents/context/lib/focus.sh` | tests |
+| `lib/compat.sh` | tests |
+| `lib/tasks.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_focus.yaml`*

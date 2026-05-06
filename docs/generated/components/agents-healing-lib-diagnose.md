@@ -9,11 +9,19 @@
 Healing Agent - diagnose command
 Analyze task issues and suggest recovery actions
 
-## Used By (1)
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/ask.py` | calls |
+
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/healing/healing.sh` | called_by |
+| `tests/unit/healing_diagnose.bats` | called_by |
+| `tests/unit/healing_diagnose.bats` | tests_by |
 
 ## Documentation
 

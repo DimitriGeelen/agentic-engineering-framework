@@ -11,11 +11,16 @@
 Unit tests for lib/setup.sh
 Tests do_setup argument parsing and help
 
-## Dependencies (1)
+## Dependencies (6)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/setup.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/errors.sh` | calls |
+| `lib/setup.sh` | tests |
+| `lib/colors.sh` | tests |
+| `lib/errors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_setup.yaml`*

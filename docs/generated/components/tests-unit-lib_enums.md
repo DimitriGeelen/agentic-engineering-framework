@@ -12,11 +12,12 @@ Unit tests for lib/enums.sh
 Tests validation functions: is_valid_status, is_valid_type,
 is_valid_horizon, is_valid_transition, valid_transitions_for
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/enums.sh` | calls |
+| `lib/enums.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_enums.yaml`*

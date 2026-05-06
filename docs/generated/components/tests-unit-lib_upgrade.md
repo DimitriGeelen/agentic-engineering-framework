@@ -9,11 +9,14 @@
 Unit tests for lib/upgrade.sh
 Tests do_upgrade argument parsing, help, and guards
 
-## Dependencies (1)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/upgrade.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/upgrade.sh` | tests |
+| `lib/colors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_upgrade.yaml`*

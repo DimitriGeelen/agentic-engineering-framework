@@ -16,6 +16,16 @@ These tests pin the invariant: every TermLink-routed kind in
 VALID_WORKER_KINDS has a matching case in termlink.sh's --worker-kind
 acceptor. Adding a kind to one without the other now fails loudly.
 
+## Dependencies (5)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/termlink/termlink.sh` | calls |
+| `tools/ollama-tool-loop.py` | calls |
+| `agents/termlink/termlink.sh` | tests |
+| `tools/ollama-tool-loop.py` | tests |
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_worker_kind_drift.yaml`*
 *Last verified: 2026-05-03*

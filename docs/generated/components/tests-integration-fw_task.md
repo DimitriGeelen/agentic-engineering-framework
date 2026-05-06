@@ -14,11 +14,12 @@ fw task create   — create a new task
 fw task update   — update task status
 fw task list     — list active tasks
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_task.yaml`*

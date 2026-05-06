@@ -11,6 +11,12 @@
 Source termlink.sh inside a subshell that ignores its trailing
 "wrong-call" exit; we only want the function definitions.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/termlink/termlink.sh` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_termlink_dispatch_task_type.yaml`*
 *Last verified: 2026-05-01*

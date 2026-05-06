@@ -11,11 +11,12 @@
 Unit tests for agents/observe/observe.sh (fw note)
 Origin: T-932, T-943 (isolation fix)
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/observe/observe.sh` | calls |
+| `agents/observe/observe.sh` | tests |
 
 ## Related
 

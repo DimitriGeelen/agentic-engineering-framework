@@ -11,11 +11,16 @@
 Unit tests for lib/assumption.sh
 Tests do_assumption routing, help, validation, ensure_assumptions_file
 
-## Dependencies (1)
+## Dependencies (6)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/assumption.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/errors.sh` | calls |
+| `lib/assumption.sh` | tests |
+| `lib/colors.sh` | tests |
+| `lib/errors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_assumption.yaml`*

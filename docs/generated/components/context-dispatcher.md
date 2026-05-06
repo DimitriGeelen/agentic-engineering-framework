@@ -34,7 +34,7 @@ Usage:
 | `agents/context/lib/focus.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (13)
+## Used By (15)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -51,6 +51,8 @@ Usage:
 | `tests/unit/context_learning.bats` | called-by |
 | `tests/unit/context_episodic.bats` | called-by |
 | `tests/unit/context_pattern.bats` | called-by |
+| `tests/unit/update_task_episodic_gen.bats` | called_by |
+| `tests/unit/update_task_episodic_gen.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-dispatcher.yaml`*

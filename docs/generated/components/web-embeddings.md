@@ -18,7 +18,7 @@ Configuration (T-273: config-driven, no hardcoded paths)
 | `web/shared.py` | calls |
 | `web/search.py` | calls |
 
-## Used By (4)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -26,6 +26,8 @@ Configuration (T-273: config-driven, no hardcoded paths)
 | `web/app.py` | called_by |
 | `web/blueprints/api.py` | called_by |
 | `web/blueprints/discovery.py` | called_by |
+| `web/search_utils.py` | called_by |
+| `lib/ask.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-embeddings.yaml`*

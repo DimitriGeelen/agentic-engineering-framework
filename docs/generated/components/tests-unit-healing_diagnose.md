@@ -14,11 +14,13 @@ Note: classify_failure uses `declare -A` associative arrays which are
 scoped locally when sourced inside bats functions. We use bash -c
 subprocesses to ensure proper scoping of the associative array.
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/healing/healing.sh` | calls |
+| `agents/healing/lib/diagnose.sh` | calls |
+| `agents/healing/lib/diagnose.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-healing_diagnose.yaml`*

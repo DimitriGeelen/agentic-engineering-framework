@@ -22,7 +22,7 @@ Conditions: ?git (requires .git), ?claude,generic (provider match)
 |--------|-------------|
 | `lib/init.sh` | reads |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -30,6 +30,7 @@ Conditions: ?git (requires .git), ?claude,generic (provider match)
 | `lib/init.sh` | called_by |
 | `tests/unit/lib_validate_init.bats` | called-by |
 | `tests/unit/lib_validate_init.bats` | called_by |
+| `tests/unit/lib_validate_init.bats` | tests_by |
 
 ## Related
 

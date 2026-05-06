@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1757: fw orchestrator status outcomes — dedupe by dispatch_id, prefer latest evaluator
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T22:41:55Z
+# ============================================================================
+
+task_id: T-1757
+task_name: "fw orchestrator status outcomes — dedupe by dispatch_id, prefer latest evaluator"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T22:38:24Z
+completed: 2026-05-05T22:41:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-06T00:41:44+02:00
+last_commit: 2026-05-06T00:41:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  orchestrator status outcomes — dedupe by dispatch_id (latest wins)
+
+# Key outcomes
+outcomes:
+  - "`_aggregate_outcomes_by_task_type` in bin/fw groups outcomes by `dispatch_id`,"
+  - "After fix: `fw orchestrator status --outcomes` shows escalation-triage with"
+  - "Total outcome count for escalation-triage drops 221 → 191 (collapses 30 duplicate"
+  - "Unit test: `tests/unit/test_orchestrator_outcome_dedup.py` — 4/4 pass (replay"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Substrate stays append-only; the dedup happens in `_aggregate_outcomes_by_task_type`"
+    rationale: "The audit trail \"we used to think X, then re-evaluated and got Y\" is valuable"
+    alternatives_rejected: ["Mutate the substrate to mark superseded rows — would require in-place"]
+    chose: "`(o.get(\"ts\") or \"\") > (prev.get(\"ts\") or \"\")` — lexicographic compare"
+    rationale: "All ts values are ISO 8601 with timezone; lexicographic equals chronological"
+    alternatives_rejected: ["`datetime.fromisoformat()` — adds parsing cost and a potential failure"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".fabric/components/tests-unit-test_orchestrator_outcome_dedup.yaml"
+  - ".tasks/active/T-1757-fw-orchestrator-status-outcomes--dedupe-.md"
+  - ".tasks/completed/T-1756-re-parse-historical-parse-fail-outcomes-.md"
+  - "tests/unit/test_orchestrator_outcome_dedup.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T00:41:44"
+    action: "T-1757: orchestrator status outcomes — dedupe by dispatch_id (latest wins)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 5
+  lines_added: 302
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1757-fw-orchestrator-status-outcomes--dedupe-.md
+generated_by: context-agent-hybrid

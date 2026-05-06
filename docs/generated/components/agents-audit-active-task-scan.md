@@ -8,11 +8,13 @@
 
 Results
 
-## Used By (1)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-004` | called_by |
+| `tests/unit/audit_scan.bats` | called_by |
+| `tests/unit/audit_scan.bats` | tests_by |
 
 ## Related
 

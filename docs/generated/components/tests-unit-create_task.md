@@ -11,11 +11,12 @@
 Unit tests for agents/task-create/create-task.sh
 Origin: T-921
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/task-create/create-task.sh` | calls |
+| `agents/task-create/create-task.sh` | tests |
 
 ## Related
 

@@ -8,19 +8,21 @@
 
 Cron files managed by the framework
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/templates/cron.html` | renders |
+| `bin/fw` | calls |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_api_cron_jobs.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-cron.yaml`*

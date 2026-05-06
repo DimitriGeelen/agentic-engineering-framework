@@ -10,11 +10,13 @@
 
 Unit tests for fw verify-acs (T-824)
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/verify-acs.sh` | calls |
+| `lib/verify-acs.sh` | tests |
+| `bin/fw` | tests |
 
 ## Related
 

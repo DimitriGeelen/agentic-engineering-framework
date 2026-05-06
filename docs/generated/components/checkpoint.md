@@ -39,7 +39,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | `lib/paths.sh` | calls |
 | `lib/config.sh` | calls |
 
-## Used By (8)
+## Used By (13)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -51,6 +51,11 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | `C-009` | triggers_by |
 | `agents/context/session-metrics.sh` | called-by |
 | `tests/unit/checkpoint.bats` | called-by |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| `tests/unit/checkpoint.bats` | called_by |
+| `tests/unit/checkpoint.bats` | tests_by |
+| `tests/unit/handover_push_timeout.bats` | called_by |
+| `tests/unit/handover_push_timeout.bats` | tests_by |
 
 ## Documentation
 

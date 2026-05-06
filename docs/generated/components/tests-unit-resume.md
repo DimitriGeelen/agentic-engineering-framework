@@ -11,11 +11,12 @@
 Unit tests for agents/resume/resume.sh
 Origin: T-922
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/resume/resume.sh` | calls |
+| `agents/resume/resume.sh` | tests |
 
 ## Related
 

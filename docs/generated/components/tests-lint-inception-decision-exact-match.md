@@ -9,10 +9,11 @@
 Invariant: inception decision writer uses exact match on "## Decision"
 Origin: T-1202/T-1200 — startswith('## Decision') matched both ## Decisions and ## Decision
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
+| `lib/inception.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-inception-decision-exact-match.yaml`*

@@ -13,6 +13,13 @@ in chat after a lease move ends up 404ing from LAN clients.
 Witness: 2026-04-30 on host `dimitrimintdev` — NetworkManager DHCP-bounced
 enp5s0 between .123 and .107 8x in one day; file held .123 for hours.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/watchtower.sh` | calls |
+| `bin/watchtower.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-watchtower_url_refresh.yaml`*
 *Last verified: 2026-04-30*

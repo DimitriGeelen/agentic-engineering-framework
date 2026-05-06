@@ -13,11 +13,12 @@ Tests the primary workflow entry point:
 fw work-on "name" --type build   — create task + set focus + start
 fw work-on T-XXX                 — resume existing task
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_work_on.yaml`*

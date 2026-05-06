@@ -20,12 +20,13 @@ Singleton registry and adapter map (initialized on first use)
 | `web/terminal/session.py` | calls |
 | `web/templates/terminal.html` | renders |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_api_termlink.py` | called_by |
 
 ## Related
 

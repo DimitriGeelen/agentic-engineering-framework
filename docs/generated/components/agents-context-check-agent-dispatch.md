@@ -27,6 +27,12 @@ Enforcement:
 | `lib/paths.sh` | calls |
 | `lib/config.sh` | calls |
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+
 ## Related
 
 ### Tasks

@@ -9,11 +9,13 @@
 Healing Agent - suggest command
 Get suggestions for all tasks with issues
 
-## Used By (1)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/healing/healing.sh` | called_by |
+| `tests/unit/healing_suggest.bats` | called_by |
+| `tests/unit/healing_suggest.bats` | tests_by |
 
 ## Related
 

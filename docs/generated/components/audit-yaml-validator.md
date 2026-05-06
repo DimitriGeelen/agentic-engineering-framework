@@ -19,7 +19,7 @@ audit.sh --cron                       # Shorthand for --output .context/audits/c
 audit.sh schedule install|remove|status  # Manage cron schedule
 Sections: structure, compliance, quality, traceability, enforcement,
 
-## Dependencies (10)
+## Dependencies (12)
 
 | Target | Relationship |
 |--------|-------------|
@@ -33,8 +33,10 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | `agents/audit/active-task-scan.py` | calls |
 | `agents/audit/completed-task-scan.py` | calls |
 | `lib/watchtower.sh` | calls |
+| `lib/inception_recommendation.sh` | calls |
+| `lib/hook-threshold.py` | calls |
 
-## Used By (5)
+## Used By (15)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -43,6 +45,16 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | `bin/fw` | called_by |
 | `agents/onboarding-test/test-onboarding.sh` | called_by |
 | `tests/unit/audit.bats` | tested_by |
+| `tests/governance/test_git_hooks.bats` | called_by |
+| `tests/governance/test_git_hooks.bats` | tests_by |
+| `tests/unit/audit.bats` | called_by |
+| `tests/unit/audit.bats` | tests_by |
+| `tests/unit/audit_flock.bats` | called_by |
+| `tests/unit/audit_flock.bats` | tests_by |
+| `tests/unit/audit_null_timestamp.bats` | called_by |
+| `tests/unit/audit_null_timestamp.bats` | tests_by |
+| `tests/unit/lib_pickup.bats` | tests_by |
+| `tests/unit/test_enrich_bats_parser.py` | called_by |
 
 ## Related
 

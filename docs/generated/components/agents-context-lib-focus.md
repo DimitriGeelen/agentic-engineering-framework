@@ -9,7 +9,13 @@
 Context Agent - focus command
 Set or show current task focus
 
-## Used By (4)
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/ask.py` | calls |
+
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -17,6 +23,8 @@ Set or show current task focus
 | `capture-skill` | read_by |
 | `agents/context/context.sh` | called-by |
 | `.claude/commands/capture.md` | used-by |
+| `tests/unit/context_focus.bats` | called_by |
+| `tests/unit/context_focus.bats` | tests_by |
 
 ## Documentation
 

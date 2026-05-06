@@ -6,6 +6,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/costs.sh` | calls |
+
 ## Used By (1)
 
 | Component | Relationship |

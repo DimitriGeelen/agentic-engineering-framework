@@ -21,11 +21,12 @@
 | `agents/context/pre-compact.sh` | triggers |
 | `agents/context/post-compact-resume.sh` | triggers |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/audit/self-audit.sh` | read_by |
+| `web/blueprints/enforcement.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `hook-config.yaml`*

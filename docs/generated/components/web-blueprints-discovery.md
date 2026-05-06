@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (12)
+## Dependencies (13)
 
 | Target | Relationship |
 |--------|-------------|
@@ -24,6 +24,7 @@
 | `web/templates/feedback_analytics.html` | renders |
 | `web/templates/patterns.html` | renders |
 | `web/templates/graduation.html` | renders |
+| `F-002` | calls |
 
 ## Used By (7)
 

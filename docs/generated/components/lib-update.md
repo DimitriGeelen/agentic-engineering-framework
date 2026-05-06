@@ -12,13 +12,14 @@ re-vendors from there. Uses upstream_repo from .framework.yaml.
 Global installs (~/.agentic-framework with .git): fetches and resets
 to latest upstream (legacy path, pre-T-499).
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/lib_update.bats` | called-by |
 | `tests/unit/lib_update.bats` | called_by |
+| `tests/unit/lib_update.bats` | tests_by |
 
 ## Related
 

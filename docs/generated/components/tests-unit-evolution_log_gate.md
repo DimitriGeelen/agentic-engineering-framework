@@ -13,6 +13,13 @@ under bats `run`, same lesson as T-1716 audit_c006 tests).
 Gate-integration tested via direct invocation of check_evolution_log
 with mocked NEW_STATUS / TASK_FILE / SKIP_EVOLUTION.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/evolution_log.sh` | calls |
+| `lib/evolution_log.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-evolution_log_gate.yaml`*
 *Last verified: 2026-05-04*

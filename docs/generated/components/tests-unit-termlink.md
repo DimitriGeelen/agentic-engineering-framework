@@ -25,11 +25,12 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/termlink/termlink.sh` | calls |
+| `agents/termlink/termlink.sh` | tests |
 
 ## Related
 

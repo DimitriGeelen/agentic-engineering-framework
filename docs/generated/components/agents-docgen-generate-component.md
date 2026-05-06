@@ -22,13 +22,14 @@ Output: docs/generated/components/{card-name}.md
 | `agents/docgen/generate_component.py` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/docgen_component.bats` | tested_by |
 | `tests/unit/docgen_component.bats` | called_by |
+| `tests/unit/docgen_component.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-docgen-generate-component.yaml`*

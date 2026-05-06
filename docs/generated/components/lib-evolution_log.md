@@ -17,6 +17,14 @@ Used by:
 - (future) lib/evolution_log.sh sweep mode
 Public functions:
 
+## Used By (3)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/task-create/update-task.sh` | called_by |
+| `tests/unit/evolution_log_gate.bats` | called_by |
+| `tests/unit/evolution_log_gate.bats` | tests_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-evolution_log.yaml`*
 *Last verified: 2026-05-04*

@@ -12,11 +12,12 @@ Integration tests for fw doctor subcommand
 Tests the CLI interface for framework health check:
 fw doctor — run all health checks
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_doctor.yaml`*

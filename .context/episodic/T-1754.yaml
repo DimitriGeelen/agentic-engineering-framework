@@ -1,0 +1,331 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1754: fabric enrich — add .bats parser + standalone tag for orphan scripts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-05T22:11:25Z
+# ============================================================================
+
+task_id: T-1754
+task_name: "fabric enrich — add .bats parser + standalone tag for orphan scripts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T22:02:05Z
+completed: 2026-05-05T22:11:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-06T00:10:30+02:00
+last_commit: 2026-05-06T00:11:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric enrich — .bats parser + standalone flag (84→33 edgeless, -67%). fix verification — collapse multiline python heredoc to single line
+
+# Key outcomes
+outcomes:
+  - "`agents/fabric/lib/enrich.py` recognises `.bats` files (new `detect_bats_deps`, dispatch"
+  - "Unit tests cover the bats parser: 9 cases in `tests/unit/test_enrich_bats_parser.py` (var"
+  - "`bin/fw fabric enrich` after change reduces edgeless count by ≥40 (84 → 33, -51)"
+  - "7 standalone probes/tools tagged with `standalone: true` (4 tools/probes + gpu-recover +"
+  - "`bin/fw audit` shows the WARN line below 45 cards (was 100/543 → now 33/536, -67%;"
+  - "`bin/fw fabric drift` clean (unregistered: 0, orphaned: 0, stale: 14 — pre-existing)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix verification — collapse multiline python heredoc to single line"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Edges from bats files use `type: \"tests\"` (semantic — this is a test of X)"
+    rationale: "Reverse-edge readers can filter \"what tests me?\" via `tests` type; `calls` already"
+    alternatives_rejected: ["Reuse `calls` — would conflate test-coverage edges with runtime invocations"]
+    chose: "Audit excludes cards with `standalone: true` from edgeless count"
+    rationale: "Probe scripts (t1700-t1706, gpu-recover, api-usage) are standalone by design —"
+    alternatives_rejected: ["Force every card to have ≥1 edge — would require adding fake `bin/fw` edges"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/fabric/lib/enrich.py"
+  - ".fabric/components/add-learning.yaml"
+  - ".fabric/components/agents-audit-active-task-scan.yaml"
+  - ".fabric/components/agents-audit-completed-task-scan.yaml"
+  - ".fabric/components/agents-context-audit-task-tools.yaml"
+  - ".fabric/components/agents-context-block-task-tools.yaml"
+  - ".fabric/components/agents-context-check-active-task.yaml"
+  - ".fabric/components/agents-context-check-agent-dispatch.yaml"
+  - ".fabric/components/agents-context-check-project-boundary.yaml"
+  - ".fabric/components/agents-context-check-tier0.yaml"
+  - ".fabric/components/agents-context-lib-decision.yaml"
+  - ".fabric/components/agents-context-lib-episodic.yaml"
+  - ".fabric/components/agents-context-lib-focus.yaml"
+  - ".fabric/components/agents-context-lib-init.yaml"
+  - ".fabric/components/agents-context-lib-pattern.yaml"
+  - ".fabric/components/agents-context-lib-safe-commands.yaml"
+  - ".fabric/components/agents-context-lib-status.yaml"
+  - ".fabric/components/agents-context-post-compact-resume.yaml"
+  - ".fabric/components/agents-context-pre-compact.yaml"
+  - ".fabric/components/agents-docgen-generate-article.yaml"
+  - ".fabric/components/agents-docgen-generate-component.yaml"
+  - ".fabric/components/agents-fabric-fabric.yaml"
+  - ".fabric/components/agents-git-lib-common.yaml"
+  - ".fabric/components/agents-git-lib-hooks.yaml"
+  - ".fabric/components/agents-git-lib-log.yaml"
+  - ".fabric/components/agents-gpu-recover-recover.yaml"
+  - ".fabric/components/agents-handover-handover.yaml"
+  - ".fabric/components/agents-healing-lib-diagnose.yaml"
+  - ".fabric/components/agents-healing-lib-suggest.yaml"
+  - ".fabric/components/agents-metrics-api-usage.yaml"
+  - ".fabric/components/agents-monitor-watchtower-rss-sample.yaml"
+  - ".fabric/components/agents-observe-observe.yaml"
+  - ".fabric/components/agents-resume-resume.yaml"
+  - ".fabric/components/agents-task-create-create-task.yaml"
+  - ".fabric/components/agents-task-create-update-task.yaml"
+  - ".fabric/components/agents-termlink-termlink.yaml"
+  - ".fabric/components/audit-yaml-validator.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/bin-hook-enable.yaml"
+  - ".fabric/components/bin-watchtower.yaml"
+  - ".fabric/components/budget-gate.yaml"
+  - ".fabric/components/checkpoint.yaml"
+  - ".fabric/components/context-dispatcher.yaml"
+  - ".fabric/components/lib-ask.yaml"
+  - ".fabric/components/lib-assumption.yaml"
+  - ".fabric/components/lib-build.yaml"
+  - ".fabric/components/lib-bus.yaml"
+  - ".fabric/components/lib-colors.yaml"
+  - ".fabric/components/lib-compat.yaml"
+  - ".fabric/components/lib-config-file.yaml"
+  - ".fabric/components/lib-config.yaml"
+  - ".fabric/components/lib-costs.yaml"
+  - ".fabric/components/lib-dispatch.yaml"
+  - ".fabric/components/lib-enums.yaml"
+  - ".fabric/components/lib-errors.yaml"
+  - ".fabric/components/lib-evolution_log.yaml"
+  - ".fabric/components/lib-firewall.yaml"
+  - ".fabric/components/lib-first-run.yaml"
+  - ".fabric/components/lib-harvest.yaml"
+  - ".fabric/components/lib-hook-telemetry.yaml"
+  - ".fabric/components/lib-hook-threshold.yaml"
+  - ".fabric/components/lib-inception.yaml"
+  - ".fabric/components/lib-init.yaml"
+  - ".fabric/components/lib-keylock.yaml"
+  - ".fabric/components/lib-mirror.yaml"
+  - ".fabric/components/lib-notify.yaml"
+  - ".fabric/components/lib-paths.yaml"
+  - ".fabric/components/lib-pickup.yaml"
+  - ".fabric/components/lib-preflight.yaml"
+  - ".fabric/components/lib-promote.yaml"
+  - ".fabric/components/lib-review.yaml"
+  - ".fabric/components/lib-runtime.yaml"
+  - ".fabric/components/lib-setup.yaml"
+  - ".fabric/components/lib-task-audit.yaml"
+  - ".fabric/components/lib-tasks.yaml"
+  - ".fabric/components/lib-update.yaml"
+  - ".fabric/components/lib-upgrade.yaml"
+  - ".fabric/components/lib-upstream.yaml"
+  - ".fabric/components/lib-validate-init.yaml"
+  - ".fabric/components/lib-verify-acs.yaml"
+  - ".fabric/components/lib-version.yaml"
+  - ".fabric/components/lib-yaml.yaml"
+  - ".fabric/components/tests-governance-test_git_hooks.yaml"
+  - ".fabric/components/tests-governance-test_pretooluse_gates.yaml"
+  - ".fabric/components/tests-governance-test_task_lifecycle_gates.yaml"
+  - ".fabric/components/tests-integration-audit_blocks_review_and_decide.yaml"
+  - ".fabric/components/tests-integration-cron_install.yaml"
+  - ".fabric/components/tests-integration-fw_approvals.yaml"
+  - ".fabric/components/tests-integration-fw_assumption.yaml"
+  - ".fabric/components/tests-integration-fw_audit.yaml"
+  - ".fabric/components/tests-integration-fw_bus.yaml"
+  - ".fabric/components/tests-integration-fw_config.yaml"
+  - ".fabric/components/tests-integration-fw_context.yaml"
+  - ".fabric/components/tests-integration-fw_costs.yaml"
+  - ".fabric/components/tests-integration-fw_cron.yaml"
+  - ".fabric/components/tests-integration-fw_decisions.yaml"
+  - ".fabric/components/tests-integration-fw_doctor.yaml"
+  - ".fabric/components/tests-integration-fw_fabric.yaml"
+  - ".fabric/components/tests-integration-fw_fix_learned.yaml"
+  - ".fabric/components/tests-integration-fw_gaps.yaml"
+  - ".fabric/components/tests-integration-fw_git.yaml"
+  - ".fabric/components/tests-integration-fw_handover.yaml"
+  - ".fabric/components/tests-integration-fw_harvest.yaml"
+  - ".fabric/components/tests-integration-fw_healing.yaml"
+  - ".fabric/components/tests-integration-fw_help.yaml"
+  - ".fabric/components/tests-integration-fw_hook.yaml"
+  - ".fabric/components/tests-integration-fw_inception.yaml"
+  - ".fabric/components/tests-integration-fw_init.yaml"
+  - ".fabric/components/tests-integration-fw_learnings.yaml"
+  - ".fabric/components/tests-integration-fw_metrics.yaml"
+  - ".fabric/components/tests-integration-fw_notify.yaml"
+  - ".fabric/components/tests-integration-fw_onboarding.yaml"
+  - ".fabric/components/tests-integration-fw_patterns.yaml"
+  - ".fabric/components/tests-integration-fw_pickup.yaml"
+  - ".fabric/components/tests-integration-fw_practices.yaml"
+  - ".fabric/components/tests-integration-fw_preflight.yaml"
+  - ".fabric/components/tests-integration-fw_promote.yaml"
+  - ".fabric/components/tests-integration-fw_resume.yaml"
+  - ".fabric/components/tests-integration-fw_search.yaml"
+  - ".fabric/components/tests-integration-fw_self_test.yaml"
+  - ".fabric/components/tests-integration-fw_task.yaml"
+  - ".fabric/components/tests-integration-fw_tier0.yaml"
+  - ".fabric/components/tests-integration-fw_timeline.yaml"
+  - ".fabric/components/tests-integration-fw_traceability.yaml"
+  - ".fabric/components/tests-integration-fw_upstream.yaml"
+  - ".fabric/components/tests-integration-fw_validate_init.yaml"
+  - ".fabric/components/tests-integration-fw_vendor.yaml"
+  - ".fabric/components/tests-integration-fw_version.yaml"
+  - ".fabric/components/tests-integration-fw_work_on.yaml"
+  - ".fabric/components/tests-lint-inception-decision-exact-match.yaml"
+  - ".fabric/components/tests-lint-no-bare-fw-in-gate-scripts.yaml"
+  - ".fabric/components/tests-playwright-test_escalation_v05.yaml"
+  - ".fabric/components/tests-unit-add_learning_id_allocator.yaml"
+  - ".fabric/components/tests-unit-audit_flock.yaml"
+  - ".fabric/components/tests-unit-audit_null_timestamp.yaml"
+  - ".fabric/components/tests-unit-audit_scan.yaml"
+  - ".fabric/components/tests-unit-audit_task_tools.yaml"
+  - ".fabric/components/tests-unit-audit.yaml"
+  - ".fabric/components/tests-unit-block_task_tools.yaml"
+  - ".fabric/components/tests-unit-checkpoint.yaml"
+  - ".fabric/components/tests-unit-context_decision.yaml"
+  - ".fabric/components/tests-unit-context_episodic.yaml"
+  - ".fabric/components/tests-unit-context_focus.yaml"
+  - ".fabric/components/tests-unit-context_init.yaml"
+  - ".fabric/components/tests-unit-context_learning.yaml"
+  - ".fabric/components/tests-unit-context_pattern.yaml"
+  - ".fabric/components/tests-unit-context_safe_commands.yaml"
+  - ".fabric/components/tests-unit-context_status.yaml"
+  - ".fabric/components/tests-unit-create_task.yaml"
+  - ".fabric/components/tests-unit-cron_flock_parity.yaml"
+  - ".fabric/components/tests-unit-docgen_article.yaml"
+  - ".fabric/components/tests-unit-docgen_component.yaml"
+  - ".fabric/components/tests-unit-doctor_duplicate_hook_detection.yaml"
+  - ".fabric/components/tests-unit-doctor_hook_exercise.yaml"
+  - ".fabric/components/tests-unit-escalation_scan_v05.yaml"
+  - ".fabric/components/tests-unit-evolution_log_gate.yaml"
+  - ".fabric/components/tests-unit-fabric.yaml"
+  - ".fabric/components/tests-unit-focus_drift_gate.yaml"
+  - ".fabric/components/tests-unit-git_common.yaml"
+  - ".fabric/components/tests-unit-git_log.yaml"
+  - ".fabric/components/tests-unit-handover_push_no_origin.yaml"
+  - ".fabric/components/tests-unit-handover_push_timeout.yaml"
+  - ".fabric/components/tests-unit-handover_t012_active_only.yaml"
+  - ".fabric/components/tests-unit-handover.yaml"
+  - ".fabric/components/tests-unit-healing_diagnose.yaml"
+  - ".fabric/components/tests-unit-healing_suggest.yaml"
+  - ".fabric/components/tests-unit-hook_absolute_paths.yaml"
+  - ".fabric/components/tests-unit-hook_enable_absolute_path.yaml"
+  - ".fabric/components/tests-unit-hook_telemetry.yaml"
+  - ".fabric/components/tests-unit-hook_threshold.yaml"
+  - ".fabric/components/tests-unit-inception_decide_ac_tick.yaml"
+  - ".fabric/components/tests-unit-inception_decide_atomicity.yaml"
+  - ".fabric/components/tests-unit-inception_tick_decision_recorded.yaml"
+  - ".fabric/components/tests-unit-inception_tick_marker.yaml"
+  - ".fabric/components/tests-unit-keylock_subshell_close.yaml"
+  - ".fabric/components/tests-unit-lib_ask.yaml"
+  - ".fabric/components/tests-unit-lib_assumption.yaml"
+  - ".fabric/components/tests-unit-lib_build.yaml"
+  - ".fabric/components/tests-unit-lib_bus.yaml"
+  - ".fabric/components/tests-unit-lib_colors.yaml"
+  - ".fabric/components/tests-unit-lib_compat.yaml"
+  - ".fabric/components/tests-unit-lib_config_file.yaml"
+  - ".fabric/components/tests-unit-lib_config.yaml"
+  - ".fabric/components/tests-unit-lib_costs.yaml"
+  - ".fabric/components/tests-unit-lib_dispatch.yaml"
+  - ".fabric/components/tests-unit-lib_enums.yaml"
+  - ".fabric/components/tests-unit-lib_errors.yaml"
+  - ".fabric/components/tests-unit-lib_firewall.yaml"
+  - ".fabric/components/tests-unit-lib_first_run.yaml"
+  - ".fabric/components/tests-unit-lib_harvest.yaml"
+  - ".fabric/components/tests-unit-lib_inception.yaml"
+  - ".fabric/components/tests-unit-lib_init.yaml"
+  - ".fabric/components/tests-unit-lib_keylock.yaml"
+  - ".fabric/components/tests-unit-lib_notify.yaml"
+  - ".fabric/components/tests-unit-lib_paths.yaml"
+  - ".fabric/components/tests-unit-lib_pickup.yaml"
+  - ".fabric/components/tests-unit-lib_preflight.yaml"
+  - ".fabric/components/tests-unit-lib_promote.yaml"
+  - ".fabric/components/tests-unit-lib_review.yaml"
+  - ".fabric/components/tests-unit-lib_runtime.yaml"
+  - ".fabric/components/tests-unit-lib_setup.yaml"
+  - ".fabric/components/tests-unit-lib_task_audit.yaml"
+  - ".fabric/components/tests-unit-lib_tasks.yaml"
+  - ".fabric/components/tests-unit-lib_update.yaml"
+  - ".fabric/components/tests-unit-lib_upgrade.yaml"
+  - ".fabric/components/tests-unit-lib_upstream.yaml"
+  - ".fabric/components/tests-unit-lib_validate_init.yaml"
+  - ".fabric/components/tests-unit-lib_version.yaml"
+  - ".fabric/components/tests-unit-lib_yaml.yaml"
+  - ".fabric/components/tests-unit-observe.yaml"
+  - ".fabric/components/tests-unit-pickup_send_remote_session.yaml"
+  - ".fabric/components/tests-unit-pickup_type_routing.yaml"
+  - ".fabric/components/tests-unit-pre_compact_flock.yaml"
+  - ".fabric/components/tests-unit-pre_compact_timewindow_dedup.yaml"
+  - ".fabric/components/tests-unit-resume.yaml"
+  - ".fabric/components/tests-unit-session_start_hook_warning.yaml"
+  - ".fabric/components/tests-unit-skip_ac_partial_complete.yaml"
+  - ".fabric/components/tests-unit-task_id_race.yaml"
+  - ".fabric/components/tests-unit-task_reid.yaml"
+  - ".fabric/components/tests-unit-termlink.yaml"
+  - ".fabric/components/tests-unit-test_boundary_hook_arguments.yaml"
+  - ".fabric/components/tests-unit-test_doctor_litellm_ollama.yaml"
+  - ".fabric/components/tests-unit-test_doctor_scope_tags.yaml"
+  - ".fabric/components/tests-unit-test_enrich_bats_parser.yaml"
+  - ".fabric/components/tests-unit-test_fw_gaps_closure_check.yaml"
+  - ".fabric/components/tests-unit-test_mirror_sync.yaml"
+  - ".fabric/components/tests-unit-test_orchestrator_status_synthetic_filter.yaml"
+  - ".fabric/components/tests-unit-test_worker_kind_drift.yaml"
+  - ".fabric/components/tests-unit-test_workflow_env_isolation.yaml"
+  - ".fabric/components/tests-unit-tier0_hash_normalization.yaml"
+  - ".fabric/components/tests-unit-update_task_episodic_gen.yaml"
+  - ".fabric/components/tests-unit-update_task.yaml"
+  - ".fabric/components/tests-unit-update_task_yaml_components_emit.yaml"
+  - ".fabric/components/tests-unit-upgrade_dedupe_user_hooks.yaml"
+  - ".fabric/components/tests-unit-upgrade_duplicate_hook_detection.yaml"
+  - ".fabric/components/tests-unit-verify_acs.yaml"
+  - ".fabric/components/tests-unit-watchtower_url_refresh.yaml"
+  - ".fabric/components/tests-unit-yaml_pipefail.yaml"
+  - ".fabric/components/tools-escalation-scan-v0-5.yaml"
+  - ".fabric/components/tools-g064-readiness.yaml"
+  - ".fabric/components/tools-ollama-tool-loop.yaml"
+  - ".fabric/components/tools-t1700-ollama-harness.yaml"
+  - ".fabric/components/tools-t1703-probe-matrix.yaml"
+  - ".fabric/components/tools-t1704-hermes3-probe.yaml"
+  - ".fabric/components/tools-t1706-tool-loop-probe.yaml"
+  - ".tasks/active/T-1754-fabric-enrich--add-bats-parser--standalo.md"
+  - ".tasks/completed/T-1753-fabric-enrich--close-audit-warn-on-10054.md"
+  - "tests/unit/test_enrich_bats_parser.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T00:10:30"
+    action: "T-1754: fabric enrich — .bats parser + standalone flag (84→33 edgeless, -67%)"
+  - time: "2026-05-06T00:11:13"
+    action: "T-1754: fix verification — collapse multiline python heredoc to single line"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 249
+  lines_added: 2902
+  lines_removed: 1402
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1754-fabric-enrich--add-bats-parser--standalo.md
+generated_by: context-agent-hybrid

@@ -20,7 +20,7 @@ Scripts that source lib/paths.sh get colors for free.
 |--------|-------------|
 | `lib/colors.sh` | calls |
 
-## Used By (8)
+## Used By (43)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -32,6 +32,41 @@ Scripts that source lib/paths.sh get colors for free.
 | `lib/colors.sh` | called_by |
 | `lib/costs.sh` | called_by |
 | `tests/unit/lib_colors.bats` | called_by |
+| `tests/unit/inception_decide_ac_tick.bats` | called_by |
+| `tests/unit/inception_decide_ac_tick.bats` | tests_by |
+| `tests/unit/inception_decide_atomicity.bats` | called_by |
+| `tests/unit/inception_decide_atomicity.bats` | tests_by |
+| `tests/unit/inception_tick_decision_recorded.bats` | called_by |
+| `tests/unit/inception_tick_decision_recorded.bats` | tests_by |
+| `tests/unit/inception_tick_marker.bats` | called_by |
+| `tests/unit/inception_tick_marker.bats` | tests_by |
+| `tests/unit/lib_assumption.bats` | called_by |
+| `tests/unit/lib_assumption.bats` | tests_by |
+| `tests/unit/lib_bus.bats` | called_by |
+| `tests/unit/lib_bus.bats` | tests_by |
+| `tests/unit/lib_colors.bats` | tests_by |
+| `tests/unit/lib_dispatch.bats` | called_by |
+| `tests/unit/lib_dispatch.bats` | tests_by |
+| `tests/unit/lib_harvest.bats` | called_by |
+| `tests/unit/lib_harvest.bats` | tests_by |
+| `tests/unit/lib_inception.bats` | called_by |
+| `tests/unit/lib_inception.bats` | tests_by |
+| `tests/unit/lib_init.bats` | called_by |
+| `tests/unit/lib_init.bats` | tests_by |
+| `tests/unit/lib_pickup.bats` | called_by |
+| `tests/unit/lib_pickup.bats` | tests_by |
+| `tests/unit/lib_promote.bats` | called_by |
+| `tests/unit/lib_promote.bats` | tests_by |
+| `tests/unit/lib_review.bats` | called_by |
+| `tests/unit/lib_review.bats` | tests_by |
+| `tests/unit/lib_setup.bats` | called_by |
+| `tests/unit/lib_setup.bats` | tests_by |
+| `tests/unit/lib_update.bats` | called_by |
+| `tests/unit/lib_update.bats` | tests_by |
+| `tests/unit/lib_upgrade.bats` | called_by |
+| `tests/unit/lib_upgrade.bats` | tests_by |
+| `tests/unit/lib_version.bats` | called_by |
+| `tests/unit/lib_version.bats` | tests_by |
 
 ## Related
 

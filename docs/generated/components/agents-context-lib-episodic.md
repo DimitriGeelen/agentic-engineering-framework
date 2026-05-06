@@ -11,12 +11,14 @@ Generate rich episodic summary for a completed task
 Hybrid approach (D-023): Git owns timeline/metrics/artifacts,
 task file owns AC + decisions, episodic merges both automatically.
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-001` | called_by |
 | `agents/context/context.sh` | called-by |
+| `tests/unit/context_episodic.bats` | called_by |
+| `tests/unit/context_episodic.bats` | tests_by |
 
 ## Documentation
 

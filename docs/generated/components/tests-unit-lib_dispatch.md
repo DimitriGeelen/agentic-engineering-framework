@@ -11,11 +11,16 @@
 Unit tests for lib/dispatch.sh
 Tests do_dispatch routing, help, send validation
 
-## Dependencies (1)
+## Dependencies (6)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/dispatch.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/errors.sh` | calls |
+| `lib/dispatch.sh` | tests |
+| `lib/colors.sh` | tests |
+| `lib/errors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_dispatch.yaml`*

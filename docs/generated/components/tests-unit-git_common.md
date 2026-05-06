@@ -11,11 +11,17 @@
 Unit tests for agents/git/lib/common.sh
 Tests pure functions: extract_task_id, task_exists, get_task_name
 
-## Dependencies (1)
+## Dependencies (7)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/git/git.sh` | calls |
+| `lib/compat.sh` | calls |
+| `lib/tasks.sh` | calls |
+| `agents/git/lib/common.sh` | calls |
+| `agents/git/lib/common.sh` | tests |
+| `lib/compat.sh` | tests |
+| `lib/tasks.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-git_common.yaml`*

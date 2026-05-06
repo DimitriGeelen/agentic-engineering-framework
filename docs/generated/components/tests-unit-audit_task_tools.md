@@ -10,10 +10,13 @@ Unit tests for agents/context/audit-task-tools.sh (T-1118)
 PostToolUse scanner that detects TodoWrite/TaskCreate usage and warns.
 Exit code: always 0 (advisory). Output: JSON additionalContext when banned tool found.
 
-## Dependencies (1)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
+| `agents/context/audit-task-tools.sh` | calls |
+| `agents/context/audit-task-tools.sh` | tests |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_task_tools.yaml`*

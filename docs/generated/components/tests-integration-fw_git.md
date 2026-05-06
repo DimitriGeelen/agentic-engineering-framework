@@ -14,11 +14,12 @@ fw git status  — task-aware git status
 fw git commit  — commit with task reference validation
 fw git help    — show help
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_git.yaml`*

@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
+| `lib/reviewer/overrides.py` | calls |
 
 ## Used By (4)
 
