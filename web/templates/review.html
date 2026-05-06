@@ -191,6 +191,23 @@
             background: #dbeafe;
         }
 
+        /* T-1765: Pico CSS sets `code, kbd { display: inline-block }`. Inline-
+           block elements are atomic — when they don't fit on a line, the
+           browser drops the WHOLE element to the next line instead of breaking
+           inside it. For long paths like `lib/task_pair_acd.sh` in prose,
+           this looks like the path got "cutoff" / dropped from its sentence.
+           Restore inline display so paths flow with text and break naturally
+           where needed. `overflow-wrap: anywhere` lets long unbroken tokens
+           break at any character if a line really can't hold them. Apply to
+           every prose context that renders backticked paths or commands. */
+        .ac-detail code,
+        .rec-rationale code,
+        .rec-evidence code {
+            display: inline;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+
         /* Action button (check/uncheck) */
         .ac-action-btn {
             width: 100%;

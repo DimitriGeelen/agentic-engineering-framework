@@ -2801,3 +2801,10 @@ X'` returning empty group."
   date: 2026-05-06
   context: Added via context agent
   application: TBD
+- id: L-363
+  learning: "Visual regression tests must cover mobile viewport for any markdown-rendering surface (L-361/L-362 family). T-1765 RCA: Pico CSS 'code { display: inline-block }' caused atomic line-drop of long paths in prose; user perceived as 'cutoff'. Element-presence grep on rendered HTML found nothing wrong (path was present, link was clickable) — only DOM computed-style assertion at mobile viewport (320-360px) caught the issue. Pattern: when a UI fix involves CSS, the regression test MUST measure computed-style and bounding-box at the actual user viewport, not just assert HTML structure."
+  source: P-001
+  task: T-1765
+  date: 2026-05-06
+  context: Added via context agent
+  application: TBD

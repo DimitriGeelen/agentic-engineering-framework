@@ -198,6 +198,37 @@
             .ambient-strip > span:nth-child(n+5):not(:last-child) { display: none; }
         }
 
+        /* T-1765: Pico CSS sets `code, kbd { display: inline-block }` which
+           causes long inline paths/commands to drop atomically to the next
+           line when they don't fit (instead of flowing/breaking with text).
+           User-perceived "cutoff" — the path looks broken away from its
+           sentence. Override globally for prose contexts so backticked paths
+           in task bodies, recommendations, evidence lists, AC steps, etc.
+           flow naturally. The `<pre><code>` source-file viewer is unaffected
+           because the `<pre>` keeps its own block layout. */
+        article code,
+        .task-body code,
+        .ac-detail code,
+        .rec-rationale code,
+        .rec-evidence code,
+        .recommendation-block code,
+        .evidence-list code,
+        .markdown-content code,
+        td code,
+        li code {
+            display: inline;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+        /* Source-file viewer: `<pre>` wraps `<code>`. Restore inline-block on
+           the inner code so Pygments token spans don't collapse weirdly. */
+        pre > code,
+        .codehilite code {
+            display: inline-block;
+            overflow-wrap: normal;
+            word-break: normal;
+        }
+
         /* ── Utility classes ──────────────────────────────── */
         /* Text */
         .text-muted { color: var(--pico-muted-color); }
