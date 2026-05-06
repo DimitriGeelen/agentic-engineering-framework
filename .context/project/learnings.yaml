@@ -2794,3 +2794,10 @@ X'` returning empty group."
   date: 2026-05-06
   context: Added via context agent
   application: TBD
+- id: L-362
+  learning: "Helper-vs-consumer drift (L-361 sibling): when a helper is promoted from a single blueprint to a shared module (T-1722 promoted _auto_link_files), identify ALL consumers that depend on the helper's output contract. T-1764: linker promotion extended dirs/extensions but the /file/ route — a consumer of the linker's output — wasn't updated. Result: 14×7=98 (dirs × exts) link shapes the linker emits, route only serves 4×1. Fix pattern: a single source-of-truth predicate (is_viewable_path) consulted by both producer and consumer prevents future drift; new test enumerates predicate × extension to catch regression at test-time not human-review-time."
+  source: P-001
+  task: T-1764
+  date: 2026-05-06
+  context: Added via context agent
+  application: TBD

@@ -287,31 +287,87 @@ _TASK_REF_RE_SHARED = re_mod.compile(r"(?<![\w/-])(T-\d{3,5})(?![\w/-])")
 _BARE_URL_RE_SHARED = re_mod.compile(r"(?<![\(\[\"'`])(https?://[^\s<>'\"`)\]]+)")
 _CODE_URL_HTML_RE_SHARED = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
 
+# T-1764: single source of truth for "viewable artefact paths".
+# Both the auto-linker (T-1722) and the /file/ route (T-632) consult these.
+# Diverging them — as happened pre-T-1764 — means the linker emits anchors
+# the route can't serve (HTTP 404), silently breaking T-1722's contract.
+
+VIEWABLE_DIR_PREFIXES = (
+    "docs/reports/",
+    ".tasks/active/",
+    ".tasks/completed/",
+    ".context/handovers/",
+    ".context/episodic/",
+    ".context/audits/",
+    ".context/project/",
+    ".context/working/",
+    ".context/arcs/",
+    ".fabric/components/",
+    "web/",
+    "lib/",
+    "bin/",
+    "agents/",
+    "tests/",
+    "tools/",
+    "prompts/",
+    "policy/",
+    "deploy/",
+)
+
+VIEWABLE_EXTENSIONS = ("md", "yaml", "yml", "py", "sh", "bats", "json", "toml")
+
+
+def is_viewable_path(filepath: str) -> bool:
+    """Return True iff `filepath` (relative to PROJECT_ROOT) is servable by /file/.
+
+    Single source of truth used by both `_auto_link_files` (T-1722) and the
+    `/file/<path>` route (T-632). Drift between linker and route was the
+    T-1764 root cause.
+
+    Path-traversal guards live HERE, not in the route — so any caller (linker,
+    route, future surfaces) gets the same enforcement.
+    """
+    if not filepath:
+        return False
+    if ".." in filepath:
+        return False
+    if not any(filepath.startswith(d) for d in VIEWABLE_DIR_PREFIXES):
+        return False
+    ext = filepath.rsplit(".", 1)[-1] if "." in filepath else ""
+    if ext not in VIEWABLE_EXTENSIONS:
+        return False
+    return True
+
+
 # T-1722: artefact path linkifier — promoted from web/blueprints/docs.py (T-633)
 # and extended. Matches paths under known artefact prefixes ending in a known
 # extension. The (PROJECT_ROOT/path).exists() guard in _auto_link_files refuses
 # to link non-existent paths — eliminates false positives from natural prose
-# that happens to share a prefix.
-_ARTEFACT_PATH_RE = re_mod.compile(
-    # Three guards to keep idempotent and avoid wrapping an already-linked path:
-    #   (?<!href=")  — path is not the href target of an existing <a>
-    #   (?<!/file/)  — path is not the suffix of an already-built /file/<...> URL
-    #   (?<!">)      — path is not the link text immediately following an anchor's closing `">`
-    r'(?<!href=")'
-    r'(?<!/file/)'
-    r'(?<!">)'
-    r'(`?)'
-    r'('
-    r'(?:docs/reports/|'
-    r'\.tasks/(?:active|completed)/|'
-    r'\.context/(?:handovers|episodic|audits|project|working|arcs)/|'
-    r'\.fabric/components/|'
-    r'(?:web|lib|bin|agents|tests|tools|prompts|policy|deploy)/'
-    r')'
-    r'[A-Za-z0-9_/.-]+\.(?:md|yaml|yml|py|sh|json|toml)'
-    r')'
-    r'(`?)'
-)
+# that happens to share a prefix. The dir/extension lists are derived from
+# VIEWABLE_DIR_PREFIXES and VIEWABLE_EXTENSIONS (T-1764) so route and linker
+# stay in lockstep.
+def _build_artefact_path_re():
+    # Strip trailing slashes from dirs to embed cleanly in alternation, then
+    # escape regex metachars (the leading `.` in `.tasks/`, `.context/`, etc.)
+    dirs = "|".join(re_mod.escape(d) for d in VIEWABLE_DIR_PREFIXES)
+    exts = "|".join(re_mod.escape(e) for e in VIEWABLE_EXTENSIONS)
+    pattern = (
+        # Three guards to keep idempotent and avoid wrapping an already-linked path:
+        #   (?<!href=")  — path is not the href target of an existing <a>
+        #   (?<!/file/)  — path is not the suffix of an already-built /file/<...> URL
+        #   (?<!">)      — path is not the link text immediately following an anchor's closing `">`
+        r'(?<!href=")'
+        r'(?<!/file/)'
+        r'(?<!">)'
+        r'(`?)'
+        r'((?:' + dirs + r')'
+        r'[A-Za-z0-9_/.-]+\.(?:' + exts + r'))'
+        r'(`?)'
+    )
+    return re_mod.compile(pattern)
+
+
+_ARTEFACT_PATH_RE = _build_artefact_path_re()
 
 
 def _auto_link_files(html: str) -> str:
