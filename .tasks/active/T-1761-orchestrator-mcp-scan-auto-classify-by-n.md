@@ -104,6 +104,16 @@ Captured from T-1760 Evolution: a heuristic that auto-classifies new `termlink_a
 - T-1755 (59 tools), T-1755 follow-up (2 tools), T-1760 (18 tools) — cumulative ~35 min effort across 3 commits in one day
 - Re-evaluation triggers documented: 4th batch in <14 days, misclassification incident, or generic cross-MCP convention classifier emerges
 
+## Decision
+
+**Decision:** DEFER
+
+**Rationale:** See `## Recommendation` above and `docs/reports/T-1761-auto-classify-heuristic.md` for full analysis. Marginal leverage at current cadence; misclassification risk is asymmetric. Re-evaluate on triggers documented in research artifact.
+
+**Decided by:** agent (autonomous filing per inception authority — DEFER is not GO/NO-GO; structural gate `fw inception decide` allows agents to capture DEFER without human signoff per T-1259/T-1716 contract).
+
+**Decided at:** 2026-05-06T07:00Z
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
