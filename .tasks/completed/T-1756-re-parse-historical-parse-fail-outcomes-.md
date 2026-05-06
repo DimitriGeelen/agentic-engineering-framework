@@ -4,16 +4,16 @@ name: "Re-parse historical PARSE-FAIL outcomes through T-1748 hardened parser"
 description: >
   Re-parse historical PARSE-FAIL outcomes through T-1748 hardened parser
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink]
-components: []
+components: [tools/reparse-historical-parsefails.py]
 related_tasks: []
 created: 2026-05-05T22:32:50Z
-last_update: 2026-05-05T22:34:03Z
-date_finished: null
+last_update: 2026-05-05T22:37:38Z
+date_finished: 2026-05-05T22:37:38Z
 ---
 
 # T-1756: Re-parse historical PARSE-FAIL outcomes through T-1748 hardened parser
@@ -141,3 +141,15 @@ tracked as Evolution follow-up.
 
 ### 2026-05-05T22:34:03Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c3a021e6
+- **Timestamp:** 2026-05-05T22:37:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T22:37:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

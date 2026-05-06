@@ -4,16 +4,16 @@ name: "fw orchestrator status outcomes — dedupe by dispatch_id, prefer latest 
 description: >
   fw orchestrator status outcomes — dedupe by dispatch_id, prefer latest evaluator
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink]
-components: []
+components: [bin/fw, tests/unit/test_orchestrator_outcome_dedup.py]
 related_tasks: []
 created: 2026-05-05T22:38:24Z
-last_update: 2026-05-05T22:39:17Z
-date_finished: null
+last_update: 2026-05-05T22:41:49Z
+date_finished: 2026-05-05T22:41:49Z
 ---
 
 # T-1757: fw orchestrator status outcomes — dedupe by dispatch_id, prefer latest evaluator
@@ -113,3 +113,15 @@ true post-recovery state (1.0% instead of 4.5%). Audit trail preserved.
 
 ### 2026-05-05T22:39:17Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-252bc933
+- **Timestamp:** 2026-05-05T22:41:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-05T22:41:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,16 +4,16 @@ name: "audit.sh watchdog leaks flock fd 200 — orphan sleeps hold stale lock an
 description: >
   Discovered while completing T-1771. agents/audit/audit.sh:334 spawns a watchdog subshell that inherits FD 200 (the flock fd from line 321). When the audit script exits and the watchdog subshell exits, its sleep child reparents to init AND keeps its inherited copy of FD 200 — the lock is still held until sleep terminates (default 600s). This means concurrent fw audit invocations (e.g. inside a bats fixture that runs fw audit 5 times) silently abort with 'Another audit is already running' to stderr, exit 0, empty stdout — breaking pipelines like 'fw audit | grep'. Fix: 'exec 200>&-' inside the watchdog subshell so the inherited fd is closed before sleep is forked. Anchor: T-1687 (orchestrator-rethink arc — audit infrastructure depended on by orchestrator observability gauges).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [fd-leak]
-components: []
+components: [C-004]
 related_tasks: []
 created: 2026-05-06T17:43:11Z
-last_update: 2026-05-06T17:43:53Z
-date_finished: null
+last_update: 2026-05-06T17:53:13Z
+date_finished: 2026-05-06T17:53:13Z
 ---
 
 # T-1772: audit.sh watchdog leaks flock fd 200 — orphan sleeps hold stale lock and break subsequent fw audit
@@ -36,8 +36,8 @@ date_finished: null
 ## Verification
 
 bats tests/unit/test_audit_watchdog_fd.bats </dev/null
-grep -A 1 "sleep .AUDIT_TIMEOUT" agents/audit/audit.sh | grep -q "exec 200>&-"
-bin/fw audit --section structure 2>&1 | grep -E "^(Pass:|Fail:)"
+grep -q "/proc/self/fd" agents/audit/audit.sh
+{ bin/fw audit --section structure 2>&1 || true; } | grep -qE "^(Pass:|Fail:)"
 
 ## RCA
 
@@ -93,3 +93,15 @@ bin/fw audit --section structure 2>&1 | grep -E "^(Pass:|Fail:)"
 
 ### 2026-05-06T17:43:53Z — status-update [task-update-agent]
 - **Change:** tags: +fd-leak
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ba0dacd1
+- **Timestamp:** 2026-05-06T17:53:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-06T17:53:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

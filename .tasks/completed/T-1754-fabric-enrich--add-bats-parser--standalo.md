@@ -4,16 +4,16 @@ name: "fabric enrich — add .bats parser + standalone tag for orphan scripts"
 description: >
   fabric enrich — add .bats parser + standalone tag for orphan scripts
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-004, tests/unit/test_enrich_bats_parser.py]
 related_tasks: []
 created: 2026-05-05T22:02:05Z
-last_update: 2026-05-05T22:02:05Z
-date_finished: null
+last_update: 2026-05-05T22:11:17Z
+date_finished: 2026-05-05T22:11:17Z
 ---
 
 # T-1754: fabric enrich — add .bats parser + standalone tag for orphan scripts
@@ -133,3 +133,20 @@ audit WARN by 67% and preserve graph honesty. All ACs pass.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1754-fabric-enrich--add-bats-parser--standalo.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-b11cbda6
+- **Timestamp:** 2026-05-05T22:11:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `agents/fabric/lib/enrich.py` recognises `.bats` files (new `detect_bats_deps`, dispatch
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/fabric/lib/enrich.py in: `agents/fabric/lib/enrich.py` recognises `.bats` files (new `detect_bats_deps`, dispatch`
+
+### 2026-05-05T22:11:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

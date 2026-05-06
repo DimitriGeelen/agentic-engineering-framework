@@ -4,7 +4,7 @@ name: "structural drift detection between cron-registry.yaml and generated cront
 description: >
   Inception: structural drift detection between cron-registry.yaml and generated crontab and deployed /etc/cron.d/ — prevent recurrence of T-1767 silent non-deploy
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: ["arc:orchestrator-rethink", "structural-fix", "cron", "drift-detection", 
 components: []
 related_tasks: ["T-1767", "T-1727", "T-1750"]
 created: 2026-05-06T12:14:38Z
-last_update: 2026-05-06T12:16:21Z
-date_finished: null
+last_update: 2026-05-06T16:37:41Z
+date_finished: 2026-05-06T16:37:41Z
 ---
 
 # T-1768: structural drift detection between cron-registry.yaml and generated crontab and deployed /etc/cron.d/ — prevent recurrence of T-1767 silent non-deploy
@@ -92,15 +92,15 @@ A3 confirmed (no proactive detection); but the absence is in *invocation*, not i
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -180,7 +180,44 @@ Build task to file: T-1769 ("Make cron drift actionable: audit-summary visibilit
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — combine (c) + (e), small scope
+
+Rationale:
+
+Spikes revealed the original framing was wrong: detection EXISTS in `fw doctor:1631-1657`. The gap is surfacing, not detection. That collapses the structural fix from "build a drift detector" to two small touches:
+
+1. (e) Bump cron-drift WARN to a counted failure in `fw audit` summary — `fw audit` already runs in cron (`structural-30m`). If `fw audit` calls into `fw doctor`'s cron-drift check (or replicates it), drift gets counted alongside other audit findings. Visible on `/audit` watchtower page. Same surface as fabric drift, hook threshold, etc. — established pattern, no new alert channel.
+
+2. (c) CLAUDE.md addendum: cron-touching task `## Verification` MUST include `bash -c 'bin/fw doctor 2>&1 | grep -q "Cron registry in sync"'` — catches drift at task-completion time, before the broken state ships. Single-line convention, no code change.
+
+Together: (e) catches drift in autonomous monitoring (escalating alongside existing audit findings); (c) prevents the specific T-1767 mode (cron-touching task that never deploys) at task-close.
+
+REJECTED:
+- (a) lone — already partially exists; extending to registry↔generated drift is a small PR but doesn't fix the surfacing gap.
+- (b) lone — narrow window; misses the post-install drift.
+- (d) — alert fatigue + new channel + dedicated cron job for one check; over-scoped.
+
+Decision-block: GO into a build task. Implementation small enough to fit one slice:
+
+| Touch | Files | Lines |
+|-------|-------|-------|
+| `fw audit` calls cron drift check OR sources `bin/fw:1631-1657` | `agents/audit/audit.sh` | ~15 |
+| `## Verification` convention written into CLAUDE.md | `CLAUDE.md` | ~10 |
+| Bats fixture: simulated drift produces audit FAIL | `tests/unit/test_audit_cron_drift.bats` | ~30 |
+
+Build task to file: T-1769 ("Make cron drift actionable: audit-summary visibility + cron-touching task verification convention").
+
+Evidence:
+
+- `bin/fw:1631-1657` — existing cron drift check (T-1112/T-1114)
+- `bin/fw:1659-1676` — existing flock parity check (T-1558)
+- `agents/audit/audit.sh` — current audit shell (where (e) would land)
+- `tools/g064-readiness.py` — companion gauge proves "deployed but not firing" is its own class
+- T-1767 commit `f62e32501` — concrete failure mode this prevents
+
+**Date**: 2026-05-06T16:37:41Z
 
 ## Updates
 
@@ -189,3 +226,54 @@ Build task to file: T-1769 ("Make cron drift actionable: audit-summary visibilit
 
 ### 2026-05-06T12:16:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-06T16:37:41Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — combine (c) + (e), small scope
+
+Rationale:
+
+Spikes revealed the original framing was wrong: detection EXISTS in `fw doctor:1631-1657`. The gap is surfacing, not detection. That collapses the structural fix from "build a drift detector" to two small touches:
+
+1. (e) Bump cron-drift WARN to a counted failure in `fw audit` summary — `fw audit` already runs in cron (`structural-30m`). If `fw audit` calls into `fw doctor`'s cron-drift check (or replicates it), drift gets counted alongside other audit findings. Visible on `/audit` watchtower page. Same surface as fabric drift, hook threshold, etc. — established pattern, no new alert channel.
+
+2. (c) CLAUDE.md addendum: cron-touching task `## Verification` MUST include `bash -c 'bin/fw doctor 2>&1 | grep -q "Cron registry in sync"'` — catches drift at task-completion time, before the broken state ships. Single-line convention, no code change.
+
+Together: (e) catches drift in autonomous monitoring (escalating alongside existing audit findings); (c) prevents the specific T-1767 mode (cron-touching task that never deploys) at task-close.
+
+REJECTED:
+- (a) lone — already partially exists; extending to registry↔generated drift is a small PR but doesn't fix the surfacing gap.
+- (b) lone — narrow window; misses the post-install drift.
+- (d) — alert fatigue + new channel + dedicated cron job for one check; over-scoped.
+
+Decision-block: GO into a build task. Implementation small enough to fit one slice:
+
+| Touch | Files | Lines |
+|-------|-------|-------|
+| `fw audit` calls cron drift check OR sources `bin/fw:1631-1657` | `agents/audit/audit.sh` | ~15 |
+| `## Verification` convention written into CLAUDE.md | `CLAUDE.md` | ~10 |
+| Bats fixture: simulated drift produces audit FAIL | `tests/unit/test_audit_cron_drift.bats` | ~30 |
+
+Build task to file: T-1769 ("Make cron drift actionable: audit-summary visibility + cron-touching task verification convention").
+
+Evidence:
+
+- `bin/fw:1631-1657` — existing cron drift check (T-1112/T-1114)
+- `bin/fw:1659-1676` — existing flock parity check (T-1558)
+- `agents/audit/audit.sh` — current audit shell (where (e) would land)
+- `tools/g064-readiness.py` — companion gauge proves "deployed but not firing" is its own class
+- T-1767 commit `f62e32501` — concrete failure mode this prevents
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-db104e6c
+- **Timestamp:** 2026-05-06T16:37:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-06T16:37:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

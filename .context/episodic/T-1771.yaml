@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1771: make cron drift actionable: audit-summary visibility + cron-touching task verification convention
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-06T17:53:51Z
+# ============================================================================
+
+task_id: T-1771
+task_name: "make cron drift actionable: audit-summary visibility + cron-touching task verification convention"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T17:08:48Z
+completed: 2026-05-06T17:53:45Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-05-06T19:22:41+02:00
+last_commit: 2026-05-06T19:22:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cron drift visible in fw audit + CLAUDE.md verification convention
+
+# Key outcomes
+outcomes:
+  - "`agents/audit/audit.sh` structure section runs cron-drift check (replicates `bin/fw doctor:1631-1657` logic) — emits `fail` on registry/deployed mismatch or generated-but-not-installed; `warn` on registry-but-not-generated."
+  - "CLAUDE.md gains an addendum (under §Verification Gate (P-011) or §Task System) instructing cron-touching tasks to include `bin/fw doctor 2>&1 | grep -q \"Cron registry in sync\"` in `## Verification`."
+  - "Bats fixture `tests/unit/test_audit_cron_drift.bats` exists with at least 3 cases: in-sync (pass), registry-deployed-diff (fail), generated-not-installed (fail). Uses isolated TEST_PROJECT — no host pollution (per T-1700/T-1707 lesson). Shipped with 5 cases."
+  - "All bats cases pass: `bats tests/unit/test_audit_cron_drift.bats` — 5/5 ok."
+  - "`bin/fw audit --section structure` against this repo still passes — Pass: 10 (was 9; new \"Cron registry in sync\" PASS), Warn: 2 (unchanged), Fail: 0 (unchanged). No regression."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "CLAUDE.md"
+  - ".tasks/active/T-1771-make-cron-drift-actionable-audit-summary.md"
+  - "tests/unit/test_audit_cron_drift.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T19:22:41"
+    action: "T-1771: cron drift visible in fw audit + CLAUDE.md verification convention"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, cron, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 44
+  commits: 1
+  files_changed: 4
+  lines_added: 236
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1771-make-cron-drift-actionable-audit-summary.md
+generated_by: context-agent-hybrid
