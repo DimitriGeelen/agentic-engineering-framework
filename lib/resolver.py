@@ -567,6 +567,67 @@ def cmd_dispatch(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_run(args: argparse.Namespace) -> int:
+    """fw resolver run <task_id> <task_type> — build envelope + spawn worker.
+
+    Convenience CLI on top of `dispatch` + `lib/spawn.spawn_dispatch`. T-1774.
+
+    Returns 0 on success, 1 on resolver/spawn errors, 2 on a worker terminal
+    error (e.g. agent.done with type=error). The third exit code lets shell
+    callers distinguish "infrastructure broke" from "worker reported error".
+    """
+    task_context = load_task_frontmatter(args.task_id)
+    task_context.setdefault("TASK_ID", args.task_id)
+    task_context.setdefault("TASK_TYPE", args.task_type)
+    task_context.setdefault("TASK_NAME", "")
+    task_context.setdefault("TASK_DESCRIPTION", "")
+    task_context.setdefault("ACCEPTANCE_CRITERIA", "(none)")
+    for kv in getattr(args, "var", []) or []:
+        if "=" not in kv:
+            print(f"resolver run: --var must be KEY=VALUE, got {kv!r}", file=sys.stderr)
+            return 1
+        key, _, value = kv.partition("=")
+        task_context[key] = value
+
+    try:
+        envelope, _row = resolve(args.task_id, args.task_type, task_context, dry_run=False)
+    except ResolverError as e:
+        print(f"resolver run: error: {e}", file=sys.stderr)
+        return 1
+
+    # Lazy-import spawn so `fw resolver dispatch|workflows|explain` don't pay
+    # for it (and so spawn's PiWorker import path stays cold for non-pi flows).
+    try:
+        import spawn  # noqa: PLC0415
+    except ImportError as e:
+        print(f"resolver run: cannot import lib/spawn.py: {e}", file=sys.stderr)
+        return 1
+
+    try:
+        outcome = spawn.spawn_dispatch(envelope)
+    except NotImplementedError as e:
+        print(f"resolver run: {e}", file=sys.stderr)
+        return 1
+    except spawn.SpawnError as e:
+        print(f"resolver run: spawn error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(json.dumps(outcome, indent=2))
+    else:
+        print(f"dispatch_id:    {envelope['dispatch_id']}")
+        print(f"task_type:      {envelope['task_type']}")
+        print(f"worker_kind:    {envelope['worker_kind']}")
+        print(f"status:         {outcome['status']}")
+        print(f"events_count:   {outcome['events_count']}")
+        print(f"events_path:    {outcome['events_path']}")
+        if outcome.get("terminal_event"):
+            etype = outcome["terminal_event"].get("type")
+            print(f"terminal:       {etype}")
+
+    return 2 if outcome["status"] == "error" else 0
+
+
 def cmd_explain(args: argparse.Namespace) -> int:
     """fw resolver explain <dispatch_id>"""
     if not DISPATCHES_LOG.exists():
@@ -658,6 +719,19 @@ def main(argv: Optional[List[str]] = None) -> int:
         ),
     )
     sp_d.set_defaults(func=cmd_dispatch)
+
+    sp_r = sub.add_parser("run", help="Build envelope + spawn worker (T-1774)")
+    sp_r.add_argument("task_id", help="Task ID (e.g. T-1773)")
+    sp_r.add_argument("task_type", help="Workflow task_type (or 'default')")
+    sp_r.add_argument("--json", action="store_true", help="Emit outcome dict as JSON")
+    sp_r.add_argument(
+        "--var",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="Inject custom $VAR into the prompt template (same as `dispatch`).",
+    )
+    sp_r.set_defaults(func=cmd_run)
 
     sp_e = sub.add_parser("explain", help="Print a dispatch row by ID prefix")
     sp_e.add_argument("dispatch_id", help="Dispatch UUID (or prefix)")

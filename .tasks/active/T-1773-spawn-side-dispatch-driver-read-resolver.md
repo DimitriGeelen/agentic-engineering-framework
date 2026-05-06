@@ -12,7 +12,7 @@ tags: [arc:orchestrator-rethink, spawn, dispatch-driver]
 components: []
 related_tasks: [T-1700, T-1701]
 created: 2026-05-06T18:52:51Z
-last_update: 2026-05-06T18:59:08Z
+last_update: 2026-05-06T19:00:37Z
 date_finished: null
 ---
 
@@ -89,12 +89,10 @@ to a follow-up so v1 ships a tested primitive, not a half-wired CLI.
 
 - [ ] [REVIEW] **#H1: End-to-end smoke (after T-1701 #H1 + #H2)**
       **Steps:**
-      1. With pi installed + /login complete: `cd /opt/999-Agentic-Engineering-Framework`
-      2. Build envelope: `bin/fw resolver dispatch T-1773 cheap-research --json > /tmp/env.json`
-      3. Run spawn: `python3 -c "import sys, json; sys.path.insert(0,'lib'); from spawn import spawn_dispatch; print(json.dumps(spawn_dispatch(json.load(open('/tmp/env.json'))), indent=2))"`
-      4. Verify: `tail -1 .context/dispatches.jsonl | python3 -c "import sys,json; r=json.loads(sys.stdin.read()); print(r['outcome'])"`
-      **Expected:** spawn returns `{"status": "success", ...}`; events file exists at `<blob_dir>/events.jsonl`; row outcome is `success` (not `pending`).
-      **If not:** check pi binary on PATH, check workflow loaded provider correctly, check blob_dir is writable.
+      1. With pi installed + /login complete: `cd /opt/999-Agentic-Engineering-Framework && bin/fw resolver run T-1773 cheap-research`
+      2. Verify: `tail -1 .context/dispatches.jsonl | python3 -c "import sys,json; r=json.loads(sys.stdin.read()); print(r['outcome'])"`
+      **Expected:** stdout shows `status: success`, `events_count > 0`, exit code 0; `.context/dispatches.jsonl` last row has `outcome: success` (not `pending`).
+      **If not:** add `--json` to step 1 for full structured outcome; check pi binary on PATH, check workflow loaded provider correctly, check blob_dir is writable. (T-1774 added the single-line CLI; the prior multi-line `python -c` invocation is no longer needed.)
 
 ## Verification
 
