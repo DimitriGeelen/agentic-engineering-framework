@@ -32,6 +32,14 @@ patterns:
     expected_type: script
     note: "Framework library scripts"
 
+  - glob: "lib/**/*.py"
+    expected_type: script
+    note: "Python sublibraries under lib/<package>/ (T-1759 — closes drift blindspot from T-1758)"
+
+  - glob: "tools/*.py"
+    expected_type: script
+    note: "One-off utility scripts (back-prop, replay, diagnostics) (T-1759)"
+
   - glob: "bin/*"
     expected_type: script
     note: "CLI entry points"

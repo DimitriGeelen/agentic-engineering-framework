@@ -1,0 +1,22 @@
+id: lib/ask.py
+name: ask-py
+type: script
+subsystem: framework-core
+location: lib/ask.py
+tags:
+- lib
+- fw-subcommand
+purpose: Python implementation of fw ask subcommand (sibling of lib/ask.sh)
+depends_on:
+- target: web/embeddings.py
+  type: calls
+depended_by:
+- target: agents/context/lib/focus.sh
+  type: called_by
+- target: agents/healing/lib/diagnose.sh
+  type: called_by
+- target: lib/ask.sh
+  type: called_by
+last_verified: 2026-05-06
+created_by: T-1759
+last_enriched: '2026-05-06'
