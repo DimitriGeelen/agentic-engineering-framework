@@ -149,6 +149,14 @@ The `## Verification` section contains shell commands that **must pass** before 
 
 If the toolchain is not installed on the gate-running host, scope the command (e.g. `command -v dotnet >/dev/null && dotnet build`). Don't omit the check.
 
+**Cron-touching tasks (L-364, T-1771):** If your task edited `.context/cron-registry.yaml`, anything under `.context/cron/`, or any cron generator code (`bin/fw cron generate|install`, `agents/audit/audit.sh` cron schedule helpers), `## Verification` MUST include:
+
+```
+bin/fw doctor 2>&1 | grep -q "Cron registry in sync"
+```
+
+The chain is registry → generated → deployed. Each transition is a separate state — "wired" is not "deployed". Without this check, a cron-touching task can ship work-completed while the deployed crontab is still the previous version and the new job never fires (T-1767 origin: 3 days of silent drift). The `fw doctor` line + this AC catches drift at task-close, before the broken state ships. T-1771 also wires this into `fw audit` (FAIL on registry/deployed mismatch), so autonomous monitoring catches it post-ship — but task-close is the earlier, cheaper gate.
+
 ### Task Lifecycle
 
 ```

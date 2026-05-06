@@ -709,6 +709,40 @@ DRIFTEOF
     fi
 fi
 
+# T-1771 (T-1768 GO follow-up): cron drift check.
+# Mirrors `bin/fw doctor` cron-drift logic so the registry → generated →
+# deployed pipeline is monitored alongside fabric drift, hook threshold,
+# etc. — same surface, same cron, no new alert channel. WARN was the
+# doctor's level; here we use FAIL on substantive drift because cron
+# drift means *tasks won't run* (silent execution failure), strictly
+# more serious than a missing fabric card. Origin: T-1767 (cron-touching
+# task closed work-completed while drift made the new job a no-op for
+# 3 days). G-064 closure path.
+_cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+if [ -f "$_cron_registry" ]; then
+    _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
+    _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
+    _cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
+    _cron_target="$_cron_target_dir/agentic-audit-${_cron_slug}"
+    if [ -f "$_cron_source" ] && [ -f "$_cron_target" ]; then
+        if diff -q "$_cron_source" "$_cron_target" >/dev/null 2>&1; then
+            pass "Cron registry in sync with $_cron_target"
+        else
+            fail "Cron drift: $_cron_source differs from deployed $_cron_target" \
+                 "Registry edits or generator output have not been deployed — cron jobs may be running stale or absent" \
+                 "Run: fw cron install"
+        fi
+    elif [ -f "$_cron_source" ] && [ ! -f "$_cron_target" ]; then
+        fail "Cron drift: generated but not installed at $_cron_target" \
+             "Generated crontab exists but is not deployed — scheduled jobs are not running" \
+             "Run: fw cron install"
+    elif [ ! -f "$_cron_source" ]; then
+        warn "Cron drift: registry present but not generated" \
+             "$_cron_registry exists but $_cron_source is missing" \
+             "Run: fw cron install"
+    fi
+fi
+
 # T-1631 (B-3b of T-1626): Hook-failure threshold check.
 # Reads .hook-counter + .hook-failure-counter (T-1628 telemetry) and
 # warns if any hook is failing in production over threshold. Does NOT
