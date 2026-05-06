@@ -32,3 +32,5 @@ depended_by:
   type: called_by
 - target: web/search_utils.py
   type: called_by
+- target: lib/ask.py
+  type: called_by

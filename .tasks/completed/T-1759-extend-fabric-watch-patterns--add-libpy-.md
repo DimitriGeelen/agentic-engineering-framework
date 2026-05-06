@@ -4,7 +4,7 @@ name: "extend fabric watch-patterns — add lib/**/*.py + tools/*.py to close dr
 description: >
   extend fabric watch-patterns — add lib/**/*.py + tools/*.py to close drift blindspot (T-1758 follow-up)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: ["arc:orchestrator-rethink", "fabric", "drift-defense"]
 components: [".fabric/watch-patterns.yaml"]
 related_tasks: ["T-1758"]
 created: 2026-05-06T05:44:44Z
-last_update: 2026-05-06T05:44:44Z
-date_finished: null
+last_update: 2026-05-06T06:02:22Z
+date_finished: 2026-05-06T06:02:22Z
 ---
 
 # T-1759: extend fabric watch-patterns — add lib/**/*.py + tools/*.py to close drift blindspot (T-1758 follow-up)
@@ -123,3 +123,22 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -c "import yaml; yaml.safe_
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1759-extend-fabric-watch-patterns--add-libpy-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-2ee47666
+- **Timestamp:** 2026-05-06T06:02:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — After adding patterns, drift correctly flags genuinely-missing cards — caught `lib/ask.py` (existed without card) and `tools/escalation-scan-v0.py` (existed without card); both registered. Final drift
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/ask.py in: After adding patterns, drift correctly flags genuinely-missing cards — caught `lib/ask.py` (existed without card) and `tools/escalation-scan-v0.py` (e`
+- **AC#4 (Agent)** — Drift catches a synthetic missing card: confirmed by direct python check — moving `lib-reviewer-audit.yaml` aside surfaced `lib/reviewer/audit.py` in unregistered list; restored, no longer flagged
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/reviewer/audit.py in: Drift catches a synthetic missing card: confirmed by direct python check — moving `lib-reviewer-audit.yaml` aside surfaced `lib/reviewer/audit.py` in `
+
+### 2026-05-06T06:02:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

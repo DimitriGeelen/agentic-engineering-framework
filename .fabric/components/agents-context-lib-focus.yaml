@@ -5,7 +5,9 @@ subsystem: context-fabric
 location: agents/context/lib/focus.sh
 tags: []
 purpose: Context Agent - focus command
-depends_on: []
+depends_on:
+- target: lib/ask.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:

@@ -5,7 +5,9 @@ subsystem: healing
 location: agents/healing/lib/diagnose.sh
 tags: []
 purpose: Healing Agent - diagnose command
-depends_on: []
+depends_on:
+- target: lib/ask.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
