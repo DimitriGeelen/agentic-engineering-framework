@@ -19,8 +19,11 @@
 # primitives) classified by naming convention (action verb → mutator; read suffix → readonly).
 # /opt/termlink is outside PROJECT_ROOT and unreadable from here, so handler-level
 # verification is deferred — human can correct miscategorisations on review.
+# Update 2026-05-06 (T-1760): added 18 more termlink_agent_* analytics primitives
+# (stats/rates/depths/volumes — all read-shaped names). Same convention-based
+# classification rule. Baseline 136 → 154.
 
-baseline_count: 136
+baseline_count: 154
 last_verified: 2026-05-06
 
 gated:
@@ -86,7 +89,7 @@ mutators_ungated:
 
 readonly_exempt:
   description: "Passive/observational — gating optional. Adding new entries here requires an explicit reason in the commit body."
-  count: 90
+  count: 108
   tools:
     - termlink_ping
     - termlink_status
@@ -183,3 +186,25 @@ readonly_exempt:
     # (upstream TermLink is actively shipping). Both read-shaped stats names.
     - termlink_agent_activity_rhythm
     - termlink_agent_peer_engagement
+    # T-1760: 18 analytics primitives surfaced after T-1755 — all read-shaped
+    # names per the established convention (stats/rates/depths/volumes, no
+    # write verbs). Naming-convention classification; handler-level review
+    # deferred (TermLink source outside PROJECT_ROOT).
+    - termlink_agent_co_posters
+    - termlink_agent_daily_volume
+    - termlink_agent_emoji_users
+    - termlink_agent_engagement_rate
+    - termlink_agent_first_post_by
+    - termlink_agent_first_responders
+    - termlink_agent_msg_growth_rate
+    - termlink_agent_orphan_replies
+    - termlink_agent_quiet_threads
+    - termlink_agent_recent_window
+    - termlink_agent_response_latency
+    - termlink_agent_self_replies
+    - termlink_agent_thread_authors
+    - termlink_agent_thread_depth
+    - termlink_agent_thread_health
+    - termlink_agent_top_reacted
+    - termlink_agent_top_replied
+    - termlink_agent_user_summary
