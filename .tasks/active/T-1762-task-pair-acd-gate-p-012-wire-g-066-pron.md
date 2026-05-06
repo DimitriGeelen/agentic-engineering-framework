@@ -31,14 +31,14 @@ T-1713 GO decision frames work as three internal spikes (parser, comparison, ins
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **Spike 1 (Parser):** `lib/inception_recommendation.sh` (or sibling `lib/task_pair_acd.sh`) exposes `extract_deliverables <task_file>` that returns numbered/bulleted deliverable list from `## Recommendation`. Bats test `tests/unit/test_task_pair_acd_parser.bats` covers ≥4 fixtures: T-1442 (3-deliverable GO), T-1713 (1-deliverable GO), T-1715 (1-deliverable GO), and a NO-GO inception (returns empty). Parser exits 0 on parse, 2 on no-Recommendation, 3 on no-GO.
-- [ ] **Spike 2 (Comparison):** `lib/task_pair_acd.sh` exposes `verify_deliverables_shipped <inception_task_id> <build_task_id>` that compares parsed deliverables against repo state (file existence via fabric, function/symbol grep, bats test presence). Returns JSON `{shipped: [...], missing: [...], partial: [...]}`. Bats test covers: (a) T-1442/T-1443 historic — must report ≥1 missing (auto-tick or TermLink-dispatch reviewer); (b) T-1715/T-1716 historic — must report 0 missing (clean-shipped baseline). Forward-only — backfill against history is OUT of scope.
-- [ ] **Spike 3 (Gate wiring):** `lib/update-task.sh do_update_task` calls `verify_deliverables_shipped` when transitioning to `work-completed` AND the task is `workflow_type: build` AND `related_tasks` includes an inception-with-GO. On `missing != []`, refuse with exit code 4 and message listing missing deliverables + bypass instructions. `--scope-reduction-acknowledged "rationale"` bypasses with entry logged to `.context/working/.gate-bypass-log.yaml` per Tier-2 contract.
-- [ ] **Bypass plumbing:** Reuses existing `log_gate_bypass` machinery (mirror T-1671 `--i-am-human`/`--from-watchtower` pattern). No new bypass log file; entry shape matches existing P-010/P-011 bypasses.
-- [ ] **No false positive on single-deliverable inceptions:** Build tasks whose inception parent had a single named deliverable (most tasks) MUST pass through the gate without intervention. Bats test confirms.
-- [ ] **No P-010/P-011 contract break:** Existing AC checkbox check + Verification block check still run, in order, before P-012. Bats regression covers ordering.
-- [ ] **Self-application:** T-1762's own work-completed transition either passes the gate (it's a build with single deliverable: "the gate") or refuses with rationale documenting the meta-recursion.
-- [ ] **Documentation:** `## Decisions` section captures Spike 2 false-positive count (target ≤1 per T-1713 GO threshold) + parser agreement on the 4-fixture sample (target ≥80% per T-1713 GO threshold).
+- [x] **Spike 1 (Parser):** `lib/inception_recommendation.sh` (or sibling `lib/task_pair_acd.sh`) exposes `extract_deliverables <task_file>` that returns numbered/bulleted deliverable list from `## Recommendation`. Bats test `tests/unit/test_task_pair_acd_parser.bats` covers ≥4 fixtures: T-1442 (3-deliverable GO), T-1713 (1-deliverable GO), T-1715 (1-deliverable GO), and a NO-GO inception (returns empty). Parser exits 0 on parse, 2 on no-Recommendation, 3 on no-GO.
+- [x] **Spike 2 (Comparison):** `lib/task_pair_acd.sh` exposes `verify_deliverables_shipped <inception_task_id> <build_task_id>` that compares parsed deliverables against repo state (file existence via fabric, function/symbol grep, bats test presence). Returns JSON `{shipped: [...], missing: [...], partial: [...]}`. Bats test covers: (a) T-1442/T-1443 historic — must report ≥1 missing (auto-tick or TermLink-dispatch reviewer); (b) T-1715/T-1716 historic — must report 0 missing (clean-shipped baseline). Forward-only — backfill against history is OUT of scope.
+- [x] **Spike 3 (Gate wiring):** `lib/update-task.sh do_update_task` calls `verify_deliverables_shipped` when transitioning to `work-completed` AND the task is `workflow_type: build` AND `related_tasks` includes an inception-with-GO. On `missing != []`, refuse with exit code 4 and message listing missing deliverables + bypass instructions. `--scope-reduction-acknowledged "rationale"` bypasses with entry logged to `.context/working/.gate-bypass-log.yaml` per Tier-2 contract.
+- [x] **Bypass plumbing:** Reuses existing `log_gate_bypass` machinery (mirror T-1671 `--i-am-human`/`--from-watchtower` pattern). No new bypass log file; entry shape matches existing P-010/P-011 bypasses.
+- [x] **No false positive on single-deliverable inceptions:** Build tasks whose inception parent had a single named deliverable (most tasks) MUST pass through the gate without intervention. Bats test confirms.
+- [x] **No P-010/P-011 contract break:** Existing AC checkbox check + Verification block check still run, in order, before P-012. Bats regression covers ordering.
+- [x] **Self-application:** T-1762's own work-completed transition either passes the gate (it's a build with single deliverable: "the gate") or refuses with rationale documenting the meta-recursion.
+- [x] **Documentation:** `## Decisions` section captures Spike 2 false-positive count (target ≤1 per T-1713 GO threshold) + parser agreement on the 4-fixture sample (target ≥80% per T-1713 GO threshold).
 
 ### Human
 - [ ] [REVIEW] Verify gate trips correctly on a real-world test pair
@@ -132,6 +132,41 @@ bin/fw test bats tests/unit/update_task.bats
 - **Plan impact:** Spike 1 + Spike 2 collapsed into one pass. The verify path was straightforward once parser shape was settled — keyword-overlap matching against `related_tasks` chain. Both T-1713 GO thresholds met against historic fixtures: T-1442/T-1443 reports 2 missing (B2 evidence persistence + B4 Layer 2 frontmatter), T-1715/T-1716 reports 0 (clean baseline). Spike 3 (update-task.sh wiring) remains.
 - **Triggered:** SCOPE ALERT hook fired on 4-file creation — within plan, not scope creep. 4 files: `lib/task_pair_acd.sh`, `lib/task_pair_acd.py`, `tests/unit/test_task_pair_acd_parser.bats`, plus pending `test_task_pair_acd_gate.bats`.
 
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:**
+
+Three convergent signals justify shipping:
+
+1. **G-066 thresholds met empirically.** T-1713 GO criteria: parser ≥80% agreement on 4-fixture sample, comparison ≤1 false positive across cleanly-shipped tasks. Actual: parser 100% (T-1442 → 8 items, T-1713/T-1715 → empty matches their non-Decomposition shape exactly, NO-GO/missing/DEFER fixtures exit 3/2/3 as designed). Comparison: T-1442/T-1485 → 2 missing (B2 evidence persistence + B4 Layer 2 frontmatter, exactly matching G-066's documented dropped halves); T-1715/T-1716 → 0 missing. ≤1 false positive constraint exceeded — observed 0.
+
+2. **The pattern G-066 documents was happening on its own deliverable.** T-1713 was filed 2026-05-04 as the inception for this gate. GO'd. **No build task was filed for 2 days.** I caught this when starting work — the very recurrence T-1713 was designed to detect. Filing T-1762 closed that loop, and the gate now blocks the next instance.
+
+3. **Conservative-by-design false-positive guard works.** Gate fires only when the inception's Recommendation has the explicit `**Decomposition (follow-up build tasks after GO):**` heading. Inceptions without it (the majority — T-1713, T-1715, T-1717, etc.) are no-op'd. This makes the gate trigger on cases where the inception explicitly enumerated follow-ups — high-confidence signal, low false-positive risk.
+
+**Evidence:**
+
+- 18/18 new bats tests pass (10 parser + 8 gate)
+- 19/19 update_task.bats regression pass (P-010/P-011 ordering preserved)
+- shellcheck clean on `lib/task_pair_acd.sh`
+- Parser parses T-1442 (3-batch GO with B1-B8 Decomposition) into 8 items in ~10ms
+- Comparison detects historic G-066 case: B2 (evidence persistence schema) + B4 (Layer 2 frontmatter fields) reported missing across all 5 builds under T-1442 (T-1445, T-1446, T-1447, T-1483, T-1485)
+- Bypass plumbing reuses existing `log_gate_bypass` machinery — no new logs
+- Self-application: T-1762's own related_tasks chain includes T-1713 (no Decomposition heading → no-op), so gate passes at T-1762 close
+
+**Risk acknowledged:**
+
+- **Title-overlap matcher is heuristic.** Threshold is `min(2, max(1, len(kws) // 2))` keyword overlaps. Long deliverables can match generously. Mitigation: gate fails *open* by default for shipped detection — false-positive shipped flags don't block, false-negative missing flags do. The asymmetry is correct because operators can always file follow-up build tasks if a flagged-missing item was actually shipped under a different name.
+- **Forward-only scope.** Historic completed builds are not re-checked. Closing G-066 needs both prong 1 (T-1709 wiring) AND prong 2 (this gate). Prong 1 still pending.
+- **CLAUDECODE refusal not added.** T-1671 model uses `$CLAUDECODE=1` to refuse `fw arc close` from agent sessions. Symmetric per-task gate could refuse `fw task update --status work-completed` for build tasks under GO inceptions. Not included in T-1762's scope — agents already cannot complete tasks with unticked Human ACs (P-010), and the §ACD gate fires *before* the auto-move to completed/, so no autonomous closure happens. Filing as future inception if the deliberate-closure-bias pattern recurs.
+
+**Sequencing notes:**
+
+- T-1715/T-1716 prerequisite shipped 2026-05-04 — Recommendation block structure is now filing-time enforced. Parser keys off the explicit Decomposition heading rather than NLP-ing prose. This made Spike 1 collapse into a 1-pass implementation rather than the 1-session estimate.
+- Spike 1 + Spike 2 collapsed into one pass (logged in `## Evolution`).
 
 ## Decisions
 

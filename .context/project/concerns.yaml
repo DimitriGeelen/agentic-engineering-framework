@@ -1978,11 +1978,16 @@ concerns:
       structurally impossible without an explicit lift.
     - GO scope (3): TermLink-dispatched, evidence-gated reviewer agent.
       `agents/reviewer/` directory missing entirely.
-    - Generalisation: there is no per-task §ACD gate. An inception with
-      multi-deliverable GO can ship one deliverable + close work-completed,
-      and the framework provides no detection. The audit cron's Pass-B
-      re-scan looks for AC verdict drift, not for "GO scope vs. shipped
-      scope" drift.
+    - Prong 2 (per-task §ACD gate, T-1762) SHIPPED 2026-05-06 —
+      `lib/task_pair_acd.{sh,py}` parses inception Recommendation ->
+      `**Decomposition (follow-up build tasks after GO):**` heading and
+      verifies promised follow-ups shipped via related_tasks chain.
+      Wired into `agents/task-create/update-task.sh` after evolution-log
+      gate. 18/18 bats pass. T-1442/T-1485 historic regression confirms
+      gate would have caught B2 (evidence persistence) + B4 (Layer 2
+      frontmatter) silent drops at the moment of closure.
+    - PRONG 1 (wire the missing halves) STILL PENDING — T-1709 in
+      inception phase, awaiting GO/NO-GO/DEFER. Closure requires both.
   recommendation: |
     Two-pronged:
 
@@ -2007,9 +2012,9 @@ concerns:
     inception). DO NOT close on (1) alone — that would repeat the pattern
     G-066 documents.
   created: 2026-05-04
-  last_reviewed: 2026-05-04
+  last_reviewed: 2026-05-06
   related_task: T-1709
-  related_tasks_extra: [T-1442, T-1443, T-1668, T-1671, G-062]
+  related_tasks_extra: [T-1442, T-1443, T-1668, T-1671, T-1709, T-1711, T-1713, T-1762, G-062]
 
 - id: G-067
   type: gap

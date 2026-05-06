@@ -2780,3 +2780,10 @@ X'` returning empty group."
   date: 2026-05-05
   context: Added via context agent
   application: TBD
+- id: L-360
+  learning: "T-1713 (gate-design inception) was filed with GO recommendation 2026-05-04 but no build task was filed for 2 days — T-1762 caught it on next-touch. The very pattern T-1713 was designed to detect was happening on its own deliverable. Lesson: an inception with GO must surface in agent attention as 'unbuilt promise' until a build task with related_tasks pointing at it is filed. Detective for this exists for arc-level (T-1656 closure-pressure audit) but not task-pair level. T-1762 closes the structural prong; the noticed-it pattern still relies on agent diligence."
+  source: P-002
+  task: T-1762
+  date: 2026-05-06
+  context: Added via context agent
+  application: TBD
