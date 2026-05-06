@@ -48,17 +48,45 @@ Spike 3 (15 min): consider the three candidate mechanisms (fw doctor warning, fw
 
 Recommendation: pick one path and file as build task.
 
-## Technical Constraints
+## Findings (post-spike)
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+### Spike 1: existing cron drift detection — EXISTS
+
+`bin/fw:1631-1657` (T-1112/T-1114) implements a cron-drift check inside `fw doctor`:
+- compares `.context/cron/agentic-audit.crontab` (source) against `/etc/cron.d/agentic-audit-<slug>` (target)
+- WARNs "Cron registry drift: $cron_source differs from $cron_target" with hint "Run: fw cron install"
+- Also (T-1558) compares flock-wrapper count between registry and deployed file
+
+A1 RE-VALIDATED: detection exists. The original problem statement assumed it did not.
+
+### Spike 2: invocation/surfacing — GAP
+
+- `fw doctor` is interactive only; no cron job invokes it.
+- No notification channel converts the WARN into something the agent or user sees outside `fw doctor` runs.
+- No watchtower surface, no liveness.jsonl entry, no audit log.
+- Result: drift accumulates silently between (rare) interactive invocations.
+
+A3 confirmed (no proactive detection); but the absence is in *invocation*, not in *detection*.
+
+### Spike 3: candidate mechanisms — three axes
+
+| Mechanism | Coverage | Latency | FP risk | Cost |
+|-----------|----------|---------|---------|------|
+| (a) `fw doctor` extension — also check registry↔generated | adds 1 of 3 pair-drifts | manual | low | small |
+| (b) `fw cron install` pre-flight | catches edit-not-yet-generated | install-time | low | small |
+| (c) Cron-touching task verification convention — `## Verification` line `bin/fw doctor \| grep -q "in sync"` | all detectable drifts at task-close | task-completion | low | doc-only |
+| (d) `fw doctor` runs in cron + propagates to a notification | all drifts, periodic | ≤ 24 h | medium (alert fatigue) | medium |
+| (e) Bump cron-drift WARN to FAIL in `fw doctor`, count in `fw audit` summary | escalation-only | manual | low | tiny |
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN scope:**
+- Make existing cron-drift detection actionable (surfacing, not detecting).
+- Cover the failure mode T-1767 hit: registry edited but never deployed; OR deployed file edited but registry not updated.
+
+**OUT of scope:**
+- Deeper structural redesign of cron pipeline (`fw cron install` could become idempotent post-flight, etc.) — over-scoped.
+- Generalising drift detection beyond cron (config-file drift, doc drift) — separate concern.
 
 ## Acceptance Criteria
 
@@ -104,17 +132,40 @@ Recommendation: pick one path and file as build task.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — combine (c) + (e), small scope
 
 **Rationale:**
 
-Filed as a follow-up to T-1767 to track the structural fix. Recommendation deferred until exploration of three candidate mechanisms (fw doctor drift check vs fw cron install pre-flight vs cron-touching task verification convention) selects the lightest-touch path. Scope-decision boundary not yet drawn. Inception is the right phase per L-291/L-364 — symptomatic fix shipped in T-1767, structural prevention requires its own evaluation.
+Spikes revealed the original framing was wrong: detection EXISTS in `fw doctor:1631-1657`. The gap is surfacing, not detection. That collapses the structural fix from "build a drift detector" to two small touches:
+
+1. **(e) Bump cron-drift WARN to a counted failure in `fw audit` summary** — `fw audit` already runs in cron (`structural-30m`). If `fw audit` calls into `fw doctor`'s cron-drift check (or replicates it), drift gets counted alongside other audit findings. Visible on `/audit` watchtower page. Same surface as fabric drift, hook threshold, etc. — established pattern, no new alert channel.
+
+2. **(c) CLAUDE.md addendum: cron-touching task `## Verification` MUST include `bash -c 'bin/fw doctor 2>&1 | grep -q "Cron registry in sync"'`** — catches drift at task-completion time, before the broken state ships. Single-line convention, no code change.
+
+Together: (e) catches drift in autonomous monitoring (escalating alongside existing audit findings); (c) prevents the specific T-1767 mode (cron-touching task that never deploys) at task-close.
+
+**REJECTED:**
+- (a) lone — already partially exists; extending to registry↔generated drift is a small PR but doesn't fix the surfacing gap.
+- (b) lone — narrow window; misses the post-install drift.
+- (d) — alert fatigue + new channel + dedicated cron job for one check; over-scoped.
+
+**Decision-block: GO into a build task. Implementation small enough to fit one slice:**
+
+| Touch | Files | Lines |
+|-------|-------|-------|
+| `fw audit` calls cron drift check OR sources `bin/fw:1631-1657` | `agents/audit/audit.sh` | ~15 |
+| `## Verification` convention written into CLAUDE.md | `CLAUDE.md` | ~10 |
+| Bats fixture: simulated drift produces audit FAIL | `tests/unit/test_audit_cron_drift.bats` | ~30 |
+
+Build task to file: T-1769 ("Make cron drift actionable: audit-summary visibility + cron-touching task verification convention").
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- `bin/fw:1631-1657` — existing cron drift check (T-1112/T-1114)
+- `bin/fw:1659-1676` — existing flock parity check (T-1558)
+- `agents/audit/audit.sh` — current audit shell (where (e) would land)
+- `tools/g064-readiness.py` — companion gauge proves "deployed but not firing" is its own class
+- T-1767 commit `f62e32501` — concrete failure mode this prevents
 
 ## Decisions
 
