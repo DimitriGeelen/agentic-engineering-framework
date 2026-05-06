@@ -305,6 +305,28 @@ def build_legacy_topics(legacy_topics, last_seen=None):
         out.append(row)
     return out
 
+# T-1625: topic-field availability signal. Disambiguates two states the
+# T-1622 by-topic table renders identically:
+#   (a) "no traffic"      — legacy_total == 0 (genuinely cut-clean)
+#   (b) "pre-T-1622 hub"  — legacy_total > 0 but with_topic == 0 (the
+#                           hub binary predates T-1622, audit-log entries
+#                           lack the field; not migration progress)
+# Returns (legacy_total, with_topic) for the window. Kept SEPARATE from
+# stats_for_window's 10-tuple return — PL-152 isolation rule (T-1623).
+def legacy_topic_coverage_for_window(days: int):
+    cutoff = now_ms - days * 86400 * 1000
+    total = 0
+    with_topic = 0
+    for ts, method, _from, _pid, _addr, topic in entries:
+        if ts < cutoff:
+            continue
+        if not is_legacy(method):
+            continue
+        total += 1
+        if topic:
+            with_topic += 1
+    return total, with_topic
+
 # T-1416: cut-ready short-circuit. Binary gate on attributable-only legacy.
 # Composes with --json (compact CI shape) or human (one-line PASS/FAIL).
 # Exits before the trend/single-window paths so the output is unambiguous.
@@ -370,6 +392,11 @@ if json_out:
             "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips_60, last_seen_ips_60),
             # T-1622: per-(method, topic) breakdown — closes T-1166 last visibility gap.
             "legacy_topics": build_legacy_topics(*legacy_topic_stats_for_window(60)),
+            # T-1625: availability signal — distinguishes "no traffic" from
+            # "pre-T-1622 hub". Operators (and the T-1166 cut gate) read
+            # this to decide whether a silent topic table is good news or
+            # a telemetry gap.
+            "legacy_topic_coverage": dict(zip(("total", "with_topic"), legacy_topic_coverage_for_window(60))),
             "gate": {"window_days": 60, "passing": gate_passing},
         }
         print(json.dumps(out))
@@ -402,6 +429,8 @@ if json_out:
             "legacy_callers_by_ip": build_legacy_callers_by_ip(legacy_ips, last_seen_ips),
             # T-1622: per-(method, topic) breakdown — closes T-1166 last visibility gap.
             "legacy_topics": build_legacy_topics(*legacy_topic_stats_for_window(last_n)),
+            # T-1625: availability signal — see trend-mode comment.
+            "legacy_topic_coverage": dict(zip(("total", "with_topic"), legacy_topic_coverage_for_window(last_n))),
             "gate": {"window_days": last_n, "passing": passing},
         }
         print(json.dumps(out))
@@ -482,11 +511,18 @@ if last_n_s == "":
     # written by post-T-1622 hubs carry topic; pre-T-1622 entries are
     # silently absent (visible in by-method but not bucketed by topic).
     _legacy_topics_60, _legacy_topic_seen_60 = legacy_topic_stats_for_window(60)
+    # T-1625: coverage signal — disambiguate "no traffic" from "pre-T-1622 hub".
+    _topic_total_60, _topic_with_60 = legacy_topic_coverage_for_window(60)
     if _legacy_topics_60:
         print()
         print(f"  Legacy callers by topic (last 60d):")
         for (method, topic), count in _legacy_topics_60.most_common(15):
             print(f"    {count:>8d}  {method:<20s}  topic={topic}")
+        if _topic_with_60 < _topic_total_60:
+            print(f"    (topic field present on {_topic_with_60}/{_topic_total_60} legacy entries — older entries lack it)")
+    elif _topic_total_60 > 0:
+        print()
+        print(f"  Legacy callers by topic (last 60d): (topic field unavailable — hub may predate T-1622)")
 
     print()
     print(f"  Gate threshold: {gate_pct_s:.2f}% (over 60-day window — T-1166)")
@@ -551,10 +587,17 @@ if legacy_ips:
 # field and are silently absent (they show up in the by-method tally but
 # can't be sliced by topic).
 _legacy_topics, _legacy_topic_seen = legacy_topic_stats_for_window(last_n)
+# T-1625: coverage signal — disambiguate "no traffic" from "pre-T-1622 hub".
+_topic_total_w, _topic_with_w = legacy_topic_coverage_for_window(last_n)
 if _legacy_topics:
     print(f"  Legacy callers by topic (last {last_n}d):")
     for (method, topic), count in _legacy_topics.most_common(15):
         print(f"    {count:>8d}  {method:<20s}  topic={topic}")
+    if _topic_with_w < _topic_total_w:
+        print(f"    (topic field present on {_topic_with_w}/{_topic_total_w} legacy entries — older entries lack it)")
+    print()
+elif _topic_total_w > 0:
+    print(f"  Legacy callers by topic (last {last_n}d): (topic field unavailable — hub may predate T-1622)")
     print()
 
 legacy_pct = (legacy_total / total) * 100 if total > 0 else 0.0
