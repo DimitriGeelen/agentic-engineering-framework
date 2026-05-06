@@ -2823,3 +2823,10 @@ X'` returning empty group."
   date: 2026-05-06
   context: "9-day silent non-firing of reviewer-audit cron discovered while verifying §ACD safety-net coverage on orchestrator-rethink arc. Same family pattern as T-1767/L-364."
   application: "When emitting commands for non-interactive contexts (cron, systemd, dispatch), the generator must establish cwd explicitly — env vars alone are not sufficient for Python module imports. Stderr must NEVER be silently swallowed; pipe to logger or a discoverable log file. Verification of any cron-touching change must include an env-i exec test, not just a grep of the generated text."
+- id: L-366
+  learning: "Inline D3/Canvas init that reads clientWidth/clientHeight synchronously at script parse can return 0 in Chromium when stylesheets/fonts are still loading. Cached into const → degenerate viewBox/coordinate system → empty render that 'works after refresh'. Fix pattern: read into let with sensible fallback defaults, defer initial render to requestAnimationFrame, attach ResizeObserver for ongoing layout shifts. Element-presence grep cannot detect this — needs Playwright assertion on viewBox numerics or rendered node count. Origin: T-1770 in web/templates/fabric_explorer.html — symptom (b) container visible, no nodes; refresh fixes."
+  source: P-001
+  task: T-1770
+  date: 2026-05-06
+  context: Added via context agent
+  application: TBD
