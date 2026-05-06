@@ -2830,3 +2830,10 @@ X'` returning empty group."
   date: 2026-05-06
   context: Added via context agent
   application: TBD
+- id: L-367
+  learning: "Background subshell watchdogs (fork-and-sleep timeout pattern) leak EVERY inherited file descriptor — not just stdio. When the audit script's watchdog at agents/audit/audit.sh:334 was '( sleep TIMEOUT && kill -TERM $$ ) &', the sleep child reparented to init and kept holding (a) FD 200 (the flock fd from line 321), silently blocking subsequent fw audit invocations for 600s, AND (b) FD 3 (bats per-test pipe), making bats orchestrators hang on EOF. T-1464 only addressed FDs 0/1/2 via stream redirects. Fix pattern: walk /proc/self/fd in the subshell and 'exec FD>&-' everything > 2 before forking sleep. Catch in regression tests by piping the parent command and using fuser+orphan-fd inspection."
+  source: P-001
+  task: T-1687
+  date: 2026-05-06
+  context: Added via context agent
+  application: TBD
