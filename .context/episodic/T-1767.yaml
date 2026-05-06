@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1767: fix escalation-scan-v0.5 cron deploy gap — registry missing entry, /etc/cron.d/ never received it, G-064 readiness blocked at 0 cron firings
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-06T12:11:40Z
+# ============================================================================
+
+task_id: T-1767
+task_name: "fix escalation-scan-v0.5 cron deploy gap — registry missing entry, /etc/cron.d/ never received it, G-064 readiness blocked at 0 cron firings"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T12:07:55Z
+completed: 2026-05-06T12:11:36Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`escalation-scan-v0.5` entry added to `.context/cron-registry.yaml` with same shape as `escalation-drift-daily` (id, name, schedule `33 5 * * *`, command, source_file, origin_task=T-1727, status=active, description)."
+  - "`bin/fw cron generate` regenerates `.context/cron/agentic-audit.crontab` with v0.5 entry preserved (no diff vs current crontab v0.5 line) — proves registry now matches the previously-manually-edited file."
+  - "`bin/fw cron install` deploys the regenerated file to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` atomically — file mtime updated to today, content matches repo crontab."
+  - "Deployed `/etc/cron.d/` file contains `33 5 * * * root` line referencing `tools/escalation-scan-v0.5.py` (grep verifies)."
+  - "`bin/fw cron status` lists both `escalation-drift-daily` (v0) AND a new `escalation-scan-v0-5` (v0.5) entry as active."
+  - "`bash -n` parses both modified files clean (yaml registry + sourced cron file)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["bug", "arc:orchestrator-rethink", "cron-deploy", "G-064-blocker", "registry-vs-deployment"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1767-fix-escalation-scan-v05-cron-deploy-gap-.md
+generated_by: context-agent-hybrid

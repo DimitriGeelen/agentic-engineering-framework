@@ -2808,3 +2808,10 @@ X'` returning empty group."
   date: 2026-05-06
   context: Added via context agent
   application: TBD
+- id: L-364
+  learning: "Cron 'wired' is not 'deployed'. The chain is registry (.context/cron-registry.yaml) → fw cron generate → .context/cron/agentic-audit.crontab → fw cron install → /etc/cron.d/agentic-audit-<slug>. Skipping any link leaves the daemon blind. T-1767 found 24+ hours of silent non-firing on escalation-scan-v0.5 because someone manually edited the generated crontab file (May 5) without updating the registry — `fw cron install` would have overwritten the manual edit anyway because it regenerates from registry. Verification of cron-touching tasks must include `grep <pattern> /etc/cron.d/<file>`, NOT a grep against the repo file. Same family as G-066 §ACD substrate-vs-deliverable conflation: T-1727 verified the substrate (file artefact contains the line) but never confirmed the deliverable (cron daemon fires the job)."
+  source: P-002
+  task: T-1767
+  date: 2026-05-06
+  context: Added directly via Edit (focus-drift gate blocked add-learning command after T-1767 completion)
+  application: "All cron-touching tasks must verify against /etc/cron.d/, not the repo file. Future structural fix: T-1768 — drift detection between registry/generated/deployed."

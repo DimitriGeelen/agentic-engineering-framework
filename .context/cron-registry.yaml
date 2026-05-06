@@ -169,6 +169,15 @@ jobs:
     status: active
     description: "Daily scan of completed tasks for symptom-fix candidates: bug-class without ## RCA (H1), repeated learning-IDs across 3+ tasks in 30 days (H2), bug-class without RCA AND no learning capture (H3). Writes machine-readable summary to .context/working/escalation-drift-LATEST.yaml + human-readable report to docs/reports/T-1549-escalation-scan-v0.md. Antifragile (no caching). Surfaces drift after Layer A (T-1550 RCA gate) baseline."
 
+  - id: escalation-scan-v0-5
+    name: "Escalation drift LLM augmentation (T-1727 — v0.5 runs after v0; idempotent over 7d)"
+    schedule: "33 5 * * *"
+    command: "cd /opt/999-Agentic-Engineering-Framework && python3 tools/escalation-scan-v0.5.py --window-days 30 --limit 200"
+    source_file: agentic-audit.crontab
+    origin_task: T-1727
+    status: active
+    description: "LLM-augmented escalation scan (T-1727). Routes via fw resolver dispatch (workflow=escalation-triage, worker_kind=ollama-loop) — second autonomous consumer of orchestrator substrate, primary closure-gauge for G-064. Runs at 5:33 UTC daily, 10 min after v0 (5:23 UTC). Idempotent over 7-day window: re-running within 7d skips already-scanned tasks. T-1750's tools/g064-readiness.py reads dispatches.jsonl filtered to this cron's window."
+
   - id: watchtower-rss-5m
     name: "Watchtower RSS observation (5 min, T-1611-B)"
     schedule: "*/5 * * * *"

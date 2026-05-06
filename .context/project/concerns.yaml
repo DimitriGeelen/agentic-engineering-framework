@@ -1859,6 +1859,20 @@ concerns:
     T-1727 backfill, excludes synthetic T-stress-* dispatches, and reports
     against the ≥3 distinct cron-firing dates threshold. `--json` for machine
     consumption; `--strict` exits 1 when not ready.
+
+    DEPLOY GAP DISCOVERED (2026-05-06, T-1767): The cron entry for v0.5 was
+    NEVER deployed to /etc/cron.d/. T-1727 added the line directly to the
+    generated crontab file (.context/cron/agentic-audit.crontab) without
+    updating the registry (.context/cron-registry.yaml), and `fw cron install`
+    had not run since. /etc/cron.d/agentic-audit-... had a 2026-05-03 mtime —
+    two days before the manual edit. Result: cron daemon never fired the job
+    in 24+ hours; readiness gauge correctly reported 0 cron-firings as
+    NOT_READY. T-1767 added the registry entry, regenerated, and deployed
+    atomically. First natural firing should occur 2026-05-07 05:33 UTC.
+    Re-evaluation date moves: 2026-05-08 → 2026-05-09 morning UTC after
+    3 distinct cron-firing dates have accumulated. Filed L-364 (cron
+    'wired' ≠ 'deployed') and T-1768 (structural drift detection) as
+    follow-ups.
 - id: G-065
   type: gap
   title: "Boundary hook is read-blind — only blocks `cd` to outside paths, not commands with outside-path arguments"
