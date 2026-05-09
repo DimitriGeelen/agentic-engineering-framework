@@ -358,6 +358,29 @@ plus Claude Code-specific integration notes.
                 project_header="${project_header//__PROJECT_NAME__/$project_name}"
                 printf '%s\n%s\n' "$project_header" "$governance" > "$project_claude"
                 echo -e "  ${GREEN}UPDATED${NC}  Governance sections refreshed from framework template. Backup: CLAUDE.md.bak"
+
+                # T-1629/G-055: Detect inline-customization regressions in
+                # governance sections. The wholesale-replace above cannot
+                # preserve project-specific INLINE additions inside governance
+                # (extra rows in tables, modified bullet text). Surface lost
+                # lines so the operator decides whether to re-apply them.
+                # Without this audit the regression goes silent — observed
+                # 2026-05-03 (PL-124 hit twice within 7d → G-055).
+                local lost_lines lost_count
+                lost_lines=$(grep -Fxv -f "$project_claude" "${project_claude}.bak" 2>/dev/null \
+                    | grep -vE '^[[:space:]]*$' || true)
+                if [ -n "$lost_lines" ]; then
+                    lost_count=$(printf '%s\n' "$lost_lines" | wc -l)
+                    echo -e "  ${YELLOW}!${NC}  $lost_count line(s) in CLAUDE.md.bak are absent from the new CLAUDE.md."
+                    echo -e "      These may be project-specific inline customizations the template"
+                    echo -e "      merge cannot preserve. First lines:"
+                    printf '%s\n' "$lost_lines" | head -8 | sed 's/^/        /'
+                    if [ "$lost_count" -gt 8 ]; then
+                        echo "        ... ($((lost_count - 8)) more — full diff: diff CLAUDE.md.bak CLAUDE.md)"
+                    fi
+                    echo -e "      ${YELLOW}Review and re-apply if needed, then remove CLAUDE.md.bak to clear.${NC}"
+                    echo -e "      Background: G-055 / PL-124 (.context/project/{concerns,learnings}.yaml)"
+                fi
             fi
         fi
     elif [ ! -f "$project_claude" ]; then
