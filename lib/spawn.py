@@ -76,11 +76,11 @@ def spawn_dispatch(
     wk = envelope.get("worker_kind")
     handler = _DISPATCHERS.get(wk)
     if handler is None:
-        if wk in ("ollama-loop", "TermLink", "Task"):
+        if wk in ("TermLink", "Task"):
             raise NotImplementedError(
                 f"spawn driver: worker_kind={wk!r} not yet routed "
-                f"(T-1773 v1 ships pi only; "
-                f"ollama-loop/TermLink/Task scheduled for follow-up)"
+                f"(T-1773 v1 ships pi only; T-1775 added ollama-loop; "
+                f"TermLink/Task scheduled for follow-up)"
             )
         raise SpawnError(
             f"spawn driver: unknown worker_kind={wk!r}; "
@@ -185,6 +185,56 @@ def _spawn_pi(
     }
 
 
+def _spawn_ollama_loop(
+    envelope: Dict[str, Any],
+    on_event: Optional[Callable[[Dict[str, Any]], None]],
+) -> Dict[str, Any]:
+    """Spawn `claude -p` via lib/ollama_loop.OllamaLoopWorker, stream events.
+
+    Env merging: os.environ overlaid by envelope["env"]. The
+    ANTHROPIC_BASE_URL / ANTHROPIC_API_KEY redirection is what makes this an
+    "ollama-loop" rather than a real Anthropic call — without those env vars
+    set in the workflow, `claude -p` would call the real API.
+
+    Terminal event: ``{"type": "result", "is_error": bool}``. Map is_error to
+    status="error" (everything else is success).
+    """
+    import ollama_loop  # noqa: PLC0415 — deferred so module imports without claude
+
+    blob_dir = _resolve_blob_dir(envelope)
+    blob_dir.mkdir(parents=True, exist_ok=True)
+    events_path = blob_dir / "events.jsonl"
+
+    terminal: Optional[Dict[str, Any]] = None
+    count = 0
+    with events_path.open("a") as ev_f:
+        worker = ollama_loop.OllamaLoopWorker(
+            model=envelope["model"],
+            cwd=envelope.get("cwd", str(PROJECT_ROOT)),
+            env=envelope.get("env") or {},
+            allowed_tools=envelope.get("allowed_tools") or [],
+        )
+        try:
+            for event in worker.prompt(envelope["prompt"]):
+                ev_f.write(json.dumps(event) + "\n")
+                count += 1
+                if on_event is not None:
+                    on_event(event)
+                if event.get("type") == "result":
+                    terminal = event
+        finally:
+            worker.close()
+
+    is_error = bool(terminal and terminal.get("is_error"))
+    status = "error" if is_error else "success"
+    return {
+        "status": status,
+        "events_count": count,
+        "events_path": str(events_path),
+        "terminal_event": terminal,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -216,4 +266,5 @@ def _resolve_blob_dir(envelope: Dict[str, Any]) -> Path:
 
 _DISPATCHERS = {
     "pi": _spawn_pi,
+    "ollama-loop": _spawn_ollama_loop,
 }

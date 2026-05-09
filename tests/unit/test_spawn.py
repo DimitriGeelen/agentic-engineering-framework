@@ -119,14 +119,99 @@ def test_pi_route_error_terminal(tmp_project):
 
 
 def test_other_worker_kinds_raise_notimplemented(tmp_project):
+    """T-1775 added ollama-loop. TermLink + Task remain deferred."""
     tmp_path, spawn = tmp_project
-    for wk in ("ollama-loop", "TermLink", "Task"):
+    for wk in ("TermLink", "Task"):
         env = _envelope(tmp_path, worker_kind=wk)
         with pytest.raises(NotImplementedError) as exc:
             spawn.spawn_dispatch(env)
         msg = str(exc.value)
         assert wk in msg
-        assert "T-1773" in msg
+        # Deferral message references the originating task IDs
+        assert "T-1773" in msg or "T-1775" in msg
+
+
+def test_ollama_loop_route_success(tmp_project):
+    """T-1775: ollama-loop route streams events; type=result is_error=False → success."""
+    tmp_path, spawn = tmp_project
+    env = _envelope(
+        tmp_path,
+        worker_kind="ollama-loop",
+        env={"ANTHROPIC_BASE_URL": "http://localhost:4000"},
+    )
+    events = [
+        {"type": "system", "subtype": "init"},
+        {"type": "assistant", "message": {"content": "hi"}},
+        {"type": "result", "is_error": False, "result": "done"},
+    ]
+
+    def fake_factory(**kwargs):
+        m = MagicMock()
+        m.prompt.return_value = iter(events)
+        m.close.return_value = 0
+        return m
+
+    import ollama_loop  # noqa: F401 — ensure module is in sys.modules
+    with patch("ollama_loop.OllamaLoopWorker", side_effect=fake_factory):
+        result = spawn.spawn_dispatch(env)
+
+    assert result["status"] == "success"
+    assert result["events_count"] == 3
+    assert result["terminal_event"]["type"] == "result"
+    assert result["terminal_event"]["is_error"] is False
+    ep = Path(result["events_path"])
+    assert ep.exists()
+    lines = ep.read_text().strip().splitlines()
+    assert len(lines) == 3
+
+
+def test_ollama_loop_route_error_terminal(tmp_project):
+    """T-1775: type=result is_error=True → status=error."""
+    tmp_path, spawn = tmp_project
+    env = _envelope(tmp_path, worker_kind="ollama-loop")
+    events = [
+        {"type": "assistant", "message": {}},
+        {"type": "result", "is_error": True, "error": "model timeout"},
+    ]
+
+    def fake_factory(**kwargs):
+        m = MagicMock()
+        m.prompt.return_value = iter(events)
+        m.close.return_value = 0
+        return m
+
+    with patch("ollama_loop.OllamaLoopWorker", side_effect=fake_factory):
+        result = spawn.spawn_dispatch(env)
+    assert result["status"] == "error"
+    assert result["terminal_event"]["is_error"] is True
+
+
+def test_ollama_loop_route_passes_env_and_tools(tmp_project):
+    """T-1775: envelope env + allowed_tools forwarded to OllamaLoopWorker."""
+    tmp_path, spawn = tmp_project
+    env = _envelope(
+        tmp_path,
+        worker_kind="ollama-loop",
+        env={"ANTHROPIC_BASE_URL": "http://localhost:4000",
+             "ANTHROPIC_API_KEY": "sk-litellm-local-dev"},
+        allowed_tools=["Read", "Bash", "Grep"],
+    )
+    captured = {}
+
+    def fake_factory(**kwargs):
+        captured.update(kwargs)
+        m = MagicMock()
+        m.prompt.return_value = iter([{"type": "result", "is_error": False}])
+        m.close.return_value = 0
+        return m
+
+    with patch("ollama_loop.OllamaLoopWorker", side_effect=fake_factory):
+        spawn.spawn_dispatch(env)
+
+    assert captured["env"]["ANTHROPIC_BASE_URL"] == "http://localhost:4000"
+    assert captured["env"]["ANTHROPIC_API_KEY"] == "sk-litellm-local-dev"
+    assert captured["allowed_tools"] == ["Read", "Bash", "Grep"]
+    assert captured["model"] == env["model"]
 
 
 def test_unknown_worker_kind_raises_spawnerror(tmp_project):
