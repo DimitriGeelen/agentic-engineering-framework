@@ -327,3 +327,58 @@ def test_spawn_dispatch_finalises_outcome_row(tmp_project):
     rows = [json.loads(line) for line in log.read_text().strip().splitlines()]
     assert rows[0]["outcome"] == "success"
     assert rows[0]["events_count"] == 1
+
+
+def test_spawn_persists_terminal_event_pi(tmp_project):
+    """T-1777: pi route persists terminal `agent.done` event into dispatches row."""
+    tmp_path, spawn = tmp_project
+    _write_workflow(tmp_path)
+    log = tmp_path / ".context" / "dispatches.jsonl"
+    log.write_text(json.dumps({"dispatch_id": "abc-123", "outcome": "pending"}) + "\n")
+    env = _envelope(tmp_path)
+    with patch("pi_worker.PiWorker", _fake_pi_worker([{"type": "agent.done", "id": "req-1"}])):
+        spawn.spawn_dispatch(env)
+    rows = [json.loads(line) for line in log.read_text().strip().splitlines()]
+    assert rows[0]["terminal_event"]["type"] == "agent.done"
+    assert rows[0]["terminal_event"]["id"] == "req-1"
+
+
+def test_spawn_persists_terminal_event_ollama_loop(tmp_project):
+    """T-1777: ollama-loop route persists `result` event with is_error flag."""
+    tmp_path, spawn = tmp_project
+    log = tmp_path / ".context" / "dispatches.jsonl"
+    log.write_text(json.dumps({"dispatch_id": "abc-123", "outcome": "pending"}) + "\n")
+    env = _envelope(tmp_path, worker_kind="ollama-loop")
+    events = [
+        {"type": "assistant"},
+        {"type": "result", "is_error": False, "result": "ok"},
+    ]
+
+    def fake_factory(**kwargs):
+        m = MagicMock()
+        m.prompt.return_value = iter(events)
+        m.close.return_value = 0
+        return m
+
+    with patch("ollama_loop.OllamaLoopWorker", side_effect=fake_factory):
+        spawn.spawn_dispatch(env)
+    rows = [json.loads(line) for line in log.read_text().strip().splitlines()]
+    te = rows[0]["terminal_event"]
+    assert te["type"] == "result"
+    assert te["is_error"] is False
+    assert te["result"] == "ok"
+
+
+def test_spawn_omits_terminal_event_when_none(tmp_project):
+    """T-1777: when no terminal event arrives (early stream end), the row
+    should NOT carry a null terminal_event field."""
+    tmp_path, spawn = tmp_project
+    _write_workflow(tmp_path)
+    log = tmp_path / ".context" / "dispatches.jsonl"
+    log.write_text(json.dumps({"dispatch_id": "abc-123", "outcome": "pending"}) + "\n")
+    env = _envelope(tmp_path)
+    # No agent.done, no error — generator just ends
+    with patch("pi_worker.PiWorker", _fake_pi_worker([{"type": "response"}])):
+        spawn.spawn_dispatch(env)
+    rows = [json.loads(line) for line in log.read_text().strip().splitlines()]
+    assert "terminal_event" not in rows[0]

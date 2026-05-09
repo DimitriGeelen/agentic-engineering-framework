@@ -88,8 +88,14 @@ def spawn_dispatch(
         )
 
     outcome = handler(envelope, on_event)
+    extra = {"events_count": outcome["events_count"]}
+    # T-1777: persist terminal_event into dispatch row so `fw outcome read`
+    # can surface the result without cracking open events.jsonl. Omitted when
+    # None (e.g. timeout/crash mid-stream produced no terminal event).
+    if outcome.get("terminal_event") is not None:
+        extra["terminal_event"] = outcome["terminal_event"]
     update_outcome_row(envelope.get("dispatch_id", ""), outcome["status"],
-                       extra={"events_count": outcome["events_count"]})
+                       extra=extra)
     return outcome
 
 
