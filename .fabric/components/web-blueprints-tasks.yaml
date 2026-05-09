@@ -16,7 +16,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-09'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -44,4 +44,10 @@ depended_by:
 - target: tests/playwright/test_api_task_inline.py
   type: called_by
 - target: tests/playwright/test_api_task_mutations.py
+  type: called_by
+- target: tests/unit/test_ac_body_html_comment.py
+  type: called_by
+- target: tests/unit/test_ac_body_html_comment.py
+  type: registered_by
+- target: tests/unit/test_file_route_extensions.py
   type: called_by

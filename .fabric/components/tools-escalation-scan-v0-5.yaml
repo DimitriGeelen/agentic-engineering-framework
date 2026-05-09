@@ -13,6 +13,8 @@ depended_by:
   type: tests_by
 - target: tools/reparse-historical-parsefails.py
   type: called_by
+- target: tests/unit/test_cron_generate_shape.bats
+  type: tests_by
 last_verified: 2026-05-05
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-09'

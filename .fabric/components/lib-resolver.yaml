@@ -10,11 +10,15 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/spawn.py
+  type: calls
 depended_by:
 - target: lib/resolver.sh
   type: called_by
 - target: tests/unit/test_resolver.py
   type: called_by
+- target: lib/spawn.py
+  type: called_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-09'

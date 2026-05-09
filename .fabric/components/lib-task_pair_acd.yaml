@@ -4,17 +4,23 @@ type: script
 subsystem: framework-core
 location: lib/task_pair_acd.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/task-create/update-task.sh
+  type: called_by
+- target: tests/playwright/test_review_code_inline.py
+  type: called_by
+- target: tests/unit/test_file_route_extensions.py
+  type: called_by
+- target: tests/unit/test_task_pair_acd_gate.bats
+  type: called_by
+- target: tests/unit/test_task_pair_acd_gate.bats
+  type: tests_by
+- target: tests/unit/test_task_pair_acd_parser.bats
+  type: called_by
+- target: tests/unit/test_task_pair_acd_parser.bats
+  type: tests_by
 last_verified: 2026-05-06
 created_by: unknown
+last_enriched: '2026-05-09'

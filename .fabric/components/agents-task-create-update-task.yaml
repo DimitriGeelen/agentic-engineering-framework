@@ -24,9 +24,13 @@ depends_on:
   type: calls
 - target: lib/reviewer/static_scan.py
   type: calls
+- target: lib/task_pair_acd.sh
+  type: calls
+- target: lib/task_pair_acd.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-09'
 depended_by:
 - target: C-004
   type: called_by
@@ -57,6 +61,10 @@ depended_by:
 - target: tests/unit/update_task_yaml_components_emit.bats
   type: called_by
 - target: tests/unit/update_task_yaml_components_emit.bats
+  type: tests_by
+- target: tests/unit/test_task_pair_acd_gate.bats
+  type: called_by
+- target: tests/unit/test_task_pair_acd_gate.bats
   type: tests_by
 docs:
 - path: docs/articles/deep-dives/06-authority-model.md
