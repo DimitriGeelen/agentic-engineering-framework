@@ -91,6 +91,47 @@ def test_cmd_run_worker_error_returns_2(mock_resolve, _mock_frontmatter, capsys)
     out = capsys.readouterr().out
     assert "status:         error" in out
     assert "terminal:       error" in out
+    # T-1778: pi error event surfaces `retryable` sub-field
+    assert "retryable:      True" in out
+
+
+@patch.object(resolver, "load_task_frontmatter", return_value={})
+@patch.object(resolver, "resolve")
+def test_cmd_run_ollama_loop_result_shows_is_error(mock_resolve, _mock_frontmatter, capsys):
+    """T-1778: ollama-loop result event surfaces is_error sub-field."""
+    mock_resolve.return_value = (_envelope(), {})
+    fake_spawn = MagicMock()
+    fake_spawn.spawn_dispatch.return_value = _outcome(
+        status="success",
+        terminal={"type": "result", "is_error": False, "result": "ok"},
+    )
+    fake_spawn.SpawnError = type("SpawnError", (Exception,), {})
+    with patch.dict(sys.modules, {"spawn": fake_spawn}):
+        rc = resolver.cmd_run(_args())
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "terminal:       result" in out
+    assert "is_error:       False" in out
+
+
+@patch.object(resolver, "load_task_frontmatter", return_value={})
+@patch.object(resolver, "resolve")
+def test_cmd_run_agent_done_no_subfields(mock_resolve, _mock_frontmatter, capsys):
+    """T-1778: agent.done terminal event has no retryable / is_error to print."""
+    mock_resolve.return_value = (_envelope(), {})
+    fake_spawn = MagicMock()
+    fake_spawn.spawn_dispatch.return_value = _outcome(
+        status="success",
+        terminal={"type": "agent.done"},
+    )
+    fake_spawn.SpawnError = type("SpawnError", (Exception,), {})
+    with patch.dict(sys.modules, {"spawn": fake_spawn}):
+        rc = resolver.cmd_run(_args())
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "terminal:       agent.done" in out
+    assert "retryable:" not in out
+    assert "is_error:" not in out
 
 
 @patch.object(resolver, "load_task_frontmatter", return_value={})

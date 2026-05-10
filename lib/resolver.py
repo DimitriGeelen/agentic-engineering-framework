@@ -622,8 +622,13 @@ def cmd_run(args: argparse.Namespace) -> int:
         print(f"events_count:   {outcome['events_count']}")
         print(f"events_path:    {outcome['events_path']}")
         if outcome.get("terminal_event"):
-            etype = outcome["terminal_event"].get("type")
-            print(f"terminal:       {etype}")
+            te = outcome["terminal_event"]
+            print(f"terminal:       {te.get('type')}")
+            # T-1778: surface sub-fields that drive retry/error semantics
+            if te.get("type") == "error" and "retryable" in te:
+                print(f"retryable:      {te['retryable']}")
+            elif te.get("type") == "result" and "is_error" in te:
+                print(f"is_error:       {te['is_error']}")
 
     return 2 if outcome["status"] == "error" else 0
 
@@ -663,6 +668,14 @@ def cmd_explain(args: argparse.Namespace) -> int:
     print(f"model:          {found.get('model')}")
     print(f"variant_id:     {found.get('variant_id')}")
     print(f"outcome:        {found.get('outcome')}")
+    # T-1778: surface terminal_event detail when persisted (T-1777+)
+    te = found.get("terminal_event")
+    if te:
+        print(f"terminal:       {te.get('type')}")
+        if te.get("type") == "error" and "retryable" in te:
+            print(f"retryable:      {te['retryable']}")
+        elif te.get("type") == "result" and "is_error" in te:
+            print(f"is_error:       {te['is_error']}")
     print(f"blob_dir:       {found.get('blob_dir')}")
     blob_dir = PROJECT_ROOT / found.get("blob_dir", "")
     if blob_dir.is_dir():
