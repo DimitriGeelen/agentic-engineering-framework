@@ -3361,11 +3361,16 @@ EOF
                 shift
                 _emit_json=0
                 _emit_outcomes=0
+                _filter_task=""
+                # T-1784: --task T-XXX filter (next arg is the task id).
+                _prev=""
                 for _arg in "$@"; do
                     [ "$_arg" = "--json" ] && _emit_json=1
                     [ "$_arg" = "--outcomes" ] && _emit_outcomes=1
+                    [ "$_prev" = "--task" ] && _filter_task="$_arg"
+                    _prev="$_arg"
                 done
-                python3 - "$_emit_json" "$_emit_outcomes" <<'PYEOF'
+                python3 - "$_emit_json" "$_emit_outcomes" "$_filter_task" <<'PYEOF'
 import json
 import os
 import sys
@@ -3374,6 +3379,7 @@ from pathlib import Path
 
 emit_json = sys.argv[1] == "1"
 emit_outcomes = sys.argv[2] == "1"
+filter_task = sys.argv[3] if len(sys.argv) > 3 else ""
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 DISPATCHES = PROJECT_ROOT / ".context" / "dispatches.jsonl"
 OUTCOMES = PROJECT_ROOT / ".context" / "dispatch-outcomes.jsonl"
@@ -3412,6 +3418,16 @@ def _is_synthetic(row):
 
 dispatches = [d for d in dispatches_all if not _is_synthetic(d)]
 synthetic = [d for d in dispatches_all if _is_synthetic(d)]
+
+# T-1784: --task T-XXX filter applied BEFORE all aggregation, so every
+# downstream breakdown (task_type, worker_kind, terminal_event, recent)
+# sees only matching rows. Synthetic exclusion still ran above.
+if filter_task:
+    dispatches = [d for d in dispatches if d.get("task_id") == filter_task]
+    # Outcomes are filtered to match the (now-narrowed) dispatch_ids.
+    matching_dids = {d.get("dispatch_id") for d in dispatches if d.get("dispatch_id")}
+    outcomes = [o for o in outcomes if o.get("dispatch_id") in matching_dids]
+    dispatch_ids_with_outcomes = {o.get("dispatch_id") for o in outcomes if o.get("dispatch_id")}
 
 stats = {
     "dispatch_total": len(dispatches),
@@ -3537,12 +3553,27 @@ if emit_json:
     print(json.dumps(stats, indent=2))
     sys.exit(0)
 
+if filter_task and stats["dispatch_total"] == 0:
+    # T-1784: empty filter result — separate notice (real dispatches exist,
+    # just none for this task). Synthetic count doesn't gate this notice.
+    if emit_json:
+        # JSON callers get the empty stats dict (valid, machine-parseable)
+        # rather than a free-text line.
+        print(json.dumps(stats, indent=2))
+    else:
+        print(f"no dispatches captured for task {filter_task}")
+    sys.exit(0)
+
 if stats["dispatch_total"] == 0 and stats["outcome_total"] == 0 and stats["synthetic_total"] == 0:
     print("no dispatches captured yet")
     print(f"(write path: {DISPATCHES.relative_to(PROJECT_ROOT)})")
     sys.exit(0)
 
 print(f"Dispatch substrate (T-1687 arc, v1)")
+if filter_task:
+    # T-1784: make the narrowing visible — operator should not wonder
+    # whether they're looking at the full substrate or one task's slice.
+    print(f"  Filter:            task={filter_task}")
 print(f"  Dispatches:        {stats['dispatch_total']}")
 print(f"  Outcome events:    {stats['outcome_total']}")
 if stats["dispatch_total"]:

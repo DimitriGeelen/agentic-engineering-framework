@@ -294,6 +294,83 @@ def test_json_recent_carries_terminal_event(tmp_path):
     assert entry["terminal_event"]["is_error"] is False
 
 
+# ---------------------------------------------------------------------------
+# T-1784: --task T-XXX filter
+# ---------------------------------------------------------------------------
+
+
+def test_task_filter_narrows_to_matching_dispatches(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "f1-aaaa", "ts": "2026-05-11T00:00:01", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+        {"dispatch_id": "f2-bbbb", "ts": "2026-05-11T00:00:02", "task_id": "T-200",
+         "task_type": "Y", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "f3-cccc", "ts": "2026-05-11T00:00:03", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+    ], [])
+    result = _run_status(tmp_path, "--task", "T-100")
+    assert result.returncode == 0, result.stderr
+    assert "Filter:            task=T-100" in result.stdout
+    assert "Dispatches:        2" in result.stdout
+    # T-200 row excluded.
+    assert "[f2-bbbb" not in result.stdout
+    # T-100 rows present.
+    assert "[f1-aaaa" in result.stdout
+    assert "[f3-cccc" in result.stdout
+
+
+def test_task_filter_empty_result_prints_notice(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "f1-aaaa", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+    ], [])
+    result = _run_status(tmp_path, "--task", "T-999")
+    assert result.returncode == 0, result.stderr
+    assert "no dispatches captured for task T-999" in result.stdout
+
+
+def test_task_filter_with_json_returns_empty_stats(tmp_path):
+    """--json --task with no match returns parseable empty stats, not free text."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "f1-aaaa", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+    ], [])
+    result = _run_status(tmp_path, "--task", "T-999", "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["dispatch_total"] == 0
+    assert data["by_task_type"] == {}
+    assert data["by_worker_kind"] == {}
+
+
+def test_task_filter_composes_with_json(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "f1-aaaa", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+        {"dispatch_id": "f2-bbbb", "task_id": "T-200",
+         "task_type": "Y", "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path, "--task", "T-100", "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["dispatch_total"] == 1
+    # Only T-100's task_type appears.
+    assert "X" in data["by_task_type"]
+    assert "Y" not in data["by_task_type"]
+
+
+def test_task_filter_excludes_synthetic_rows(tmp_path):
+    """Synthetic T-stress-* are not matched even when filter looks for them."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "f1-aaaa", "task_id": "T-stress-100",
+         "task_type": "stress", "worker_kind": "pi"},
+    ], [])
+    result = _run_status(tmp_path, "--task", "T-stress-100")
+    assert result.returncode == 0, result.stderr
+    # Synthetic rows excluded BEFORE filter applies, so the filter sees zero.
+    assert "no dispatches captured for task T-stress-100" in result.stdout
+
+
 def test_json_terminal_keys_empty_when_no_rows_have_terminal_event(tmp_path):
     """Legacy-only data → empty dicts (not missing keys, not None)."""
     _seed_jsonl(tmp_path, [
