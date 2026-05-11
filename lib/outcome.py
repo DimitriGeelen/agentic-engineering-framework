@@ -251,6 +251,45 @@ def read_dispatch(dispatch_id_prefix: str) -> Optional[Dict[str, Any]]:
     return merged
 
 
+def _dispatch_terminal_map() -> Dict[str, Dict[str, Any]]:
+    """Build {dispatch_id: terminal_event} from dispatches.jsonl.
+
+    Skips rows without terminal_event. Single-pass; O(n) build, O(1) lookup
+    afterwards. Empty dict if log missing or no row carries the field.
+    (T-1782 — pair to T-1780 / T-1781 surfaces of T-1777-persisted data.)
+    """
+    out: Dict[str, Dict[str, Any]] = {}
+    if not DISPATCHES_LOG.exists():
+        return out
+    with DISPATCHES_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            te = row.get("terminal_event")
+            did = row.get("dispatch_id")
+            if did and isinstance(te, dict) and te.get("type"):
+                out[did] = te
+    return out
+
+
+def _terminal_suffix(te: Optional[Dict[str, Any]]) -> str:
+    """Render `terminal=<type>(<suffix>)` per T-1781 idiom; "" if absent."""
+    if not isinstance(te, dict) or not te.get("type"):
+        return ""
+    ttype = te["type"]
+    suffix = ""
+    if ttype == "error" and "retryable" in te:
+        suffix = "(retryable)" if te["retryable"] else "(non-retryable)"
+    elif ttype == "result" and te.get("is_error") is True:
+        suffix = "(is_error)"
+    return f" terminal={ttype}{suffix}"
+
+
 def list_outcomes_for_task(task_id: str) -> List[Dict[str, Any]]:
     """Return all outcome rows for a task_id from outcomes log."""
     if not OUTCOMES_LOG.exists():
@@ -346,12 +385,17 @@ def cmd_list(args: argparse.Namespace) -> int:
     if not rows:
         print(f"(no outcome events for {args.task_id})")
         return 0
+    # T-1782: one-pass build of {did → terminal_event}; lookup O(1) per row.
+    term_map = _dispatch_terminal_map()
     for r in rows:
         o = r.get("outcome", {})
         ok = "✓" if o.get("verification_passed") and o.get("ac_satisfied") else "·"
+        did = r.get("dispatch_id", "?")
+        suffix = _terminal_suffix(term_map.get(did))
         print(
-            f"{ok} {r.get('ts', '?')} [{r.get('dispatch_id', '?')[:8]}] "
+            f"{ok} {r.get('ts', '?')} [{did[:8]}] "
             f"ac={o.get('ac_checked', '?')}/{o.get('ac_total', '?')}"
+            f"{suffix}"
         )
     return 0
 

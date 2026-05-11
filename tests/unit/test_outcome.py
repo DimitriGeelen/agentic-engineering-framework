@@ -343,6 +343,111 @@ def test_cmd_read_legacy_row_no_terminal_event(isolated_root, capsys):
     assert "is_error:" not in out
 
 
+# ---------------------------------------------------------------------------
+# T-1782: cmd_list surfaces terminal_event via dispatch join
+# ---------------------------------------------------------------------------
+
+
+def _list_args(task_id, json_flag=False):
+    return argparse.Namespace(task_id=task_id, json=json_flag)
+
+
+def _list_line(stdout: str, did_prefix: str) -> str:
+    for line in stdout.splitlines():
+        if f"[{did_prefix}" in line:
+            return line
+    return ""
+
+
+def test_cmd_list_shows_terminal_agent_done(isolated_root, capsys):
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "L1-abcd", "task_id": "T-200",
+         "terminal_event": {"type": "agent.done"}},
+    ])
+    o.backprop_outcome("T-200", {"verification_passed": True, "ac_satisfied": True})
+    rc = o.cmd_list(_list_args("T-200"))
+    assert rc == 0
+    line = _list_line(capsys.readouterr().out, "L1-abcd")
+    assert "terminal=agent.done" in line
+
+
+def test_cmd_list_shows_retryable_error(isolated_root, capsys):
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "L2-abcd", "task_id": "T-201",
+         "terminal_event": {"type": "error", "retryable": True}},
+    ])
+    o.backprop_outcome("T-201", {"verification_passed": False})
+    rc = o.cmd_list(_list_args("T-201"))
+    assert rc == 0
+    line = _list_line(capsys.readouterr().out, "L2-abcd")
+    assert "terminal=error(retryable)" in line
+
+
+def test_cmd_list_shows_result_is_error_suffix(isolated_root, capsys):
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "L3-abcd", "task_id": "T-202",
+         "terminal_event": {"type": "result", "is_error": True}},
+    ])
+    o.backprop_outcome("T-202", {"verification_passed": False})
+    rc = o.cmd_list(_list_args("T-202"))
+    assert rc == 0
+    line = _list_line(capsys.readouterr().out, "L3-abcd")
+    assert "terminal=result(is_error)" in line
+
+
+def test_cmd_list_no_suffix_on_result_success(isolated_root, capsys):
+    """is_error=False is the common success path — `terminal=result` with no suffix."""
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "L4-abcd", "task_id": "T-203",
+         "terminal_event": {"type": "result", "is_error": False}},
+    ])
+    o.backprop_outcome("T-203", {"verification_passed": True, "ac_satisfied": True})
+    rc = o.cmd_list(_list_args("T-203"))
+    assert rc == 0
+    line = _list_line(capsys.readouterr().out, "L4-abcd")
+    assert "terminal=result" in line
+    assert "(is_error)" not in line
+    assert "(retryable)" not in line
+
+
+def test_cmd_list_no_terminal_when_dispatch_row_lacks_it(isolated_root, capsys):
+    """Legacy dispatch (no terminal_event) → list line has no `terminal=` suffix."""
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "L5-abcd", "task_id": "T-204"},  # legacy row
+    ])
+    o.backprop_outcome("T-204", {"verification_passed": True, "ac_satisfied": True})
+    rc = o.cmd_list(_list_args("T-204"))
+    assert rc == 0
+    line = _list_line(capsys.readouterr().out, "L5-abcd")
+    assert "terminal=" not in line
+
+
+def test_cmd_list_no_terminal_when_dispatch_not_in_log(isolated_root, capsys):
+    """Orphan outcome row (no matching dispatch) → no crash, no suffix."""
+    root, o = isolated_root
+    # Seed an unrelated dispatch so log exists but no matching row for T-205.
+    _seed_dispatches(root, [
+        {"dispatch_id": "OTHER-abcd", "task_id": "T-999",
+         "terminal_event": {"type": "agent.done"}},
+    ])
+    # Manually append an outcome with no matching dispatch.
+    outcomes_log = root / ".context" / "dispatch-outcomes.jsonl"
+    outcomes_log.write_text(json.dumps({
+        "dispatch_id": "ORPHAN-abcd", "task_id": "T-205", "ts": "2026-05-11T00:00:00",
+        "outcome": {"verification_passed": True, "ac_satisfied": True},
+    }) + "\n")
+    rc = o.cmd_list(_list_args("T-205"))
+    assert rc == 0
+    line = _list_line(capsys.readouterr().out, "ORPHAN-a")
+    assert line  # row was rendered
+    assert "terminal=" not in line
+
+
 def test_cmd_read_json_carries_terminal_event(isolated_root, capsys):
     """--json output includes terminal_event from the dispatch row (T-1777)."""
     root, o = isolated_root
