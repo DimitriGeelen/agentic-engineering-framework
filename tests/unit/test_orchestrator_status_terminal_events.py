@@ -460,3 +460,96 @@ def test_json_terminal_keys_empty_when_no_rows_have_terminal_event(tmp_path):
     assert data["by_terminal_type"] == {}
     assert data["terminal_retryable"] == {}
     assert data["terminal_is_error"] == {}
+
+
+# ---------------------------------------------------------------------------
+# T-1786: --worker-kind X filter
+# ---------------------------------------------------------------------------
+
+
+def test_worker_kind_filter_narrows_to_matching_dispatches(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "w1-aaaa", "ts": "2026-05-11T00:00:01", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "w2-bbbb", "ts": "2026-05-11T00:00:02", "task_id": "T-200",
+         "task_type": "Y", "worker_kind": "TermLink"},
+        {"dispatch_id": "w3-cccc", "ts": "2026-05-11T00:00:03", "task_id": "T-300",
+         "task_type": "Z", "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path, "--worker-kind", "ollama-loop")
+    assert result.returncode == 0, result.stderr
+    assert "Filter:            worker_kind=ollama-loop" in result.stdout
+    assert "Dispatches:        2" in result.stdout
+    # TermLink row excluded.
+    assert "[w2-bbbb" not in result.stdout
+    # ollama-loop rows present.
+    assert "[w1-aaaa" in result.stdout
+    assert "[w3-cccc" in result.stdout
+
+
+def test_worker_kind_filter_empty_result_prints_notice(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "w1-aaaa", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path, "--worker-kind", "Task")
+    assert result.returncode == 0, result.stderr
+    assert "no dispatches captured for worker_kind Task" in result.stdout
+
+
+def test_worker_kind_filter_composes_with_task_AND(tmp_path):
+    """--worker-kind and --task: both filters must match."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "w1-aaaa", "ts": "2026-05-11T00:00:01", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "w2-bbbb", "ts": "2026-05-11T00:00:02", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "TermLink"},
+        {"dispatch_id": "w3-cccc", "ts": "2026-05-11T00:00:03", "task_id": "T-200",
+         "task_type": "Y", "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path, "--worker-kind", "ollama-loop", "--task", "T-100")
+    assert result.returncode == 0, result.stderr
+    assert "Filter:            task=T-100" in result.stdout
+    assert "Filter:            worker_kind=ollama-loop" in result.stdout
+    assert "Dispatches:        1" in result.stdout
+    assert "[w1-aaaa" in result.stdout
+    assert "[w2-bbbb" not in result.stdout
+    assert "[w3-cccc" not in result.stdout
+
+
+def test_worker_kind_filter_composes_with_since_AND(tmp_path):
+    """--worker-kind and --since: AND-composition with time window."""
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    recent = (now - timedelta(minutes=10)).isoformat()
+    old = (now - timedelta(days=2)).isoformat()
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "w1-aaaa", "ts": recent, "task_id": "T-100",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "w2-bbbb", "ts": old, "task_id": "T-100",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "w3-cccc", "ts": recent, "task_id": "T-100",
+         "task_type": "X", "worker_kind": "TermLink"},
+    ], [])
+    result = _run_status(tmp_path, "--worker-kind", "ollama-loop", "--since", "1h")
+    assert result.returncode == 0, result.stderr
+    assert "Dispatches:        1" in result.stdout
+    assert "[w1-aaaa" in result.stdout  # recent + ollama-loop
+    assert "[w2-bbbb" not in result.stdout  # old (filtered by --since)
+    assert "[w3-cccc" not in result.stdout  # TermLink (filtered by --worker-kind)
+
+
+def test_worker_kind_filter_composes_with_json(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "w1-aaaa", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "w2-bbbb", "task_id": "T-200",
+         "task_type": "Y", "worker_kind": "TermLink"},
+    ], [])
+    result = _run_status(tmp_path, "--worker-kind", "ollama-loop", "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["dispatch_total"] == 1
+    # Only ollama-loop's worker_kind appears in breakdown.
+    assert "ollama-loop" in data["by_worker_kind"]
+    assert "TermLink" not in data["by_worker_kind"]

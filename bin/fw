@@ -3363,16 +3363,18 @@ EOF
                 _emit_outcomes=0
                 _filter_task=""
                 _filter_since=""
-                # T-1784: --task T-XXX filter. T-1785: --since DURATION filter.
+                _filter_worker_kind=""
+                # T-1784: --task. T-1785: --since. T-1786: --worker-kind.
                 _prev=""
                 for _arg in "$@"; do
                     [ "$_arg" = "--json" ] && _emit_json=1
                     [ "$_arg" = "--outcomes" ] && _emit_outcomes=1
                     [ "$_prev" = "--task" ] && _filter_task="$_arg"
                     [ "$_prev" = "--since" ] && _filter_since="$_arg"
+                    [ "$_prev" = "--worker-kind" ] && _filter_worker_kind="$_arg"
                     _prev="$_arg"
                 done
-                python3 - "$_emit_json" "$_emit_outcomes" "$_filter_task" "$_filter_since" <<'PYEOF'
+                python3 - "$_emit_json" "$_emit_outcomes" "$_filter_task" "$_filter_since" "$_filter_worker_kind" <<'PYEOF'
 import json
 import os
 import sys
@@ -3383,6 +3385,7 @@ emit_json = sys.argv[1] == "1"
 emit_outcomes = sys.argv[2] == "1"
 filter_task = sys.argv[3] if len(sys.argv) > 3 else ""
 filter_since_arg = sys.argv[4] if len(sys.argv) > 4 else ""
+filter_worker_kind = sys.argv[5] if len(sys.argv) > 5 else ""
 
 
 def _parse_duration(s):
@@ -3446,11 +3449,13 @@ def _is_synthetic(row):
 dispatches = [d for d in dispatches_all if not _is_synthetic(d)]
 synthetic = [d for d in dispatches_all if _is_synthetic(d)]
 
-# T-1784: --task filter. T-1785: --since filter. Both apply BEFORE
-# aggregation so every downstream breakdown sees only matching rows.
-# AND-composition when both set.
+# T-1784: --task filter. T-1785: --since filter. T-1786: --worker-kind.
+# All apply BEFORE aggregation so every downstream breakdown sees only
+# matching rows. AND-composition when multiple set.
 if filter_task:
     dispatches = [d for d in dispatches if d.get("task_id") == filter_task]
+if filter_worker_kind:
+    dispatches = [d for d in dispatches if d.get("worker_kind") == filter_worker_kind]
 if filter_since_seconds is not None:
     from datetime import datetime as _dt, timezone as _tz, timedelta as _td
     cutoff = _dt.now(_tz.utc) - _td(seconds=filter_since_seconds)
@@ -3465,7 +3470,7 @@ if filter_since_seconds is not None:
 else:
     cutoff_iso = None
 
-if filter_task or filter_since_seconds is not None:
+if filter_task or filter_since_seconds is not None or filter_worker_kind:
     # Outcomes are filtered to match the (now-narrowed) dispatch_ids.
     matching_dids = {d.get("dispatch_id") for d in dispatches if d.get("dispatch_id")}
     outcomes = [o for o in outcomes if o.get("dispatch_id") in matching_dids]
@@ -3595,9 +3600,10 @@ if emit_json:
     print(json.dumps(stats, indent=2))
     sys.exit(0)
 
-if (filter_task or filter_since_seconds is not None) and stats["dispatch_total"] == 0:
-    # T-1784 / T-1785: empty filter result — separate notice (real dispatches
-    # may exist, just none matching the filter). Synthetic gating skipped.
+if (filter_task or filter_since_seconds is not None or filter_worker_kind) and stats["dispatch_total"] == 0:
+    # T-1784 / T-1785 / T-1786: empty filter result — separate notice (real
+    # dispatches may exist, just none matching the filter). Synthetic gating
+    # skipped.
     if emit_json:
         # JSON callers get the empty stats dict (valid, machine-parseable).
         print(json.dumps(stats, indent=2))
@@ -3605,6 +3611,8 @@ if (filter_task or filter_since_seconds is not None) and stats["dispatch_total"]
         parts = []
         if filter_task:
             parts.append(f"task {filter_task}")
+        if filter_worker_kind:
+            parts.append(f"worker_kind {filter_worker_kind}")
         if filter_since_seconds is not None:
             parts.append(f"the last {filter_since_arg}")
         scope = " in ".join(parts)
@@ -3621,6 +3629,9 @@ if filter_task:
     # T-1784: make the narrowing visible — operator should not wonder
     # whether they're looking at the full substrate or one task's slice.
     print(f"  Filter:            task={filter_task}")
+if filter_worker_kind:
+    # T-1786: same visibility for worker_kind narrowing.
+    print(f"  Filter:            worker_kind={filter_worker_kind}")
 if filter_since_seconds is not None:
     # T-1785: surface the cutoff so operators see what window they're in.
     print(f"  Filter:            since={filter_since_arg} (>= {cutoff_iso})")

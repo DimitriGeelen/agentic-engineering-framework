@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1786: fw orchestrator status --worker-kind X: filter by worker_kind
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-11T11:04:37Z
+# ============================================================================
+
+task_id: T-1786
+task_name: "fw orchestrator status --worker-kind X: filter by worker_kind"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T11:01:42Z
+completed: 2026-05-11T11:04:27Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`fw orchestrator status --worker-kind X` accepts a worker_kind string."
+  - "Filter applies BEFORE all aggregation: dispatches not matching"
+  - "Synthetic exclusion still runs."
+  - "When no dispatches match, print a clear notice"
+  - "JSON output for empty filter returns the stats dict with zero"
+  - "`--worker-kind` composes with `--task`, `--since`, `--json`, `--outcomes`."
+  - "AND-composition: all active filters must match."
+  - "`tests/unit/test_orchestrator_status_terminal_events.py` extends with:"
+  - "`python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py -v` exits 0."
+  - "No regression: arc-suite green."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1786-fw-orchestrator-status---worker-kind-x-f.md
+generated_by: context-agent-hybrid
