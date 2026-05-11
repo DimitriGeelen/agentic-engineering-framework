@@ -295,6 +295,83 @@ def test_json_recent_carries_terminal_event(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# T-1785: --since DURATION filter
+# ---------------------------------------------------------------------------
+
+
+def test_since_filter_rejects_invalid_format(tmp_path):
+    _seed_jsonl(tmp_path, [], [])
+    for bad in ("xyz", "0h", "-1h", "1", "1s", "30 minutes"):
+        result = _run_status(tmp_path, "--since", bad)
+        assert result.returncode == 1, f"expected error for --since {bad!r}"
+        assert "invalid --since" in result.stderr
+
+
+def test_since_filter_accepts_m_h_d(tmp_path):
+    """Smoke that all three units parse — empty data, just verifies no parse error."""
+    _seed_jsonl(tmp_path, [], [])
+    for good in ("1m", "24h", "7d", "999m"):
+        result = _run_status(tmp_path, "--since", good)
+        # No matching rows → exit 0 with notice; parse error would exit 1.
+        assert result.returncode == 0, f"--since {good!r} should parse: {result.stderr}"
+
+
+def test_since_filter_narrows_to_recent_only(tmp_path):
+    """Rows older than the cutoff are excluded."""
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    recent_ts = (now - timedelta(minutes=30)).isoformat()
+    old_ts = (now - timedelta(days=2)).isoformat()
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "RECENT-1", "ts": recent_ts, "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+        {"dispatch_id": "OLD-1", "ts": old_ts, "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+    ], [])
+    result = _run_status(tmp_path, "--since", "1h")
+    assert result.returncode == 0, result.stderr
+    assert "Filter:            since=1h" in result.stdout
+    assert "Dispatches:        1" in result.stdout
+    assert "[RECENT-1" in result.stdout
+    assert "[OLD-1" not in result.stdout
+
+
+def test_since_filter_empty_result_notice(tmp_path):
+    """Old rows + --since 1h → empty notice."""
+    from datetime import datetime, timezone, timedelta
+    old_ts = (datetime.now(timezone.utc) - timedelta(days=5)).isoformat()
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "OLD-x", "ts": old_ts, "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+    ], [])
+    result = _run_status(tmp_path, "--since", "1h")
+    assert result.returncode == 0, result.stderr
+    assert "no dispatches captured for the last 1h" in result.stdout
+
+
+def test_since_and_task_filters_compose_AND(tmp_path):
+    """When both --task and --since are set, both must match."""
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    recent = (now - timedelta(minutes=10)).isoformat()
+    old = (now - timedelta(days=3)).isoformat()
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "MATCH-1", "ts": recent, "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+        {"dispatch_id": "WRONG-TASK", "ts": recent, "task_id": "T-200",
+         "task_type": "X", "worker_kind": "pi"},
+        {"dispatch_id": "WRONG-TIME", "ts": old, "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi"},
+    ], [])
+    result = _run_status(tmp_path, "--task", "T-100", "--since", "1h")
+    assert result.returncode == 0, result.stderr
+    assert "Dispatches:        1" in result.stdout
+    assert "[MATCH-1" in result.stdout
+    assert "[WRONG-TASK" not in result.stdout
+    assert "[WRONG-TIME" not in result.stdout
+
+
+# ---------------------------------------------------------------------------
 # T-1784: --task T-XXX filter
 # ---------------------------------------------------------------------------
 
