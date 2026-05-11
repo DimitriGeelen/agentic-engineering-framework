@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1790: fw orchestrator status/routes --task-type X: fourth filter knob (parity across surfaces)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-11T11:21:42Z
+# ============================================================================
+
+task_id: T-1790
+task_name: "fw orchestrator status/routes --task-type X: fourth filter knob (parity across surfaces)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T11:42:00Z
+completed: 2026-05-11T11:21:32Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`fw orchestrator status --task-type X` accepts a task_type string."
+  - "Filter applied BEFORE aggregation (mirror of --worker-kind)."
+  - "Composes with --task, --since, --worker-kind (AND)."
+  - "Empty-result notice includes task_type in scope phrase."
+  - "Filter line `Filter: task_type=X` shown when active."
+  - "`fw orchestrator routes --task-type X` narrows the by_task_type"
+  - "When no match → \"no route cache entries for task_type X\" notice."
+  - "--json: by_task_type list filtered to matching entries only."
+  - "`tests/unit/test_orchestrator_status_terminal_events.py` extends with:"
+  - "`tests/unit/test_orchestrator_routes.py` extends with:"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1790-fw-orchestrator-statusroutes---task-type.md
+generated_by: context-agent-hybrid

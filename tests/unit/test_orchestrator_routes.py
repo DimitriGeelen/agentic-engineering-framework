@@ -220,3 +220,79 @@ def test_task_types_sorted_alphabetically(tmp_path):
     out = result.stdout
     assert out.index("task_type=apple") < out.index("task_type=middle")
     assert out.index("task_type=middle") < out.index("task_type=zebra")
+
+
+# ---------------------------------------------------------------------------
+# T-1790: --task-type X filter
+# ---------------------------------------------------------------------------
+
+
+def test_routes_task_type_filter_narrows_to_one_task_type(tmp_path):
+    """--task-type build → only build's leaderboard rendered."""
+    _seed_cache(tmp_path, {
+        "haiku:build": {"model": "haiku", "task_type": "build",
+                        "successes": 5, "failures": 1,
+                        "last_used": "2026-05-01"},
+        "sonnet:design": {"model": "sonnet", "task_type": "design",
+                          "successes": 3, "failures": 0,
+                          "last_used": "2026-05-01"},
+    })
+    result = _run_routes(tmp_path, "--task-type", "build")
+    assert result.returncode == 0, result.stderr
+    out = result.stdout
+    assert "task_type=build" in out
+    assert "task_type=design" not in out
+    assert "haiku" in out
+    assert "sonnet" not in out
+
+
+def test_routes_task_type_filter_no_match_prints_notice(tmp_path):
+    """--task-type with no matching entry → distinct notice."""
+    _seed_cache(tmp_path, {
+        "haiku:build": {"model": "haiku", "task_type": "build",
+                        "successes": 5, "failures": 0,
+                        "last_used": "2026"},
+    })
+    result = _run_routes(tmp_path, "--task-type", "missing")
+    assert result.returncode == 0, result.stderr
+    assert "no route cache entries for task_type missing" in result.stdout
+    # Not the bare "no model_stats yet" notice — different code path.
+    assert "no model_stats yet" not in result.stdout
+
+
+def test_routes_task_type_filter_with_json(tmp_path):
+    """--task-type --json → filtered list + accurate total_stats."""
+    _seed_cache(tmp_path, {
+        "haiku:build": {"model": "haiku", "task_type": "build",
+                        "successes": 5, "failures": 1,
+                        "last_used": "2026"},
+        "opus:build": {"model": "opus", "task_type": "build",
+                       "successes": 1, "failures": 3,
+                       "last_used": "2026"},
+        "sonnet:design": {"model": "sonnet", "task_type": "design",
+                          "successes": 3, "failures": 0,
+                          "last_used": "2026"},
+    })
+    result = _run_routes(tmp_path, "--task-type", "build", "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["available"] is True
+    # Only build entry retained — total_stats reflects filter.
+    assert data["total_stats"] == 2
+    assert len(data["by_task_type"]) == 1
+    assert data["by_task_type"][0]["task_type"] == "build"
+
+
+def test_routes_task_type_filter_no_match_json(tmp_path):
+    """--task-type --json with no match → valid JSON (empty list)."""
+    _seed_cache(tmp_path, {
+        "haiku:build": {"model": "haiku", "task_type": "build",
+                        "successes": 1, "failures": 0,
+                        "last_used": "2026"},
+    })
+    result = _run_routes(tmp_path, "--task-type", "missing", "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["available"] is True
+    assert data["by_task_type"] == []
+    assert data["total_stats"] == 0

@@ -1,0 +1,21 @@
+id: tests/unit/test_orchestrator_routes.py
+name: test_orchestrator_routes
+type: script
+subsystem: tests
+location: tests/unit/test_orchestrator_routes.py
+tags: [arc:orchestrator-rethink, test, observability]
+
+purpose: >
+  Pin the `fw orchestrator routes` CLI surface (T-1789): mirror of web
+  /orchestrator's route-cache view. Covers missing-cache, empty
+  model_stats, invalid JSON, candidate sorting, --json shape parity
+  with web _route_cache_learned, last_used surfacing.
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-05-11
+created_by: T-1789

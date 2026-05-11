@@ -767,3 +767,55 @@ def test_json_by_model_empty_when_no_model_field(tmp_path):
     assert data["by_model"] == {}
     # Recent row carries model=None (key present, value None).
     assert data["recent"][0]["model"] is None
+
+
+# ---------------------------------------------------------------------------
+# T-1790: --task-type X filter
+# ---------------------------------------------------------------------------
+
+
+def test_task_type_filter_narrows_to_matching_dispatches(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "tt1-aaa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "escalation-triage", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "tt2-bbb", "ts": "2026-05-11T00:00:02", "task_id": "T-2",
+         "task_type": "build", "worker_kind": "TermLink"},
+        {"dispatch_id": "tt3-ccc", "ts": "2026-05-11T00:00:03", "task_id": "T-3",
+         "task_type": "escalation-triage", "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path, "--task-type", "escalation-triage")
+    assert result.returncode == 0, result.stderr
+    assert "Filter:            task_type=escalation-triage" in result.stdout
+    assert "Dispatches:        2" in result.stdout
+    assert "[tt2-bbb" not in result.stdout
+    assert "[tt1-aaa" in result.stdout
+    assert "[tt3-ccc" in result.stdout
+
+
+def test_task_type_filter_empty_result_prints_notice(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "tt1-aaa", "task_id": "T-1", "task_type": "build",
+         "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path, "--task-type", "design")
+    assert result.returncode == 0, result.stderr
+    assert "no dispatches captured for task_type design" in result.stdout
+
+
+def test_task_type_filter_composes_with_worker_kind_AND(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "tt1-aaa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "escalation-triage", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "tt2-bbb", "ts": "2026-05-11T00:00:02", "task_id": "T-2",
+         "task_type": "escalation-triage", "worker_kind": "TermLink"},
+        {"dispatch_id": "tt3-ccc", "ts": "2026-05-11T00:00:03", "task_id": "T-3",
+         "task_type": "build", "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path,
+                         "--task-type", "escalation-triage",
+                         "--worker-kind", "ollama-loop")
+    assert result.returncode == 0, result.stderr
+    assert "Dispatches:        1" in result.stdout
+    assert "[tt1-aaa" in result.stdout
+    assert "[tt2-bbb" not in result.stdout
+    assert "[tt3-ccc" not in result.stdout
