@@ -3427,6 +3427,32 @@ if stats["dispatch_total"]:
     stats["enrichment_ratio"] = round(stats["enriched_dispatches"] / stats["dispatch_total"], 3)
 
 
+# T-1779: terminal_event breakdown surfaces the data T-1777 persists into
+# dispatch rows. Three counters:
+#   by_terminal_type — distribution of terminal_event["type"]
+#   terminal_retryable — for "error" events, retryable True/False split
+#   terminal_is_error — for "result" events, is_error True/False split
+# All omitted from text output when empty (legacy data, graceful).
+_by_terminal_type: Counter = Counter()
+_terminal_retryable: Counter = Counter()
+_terminal_is_error: Counter = Counter()
+for d in dispatches:
+    te = d.get("terminal_event")
+    if not isinstance(te, dict):
+        continue
+    ttype = te.get("type")
+    if not ttype:
+        continue
+    _by_terminal_type[ttype] += 1
+    if ttype == "error" and "retryable" in te:
+        _terminal_retryable[bool(te["retryable"])] += 1
+    elif ttype == "result" and "is_error" in te:
+        _terminal_is_error[bool(te["is_error"])] += 1
+stats["by_terminal_type"] = dict(_by_terminal_type)
+stats["terminal_retryable"] = {str(k): v for k, v in _terminal_retryable.items()}
+stats["terminal_is_error"] = {str(k): v for k, v in _terminal_is_error.items()}
+
+
 # T-1749: per-task-type outcome quality aggregation. Routes by outcome
 # shape, not hardcoded evaluator name — verdict-style (escalation-scan-v0.5)
 # and verification-style (default evaluator) are both surfaced.
@@ -3532,6 +3558,22 @@ print("By worker_kind:")
 for k, v in stats["by_worker_kind"].items():
     print(f"  {k:30s} {v}")
 print()
+# T-1779: terminal_event breakdown — only render when at least one row
+# carries the persisted field (T-1777). Legacy-data rows get no noise.
+if stats["by_terminal_type"]:
+    print("By terminal event:")
+    for k, v in sorted(stats["by_terminal_type"].items(), key=lambda x: -x[1]):
+        line = f"  {k:30s} {v}"
+        if k == "error" and stats["terminal_retryable"]:
+            t = stats["terminal_retryable"].get("True", 0)
+            f_ = stats["terminal_retryable"].get("False", 0)
+            line += f"   (retryable={t} / non-retryable={f_})"
+        print(line)
+        if k == "result" and stats["terminal_is_error"]:
+            t = stats["terminal_is_error"].get("True", 0)
+            f_ = stats["terminal_is_error"].get("False", 0)
+            print(f"      is_error: True={t} False={f_}")
+    print()
 print("Recent dispatches:")
 for r in stats["recent"]:
     flag = "·"
