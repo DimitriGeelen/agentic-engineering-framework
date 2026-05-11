@@ -553,3 +553,112 @@ def test_worker_kind_filter_composes_with_json(tmp_path):
     # Only ollama-loop's worker_kind appears in breakdown.
     assert "ollama-loop" in data["by_worker_kind"]
     assert "TermLink" not in data["by_worker_kind"]
+
+
+# ---------------------------------------------------------------------------
+# T-1787: --recent N — view-density knob
+# ---------------------------------------------------------------------------
+
+
+def _seed_n_dispatches(tmp_path, n):
+    """Seed n dispatches with ascending ts; ids r0001..r{n:04d}."""
+    rows = []
+    for i in range(n):
+        rows.append({
+            "dispatch_id": f"r{i:04d}-aa",
+            "ts": f"2026-05-11T00:{i // 60:02d}:{i % 60:02d}",
+            "task_id": f"T-{1000 + i}",
+            "task_type": "escalation-triage",
+            "worker_kind": "ollama-loop",
+        })
+    _seed_jsonl(tmp_path, rows, [])
+
+
+def test_recent_default_is_5(tmp_path):
+    """No --recent → last 5 dispatches (preserves pre-flag behavior)."""
+    _seed_n_dispatches(tmp_path, 10)
+    result = _run_status(tmp_path)
+    assert result.returncode == 0, result.stderr
+    # Last 5 dispatches: r0005..r0009 present, r0000..r0004 absent.
+    for i in range(5):
+        assert f"[r{i:04d}-a" not in result.stdout, f"row {i} should be hidden"
+    for i in range(5, 10):
+        assert f"[r{i:04d}-a" in result.stdout, f"row {i} should be visible"
+
+
+def test_recent_n_shows_n_rows(tmp_path):
+    """--recent 10 → up to 10 dispatches."""
+    _seed_n_dispatches(tmp_path, 20)
+    result = _run_status(tmp_path, "--recent", "10")
+    assert result.returncode == 0, result.stderr
+    # Last 10: r0010..r0019 present, r0000..r0009 absent.
+    for i in range(10):
+        assert f"[r{i:04d}-a" not in result.stdout, f"row {i} should be hidden"
+    for i in range(10, 20):
+        assert f"[r{i:04d}-a" in result.stdout, f"row {i} should be visible"
+
+
+def test_recent_1_shows_only_latest(tmp_path):
+    """--recent 1 → only the latest row."""
+    _seed_n_dispatches(tmp_path, 5)
+    result = _run_status(tmp_path, "--recent", "1")
+    assert result.returncode == 0, result.stderr
+    assert "[r0004-a" in result.stdout  # latest
+    for i in range(4):
+        assert f"[r{i:04d}-a" not in result.stdout
+
+
+def test_recent_zero_rejected(tmp_path):
+    _seed_n_dispatches(tmp_path, 3)
+    result = _run_status(tmp_path, "--recent", "0")
+    assert result.returncode == 1
+    assert "--recent must be >= 1" in result.stderr
+
+
+def test_recent_negative_rejected(tmp_path):
+    _seed_n_dispatches(tmp_path, 3)
+    result = _run_status(tmp_path, "--recent", "-5")
+    assert result.returncode == 1
+    # Negative parses as int but fails the >=1 check.
+    assert "--recent must be >= 1" in result.stderr
+
+
+def test_recent_non_integer_rejected(tmp_path):
+    _seed_n_dispatches(tmp_path, 3)
+    result = _run_status(tmp_path, "--recent", "abc")
+    assert result.returncode == 1
+    assert "invalid --recent" in result.stderr
+
+
+def test_recent_composes_with_worker_kind(tmp_path):
+    """--recent applies AFTER --worker-kind filter; count reflects matches only."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "a01-aa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "a02-aa", "ts": "2026-05-11T00:00:02", "task_id": "T-2",
+         "task_type": "X", "worker_kind": "TermLink"},
+        {"dispatch_id": "a03-aa", "ts": "2026-05-11T00:00:03", "task_id": "T-3",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "a04-aa", "ts": "2026-05-11T00:00:04", "task_id": "T-4",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path, "--worker-kind", "ollama-loop", "--recent", "2")
+    assert result.returncode == 0, result.stderr
+    # 3 ollama-loop rows in scope; recent 2 → a03, a04.
+    assert "[a03-a" in result.stdout
+    assert "[a04-a" in result.stdout
+    # a01 (ollama-loop but bumped out by --recent 2)
+    assert "[a01-a" not in result.stdout
+    # a02 (filtered by --worker-kind)
+    assert "[a02-a" not in result.stdout
+
+
+def test_recent_composes_with_json(tmp_path):
+    """--recent affects stats['recent'] in JSON output."""
+    _seed_n_dispatches(tmp_path, 10)
+    result = _run_status(tmp_path, "--recent", "3", "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert len(data["recent"]) == 3
+    # Totals unchanged (recent only narrows the view, not stats).
+    assert data["dispatch_total"] == 10

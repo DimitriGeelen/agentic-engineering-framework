@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1787: fw orchestrator status --recent N: control size of recent block
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-11T11:09:21Z
+# ============================================================================
+
+task_id: T-1787
+task_name: "fw orchestrator status --recent N: control size of recent block"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T11:10:00Z
+completed: 2026-05-11T11:09:12Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`fw orchestrator status --recent N` accepts a positive integer."
+  - "Default behavior unchanged (last 5 dispatches) when flag absent."
+  - "Slice is `dispatches[-N:]` — taken AFTER all filters apply."
+  - "N <= 0 rejected with clear error, exit 1."
+  - "Non-integer rejected with clear error, exit 1."
+  - "`--recent` composes with `--task`, `--since`, `--worker-kind`."
+  - "`--recent` composes with `--json` (stats[\"recent\"] reflects N)."
+  - "When filter narrows to < N rows, the smaller count is shown"
+  - "`tests/unit/test_orchestrator_status_terminal_events.py` extends with:"
+  - "`python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py -v` exits 0."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1787-fw-orchestrator-status---recent-n-contro.md
+generated_by: context-agent-hybrid

@@ -3364,7 +3364,8 @@ EOF
                 _filter_task=""
                 _filter_since=""
                 _filter_worker_kind=""
-                # T-1784: --task. T-1785: --since. T-1786: --worker-kind.
+                _recent_n=""
+                # T-1784: --task. T-1785: --since. T-1786: --worker-kind. T-1787: --recent.
                 _prev=""
                 for _arg in "$@"; do
                     [ "$_arg" = "--json" ] && _emit_json=1
@@ -3372,9 +3373,10 @@ EOF
                     [ "$_prev" = "--task" ] && _filter_task="$_arg"
                     [ "$_prev" = "--since" ] && _filter_since="$_arg"
                     [ "$_prev" = "--worker-kind" ] && _filter_worker_kind="$_arg"
+                    [ "$_prev" = "--recent" ] && _recent_n="$_arg"
                     _prev="$_arg"
                 done
-                python3 - "$_emit_json" "$_emit_outcomes" "$_filter_task" "$_filter_since" "$_filter_worker_kind" <<'PYEOF'
+                python3 - "$_emit_json" "$_emit_outcomes" "$_filter_task" "$_filter_since" "$_filter_worker_kind" "$_recent_n" <<'PYEOF'
 import json
 import os
 import sys
@@ -3386,6 +3388,27 @@ emit_outcomes = sys.argv[2] == "1"
 filter_task = sys.argv[3] if len(sys.argv) > 3 else ""
 filter_since_arg = sys.argv[4] if len(sys.argv) > 4 else ""
 filter_worker_kind = sys.argv[5] if len(sys.argv) > 5 else ""
+recent_n_arg = sys.argv[6] if len(sys.argv) > 6 else ""
+
+# T-1787: --recent N parsing + validation. Default 5 preserves the
+# pre-flag behavior; explicit N>=1 integer required.
+recent_n = 5
+if recent_n_arg:
+    try:
+        recent_n = int(recent_n_arg)
+    except ValueError:
+        print(
+            f"orchestrator status: invalid --recent '{recent_n_arg}' "
+            "(expected positive integer)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if recent_n < 1:
+        print(
+            f"orchestrator status: --recent must be >= 1 (got {recent_n})",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def _parse_duration(s):
@@ -3579,7 +3602,7 @@ if emit_outcomes:
 
 # Last 5 dispatches with outcome status (real only — synthetic rows have
 # no telemetry so they're dropped from "recent" too).
-for d in dispatches[-5:]:
+for d in dispatches[-recent_n:]:
     did = d.get("dispatch_id", "?")
     matched = [o for o in outcomes if o.get("dispatch_id") == did]
     out = matched[-1].get("outcome", {}) if matched else None
