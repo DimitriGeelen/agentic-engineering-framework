@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1789: fw orchestrator routes: surface route-cache learned model preferences (CLI mirror of /orchestrator)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-11T11:17:39Z
+# ============================================================================
+
+task_id: T-1789
+task_name: "fw orchestrator routes: surface route-cache learned model preferences (CLI mirror of /orchestrator)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T11:30:00Z
+completed: 2026-05-11T11:17:29Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`fw orchestrator routes` reads `/var/lib/termlink/route-cache.json`"
+  - "When file is missing, prints \"no route cache yet\" + path; exits 0."
+  - "When file exists but `model_stats` is empty or invalid, prints"
+  - "Per-task-type section header: `task_type=<X> (best=<model>, total <N>)`."
+  - "Per-candidate row: `model successes/failures (rate %) last_used`."
+  - "Candidates sorted: rate desc, then total desc, then model alpha."
+  - "Task-types sorted alphabetically."
+  - "`--json` flag emits the same data structure as web's `_route_cache_learned`"
+  - "`tests/unit/test_orchestrator_routes.py` covers:"
+  - "`python3 -m pytest tests/unit/test_orchestrator_routes.py -v` exits 0."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1789-fw-orchestrator-routes-surface-route-cac.md
+generated_by: context-agent-hybrid

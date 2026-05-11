@@ -3355,6 +3355,126 @@ Track via: T-1687 (orchestrator-rethink arc), ADR-0003.
 EOF
                 exit 0
                 ;;
+            routes)
+                # T-1789: CLI mirror of web /orchestrator's route-cache view.
+                # Reads route-cache.json (TermLink hub-written) and surfaces
+                # learned per-task-type model preferences. Pairs with
+                # `fw orchestrator status` — status shows what got dispatched,
+                # routes shows what the orchestrator has learned wins.
+                shift
+                _emit_json=0
+                for _arg in "$@"; do
+                    [ "$_arg" = "--json" ] && _emit_json=1
+                done
+                python3 - "$_emit_json" <<'PYEOF'
+import json
+import os
+import sys
+from collections import defaultdict
+from pathlib import Path
+
+emit_json = sys.argv[1] == "1"
+
+
+def _route_cache_path() -> Path:
+    """Match web/blueprints/orchestrator.py _route_cache_path() exactly."""
+    xdg = os.environ.get("XDG_RUNTIME_DIR")
+    if xdg:
+        return Path(xdg) / "termlink" / "route-cache.json"
+    return Path("/var/lib/termlink/route-cache.json")
+
+
+def _route_cache_summary() -> dict:
+    """Aggregate route-cache model_stats by task_type. Mirrors web side
+    (_route_cache_learned). Shape:
+      {available, path, by_task_type: [{task_type, best, candidates}], total_stats}
+    """
+    path = _route_cache_path()
+    if not path.is_file():
+        return {"available": False, "path": str(path), "by_task_type": [], "total_stats": 0}
+    try:
+        cache = json.loads(path.read_text())
+    except (json.JSONDecodeError, OSError):
+        # Treat malformed/unreadable as unavailable — never crash the CLI.
+        return {"available": False, "path": str(path), "by_task_type": [], "total_stats": 0}
+    stats = cache.get("model_stats") or {}
+    if not isinstance(stats, dict):
+        stats = {}
+    by_tt: dict = defaultdict(list)
+    for stat in stats.values():
+        if not isinstance(stat, dict):
+            continue
+        tt = stat.get("task_type")
+        model = stat.get("model")
+        if not tt or not model:
+            continue
+        succ = int(stat.get("successes", 0) or 0)
+        fail = int(stat.get("failures", 0) or 0)
+        total = succ + fail
+        if total <= 0:
+            continue
+        by_tt[tt].append({
+            "model": model,
+            "successes": succ,
+            "failures": fail,
+            "total": total,
+            "rate": succ / total,
+            "last_used": stat.get("last_used"),
+        })
+    rows = []
+    for tt, candidates in sorted(by_tt.items()):
+        # Sort: rate desc, total desc, model alpha.
+        candidates.sort(key=lambda c: (-c["rate"], -c["total"], c["model"]))
+        rows.append({
+            "task_type": tt,
+            "best": candidates[0],
+            "candidates": candidates,
+        })
+    return {
+        "available": True,
+        "path": str(path),
+        "by_task_type": rows,
+        "total_stats": sum(len(r["candidates"]) for r in rows),
+    }
+
+
+summary = _route_cache_summary()
+
+if emit_json:
+    print(json.dumps(summary, indent=2))
+    sys.exit(0)
+
+if not summary["available"]:
+    print("no route cache yet")
+    print(f"(read path: {summary['path']})")
+    sys.exit(0)
+
+if not summary["by_task_type"]:
+    # File exists, JSON valid, but no usable model_stats. Distinguishes
+    # "never wrote anything" from "wrote, but no completed dispatches yet".
+    print("route cache has no model_stats yet")
+    print(f"(read path: {summary['path']})")
+    sys.exit(0)
+
+print(f"Route cache (learned preferences) — {summary['total_stats']} candidates")
+print(f"  source: {summary['path']}")
+print()
+for row in summary["by_task_type"]:
+    tt = row["task_type"]
+    best = row["best"]
+    total = sum(c["total"] for c in row["candidates"])
+    print(f"task_type={tt} (best={best['model']}, total {total})")
+    for c in row["candidates"]:
+        last = c.get("last_used") or "-"
+        rate_pct = c["rate"] * 100
+        print(
+            f"  {c['model']:30s} {c['successes']}/{c['failures']} "
+            f"({rate_pct:.0f}%) last_used={last}"
+        )
+    print()
+PYEOF
+                exit 0
+                ;;
             status)
                 # T-1699: substrate observability — dispatch + outcome summary.
                 # T-1749: --outcomes flag adds per-task-type outcome quality view.
