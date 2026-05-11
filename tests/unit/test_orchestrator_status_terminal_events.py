@@ -192,6 +192,108 @@ def test_json_exposes_terminal_event_keys(tmp_path):
     assert data["terminal_is_error"]["False"] == 1
 
 
+# ---------------------------------------------------------------------------
+# T-1781 — Recent dispatches inline terminal_event
+# ---------------------------------------------------------------------------
+
+
+def _recent_line(stdout: str, dispatch_prefix: str) -> str:
+    """Return the 'Recent dispatches:' line matching a dispatch_id prefix."""
+    block = stdout.split("Recent dispatches:")[-1]
+    for line in block.splitlines():
+        if f"[{dispatch_prefix}" in line:
+            return line
+    return ""
+
+
+def test_recent_line_shows_terminal_agent_done(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "deadbeef-1", "ts": "2026-05-11T00:00:01", "task_id": "T-100",
+         "task_type": "X", "worker_kind": "pi",
+         "terminal_event": {"type": "agent.done"}},
+    ], [])
+    result = _run_status(tmp_path)
+    assert result.returncode == 0, result.stderr
+    line = _recent_line(result.stdout, "deadbeef")
+    assert "terminal=agent.done" in line
+
+
+def test_recent_line_shows_retryable_error(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "deadbeef-2", "ts": "2026-05-11T00:00:02", "task_id": "T-101",
+         "task_type": "X", "worker_kind": "pi",
+         "terminal_event": {"type": "error", "retryable": True, "message": "429"}},
+    ], [])
+    result = _run_status(tmp_path)
+    line = _recent_line(result.stdout, "deadbeef")
+    assert "terminal=error(retryable)" in line
+
+
+def test_recent_line_shows_non_retryable_error(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "deadbeef-3", "ts": "2026-05-11T00:00:03", "task_id": "T-102",
+         "task_type": "X", "worker_kind": "pi",
+         "terminal_event": {"type": "error", "retryable": False, "message": "auth"}},
+    ], [])
+    result = _run_status(tmp_path)
+    line = _recent_line(result.stdout, "deadbeef")
+    assert "terminal=error(non-retryable)" in line
+
+
+def test_recent_line_shows_result_is_error_true(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "deadbeef-4", "ts": "2026-05-11T00:00:04", "task_id": "T-103",
+         "task_type": "X", "worker_kind": "ollama-loop",
+         "terminal_event": {"type": "result", "is_error": True}},
+    ], [])
+    result = _run_status(tmp_path)
+    line = _recent_line(result.stdout, "deadbeef")
+    assert "terminal=result(is_error)" in line
+
+
+def test_recent_line_shows_result_no_suffix_on_success(tmp_path):
+    """is_error: False is the common success case — no suffix noise."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "deadbeef-5", "ts": "2026-05-11T00:00:05", "task_id": "T-104",
+         "task_type": "X", "worker_kind": "ollama-loop",
+         "terminal_event": {"type": "result", "is_error": False}},
+    ], [])
+    result = _run_status(tmp_path)
+    line = _recent_line(result.stdout, "deadbeef")
+    assert "terminal=result" in line
+    # No suffix on the success path.
+    assert "(is_error)" not in line
+    assert "(retryable)" not in line
+
+
+def test_recent_line_unchanged_when_no_terminal_event(tmp_path):
+    """Legacy rows without terminal_event must not have a `terminal=` field."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "deadbeef-6", "ts": "2026-05-11T00:00:06", "task_id": "T-105",
+         "task_type": "X", "worker_kind": "pi"},
+    ], [])
+    result = _run_status(tmp_path)
+    line = _recent_line(result.stdout, "deadbeef")
+    assert "terminal=" not in line
+    # Existing line content still rendered.
+    assert "worker=pi" in line
+
+
+def test_json_recent_carries_terminal_event(tmp_path):
+    """`--json` exposes terminal_event per recent entry (mirrors row shape)."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "deadbeef-7", "ts": "2026-05-11T00:00:07", "task_id": "T-106",
+         "task_type": "X", "worker_kind": "ollama-loop",
+         "terminal_event": {"type": "result", "is_error": False}},
+    ], [])
+    result = _run_status(tmp_path, "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    entry = next(r for r in data["recent"] if r["dispatch_id"].startswith("deadbeef"))
+    assert entry["terminal_event"]["type"] == "result"
+    assert entry["terminal_event"]["is_error"] is False
+
+
 def test_json_terminal_keys_empty_when_no_rows_have_terminal_event(tmp_path):
     """Legacy-only data → empty dicts (not missing keys, not None)."""
     _seed_jsonl(tmp_path, [

@@ -1,0 +1,101 @@
+---
+id: T-1781
+name: "fw orchestrator status — show terminal_event in 'Recent dispatches:' lines"
+description: >
+  fw orchestrator status — show terminal_event in 'Recent dispatches:' lines
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: [arc:orchestrator-rethink, cli, observability]
+components: []
+related_tasks: [T-1777, T-1779]
+created: 2026-05-11T09:00:00Z
+last_update: 2026-05-11T09:00:00Z
+date_finished: null
+---
+
+# T-1781: fw orchestrator status — show terminal_event in 'Recent dispatches:' lines
+
+## Context
+
+`fw orchestrator status` ends with a "Recent dispatches:" block showing
+the last 5 dispatch rows in this format:
+
+    · 2026-05-05T18:30:55 [23ecae45] task=T-1086 type=escalation-triage worker=ollama-loop
+
+The terminal_event T-1777 persists into each row is the most operator-
+relevant piece of "what happened" — but invisible here. Adding it makes
+the default surface ("first thing I see when I run status") answer the
+default operator question ("did these complete cleanly?").
+
+T-1779 added an aggregate breakdown ("By terminal event:"); T-1781
+brings the same data inline at the per-row level.
+
+## Acceptance Criteria
+
+### Agent
+
+**1. Recent dispatches line format**
+- [x] When a dispatch row carries `terminal_event` with a `type`, append
+      ` terminal=<type>` to the existing line.
+- [x] For `error` events with `retryable` flag, append `(retryable)` or
+      `(non-retryable)` after the type.
+- [x] For `result` events with `is_error: True`, append `(is_error)`
+      after the type. `is_error: False` does not add a suffix (success
+      case, no noise).
+- [x] Rows without terminal_event print the existing line unchanged
+      (backward compatible).
+
+**2. Stats dict propagation**
+- [x] Each entry in `stats["recent"]` gains `terminal_event` key
+      (mirroring the dispatch row), or `None` if absent.
+
+**3. Tests**
+- [x] `tests/unit/test_orchestrator_status_terminal_events.py` extended:
+      - recent line shows `terminal=agent.done` when present
+      - recent line shows `terminal=error(retryable)` for retryable error
+      - recent line shows `terminal=error(non-retryable)` for non-retryable
+      - recent line shows `terminal=result(is_error)` for failed result
+      - recent line shows `terminal=result` for successful result (no suffix)
+      - recent line unchanged when row lacks terminal_event
+- [x] `python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py -v` exits 0.
+- [x] No regression: full arc-suite (T-1777, T-1778, T-1779, T-1780) green.
+
+### Human
+
+(Mechanical / deterministic — no Human ACs.)
+
+## Verification
+
+python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py tests/unit/test_orchestrator_status_outcomes.py tests/unit/test_outcome.py -v
+
+## Recommendation
+
+**Recommendation:** GO — single-line append on the default surface; closes the per-row leg.
+
+**Rationale:** The "Recent dispatches:" block is the first thing an operator reads when running `fw orchestrator status`. Showing terminal_event inline (`terminal=agent.done` / `terminal=error(retryable)` / `terminal=result(is_error)`) answers the default question — "did these dispatches complete cleanly?" — without making the user run `fw outcome read <dispatch_id>` for each. is_error: False is the success path; no suffix avoids cluttering the common case. Pattern: render only what's informative for THIS terminal type (same principle as T-1778's quiet-on-agent.done decision).
+
+**Evidence:**
+- `bin/fw` — Recent dispatches block extended; stats dict carries `terminal_event` per row.
+- `tests/unit/test_orchestrator_status_terminal_events.py` — 6 new T-1781 tests.
+- Combined regression: T-1777 + T-1778 + T-1779 + T-1780 + T-1781 all green.
+
+**Headline mechanic:** `bin/fw orchestrator status` "Recent dispatches:" now shows `terminal=<type>(<suffix>)` per row when data is present. Default surface, default question, one-look answer.
+
+## Evolution
+
+### 2026-05-11 — suffix-only-when-informative
+
+- **What changed:** Considered always appending `(is_error=False)` to result events for symmetry with `(retryable)` on errors. Rejected: every successful ollama-loop dispatch would carry a meaningless suffix, doubling line length on the common case. Adopted the asymmetric rule: error always shows retryable state (both branches important); result shows nothing on success, `(is_error)` only on failure (the noisy case is the failure case, not the success case).
+- **Plan impact:** Branch on `(type, is_error_value)` for result; branch on `retryable` boolean for error. Tests pin both halves of result branch (with and without suffix).
+- **Triggered:** None — pinned via test.
+
+## Decisions
+
+## Updates
+
+### 2026-05-11T09:00:00Z — task-created
+- **Action:** Created task; arc-tagged orchestrator-rethink
+- **Context:** Inline-row pair to T-1779's aggregate breakdown

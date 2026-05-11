@@ -3528,6 +3528,9 @@ for d in dispatches[-5:]:
         "worker_kind": d.get("worker_kind"),
         "verification_passed": out.get("verification_passed") if out else None,
         "ac_satisfied": out.get("ac_satisfied") if out else None,
+        # T-1781: include terminal_event inline so the default surface
+        # answers "did this complete cleanly?" without a separate lookup.
+        "terminal_event": d.get("terminal_event"),
     })
 
 if emit_json:
@@ -3581,8 +3584,22 @@ for r in stats["recent"]:
         flag = "✓"
     elif r["verification_passed"] is False or r["ac_satisfied"] is False:
         flag = "✗"
+    # T-1781: append terminal=<type> with conditional suffix. error gets
+    # full retryable state (both branches matter); result gets `(is_error)`
+    # only on failure (success is the common case — no suffix noise).
+    term_suffix = ""
+    te = r.get("terminal_event")
+    if isinstance(te, dict) and te.get("type"):
+        ttype = te["type"]
+        suffix = ""
+        if ttype == "error" and "retryable" in te:
+            suffix = "(retryable)" if te["retryable"] else "(non-retryable)"
+        elif ttype == "result" and te.get("is_error") is True:
+            suffix = "(is_error)"
+        term_suffix = f" terminal={ttype}{suffix}"
     print(f"  {flag} {r['ts']} [{r['dispatch_id']}] "
-          f"task={r['task_id']} type={r['task_type']} worker={r['worker_kind']}")
+          f"task={r['task_id']} type={r['task_type']} worker={r['worker_kind']}"
+          f"{term_suffix}")
 
 # T-1749: --outcomes view — per-task-type outcome quality.
 if emit_outcomes:
