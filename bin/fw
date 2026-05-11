@@ -3507,6 +3507,10 @@ stats = {
     "enrichment_ratio": 0.0,
     "by_task_type": dict(Counter(d.get("task_type") or "?" for d in dispatches).most_common(5)),
     "by_worker_kind": dict(Counter(d.get("worker_kind") or "?" for d in dispatches)),
+    # T-1788: model is the orchestrator's routing decision. Counter excludes
+    # rows where model is missing (legacy or unenriched) so the breakdown
+    # reflects only dispatches with a recorded routing choice.
+    "by_model": dict(Counter(d.get("model") for d in dispatches if d.get("model"))),
     "recent": [],
 }
 if stats["dispatch_total"]:
@@ -3612,6 +3616,9 @@ for d in dispatches[-recent_n:]:
         "task_id": d.get("task_id"),
         "task_type": d.get("task_type"),
         "worker_kind": d.get("worker_kind"),
+        # T-1788: model is the orchestrator's routing decision per dispatch.
+        # None when row predates T-1664 / model unset.
+        "model": d.get("model"),
         "verification_passed": out.get("verification_passed") if out else None,
         "ac_satisfied": out.get("ac_satisfied") if out else None,
         # T-1781: include terminal_event inline so the default surface
@@ -3676,6 +3683,13 @@ print("By worker_kind:")
 for k, v in stats["by_worker_kind"].items():
     print(f"  {k:30s} {v}")
 print()
+# T-1788: by_model — the routing decision per dispatch. Omitted when
+# no row carries a model (legacy data; mirror of terminal_event gating).
+if stats["by_model"]:
+    print("By model:")
+    for k, v in sorted(stats["by_model"].items(), key=lambda x: -x[1]):
+        print(f"  {k:30s} {v}")
+    print()
 # T-1779: terminal_event breakdown — only render when at least one row
 # carries the persisted field (T-1777). Legacy-data rows get no noise.
 if stats["by_terminal_type"]:
@@ -3712,8 +3726,12 @@ for r in stats["recent"]:
         elif ttype == "result" and te.get("is_error") is True:
             suffix = "(is_error)"
         term_suffix = f" terminal={ttype}{suffix}"
+    # T-1788: surface the routing decision (model) inline. "?" when
+    # missing keeps the column-shape stable across legacy/new rows.
+    model_str = r.get("model") or "?"
     print(f"  {flag} {r['ts']} [{r['dispatch_id']}] "
-          f"task={r['task_id']} type={r['task_type']} worker={r['worker_kind']}"
+          f"task={r['task_id']} type={r['task_type']} worker={r['worker_kind']} "
+          f"model={model_str}"
           f"{term_suffix}")
 
 # T-1749: --outcomes view — per-task-type outcome quality.

@@ -662,3 +662,108 @@ def test_recent_composes_with_json(tmp_path):
     assert len(data["recent"]) == 3
     # Totals unchanged (recent only narrows the view, not stats).
     assert data["dispatch_total"] == 10
+
+
+# ---------------------------------------------------------------------------
+# T-1788: model surface — by_model breakdown + recent-line model=
+# ---------------------------------------------------------------------------
+
+
+def test_by_model_section_rendered_when_model_present(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "claude-3-5-sonnet"},
+        {"dispatch_id": "m2-bbbb", "task_id": "T-2", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "claude-3-5-sonnet"},
+        {"dispatch_id": "m3-cccc", "task_id": "T-3", "task_type": "Y",
+         "worker_kind": "TermLink", "model": "sonnet"},
+    ], [])
+    result = _run_status(tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert "By model:" in result.stdout
+    assert "claude-3-5-sonnet" in result.stdout
+    assert "sonnet" in result.stdout
+    # Most-common first.
+    assert result.stdout.index("claude-3-5-sonnet") < result.stdout.index("  sonnet")
+
+
+def test_by_model_section_omitted_when_no_model_field(tmp_path):
+    """Legacy-only rows (no model field) → section absent (graceful)."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop"},
+        {"dispatch_id": "m2-bbbb", "task_id": "T-2", "task_type": "Y",
+         "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert "By model:" not in result.stdout
+
+
+def test_recent_line_shows_model(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaaa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "X", "worker_kind": "ollama-loop",
+         "model": "claude-3-5-sonnet-hermes3"},
+    ], [])
+    result = _run_status(tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert "model=claude-3-5-sonnet-hermes3" in result.stdout
+
+
+def test_recent_line_shows_model_question_when_missing(tmp_path):
+    """No model field → model=? in recent line (column shape preserved)."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaaa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "X", "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert "model=?" in result.stdout
+
+
+def test_by_model_respects_worker_kind_filter(tmp_path):
+    """--worker-kind filter narrows the by_model breakdown."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "claude-3-5-sonnet"},
+        {"dispatch_id": "m2-bbbb", "task_id": "T-2", "task_type": "Y",
+         "worker_kind": "TermLink", "model": "sonnet"},
+    ], [])
+    result = _run_status(tmp_path, "--worker-kind", "ollama-loop")
+    assert result.returncode == 0, result.stderr
+    assert "claude-3-5-sonnet" in result.stdout
+    # TermLink's model excluded by the filter.
+    # Check the model row inside By model: section (not other contexts).
+    assert "  sonnet                  " not in result.stdout
+
+
+def test_json_exposes_by_model_key(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "claude-3-5-sonnet"},
+        {"dispatch_id": "m2-bbbb", "task_id": "T-2", "task_type": "Y",
+         "worker_kind": "TermLink", "model": "sonnet"},
+    ], [])
+    result = _run_status(tmp_path, "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert "by_model" in data
+    assert data["by_model"]["claude-3-5-sonnet"] == 1
+    assert data["by_model"]["sonnet"] == 1
+    # Each recent row carries the model field.
+    for r in data["recent"]:
+        assert "model" in r
+
+
+def test_json_by_model_empty_when_no_model_field(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop"},
+    ], [])
+    result = _run_status(tmp_path, "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["by_model"] == {}
+    # Recent row carries model=None (key present, value None).
+    assert data["recent"][0]["model"] is None
