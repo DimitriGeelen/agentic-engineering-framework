@@ -122,7 +122,13 @@ do_generate_episodic() {
     local decisions_section=$(sed -n '/^## Decisions/,/^## /p' "$task_file" 2>/dev/null | head -n -1)
     if [ -n "$decisions_section" ]; then
         # Check for actual content (not just comments/empty)
-        local decision_content=$(echo "$decisions_section" | grep -v '^##' | grep -v '^<!--' | grep -v '^-->' | grep -v '^\s*$' | head -20)
+        # T-1631 / G-082 fix: use '^## ' (with trailing space) so we strip the
+        # H2 section delimiter `## Decisions` but preserve `### date — topic`
+        # H3 headings that label each decision. The prior regex `^##` greedily
+        # consumed H3 headings, leaving the `^### ` handler below with nothing
+        # to fire on and producing decisions blocks whose Chose/Why/Rejected
+        # fields merged into a single flat mapping (silent data corruption).
+        local decision_content=$(echo "$decisions_section" | grep -v '^## ' | grep -v '^<!--' | grep -v '^-->' | grep -v '^\s*$' | head -20)
         if [ -n "$decision_content" ]; then
             decisions_raw="$decision_content"
             has_decisions=true
@@ -405,6 +411,24 @@ HEREDOC
     if [ "$enrichment_status" = "pending" ]; then
         status_icon="⚠"
         status_label="Needs enrichment"
+    fi
+
+    # T-1631 / G-082 prevention: validate the generated YAML before declaring
+    # success. The prior regex bug at line 125 silently merged decisions and
+    # parser-side tolerance hid the defect for months. Failing loud here means
+    # the next divergence between template and real-data emission gets caught
+    # at write time, not at downstream consumer-read time.
+    if command -v python3 >/dev/null 2>&1; then
+        if ! python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$episodic_file" 2>/tmp/episodic-yaml-err.$$; then
+            echo -e "${RED}Episodic YAML validation failed: $episodic_file${NC}" >&2
+            cat /tmp/episodic-yaml-err.$$ >&2
+            rm -f /tmp/episodic-yaml-err.$$
+            echo "" >&2
+            echo "The episodic generator produced invalid YAML. This is a generator bug; do not edit the output by hand." >&2
+            echo "Capture the source task and report on framework:pickup with msg_type=pickup-bug-report." >&2
+            exit 2
+        fi
+        rm -f /tmp/episodic-yaml-err.$$
     fi
 
     echo -e "${GREEN}Episodic generated: $episodic_file${NC}"
