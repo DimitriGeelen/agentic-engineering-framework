@@ -270,3 +270,89 @@ def test_list_outcomes_for_task(isolated_root):
     o.backprop_outcome("T-001", {"v": 2})  # second call appends another set
     rows = o.list_outcomes_for_task("T-001")
     assert len(rows) == 4  # 2 dispatches × 2 backprop calls
+
+
+# ---------------------------------------------------------------------------
+# T-1780: cmd_read surfaces terminal_event sub-fields (mirror of T-1778)
+# ---------------------------------------------------------------------------
+import argparse  # noqa: E402
+
+
+def _read_args(dispatch_id, json_flag=False):
+    return argparse.Namespace(dispatch_id=dispatch_id, json=json_flag)
+
+
+def test_cmd_read_prints_agent_done_terminal(isolated_root, capsys):
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "d1", "task_id": "T-100", "task_type": "x",
+         "worker_kind": "pi", "model": "claude-3",
+         "terminal_event": {"type": "agent.done"}},
+    ])
+    rc = o.cmd_read(_read_args("d1"))
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "terminal:       agent.done" in out
+    # No sub-field noise for agent.done.
+    assert "retryable:" not in out
+    assert "is_error:" not in out
+
+
+def test_cmd_read_prints_pi_error_retryable(isolated_root, capsys):
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "d2", "task_id": "T-101", "task_type": "x",
+         "worker_kind": "pi", "model": "claude-3",
+         "terminal_event": {"type": "error", "retryable": True, "message": "429"}},
+    ])
+    rc = o.cmd_read(_read_args("d2"))
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "terminal:       error" in out
+    assert "retryable:      True" in out
+    assert "is_error:" not in out
+
+
+def test_cmd_read_prints_ollama_result_is_error(isolated_root, capsys):
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "d3", "task_id": "T-102", "task_type": "x",
+         "worker_kind": "ollama-loop", "model": "claude-3",
+         "terminal_event": {"type": "result", "is_error": False, "result": "ok"}},
+    ])
+    rc = o.cmd_read(_read_args("d3"))
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "terminal:       result" in out
+    assert "is_error:       False" in out
+    assert "retryable:" not in out
+
+
+def test_cmd_read_legacy_row_no_terminal_event(isolated_root, capsys):
+    """Rows without terminal_event (legacy data) → no terminal lines printed."""
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "d4", "task_id": "T-103", "task_type": "x",
+         "worker_kind": "pi", "model": "claude-3"},
+    ])
+    rc = o.cmd_read(_read_args("d4"))
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "terminal:" not in out
+    assert "retryable:" not in out
+    assert "is_error:" not in out
+
+
+def test_cmd_read_json_carries_terminal_event(isolated_root, capsys):
+    """--json output includes terminal_event from the dispatch row (T-1777)."""
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "d5", "task_id": "T-104", "task_type": "x",
+         "worker_kind": "ollama-loop", "model": "claude-3",
+         "terminal_event": {"type": "result", "is_error": True}},
+    ])
+    rc = o.cmd_read(_read_args("d5", json_flag=True))
+    assert rc == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["terminal_event"]["type"] == "result"
+    assert data["terminal_event"]["is_error"] is True

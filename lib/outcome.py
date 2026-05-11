@@ -317,6 +317,15 @@ def cmd_read(args: argparse.Namespace) -> int:
         print(f"task_type:      {merged.get('task_type')}")
         print(f"worker_kind:    {merged.get('worker_kind')}")
         print(f"model:          {merged.get('model')}")
+        # T-1780: surface terminal_event sub-fields (mirrors T-1778 pattern
+        # in resolver cmd_run / cmd_explain). Quiet on agent.done / missing.
+        te = merged.get("terminal_event")
+        if isinstance(te, dict) and te.get("type"):
+            print(f"terminal:       {te['type']}")
+            if te["type"] == "error" and "retryable" in te:
+                print(f"retryable:      {te['retryable']}")
+            elif te["type"] == "result" and "is_error" in te:
+                print(f"is_error:       {te['is_error']}")
         oe = merged.get("outcome_event")
         if oe:
             o = oe.get("outcome", {})
