@@ -278,8 +278,10 @@ def test_list_outcomes_for_task(isolated_root):
 import argparse  # noqa: E402
 
 
-def _read_args(dispatch_id, json_flag=False):
-    return argparse.Namespace(dispatch_id=dispatch_id, json=json_flag)
+def _read_args(dispatch_id, json_flag=False, tail_events=None):
+    return argparse.Namespace(
+        dispatch_id=dispatch_id, json=json_flag, tail_events=tail_events,
+    )
 
 
 def test_cmd_read_prints_agent_done_terminal(isolated_root, capsys):
@@ -446,6 +448,126 @@ def test_cmd_list_no_terminal_when_dispatch_not_in_log(isolated_root, capsys):
     line = _list_line(capsys.readouterr().out, "ORPHAN-a")
     assert line  # row was rendered
     assert "terminal=" not in line
+
+
+# ---------------------------------------------------------------------------
+# T-1783: --tail-events N — forensic event tail from blob
+# ---------------------------------------------------------------------------
+
+
+def _seed_events_blob(root: Path, dispatch_id: str, events: list[dict]) -> str:
+    blob_dir = root / ".context" / "dispatch-blobs" / dispatch_id
+    blob_dir.mkdir(parents=True, exist_ok=True)
+    (blob_dir / "events.jsonl").write_text(
+        "\n".join(json.dumps(e) for e in events) + ("\n" if events else "")
+    )
+    return str(blob_dir)
+
+
+def test_tail_events_shows_last_n_event_types(isolated_root, capsys):
+    root, o = isolated_root
+    blob = _seed_events_blob(root, "tail-1", [
+        {"type": "thinking", "msg": "step1"},
+        {"type": "tool_use", "name": "Read"},
+        {"type": "tool_use", "name": "Bash"},
+        {"type": "result", "is_error": False, "result": "ok"},
+    ])
+    _seed_dispatches(root, [
+        {"dispatch_id": "tail-1", "task_id": "T-300", "task_type": "x",
+         "worker_kind": "ollama-loop", "model": "m", "blob_dir": blob,
+         "terminal_event": {"type": "result", "is_error": False}},
+    ])
+    rc = o.cmd_read(_read_args("tail-1", tail_events=2))
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "events (last 2 of 4)" in out
+    # Last two events: tool_use Bash + result(is_error=False)
+    # Earlier events should not appear in the tail summary.
+    assert "tool_use" in out
+    assert "result (is_error=False)" in out
+    # thinking step1 was 4 events back — not in tail.
+    assert "step1" not in out
+
+
+def test_tail_events_rejects_zero_and_negative(isolated_root, capsys):
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "tail-2", "task_id": "T-301", "blob_dir": "/tmp"},
+    ])
+    rc = o.cmd_read(_read_args("tail-2", tail_events=0))
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert ">= 1" in err
+
+    rc = o.cmd_read(_read_args("tail-2", tail_events=-3))
+    assert rc == 1
+
+
+def test_tail_events_missing_blob_dir_field(isolated_root, capsys):
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "tail-3", "task_id": "T-302",
+         "task_type": "x", "worker_kind": "pi", "model": "m"},
+    ])
+    rc = o.cmd_read(_read_args("tail-3", tail_events=3))
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "no event log for this dispatch" in out
+
+
+def test_tail_events_missing_events_file(isolated_root, capsys):
+    """blob_dir set but events.jsonl absent → graceful notice."""
+    root, o = isolated_root
+    empty_blob = root / ".context" / "dispatch-blobs" / "empty"
+    empty_blob.mkdir(parents=True)
+    _seed_dispatches(root, [
+        {"dispatch_id": "tail-4", "task_id": "T-303",
+         "task_type": "x", "worker_kind": "pi", "model": "m",
+         "blob_dir": str(empty_blob)},
+    ])
+    rc = o.cmd_read(_read_args("tail-4", tail_events=3))
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "no event log for this dispatch" in out
+
+
+def test_tail_events_skips_malformed_lines(isolated_root, capsys):
+    root, o = isolated_root
+    blob_dir = root / ".context" / "dispatch-blobs" / "tail-5"
+    blob_dir.mkdir(parents=True)
+    # 1 good, 1 malformed, 1 good.
+    (blob_dir / "events.jsonl").write_text(
+        '{"type":"agent.done"}\n'
+        'not-json-at-all\n'
+        '{"type":"result","is_error":false}\n'
+    )
+    _seed_dispatches(root, [
+        {"dispatch_id": "tail-5", "task_id": "T-304",
+         "task_type": "x", "worker_kind": "ollama-loop", "model": "m",
+         "blob_dir": str(blob_dir)},
+    ])
+    rc = o.cmd_read(_read_args("tail-5", tail_events=5))
+    assert rc == 0
+    out = capsys.readouterr().out
+    # Two valid events parsed, malformed skipped.
+    assert "events (last 2 of 2)" in out
+    assert "agent.done" in out
+    assert "result" in out
+
+
+def test_tail_events_omitted_default_behavior(isolated_root, capsys):
+    """Without --tail-events, no event tail section is printed (T-1780 unchanged)."""
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "tail-6", "task_id": "T-305",
+         "task_type": "x", "worker_kind": "pi", "model": "m",
+         "blob_dir": "/tmp/whatever",
+         "terminal_event": {"type": "agent.done"}},
+    ])
+    rc = o.cmd_read(_read_args("tail-6"))  # no tail_events kwarg
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "events" not in out.lower().split("terminal:")[-1] or "events (last" not in out
 
 
 def test_cmd_read_json_carries_terminal_event(isolated_root, capsys):

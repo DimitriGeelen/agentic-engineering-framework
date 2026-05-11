@@ -343,6 +343,10 @@ def cmd_backprop(args: argparse.Namespace) -> int:
 
 
 def cmd_read(args: argparse.Namespace) -> int:
+    n = getattr(args, "tail_events", None)
+    if n is not None and n < 1:
+        print("outcome: --tail-events N must be >= 1", file=sys.stderr)
+        return 1
     merged = read_dispatch(args.dispatch_id)
     if not merged:
         print(f"outcome: no dispatch matching '{args.dispatch_id}'", file=sys.stderr)
@@ -374,7 +378,69 @@ def cmd_read(args: argparse.Namespace) -> int:
             print(f"  ac_checked/total:    {o.get('ac_checked')}/{o.get('ac_total')}")
         else:
             print("outcome_event:  (none — back-prop has not fired)")
+        # T-1783: optional --tail-events N tail of <blob_dir>/events.jsonl.
+        # Opt-in (default behavior unchanged when flag omitted).
+        n = getattr(args, "tail_events", None)
+        if n is not None:
+            _render_event_tail(merged, n)
     return 0
+
+
+def _event_summary(event: Dict[str, Any]) -> str:
+    """Render a single event as `<type> (<key-summary>)` per T-1783 idiom."""
+    etype = event.get("type", "?")
+    summary = ""
+    if etype == "error":
+        retry = event.get("retryable")
+        msg = (event.get("message") or "")[:60]
+        parts = []
+        if retry is not None:
+            parts.append(f"retryable={retry}")
+        if msg:
+            parts.append(f"message={msg!r}")
+        summary = ", ".join(parts)
+    elif etype == "result":
+        is_err = event.get("is_error")
+        if is_err is not None:
+            summary = f"is_error={is_err}"
+    elif etype == "agent.done":
+        summary = ""
+    else:
+        # Unknown type — fall back to a truncated json dump for visibility.
+        try:
+            blob = json.dumps({k: v for k, v in event.items() if k != "type"})
+            summary = blob[:60]
+        except (TypeError, ValueError):
+            summary = ""
+    if summary:
+        return f"{etype} ({summary})"
+    return etype
+
+
+def _render_event_tail(merged: Dict[str, Any], n: int) -> None:
+    """Print the last N events from <blob_dir>/events.jsonl as a summary list."""
+    blob_dir = merged.get("blob_dir")
+    if not blob_dir:
+        print("events:         (no event log for this dispatch)")
+        return
+    events_path = Path(blob_dir) / "events.jsonl"
+    if not events_path.exists():
+        print("events:         (no event log for this dispatch)")
+        return
+    events: List[Dict[str, Any]] = []
+    with events_path.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                events.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue  # T-1783: malformed lines skipped, do not crash
+    tail = events[-n:]
+    print(f"events (last {len(tail)} of {len(events)}):")
+    for ev in tail:
+        print(f"  · {_event_summary(ev)}")
 
 
 def cmd_list(args: argparse.Namespace) -> int:
@@ -423,6 +489,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     sp_r = sub.add_parser("read", help="Read merged dispatch + latest outcome")
     sp_r.add_argument("dispatch_id", help="Dispatch UUID (or prefix)")
     sp_r.add_argument("--json", action="store_true")
+    sp_r.add_argument("--tail-events", type=int, default=None,
+                      metavar="N",
+                      help="Tail last N events from <blob_dir>/events.jsonl (T-1783)")
     sp_r.set_defaults(func=cmd_read)
 
     sp_l = sub.add_parser("list", help="List all outcome events for a task")
