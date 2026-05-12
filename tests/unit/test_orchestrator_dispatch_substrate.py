@@ -174,3 +174,90 @@ def test_orchestrator_page_shows_substrate_absent_when_no_jsonl(client):
     html = rv.data.decode()
     assert "Dispatch substrate" in html
     assert "substrate absent" in html
+
+
+# ─── T-1794: by_task_type companion breakdown ────────────────────────────────
+
+
+def test_substrate_returns_by_task_type(client):
+    c, tmp_path = client
+    _seed_dispatches(tmp_path, [
+        {"dispatch_id": "a", "task_id": "T-1", "task_type": "build", "model": "haiku"},
+        {"dispatch_id": "b", "task_id": "T-2", "task_type": "build", "model": "haiku"},
+        {"dispatch_id": "c", "task_id": "T-3", "task_type": "design", "model": "opus"},
+    ])
+    from web.blueprints.orchestrator import _dispatch_substrate
+    out = _dispatch_substrate()
+    assert out["by_task_type"] == [
+        {"task_type": "build", "count": 2},
+        {"task_type": "design", "count": 1},
+    ]
+
+
+def test_substrate_by_task_type_excludes_synthetic(client):
+    c, tmp_path = client
+    _seed_dispatches(tmp_path, [
+        {"dispatch_id": "a", "task_id": "T-1", "task_type": "build", "model": "haiku"},
+        {"dispatch_id": "b", "task_id": "T-stress-0", "task_type": "build",
+         "model": "haiku"},
+        {"dispatch_id": "c", "task_id": "T-stress-1", "task_type": "design",
+         "model": "opus"},
+    ])
+    from web.blueprints.orchestrator import _dispatch_substrate
+    out = _dispatch_substrate()
+    # Synthetic rows excluded from by_task_type the same way they're
+    # excluded from by_model and total.
+    assert out["by_task_type"] == [{"task_type": "build", "count": 1}]
+
+
+def test_substrate_by_task_type_excludes_rows_missing_task_type(client):
+    c, tmp_path = client
+    _seed_dispatches(tmp_path, [
+        {"dispatch_id": "a", "task_id": "T-1", "task_type": "build", "model": "haiku"},
+        {"dispatch_id": "b", "task_id": "T-2", "model": "opus"},  # no task_type
+        {"dispatch_id": "c", "task_id": "T-3", "task_type": None, "model": "opus"},
+    ])
+    from web.blueprints.orchestrator import _dispatch_substrate
+    out = _dispatch_substrate()
+    # Total counts ALL real rows; by_task_type only those with the field.
+    assert out["total"] == 3
+    assert out["by_task_type"] == [{"task_type": "build", "count": 1}]
+
+
+def test_substrate_by_task_type_sorted_count_desc(client):
+    c, tmp_path = client
+    _seed_dispatches(tmp_path, [
+        {"dispatch_id": str(i), "task_id": f"T-{i}", "task_type": "build",
+         "model": "haiku"}
+        for i in range(4)
+    ] + [
+        {"dispatch_id": str(i + 100), "task_id": f"T-{i + 100}",
+         "task_type": "design", "model": "opus"}
+        for i in range(2)
+    ] + [
+        {"dispatch_id": str(i + 200), "task_id": f"T-{i + 200}",
+         "task_type": "spike", "model": "sonnet"}
+        for i in range(1)
+    ])
+    from web.blueprints.orchestrator import _dispatch_substrate
+    out = _dispatch_substrate()
+    counts = [r["count"] for r in out["by_task_type"]]
+    assert counts == sorted(counts, reverse=True)
+    assert out["by_task_type"][0]["task_type"] == "build"
+    assert out["by_task_type"][-1]["task_type"] == "spike"
+
+
+def test_orchestrator_page_renders_by_task_type_subtable(client):
+    c, tmp_path = client
+    _seed_dispatches(tmp_path, [
+        {"dispatch_id": "a", "task_id": "T-1", "task_type": "escalation-triage",
+         "model": "haiku"},
+        {"dispatch_id": "b", "task_id": "T-2", "task_type": "build",
+         "model": "opus"},
+    ])
+    rv = c.get("/orchestrator")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "By task-type" in html
+    assert "escalation-triage" in html
+    assert "build" in html

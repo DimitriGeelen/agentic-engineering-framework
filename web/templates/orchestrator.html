@@ -269,6 +269,7 @@
     plus <strong>{{ substrate.synthetic_total }}</strong> synthetic (<code>T-stress-*</code>,
     excluded from the breakdown){% endif %}.</p>
 {% if substrate.by_model %}
+<h3 style="margin-top:1rem;">By model</h3>
 <table>
     <thead>
         <tr>
@@ -290,6 +291,27 @@
 {% else %}
 <p class="muted"><small>No <code>model</code> field on any dispatch row yet — substrate
     rows predate the model-capture path or model wasn't resolved.</small></p>
+{% endif %}
+{% if substrate.by_task_type %}
+<h3 style="margin-top:1rem;">By task-type</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Task-type</th>
+            <th>Dispatches</th>
+            <th>Share</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in substrate.by_task_type %}
+        <tr>
+            <td><span class="pill"><code>{{ row.task_type }}</code></span></td>
+            <td>{{ row.count }}</td>
+            <td>{{ "%.0f%%"|format(100 * row.count / substrate.total) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endif %}
 {% endif %}
 

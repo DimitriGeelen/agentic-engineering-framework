@@ -251,18 +251,25 @@ def _dispatch_substrate() -> dict:
         "path": str,
         "total": int,                # real dispatches only
         "synthetic_total": int,
-        "by_model": [{"model": "X", "count": N}, ...],  # sorted count desc
+        "by_model": [{"model": "X", "count": N}, ...],          # sorted count desc
+        "by_task_type": [{"task_type": "X", "count": N}, ...],  # sorted count desc
       }
+
+    T-1794: added `by_task_type` companion breakdown. Same row-exclusion
+    rule (rows missing task_type are excluded from by_task_type only —
+    they still contribute to `total`).
     """
+    empty = {
+        "available": False,
+        "path": "",
+        "total": 0,
+        "synthetic_total": 0,
+        "by_model": [],
+        "by_task_type": [],
+    }
     path = PROJECT_ROOT / ".context" / "dispatches.jsonl"
     if not path.is_file():
-        return {
-            "available": False,
-            "path": str(path),
-            "total": 0,
-            "synthetic_total": 0,
-            "by_model": [],
-        }
+        return {**empty, "path": str(path)}
     real_rows: list[dict] = []
     synthetic_count = 0
     try:
@@ -280,32 +287,28 @@ def _dispatch_substrate() -> dict:
                 continue
             real_rows.append(row)
     except OSError:
-        return {
-            "available": False,
-            "path": str(path),
-            "total": 0,
-            "synthetic_total": 0,
-            "by_model": [],
-        }
+        return {**empty, "path": str(path)}
     model_counter: Counter = Counter()
+    task_type_counter: Counter = Counter()
     for row in real_rows:
         model = row.get("model")
-        if not model:
-            continue  # exclude rows missing model (mirror of CLI T-1788)
-        model_counter[model] += 1
-    by_model = [
-        {"model": m, "count": c}
-        for m, c in sorted(
-            model_counter.items(),
-            key=lambda kv: (-kv[1], kv[0]),
-        )
-    ]
+        if model:
+            model_counter[model] += 1
+        tt = row.get("task_type")
+        if tt:
+            task_type_counter[tt] += 1
+    def _to_rows(counter: Counter, key: str) -> list[dict]:
+        return [
+            {key: k, "count": v}
+            for k, v in sorted(counter.items(), key=lambda kv: (-kv[1], kv[0]))
+        ]
     return {
         "available": True,
         "path": str(path),
         "total": len(real_rows),
         "synthetic_total": synthetic_count,
-        "by_model": by_model,
+        "by_model": _to_rows(model_counter, "model"),
+        "by_task_type": _to_rows(task_type_counter, "task_type"),
     }
 
 
