@@ -251,13 +251,14 @@ def _dispatch_substrate() -> dict:
         "path": str,
         "total": int,                # real dispatches only
         "synthetic_total": int,
-        "by_model": [{"model": "X", "count": N}, ...],          # sorted count desc
-        "by_task_type": [{"task_type": "X", "count": N}, ...],  # sorted count desc
+        "by_model": [{"model": "X", "count": N}, ...],              # sorted count desc
+        "by_task_type": [{"task_type": "X", "count": N}, ...],      # sorted count desc
+        "by_worker_kind": [{"worker_kind": "X", "count": N}, ...],  # sorted count desc
       }
 
-    T-1794: added `by_task_type` companion breakdown. Same row-exclusion
-    rule (rows missing task_type are excluded from by_task_type only —
-    they still contribute to `total`).
+    T-1794: added `by_task_type` companion. T-1795: added `by_worker_kind`.
+    Same row-exclusion rule for all three (rows missing the field are
+    excluded from that breakdown only — they still contribute to `total`).
     """
     empty = {
         "available": False,
@@ -266,6 +267,7 @@ def _dispatch_substrate() -> dict:
         "synthetic_total": 0,
         "by_model": [],
         "by_task_type": [],
+        "by_worker_kind": [],
     }
     path = PROJECT_ROOT / ".context" / "dispatches.jsonl"
     if not path.is_file():
@@ -290,6 +292,7 @@ def _dispatch_substrate() -> dict:
         return {**empty, "path": str(path)}
     model_counter: Counter = Counter()
     task_type_counter: Counter = Counter()
+    worker_kind_counter: Counter = Counter()
     for row in real_rows:
         model = row.get("model")
         if model:
@@ -297,6 +300,9 @@ def _dispatch_substrate() -> dict:
         tt = row.get("task_type")
         if tt:
             task_type_counter[tt] += 1
+        wk = row.get("worker_kind")
+        if wk:
+            worker_kind_counter[wk] += 1
     def _to_rows(counter: Counter, key: str) -> list[dict]:
         return [
             {key: k, "count": v}
@@ -309,6 +315,7 @@ def _dispatch_substrate() -> dict:
         "synthetic_total": synthetic_count,
         "by_model": _to_rows(model_counter, "model"),
         "by_task_type": _to_rows(task_type_counter, "task_type"),
+        "by_worker_kind": _to_rows(worker_kind_counter, "worker_kind"),
     }
 
 

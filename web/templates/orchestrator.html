@@ -313,6 +313,27 @@
     </tbody>
 </table>
 {% endif %}
+{% if substrate.by_worker_kind %}
+<h3 style="margin-top:1rem;">By worker-kind</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Worker-kind</th>
+            <th>Dispatches</th>
+            <th>Share</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in substrate.by_worker_kind %}
+        <tr>
+            <td><span class="pill"><code>{{ row.worker_kind }}</code></span></td>
+            <td>{{ row.count }}</td>
+            <td>{{ "%.0f%%"|format(100 * row.count / substrate.total) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
 {% endif %}
 
 <!-- Learned routing panel (T-1669 Step 3) -->

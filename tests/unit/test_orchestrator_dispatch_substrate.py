@@ -261,3 +261,60 @@ def test_orchestrator_page_renders_by_task_type_subtable(client):
     assert "By task-type" in html
     assert "escalation-triage" in html
     assert "build" in html
+
+
+# ─── T-1795: by_worker_kind sibling breakdown ────────────────────────────────
+
+
+def test_substrate_returns_by_worker_kind(client):
+    c, tmp_path = client
+    _seed_dispatches(tmp_path, [
+        {"dispatch_id": "a", "task_id": "T-1", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "b", "task_id": "T-2", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "c", "task_id": "T-3", "worker_kind": "TermLink"},
+    ])
+    from web.blueprints.orchestrator import _dispatch_substrate
+    out = _dispatch_substrate()
+    assert out["by_worker_kind"] == [
+        {"worker_kind": "ollama-loop", "count": 2},
+        {"worker_kind": "TermLink", "count": 1},
+    ]
+
+
+def test_substrate_by_worker_kind_excludes_synthetic(client):
+    c, tmp_path = client
+    _seed_dispatches(tmp_path, [
+        {"dispatch_id": "a", "task_id": "T-1", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "b", "task_id": "T-stress-0", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "c", "task_id": "T-stress-1", "worker_kind": "TermLink"},
+    ])
+    from web.blueprints.orchestrator import _dispatch_substrate
+    out = _dispatch_substrate()
+    assert out["by_worker_kind"] == [{"worker_kind": "ollama-loop", "count": 1}]
+
+
+def test_substrate_by_worker_kind_excludes_rows_missing_field(client):
+    c, tmp_path = client
+    _seed_dispatches(tmp_path, [
+        {"dispatch_id": "a", "task_id": "T-1", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "b", "task_id": "T-2"},  # missing
+        {"dispatch_id": "c", "task_id": "T-3", "worker_kind": None},  # explicit null
+    ])
+    from web.blueprints.orchestrator import _dispatch_substrate
+    out = _dispatch_substrate()
+    assert out["total"] == 3
+    assert out["by_worker_kind"] == [{"worker_kind": "ollama-loop", "count": 1}]
+
+
+def test_orchestrator_page_renders_by_worker_kind_subtable(client):
+    c, tmp_path = client
+    _seed_dispatches(tmp_path, [
+        {"dispatch_id": "a", "task_id": "T-1", "worker_kind": "ollama-loop"},
+        {"dispatch_id": "b", "task_id": "T-2", "worker_kind": "TermLink"},
+    ])
+    rv = c.get("/orchestrator")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    assert "By worker-kind" in html
+    assert "ollama-loop" in html
+    assert "TermLink" in html
