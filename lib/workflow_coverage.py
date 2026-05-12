@@ -59,14 +59,18 @@ def _import_valid_worker_kinds() -> set:
     return set(getattr(resolver, "VALID_WORKER_KINDS", set()))
 
 
-def _parse_workflows(workflows_dir: Path) -> Dict[str, str]:
-    """Return ``{workflow_name: worker_kind}`` for every YAML file in
-    ``workflows_dir``. Workflows without a ``worker_kind`` field are
-    represented as ``{name: ""}``. Malformed YAML files are skipped.
+def _parse_workflows(workflows_dir: Path) -> Dict[str, Dict[str, str]]:
+    """Return ``{workflow_name: {"worker_kind", "provider"}}`` for every
+    YAML file in ``workflows_dir``. Missing fields → empty string. Malformed
+    YAML files are skipped.
+
+    T-1800: provider field also parsed (used to flag pi workflows missing
+    their required provider — `lib/spawn._spawn_pi` raises SpawnError when
+    both envelope and workflow lack it).
     """
     import yaml  # local — lazy so module imports without PyYAML
 
-    out: Dict[str, str] = {}
+    out: Dict[str, Dict[str, str]] = {}
     if not workflows_dir.is_dir():
         return out
     for path in sorted(workflows_dir.glob("*.yaml")):
@@ -76,7 +80,10 @@ def _parse_workflows(workflows_dir: Path) -> Dict[str, str]:
             continue
         if not isinstance(data, dict):
             continue
-        out[path.stem] = str(data.get("worker_kind") or "")
+        out[path.stem] = {
+            "worker_kind": str(data.get("worker_kind") or ""),
+            "provider": str(data.get("provider") or ""),
+        }
     return out
 
 
@@ -99,18 +106,26 @@ def check_workflow_dispatcher_coverage(
     Graceful on missing/malformed inputs: returns ok=True with empty lists.
     """
     wf_dir = workflows_dir or WORKFLOWS_DIR
-    workflow_kinds = _parse_workflows(wf_dir)
+    workflow_data = _parse_workflows(wf_dir)
     routable = _import_dispatcher_keys()
     valid = _import_valid_worker_kinds()
 
     workflows = [
-        {"name": name, "worker_kind": wk}
-        for name, wk in workflow_kinds.items()
+        {"name": name, "worker_kind": d["worker_kind"], "provider": d["provider"]}
+        for name, d in workflow_data.items()
     ]
     unroutable_workflows = [
-        {"name": name, "worker_kind": wk}
-        for name, wk in workflow_kinds.items()
-        if wk and wk not in routable
+        {"name": name, "worker_kind": d["worker_kind"]}
+        for name, d in workflow_data.items()
+        if d["worker_kind"] and d["worker_kind"] not in routable
+    ]
+    # T-1800: pi workflows MUST declare a provider field — lib/spawn._spawn_pi
+    # raises SpawnError when both envelope and workflow lack one. Audit-time
+    # detection of that runtime-trap class.
+    pi_workflows_missing_provider = [
+        {"name": name, "worker_kind": "pi"}
+        for name, d in workflow_data.items()
+        if d["worker_kind"] == "pi" and not d["provider"]
     ]
     declarable_but_unroutable = sorted(valid - routable) if valid else []
 
@@ -120,7 +135,11 @@ def check_workflow_dispatcher_coverage(
         "valid_kinds": sorted(valid),
         "declarable_but_unroutable": declarable_but_unroutable,
         "unroutable_workflows": unroutable_workflows,
-        "ok": len(unroutable_workflows) == 0,
+        "pi_workflows_missing_provider": pi_workflows_missing_provider,
+        "ok": (
+            len(unroutable_workflows) == 0
+            and len(pi_workflows_missing_provider) == 0
+        ),
     }
 
 
@@ -128,17 +147,27 @@ def format_audit_line(report: Dict[str, Any]) -> str:
     """Compact one-line summary used by audit.sh's PASS/FAIL emitter."""
     n_total = len(report["workflows"])
     n_unroutable = len(report["unroutable_workflows"])
+    n_missing_provider = len(report.get("pi_workflows_missing_provider", []))
     declarable_unroutable = report["declarable_but_unroutable"]
     if report["ok"]:
         return (
-            f"all {n_total} workflows route to a registered dispatcher; "
+            f"all {n_total} workflows route to a registered dispatcher and "
+            f"pi workflows declare a provider; "
             f"declarable-but-unroutable: {declarable_unroutable or 'none'}"
         )
-    bad = ", ".join(
-        f"{w['name']}({w['worker_kind']})"
-        for w in report["unroutable_workflows"]
-    )
-    return f"{n_unroutable}/{n_total} workflows declare an unroutable worker_kind: {bad}"
+    parts: list[str] = []
+    if n_unroutable:
+        bad = ", ".join(
+            f"{w['name']}({w['worker_kind']})"
+            for w in report["unroutable_workflows"]
+        )
+        parts.append(f"{n_unroutable}/{n_total} unroutable worker_kind: {bad}")
+    if n_missing_provider:
+        bad = ", ".join(
+            w["name"] for w in report["pi_workflows_missing_provider"]
+        )
+        parts.append(f"{n_missing_provider} pi workflow(s) missing provider: {bad}")
+    return "; ".join(parts)
 
 
 if __name__ == "__main__":

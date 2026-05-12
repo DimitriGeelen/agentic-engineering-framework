@@ -41,11 +41,18 @@ def coverage(monkeypatch, tmp_path):
     return workflow_coverage, wf_dir
 
 
-def _write_workflow(wf_dir: Path, name: str, worker_kind: str | None):
-    """Helper: write a workflow YAML with optional worker_kind."""
+def _write_workflow(wf_dir: Path, name: str, worker_kind: str | None,
+                    provider: str | None = None):
+    """Helper: write a workflow YAML with optional worker_kind/provider.
+
+    Pi workflows must declare a provider (T-1800) — pass ``provider="anthropic"``
+    when writing pi fixtures to avoid the missing-provider FAIL.
+    """
     body = f"name: {name}\n"
     if worker_kind is not None:
         body += f"worker_kind: {worker_kind}\n"
+    if provider is not None:
+        body += f"provider: {provider}\n"
     (wf_dir / f"{name}.yaml").write_text(body)
 
 
@@ -54,8 +61,8 @@ def _write_workflow(wf_dir: Path, name: str, worker_kind: str | None):
 
 def test_all_routable_returns_ok(coverage):
     wc, wf_dir = coverage
-    # The three currently-routable worker_kinds.
-    _write_workflow(wf_dir, "wf-pi", "pi")
+    # The three currently-routable worker_kinds (pi needs provider).
+    _write_workflow(wf_dir, "wf-pi", "pi", provider="anthropic")
     _write_workflow(wf_dir, "wf-ollama", "ollama-loop")
     _write_workflow(wf_dir, "wf-tl", "TermLink")
 
@@ -63,6 +70,7 @@ def test_all_routable_returns_ok(coverage):
     assert r["ok"] is True
     assert len(r["workflows"]) == 3
     assert r["unroutable_workflows"] == []
+    assert r["pi_workflows_missing_provider"] == []
 
 
 def test_workflow_without_worker_kind_not_unroutable(coverage):
@@ -70,7 +78,7 @@ def test_workflow_without_worker_kind_not_unroutable(coverage):
     back to default.yaml at run time)."""
     wc, wf_dir = coverage
     _write_workflow(wf_dir, "wf-interactive", None)
-    _write_workflow(wf_dir, "wf-pi", "pi")
+    _write_workflow(wf_dir, "wf-pi", "pi", provider="anthropic")
 
     r = wc.check_workflow_dispatcher_coverage()
     assert r["ok"] is True
@@ -170,16 +178,75 @@ def test_declarable_but_unroutable_reflects_set_difference(coverage):
 
 def test_format_audit_line_ok(coverage):
     wc, wf_dir = coverage
-    _write_workflow(wf_dir, "wf-pi", "pi")
+    _write_workflow(wf_dir, "wf-pi", "pi", provider="anthropic")
     line = wc.format_audit_line(wc.check_workflow_dispatcher_coverage())
     assert "all 1 workflows route" in line
     assert "declarable-but-unroutable" in line
 
 
-def test_format_audit_line_fail(coverage):
+def test_format_audit_line_fail_unroutable(coverage):
     wc, wf_dir = coverage
-    _write_workflow(wf_dir, "wf-pi", "pi")
+    _write_workflow(wf_dir, "wf-pi", "pi", provider="anthropic")
     _write_workflow(wf_dir, "wf-task", "Task")
     line = wc.format_audit_line(wc.check_workflow_dispatcher_coverage())
-    assert "1/2 workflows declare an unroutable" in line
+    assert "unroutable worker_kind" in line
     assert "wf-task(Task)" in line
+
+
+# ─── T-1800: provider coverage ──────────────────────────────────────────────
+
+
+def test_pi_with_provider_returns_ok(coverage):
+    """A pi workflow declaring both worker_kind and provider passes."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-pi", "pi", provider="anthropic")
+
+    r = wc.check_workflow_dispatcher_coverage()
+    assert r["ok"] is True
+    assert r["pi_workflows_missing_provider"] == []
+    # provider field also surfaced on the workflow row
+    rows = [w for w in r["workflows"] if w["name"] == "wf-pi"]
+    assert rows[0]["provider"] == "anthropic"
+
+
+def test_pi_without_provider_fails(coverage):
+    """A pi workflow lacking provider raises SpawnError at runtime — flag it."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-pi-no-provider", "pi")  # missing provider
+
+    r = wc.check_workflow_dispatcher_coverage()
+    assert r["ok"] is False
+    bad = r["pi_workflows_missing_provider"]
+    assert len(bad) == 1
+    assert bad[0]["name"] == "wf-pi-no-provider"
+    assert bad[0]["worker_kind"] == "pi"
+
+
+def test_non_pi_without_provider_not_flagged(coverage):
+    """provider is pi-specific; ollama-loop/TermLink workflows don't need it."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-ollama", "ollama-loop")  # no provider — fine
+    _write_workflow(wf_dir, "wf-tl", "TermLink")  # no provider — fine
+
+    r = wc.check_workflow_dispatcher_coverage()
+    assert r["ok"] is True
+    assert r["pi_workflows_missing_provider"] == []
+
+
+def test_format_audit_line_surfaces_missing_provider(coverage):
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-pi-no-prov", "pi")  # missing
+    line = wc.format_audit_line(wc.check_workflow_dispatcher_coverage())
+    assert "pi workflow(s) missing provider" in line
+    assert "wf-pi-no-prov" in line
+
+
+def test_format_audit_line_combines_both_failure_classes(coverage):
+    """When both unroutable AND missing-provider are present, both are
+    surfaced in the audit line."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-pi-no-prov", "pi")  # missing provider
+    _write_workflow(wf_dir, "wf-task", "Task")  # unroutable
+    line = wc.format_audit_line(wc.check_workflow_dispatcher_coverage())
+    assert "unroutable worker_kind" in line
+    assert "pi workflow(s) missing provider" in line

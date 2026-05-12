@@ -43,11 +43,13 @@ def client(tmp_path, monkeypatch):
         yield c, tmp_path
 
 
-def _write_workflow(tmp_path, name, worker_kind=None):
+def _write_workflow(tmp_path, name, worker_kind=None, provider=None):
     wf_dir = tmp_path / ".context" / "project" / "workflows"
     body = f"name: {name}\n"
     if worker_kind is not None:
         body += f"worker_kind: {worker_kind}\n"
+    if provider is not None:
+        body += f"provider: {provider}\n"
     (wf_dir / f"{name}.yaml").write_text(body)
 
 
@@ -56,7 +58,7 @@ def _write_workflow(tmp_path, name, worker_kind=None):
 
 def test_workflow_coverage_returns_helper_shape(client):
     c, tmp_path = client
-    _write_workflow(tmp_path, "wf-pi", "pi")
+    _write_workflow(tmp_path, "wf-pi", "pi", provider="anthropic")
     _write_workflow(tmp_path, "wf-tl", "TermLink")
 
     from web.blueprints.orchestrator import _workflow_coverage
@@ -83,7 +85,7 @@ def test_workflow_coverage_flags_unroutable(client):
 
 def test_panel_renders_with_workflows(client):
     c, tmp_path = client
-    _write_workflow(tmp_path, "wf-pi", "pi")
+    _write_workflow(tmp_path, "wf-pi", "pi", provider="anthropic")
     _write_workflow(tmp_path, "wf-ollama", "ollama-loop")
 
     rv = c.get("/orchestrator")
@@ -100,7 +102,7 @@ def test_panel_renders_with_workflows(client):
 
 def test_panel_renders_warn_when_unroutable(client):
     c, tmp_path = client
-    _write_workflow(tmp_path, "wf-pi", "pi")
+    _write_workflow(tmp_path, "wf-pi", "pi", provider="anthropic")
     _write_workflow(tmp_path, "wf-task", "Task")
 
     rv = c.get("/orchestrator")
@@ -126,7 +128,7 @@ def test_panel_shows_workflow_without_worker_kind_as_interactive(client):
 def test_panel_shows_declarable_but_unroutable_set(client):
     """The footer line surfaces VALID_WORKER_KINDS - _DISPATCHERS.keys()."""
     c, tmp_path = client
-    _write_workflow(tmp_path, "wf-pi", "pi")  # any routable workflow
+    _write_workflow(tmp_path, "wf-pi", "pi", provider="anthropic")  # any routable workflow
 
     rv = c.get("/orchestrator")
     html = rv.data.decode()
