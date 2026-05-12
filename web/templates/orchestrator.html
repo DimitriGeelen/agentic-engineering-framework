@@ -377,6 +377,63 @@
 {% endif %}
 {% endif %}
 
+<!-- Workflow coverage panel (T-1799 — web parity for T-1798 audit check) -->
+<h2 style="margin-top:2rem;">Workflow coverage</h2>
+<p class="muted">Workflow → dispatcher coverage matrix. Each workflow under
+    <code>.context/project/workflows/</code> declares an optional
+    <code>worker_kind</code> field; the spawn driver
+    (<code>lib/spawn._DISPATCHERS</code>) routes a subset of declarable values.
+    Any workflow that declares a worker_kind without a registered handler is
+    a runtime trap (T-1776 — surfaced as <code>NotImplementedError</code>).
+    <a href="/tasks/T-1798"><code>T-1798</code></a> ratchets this from a runtime
+    trap to an audit-time visibility check; this panel renders the same data
+    on the web.</p>
+{% if not workflow_coverage.available %}
+    <p class="muted"><span class="badge badge-info">unavailable</span> Helper not importable.</p>
+{% else %}
+    {% if workflow_coverage.ok %}
+        <p><span class="badge badge-ok">OK</span>
+            All {{ workflow_coverage.workflows | length }} workflows route to a registered dispatcher.</p>
+    {% else %}
+        <p><span class="badge badge-warn">FAIL</span>
+            {{ workflow_coverage.unroutable_workflows | length }} of
+            {{ workflow_coverage.workflows | length }} workflows declare an unroutable worker_kind.</p>
+    {% endif %}
+    <table>
+        <thead>
+            <tr><th>Workflow</th><th>worker_kind</th><th>Routable</th></tr>
+        </thead>
+        <tbody>
+        {% for w in workflow_coverage.workflows %}
+            <tr>
+                <td><code>{{ w.name }}</code></td>
+                <td>{% if w.worker_kind %}<code>{{ w.worker_kind }}</code>{% else %}<span class="muted">— (interactive)</span>{% endif %}</td>
+                <td>
+                {% if not w.worker_kind %}
+                    <span class="muted">n/a</span>
+                {% elif w.worker_kind in workflow_coverage.routable %}
+                    <span class="badge badge-ok">yes</span>
+                {% else %}
+                    <span class="badge badge-warn">no</span>
+                {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p class="muted">
+        Routable dispatchers: <code>{{ workflow_coverage.routable | join(', ') }}</code>.
+        Declarable but unroutable:
+        {% if workflow_coverage.declarable_but_unroutable %}
+            <code>{{ workflow_coverage.declarable_but_unroutable | join(', ') }}</code>
+            (declared in <code>lib/resolver.VALID_WORKER_KINDS</code> but missing from
+            <code>lib/spawn._DISPATCHERS</code> — declaring any of these in a workflow is a runtime trap).
+        {% else %}
+            none.
+        {% endif %}
+    </p>
+{% endif %}
+
 <!-- Learned routing panel (T-1669 Step 3) -->
 <h2 style="margin-top:2rem;">Learned routing</h2>
 <p class="muted">Per-task-type model preferences derived from <code>route-cache.json</code>

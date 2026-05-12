@@ -420,6 +420,30 @@ def _outcome_quality() -> dict:
     }
 
 
+def _workflow_coverage() -> dict:
+    """T-1799: workflow → dispatcher coverage report for the web panel.
+
+    Thin facade over ``lib.workflow_coverage.check_workflow_dispatcher_coverage``.
+    Returns ``{"available": False}`` when the helper can't be imported (e.g.
+    consumer projects without the framework's lib/ on path) so the template
+    can show an empty state instead of crashing.
+    """
+    import sys
+    lib_dir = PROJECT_ROOT / "lib"
+    if str(lib_dir) not in sys.path:
+        sys.path.insert(0, str(lib_dir))
+    try:
+        import workflow_coverage  # noqa: PLC0415
+    except Exception:
+        return {"available": False}
+    try:
+        report = workflow_coverage.check_workflow_dispatcher_coverage()
+    except Exception:
+        return {"available": False}
+    report["available"] = True
+    return report
+
+
 def _arc_tasks() -> list[dict]:
     """Surface T-1641 + follow-up arc parents for the cross-link panel."""
     targets = ["T-1641", "T-1642", "T-1643", "T-1644", "T-1645", "T-1646", "T-1647"]
@@ -524,4 +548,5 @@ def orchestrator_page():
         learned=_route_cache_learned(),
         substrate=_dispatch_substrate(),
         outcome_quality=_outcome_quality(),
+        workflow_coverage=_workflow_coverage(),
     )
