@@ -3506,9 +3506,10 @@ PYEOF
                 _filter_since=""
                 _filter_worker_kind=""
                 _filter_task_type=""
+                _filter_model=""
                 _recent_n=""
                 # T-1784: --task. T-1785: --since. T-1786: --worker-kind.
-                # T-1787: --recent. T-1790: --task-type.
+                # T-1787: --recent. T-1790: --task-type. T-1791: --model.
                 _prev=""
                 for _arg in "$@"; do
                     [ "$_arg" = "--json" ] && _emit_json=1
@@ -3517,10 +3518,11 @@ PYEOF
                     [ "$_prev" = "--since" ] && _filter_since="$_arg"
                     [ "$_prev" = "--worker-kind" ] && _filter_worker_kind="$_arg"
                     [ "$_prev" = "--task-type" ] && _filter_task_type="$_arg"
+                    [ "$_prev" = "--model" ] && _filter_model="$_arg"
                     [ "$_prev" = "--recent" ] && _recent_n="$_arg"
                     _prev="$_arg"
                 done
-                python3 - "$_emit_json" "$_emit_outcomes" "$_filter_task" "$_filter_since" "$_filter_worker_kind" "$_recent_n" "$_filter_task_type" <<'PYEOF'
+                python3 - "$_emit_json" "$_emit_outcomes" "$_filter_task" "$_filter_since" "$_filter_worker_kind" "$_recent_n" "$_filter_task_type" "$_filter_model" <<'PYEOF'
 import json
 import os
 import sys
@@ -3534,6 +3536,7 @@ filter_since_arg = sys.argv[4] if len(sys.argv) > 4 else ""
 filter_worker_kind = sys.argv[5] if len(sys.argv) > 5 else ""
 recent_n_arg = sys.argv[6] if len(sys.argv) > 6 else ""
 filter_task_type = sys.argv[7] if len(sys.argv) > 7 else ""
+filter_model = sys.argv[8] if len(sys.argv) > 8 else ""
 
 # T-1787: --recent N parsing + validation. Default 5 preserves the
 # pre-flag behavior; explicit N>=1 integer required.
@@ -3618,14 +3621,17 @@ dispatches = [d for d in dispatches_all if not _is_synthetic(d)]
 synthetic = [d for d in dispatches_all if _is_synthetic(d)]
 
 # T-1784: --task filter. T-1785: --since filter. T-1786: --worker-kind.
-# T-1790: --task-type. All apply BEFORE aggregation so every downstream
-# breakdown sees only matching rows. AND-composition when multiple set.
+# T-1790: --task-type. T-1791: --model. All apply BEFORE aggregation so
+# every downstream breakdown sees only matching rows. AND-composition when
+# multiple set.
 if filter_task:
     dispatches = [d for d in dispatches if d.get("task_id") == filter_task]
 if filter_worker_kind:
     dispatches = [d for d in dispatches if d.get("worker_kind") == filter_worker_kind]
 if filter_task_type:
     dispatches = [d for d in dispatches if d.get("task_type") == filter_task_type]
+if filter_model:
+    dispatches = [d for d in dispatches if d.get("model") == filter_model]
 if filter_since_seconds is not None:
     from datetime import datetime as _dt, timezone as _tz, timedelta as _td
     cutoff = _dt.now(_tz.utc) - _td(seconds=filter_since_seconds)
@@ -3640,7 +3646,7 @@ if filter_since_seconds is not None:
 else:
     cutoff_iso = None
 
-if filter_task or filter_since_seconds is not None or filter_worker_kind or filter_task_type:
+if filter_task or filter_since_seconds is not None or filter_worker_kind or filter_task_type or filter_model:
     # Outcomes are filtered to match the (now-narrowed) dispatch_ids.
     matching_dids = {d.get("dispatch_id") for d in dispatches if d.get("dispatch_id")}
     outcomes = [o for o in outcomes if o.get("dispatch_id") in matching_dids]
@@ -3777,10 +3783,10 @@ if emit_json:
     print(json.dumps(stats, indent=2))
     sys.exit(0)
 
-if (filter_task or filter_since_seconds is not None or filter_worker_kind or filter_task_type) and stats["dispatch_total"] == 0:
-    # T-1784 / T-1785 / T-1786 / T-1790: empty filter result — separate notice
-    # (real dispatches may exist, just none matching the filter). Synthetic
-    # gating skipped.
+if (filter_task or filter_since_seconds is not None or filter_worker_kind or filter_task_type or filter_model) and stats["dispatch_total"] == 0:
+    # T-1784 / T-1785 / T-1786 / T-1790 / T-1791: empty filter result — separate
+    # notice (real dispatches may exist, just none matching the filter).
+    # Synthetic gating skipped.
     if emit_json:
         # JSON callers get the empty stats dict (valid, machine-parseable).
         print(json.dumps(stats, indent=2))
@@ -3792,6 +3798,8 @@ if (filter_task or filter_since_seconds is not None or filter_worker_kind or fil
             parts.append(f"task_type {filter_task_type}")
         if filter_worker_kind:
             parts.append(f"worker_kind {filter_worker_kind}")
+        if filter_model:
+            parts.append(f"model {filter_model}")
         if filter_since_seconds is not None:
             parts.append(f"the last {filter_since_arg}")
         scope = " in ".join(parts)
@@ -3814,6 +3822,9 @@ if filter_task_type:
 if filter_worker_kind:
     # T-1786: same visibility for worker_kind narrowing.
     print(f"  Filter:            worker_kind={filter_worker_kind}")
+if filter_model:
+    # T-1791: surface model narrowing (routing-decision filter).
+    print(f"  Filter:            model={filter_model}")
 if filter_since_seconds is not None:
     # T-1785: surface the cutoff so operators see what window they're in.
     print(f"  Filter:            since={filter_since_arg} (>= {cutoff_iso})")

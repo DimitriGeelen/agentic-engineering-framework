@@ -819,3 +819,108 @@ def test_task_type_filter_composes_with_worker_kind_AND(tmp_path):
     assert "[tt1-aaa" in result.stdout
     assert "[tt2-bbb" not in result.stdout
     assert "[tt3-ccc" not in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# T-1791: --model X filter — fifth filter knob, symmetric to T-1786/T-1790.
+# ---------------------------------------------------------------------------
+
+
+def test_model_filter_narrows_to_matching_dispatches(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "escalation-triage", "worker_kind": "ollama-loop",
+         "model": "claude-3-5-sonnet-hermes3"},
+        {"dispatch_id": "m2-bbb", "ts": "2026-05-11T00:00:02", "task_id": "T-2",
+         "task_type": "build", "worker_kind": "TermLink", "model": "opus"},
+        {"dispatch_id": "m3-ccc", "ts": "2026-05-11T00:00:03", "task_id": "T-3",
+         "task_type": "design", "worker_kind": "ollama-loop",
+         "model": "claude-3-5-sonnet-hermes3"},
+    ], [])
+    result = _run_status(tmp_path, "--model", "claude-3-5-sonnet-hermes3")
+    assert result.returncode == 0, result.stderr
+    assert "Filter:            model=claude-3-5-sonnet-hermes3" in result.stdout
+    assert "Dispatches:        2" in result.stdout
+    assert "[m1-aaa" in result.stdout
+    assert "[m3-ccc" in result.stdout
+    assert "[m2-bbb" not in result.stdout
+
+
+def test_model_filter_empty_result_prints_notice(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "haiku"},
+    ], [])
+    result = _run_status(tmp_path, "--model", "opus")
+    assert result.returncode == 0, result.stderr
+    assert "no dispatches captured for model opus" in result.stdout
+
+
+def test_model_filter_composes_with_worker_kind_AND(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "X", "worker_kind": "ollama-loop", "model": "haiku"},
+        {"dispatch_id": "m2-bbb", "ts": "2026-05-11T00:00:02", "task_id": "T-2",
+         "task_type": "X", "worker_kind": "TermLink", "model": "haiku"},
+        {"dispatch_id": "m3-ccc", "ts": "2026-05-11T00:00:03", "task_id": "T-3",
+         "task_type": "X", "worker_kind": "ollama-loop", "model": "opus"},
+    ], [])
+    result = _run_status(tmp_path,
+                         "--model", "haiku",
+                         "--worker-kind", "ollama-loop")
+    assert result.returncode == 0, result.stderr
+    assert "Dispatches:        1" in result.stdout
+    assert "[m1-aaa" in result.stdout
+    assert "[m2-bbb" not in result.stdout
+    assert "[m3-ccc" not in result.stdout
+
+
+def test_model_filter_composes_with_task_type_AND(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "build", "worker_kind": "Task", "model": "haiku"},
+        {"dispatch_id": "m2-bbb", "ts": "2026-05-11T00:00:02", "task_id": "T-2",
+         "task_type": "design", "worker_kind": "Task", "model": "haiku"},
+        {"dispatch_id": "m3-ccc", "ts": "2026-05-11T00:00:03", "task_id": "T-3",
+         "task_type": "build", "worker_kind": "Task", "model": "opus"},
+    ], [])
+    result = _run_status(tmp_path,
+                         "--model", "haiku",
+                         "--task-type", "build")
+    assert result.returncode == 0, result.stderr
+    assert "Dispatches:        1" in result.stdout
+    assert "[m1-aaa" in result.stdout
+    assert "[m2-bbb" not in result.stdout  # filtered by task-type
+    assert "[m3-ccc" not in result.stdout  # filtered by model
+
+
+def test_model_filter_with_json(tmp_path):
+    """--model + --json: stats reflect filtered set."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "haiku"},
+        {"dispatch_id": "m2-bbb", "task_id": "T-2", "task_type": "Y",
+         "worker_kind": "TermLink", "model": "opus"},
+    ], [])
+    result = _run_status(tmp_path, "--model", "haiku", "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["dispatch_total"] == 1
+    assert data["by_model"] == {"haiku": 1}
+    assert len(data["recent"]) == 1
+    assert data["recent"][0]["model"] == "haiku"
+
+
+def test_model_filter_excludes_rows_without_model_field(tmp_path):
+    """--model X: rows missing the model field must NOT match."""
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "m1-aaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "haiku"},
+        {"dispatch_id": "m2-bbb", "task_id": "T-2", "task_type": "Y",
+         "worker_kind": "TermLink"},  # no model field — legacy row
+    ], [])
+    result = _run_status(tmp_path, "--model", "haiku")
+    assert result.returncode == 0, result.stderr
+    assert "Dispatches:        1" in result.stdout
+    assert "[m1-aaa" in result.stdout
+    assert "[m2-bbb" not in result.stdout
