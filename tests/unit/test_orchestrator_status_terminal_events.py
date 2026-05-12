@@ -924,3 +924,97 @@ def test_model_filter_excludes_rows_without_model_field(tmp_path):
     assert "Dispatches:        1" in result.stdout
     assert "[m1-aaa" in result.stdout
     assert "[m2-bbb" not in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# T-1793: --workflow-resolved-via filter — sixth filter knob, fallback forensics.
+# ---------------------------------------------------------------------------
+
+
+def test_resolved_via_filter_narrows_to_primary(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "r1-aaa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "X", "worker_kind": "ollama-loop", "model": "haiku",
+         "workflow_resolved_via": "primary"},
+        {"dispatch_id": "r2-bbb", "ts": "2026-05-11T00:00:02", "task_id": "T-2",
+         "task_type": "Y", "worker_kind": "TermLink", "model": "opus",
+         "workflow_resolved_via": "fallback"},
+        {"dispatch_id": "r3-ccc", "ts": "2026-05-11T00:00:03", "task_id": "T-3",
+         "task_type": "X", "worker_kind": "ollama-loop", "model": "haiku",
+         "workflow_resolved_via": "primary"},
+    ], [])
+    result = _run_status(tmp_path, "--workflow-resolved-via", "primary")
+    assert result.returncode == 0, result.stderr
+    assert "Filter:            workflow_resolved_via=primary" in result.stdout
+    assert "Dispatches:        2" in result.stdout
+    assert "[r1-aaa" in result.stdout
+    assert "[r3-ccc" in result.stdout
+    assert "[r2-bbb" not in result.stdout
+
+
+def test_resolved_via_filter_narrows_to_fallback(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "r1-aaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "haiku",
+         "workflow_resolved_via": "primary"},
+        {"dispatch_id": "r2-bbb", "task_id": "T-2", "task_type": "Y",
+         "worker_kind": "TermLink", "model": "opus",
+         "workflow_resolved_via": "fallback"},
+    ], [])
+    result = _run_status(tmp_path, "--workflow-resolved-via", "fallback")
+    assert result.returncode == 0, result.stderr
+    assert "Dispatches:        1" in result.stdout
+    assert "[r2-bbb" in result.stdout
+    assert "[r1-aaa" not in result.stdout
+
+
+def test_resolved_via_filter_empty_result_prints_notice(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "r1-aaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "haiku",
+         "workflow_resolved_via": "primary"},
+    ], [])
+    result = _run_status(tmp_path, "--workflow-resolved-via", "fallback")
+    assert result.returncode == 0, result.stderr
+    assert "no dispatches captured for workflow_resolved_via fallback" in result.stdout
+
+
+def test_resolved_via_composes_with_model_AND(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "r1-aaa", "ts": "2026-05-11T00:00:01", "task_id": "T-1",
+         "task_type": "X", "worker_kind": "ollama-loop", "model": "haiku",
+         "workflow_resolved_via": "primary"},
+        {"dispatch_id": "r2-bbb", "ts": "2026-05-11T00:00:02", "task_id": "T-2",
+         "task_type": "X", "worker_kind": "ollama-loop", "model": "opus",
+         "workflow_resolved_via": "primary"},
+        {"dispatch_id": "r3-ccc", "ts": "2026-05-11T00:00:03", "task_id": "T-3",
+         "task_type": "X", "worker_kind": "ollama-loop", "model": "haiku",
+         "workflow_resolved_via": "fallback"},
+    ], [])
+    result = _run_status(tmp_path,
+                         "--workflow-resolved-via", "primary",
+                         "--model", "haiku")
+    assert result.returncode == 0, result.stderr
+    assert "Dispatches:        1" in result.stdout
+    assert "[r1-aaa" in result.stdout
+    assert "[r2-bbb" not in result.stdout  # filtered by model
+    assert "[r3-ccc" not in result.stdout  # filtered by resolved_via
+
+
+def test_resolved_via_filter_with_json(tmp_path):
+    _seed_jsonl(tmp_path, [
+        {"dispatch_id": "r1-aaa", "task_id": "T-1", "task_type": "X",
+         "worker_kind": "ollama-loop", "model": "haiku",
+         "workflow_resolved_via": "primary"},
+        {"dispatch_id": "r2-bbb", "task_id": "T-2", "task_type": "Y",
+         "worker_kind": "TermLink", "model": "opus",
+         "workflow_resolved_via": "fallback"},
+    ], [])
+    result = _run_status(tmp_path,
+                         "--workflow-resolved-via", "fallback",
+                         "--json")
+    assert result.returncode == 0, result.stderr
+    data = json.loads(result.stdout)
+    assert data["dispatch_total"] == 1
+    assert len(data["recent"]) == 1
+    assert data["recent"][0]["dispatch_id"] == "r2-bbb"[:8]
