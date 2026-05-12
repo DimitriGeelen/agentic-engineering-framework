@@ -118,17 +118,94 @@ def test_pi_route_error_terminal(tmp_project):
     assert result["terminal_event"]["retryable"] is True
 
 
-def test_other_worker_kinds_raise_notimplemented(tmp_project):
-    """T-1775 added ollama-loop. TermLink + Task remain deferred."""
+def test_remaining_worker_kinds_raise_notimplemented(tmp_project):
+    """T-1775 added ollama-loop, T-1797 added TermLink. Only Task remains deferred."""
     tmp_path, spawn = tmp_project
-    for wk in ("TermLink", "Task"):
-        env = _envelope(tmp_path, worker_kind=wk)
-        with pytest.raises(NotImplementedError) as exc:
-            spawn.spawn_dispatch(env)
-        msg = str(exc.value)
-        assert wk in msg
-        # Deferral message references the originating task IDs
-        assert "T-1773" in msg or "T-1775" in msg
+    env = _envelope(tmp_path, worker_kind="Task")
+    with pytest.raises(NotImplementedError) as exc:
+        spawn.spawn_dispatch(env)
+    msg = str(exc.value)
+    assert "Task" in msg
+    # Deferral message references the originating task IDs
+    assert "T-1773" in msg or "T-1775" in msg or "T-1797" in msg
+
+
+def test_termlink_route_wired(tmp_project):
+    """T-1797: TermLink is registered in _DISPATCHERS and no longer raises
+    NotImplementedError. Stream-json result event maps to outcome status."""
+    tmp_path, spawn = tmp_project
+    assert "TermLink" in spawn._DISPATCHERS
+
+    env = _envelope(tmp_path, worker_kind="TermLink")
+    events = [
+        {"type": "system", "subtype": "init"},
+        {"type": "assistant", "message": {"content": "hi"}},
+        {"type": "result", "is_error": False, "result": "done"},
+    ]
+
+    def fake_factory(**kwargs):
+        m = MagicMock()
+        m.prompt.return_value = iter(events)
+        m.close.return_value = 0
+        return m
+
+    import termlink_worker  # noqa: F401 — ensure module is in sys.modules
+    with patch("termlink_worker.TermLinkWorker", side_effect=fake_factory):
+        result = spawn.spawn_dispatch(env)
+
+    assert result["status"] == "success"
+    assert result["events_count"] == 3
+    assert result["terminal_event"]["type"] == "result"
+    ep = Path(result["events_path"])
+    assert ep.exists()
+    lines = ep.read_text().strip().splitlines()
+    assert len(lines) == 3
+
+
+def test_termlink_route_error_terminal(tmp_project):
+    """T-1797: type=result is_error=True → status=error (same shape as ollama-loop)."""
+    tmp_path, spawn = tmp_project
+    env = _envelope(tmp_path, worker_kind="TermLink")
+    events = [{"type": "result", "is_error": True, "error": "worker timeout"}]
+
+    def fake_factory(**kwargs):
+        m = MagicMock()
+        m.prompt.return_value = iter(events)
+        m.close.return_value = 0
+        return m
+
+    with patch("termlink_worker.TermLinkWorker", side_effect=fake_factory):
+        result = spawn.spawn_dispatch(env)
+    assert result["status"] == "error"
+    assert result["terminal_event"]["is_error"] is True
+
+
+def test_termlink_route_forwards_task_id_and_tools(tmp_project):
+    """T-1797: envelope task_id, env, allowed_tools, task_type forwarded to worker."""
+    tmp_path, spawn = tmp_project
+    env = _envelope(
+        tmp_path,
+        worker_kind="TermLink",
+        env={"ANTHROPIC_BASE_URL": "http://localhost:4000"},
+        allowed_tools=["Read", "Bash"],
+    )
+    captured = {}
+
+    def fake_factory(**kwargs):
+        captured.update(kwargs)
+        m = MagicMock()
+        m.prompt.return_value = iter([{"type": "result", "is_error": False}])
+        m.close.return_value = 0
+        return m
+
+    with patch("termlink_worker.TermLinkWorker", side_effect=fake_factory):
+        spawn.spawn_dispatch(env)
+
+    assert captured["task_id"] == env["task_id"]
+    assert captured["env"]["ANTHROPIC_BASE_URL"] == "http://localhost:4000"
+    assert captured["allowed_tools"] == ["Read", "Bash"]
+    assert captured["task_type"] == env["task_type"]
+    assert captured["model"] == env["model"]
 
 
 def test_ollama_loop_route_success(tmp_project):

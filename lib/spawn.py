@@ -76,11 +76,11 @@ def spawn_dispatch(
     wk = envelope.get("worker_kind")
     handler = _DISPATCHERS.get(wk)
     if handler is None:
-        if wk in ("TermLink", "Task"):
+        if wk == "Task":
             raise NotImplementedError(
                 f"spawn driver: worker_kind={wk!r} not yet routed "
                 f"(T-1773 v1 ships pi only; T-1775 added ollama-loop; "
-                f"TermLink/Task scheduled for follow-up)"
+                f"T-1797 added TermLink; Task scheduled for follow-up)"
             )
         raise SpawnError(
             f"spawn driver: unknown worker_kind={wk!r}; "
@@ -270,7 +270,60 @@ def _resolve_blob_dir(envelope: Dict[str, Any]) -> Path:
     return p if p.is_absolute() else (PROJECT_ROOT / p)
 
 
+def _spawn_termlink(
+    envelope: Dict[str, Any],
+    on_event: Optional[Callable[[Dict[str, Any]], None]],
+) -> Dict[str, Any]:
+    """Spawn a TermLink worker via lib/termlink_worker.TermLinkWorker.
+
+    Mirrors ``_spawn_ollama_loop``; differs only in which worker class is
+    instantiated. The TermLink primitive's ``prompt()`` yields events parsed
+    from the on-disk ``result.jsonl`` after the worker exits — same stream-json
+    shape (terminal event ``{"type": "result", "is_error": bool}``).
+
+    Origin: T-1776 surfaced the contract gap (default.yaml → worker_kind:
+    TermLink → NotImplementedError). T-1797 closes it.
+    """
+    import termlink_worker  # noqa: PLC0415 — deferred so module imports without fw
+
+    blob_dir = _resolve_blob_dir(envelope)
+    blob_dir.mkdir(parents=True, exist_ok=True)
+    events_path = blob_dir / "events.jsonl"
+
+    terminal: Optional[Dict[str, Any]] = None
+    count = 0
+    with events_path.open("a") as ev_f:
+        worker = termlink_worker.TermLinkWorker(
+            model=envelope["model"],
+            cwd=envelope.get("cwd", str(PROJECT_ROOT)),
+            task_id=envelope.get("task_id", ""),
+            env=envelope.get("env") or {},
+            allowed_tools=envelope.get("allowed_tools") or [],
+            task_type=envelope.get("task_type"),
+        )
+        try:
+            for event in worker.prompt(envelope["prompt"]):
+                ev_f.write(json.dumps(event) + "\n")
+                count += 1
+                if on_event is not None:
+                    on_event(event)
+                if event.get("type") == "result":
+                    terminal = event
+        finally:
+            worker.close()
+
+    is_error = bool(terminal and terminal.get("is_error"))
+    status = "error" if is_error else "success"
+    return {
+        "status": status,
+        "events_count": count,
+        "events_path": str(events_path),
+        "terminal_event": terminal,
+    }
+
+
 _DISPATCHERS = {
     "pi": _spawn_pi,
     "ollama-loop": _spawn_ollama_loop,
+    "TermLink": _spawn_termlink,
 }
