@@ -4,16 +4,16 @@ name: "workflow-dispatcher coverage check — fw audit flags worker_kind declara
 description: >
   workflow-dispatcher coverage check — fw audit flags worker_kind declarations without a spawn handler (T-1776 prevention)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, audit, prevention, contract-gap]
-components: []
+components: [C-004, lib/workflow_coverage.py, tests/unit/test_workflow_coverage.py]
 related_tasks: [T-1776, T-1797]
 created: 2026-05-13T00:00:00Z
-last_update: 2026-05-13T00:00:00Z
-date_finished: null
+last_update: 2026-05-12T22:07:37Z
+date_finished: 2026-05-12T22:07:37Z
 ---
 
 # T-1798: workflow-dispatcher coverage check — fw audit flags worker_kind declarations without a spawn handler (T-1776 prevention)
@@ -113,3 +113,20 @@ python3 -c "import sys; sys.path.insert(0, 'lib'); import workflow_coverage; r =
 ### 2026-05-13T00:00:00Z — task-created
 - **Action:** Created task
 - **Context:** T-1776 prevention slice — convert runtime trap to audit-time visibility
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-eb7cbf34
+- **Timestamp:** 2026-05-12T22:07:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `agents/audit/audit.sh` orchestrator section calls the coverage helper
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: `agents/audit/audit.sh` orchestrator section calls the coverage helper`
+
+### 2026-05-12T22:07:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

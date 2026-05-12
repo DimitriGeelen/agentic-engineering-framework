@@ -4,16 +4,16 @@ name: "provider-coverage check — extend workflow_coverage to flag pi workflows
 description: >
   provider-coverage check — extend workflow_coverage to flag pi workflows missing provider field (T-1798 sibling gap)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, audit, prevention, contract-gap]
-components: []
+components: [lib/workflow_coverage.py, tests/unit/test_orchestrator_workflow_coverage.py, tests/unit/test_workflow_coverage.py]
 related_tasks: [T-1798, T-1797, T-1776]
 created: 2026-05-13T00:00:00Z
-last_update: 2026-05-13T00:00:00Z
-date_finished: null
+last_update: 2026-05-12T22:16:29Z
+date_finished: 2026-05-12T22:16:29Z
 ---
 
 # T-1800: provider-coverage check — extend workflow_coverage to flag pi workflows missing provider field (T-1798 sibling gap)
@@ -110,3 +110,20 @@ PROJECT_ROOT=$(pwd) python3 -c "import sys; sys.path.insert(0, 'lib'); import wo
 ### 2026-05-13T00:00:00Z — task-created
 - **Action:** Created task
 - **Context:** Sibling gap to T-1798 — same antifragility shape on the provider field
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-3e83ed49
+- **Timestamp:** 2026-05-12T22:16:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — Live audit: `bash agents/audit/audit.sh -s orchestrator` still PASS
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: Live audit: `bash agents/audit/audit.sh -s orchestrator` still PASS`
+
+### 2026-05-12T22:16:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
