@@ -3315,6 +3315,31 @@ else
     fi
 fi
 
+# T-1798: Workflow → dispatcher coverage check.
+# T-1776 surfaced default.yaml → worker_kind: TermLink at *runtime*
+# (NotImplementedError). The structural prevention is to flag the gap at
+# audit time. lib/workflow_coverage.py cross-references each workflow's
+# declared worker_kind against lib/spawn._DISPATCHERS.keys().
+COVERAGE_HELPER="$FRAMEWORK_ROOT/lib/workflow_coverage.py"
+if [ -f "$COVERAGE_HELPER" ]; then
+    COVERAGE_OUT=$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
+import sys
+sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
+import workflow_coverage
+r = workflow_coverage.check_workflow_dispatcher_coverage()
+print(workflow_coverage.format_audit_line(r))
+sys.exit(0 if r['ok'] else 1)
+" 2>&1)
+    COVERAGE_RC=$?
+    if [ "$COVERAGE_RC" = "0" ]; then
+        pass "Workflow dispatcher coverage: $COVERAGE_OUT"
+    else
+        fail "Workflow dispatcher coverage: $COVERAGE_OUT" \
+             "Workflow declares worker_kind without a spawn handler — runtime NotImplementedError trap" \
+             "Either add a handler to lib/spawn._DISPATCHERS, or change the workflow's worker_kind to a routable one (pi, ollama-loop, TermLink)"
+    fi
+fi
+
 echo ""
 fi # end orchestrator
 
