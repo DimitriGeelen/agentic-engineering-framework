@@ -4,16 +4,16 @@ name: "Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 
 description: >
   Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 audit check on web (matrix of workflow × worker_kind × routable)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:orchestrator-rethink, web, observability]
-components: []
+components: [tests/unit/test_orchestrator_workflow_coverage.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: [T-1776, T-1797, T-1798]
 created: 2026-05-12T22:08:26Z
-last_update: 2026-05-12T22:08:26Z
-date_finished: null
+last_update: 2026-05-12T22:11:39Z
+date_finished: 2026-05-12T22:11:39Z
 ---
 
 # T-1799: Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 audit check on web (matrix of workflow × worker_kind × routable)
@@ -108,3 +108,20 @@ python3 -m pytest tests/unit/test_orchestrator_workflow_coverage.py -v
 ### 2026-05-12T22:08:26Z — task-created
 - **Action:** Created task
 - **Context:** T-1798 audit-check needed a web parity slice
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-3034a80e
+- **Timestamp:** 2026-05-12T22:11:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `_workflow_coverage()` added to `web/blueprints/orchestrator.py`.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/orchestrator.py in: `_workflow_coverage()` added to `web/blueprints/orchestrator.py`.`
+
+### 2026-05-12T22:11:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
