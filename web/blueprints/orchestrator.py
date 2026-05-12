@@ -319,6 +319,107 @@ def _dispatch_substrate() -> dict:
     }
 
 
+def _outcome_quality() -> dict:
+    """T-1796 — surface outcome-quality (verification pass/fail per task_type).
+
+    Mirrors `fw orchestrator status --outcomes` verification-style
+    aggregation. Reads dispatches.jsonl + dispatch-outcomes.jsonl,
+    joins on dispatch_id, dedupes by latest ts (T-1757 rule), excludes
+    synthetic dispatches, returns per-task-type pass/fail counts.
+
+    Returns:
+      {
+        "available": bool,
+        "total_outcomes": int,         # after dedup + synthetic-exclusion
+        "by_task_type": [{
+            "task_type": str,
+            "passed": int,
+            "failed": int,
+            "total": int,
+            "pass_rate": float,        # 0..1
+        }, ...],                        # sorted total desc
+      }
+
+    Notes:
+    - "verdict-style" outcomes (escalation-scan-v0.5 shape) are still
+      counted toward `total_outcomes` but contribute to neither passed
+      nor failed (no verification_passed field).
+    """
+    empty: dict = {"available": False, "total_outcomes": 0, "by_task_type": []}
+    dispatches_path = PROJECT_ROOT / ".context" / "dispatches.jsonl"
+    outcomes_path = PROJECT_ROOT / ".context" / "dispatch-outcomes.jsonl"
+    if not outcomes_path.is_file():
+        return empty
+    # Build dispatch_id -> task_type map for non-synthetic dispatches.
+    did_to_type: dict[str, str] = {}
+    if dispatches_path.is_file():
+        try:
+            for line in dispatches_path.read_text().splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                tid = row.get("task_id") or ""
+                if tid.startswith("T-stress-"):
+                    continue
+                did = row.get("dispatch_id")
+                if did:
+                    did_to_type[did] = row.get("task_type") or "?"
+        except OSError:
+            return empty
+    # Dedupe outcomes by dispatch_id, latest ts wins (T-1757).
+    latest_per_did: dict[str, dict] = {}
+    try:
+        for line in outcomes_path.read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            did = row.get("dispatch_id")
+            if not did or did not in did_to_type:
+                continue  # outcome for synthetic or unknown dispatch
+            prev = latest_per_did.get(did)
+            if prev is None or (row.get("ts") or "") > (prev.get("ts") or ""):
+                latest_per_did[did] = row
+    except OSError:
+        return empty
+    # Aggregate per task_type.
+    per_type: dict[str, dict] = {}
+    for did, o in latest_per_did.items():
+        tt = did_to_type[did]
+        bucket = per_type.setdefault(tt, {"passed": 0, "failed": 0, "total": 0})
+        bucket["total"] += 1
+        outcome_body = o.get("outcome", {}) or {}
+        if "verification_passed" in outcome_body:
+            if bool(outcome_body["verification_passed"]):
+                bucket["passed"] += 1
+            else:
+                bucket["failed"] += 1
+    rows = []
+    for tt, b in per_type.items():
+        decided = b["passed"] + b["failed"]
+        rate = (b["passed"] / decided) if decided else 0.0
+        rows.append({
+            "task_type": tt,
+            "passed": b["passed"],
+            "failed": b["failed"],
+            "total": b["total"],
+            "pass_rate": rate,
+        })
+    rows.sort(key=lambda r: (-r["total"], r["task_type"]))
+    return {
+        "available": True,
+        "total_outcomes": len(latest_per_did),
+        "by_task_type": rows,
+    }
+
+
 def _arc_tasks() -> list[dict]:
     """Surface T-1641 + follow-up arc parents for the cross-link panel."""
     targets = ["T-1641", "T-1642", "T-1643", "T-1644", "T-1645", "T-1646", "T-1647"]
@@ -422,4 +523,5 @@ def orchestrator_page():
         recent_dispatches=_recent_dispatches(),
         learned=_route_cache_learned(),
         substrate=_dispatch_substrate(),
+        outcome_quality=_outcome_quality(),
     )

@@ -336,6 +336,47 @@
 {% endif %}
 {% endif %}
 
+<!-- Outcome quality panel (T-1796 — CLI parity for --outcomes verification-style view) -->
+<h2 style="margin-top:2rem;">Outcome quality</h2>
+<p class="muted">Verification pass/fail per <code>task_type</code> from
+    <code>.context/dispatch-outcomes.jsonl</code> (CLI parity with
+    <code>fw orchestrator status --outcomes</code>, T-1749). Latest outcome per
+    dispatch wins (T-1757 dedup rule). Verdict-style events (e.g.
+    escalation-scan-v0.5) are counted in <em>Outcomes</em> but only contribute to
+    passed/failed when they carry <code>verification_passed</code>.</p>
+{% if not outcome_quality.available or outcome_quality.total_outcomes == 0 %}
+<p><span class="badge badge-info">no outcomes</span> No outcome events recorded
+    yet (or <code>dispatch-outcomes.jsonl</code> is absent). Outcomes are
+    written back when dispatch workers exit.</p>
+{% else %}
+<p><strong>{{ outcome_quality.total_outcomes }}</strong> outcome event(s)
+    across <strong>{{ outcome_quality.by_task_type|length }}</strong> task-type(s).</p>
+{% if outcome_quality.by_task_type %}
+<table>
+    <thead>
+        <tr>
+            <th>Task-type</th>
+            <th>Passed</th>
+            <th>Failed</th>
+            <th>Total</th>
+            <th>Pass rate</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in outcome_quality.by_task_type %}
+        <tr>
+            <td><span class="pill"><code>{{ row.task_type }}</code></span></td>
+            <td>{% if row.passed %}<span class="badge badge-ok">{{ row.passed }}</span>{% else %}<span class="muted">0</span>{% endif %}</td>
+            <td>{% if row.failed %}<span class="badge badge-warn">{{ row.failed }}</span>{% else %}<span class="muted">0</span>{% endif %}</td>
+            <td>{{ row.total }}</td>
+            <td>{% if row.passed + row.failed %}{{ "%.0f%%"|format(row.pass_rate * 100) }}{% else %}<span class="muted">—</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endif %}
+
 <!-- Learned routing panel (T-1669 Step 3) -->
 <h2 style="margin-top:2rem;">Learned routing</h2>
 <p class="muted">Per-task-type model preferences derived from <code>route-cache.json</code>
