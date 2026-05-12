@@ -250,6 +250,49 @@
 </details>
 {% endif %}
 
+<!-- Dispatch substrate panel (T-1792 — CLI parity for `fw orchestrator status`) -->
+<h2 style="margin-top:2rem;">Dispatch substrate</h2>
+<p class="muted">Per-model dispatch counts from <code>.context/dispatches.jsonl</code>
+    (CLI parity with <code>fw orchestrator status</code>, T-1788). Each row counts how
+    many times the framework dispatch path actually routed work to that model — the
+    "what got picked" view, complementing the learned-routing "what should win" view below.
+    Synthetic rows (<code>T-stress-*</code>) are excluded from the headline counts.</p>
+{% if not substrate.available %}
+<p><span class="badge badge-warn">substrate absent</span> No <code>dispatches.jsonl</code> at
+    <code>{{ substrate.path }}</code> yet. Run a dispatch (<code>fw resolver dispatch</code>
+    or <code>fw termlink dispatch</code>) to seed it.</p>
+{% elif substrate.total == 0 and substrate.synthetic_total == 0 %}
+<p><span class="badge badge-info">no dispatches</span> Substrate file exists but no real
+    dispatches recorded yet.</p>
+{% else %}
+<p><strong>{{ substrate.total }}</strong> real dispatch(es){% if substrate.synthetic_total %},
+    plus <strong>{{ substrate.synthetic_total }}</strong> synthetic (<code>T-stress-*</code>,
+    excluded from the breakdown){% endif %}.</p>
+{% if substrate.by_model %}
+<table>
+    <thead>
+        <tr>
+            <th>Model</th>
+            <th>Dispatches</th>
+            <th>Share</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in substrate.by_model %}
+        <tr>
+            <td><code>{{ row.model }}</code></td>
+            <td>{{ row.count }}</td>
+            <td>{{ "%.0f%%"|format(100 * row.count / substrate.total) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="muted"><small>No <code>model</code> field on any dispatch row yet — substrate
+    rows predate the model-capture path or model wasn't resolved.</small></p>
+{% endif %}
+{% endif %}
+
 <!-- Learned routing panel (T-1669 Step 3) -->
 <h2 style="margin-top:2rem;">Learned routing</h2>
 <p class="muted">Per-task-type model preferences derived from <code>route-cache.json</code>

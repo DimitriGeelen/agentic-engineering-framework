@@ -232,6 +232,83 @@ def _route_cache_learned() -> dict:
     }
 
 
+def _dispatch_substrate() -> dict:
+    """T-1792 — surface dispatch substrate (`.context/dispatches.jsonl`) for /orchestrator.
+
+    Mirrors `fw orchestrator status`'s headline shape so the web view has
+    CLI parity. Minimum slice: totals + by_model. by_task_type /
+    by_worker_kind / outcomes are deferred to follow-on slices (separate
+    tasks) — keep this panel scoped to the routing-decision view that
+    T-1788 introduced on the CLI.
+
+    Synthetic rows (`task_id` startswith `T-stress-`) are excluded from
+    `total` and `by_model`, consistent with the CLI's `_is_synthetic`
+    rule (T-1712). Synthetic count is surfaced separately for context.
+
+    Returns:
+      {
+        "available": bool,
+        "path": str,
+        "total": int,                # real dispatches only
+        "synthetic_total": int,
+        "by_model": [{"model": "X", "count": N}, ...],  # sorted count desc
+      }
+    """
+    path = PROJECT_ROOT / ".context" / "dispatches.jsonl"
+    if not path.is_file():
+        return {
+            "available": False,
+            "path": str(path),
+            "total": 0,
+            "synthetic_total": 0,
+            "by_model": [],
+        }
+    real_rows: list[dict] = []
+    synthetic_count = 0
+    try:
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue  # skip malformed line, continue parsing
+            tid = row.get("task_id") or ""
+            if tid.startswith("T-stress-"):
+                synthetic_count += 1
+                continue
+            real_rows.append(row)
+    except OSError:
+        return {
+            "available": False,
+            "path": str(path),
+            "total": 0,
+            "synthetic_total": 0,
+            "by_model": [],
+        }
+    model_counter: Counter = Counter()
+    for row in real_rows:
+        model = row.get("model")
+        if not model:
+            continue  # exclude rows missing model (mirror of CLI T-1788)
+        model_counter[model] += 1
+    by_model = [
+        {"model": m, "count": c}
+        for m, c in sorted(
+            model_counter.items(),
+            key=lambda kv: (-kv[1], kv[0]),
+        )
+    ]
+    return {
+        "available": True,
+        "path": str(path),
+        "total": len(real_rows),
+        "synthetic_total": synthetic_count,
+        "by_model": by_model,
+    }
+
+
 def _arc_tasks() -> list[dict]:
     """Surface T-1641 + follow-up arc parents for the cross-link panel."""
     targets = ["T-1641", "T-1642", "T-1643", "T-1644", "T-1645", "T-1646", "T-1647"]
@@ -334,4 +411,5 @@ def orchestrator_page():
         arc_tasks=_arc_tasks(),
         recent_dispatches=_recent_dispatches(),
         learned=_route_cache_learned(),
+        substrate=_dispatch_substrate(),
     )
