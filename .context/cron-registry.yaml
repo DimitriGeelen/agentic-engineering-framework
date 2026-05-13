@@ -178,14 +178,11 @@ jobs:
     status: active
     description: "LLM-augmented escalation scan (T-1727). Routes via fw resolver dispatch (workflow=escalation-triage, worker_kind=ollama-loop) — second autonomous consumer of orchestrator substrate, primary closure-gauge for G-064. Runs at 5:33 UTC daily, 10 min after v0 (5:23 UTC). Idempotent over 7-day window: re-running within 7d skips already-scanned tasks. T-1750's tools/g064-readiness.py reads dispatches.jsonl filtered to this cron's window."
 
-  - id: peer-subscribe-1m
-    name: "Peer-consult subscriber (T-1818 — inbox.queued long-poll)"
-    schedule: "* * * * *"
-    command: "flock -n /var/lock/agentic-cron-peer-subscribe.lock -c 'fw peer subscribe --once'"
-    source_file: agentic-audit.crontab
-    origin_task: T-1818
-    status: active
-    description: "v2 peer-consult slice 1 framework-half (T-1818). Long-poll TermLink `inbox.queued` event topic via `termlink event poll <ready-session> --topic inbox.queued`. On hit: resolve addressee via .context/peer-consult-prompts.yaml, spawn responder via `fw termlink dispatch`. On miss: log to .context/working/peer-consult-misses.log and continue (no stall). Pairs with TermLink T-1636 (hub-side emitter). Pattern mirrors lib/subscribe-learnings-from-bus.sh (broadcast topic, any-ready-session polling). 1m cron — minimum standard cron — with long-poll timeout ~50s absorbs the gap to near-real-time behaviour."
+  # Peer-consult subscriber (T-1818) entry deferred: framework-side cron
+  # registration will land in a small follow-up task alongside TermLink
+  # T-1636's deployment, since `fw audit schedule install` writes /etc/cron.d/
+  # (Tier 0). Until that joint deployment, the `fw peer subscribe` CLI verb
+  # exists and is invocable on-demand, but no scheduled invocations happen.
 
   - id: watchtower-rss-5m
     name: "Watchtower RSS observation (5 min, T-1611-B)"

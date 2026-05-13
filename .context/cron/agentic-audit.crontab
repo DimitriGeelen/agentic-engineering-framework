@@ -62,8 +62,5 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Escalation drift LLM augmentation (T-1727 — v0.5 runs after v0; idempotent over 7d)
 33 5 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 tools/escalation-scan-v0.5.py --window-days 30 --limit 200 2>&1 | logger -t agentic-cron
 
-# Peer-consult subscriber (T-1818 — inbox.queued long-poll)
-* * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-peer-subscribe.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" peer subscribe --once' 2>&1 | logger -t agentic-cron
-
 # Watchtower RSS observation (5 min, T-1611-B)
 */5 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && /opt/999-Agentic-Engineering-Framework/agents/monitor/watchtower-rss-sample.sh 2>&1 | logger -t agentic-cron
