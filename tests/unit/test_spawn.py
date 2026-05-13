@@ -459,3 +459,135 @@ def test_spawn_omits_terminal_event_when_none(tmp_project):
         spawn.spawn_dispatch(env)
     rows = [json.loads(line) for line in log.read_text().strip().splitlines()]
     assert "terminal_event" not in rows[0]
+
+
+# ---------------------------------------------------------------------------
+# T-1805 / ADR-0004 — dispatch-safety slice 1: pause_requested terminal class
+# ---------------------------------------------------------------------------
+
+
+def test_pause_event_type_constant(tmp_project):
+    """The constant referenced by AC verification is `pause_requested` and
+    `paused` is in the valid-status set."""
+    _, spawn = tmp_project
+    assert spawn._PAUSE_EVENT_TYPE == "pause_requested"
+    assert spawn._VALID_OUTCOME_STATUSES == frozenset({"success", "error", "paused"})
+
+
+def test_classify_status_pause_takes_precedence(tmp_project):
+    """A pause_requested terminal classifies as `paused`, not success/error.
+    Pause is a structured deferral — Worker hasn't attempted, so success vs
+    error don't apply yet."""
+    _, spawn = tmp_project
+    pause = {"type": "pause_requested", "question": "which pattern?",
+             "assessment": {"severity": "high", "likelihood": "medium"}}
+    assert spawn._classify_status(pause) == "paused"
+    # Sanity: no terminal → success
+    assert spawn._classify_status(None) == "success"
+    # Existing classifications still hold
+    assert spawn._classify_status({"type": "agent.done"}) == "success"
+    assert spawn._classify_status({"type": "error"}) == "error"
+    assert spawn._classify_status({"type": "result", "is_error": True}) == "error"
+    assert spawn._classify_status({"type": "result", "is_error": False}) == "success"
+
+
+def test_pi_route_pause_terminal(tmp_project):
+    """pi dispatcher recognizes pause_requested as terminal; outcome status
+    is `paused`; terminal_event dict preserved."""
+    tmp_path, spawn = tmp_project
+    _write_workflow(tmp_path)
+    env = _envelope(tmp_path)
+    events = [
+        {"type": "response", "id": "req-1"},
+        {"type": "pause_requested", "question": "Pattern A or B?",
+         "assessment": {"severity": "high", "likelihood": "medium"},
+         "state_ref": "blob_dir/state-1"},
+    ]
+    with patch("pi_worker.PiWorker", _fake_pi_worker(events)):
+        result = spawn.spawn_dispatch(env)
+    assert result["status"] == "paused"
+    assert result["terminal_event"]["type"] == "pause_requested"
+    assert result["terminal_event"]["question"] == "Pattern A or B?"
+    assert result["terminal_event"]["assessment"]["severity"] == "high"
+
+
+def test_ollama_loop_route_pause_terminal(tmp_project):
+    """ollama-loop dispatcher recognizes pause_requested as terminal."""
+    tmp_path, spawn = tmp_project
+    env = _envelope(tmp_path, worker_kind="ollama-loop")
+    events = [
+        {"type": "system", "subtype": "init"},
+        {"type": "pause_requested", "question": "Schema migration ambiguous?",
+         "assessment": {"severity": "high", "likelihood": "high"}},
+    ]
+
+    def fake_factory(**kwargs):  # noqa: ARG001
+        m = MagicMock()
+        m.prompt.return_value = iter(events)
+        m.close.return_value = 0
+        return m
+
+    import ollama_loop  # noqa: F401 — ensure module in sys.modules
+    with patch("ollama_loop.OllamaLoopWorker", side_effect=fake_factory):
+        result = spawn.spawn_dispatch(env)
+    assert result["status"] == "paused"
+    assert result["terminal_event"]["type"] == "pause_requested"
+
+
+def test_termlink_route_pause_terminal(tmp_project):
+    """TermLink dispatcher recognizes pause_requested as terminal."""
+    tmp_path, spawn = tmp_project
+    env = _envelope(tmp_path, worker_kind="TermLink")
+    events = [
+        {"type": "system", "subtype": "init"},
+        {"type": "pause_requested", "question": "Tool selection ambiguous?",
+         "assessment": {"severity": "medium", "likelihood": "high"}},
+    ]
+
+    def fake_factory(**kwargs):  # noqa: ARG001
+        m = MagicMock()
+        m.prompt.return_value = iter(events)
+        m.close.return_value = 0
+        return m
+
+    import termlink_worker  # noqa: F401
+    with patch("termlink_worker.TermLinkWorker", side_effect=fake_factory):
+        result = spawn.spawn_dispatch(env)
+    assert result["status"] == "paused"
+    assert result["terminal_event"]["type"] == "pause_requested"
+
+
+def test_spawn_pause_persists_into_dispatch_row(tmp_project):
+    """Pause event persists into dispatches.jsonl row with status=paused."""
+    tmp_path, spawn = tmp_project
+    _write_workflow(tmp_path)
+    log = tmp_path / ".context" / "dispatches.jsonl"
+    log.write_text(json.dumps({"dispatch_id": "abc-123", "outcome": "pending"}) + "\n")
+    env = _envelope(tmp_path)
+    events = [
+        {"type": "pause_requested", "question": "Which file pattern?",
+         "assessment": {"severity": "high", "likelihood": "medium"}},
+    ]
+    with patch("pi_worker.PiWorker", _fake_pi_worker(events)):
+        spawn.spawn_dispatch(env)
+    rows = [json.loads(line) for line in log.read_text().strip().splitlines()]
+    assert rows[0]["outcome"] == "paused"
+    assert rows[0]["terminal_event"]["type"] == "pause_requested"
+    assert rows[0]["terminal_event"]["question"] == "Which file pattern?"
+
+
+def test_pause_does_not_break_existing_success_path(tmp_project):
+    """Regression guard: an agent.done after a non-terminal event still maps
+    to success — pause recognition must not steal terminal status from
+    non-pause events earlier in the stream."""
+    tmp_path, spawn = tmp_project
+    _write_workflow(tmp_path)
+    env = _envelope(tmp_path)
+    events = [
+        {"type": "response", "id": "req-1"},
+        {"type": "agent.done"},
+    ]
+    with patch("pi_worker.PiWorker", _fake_pi_worker(events)):
+        result = spawn.spawn_dispatch(env)
+    assert result["status"] == "success"
+    assert result["terminal_event"]["type"] == "agent.done"

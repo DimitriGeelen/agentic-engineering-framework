@@ -47,10 +47,44 @@ PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 DISPATCHES_LOG = PROJECT_ROOT / ".context" / "dispatches.jsonl"
 WORKFLOWS_DIR = PROJECT_ROOT / ".context" / "project" / "workflows"
 
+# T-1805 / ADR-0004 — dispatch-safety slice 1: substrate recognition for pause.
+# Worker emits a `pause_requested` terminal event when severity x likelihood of
+# being-wrong crosses the workflow's pause_threshold. Dispatch outcome status
+# becomes `paused` (joins `success` and `error`). Resolver-injected envelope
+# preamble (slice 2) instructs Workers when to emit; this slice only teaches
+# the substrate to *recognize* it.
+_PAUSE_EVENT_TYPE = "pause_requested"
+_VALID_OUTCOME_STATUSES = frozenset({"success", "error", "paused"})
+
 
 class SpawnError(Exception):
     """Raised when spawn-side prerequisites fail (workflow not found, pi
     missing, malformed envelope)."""
+
+
+def _classify_status(terminal: Optional[Dict[str, Any]]) -> str:
+    """Map a terminal event to one of {success, error, paused}.
+
+    Pause takes precedence over error/success: a paused Worker has not yet
+    attempted the work — the pause is a structured deferral, not an outcome
+    of attempted work. See ADR-0004.
+
+    Contract:
+      - terminal_event.type == "pause_requested" → "paused"
+      - terminal_event.type == "error" → "error"
+      - terminal_event.type == "result" and is_error is True → "error"
+      - anything else (or no terminal) → "success"
+    """
+    if not terminal:
+        return "success"
+    ttype = terminal.get("type")
+    if ttype == _PAUSE_EVENT_TYPE:
+        return "paused"
+    if ttype == "error":
+        return "error"
+    if ttype == "result" and terminal.get("is_error") is True:
+        return "error"
+    return "success"
 
 
 # ---------------------------------------------------------------------------
@@ -177,12 +211,12 @@ def _spawn_pi(
                 if on_event is not None:
                     on_event(event)
                 etype = event.get("type")
-                if etype in ("agent.done", "error"):
+                if etype in ("agent.done", "error", _PAUSE_EVENT_TYPE):
                     terminal = event
         finally:
             worker.close()
 
-    status = "error" if (terminal and terminal.get("type") == "error") else "success"
+    status = _classify_status(terminal)
     return {
         "status": status,
         "events_count": count,
@@ -226,13 +260,13 @@ def _spawn_ollama_loop(
                 count += 1
                 if on_event is not None:
                     on_event(event)
-                if event.get("type") == "result":
+                etype = event.get("type")
+                if etype in ("result", _PAUSE_EVENT_TYPE):
                     terminal = event
         finally:
             worker.close()
 
-    is_error = bool(terminal and terminal.get("is_error"))
-    status = "error" if is_error else "success"
+    status = _classify_status(terminal)
     return {
         "status": status,
         "events_count": count,
@@ -307,13 +341,13 @@ def _spawn_termlink(
                 count += 1
                 if on_event is not None:
                     on_event(event)
-                if event.get("type") == "result":
+                etype = event.get("type")
+                if etype in ("result", _PAUSE_EVENT_TYPE):
                     terminal = event
         finally:
             worker.close()
 
-    is_error = bool(terminal and terminal.get("is_error"))
-    status = "error" if is_error else "success"
+    status = _classify_status(terminal)
     return {
         "status": status,
         "events_count": count,

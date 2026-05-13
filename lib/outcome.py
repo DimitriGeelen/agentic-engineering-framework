@@ -278,7 +278,12 @@ def _dispatch_terminal_map() -> Dict[str, Dict[str, Any]]:
 
 
 def _terminal_suffix(te: Optional[Dict[str, Any]]) -> str:
-    """Render `terminal=<type>(<suffix>)` per T-1781 idiom; "" if absent."""
+    """Render `terminal=<type>(<suffix>)` per T-1781 idiom; "" if absent.
+
+    T-1805 / ADR-0004: `pause_requested` events get a `(question="...")`
+    suffix when the Worker provided a question — gives operators scan-time
+    triage signal without cracking open events.jsonl.
+    """
     if not isinstance(te, dict) or not te.get("type"):
         return ""
     ttype = te["type"]
@@ -287,6 +292,13 @@ def _terminal_suffix(te: Optional[Dict[str, Any]]) -> str:
         suffix = "(retryable)" if te["retryable"] else "(non-retryable)"
     elif ttype == "result" and te.get("is_error") is True:
         suffix = "(is_error)"
+    elif ttype == "pause_requested":
+        # T-1805: short question summary for at-a-glance triage
+        q = (te.get("question") or "").strip()
+        if q:
+            if len(q) > 40:
+                q = q[:37] + "..."
+            suffix = f"(question={q!r})"
     return f" terminal={ttype}{suffix}"
 
 
@@ -369,6 +381,20 @@ def cmd_read(args: argparse.Namespace) -> int:
                 print(f"retryable:      {te['retryable']}")
             elif te["type"] == "result" and "is_error" in te:
                 print(f"is_error:       {te['is_error']}")
+            elif te["type"] == "pause_requested":
+                # T-1805 / ADR-0004: pause-specific fields (one per line)
+                if te.get("question"):
+                    print(f"question:       {te['question']}")
+                a = te.get("assessment")
+                if isinstance(a, dict):
+                    if "severity" in a:
+                        print(f"severity:       {a['severity']}")
+                    if "likelihood" in a:
+                        print(f"likelihood:     {a['likelihood']}")
+                elif a:
+                    print(f"assessment:     {a}")
+                if te.get("state_ref"):
+                    print(f"state_ref:      {te['state_ref']}")
         oe = merged.get("outcome_event")
         if oe:
             o = oe.get("outcome", {})
@@ -403,6 +429,11 @@ def _event_summary(event: Dict[str, Any]) -> str:
         is_err = event.get("is_error")
         if is_err is not None:
             summary = f"is_error={is_err}"
+    elif etype == "pause_requested":
+        # T-1805: question summary for event-tail visibility
+        q = (event.get("question") or "")[:40]
+        if q:
+            summary = f"question={q!r}"
     elif etype == "agent.done":
         summary = ""
     else:

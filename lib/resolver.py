@@ -629,6 +629,18 @@ def cmd_run(args: argparse.Namespace) -> int:
                 print(f"retryable:      {te['retryable']}")
             elif te.get("type") == "result" and "is_error" in te:
                 print(f"is_error:       {te['is_error']}")
+            elif te.get("type") == "pause_requested":
+                # T-1805 / ADR-0004: pause-specific fields
+                if te.get("question"):
+                    print(f"question:       {te['question']}")
+                a = te.get("assessment")
+                if isinstance(a, dict):
+                    if "severity" in a:
+                        print(f"severity:       {a['severity']}")
+                    if "likelihood" in a:
+                        print(f"likelihood:     {a['likelihood']}")
+                if te.get("state_ref"):
+                    print(f"state_ref:      {te['state_ref']}")
 
     return 2 if outcome["status"] == "error" else 0
 

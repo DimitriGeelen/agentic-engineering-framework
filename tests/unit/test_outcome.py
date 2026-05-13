@@ -451,6 +451,99 @@ def test_cmd_list_no_terminal_when_dispatch_not_in_log(isolated_root, capsys):
 
 
 # ---------------------------------------------------------------------------
+# T-1805 / ADR-0004 — dispatch-safety slice 1: pause_requested surfaces
+# ---------------------------------------------------------------------------
+
+
+def test_cmd_read_prints_pause_requested_fields(isolated_root, capsys):
+    """fw outcome read surfaces question, severity, likelihood, state_ref."""
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "p1", "task_id": "T-300", "task_type": "build",
+         "worker_kind": "pi", "model": "claude-3",
+         "terminal_event": {
+             "type": "pause_requested",
+             "question": "Use feature-flag pattern A or B?",
+             "assessment": {"severity": "high", "likelihood": "medium"},
+             "state_ref": "blob_dir/state-1",
+         }},
+    ])
+    rc = o.cmd_read(_read_args("p1"))
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "terminal:       pause_requested" in out
+    assert "question:       Use feature-flag pattern A or B?" in out
+    assert "severity:       high" in out
+    assert "likelihood:     medium" in out
+    assert "state_ref:      blob_dir/state-1" in out
+    # No noise from other terminal types
+    assert "retryable:" not in out
+    assert "is_error:" not in out
+
+
+def test_cmd_read_pause_optional_fields(isolated_root, capsys):
+    """A minimal pause_requested (only `type` + `question`) renders question
+    only — no crash on missing assessment/state_ref."""
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "p2", "task_id": "T-301",
+         "terminal_event": {"type": "pause_requested",
+                            "question": "What?"}},
+    ])
+    rc = o.cmd_read(_read_args("p2"))
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "terminal:       pause_requested" in out
+    assert "question:       What?" in out
+    assert "severity:" not in out
+    assert "state_ref:" not in out
+
+
+def test_cmd_list_shows_pause_terminal_with_question(isolated_root, capsys):
+    """fw outcome list shows `terminal=pause_requested(question="...")`."""
+    root, o = isolated_root
+    _seed_dispatches(root, [
+        {"dispatch_id": "PAUSE-abcd", "task_id": "T-302",
+         "terminal_event": {"type": "pause_requested",
+                            "question": "Migrate or hold?"}},
+    ])
+    o.backprop_outcome("T-302", {"verification_passed": False, "ac_satisfied": False})
+    rc = o.cmd_list(_list_args("T-302"))
+    assert rc == 0
+    line = _list_line(capsys.readouterr().out, "PAUSE-ab")
+    assert "terminal=pause_requested" in line
+    assert "question=" in line
+    assert "Migrate or hold?" in line
+
+
+def test_cmd_list_truncates_long_pause_question(isolated_root, capsys):
+    """Questions over 40 chars are truncated with ellipsis — keeps the list
+    line scannable."""
+    root, o = isolated_root
+    long_q = "x" * 100
+    _seed_dispatches(root, [
+        {"dispatch_id": "PAUSE-long", "task_id": "T-303",
+         "terminal_event": {"type": "pause_requested", "question": long_q}},
+    ])
+    o.backprop_outcome("T-303", {"verification_passed": False, "ac_satisfied": False})
+    rc = o.cmd_list(_list_args("T-303"))
+    assert rc == 0
+    line = _list_line(capsys.readouterr().out, "PAUSE-lo")
+    assert "..." in line
+    assert "x" * 100 not in line  # full string not emitted
+
+
+def test_event_summary_renders_pause_with_question(isolated_root):
+    """_event_summary on a pause event includes the question for visibility
+    in --tail-events forensics."""
+    _, o = isolated_root
+    s = o._event_summary({"type": "pause_requested", "question": "ambig?"})
+    assert "pause_requested" in s
+    assert "question=" in s
+    assert "ambig?" in s
+
+
+# ---------------------------------------------------------------------------
 # T-1783: --tail-events N — forensic event tail from blob
 # ---------------------------------------------------------------------------
 
