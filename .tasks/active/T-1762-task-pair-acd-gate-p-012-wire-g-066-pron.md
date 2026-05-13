@@ -4,16 +4,16 @@ name: "task-pair §ACD gate (P-012): wire G-066 prong 2 into update-task.sh per 
 description: >
   task-pair §ACD gate (P-012): wire G-066 prong 2 into update-task.sh per T-1713 GO
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: ["arc:orchestrator-rethink", "ACD", "G-062-family", "G-066", "governance-gate", "P-012"]
-components: ["lib/update-task.sh", "lib/inception_recommendation.sh", "agents/task-create/update-task.sh"]
+components: [agents/task-create/update-task.sh, lib/task_pair_acd.py, lib/task_pair_acd.sh, tests/playwright/test_review_code_inline.py, tests/unit/test_ac_body_html_comment.py, tests/unit/test_file_route_extensions.py, tests/unit/test_task_pair_acd_gate.bats, tests/unit/test_task_pair_acd_parser.bats, web/blueprints/docs.py, web/blueprints/tasks.py, web/shared.py, web/templates/base.html, web/templates/review.html]
 related_tasks: ["T-1442", "T-1443", "T-1668", "T-1671", "T-1711", "T-1713", "T-1715", "T-1716", "T-1709"]
 created: 2026-05-06T07:57:36Z
-last_update: 2026-05-06T07:57:36Z
-date_finished: null
+last_update: 2026-05-13T22:33:56Z
+date_finished: 2026-05-13T22:33:56Z
 ---
 
 # T-1762: task-pair §ACD gate (P-012): wire G-066 prong 2 into update-task.sh per T-1713 GO
@@ -120,6 +120,12 @@ bin/fw test bats tests/unit/update_task.bats
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-14 — silent-halt bug found by self-application + test-env mismatch RCA
+
+- **What changed:** T-1762's own `--status work-completed` transition halted silently between `Evolution log: substantive ✓` and the next gate output. Bats tests for the gate were green. Root cause: `agents/task-create/update-task.sh:530` did `verify_json=$(python3 ... verify ...)` AFTER a separate `local verify_json verify_rc` declaration. Under the script's `set -euo pipefail`, that's a regular assignment and the non-zero exit from python3 (rc=4 for missing deliverables) triggered set-e exit BEFORE `verify_rc=$?` could capture the code — silently bypassing all the stderr-printed diagnostic block and the explicit `exit 1`. Production exit was 4 (python3's rc), stderr empty.
+- **Plan impact:** §ACD self-application AC said "either passes the gate ... or refuses with rationale documenting the meta-recursion." Current behaviour refuses with *no surfaced rationale* — worse than either branch in the AC. Fix: capture exit code via `|| verify_rc=$?` so set -e doesn't see a failing command. Second-order finding: `run_check` in `tests/unit/test_task_pair_acd_gate.bats` used `bash -c "..."` without `set -euo pipefail`, so the test environment never exercised production's actual shell mode — green tests + broken production. Fixed both: prod assignment idiom + test-env now mirrors production via explicit `set -euo pipefail` in run_check.
+- **Triggered:** No new task. Root-cause-escalation (G-019) test isolation fix is in same commit — without it the bug class can recur on any future `var=$(cmd)` in update-task.sh. T-1762's transition now proceeds via `--scope-reduction-acknowledged` with meta-recursion rationale (B2/B4 historic gaps from T-1442 are exactly what the gate exists to *prevent in the future*; backfill is OUT of scope per Spike 2 AC).
+
 ### 2026-05-06 — Spike 1 (Parser) complete; Spike 2 contract met same pass
 
 - **What changed:** Built parser as `lib/task_pair_acd.{sh,py}` (Python core + Bash wrapper, mirrors `lib/inception_recommendation.sh` shape). T-1715/T-1716 prerequisite let parser key off the explicit `**Decomposition (follow-up build tasks after GO):**` heading rather than NLP-extracting prose. Conservative: no Decomposition heading → empty list → gate is no-op for that pair.
@@ -179,3 +185,20 @@ Three convergent signals justify shipping:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1762-task-pair-acd-gate-p-012-wire-g-066-pron.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-bf3102b0
+- **Timestamp:** 2026-05-13T22:33:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 11
+     - evidence: `bash lib/task_pair_acd.sh extract_deliverables .tasks/completed/T-1713-task-pair-acd-gate-detect-substrate-vs-d.md >/dev/null`
+
+### 2026-05-13T22:33:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

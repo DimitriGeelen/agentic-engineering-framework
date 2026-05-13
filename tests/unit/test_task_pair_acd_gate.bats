@@ -132,7 +132,14 @@ run_check() {
     local scope_ack="${2:-}"
     local pr="${PROJECT_ROOT:-$TEST_TEMP_DIR}"
     cd "$TEST_TEMP_DIR" || return 1
+    # NOTE: `set -euo pipefail` mirrors update-task.sh's actual mode. Without
+    # this line the test ran in vanilla bash and silently masked a real bug
+    # where a `var=$(cmd)` assignment after a separate `local var` triggered
+    # set-e exit on cmd non-zero, killing the function before any stderr
+    # diagnostic fired. Production was silent; tests were green. (Origin:
+    # T-1762 dogfooding — own gate refused itself silently.)
     bash -c "
+        set -euo pipefail
         export PROJECT_ROOT='$pr'
         export FRAMEWORK_ROOT='$FRAMEWORK_ROOT'
         export TASK_FILE='$task_file'

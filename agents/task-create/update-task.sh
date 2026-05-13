@@ -525,11 +525,19 @@ PYRELATED
 
     [ -z "$inception_id" ] && return 0
 
-    # Run the verify pass
-    local verify_json verify_rc
+    # Run the verify pass.
+    #
+    # NOTE: `set -e` is in effect for this script. A plain command-substitution
+    # assignment (`var=$(cmd)`) to a variable that was declared `local` on
+    # a previous line is a REGULAR assignment, so set -e triggers exit on a
+    # non-zero exit of `cmd` — silently bypassing the error-reporting block
+    # below. Origin bug: gate fired exit-4 in production but no stderr ever
+    # reached the user; observed on T-1762 itself when the gate refused its
+    # own transition. Fix: capture exit code via `|| rc=$?` idiom so set -e
+    # does not see a failing command.
+    local verify_json="" verify_rc=0
     verify_json=$(python3 "$FRAMEWORK_ROOT/lib/task_pair_acd.py" verify \
-        "$inception_id" "$task_id" "$PROJECT_ROOT" 2>/dev/null)
-    verify_rc=$?
+        "$inception_id" "$task_id" "$PROJECT_ROOT" 2>/dev/null) || verify_rc=$?
 
     if [ "$verify_rc" -eq 0 ]; then
         echo -e "${GREEN}Task-pair §ACD: all promised deliverables shipped ✓ (P-012, vs $inception_id)${NC}"
