@@ -4,16 +4,16 @@ name: "AC classification gap — [REVIEWER] prefix for reviewer-agent-verifiable
 description: >
   AC classification gap — [REVIEWER] prefix for reviewer-agent-verifiable ACs (closes T-954/T-1443 vocabulary gap)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [governance, ac-classification, reviewer, rca]
-components: [CLAUDE.md, lib/verify-acs.sh, lib/verify-acs.py]
+components: [lib/verify-acs.sh]
 related_tasks: [T-954, T-1443, T-1810]
 created: 2026-05-13T18:18:15Z
-last_update: 2026-05-13T18:18:15Z
-date_finished: null
+last_update: 2026-05-13T18:23:22Z
+date_finished: 2026-05-13T18:23:22Z
 ---
 
 # T-1811: AC classification gap — [REVIEWER] prefix for reviewer-agent-verifiable ACs (closes T-954/T-1443 vocabulary gap)
@@ -142,9 +142,17 @@ Detected via T-1810 follow-up triage: 7 Group C tasks were initially classified 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-9826b96e
-- **Timestamp:** 2026-05-13T18:21:16Z
+- **Scan ID:** R-42e2049d
+- **Timestamp:** 2026-05-13T18:23:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `lib/verify-acs.sh` (or `lib/verify-acs.py`) extended: when scanning a task with `[REVIEW]` Human ACs, also surface `fw reviewer T-XXX` verdict in the output (Overall + Needs Human + Findings count)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/verify-acs.sh in: `lib/verify-acs.sh` (or `lib/verify-acs.py`) extended: when scanning a task with `[REVIEW]` Human ACs, also surface `fw reviewer T-XXX` verdict in the`
+
+### 2026-05-13T18:23:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
