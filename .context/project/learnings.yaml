@@ -2851,3 +2851,10 @@ X'` returning empty group."
   date: 2026-05-13
   context: Added via context agent
   application: T-1815 — _NEGATIVE_ASSERTION_RE exemption in static_scan.py
+- id: L-370
+  learning: "Generated YAML with free-text fields must yaml-safe-dump every string value via default_style='\"' — bare shell-heredoc interpolation silently produces broken YAML when values contain ':', '#', or newlines. Symptom is downstream-silent: yaml.safe_load fails, consumers either 404 (web blueprint try/except → abort 404), silently exclude the entry from list views (try/except → continue), or fail at parse-time far from the source. Defense in depth: (1) generator yaml-quotes each free-text field, (2) audit YAML-parse check covers ALL generated YAML dirs (not just .context/project/), (3) consumer's try/except is the last line — surfacing should happen at the earlier audit gate. Origin T-1816: dispatch-safety.yaml shipped with `name: Dispatch safety: Worker uncertainty handling` (unquoted colon). Watchtower /arcs/dispatch-safety was 404 and arc silently missing from /arcs list; the 9/9-complete arc's human closure UI was unreachable. Fix: lib/arc.sh yaml-safe-dumps name+description+headline_mechanic; audit.sh scans .context/arcs/ too."
+  source: P-011
+  task: T-1816
+  date: 2026-05-13
+  context: Added after T-1816 fix-learned attempt blocked by stale focus_session
+  application: T-1816 — lib/arc.sh + agents/audit/audit.sh three-layer prevention
