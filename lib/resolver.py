@@ -100,6 +100,84 @@ def load_workflow(task_type: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Prompt assembly (Tier 2 default; Tier 1 + Tier 3 substrate)
 # ---------------------------------------------------------------------------
+# T-1806 / ADR-0004 — dispatch-safety slice 2: risk-policy preamble.
+# Workers spawn --bare (no CLAUDE.md, no hooks); the dispatch envelope is the
+# only governance channel they see. When a workflow opts in via
+# `allow_pause: true`, the Resolver prepends a baseline risk-policy preamble
+# telling the Worker how and when to emit a `pause_requested` terminal event.
+# Per-workflow override via `pause_preamble: <path>` swaps the baseline for
+# custom text. Without opt-in, no preamble is injected — cheap workflows stay
+# unmodified.
+_BASELINE_RISK_PREAMBLE = """\
+[RISK POLICY — read before any irreversible action]
+
+You MAY emit a pause_requested terminal event INSTEAD of completing the task
+when you encounter an ambiguity that meets BOTH of these conditions:
+
+  1. SEVERITY — a wrong choice here would produce output that is hard to
+     detect as wrong (verification might pass) AND expensive to undo
+     (existing code, downstream dependencies, or external state would
+     need to be reverted).
+  2. LIKELIHOOD — given the evidence currently available to you, your
+     confidence in the right choice is meaningfully below the workflow's
+     pause_threshold.
+
+This workflow's pause_threshold is: $PAUSE_THRESHOLD
+
+To pause, emit a terminal event with this exact JSON shape:
+
+  {"type": "pause_requested",
+   "question": "<the specific question you want answered>",
+   "assessment": {"severity": "<low|medium|high>",
+                  "likelihood": "<low|medium|high>"},
+   "state_ref": "<optional: file/path/identifier of any partial work>"}
+
+Then exit cleanly. The orchestrator will surface your question to the
+operator, capture the resolution, and re-dispatch you with the answer in
+context. DO NOT timeout-assume-default — silence is not consent. If you
+asked "is this safe?" and got no answer, the safe action is to wait.
+
+DO NOT pause for:
+  - Stylistic preferences (pick the existing pattern)
+  - Low-stakes ambiguities you can recover from with a single revert
+  - Anything you can answer by reading the codebase or running a test
+  - Anything that does not meet BOTH severity AND likelihood thresholds
+
+Pause is structured deferral, not "I'm not sure." Use it sparingly.
+"""
+
+
+def _risk_policy_preamble(workflow: Dict[str, Any]) -> str:
+    """Return the risk-policy preamble for this workflow.
+
+    Resolution order:
+      1. If workflow.pause_preamble is set: read that file (PROJECT_ROOT-relative).
+         Missing/unreadable → warn on stderr, fall back to baseline.
+      2. Else: use _BASELINE_RISK_PREAMBLE.
+
+    In all cases, substitute $PAUSE_THRESHOLD from the workflow (default "high")
+    so the rendered preamble is self-contained.
+    """
+    threshold = str(workflow.get("pause_threshold", "high"))
+
+    custom_path = workflow.get("pause_preamble")
+    text = _BASELINE_RISK_PREAMBLE
+    if custom_path:
+        custom_full = PROJECT_ROOT / custom_path
+        try:
+            text = custom_full.read_text()
+        except OSError as e:
+            sys.stderr.write(
+                f"resolver: pause_preamble {custom_path!r} unreadable ({e}); "
+                f"falling back to baseline\n"
+            )
+
+    # $PAUSE_THRESHOLD substitution is the only variable supported in preambles
+    # in v1 — other resolver-injected vars (RECENT_DISPATCHES etc.) are for the
+    # body, not the preamble. Keep the surface small.
+    return text.replace("$PAUSE_THRESHOLD", threshold)
+
+
 def assemble_prompt(workflow: Dict[str, Any], task_context: Dict[str, str]) -> str:
     """Render the prompt per workflow.prompt_strategy.
 
@@ -108,6 +186,10 @@ def assemble_prompt(workflow: Dict[str, Any], task_context: Dict[str, str]) -> s
     meta-prompted — substrate stub: builds the meta-prompt envelope but does
                     NOT call the meta-model unless workflow.meta_model_enabled
                     is True (deferred to v2 per A-4 caveat in T-1689).
+
+    T-1806: If workflow.allow_pause is True, prepend the risk-policy preamble
+    to the rendered output regardless of strategy. The preamble lives at the
+    front so Workers read it before any task-specific instructions.
     """
     template_path = workflow.get("prompt_template")
     if not template_path:
@@ -127,13 +209,17 @@ def assemble_prompt(workflow: Dict[str, Any], task_context: Dict[str, str]) -> s
         )
 
     if strategy == "static":
-        return template
+        body = template
+    elif strategy == "meta-prompted":
+        body = _meta_prompted_assemble(workflow, task_context, template)
+    else:
+        # default: assembled
+        body = _assembled_substitute(workflow, task_context, template)
 
-    if strategy == "meta-prompted":
-        return _meta_prompted_assemble(workflow, task_context, template)
-
-    # default: assembled
-    return _assembled_substitute(workflow, task_context, template)
+    # T-1806: prepend the risk-policy preamble when the workflow opts in.
+    if workflow.get("allow_pause") is True:
+        return _risk_policy_preamble(workflow) + "\n" + body
+    return body
 
 
 def _assembled_substitute(

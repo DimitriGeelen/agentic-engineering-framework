@@ -306,3 +306,155 @@ def test_atomic_write_uses_per_call_tmp(isolated_root, tmp_path):
     # Verify no leftover .tmp file
     leftover = list(tmp_path.glob("*.tmp.*"))
     assert leftover == []
+
+
+# ---------------------------------------------------------------------------
+# T-1806 / ADR-0004 — dispatch-safety slice 2: risk-policy preamble injection
+# ---------------------------------------------------------------------------
+
+
+def test_risk_preamble_contains_core_directives(isolated_root):
+    """Baseline preamble must teach Workers the pause protocol explicitly:
+    event type, JSON shape, severity x likelihood trigger, threshold,
+    no-timeout-fallback rule."""
+    _, r = isolated_root
+    p = r._risk_policy_preamble({"pause_threshold": "high"})
+    assert "pause_requested" in p
+    assert "severity" in p.lower()
+    assert "likelihood" in p.lower()
+    assert "pause_threshold" in p
+    assert "high" in p  # threshold value substituted
+    assert '"type": "pause_requested"' in p  # JSON shape present
+    # Anti-timeout-fallback rule (grid-power)
+    assert "silence is not consent" in p or "DO NOT timeout" in p
+
+
+def test_risk_preamble_default_threshold_is_high(isolated_root):
+    """When pause_threshold is not set, the preamble uses `high` as default
+    (rare-pause default per ADR-0004)."""
+    _, r = isolated_root
+    p = r._risk_policy_preamble({})
+    assert "is: high" in p or "pause_threshold is: high" in p or " high\n" in p
+
+
+def test_risk_preamble_substitutes_workflow_threshold(isolated_root):
+    """pause_threshold from workflow is substituted into the preamble."""
+    _, r = isolated_root
+    p = r._risk_policy_preamble({"pause_threshold": "medium"})
+    assert "medium" in p
+    # Default literal "high" should not appear as the threshold value
+    # (it may appear in the severity/likelihood enum literals — that's fine).
+    # Check that the explicit threshold value line says "medium":
+    assert "is: medium" in p or "threshold is: medium" in p
+
+
+def test_assemble_prompt_no_preamble_when_allow_pause_absent(isolated_root):
+    """allow_pause absent → no preamble injected (existing workflows unchanged)."""
+    root, r = isolated_root
+    _write_template(root, "prompts/test.md", "BODY")
+    _write_workflow(
+        root,
+        "default",
+        {"task_type": "default", "prompt_template": "prompts/test.md"},
+    )
+    wf = r.load_workflow("default")
+    out = r.assemble_prompt(wf, {})
+    assert "RISK POLICY" not in out
+    assert "pause_requested" not in out
+    assert "BODY" in out
+
+
+def test_assemble_prompt_no_preamble_when_allow_pause_false(isolated_root):
+    """Explicit allow_pause: false → no preamble (opt-out is explicit)."""
+    root, r = isolated_root
+    _write_template(root, "prompts/test.md", "BODY")
+    _write_workflow(
+        root,
+        "default",
+        {"task_type": "default", "prompt_template": "prompts/test.md",
+         "allow_pause": False},
+    )
+    wf = r.load_workflow("default")
+    out = r.assemble_prompt(wf, {})
+    assert "RISK POLICY" not in out
+
+
+def test_assemble_prompt_injects_preamble_when_allow_pause_true(isolated_root):
+    """allow_pause: true → preamble prepended; body still follows."""
+    root, r = isolated_root
+    _write_template(root, "prompts/test.md", "TASK BODY HERE")
+    _write_workflow(
+        root,
+        "default",
+        {"task_type": "default", "prompt_template": "prompts/test.md",
+         "allow_pause": True, "pause_threshold": "high"},
+    )
+    wf = r.load_workflow("default")
+    out = r.assemble_prompt(wf, {})
+    # Preamble first
+    assert out.startswith("[RISK POLICY")
+    # Body follows
+    assert "TASK BODY HERE" in out
+    # Preamble appears before body
+    assert out.index("RISK POLICY") < out.index("TASK BODY HERE")
+
+
+def test_assemble_prompt_preamble_with_static_strategy(isolated_root):
+    """static strategy + allow_pause → preamble prepended; body kept verbatim
+    (no $VAR substitution)."""
+    root, r = isolated_root
+    _write_template(root, "prompts/test.md", "Literal $UNIQUEVAR kept verbatim.")
+    _write_workflow(
+        root,
+        "default",
+        {"task_type": "default", "prompt_template": "prompts/test.md",
+         "prompt_strategy": "static", "allow_pause": True},
+    )
+    wf = r.load_workflow("default")
+    out = r.assemble_prompt(wf, {"UNIQUEVAR": "REPLACED"})
+    assert "RISK POLICY" in out
+    assert "$UNIQUEVAR" in out  # static: literal $VAR survives
+    assert "REPLACED" not in out  # nothing substituted body-side
+    # ensure prepend ordering
+    assert out.index("RISK POLICY") < out.index("$UNIQUEVAR")
+
+
+def test_assemble_prompt_custom_preamble_path(isolated_root):
+    """Workflow pause_preamble path → custom preamble used."""
+    root, r = isolated_root
+    _write_template(root, "prompts/test.md", "BODY")
+    custom = root / "prompts" / "risk" / "custom.md"
+    custom.parent.mkdir(parents=True)
+    custom.write_text("[CUSTOM PREAMBLE]\nCustom directive about $PAUSE_THRESHOLD")
+    _write_workflow(
+        root,
+        "default",
+        {"task_type": "default", "prompt_template": "prompts/test.md",
+         "allow_pause": True, "pause_threshold": "medium",
+         "pause_preamble": "prompts/risk/custom.md"},
+    )
+    wf = r.load_workflow("default")
+    out = r.assemble_prompt(wf, {})
+    assert "CUSTOM PREAMBLE" in out
+    assert "Custom directive about medium" in out  # $PAUSE_THRESHOLD substituted in custom
+    assert "RISK POLICY" not in out  # baseline not used
+
+
+def test_assemble_prompt_custom_preamble_missing_falls_back(isolated_root, capsys):
+    """Missing pause_preamble file → warn on stderr, use baseline."""
+    root, r = isolated_root
+    _write_template(root, "prompts/test.md", "BODY")
+    _write_workflow(
+        root,
+        "default",
+        {"task_type": "default", "prompt_template": "prompts/test.md",
+         "allow_pause": True,
+         "pause_preamble": "prompts/risk/does-not-exist.md"},
+    )
+    wf = r.load_workflow("default")
+    out = r.assemble_prompt(wf, {})
+    captured = capsys.readouterr()
+    assert "unreadable" in captured.err
+    assert "does-not-exist.md" in captured.err
+    # Fell back to baseline
+    assert "RISK POLICY" in out
