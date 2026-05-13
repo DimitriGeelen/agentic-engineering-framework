@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1779: orchestrator status: terminal_event breakdown — surface T-1777 persisted data in substrate observability
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T21:10:29Z
+# ============================================================================
+
+task_id: T-1779
+task_name: "orchestrator status: terminal_event breakdown — surface T-1777 persisted data in substrate observability"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T08:39:53Z
+completed: 2026-05-13T21:10:19Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-11T10:42:38+02:00
+last_commit: 2026-05-11T10:42:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw orchestrator status — terminal_event breakdown (T-1777 data surface). register test card in fabric
+
+# Key outcomes
+outcomes:
+  - "`stats[\"by_terminal_type\"]` Counter of `terminal_event[\"type\"]`"
+  - "`stats[\"terminal_retryable\"]` sub-dict for `error` events: counts"
+  - "`stats[\"terminal_is_error\"]` sub-dict for `result` events: counts"
+  - "New section `\"By terminal event:\"` printed after the existing"
+  - "When error events exist with retryable info, append"
+  - "When result events have is_error info, print"
+  - "Legacy rows (no terminal_event) → section omitted entirely. No"
+  - "`fw orchestrator status --json` exposes `by_terminal_type`,"
+  - "Existing JSON keys unchanged (`by_task_type`, `by_worker_kind`,"
+  - "`tests/unit/test_orchestrator_status_terminal_events.py` new"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/working/focus.yaml"
+  - ".fabric/components/tests-unit-test_orchestrator_status_terminal_events.yaml"
+  - ".tasks/active/T-1779-orchestrator-status-terminalevent-breakd.md"
+  - "tests/unit/test_orchestrator_status_terminal_events.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-11T10:42:38"
+    action: "T-1779: fw orchestrator status — terminal_event breakdown (T-1777 data surface)"
+  - time: "2026-05-11T10:42:57"
+    action: "T-1779: register test card in fabric"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 3630 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, observability, cli]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3630
+  commits: 4
+  files_changed: 9
+  lines_added: 838
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1779-orchestrator-status-terminalevent-breakd.md
+generated_by: context-agent-hybrid

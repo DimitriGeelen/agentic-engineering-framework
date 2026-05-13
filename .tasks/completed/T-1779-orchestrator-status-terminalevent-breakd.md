@@ -4,16 +4,16 @@ name: "orchestrator status: terminal_event breakdown — surface T-1777 persiste
 description: >
   orchestrator status: terminal_event breakdown — surface T-1777 persisted data in substrate observability
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, observability, cli]
-components: []
+components: [bin/fw, lib/outcome.py, tests/unit/test_orchestrator_status_terminal_events.py, tests/unit/test_outcome.py]
 related_tasks: [T-1699, T-1777, T-1778]
 created: 2026-05-11T08:39:53Z
-last_update: 2026-05-11T08:39:53Z
-date_finished: null
+last_update: 2026-05-13T21:10:19Z
+date_finished: 2026-05-13T21:10:19Z
 ---
 
 # T-1779: orchestrator status: terminal_event breakdown — surface T-1777 persisted data in substrate observability
@@ -125,3 +125,15 @@ python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py tests/u
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1779-orchestrator-status-terminalevent-breakd.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a9019f91
+- **Timestamp:** 2026-05-13T21:10:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T21:10:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
