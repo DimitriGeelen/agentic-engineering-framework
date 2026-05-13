@@ -8,12 +8,32 @@ Lightweight approval card at /review/T-XXX:
 """
 
 import re
+import sys
 
-from flask import Blueprint, abort, render_template
+from flask import Blueprint, abort, redirect, render_template, request, url_for
 
 from web.shared import PROJECT_ROOT, parse_frontmatter
 
+# T-1810: paused-dispatch helpers live in lib/ (CLI parity with `fw pause list`).
+sys.path.insert(0, str(PROJECT_ROOT / "lib"))
+
 bp = Blueprint("review", __name__)
+
+
+def _load_paused_for_task(task_id):
+    """Decorate paused-for-task rows with short id, age label, truncated question."""
+    from dispatch_pause import format_age, list_paused_dispatches_for_task, truncate
+
+    rows = list_paused_dispatches_for_task(task_id, PROJECT_ROOT)
+    out = []
+    for r in rows:
+        rr = dict(r)
+        did = rr.get("dispatch_id") or ""
+        rr["dispatch_id_short"] = (did[:10] + "...") if len(did) > 10 else did
+        rr["age_label"] = format_age(int(rr.get("age_seconds") or 0))
+        rr["question_display"] = truncate(rr.get("question") or "(no question)", 240)
+        out.append(rr)
+    return out
 
 
 def _find_task_file(task_id):
@@ -156,6 +176,13 @@ def review(task_id):
     decision_state = _extract_decision(body)
     decision_recorded = decision_state.lower() not in ("pending", "")
 
+    # T-1810: paused-dispatch panel — web parity for `fw pause resolve`.
+    paused_dispatches = _load_paused_for_task(task_id)
+
+    # Optional flash banner forwarded from POST handler (?resolved=<short_id>).
+    resolved_flash = request.args.get("resolved") or ""
+    resolve_error = request.args.get("resolve_error") or ""
+
     return render_template(
         "review.html",
         task_id=task_id,
@@ -178,7 +205,48 @@ def review(task_id):
         pending_tier0=active_tier0,
         artifacts=artifacts,
         reviewer=reviewer,
+        paused_dispatches=paused_dispatches,
+        resolved_flash=resolved_flash,
+        resolve_error=resolve_error,
     )
+
+
+@bp.route("/review/<task_id>/pause/<dispatch_id>/resolve", methods=["POST"])
+def review_pause_resolve(task_id, dispatch_id):
+    """T-1810: web parity for `fw pause resolve`.
+
+    Form fields:
+      answer  (required, non-empty)
+
+    Success: redirects back to `/review/<task_id>?resolved=<new_short_id>`.
+    Error:   redirects back to `/review/<task_id>?resolve_error=<message>` with
+             a 4xx status code so htmx error handlers can surface a toast if
+             the form is ever fetched via XHR. PauseResolveError → 400, anything
+             else → 500.
+    """
+    if not re.match(r"^T-\d{3,}$", task_id):
+        abort(404)
+    answer = (request.form.get("answer") or "").strip()
+    if not answer:
+        return redirect(
+            url_for("review.review", task_id=task_id, resolve_error="answer is required")
+        ), 303
+
+    from pause_resolve import PauseResolveError, resolve_pause
+
+    try:
+        envelope, _row = resolve_pause(
+            dispatch_id, answer, project_root=PROJECT_ROOT
+        )
+    except PauseResolveError as e:
+        return redirect(
+            url_for("review.review", task_id=task_id, resolve_error=str(e))
+        ), 303
+
+    new_did = (envelope.get("dispatch_id") or "")[:10] + "..."
+    return redirect(
+        url_for("review.review", task_id=task_id, resolved=new_did)
+    ), 303
 
 
 @bp.route("/review/<task_id>/acs")

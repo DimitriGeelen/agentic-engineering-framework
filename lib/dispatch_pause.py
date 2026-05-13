@@ -131,6 +131,15 @@ def list_paused_dispatches(project_root: Optional[Path] = None) -> List[Dict[str
     return out
 
 
+def list_paused_dispatches_for_task(
+    task_id: str, project_root: Optional[Path] = None
+) -> List[Dict[str, Any]]:
+    """Same as list_paused_dispatches but filtered to a single task_id."""
+    if not task_id:
+        return []
+    return [r for r in list_paused_dispatches(project_root) if r.get("task_id") == task_id]
+
+
 def format_age(seconds: int) -> str:
     """Compact human-readable age — `<10m`, `42m`, `3h`, `2d`."""
     if seconds < 600:
