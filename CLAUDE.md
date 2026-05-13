@@ -613,6 +613,20 @@ When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
 
 **RUBBER-STAMP conversion rule:** If a Human AC has `[RUBBER-STAMP]` prefix and its Steps section contains only deterministic shell commands with clear expected output, it SHOULD be an Agent AC with verification commands in `## Verification` instead. The machine is more reliable than a human for pass/fail checks.
 
+**Three Human-AC prefixes (T-1811):** The classification above is binary at the Agent/Human level, but Human ACs themselves have three sub-classes by who *can* verify them:
+
+| Prefix | When to use | Verifier |
+|--------|-------------|----------|
+| `[RUBBER-STAMP]` | Mechanical step with deterministic shell-command verification | Shell (Tier 1/2/3) — convert to Agent AC + `## Verification` |
+| `[REVIEWER]` | Pattern / wording / convention check that the static-scan reviewer agent handles (anti-pattern detection, block-message conformance, naming consistency) | `fw reviewer T-XXX` — convert to Agent AC + Verification command `bin/fw reviewer T-XXX 2>&1 \| grep -q "Overall:.*PASS"` |
+| `[REVIEW]` | Genuine human judgment — quality, tone, UX feel, strategic call, blast-radius assessment | Human only |
+
+**REVIEWER conversion rule (T-1811):** If a Human AC has `[REVIEW]` prefix but its check would be satisfied by `fw reviewer T-XXX` returning PASS + needs_human=no, it SHOULD be re-classified as `[REVIEWER]` and converted to an Agent AC with the reviewer command in `## Verification`. The reviewer agent (T-1443) is a static-scan surface — pattern conformance, anti-pattern detection, block-message presence — that complements but does not replace `[REVIEW]` for taste/judgment calls.
+
+**Test:** "Could a deterministic static scan of the task file (or referenced source) answer the AC's yes/no?" If yes → `[REVIEWER]`. If no → `[REVIEW]`.
+
+**Worked example (origin: T-1811):** The Human AC *"Confirm focus-drift block message is actionable"* on T-1730 was filed as `[REVIEW]`. The Reviewer agent's static scan (`fw reviewer T-1730`) returned CONCERN on `mock-only-integration` — a finding the AC text would never have caught. The AC should have been `[REVIEWER]` with `fw reviewer T-1730` in Verification, *plus* a separate `[REVIEW]` AC only if the wording's *feel* genuinely needed human judgment.
+
 **Verification tiers for Agent ACs:**
 - **Tier 1 (programmatic):** Shell commands, curl, grep, file checks — for deterministic, reversible checks
 - **Tier 2 (TermLink E2E):** Spawn process, inject commands, check output — for integration/CLI workflows
@@ -631,6 +645,7 @@ When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
 | "page shows element X" | `expect(page.locator("X")).to_be_visible()` |
 | "click X, verify Y appears" | `page.click("X")` + `expect(page.locator("Y")).to_be_visible()` |
 | `[RUBBER-STAMP]` with deterministic steps | Convert to Agent AC + Playwright test |
+| `[REVIEWER]` with reviewer-verifiable pattern | Convert to Agent AC + `fw reviewer T-XXX` in Verification |
 | `[REVIEW]` with subjective judgment | Keep as Human AC (not automatable) |
 
 ### Human AC Format Requirements (T-325)

@@ -2837,3 +2837,10 @@ X'` returning empty group."
   date: 2026-05-06
   context: Added via context agent
   application: TBD
+- id: L-368
+  learning: "When writing Human ACs, default reach is [REVIEW] (human judgment) but the reviewer agent (T-1443) covers many pattern/wording/conformance checks mechanically. Before tagging [REVIEW], ask: 'could fw reviewer T-XXX cover this AC text?' If yes, tag [REVIEWER] and treat it as Agent-verifiable. Pattern: AC text says 'verify the block message names the rule / confirm output is unambiguous / check naming convention' → reviewer territory, not human territory. See CLAUDE.md AC Classification third class + RUBBER-STAMP/REVIEWER conversion rules."
+  source: P-001
+  task: T-1811
+  date: 2026-05-13
+  context: Added via context agent
+  application: TBD

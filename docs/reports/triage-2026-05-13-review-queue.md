@@ -60,6 +60,18 @@ Mapping the panels to the tasks:
 
 ## Group C — mid-age dispatch substrate v1 (7 tasks, 3-9d)
 
+> **Update 2026-05-13 (T-1811 correction):** Initial classification of these as "no agent shortcut possible — open each individually" was wrong. The Human ACs read as `[REVIEW]` (human judgment), but most are actually **reviewer-agent verifiable** — pattern/wording/convention checks that `fw reviewer T-XXX` covers mechanically. Triage updated below with reviewer verdicts.
+
+| Task | Reviewer verdict | Needs Human? | Action |
+|------|------------------|--------------|--------|
+| T-1731 | **PASS** — no findings | no | **Re-class candidate** — tick on reviewer verdict OR re-class AC as `[REVIEWER]` |
+| T-1707 | **PASS** — no findings | no | **Re-class candidate** — tick on reviewer verdict |
+| T-1730 | **CONCERN** — `mock-only-integration` finding | no | Read the finding; bats test mocks the hook path — may not exercise real call |
+| T-1702 | PASS (static) + `cross-project-blast` Layer-1 | **yes** | Stays human — boundary hook touches all consumer projects |
+| T-1701, T-1762, T-1773, T-1774, T-1775 | (not scanned in this batch) | tbd | Run `bin/fw reviewer T-XXXX` per task; tick if PASS+needs-human=no |
+
+**See T-1811** for the structural fix that surfaces these reviewer verdicts in `fw verify-acs` going forward. The `[REVIEWER]` prefix is the new canonical class for reviewer-agent-verifiable Human ACs (CLAUDE.md AC Classification updated).
+
 These shipped behavioral changes (gates, primitives). Worth a closer read than the panel-render checks above.
 
 | Task | Why it deserves attention |
