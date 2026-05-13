@@ -542,6 +542,7 @@ show_help() {
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}notify${NC} <cmd>          Push notifications (setup, test, enable, disable, status)"
     echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
+    echo -e "  ${GREEN}peer${NC} <cmd>            v2 peer-consult (subscribe to TermLink inbox.queued + spawn responders)"
     echo -e "  ${GREEN}config${NC} <cmd>           Project config (set, get, list) — persistent settings in .framework.yaml"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
@@ -3903,6 +3904,12 @@ EOF
         # paused dispatch (pause_requested terminal event) and fire a retry
         # via Resolver with retry_of_dispatch_id + pause_resolution context.
         exec "$FW_LIB_DIR/pause.sh" "$@"
+        ;;
+    peer)
+        # T-1818 / v2 peer-consult slice 1 framework-half: long-poll TermLink
+        # `inbox.queued` events and spawn responder via `fw termlink dispatch`.
+        # Pairs with TermLink T-1636 (inbox.queued emitter, hub-side).
+        exec python3 "$FW_LIB_DIR/peer.py" "$@"
         ;;
     promote)
         source "$FW_LIB_DIR/promote.sh"
