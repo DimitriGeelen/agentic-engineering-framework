@@ -4,16 +4,16 @@ name: "fw orchestrator status — show terminal_event in 'Recent dispatches:' li
 description: >
   fw orchestrator status — show terminal_event in 'Recent dispatches:' lines
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, cli, observability]
-components: []
+components: [bin/fw, lib/outcome.py, tests/unit/test_orchestrator_status_terminal_events.py, tests/unit/test_outcome.py]
 related_tasks: [T-1777, T-1779]
 created: 2026-05-11T09:00:00Z
-last_update: 2026-05-11T09:00:00Z
-date_finished: null
+last_update: 2026-05-13T21:05:11Z
+date_finished: 2026-05-13T21:05:11Z
 ---
 
 # T-1781: fw orchestrator status — show terminal_event in 'Recent dispatches:' lines
@@ -99,3 +99,15 @@ python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py tests/u
 ### 2026-05-11T09:00:00Z — task-created
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Inline-row pair to T-1779's aggregate breakdown
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7c0848d6
+- **Timestamp:** 2026-05-13T21:05:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T21:05:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

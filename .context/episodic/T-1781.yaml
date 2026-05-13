@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1781: fw orchestrator status — show terminal_event in 'Recent dispatches:' lines
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T21:05:21Z
+# ============================================================================
+
+task_id: T-1781
+task_name: "fw orchestrator status — show terminal_event in 'Recent dispatches:' lines"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T09:00:00Z
+completed: 2026-05-13T21:05:11Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-11T10:48:21+02:00
+last_commit: 2026-05-11T10:48:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw orchestrator status — inline terminal_event in 'Recent dispatches:'
+
+# Key outcomes
+outcomes:
+  - "When a dispatch row carries `terminal_event` with a `type`, append"
+  - "For `error` events with `retryable` flag, append `(retryable)` or"
+  - "For `result` events with `is_error: True`, append `(is_error)`"
+  - "Rows without terminal_event print the existing line unchanged"
+  - "Each entry in `stats[\"recent\"]` gains `terminal_event` key"
+  - "`tests/unit/test_orchestrator_status_terminal_events.py` extended:"
+  - "`python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py -v` exits 0."
+  - "No regression: full arc-suite (T-1777, T-1778, T-1779, T-1780) green."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-1781-fw-orchestrator-status--show-terminaleve.md"
+  - "tests/unit/test_orchestrator_status_terminal_events.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-11T10:48:21"
+    action: "T-1781: fw orchestrator status — inline terminal_event in 'Recent dispatches:'"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3605 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3605
+  commits: 2
+  files_changed: 7
+  lines_added: 472
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1781-fw-orchestrator-status--show-terminaleve.md
+generated_by: context-agent-hybrid
