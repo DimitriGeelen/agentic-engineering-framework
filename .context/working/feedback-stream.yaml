@@ -6214,3 +6214,20 @@ scan_id: R-43244072
 task_id: T-1808
 payload:
   task_file: .tasks/active/T-1808-paused-dispatch-surface--fw-review-queue.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T17:20:23Z'
+scan_id: R-04d5dec0
+task_id: T-1809
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T17:20:23Z'
+scan_id: R-04d5dec0
+task_id: T-1809
+payload:
+  task_file: .tasks/active/T-1809-pause-re-dispatch-chain--fw-pause-resolv.md

@@ -828,3 +828,24 @@ decisions:
     date: 2026-05-13
     task: T-1808
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-121
+    decision: "Order is `[RE-DISPATCH] → [RISK POLICY] → body` when both are present. The Worker's eyes land on the operator's answer first."
+    scope: project
+    date: 2026-05-13
+    task: T-1809
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-122
+    decision: "New optional kwargs `retry_of_dispatch_id` + `pause_resolution` on `resolve()` and `assemble_prompt()`. The workflow yaml stays unchanged."
+    scope: project
+    date: 2026-05-13
+    task: T-1809
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-123
+    decision: "`fw pause resolve` always writes a new dispatch row unless `--dry-run`. No `--apply` two-phase option."
+    scope: project
+    date: 2026-05-13
+    task: T-1809
+    rationale: "Auto-captured from task file on completion"

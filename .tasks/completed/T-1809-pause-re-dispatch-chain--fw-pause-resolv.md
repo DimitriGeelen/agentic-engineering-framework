@@ -4,16 +4,16 @@ name: "Pause re-dispatch chain — fw pause resolve + resolver retry_of_dispatch
 description: >
   Pause re-dispatch chain — fw pause resolve + resolver retry_of_dispatch_id (dispatch-safety slice 5)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:dispatch-safety, slice-5]
-components: [lib/resolver.py, lib/pause_resolve.py, bin/fw, tests/unit/test_pause_resolve.py, tests/unit/test_resolver.py]
+components: [bin/fw, lib/pause_cli.py, lib/pause_resolve.py, lib/pause.sh, lib/resolver.py, tests/unit/test_pause_resolve.py]
 related_tasks: [T-1805, T-1806, T-1807, T-1808]
 created: 2026-05-13T17:15:04Z
-last_update: 2026-05-13T17:15:04Z
-date_finished: null
+last_update: 2026-05-13T17:20:21Z
+date_finished: 2026-05-13T17:20:21Z
 ---
 
 # T-1809: Pause re-dispatch chain — fw pause resolve + resolver retry_of_dispatch_id (dispatch-safety slice 5)
@@ -139,3 +139,22 @@ python3 -c "import sys; sys.path.insert(0, 'lib'); from pause_resolve import res
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1809-pause-re-dispatch-chain--fw-pause-resolv.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-04d5dec0
+- **Timestamp:** 2026-05-13T17:20:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
+     - evidence: `bin/fw pause --help 2>&1 | head -3 || true`
+  2. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_pause_resolve.py tests/unit/test_resolver.py tests/unit/test_dispatch_pause.py -q 2>&1 | tail -5`
+
+### 2026-05-13T17:20:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

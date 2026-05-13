@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1809: Pause re-dispatch chain — fw pause resolve + resolver retry_of_dispatch_id (dispatch-safety slice 5)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T17:20:26Z
+# ============================================================================
+
+task_id: T-1809
+task_name: "Pause re-dispatch chain — fw pause resolve + resolver retry_of_dispatch_id (dispatch-safety slice 5)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-13T17:15:04Z
+completed: 2026-05-13T17:20:21Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-13T19:20:00+02:00
+last_commit: 2026-05-13T19:20:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Pause re-dispatch chain — fw pause resolve + retry_of_dispatch_id (dispatch-safety slice 5 — arc closeout)
+
+# Key outcomes
+outcomes:
+  - "`lib/resolver.py:resolve()` accepts new optional kwargs `retry_of_dispatch_id: Optional[str]` and `pause_resolution: Optional[Dict[str, str]]` (with keys `question`, `answer`). When `pause_resolution` is set, `assemble_prompt` prepends a \"RE-DISPATCH — operator answered your pause\" block to the rendered output, BEFORE any risk-policy preamble. The block includes the original question, the operator's answer, and a directive to proceed with the answer as authoritative."
+  - "`lib/resolver.py:capture_dispatch()` already accepts `extra` — `resolve()` threads `retry_of_dispatch_id` into `extra` so the new dispatches.jsonl row carries the link."
+  - "`lib/pause_resolve.py` (new) exposes `resolve_pause(dispatch_id, answer, *, dry_run=False) -> Tuple[envelope, row]`. Reads the paused dispatch row from dispatches.jsonl, extracts task_id + task_type + original question (from terminal_event), calls `resolver.resolve()` with the retry/resolution fields populated, returns the new envelope+row."
+  - "Error path: `resolve_pause` raises `PauseResolveError` (subclass of ValueError) when (a) dispatch_id not found, (b) the dispatch's outcome is not `paused`, (c) the dispatch is already resolved (a later row already has `retry_of_dispatch_id` matching)."
+  - "CLI: `fw pause resolve <dispatch_id> --answer \"...\" [--dry-run]` calls `resolve_pause`. Prints the new dispatch_id + retry_of_dispatch_id link. With `--dry-run`, builds the envelope but does not write to dispatches.jsonl."
+  - "CLI: `fw pause list` shows paused dispatches awaiting resolution (CLI parity with the Watchtower panel from T-1808; reuses `lib/dispatch_pause.list_paused_dispatches`)."
+  - "Unit test (`tests/unit/test_pause_resolve.py`): happy path — synthetic paused row → `resolve_pause` returns new envelope with prepended RE-DISPATCH block; dispatches.jsonl gains a new row with `retry_of_dispatch_id` set; the new row's prompt block includes the answer text."
+  - "Unit test: error paths — unknown dispatch_id → PauseResolveError; non-paused dispatch → PauseResolveError; already-resolved → PauseResolveError."
+  - "Unit test (`tests/unit/test_resolver.py`): `assemble_prompt` with `pause_resolution` set → output starts with \"[RE-DISPATCH — operator answered your pause]\" block; block contains both question and answer text verbatim; risk-policy preamble (when `allow_pause: true`) still appears AFTER the re-dispatch block."
+  - "Unit test: `assemble_prompt` with `pause_resolution=None` → no re-dispatch block (no regression on existing dispatches)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-13 — RE-DISPATCH block sits above the risk-policy preamble"
+    chose: "Order is `[RE-DISPATCH] → [RISK POLICY] → body` when both are present. The Worker's eyes land on the operator's answer first."
+    rationale: "The answer is to a question the Worker itself asked. The risk-policy preamble is generic governance shared by every dispatch on this workflow. Specific-just-asked beats generic-always-true."
+    alternatives_rejected: ["Order `[RISK POLICY] → [RE-DISPATCH] → body` — would force the Worker to re-read the pause protocol before seeing the answer to its own question. Order `body → [RE-DISPATCH] → [RISK POLICY]` (appended) — top-of-prompt is the highest-attention position."]
+  - decision: "2026-05-13 — pause_resolution carried via resolve()/assemble_prompt kwarg, not in workflow yaml"
+    chose: "New optional kwargs `retry_of_dispatch_id` + `pause_resolution` on `resolve()` and `assemble_prompt()`. The workflow yaml stays unchanged."
+    rationale: "Pause resolution is a per-dispatch instance fact, not a per-workflow contract. Putting it in workflow yaml would conflate the two and force schema changes the linter has no use for."
+    alternatives_rejected: ["$PAUSE_RESOLUTION as a substitutable variable in the prompt template — would require every prompt template to know about pause and explicitly include `$PAUSE_RESOLUTION`. Centralizing in the Resolver lets every workflow get pause support for free."]
+  - decision: "2026-05-13 — `--apply` flag NOT added; resolve always writes (except --dry-run)"
+    chose: "`fw pause resolve` always writes a new dispatch row unless `--dry-run`. No `--apply` two-phase option."
+    rationale: "Operators already had to type the answer; making them confirm with `--apply` adds friction for the common case (their answer IS the apply). Use `--dry-run` to preview."
+    alternatives_rejected: ["Two-phase `resolve` (preview) + `apply` — slow, redundant given dry-run."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "lib/pause_cli.py"
+  - "lib/pause_resolve.py"
+  - "lib/pause.sh"
+  - "lib/resolver.py"
+  - ".tasks/active/T-1809-pause-re-dispatch-chain--fw-pause-resolv.md"
+  - "tests/unit/test_pause_resolve.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-13T19:20:00"
+    action: "T-1809: Pause re-dispatch chain — fw pause resolve + retry_of_dispatch_id (dispatch-safety slice 5 — arc closeout)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:dispatch-safety, slice-5]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 7
+  lines_added: 796
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1809-pause-re-dispatch-chain--fw-pause-resolv.md
+generated_by: context-agent-hybrid
