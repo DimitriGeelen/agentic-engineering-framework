@@ -321,6 +321,45 @@ def test_swallowed_errors_l264_real_no_verify_still_fires():
     assert len(ss.detect_swallowed_errors(section)) == 1
 
 
+# ───────────── L-369: canonical negative-assertion exempt ─────────────
+
+
+def test_swallowed_errors_l369_negative_assertion_exempt_basic():
+    """`grep PATTERN && exit 1 || true` asserts absence — must not fire."""
+    section = "grep -q 'BAD' output.txt && exit 1 || true\n"
+    assert ss.detect_swallowed_errors(section) == []
+
+
+def test_swallowed_errors_l369_negative_assertion_exempt_inline_pipe():
+    """Same pattern with command-substitution piped to grep — still exempt."""
+    section = "bin/fw verify-acs T-1806 --verbose 2>&1 | grep -q 'NUDGE' && exit 1 || true\n"
+    assert ss.detect_swallowed_errors(section) == []
+
+
+def test_swallowed_errors_l369_negative_assertion_exempt_exit_n():
+    """Any exit code in the negative assertion is exempt — not just exit 1."""
+    section = "grep -q 'X' file && exit 2 || true\n"
+    assert ss.detect_swallowed_errors(section) == []
+
+
+def test_swallowed_errors_l369_bare_or_true_still_fires():
+    """T-1809 pattern: bare `|| true` masking exit code must still fire."""
+    section = "bin/fw pause --help 2>&1 | head -3 || true\n"
+    assert len(ss.detect_swallowed_errors(section)) == 1
+
+
+def test_swallowed_errors_l369_redirected_or_true_still_fires():
+    """T-1356/T-1360 pattern: redirected `|| true` must still fire."""
+    section = "bin/fw doctor >/dev/null 2>&1 || true\n"
+    assert len(ss.detect_swallowed_errors(section)) == 1
+
+
+def test_swallowed_errors_l369_grep_or_true_without_exit_still_fires():
+    """`grep PATTERN || true` without && exit is still error-swallowing."""
+    section = "grep -rL 'style-guide' docs/ > /dev/null 2>&1 || true\n"
+    assert len(ss.detect_swallowed_errors(section)) == 1
+
+
 # ───────────────── v1.1: empty-output-success ─────────────────
 
 

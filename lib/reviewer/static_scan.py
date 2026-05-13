@@ -277,6 +277,14 @@ _GREP_LITERAL_RE = re.compile(
     r"\b(grep|awk|sed|jq|rg|ag)\b[^|]*['\"][^'\"]*--no-verify[^'\"]*['\"]"
 )
 
+# L-369: canonical negative-assertion pattern. `cmd && exit N || true` reads
+# as "if cmd succeeds, force fail; otherwise (cmd failed naturally) pass" —
+# i.e. asserting absence. This is the correct idiom for "verify pattern is
+# NOT present" and must not be flagged as severe error-swallowing. Origin:
+# T-1812 reviewer-pass + T-1815 precision tighten (14 corpus false positives
+# eliminated, 9 real findings preserved).
+_NEGATIVE_ASSERTION_RE = re.compile(r"&&\s+exit\s+\d+\s*\|\|\s*true\s*$")
+
 
 def detect_swallowed_errors(verification_section: str) -> list[Finding]:
     findings: list[Finding] = []
@@ -288,6 +296,9 @@ def detect_swallowed_errors(verification_section: str) -> list[Finding]:
             continue
         # L-264-(a): suppress if --no-verify appears as a grep/awk/sed pattern
         if _GREP_LITERAL_RE.search(line):
+            continue
+        # L-369: suppress canonical `cmd && exit N || true` negative assertion
+        if _NEGATIVE_ASSERTION_RE.search(line):
             continue
         for pat, _label in _SWALLOWED_PATTERNS:
             if pat.search(line):
