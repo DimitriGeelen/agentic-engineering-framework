@@ -4,16 +4,16 @@ name: "fw resolver run: CLI integration of spawn driver — one-line dispatch+sp
 description: >
   T-1773 shipped lib/spawn.py callable from Python but the human-facing #H1 still requires a multi-line python one-liner. Add a  subcommand to lib/resolver.py that combines  +  into a single call. CLI-only — no new architecture, just glue. Replaces T-1773 #H1's python -c with .
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:orchestrator-rethink, cli, spawn]
-components: []
+components: [lib/resolver.py, tests/unit/test_resolver_run.py]
 related_tasks: [T-1773, T-1701]
 created: 2026-05-06T19:05:44Z
-last_update: 2026-05-06T19:09:28Z
-date_finished: null
+last_update: 2026-05-13T21:20:14Z
+date_finished: 2026-05-13T21:20:14Z
 ---
 
 # T-1774: fw resolver run: CLI integration of spawn driver — one-line dispatch+spawn end-to-end
@@ -178,3 +178,20 @@ grep -q "bin/fw resolver run T-1773 cheap-research" .tasks/active/T-1773-spawn-s
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1774-fw-resolver-run-cli-integration-of-spawn.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-451c0670
+- **Timestamp:** 2026-05-13T21:20:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `test -f tests/unit/test_resolver_run.py`
+
+### 2026-05-13T21:20:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
