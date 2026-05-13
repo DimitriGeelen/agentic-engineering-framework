@@ -293,7 +293,20 @@ for fn in sorted(os.listdir(active_dir)):
                     if verbose:
                         print(f"  {CYAN}Reviewer{NC} {task_id}: {tag}")
                     if overall == "PASS" and needs.lower() == "no":
-                        print(f"  {YELLOW}NUDGE{NC}  {task_id}: reviewer PASS+no-human — consider re-classifying [REVIEW] ACs as [REVIEWER] (T-1811)")
+                        # T-1814: suppress NUDGE for genuinely-subjective ACs.
+                        # Reviewer's PASS+no-human means "no anti-patterns in AC text",
+                        # NOT "reviewer can replace human for this AC". Tone/visual
+                        # judgments stay human-only regardless of reviewer scan.
+                        subjective_kw = (
+                            "tone", "preachy", "voice", "render", "cleanly",
+                            "rhythm", "intuitive", "looks", "layout", "badge",
+                            "aesthetic", "taste", "feel", "sounds", "reads",
+                            "visual", "style"
+                        )
+                        ac_lower = ac_clean.lower()
+                        is_subjective = any(kw in ac_lower for kw in subjective_kw)
+                        if not is_subjective:
+                            print(f"  {YELLOW}NUDGE{NC}  {task_id}: reviewer PASS+no-human — consider re-classifying [REVIEW] ACs as [REVIEWER] (T-1811)")
             continue
 
         # Try automated verification
