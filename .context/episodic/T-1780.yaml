@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1780: fw outcome read — surface terminal_event sub-fields (T-1777 pair to T-1779/T-1778)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T21:06:46Z
+# ============================================================================
+
+task_id: T-1780
+task_name: "fw outcome read — surface terminal_event sub-fields (T-1777 pair to T-1779/T-1778)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T08:55:00Z
+completed: 2026-05-13T21:06:36Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-11T10:46:06+02:00
+last_commit: 2026-05-11T10:46:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw outcome read — surface terminal_event sub-fields
+
+# Key outcomes
+outcomes:
+  - "After the existing `model:` line, when `merged.get(\"terminal_event\")`"
+  - "If `terminal_event.type == \"error\"` and `retryable` key exists,"
+  - "If `terminal_event.type == \"result\"` and `is_error` key exists,"
+  - "If no `terminal_event` field (legacy row), no terminal lines printed."
+  - "`fw outcome read --json` already includes `terminal_event` in the"
+  - "`tests/unit/test_outcome.py` adds:"
+  - "`python3 -m pytest tests/unit/test_outcome.py -v` exits 0."
+  - "No regression: T-1779, T-1778, T-1777 tests still pass."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - "lib/outcome.py"
+  - ".tasks/active/T-1780-fw-outcome-read--surface-terminalevent-s.md"
+  - "tests/unit/test_outcome.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-11T10:46:06"
+    action: "T-1780: fw outcome read — surface terminal_event sub-fields"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3611 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3611
+  commits: 2
+  files_changed: 5
+  lines_added: 442
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1780-fw-outcome-read--surface-terminalevent-s.md
+generated_by: context-agent-hybrid

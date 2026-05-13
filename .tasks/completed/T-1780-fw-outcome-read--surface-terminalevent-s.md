@@ -4,16 +4,16 @@ name: "fw outcome read — surface terminal_event sub-fields (T-1777 pair to T-1
 description: >
   fw outcome read — surface terminal_event sub-fields (T-1777 pair to T-1779/T-1778)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, cli, observability]
-components: []
+components: [lib/outcome.py, tests/unit/test_outcome.py]
 related_tasks: [T-1777, T-1778, T-1779]
 created: 2026-05-11T08:55:00Z
-last_update: 2026-05-11T08:55:00Z
-date_finished: null
+last_update: 2026-05-13T21:06:36Z
+date_finished: 2026-05-13T21:06:36Z
 ---
 
 # T-1780: fw outcome read — surface terminal_event sub-fields (T-1777 pair to T-1779/T-1778)
@@ -94,3 +94,15 @@ python3 -m pytest tests/unit/test_outcome.py tests/unit/test_resolver_run.py tes
 ### 2026-05-11T08:55:00Z — task-created
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Pair-task to T-1779; pattern mirror of T-1778
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-6cac3df8
+- **Timestamp:** 2026-05-13T21:06:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T21:06:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
