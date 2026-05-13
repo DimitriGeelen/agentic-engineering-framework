@@ -4,16 +4,16 @@ name: "extend Workflow coverage panel with missing-provider class — web parity
 description: >
   extend Workflow coverage panel with missing-provider class — web parity for T-1800 (sibling to T-1799)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:orchestrator-rethink, web, observability]
-components: [tests/unit/test_orchestrator_workflow_coverage.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
+components: [tests/unit/test_orchestrator_workflow_coverage.py, web/templates/orchestrator.html]
 related_tasks: [T-1776, T-1797, T-1798, T-1799, T-1800]
 created: 2026-05-13T06:25:23Z
-last_update: 2026-05-13T06:25:23Z
-date_finished: null
+last_update: 2026-05-13T06:29:52Z
+date_finished: 2026-05-13T06:29:52Z
 ---
 
 # T-1801: extend Workflow coverage panel with missing-provider class — web parity for T-1800 (sibling to T-1799)
@@ -103,3 +103,20 @@ curl -sf "$(bin/fw watchtower url)/orchestrator" | grep -q "provider"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1801-extend-workflow-coverage-panel-with-miss.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a0d2a739
+- **Timestamp:** 2026-05-13T06:29:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/templates/orchestrator.html` workflow coverage table has a 4th column header `provider` between `worker_kind` and `Routable`.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/orchestrator.html in: `web/templates/orchestrator.html` workflow coverage table has a 4th column header `provider` between `worker_kind` and `Routable`.`
+
+### 2026-05-13T06:29:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
