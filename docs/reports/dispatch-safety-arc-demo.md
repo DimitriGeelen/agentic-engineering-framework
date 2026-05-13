@@ -97,6 +97,55 @@ again — but on the new question, not this one.
 
 Block ordering is pinned by `tests/unit/test_pause_resolve.py::test_assemble_prompt_redispatch_block_above_risk_preamble` (RE-DISPATCH must precede RISK POLICY).
 
+## Appendix: Live CLI + web smoke (2026-05-13, T-1812 follow-up)
+
+Beyond the JSON example above, this section captures **actual command output** from a controlled smoke against the live framework — synthetic paused row appended to `.context/dispatches.jsonl`, full CLI+web chain exercised, row removed at end. No state polluted.
+
+**Synthetic row appended (smoke-T1687-arctest1):**
+
+```json
+{"schema_version": 1, "ts": "2026-05-13T18:40:00+00:00", "dispatch_id": "smoke-T1687-arctest1", "task_id": "T-1687", "task_type": "build", "worker_kind": "TermLink", "model": "sonnet", "outcome": "paused", "terminal_event": {"type": "pause_requested", "question": "Smoke test: should the agent proceed with end-to-end verification?", "assessment": {"severity": "medium", "likelihood": "high"}}}
+```
+
+**`bin/fw pause list` output (slice 4 CLI surface):**
+
+```
+PAUSED — Workers awaiting resolution (1)
+  AGE  DISPATCH    TASK        SEV     QUESTION
+ <10m  smoke-T1..  T-1687      medium  Smoke test: should the agent proceed with end-to-end veri...
+```
+
+**`bin/fw pause resolve --dry-run` output (slice 5 CLI surface):**
+
+```
+new dispatch_id:    11c0f0f8-9728-471c-8ac1-f206f27b98d1
+task_id:            T-1687
+task_type:          build
+worker_kind:        TermLink
+retry_of_dispatch:  smoke-T1687-arctest1
+prompt:             3765 chars
+dry-run:            no JSONL append, no blob written
+```
+
+**`bin/fw pause resolve --dry-run --json` envelope tail (retry link confirmed):**
+
+```
+"outcome": "pending",
+"dry_run": true,
+"retry_of_dispatch_id": "smoke-T1687-arctest1"
+```
+
+**Web `/review/T-1687` rendered DOM (slices 4 + 6, panel + form):**
+
+```
+Paused Dispatches — Worker awaits your answer
+MED
+Smoke test: should the agent proceed with end-to-end verification?
+<form method="POST" action="/review/T-1687/pause/smoke-T1687-arctest1/resolve" ...>
+```
+
+All five surfaces (substrate JSONL, CLI list, CLI resolve dry-run, JSON envelope, web panel) co-operated correctly on a fresh row. The `retry_of_dispatch_id` linkage is verified in the resolve envelope, which is exactly the slice-4 forward-compat → slice-5 fulfilment chain. Synthetic row removed from `.context/dispatches.jsonl` after capture (rollback via stored backup).
+
 ## Closure path
 
 When the human is ready to close the arc:
