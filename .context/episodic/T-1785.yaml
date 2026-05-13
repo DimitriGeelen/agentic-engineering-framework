@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1785: fw orchestrator status --since DURATION: time-window filter (1h, 24h, 7d)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T21:09:14Z
+# ============================================================================
+
+task_id: T-1785
+task_name: "fw orchestrator status --since DURATION: time-window filter (1h, 24h, 7d)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T09:50:00Z
+completed: 2026-05-13T21:09:03Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-11T11:02:16+02:00
+last_commit: 2026-05-11T11:02:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw orchestrator status --since DURATION — time-window filter
+
+# Key outcomes
+outcomes:
+  - "Helper `_parse_duration(s) -> int seconds | None` handles"
+  - "Rejects negative, zero, missing unit, unknown unit."
+  - "`fw orchestrator status --since DURATION` accepts the duration string."
+  - "Filter applied BEFORE aggregation (same path as `--task`)."
+  - "Header shows `Filter: since=<duration> (>= <iso timestamp>)`"
+  - "Empty result → notice `no dispatches in the last <duration>` exit 0."
+  - "`--since` composes with `--task` and `--json` and `--outcomes`."
+  - "When both `--task` and `--since` set, both filters apply (AND)."
+  - "`tests/unit/test_orchestrator_status_terminal_events.py` extends with:"
+  - "`python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py -v` exits 0."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-1785-fw-orchestrator-status---since-duration-.md"
+  - "tests/unit/test_orchestrator_status_terminal_events.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-11T11:02:16"
+    action: "T-1785: fw orchestrator status --since DURATION — time-window filter"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3559 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3559
+  commits: 1
+  files_changed: 4
+  lines_added: 239
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1785-fw-orchestrator-status---since-duration-.md
+generated_by: context-agent-hybrid

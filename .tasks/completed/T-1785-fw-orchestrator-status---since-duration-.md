@@ -4,16 +4,16 @@ name: "fw orchestrator status --since DURATION: time-window filter (1h, 24h, 7d)
 description: >
   fw orchestrator status --since DURATION: time-window filter (1h, 24h, 7d)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, cli, observability]
-components: []
+components: [bin/fw, tests/unit/test_orchestrator_status_terminal_events.py]
 related_tasks: [T-1779, T-1784]
 created: 2026-05-11T09:50:00Z
-last_update: 2026-05-11T09:50:00Z
-date_finished: null
+last_update: 2026-05-13T21:09:03Z
+date_finished: 2026-05-13T21:09:03Z
 ---
 
 # T-1785: fw orchestrator status --since DURATION: time-window filter (1h, 24h, 7d)
@@ -98,3 +98,15 @@ python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py tests/u
 ### 2026-05-11T09:50:00Z — task-created
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Time-window pair to T-1784's task filter
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-6bbf4357
+- **Timestamp:** 2026-05-13T21:09:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T21:09:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
