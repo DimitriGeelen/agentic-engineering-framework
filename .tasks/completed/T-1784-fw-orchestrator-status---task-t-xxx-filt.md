@@ -4,16 +4,16 @@ name: "fw orchestrator status --task T-XXX: filter dispatch view to one task"
 description: >
   fw orchestrator status --task T-XXX: filter dispatch view to one task
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, cli, observability]
-components: []
+components: [bin/fw, tests/unit/test_orchestrator_status_terminal_events.py]
 related_tasks: [T-1699, T-1779, T-1781]
 created: 2026-05-11T09:35:00Z
-last_update: 2026-05-11T09:35:00Z
-date_finished: null
+last_update: 2026-05-13T21:08:37Z
+date_finished: 2026-05-13T21:08:37Z
 ---
 
 # T-1784: fw orchestrator status --task T-XXX: filter dispatch view to one task
@@ -95,3 +95,15 @@ python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py tests/u
 ### 2026-05-11T09:35:00Z — task-created
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Per-task filter for orchestrator status
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7e7846ff
+- **Timestamp:** 2026-05-13T21:08:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T21:08:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

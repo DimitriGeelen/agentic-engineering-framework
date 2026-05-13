@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1784: fw orchestrator status --task T-XXX: filter dispatch view to one task
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T21:08:47Z
+# ============================================================================
+
+task_id: T-1784
+task_name: "fw orchestrator status --task T-XXX: filter dispatch view to one task"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T09:35:00Z
+completed: 2026-05-13T21:08:37Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-11T10:59:03+02:00
+last_commit: 2026-05-11T10:59:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw orchestrator status --task T-XXX — per-task filter
+
+# Key outcomes
+outcomes:
+  - "`fw orchestrator status --task T-XXX` accepts a task ID."
+  - "Filter applies BEFORE all aggregation: dispatches not matching"
+  - "Synthetic exclusion still runs (T-stress-* + non-matching task"
+  - "When no dispatches match, print a clear notice"
+  - "JSON output for empty filter returns the stats dict with zero"
+  - "`--task` composes with `--json` and `--outcomes` (existing flags)."
+  - "`tests/unit/test_orchestrator_status_terminal_events.py` extends with:"
+  - "`python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py -v` exits 0."
+  - "No regression: arc-suite green."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-1784-fw-orchestrator-status---task-t-xxx-filt.md"
+  - "tests/unit/test_orchestrator_status_terminal_events.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-11T10:59:03"
+    action: "T-1784: fw orchestrator status --task T-XXX — per-task filter"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3573 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3573
+  commits: 1
+  files_changed: 4
+  lines_added: 207
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1784-fw-orchestrator-status---task-t-xxx-filt.md
+generated_by: context-agent-hybrid
