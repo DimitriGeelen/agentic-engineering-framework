@@ -124,6 +124,18 @@ bin/fw reviewer T-1818 2>&1 | grep -q "Overall:.*PASS"
 
 ## Decisions
 
+### 2026-05-13 — cross-repo build task pairing
+
+- **Chose:** File T-1818 (framework) + TermLink-side T-1636 as paired build tasks; both shipped under the v2 peer-consult slice 1 scope.
+- **Why:** TermLink-side coordination response (T-1804 round-trip) confirmed seam + refined wakeup mechanism. Both halves are bounded (≤40 LOC each), independently shippable.
+- **Rejected:** (a) framework-only build with TermLink-side as undocumented dependency — would re-enable the §ACD pattern T-1670 hit. (b) merge into a single arc-tagged epic — violates one-task-one-deliverable.
+
+### 2026-05-13 — wire-contract field-name divergence noted
+
+- **Issue:** TermLink-side T-1636 specifies payload `{addressee_session_id, channel, message_offset, enqueued_at}` (TermLink-precise names). T-1818 above writes `{addressee, channel, offset, timestamp}` (generic names).
+- **Action:** Human AC explicitly catches this — review must diff the two halves and align field names BEFORE either side merges. Anticipated as a normal coordination outcome, not a blocker.
+- **Default:** Framework-side will adopt TermLink-side names verbatim (TermLink emits, framework consumes — emitter wins on naming).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
