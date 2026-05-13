@@ -4,16 +4,16 @@ name: "fw resolver run/explain — surface terminal_event sub-fields (retryable,
 description: >
   fw resolver run/explain — surface terminal_event sub-fields (retryable, is_error) for one-look forensics
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, cli, observability]
-components: []
+components: [lib/outcome.py, lib/resolver.py, tests/unit/test_outcome.py, tests/unit/test_resolver_run.py]
 related_tasks: [T-1774, T-1777]
 created: 2026-05-10T05:32:24Z
-last_update: 2026-05-10T05:32:24Z
-date_finished: null
+last_update: 2026-05-13T21:10:06Z
+date_finished: 2026-05-13T21:10:06Z
 ---
 
 # T-1778: fw resolver run/explain — surface terminal_event sub-fields (retryable, is_error) for one-look forensics
@@ -145,3 +145,15 @@ python3 -m pytest tests/unit/test_resolver_run.py tests/unit/test_spawn.py tests
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1778-fw-resolver-runexplain--surface-terminal.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-35f27b11
+- **Timestamp:** 2026-05-13T21:10:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T21:10:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

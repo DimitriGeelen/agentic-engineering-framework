@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1778: fw resolver run/explain — surface terminal_event sub-fields (retryable, is_error) for one-look forensics
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T21:10:11Z
+# ============================================================================
+
+task_id: T-1778
+task_name: "fw resolver run/explain — surface terminal_event sub-fields (retryable, is_error) for one-look forensics"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-10T05:32:24Z
+completed: 2026-05-13T21:10:06Z
+duration_days: 3
+updates_count: 1
+first_commit: 2026-05-10T07:35:04+02:00
+last_commit: 2026-05-10T07:35:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cmd_run + cmd_explain surface terminal_event sub-fields
+
+# Key outcomes
+outcomes:
+  - "When `terminal_event.type == \"error\"` and `retryable` key exists,"
+  - "When `terminal_event.type == \"result\"` and `is_error` key exists,"
+  - "Other terminal types (e.g. `agent.done`) print only the type — no"
+  - "When the row has a `terminal_event` field, print:"
+  - "If row lacks `terminal_event`, no terminal lines printed (legacy rows)."
+  - "`tests/unit/test_resolver_run.py` adds:"
+  - "`python3 -m pytest tests/unit/test_resolver_run.py -v` exits 0 (9/9 pass; +2 new T-1778 tests)"
+  - "No regression: full spawn + ollama_loop + resolver_run suites pass (41/41)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/resolver.py"
+  - ".tasks/active/T-1778-fw-resolver-runexplain--surface-terminal.md"
+  - "tests/unit/test_resolver_run.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-10T07:35:04"
+    action: "T-1778: cmd_run + cmd_explain surface terminal_event sub-fields"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 5257 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5257
+  commits: 3
+  files_changed: 8
+  lines_added: 645
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1778-fw-resolver-runexplain--surface-terminal.md
+generated_by: context-agent-hybrid
