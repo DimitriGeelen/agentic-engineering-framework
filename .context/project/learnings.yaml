@@ -2844,3 +2844,10 @@ X'` returning empty group."
   date: 2026-05-13
   context: Added via context agent
   application: TBD
+- id: L-369
+  learning: "Swallowed-errors in Verification blocks (T-1812 audit): scan with regex '\\|\\| (true|:)\\s*$' at line-end across .tasks/. Real defects: line always passes regardless of result (T-1694, T-341). Canonical false positives: 'grep PATTERN && exit 1 || true' is the negative-assertion pattern — exits 1 when bad pattern found, 0 otherwise (T-134, T-1751, T-1596 etc). Tolerance patterns: 'shellcheck/bash -n ... || true' may be intentional. Origin T-1809: 'bin/fw pause --help | head -3 || true' masked argparse regressions; fixed by 'bin/fw pause --help | grep -q resolve'. STATUS 2026-05-13: codified — T-1815 added _NEGATIVE_ASSERTION_RE exemption to lib/reviewer/static_scan.py + 6 unit tests + tools/audit-swallowed-errors.py with --min/--max regression guards. Corpus residual: 11 findings across 9 task files (down from 23/16)."
+  source: P-011
+  task: T-1687
+  date: 2026-05-13
+  context: Added via context agent
+  application: T-1815 — _NEGATIVE_ASSERTION_RE exemption in static_scan.py
