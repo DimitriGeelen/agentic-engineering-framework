@@ -178,7 +178,37 @@ def _risk_policy_preamble(workflow: Dict[str, Any]) -> str:
     return text.replace("$PAUSE_THRESHOLD", threshold)
 
 
-def assemble_prompt(workflow: Dict[str, Any], task_context: Dict[str, str]) -> str:
+def _redispatch_preamble(pause_resolution: Dict[str, str]) -> str:
+    """T-1809 — build the RE-DISPATCH block prepended to a retry prompt.
+
+    Workers come back fresh on a retry (claude --bare). The only signal they
+    have that they previously paused on this exact dispatch is what we write
+    at the top of their prompt. Be explicit, terse, and put the answer in a
+    distinct visual block.
+    """
+    question = (pause_resolution.get("question") or "").strip() or "(question text was not captured)"
+    answer = (pause_resolution.get("answer") or "").strip() or "(operator provided no answer text)"
+    return (
+        "[RE-DISPATCH — operator answered your pause]\n"
+        "\n"
+        "On a previous attempt at this task you paused with this question:\n"
+        f"  Q: {question}\n"
+        "\n"
+        "The operator's answer is:\n"
+        f"  A: {answer}\n"
+        "\n"
+        "Treat this answer as authoritative. Proceed with the task using it as\n"
+        "guidance. Do NOT re-pause on the same question. If a different ambiguity\n"
+        "arises that meets the severity × likelihood threshold, you may pause\n"
+        "again — but on the new question, not this one.\n"
+    )
+
+
+def assemble_prompt(
+    workflow: Dict[str, Any],
+    task_context: Dict[str, str],
+    pause_resolution: Optional[Dict[str, str]] = None,
+) -> str:
     """Render the prompt per workflow.prompt_strategy.
 
     static       — load template, return verbatim (no $VAR expansion)
@@ -190,6 +220,11 @@ def assemble_prompt(workflow: Dict[str, Any], task_context: Dict[str, str]) -> s
     T-1806: If workflow.allow_pause is True, prepend the risk-policy preamble
     to the rendered output regardless of strategy. The preamble lives at the
     front so Workers read it before any task-specific instructions.
+
+    T-1809: If pause_resolution is provided ({question, answer}), prepend a
+    RE-DISPATCH block ABOVE the risk-policy preamble. The retry block must
+    come first because it answers a question the Worker explicitly asked —
+    it's higher-priority context than the generic risk policy.
     """
     template_path = workflow.get("prompt_template")
     if not template_path:
@@ -218,7 +253,10 @@ def assemble_prompt(workflow: Dict[str, Any], task_context: Dict[str, str]) -> s
 
     # T-1806: prepend the risk-policy preamble when the workflow opts in.
     if workflow.get("allow_pause") is True:
-        return _risk_policy_preamble(workflow) + "\n" + body
+        body = _risk_policy_preamble(workflow) + "\n" + body
+    # T-1809: prepend the re-dispatch block ABOVE the risk-policy preamble.
+    if pause_resolution:
+        body = _redispatch_preamble(pause_resolution) + "\n" + body
     return body
 
 
@@ -521,8 +559,17 @@ def resolve(
     task_context: Dict[str, str],
     *,
     dry_run: bool = False,
+    retry_of_dispatch_id: Optional[str] = None,
+    pause_resolution: Optional[Dict[str, str]] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Main entry: workflow → assemble → capture → return (envelope, row)."""
+    """Main entry: workflow → assemble → capture → return (envelope, row).
+
+    T-1809: pause re-dispatch chain. When `retry_of_dispatch_id` is set, the
+    new dispatch row carries the link back to the paused dispatch so slice 4's
+    `list_paused_dispatches` deflates the awaiting list automatically. When
+    `pause_resolution` is set, `assemble_prompt` prepends the RE-DISPATCH block
+    with the operator's answer.
+    """
     workflow = load_workflow(task_type)
     if workflow.get("inline") is True:
         raise ResolverError(
@@ -537,14 +584,18 @@ def resolve(
             f"Workflow {task_type} has invalid worker_kind '{wk}' "
             f"(valid: {sorted(VALID_WORKER_KINDS)})"
         )
-    rendered = assemble_prompt(workflow, task_context)
+    rendered = assemble_prompt(workflow, task_context, pause_resolution=pause_resolution)
     variant_id = select_variant(workflow)
+    extra: Optional[Dict[str, Any]] = None
+    if retry_of_dispatch_id:
+        extra = {"retry_of_dispatch_id": retry_of_dispatch_id}
     return capture_dispatch(
         task_id=task_id,
         workflow=workflow,
         rendered_prompt=rendered,
         variant_id=variant_id,
         write=not dry_run,
+        extra=extra,
     )
 
 

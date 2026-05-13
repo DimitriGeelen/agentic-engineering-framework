@@ -3898,6 +3898,12 @@ EOF
         # (also append-only). v2 read-path joins by dispatch_id.
         exec "$FW_LIB_DIR/outcome.sh" "$@"
         ;;
+    pause)
+        # T-1809 / dispatch-safety slice 5: capture operator's answer to a
+        # paused dispatch (pause_requested terminal event) and fire a retry
+        # via Resolver with retry_of_dispatch_id + pause_resolution context.
+        exec "$FW_LIB_DIR/pause.sh" "$@"
+        ;;
     promote)
         source "$FW_LIB_DIR/promote.sh"
         do_promote "$@"
