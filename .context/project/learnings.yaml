@@ -2858,3 +2858,10 @@ X'` returning empty group."
   date: 2026-05-13
   context: Added after T-1816 fix-learned attempt blocked by stale focus_session
   application: T-1816 — lib/arc.sh + agents/audit/audit.sh three-layer prevention
+- id: L-371
+  learning: "Denormalised registry caches (e.g. `constituent_tasks: [...]` in arc YAMLs) drift from canonical source (tag scan of `arc:<id>`) whenever tag-add bypasses the formal verb that maintains both. Class pattern: N surfaces read the registry; some use tag-scan canon, others read the cache. When the cache empties / staleness occurs, only some surfaces are wrong — the most visible (human-facing closure UI) is often the one reading the stale cache because list views read denormalised aggregates for performance. Detection: when fixing one surface for this drift, grep for OTHER readers of the same denormalised field and fix them simultaneously OR file as siblings. Origin T-1813 (audit) + T-1817 (web /arcs detail) — same data-source-drift class, 3 months apart, each fixed in isolation. Canonical mitigation in this codebase: each consumer merges legacy cache ∪ tag-scan, dedupes by id (preserves order: legacy first); ideal but out-of-scope mitigation: a `fw arc rebuild` command that re-syncs the cache from tag-scan canon. Surfaces audited 2026-05-13: audit.sh ✓ (T-1813), web/blueprints/arcs.py ✓ (T-1817), lib/arc.sh:arc_show ✓ (always tag-scan)."
+  source: P-001
+  task: T-1817
+  date: 2026-05-13
+  context: Class-level codification after second instance of the same data-source-drift pattern
+  application: T-1817 — _scan_tasks_by_tag helper + merge logic in web/blueprints/arcs.py
