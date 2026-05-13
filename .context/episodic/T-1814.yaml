@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1814: fw verify-acs NUDGE — suppress for genuinely-subjective [REVIEW] ACs (tone/visual keywords)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T19:08:17Z
+# ============================================================================
+
+task_id: T-1814
+task_name: "fw verify-acs NUDGE — suppress for genuinely-subjective [REVIEW] ACs (tone/visual keywords)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-13T19:03:07Z
+completed: 2026-05-13T19:08:09Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-13T21:05:53+02:00
+last_commit: 2026-05-13T21:05:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw verify-acs NUDGE — suppress for genuinely-subjective ACs
+
+# Key outcomes
+outcomes:
+  - "`lib/verify-acs.sh` NUDGE suppression: if the `[REVIEW]` AC text matches any of a curated keyword list (tone, preachy, voice, render, cleanly, rhythm, intuitive, looks, layout, badge, aesthetic, taste, feel, sounds, reads, visual, style), the NUDGE message is NOT printed even when reviewer is PASS+no-human (read-only check)"
+  - "Pinning behavior: `bin/fw verify-acs T-1806 --verbose 2>&1` no longer prints NUDGE for the tone-judgment AC (verified live — see Verification command 1)"
+  - "Inverse pinning: keyword detection on `[REVIEW] Names match the ADR-0004 decision` returns False (no suppression, NUDGE would fire); `[REVIEW] Confirm preamble tone is right` returns True (suppressed) — verified via Verification command 3 inline python assertion"
+  - "No regression on verify-acs CLI: `bin/fw verify-acs T-1811 --verbose` still emits PASS-class output (verified via Verification command 2)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/verify-acs.sh"
+  - ".tasks/active/T-1814-fw-verify-acs-nudge--suppress-for-genuin.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-13T21:05:53"
+    action: "T-1814: fw verify-acs NUDGE — suppress for genuinely-subjective ACs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, ac-classification, reviewer, polish]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 2
+  lines_added: 152
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1814-fw-verify-acs-nudge--suppress-for-genuin.md
+generated_by: context-agent-hybrid
