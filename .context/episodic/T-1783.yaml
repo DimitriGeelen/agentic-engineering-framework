@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1783: fw outcome read --tail-events N: show last N events from blob for one-shot forensics
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T21:08:23Z
+# ============================================================================
+
+task_id: T-1783
+task_name: "fw outcome read --tail-events N: show last N events from blob for one-shot forensics"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T09:20:00Z
+completed: 2026-05-13T21:08:18Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-11T10:55:29+02:00
+last_commit: 2026-05-11T10:55:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw outcome read --tail-events N — forensic event tail
+
+# Key outcomes
+outcomes:
+  - "`fw outcome read <dispatch_id> --tail-events N` accepts integer N."
+  - "N must be >= 1; otherwise the command errors with a clear message"
+  - "When the dispatch row has `blob_dir` and `<blob_dir>/events.jsonl`"
+  - "Key-summary: for `agent.done` → empty; for `error` →"
+  - "If blob_dir missing or events.jsonl absent, print"
+  - "If `--tail-events` not passed, behavior unchanged (T-1780 surface"
+  - "`tests/unit/test_outcome.py` extends with:"
+  - "`python3 -m pytest tests/unit/test_outcome.py -v` exits 0."
+  - "No regression: arc-suite green."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - "lib/outcome.py"
+  - ".tasks/active/T-1783-fw-outcome-read---tail-events-n-show-las.md"
+  - "tests/unit/test_outcome.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-11T10:55:29"
+    action: "T-1783: fw outcome read --tail-events N — forensic event tail"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3588 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3588
+  commits: 1
+  files_changed: 4
+  lines_added: 294
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1783-fw-outcome-read---tail-events-n-show-las.md
+generated_by: context-agent-hybrid

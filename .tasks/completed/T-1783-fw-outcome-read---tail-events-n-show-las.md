@@ -4,16 +4,16 @@ name: "fw outcome read --tail-events N: show last N events from blob for one-sho
 description: >
   fw outcome read --tail-events N: show last N events from blob for one-shot forensics
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, cli, observability]
-components: []
+components: [lib/outcome.py, tests/unit/test_outcome.py]
 related_tasks: [T-1777, T-1780]
 created: 2026-05-11T09:20:00Z
-last_update: 2026-05-11T09:20:00Z
-date_finished: null
+last_update: 2026-05-13T21:08:18Z
+date_finished: 2026-05-13T21:08:18Z
 ---
 
 # T-1783: fw outcome read --tail-events N: show last N events from blob for one-shot forensics
@@ -98,3 +98,15 @@ python3 -m pytest tests/unit/test_outcome.py -v
 ### 2026-05-11T09:20:00Z — task-created
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Forensics depth pair to T-1780 (which surfaces terminal context)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-5b895290
+- **Timestamp:** 2026-05-13T21:08:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T21:08:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
