@@ -6231,3 +6231,632 @@ scan_id: R-04d5dec0
 task_id: T-1809
 payload:
   task_file: .tasks/active/T-1809-pause-re-dispatch-chain--fw-pause-resolv.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T17:39:25Z'
+scan_id: R-d36d6517
+task_id: T-1804
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T17:39:25Z'
+scan_id: R-d36d6517
+task_id: T-1804
+payload:
+  task_file: .tasks/active/T-1804-cross-agent-conversation-arc--joint-aef-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T17:47:23Z'
+scan_id: R-561c50a4
+task_id: T-1810
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T17:47:23Z'
+scan_id: R-561c50a4
+task_id: T-1810
+payload:
+  task_file: .tasks/active/T-1810-watchtower-paused-dispatch-resolve-form-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:17:16Z'
+scan_id: R-a9331065
+task_id: T-1730
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:17:16Z'
+scan_id: R-a9331065
+task_id: T-1730
+payload:
+  task_file: .tasks/active/T-1730-bash-matcher--focus-drift-gate-on-check-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:17:16Z'
+scan_id: R-a3264422
+task_id: T-1731
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:17:16Z'
+scan_id: R-a3264422
+task_id: T-1731
+payload:
+  task_file: .tasks/active/T-1731-human-ac-tick-guard--block-agent-from-ch.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:17:16Z'
+scan_id: R-8ace41f1
+task_id: T-1702
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:17:16Z'
+scan_id: R-8ace41f1
+task_id: T-1702
+payload:
+  task_file: .tasks/active/T-1702-boundary-hook-extend-to-outside-path-arg.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:17:16Z'
+scan_id: R-77b52876
+task_id: T-1707
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:17:16Z'
+scan_id: R-77b52876
+task_id: T-1707
+payload:
+  task_file: .tasks/active/T-1707-fw-doctor-scope-tagging--split-project-v.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:21:16Z'
+scan_id: R-9826b96e
+task_id: T-1811
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:21:16Z'
+scan_id: R-9826b96e
+task_id: T-1811
+payload:
+  task_file: .tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:23:25Z'
+scan_id: R-42e2049d
+task_id: T-1811
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:23:25Z'
+scan_id: R-42e2049d
+task_id: T-1811
+payload:
+  task_file: .tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-b5166904
+task_id: T-1805
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-b5166904
+task_id: T-1805
+payload:
+  task_file: .tasks/active/T-1805-pauserequested-terminalevent-class--subs.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-d39e2b57
+task_id: T-1806
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-d39e2b57
+task_id: T-1806
+payload:
+  task_file: .tasks/active/T-1806-resolver-risk-policy-preamble-injection-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-3100a326
+task_id: T-1807
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-3100a326
+task_id: T-1807
+payload:
+  task_file: .tasks/active/T-1807-workflow-schema-lint--pausethreshold-all.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-275512ee
+task_id: T-1808
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-275512ee
+task_id: T-1808
+payload:
+  task_file: .tasks/active/T-1808-paused-dispatch-surface--fw-review-queue.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-c2f872d7
+task_id: T-1809
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-c2f872d7
+task_id: T-1809
+payload:
+  task_file: .tasks/completed/T-1809-pause-re-dispatch-chain--fw-pause-resolv.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-9375e2ee
+task_id: T-1810
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:35:12Z'
+scan_id: R-9375e2ee
+task_id: T-1810
+payload:
+  task_file: .tasks/active/T-1810-watchtower-paused-dispatch-resolve-form-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:36:20Z'
+scan_id: R-f310dedd
+task_id: T-1809
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:36:20Z'
+scan_id: R-f310dedd
+task_id: T-1809
+payload:
+  task_file: .tasks/completed/T-1809-pause-re-dispatch-chain--fw-pause-resolv.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T18:38:45Z'
+scan_id: R-f7b465be
+task_id: T-1812
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T18:38:45Z'
+scan_id: R-f7b465be
+task_id: T-1812
+payload:
+  task_file: .tasks/active/T-1812-reviewer-pass-on-dispatch-safety-arc-tas.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T19:00:54Z'
+scan_id: R-79cacaed
+task_id: T-1813
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T19:00:54Z'
+scan_id: R-79cacaed
+task_id: T-1813
+payload:
+  task_file: .tasks/active/T-1813-audit-arc-completion-check-ignores-tag-t.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T19:08:13Z'
+scan_id: R-2607ed09
+task_id: T-1814
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T19:08:13Z'
+scan_id: R-2607ed09
+task_id: T-1814
+payload:
+  task_file: .tasks/active/T-1814-fw-verify-acs-nudge--suppress-for-genuin.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T19:57:59Z'
+scan_id: R-84d77faa
+task_id: T-1815
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T19:57:59Z'
+scan_id: R-84d77faa
+task_id: T-1815
+payload:
+  task_file: .tasks/active/T-1815-l-369-follow-through-scrub-vacuous-verif.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T19:58:54Z'
+scan_id: R-81f6cb97
+task_id: T-1815
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T19:58:54Z'
+scan_id: R-81f6cb97
+task_id: T-1815
+payload:
+  task_file: .tasks/active/T-1815-l-369-follow-through-scrub-vacuous-verif.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T20:28:19Z'
+scan_id: R-2bff1dd9
+task_id: T-1816
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T20:28:19Z'
+scan_id: R-2bff1dd9
+task_id: T-1816
+payload:
+  task_file: .tasks/active/T-1816-fix-dispatch-safety-arc-yaml--unquoted-c.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T20:28:57Z'
+scan_id: R-c94fad21
+task_id: T-1816
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T20:28:57Z'
+scan_id: R-c94fad21
+task_id: T-1816
+payload:
+  task_file: .tasks/active/T-1816-fix-dispatch-safety-arc-yaml--unquoted-c.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T20:51:12Z'
+scan_id: R-dd4a54ac
+task_id: T-1817
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T20:51:12Z'
+scan_id: R-dd4a54ac
+task_id: T-1817
+payload:
+  task_file: .tasks/active/T-1817-watchtower-arcs-detail-page-misses-tag-a.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T20:52:13Z'
+scan_id: R-64e4129b
+task_id: T-1817
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T20:52:13Z'
+scan_id: R-64e4129b
+task_id: T-1817
+payload:
+  task_file: .tasks/active/T-1817-watchtower-arcs-detail-page-misses-tag-a.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T20:52:42Z'
+scan_id: R-a484a08d
+task_id: T-1817
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T20:52:42Z'
+scan_id: R-a484a08d
+task_id: T-1817
+payload:
+  task_file: .tasks/active/T-1817-watchtower-arcs-detail-page-misses-tag-a.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T20:52:43Z'
+scan_id: R-56bb8181
+task_id: T-1817
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T20:52:43Z'
+scan_id: R-56bb8181
+task_id: T-1817
+payload:
+  task_file: .tasks/active/T-1817-watchtower-arcs-detail-page-misses-tag-a.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:05:06Z'
+scan_id: R-31a338d7
+task_id: T-1781
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:05:06Z'
+scan_id: R-31a338d7
+task_id: T-1781
+payload:
+  task_file: .tasks/active/T-1781-fw-orchestrator-status--show-terminaleve.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:05:17Z'
+scan_id: R-7c0848d6
+task_id: T-1781
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:05:17Z'
+scan_id: R-7c0848d6
+task_id: T-1781
+payload:
+  task_file: .tasks/active/T-1781-fw-orchestrator-status--show-terminaleve.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:06:42Z'
+scan_id: R-6cac3df8
+task_id: T-1780
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:06:42Z'
+scan_id: R-6cac3df8
+task_id: T-1780
+payload:
+  task_file: .tasks/active/T-1780-fw-outcome-read--surface-terminalevent-s.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:07:40Z'
+scan_id: R-ac2aadb4
+task_id: T-1782
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:07:40Z'
+scan_id: R-ac2aadb4
+task_id: T-1782
+payload:
+  task_file: .tasks/active/T-1782-fw-outcome-list--show-terminalevent-stat.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:08:19Z'
+scan_id: R-5b895290
+task_id: T-1783
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:08:19Z'
+scan_id: R-5b895290
+task_id: T-1783
+payload:
+  task_file: .tasks/active/T-1783-fw-outcome-read---tail-events-n-show-las.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:08:43Z'
+scan_id: R-7e7846ff
+task_id: T-1784
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:08:43Z'
+scan_id: R-7e7846ff
+task_id: T-1784
+payload:
+  task_file: .tasks/active/T-1784-fw-orchestrator-status---task-t-xxx-filt.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:09:10Z'
+scan_id: R-6bbf4357
+task_id: T-1785
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:09:10Z'
+scan_id: R-6bbf4357
+task_id: T-1785
+payload:
+  task_file: .tasks/active/T-1785-fw-orchestrator-status---since-duration-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:09:53Z'
+scan_id: R-d99513fe
+task_id: T-1777
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:09:53Z'
+scan_id: R-d99513fe
+task_id: T-1777
+payload:
+  task_file: .tasks/active/T-1777-spawn-driver-persist-terminalevent-into-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:10:07Z'
+scan_id: R-35f27b11
+task_id: T-1778
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:10:07Z'
+scan_id: R-35f27b11
+task_id: T-1778
+payload:
+  task_file: .tasks/active/T-1778-fw-resolver-runexplain--surface-terminal.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:10:25Z'
+scan_id: R-a9019f91
+task_id: T-1779
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:10:25Z'
+scan_id: R-a9019f91
+task_id: T-1779
+payload:
+  task_file: .tasks/active/T-1779-orchestrator-status-terminalevent-breakd.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:19:50Z'
+scan_id: R-e3a8f8ab
+task_id: T-1773
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:19:50Z'
+scan_id: R-e3a8f8ab
+task_id: T-1773
+payload:
+  task_file: .tasks/active/T-1773-spawn-side-dispatch-driver-read-resolver.md

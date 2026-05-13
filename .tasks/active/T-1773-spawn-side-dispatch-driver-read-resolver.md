@@ -4,16 +4,16 @@ name: "spawn-side dispatch driver: read resolver envelope → spawn worker → s
 description: >
   T-1700 + T-1701 both shipped worker primitives (PiWorker for pi, ollama-loop env wiring for litellm) but stopped at the worker. The end-to-end mechanic (user submits task_type → resolver builds envelope → worker fires → events streamed to .context/dispatch-blobs/<id>/events.jsonl → outcome row appended to dispatches.jsonl) currently has no glue. Both v1 builds explicitly deferred this to a unified spawn driver once two consumers existed. They exist now. Build lib/spawn.py that consumes a dispatch envelope and routes by worker_kind to the appropriate primitive. Single-file design; no premature abstraction. Closes the orchestrator arc's headline mechanic.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:orchestrator-rethink, spawn, dispatch-driver]
-components: []
+components: [lib/resolver.py, lib/spawn.py, tests/unit/test_resolver_run.py, tests/unit/test_spawn.py]
 related_tasks: [T-1700, T-1701]
 created: 2026-05-06T18:52:51Z
-last_update: 2026-05-06T19:00:37Z
-date_finished: null
+last_update: 2026-05-13T21:19:49Z
+date_finished: 2026-05-13T21:19:49Z
 ---
 
 # T-1773: spawn-side dispatch driver: read resolver envelope → spawn worker → stream events → emit outcome row
@@ -200,3 +200,20 @@ The three deferred routes (ollama-loop, TermLink, Task) raise `NotImplementedErr
 ### 2026-05-06T18:54:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-e3a8f8ab
+- **Timestamp:** 2026-05-13T21:19:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `test -f tests/unit/test_spawn.py`
+
+### 2026-05-13T21:19:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -11,226 +11,52 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3000
  * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
-192.168.10.107 - - [13/May/2026 18:08:43] "GET /approvals HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-127.0.0.1 - - [13/May/2026 18:08:50] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:09:02] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:10:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:11:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:12:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:13:08] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:14:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:15:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:16:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:17:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:18:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:19:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:20:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:21:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:22:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:23:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:24:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:25:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:26:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:27:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:28:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:29:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:30:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:31:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:32:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:33:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:34:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:35:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:36:10] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:37:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:38:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:39:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:40:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:41:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:42:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:43:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:44:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:45:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:46:10] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:47:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:48:10] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:49:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:50:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:51:08] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:52:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:53:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:54:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:55:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:56:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:57:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:58:08] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 18:59:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:00:10] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:01:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:02:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:03:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:04:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:05:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:06:08] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:07:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:08:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:09:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:10:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:11:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:12:09] "GET /approvals HTTP/1.1" 200 -
-192.168.10.107 - - [13/May/2026 19:12:10] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:13:04] "GET / HTTP/1.1" 200 -
-192.168.10.107 - - [13/May/2026 19:13:23] "GET /approvals HTTP/1.1" 200 -
-192.168.10.107 - - [13/May/2026 19:13:24] "GET /api/_identity HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:14:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:15:10] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:16:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:17:03] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:18:09] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:19:04] "GET / HTTP/1.1" 200 -
-YAML parse error in dispatch-safety.yaml (/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml): mapping values are not allowed here
-  in "/opt/999-Agentic-Engineering-Framework/.context/arcs/dispatch-safety.yaml", line 2, column 22
-192.168.10.107 - - [13/May/2026 19:20:09] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/May/2026 22:49:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:49:39] "GET /arcs/dispatch-safety HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:50:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:50:50] "GET /arcs/dispatch-safety HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:50:52] "GET /arcs/dispatch-safety HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:51:08] "GET /arcs HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:51:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:52:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:52:11] "GET /arcs/dispatch-safety HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:52:13] "GET /arcs/dispatch-safety HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:52:40] "GET /arcs/dispatch-safety HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:52:42] "GET /arcs/dispatch-safety HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:53:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:54:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:55:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:56:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:57:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:57:18] "GET /arcs/dispatch-safety HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:57:25] "GET /arcs HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:57:29] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:57:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:57:30] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:57:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:58:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 22:59:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:00:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:01:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:02:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:03:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:04:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:05:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:06:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:07:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:08:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:09:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:10:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:10:50] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:10:55] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:11:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:12:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:13:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:14:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:15:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:16:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:17:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:18:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:19:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:19:50] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [13/May/2026 23:20:04] "GET / HTTP/1.1" 200 -

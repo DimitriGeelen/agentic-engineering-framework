@@ -105,3 +105,20 @@ pending_updates:
   status: pending
   resolved_date: null
   resolution_note: null
+- id: U-007
+  command: 'bin/fw termlink remote inject termlink-agent --enter ''cd /opt/termlink
+    && please review docs/proposals/T-1804-cross-agent-conversation-substrate.md (mirrored
+    from AEF) — confirm or reject the seam (transport-vs-semantics), confirm wakeup
+    option (iii hybrid: TermLink emits generic event class, AEF subscriber bridge
+    consumes), reply with verdict + bounded changeset estimate'''
+  reason: 'T-1804 GO recorded. Cross-repo seam agreement: propose to TermLink-project
+    agent (option iii — 1 generic event class TermLink-side, 1 subscriber bridge AEF-side).
+    Proposal artifact: docs/proposals/T-1804-cross-agent-conversation-substrate.md.
+    Awaiting TermLink-side concurrence before either repo writes code.'
+  task: T-1804
+  host: 192.168.10.107
+  agent: agent
+  created: '2026-05-13T17:40:53Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null
