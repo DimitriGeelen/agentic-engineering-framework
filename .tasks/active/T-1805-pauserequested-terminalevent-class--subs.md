@@ -4,16 +4,16 @@ name: "pause_requested terminal_event class — substrate recognition (dispatch-
 description: >
   pause_requested terminal_event class — substrate recognition (dispatch-safety slice 1)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:dispatch-safety, slice-1]
-components: []
+components: [lib/outcome.py, lib/resolver.py, lib/spawn.py, tests/unit/test_outcome.py, tests/unit/test_spawn.py]
 related_tasks: []
 created: 2026-05-13T15:01:56Z
-last_update: 2026-05-13T15:03:49Z
-date_finished: null
+last_update: 2026-05-13T15:09:23Z
+date_finished: 2026-05-13T15:09:23Z
 ---
 
 # T-1805: pause_requested terminal_event class — substrate recognition (dispatch-safety slice 1)
@@ -124,3 +124,15 @@ python3 -c "import sys; sys.path.insert(0, 'lib'); from spawn import _VALID_OUTC
 
 ### 2026-05-13T15:03:49Z — status-update [task-update-agent]
 - **Change:** tags: +slice-1
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-2c12c51c
+- **Timestamp:** 2026-05-13T15:09:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T15:09:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
