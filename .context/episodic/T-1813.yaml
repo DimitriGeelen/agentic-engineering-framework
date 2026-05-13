@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1813: audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks only; dispatch-safety arc invisible at 6/6
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T19:00:58Z
+# ============================================================================
+
+task_id: T-1813
+task_name: "audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks only; dispatch-safety arc invisible at 6/6"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-13T18:47:28Z
+completed: 2026-05-13T19:00:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-13T21:00:23+02:00
+last_commit: 2026-05-13T21:00:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit arc-completion — tag-based fallback (dispatch-safety silent skip fix). inline audit-yaml path in Verification (each line is separate shell)
+
+# Key outcomes
+outcomes:
+  - "`agents/audit/audit.sh` arc-completion check falls back to tag-based scan when `constituent_tasks` is empty: inline python tag-scan added at lines ~3389-3411 mirroring `lib/arc.sh:_arc_tasks_with_tag` so audit and `fw arc show` use the same task-discovery pathway"
+  - "After the fix, `bin/fw audit 2>&1 | grep dispatch-safety` shows the dispatch-safety arc — verified live: `[WARN] Arc 'dispatch-safety': 7/8 tasks completed (0.8750) but arc still in-progress`"
+  - "No regression: existing arcs continue to appear — verified live: `embeddings-strategy 1/3`, `orchestrator-rethink 28/31`, `project-shape-resilience 3/6`"
+  - "`bin/fw audit` Pass/Warn/Fail counts incremented correctly — before: Warn=28; after: Warn=29 (+1 for dispatch-safety closure pressure)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "audit arc-completion — tag-based fallback (dispatch-safety silent skip fix)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "YYYY-MM-DD — [topic]"
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-1813-audit-arc-completion-check-ignores-tag-t.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-13T21:00:23"
+    action: "T-1813: audit arc-completion — tag-based fallback (dispatch-safety silent skip fix)"
+  - time: "2026-05-13T21:00:48"
+    action: "T-1813: inline audit-yaml path in Verification (each line is separate shell)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:dispatch-safety, audit, bug, framework-blindness]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 2
+  files_changed: 2
+  lines_added: 188
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1813-audit-arc-completion-check-ignores-tag-t.md
+generated_by: context-agent-hybrid

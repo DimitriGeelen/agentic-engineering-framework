@@ -4,16 +4,16 @@ name: "audit arc-completion check ignores tag-tagged tasks — uses constituent_
 description: >
   audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks only; dispatch-safety arc invisible at 6/6
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:dispatch-safety, audit, bug, framework-blindness]
-components: [agents/audit/audit.sh, lib/arc.sh]
+components: [C-004]
 related_tasks: [T-1812, T-1811, T-1805, T-1806, T-1807, T-1808, T-1809, T-1810]
 created: 2026-05-13T18:47:28Z
-last_update: 2026-05-13T18:47:28Z
-date_finished: null
+last_update: 2026-05-13T19:00:53Z
+date_finished: 2026-05-13T19:00:53Z
 ---
 
 # T-1813: audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks only; dispatch-safety arc invisible at 6/6
@@ -160,3 +160,20 @@ Longer-term consideration (not in scope here): the two discovery pathways should
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1813-audit-arc-completion-check-ignores-tag-t.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-79cacaed
+- **Timestamp:** 2026-05-13T19:00:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `agents/audit/audit.sh` arc-completion check falls back to tag-based scan when `constituent_tasks` is empty: inline python tag-scan added at lines ~3389-3411 mirroring `lib/arc.sh:_arc_tasks_with_tag`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: `agents/audit/audit.sh` arc-completion check falls back to tag-based scan when `constituent_tasks` is empty: inline python tag-scan added at lines ~33`
+
+### 2026-05-13T19:00:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
