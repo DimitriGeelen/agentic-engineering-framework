@@ -59,11 +59,11 @@ This is the same data-source inconsistency T-1811 captured at the AC level: `fw 
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
 # Use saved audit YAML to avoid audit-lock conflicts when multiple
-# verifications run sequentially. Most recent audit is the source of truth.
-AUDIT=.context/audits/$(date -u +%Y-%m-%d).yaml; test -f "$AUDIT" || AUDIT=$(ls -t .context/audits/2026-*.yaml | head -1)
-grep -E "Arc 'dispatch-safety'" "$AUDIT" | grep -qE "[0-9]+/[0-9]+ tasks completed"
-grep -E "Arc 'orchestrator-rethink'" "$AUDIT" | grep -qE "[0-9]+/[0-9]+"
-grep -E "Arc 'embeddings-strategy'" "$AUDIT" | grep -qE "[0-9]+/[0-9]+"
+# verifications run sequentially. Each line is a separate shell invocation
+# so the audit path is inlined in each grep rather than via a variable.
+grep -E "Arc 'dispatch-safety'" "$(ls -t .context/audits/2026-*.yaml | head -1)" | grep -qE "[0-9]+/[0-9]+ tasks completed"
+grep -E "Arc 'orchestrator-rethink'" "$(ls -t .context/audits/2026-*.yaml | head -1)" | grep -qE "[0-9]+/[0-9]+"
+grep -E "Arc 'embeddings-strategy'" "$(ls -t .context/audits/2026-*.yaml | head -1)" | grep -qE "[0-9]+/[0-9]+"
 
 ## RCA
 
