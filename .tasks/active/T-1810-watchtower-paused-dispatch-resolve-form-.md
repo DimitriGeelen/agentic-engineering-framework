@@ -141,8 +141,8 @@ The endpoint piggybacks on `lib/pause_resolve.resolve_pause()` (slice 5), so the
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-561c50a4
-- **Timestamp:** 2026-05-13T17:47:23Z
+- **Scan ID:** R-9375e2ee
+- **Timestamp:** 2026-05-13T18:35:12Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -152,6 +152,5 @@ The endpoint piggybacks on `lib/pause_resolve.resolve_pause()` (slice 5), so the
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_review_paused_resolve.py -q`
-
 ### 2026-05-13T17:47:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

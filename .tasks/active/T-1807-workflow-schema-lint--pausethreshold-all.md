@@ -118,8 +118,8 @@ out=$(bin/fw doctor 2>&1 || true); echo "$out" | grep "Workflow schema:" | grep 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-a4b1af95
-- **Timestamp:** 2026-05-13T16:02:03Z
+- **Scan ID:** R-3100a326
+- **Timestamp:** 2026-05-13T18:35:12Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -129,6 +129,5 @@ out=$(bin/fw doctor 2>&1 || true); echo "$out" | grep "Workflow schema:" | grep 
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_workflow_schema_pause_lint.py -q 2>&1 | tail -5`
-
 ### 2026-05-13T16:00:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

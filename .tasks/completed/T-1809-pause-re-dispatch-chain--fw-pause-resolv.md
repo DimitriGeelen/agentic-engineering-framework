@@ -59,7 +59,7 @@ Builds on [T-1805](T-1805), [T-1806](T-1806), [T-1807](T-1807), [T-1808](T-1808)
 ## Verification
 
 python3 -m pytest tests/unit/test_pause_resolve.py tests/unit/test_resolver.py tests/unit/test_dispatch_pause.py -q 2>&1 | tail -5
-bin/fw pause --help 2>&1 | head -3 || true
+bin/fw pause --help 2>&1 | grep -q "resolve"
 python3 -c "import sys; sys.path.insert(0, 'lib'); from pause_resolve import resolve_pause, PauseResolveError; print('ok')"
 
 ## RCA
@@ -142,19 +142,16 @@ python3 -c "import sys; sys.path.insert(0, 'lib'); from pause_resolve import res
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-04d5dec0
-- **Timestamp:** 2026-05-13T17:20:23Z
+- **Scan ID:** R-f310dedd
+- **Timestamp:** 2026-05-13T18:36:20Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 1
 
 **Verification-level findings:**
 
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
-     - evidence: `bin/fw pause --help 2>&1 | head -3 || true`
-  2. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_pause_resolve.py tests/unit/test_resolver.py tests/unit/test_dispatch_pause.py -q 2>&1 | tail -5`
-
 ### 2026-05-13T17:20:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

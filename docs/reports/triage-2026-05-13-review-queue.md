@@ -16,6 +16,23 @@
 
 **Suggested:** GO all four. Demo evidence file is the headline-mechanic capture; if the human is satisfied, they can also `fw arc close dispatch-safety --demo docs/reports/dispatch-safety-arc-demo.md` afterwards (G-062 closure).
 
+### Group A — reviewer verdicts (T-1812 pass, 2026-05-13)
+
+`fw reviewer T-XXXX` run against all 6 arc tasks (T-1805 through T-1810). Verdicts are inline on each task's `/review/T-XXXX` page.
+
+| Task | Verdict | Needs Human | Findings |
+|------|---------|-------------|----------|
+| T-1805 | **PASS** | no | none |
+| T-1806 | **PASS** | no | none |
+| T-1807 | CONCERN | no | 1 × `mock-only-integration` (heuristic, partial) |
+| T-1808 | CONCERN | no | 2 × `AC-verify-mismatch` (heuristic, narrow) + 1 × `mock-only-integration` |
+| T-1809 | CONCERN | no | 1 × `mock-only-integration` (heuristic, partial). **Previously FAIL** — `swallowed-errors` finding (`\|\| true` mask on Verification line 2) fixed in this pass (`bin/fw pause --help \| grep -q "resolve"`). |
+| T-1810 | CONCERN | no | 1 × `mock-only-integration` (heuristic, partial) |
+
+**All remaining findings are heuristic with Needs Human: no.** The `mock-only-integration` pattern fires because Verification commands run pytest against the substrate modules rather than live LLM Workers — that's deliberate (live end-to-end is human-ack territory per the demo doc's "Out of scope" section). `AC-verify-mismatch` on T-1808 fires because the heuristic looks for AC-text path strings in Verification command strings, missing that `test_dispatch_pause.py` exercises `lib/dispatch_pause.py` by convention.
+
+The human can tick Group A Human ACs leaning on these verdicts.
+
 ## Group B — orchestrator-rethink arc (9 tasks, all 0d, all targeting `/orchestrator`)
 
 **Live verification surface:** http://192.168.10.107:3000/orchestrator (HTTP 200, 97KB)

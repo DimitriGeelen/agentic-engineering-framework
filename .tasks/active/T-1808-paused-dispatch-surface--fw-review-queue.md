@@ -138,8 +138,8 @@ out=$(bin/fw watchtower url 2>/dev/null); curl -sf "${out}/approvals" -o /dev/nu
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-43244072
-- **Timestamp:** 2026-05-13T17:13:24Z
+- **Scan ID:** R-275512ee
+- **Timestamp:** 2026-05-13T18:35:12Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -156,6 +156,5 @@ out=$(bin/fw watchtower url 2>/dev/null); curl -sf "${out}/approvals" -o /dev/nu
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_dispatch_pause.py -q 2>&1 | tail -5`
-
 ### 2026-05-13T17:13:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
