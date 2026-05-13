@@ -10,16 +10,16 @@ description: >
   the 9 real vacuous-suffix cases (T-1694, T-341, T-454, T-1356, T-1360, T-415,
   T-1378, T-774, etc.).
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: ["arc:dispatch-safety", "reviewer", "static-scan", "false-positive-precision"]
-components: ["lib/reviewer/static_scan.py", "tests/unit/test_reviewer_static_scan.py"]
+components: [lib/reviewer/static_scan.py, tools/audit-swallowed-errors.py]
 related_tasks: ["T-1812", "T-1809", "T-1443"]
 created: 2026-05-13T19:53:40Z
-last_update: 2026-05-13T19:53:40Z
-date_finished: null
+last_update: 2026-05-13T19:58:53Z
+date_finished: 2026-05-13T19:58:53Z
 ---
 
 # T-1815: L-369 follow-through — reviewer detector exempt for canonical negative-assertion pattern
@@ -115,9 +115,12 @@ python3 tools/audit-swallowed-errors.py --max 11 --min 9
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-84d77faa
-- **Timestamp:** 2026-05-13T19:57:59Z
+- **Scan ID:** R-81f6cb97
+- **Timestamp:** 2026-05-13T19:58:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-13T19:58:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

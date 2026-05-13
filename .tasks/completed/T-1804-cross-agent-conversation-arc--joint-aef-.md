@@ -4,16 +4,16 @@ name: "cross-agent conversation arc — joint AEF + TermLink design (consult sub
 description: >
   Joint AEF + TermLink design for cross-agent conversation substrate. Required to unlock peer-consultation (b3) as an alternative to operator pause for Worker uncertainty resolution. Surfaced during T-1687 grilling (Q15, CONTEXT.md). TermLink owns transport (channels, events, delivery, inbox, wakeup signal); AEF owns semantics (when to consult, task-context anchoring, conversation audit, spawn-on-event bridge). Must agree the seam before either repo ships code.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [inception, arc:orchestrator-rethink, cross-repo]
 components: []
 related_tasks: []
 created: 2026-05-13T14:38:27Z
-last_update: 2026-05-13T14:39:11Z
-date_finished: null
+last_update: 2026-05-13T17:39:25Z
+date_finished: 2026-05-13T17:39:25Z
 ---
 
 # T-1804: cross-agent conversation arc — joint AEF + TermLink design (consult substrate)
@@ -78,15 +78,15 @@ Time-box: 1 session for the seam decision; 1-2 sessions for cross-repo coordinat
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -156,7 +156,13 @@ The user-chosen approach (β) from the T-1687 grilling is exactly this inception
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The substrate gap is real and load-bearing for (b3) peer-consult, which is the cheaper-than-operator-pause path for Worker uncertainty resolution. Without it, (b1) operator-pause becomes the only relief valve and is likely to collapse under load (pause-storms → operators raise threshold → effectively turns pause off → original failure mode by another route). The seam between TermLink (transport) and AEF (semantics + spawn-bridge) is stable and lets both repos ship independently after agreement.
+
+The user-chosen approach (β) from the T-1687 grilling is exactly this inception's purpose: file the inception in both repos, agree the seam in writing, then build. (α) — AEF ships unilaterally with a workaround — was rejected because it bakes in adoption of whatever workaround we built, even if the eventual TermLink primitive disagrees.
+
+**Date**: 2026-05-13T17:39:24Z
 
 ## Updates
 
@@ -171,3 +177,28 @@ The user-chosen approach (β) from the T-1687 grilling is exactly this inception
 
 ### 2026-05-13T14:39:11Z — status-update [task-update-agent]
 - **Change:** tags: +cross-repo
+
+### 2026-05-13T17:39:24Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The substrate gap is real and load-bearing for (b3) peer-consult, which is the cheaper-than-operator-pause path for Worker uncertainty resolution. Without it, (b1) operator-pause becomes the only relief valve and is likely to collapse under load (pause-storms → operators raise threshold → effectively turns pause off → original failure mode by another route). The seam between TermLink (transport) and AEF (semantics + spawn-bridge) is stable and lets both repos ship independently after agreement.
+
+The user-chosen approach (β) from the T-1687 grilling is exactly this inception's purpose: file the inception in both repos, agree the seam in writing, then build. (α) — AEF ships unilaterally with a workaround — was rejected because it bakes in adoption of whatever workaround we built, even if the eventual TermLink primitive disagrees.
+
+### 2026-05-13T17:39:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d36d6517
+- **Timestamp:** 2026-05-13T17:39:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T17:39:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

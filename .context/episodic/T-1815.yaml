@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1815: L-369 follow-through: reviewer swallowed-errors detector — exempt canonical && exit 1 || true negative assertion
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T19:58:58Z
+# ============================================================================
+
+task_id: T-1815
+task_name: "L-369 follow-through: reviewer swallowed-errors detector — exempt canonical && exit 1 || true negative assertion"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-13T19:53:40Z
+completed: 2026-05-13T19:58:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-13T21:58:47+02:00
+last_commit: 2026-05-13T21:58:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reviewer detector — exempt canonical && exit N || true negative assertion
+
+# Key outcomes
+outcomes:
+  - "Detector emits zero findings for `grep PATTERN && exit 1 || true` (canonical negative assertion)."
+  - "Detector continues to fire for bare `cmd ... || true` (T-1809 pattern)."
+  - "Detector continues to fire for `cmd >/dev/null 2>&1 || true` (T-1356 pattern)."
+  - "Unit test pins both classes: positive (exempt) and negative (still flagged)."
+  - "`python3 -m pytest tests/unit/test_reviewer_static_scan.py -q` passes (78 tests, 6 new)."
+  - "Across-corpus run shows finding count drops by ≥12 (canonical FP class eliminated); residual 11 findings cover T-1694, T-341 (x2), T-1356, T-1360, T-1378, T-415, T-454, T-774, plus T-229 (different FP class — `--no-verify` inside JSON string literal piped to a hook; out of scope for this task, candidate for future precision pass)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tools-audit-swallowed-errors.yaml"
+  - "lib/reviewer/static_scan.py"
+  - ".tasks/active/T-1815-l-369-follow-through-scrub-vacuous-verif.md"
+  - "tests/unit/test_reviewer_static_scan.py"
+  - "tools/audit-swallowed-errors.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-13T21:58:47"
+    action: "T-1815: reviewer detector — exempt canonical `&& exit N || true` negative assertion"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["arc:dispatch-safety", "reviewer", "static-scan", "false-positive-precision"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 5
+  lines_added: 265
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1815-l-369-follow-through-scrub-vacuous-verif.md
+generated_by: context-agent-hybrid

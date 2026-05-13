@@ -171,8 +171,8 @@ beyond pre-existing baseline.
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-072513d7
-- **Timestamp:** 2026-05-05T07:08:24Z
+- **Scan ID:** R-a9331065
+- **Timestamp:** 2026-05-13T18:17:16Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -182,6 +182,5 @@ beyond pre-existing baseline.
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `bats tests/unit/focus_drift_gate.bats`
-
 ### 2026-05-05T07:08:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

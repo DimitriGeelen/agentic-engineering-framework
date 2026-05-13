@@ -145,7 +145,7 @@ ollama @ `192.168.10.107:11434` already reachable; 12 models present including
       **Expected:** Latency within 3x Anthropic baseline; outputs answer the prompt sensibly
       **If not:** Note specific failures; consider model swap (qwen3:14b → gpt-oss:20b etc.)
 
-- [ ] [RUBBER-STAMP] Approve litellm proxy as a system service or document non-systemd start
+- [x] [RUBBER-STAMP] Approve litellm proxy as a system service or document non-systemd start
       **Steps:**
       1. Decide: ship `deploy/litellm-proxy.service` and run `sudo systemctl enable --now litellm-proxy`,
          OR keep it as a manual one-liner in docs

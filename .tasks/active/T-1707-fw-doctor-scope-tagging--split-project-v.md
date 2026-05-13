@@ -151,8 +151,8 @@ T-1702 allowlist (still pending) and T-1707 output (this task).
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-cb8417dc
-- **Timestamp:** 2026-05-04T16:18:12Z
+- **Scan ID:** R-77b52876
+- **Timestamp:** 2026-05-13T18:17:16Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

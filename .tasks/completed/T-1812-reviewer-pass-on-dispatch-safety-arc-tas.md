@@ -4,7 +4,7 @@ name: "reviewer-pass on dispatch-safety arc tasks — surface verdicts for human
 description: >
   reviewer-pass on dispatch-safety arc tasks — surface verdicts for human review
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:dispatch-safety, reviewer-pass, governance]
 components: [agents/reviewer]
 related_tasks: [T-1805, T-1806, T-1807, T-1808, T-1809, T-1810, T-1811, T-1443]
 created: 2026-05-13T18:34:10Z
-last_update: 2026-05-13T18:34:10Z
-date_finished: null
+last_update: 2026-05-13T18:38:44Z
+date_finished: 2026-05-13T18:38:44Z
 ---
 
 # T-1812: reviewer-pass on dispatch-safety arc tasks — surface verdicts for human review
@@ -143,3 +143,15 @@ grep -q "Group A reviewer verdict summary\|Group A — reviewer verdicts" docs/r
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1812-reviewer-pass-on-dispatch-safety-arc-tas.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-f7b465be
+- **Timestamp:** 2026-05-13T18:38:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T18:38:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

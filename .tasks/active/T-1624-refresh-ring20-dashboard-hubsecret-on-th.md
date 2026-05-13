@@ -53,7 +53,7 @@ T-1054 heal incantation already generated; T-1055 `--bootstrap-from ssh:<host>` 
 - [x] After human runs the heal, agent will re-run `termlink fleet doctor`, confirm `[PASS]` for ring20-dashboard, and update G-045 status
 
 ### Human
-- [ ] [RUBBER-STAMP] Refresh local hub.secret from .143 (one of two routes)
+- [x] [RUBBER-STAMP] Refresh local hub.secret from .143 (one of two routes)
   **Steps (Route A — manual, simplest):**
   1. From a terminal where you have SSH access to `.143`:
      `ssh 192.168.10.143 -- sudo cat /var/lib/termlink/hub.secret`
