@@ -330,6 +330,115 @@ def test_enrich_with_dispatch_recency_malformed_jsonl_skipped(coverage, tmp_path
     assert rows["wf-a"]["last_dispatch_task_id"] == "T-200"
 
 
+# ─── T-1803: flag_stale_workflows ────────────────────────────────────────────
+
+
+def test_workflow_never_dispatched_marked_stale(coverage, tmp_path):
+    """last_dispatched=None → stale; warn=True; ok unchanged."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-cold", "ollama-loop")
+
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=tmp_path / "no-such.jsonl")
+    r = wc.flag_stale_workflows(r, now_iso="2026-05-13T00:00:00+00:00")
+    assert r["ok"] is True  # still no runtime trap
+    assert r["warn"] is True
+    names = [w["name"] for w in r["stale_workflows"]]
+    assert "wf-cold" in names
+
+
+def test_workflow_dispatched_recently_not_stale(coverage, tmp_path):
+    """Dispatched 1 day ago → not stale."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-fresh", "ollama-loop")
+    d = tmp_path / "d.jsonl"
+    _write_dispatches(d, [
+        {"workflow_id": "wf-fresh", "ts": "2026-05-12T00:00:00+00:00", "task_id": "T-1"},
+    ])
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=d)
+    r = wc.flag_stale_workflows(r, now_iso="2026-05-13T00:00:00+00:00")
+    assert r["warn"] is False
+    assert r["stale_workflows"] == []
+
+
+def test_workflow_dispatched_long_ago_marked_stale(coverage, tmp_path):
+    """Dispatched 91 days ago → stale (threshold=90d default)."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-old", "ollama-loop")
+    d = tmp_path / "d.jsonl"
+    _write_dispatches(d, [
+        # 2026-05-13 minus 91d = 2026-02-11
+        {"workflow_id": "wf-old", "ts": "2026-02-11T00:00:00+00:00", "task_id": "T-1"},
+    ])
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=d)
+    r = wc.flag_stale_workflows(r, now_iso="2026-05-13T00:00:00+00:00")
+    assert r["warn"] is True
+    names = [w["name"] for w in r["stale_workflows"]]
+    assert "wf-old" in names
+
+
+def test_warn_false_when_no_stale(coverage, tmp_path):
+    """All fresh → warn=False, stale list empty."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-a", "ollama-loop")
+    _write_workflow(wf_dir, "wf-b", "TermLink")
+    d = tmp_path / "d.jsonl"
+    _write_dispatches(d, [
+        {"workflow_id": "wf-a", "ts": "2026-05-12T00:00:00+00:00", "task_id": "T-1"},
+        {"workflow_id": "wf-b", "ts": "2026-05-12T00:00:00+00:00", "task_id": "T-2"},
+    ])
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=d)
+    r = wc.flag_stale_workflows(r, now_iso="2026-05-13T00:00:00+00:00")
+    assert r["warn"] is False
+    assert r["stale_workflows"] == []
+
+
+def test_warn_does_not_override_fail(coverage, tmp_path):
+    """Workflow unroutable AND stale → ok=False, warn=False (FAIL absorbs WARN)."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-task", "Task")  # unroutable → FAIL
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=tmp_path / "no-such.jsonl")
+    r = wc.flag_stale_workflows(r, now_iso="2026-05-13T00:00:00+00:00")
+    assert r["ok"] is False
+    # The stale list may be non-empty (wf-task was never dispatched), but
+    # warn must be False because ok is False — FAIL absorbs WARN.
+    assert r["warn"] is False
+
+
+def test_threshold_configurable(coverage, tmp_path):
+    """stale_threshold_days=1 → workflows dispatched 2d ago are stale."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-a", "ollama-loop")
+    d = tmp_path / "d.jsonl"
+    _write_dispatches(d, [
+        {"workflow_id": "wf-a", "ts": "2026-05-11T00:00:00+00:00", "task_id": "T-1"},
+    ])
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=d)
+    r = wc.flag_stale_workflows(
+        r, stale_threshold_days=1, now_iso="2026-05-13T00:00:00+00:00",
+    )
+    names = [w["name"] for w in r["stale_workflows"]]
+    assert "wf-a" in names
+    assert r["warn"] is True
+
+
+def test_format_audit_line_warn_state(coverage, tmp_path):
+    """format_audit_line surfaces stale names when warn=True and ok=True."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-cold", "ollama-loop")
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=tmp_path / "no-such.jsonl")
+    r = wc.flag_stale_workflows(r, now_iso="2026-05-13T00:00:00+00:00")
+    line = wc.format_audit_line(r)
+    assert "stale workflow" in line
+    assert "wf-cold" in line
+
+
 def test_enrich_with_dispatch_recency_does_not_mutate_input(coverage, tmp_path):
     """Pure function: input report's workflows still lack last_dispatched."""
     wc, wf_dir = coverage

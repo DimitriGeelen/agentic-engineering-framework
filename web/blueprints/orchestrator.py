@@ -448,6 +448,13 @@ def _workflow_coverage() -> dict:
         report = workflow_coverage.enrich_with_dispatch_recency(report)
     except Exception:
         pass
+    # T-1803: flag stale workflows (no dispatch in 90d) as WARN. Same
+    # try/except guard — staleness is a maintenance signal, not a
+    # crash-the-panel condition.
+    try:
+        report = workflow_coverage.flag_stale_workflows(report)
+    except Exception:
+        pass
     report["available"] = True
     return report
 

@@ -87,6 +87,15 @@ def test_panel_renders_with_workflows(client):
     c, tmp_path = client
     _write_workflow(tmp_path, "wf-pi", "pi", provider="anthropic")
     _write_workflow(tmp_path, "wf-ollama", "ollama-loop")
+    # T-1803: seed recent dispatches so the panel renders OK, not WARN.
+    # (Workflows never dispatched are stale by default → WARN.)
+    import datetime, json as _json
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    dispatches = tmp_path / ".context" / "dispatches.jsonl"
+    dispatches.write_text(
+        _json.dumps({"workflow_id": "wf-pi", "ts": now, "task_id": "T-X"}) + "\n" +
+        _json.dumps({"workflow_id": "wf-ollama", "ts": now, "task_id": "T-Y"}) + "\n"
+    )
 
     rv = c.get("/orchestrator")
     assert rv.status_code == 200
@@ -96,7 +105,7 @@ def test_panel_renders_with_workflows(client):
     assert "wf-ollama" in html
     # Routable dispatcher footer
     assert "Routable dispatchers" in html
-    # OK badge when all route
+    # OK badge when all route AND no stale
     assert "OK" in html
 
 
@@ -157,6 +166,22 @@ def test_panel_renders_provider_column(client):
     # non-pi rows still render (look for ollama-loop name; the empty cell
     # contains an em-dash inside <span class="muted">)
     assert "wf-ollama" in html
+
+
+def test_panel_renders_warn_state_when_only_stale(client):
+    """T-1803: all workflows route but one never dispatched → WARN badge."""
+    c, tmp_path = client
+    _write_workflow(tmp_path, "wf-cold", "ollama-loop")  # never dispatched
+
+    rv = c.get("/orchestrator")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    # WARN badge (between OK and FAIL semantically) appears
+    assert "WARN" in html
+    # Stale workflow named in the WARN message
+    assert "stale" in html
+    # Row gets a `stale` marker
+    assert "wf-cold" in html
 
 
 def test_panel_renders_last_dispatched_column(client):

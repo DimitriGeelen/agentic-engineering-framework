@@ -31,6 +31,12 @@ WORKFLOWS_DIR = PROJECT_ROOT / ".context" / "project" / "workflows"
 DISPATCHES_JSONL = PROJECT_ROOT / ".context" / "dispatches.jsonl"
 LIB_DIR = Path(__file__).resolve().parent
 
+# T-1803: a workflow declared but not dispatched in this many days is "stale" —
+# a maintenance signal (consider deprecating), not a runtime failure. Surfaced
+# as audit WARN, not FAIL. Threshold picked as ≈ one quarter; param-injectable
+# for tests, no config plumbing until pressure (T-819 pattern).
+STALE_THRESHOLD_DAYS = 90
+
 
 def _import_dispatcher_keys() -> set:
     """Read ``_DISPATCHERS.keys()`` from ``lib.spawn`` without side effects.
@@ -145,18 +151,26 @@ def check_workflow_dispatcher_coverage(
 
 
 def format_audit_line(report: Dict[str, Any]) -> str:
-    """Compact one-line summary used by audit.sh's PASS/FAIL emitter."""
+    """Compact one-line summary used by audit.sh's PASS/WARN/FAIL emitter."""
     n_total = len(report["workflows"])
     n_unroutable = len(report["unroutable_workflows"])
     n_missing_provider = len(report.get("pi_workflows_missing_provider", []))
+    n_stale = len(report.get("stale_workflows", []))
     declarable_unroutable = report["declarable_but_unroutable"]
+    parts: list[str] = []
     if report["ok"]:
-        return (
+        ok_line = (
             f"all {n_total} workflows route to a registered dispatcher and "
             f"pi workflows declare a provider; "
             f"declarable-but-unroutable: {declarable_unroutable or 'none'}"
         )
-    parts: list[str] = []
+        # T-1803: surface stale WARN inline. WARN doesn't fail the audit,
+        # but the line itself should name them so the operator sees the
+        # signal without diffing two artefacts.
+        if report.get("warn") and n_stale:
+            stale_names = ", ".join(w["name"] for w in report["stale_workflows"])
+            return f"{ok_line}; {n_stale} stale workflow(s): {stale_names}"
+        return ok_line
     if n_unroutable:
         bad = ", ".join(
             f"{w['name']}({w['worker_kind']})"
@@ -237,6 +251,91 @@ def enrich_with_dispatch_recency(
             w["last_dispatched"] = None
             w["last_dispatch_task_id"] = None
     return enriched
+
+
+def flag_stale_workflows(
+    report: Dict[str, Any],
+    stale_threshold_days: int = STALE_THRESHOLD_DAYS,
+    now_iso: str = None,
+) -> Dict[str, Any]:
+    """Add ``stale_workflows`` list + ``warn`` boolean to the report.
+
+    A workflow is **stale** when:
+      - ``last_dispatched`` is None (never dispatched), OR
+      - ``last_dispatched`` is more than ``stale_threshold_days`` ago.
+
+    Stale is a maintenance signal ("consider deprecating"), NOT a runtime
+    failure. ``report["ok"]`` is left unchanged. The new ``warn`` boolean is
+    True iff stale workflows exist AND ``ok`` is True (a WARN doesn't override
+    a FAIL — FAIL absorbs WARN).
+
+    T-1803: surfaces declared-but-dead workflows at audit time. Use the
+    `enrich_with_dispatch_recency` output as input — this function reads
+    `last_dispatched` from each row.
+
+    Args:
+        report: A report dict (typically post-``enrich_with_dispatch_recency``).
+        stale_threshold_days: Days since last dispatch to consider stale.
+            Defaults to ``STALE_THRESHOLD_DAYS`` (90).
+        now_iso: ISO8601 string for "now" — test injection. Defaults to UTC now.
+
+    Returns:
+        A new report dict with two new fields:
+          - ``stale_workflows``: list of ``{"name", "worker_kind", "last_dispatched"}``.
+          - ``warn``: True iff stale list non-empty AND ``ok`` is True.
+    """
+    import copy
+    import datetime
+
+    if now_iso is None:
+        now = datetime.datetime.now(datetime.timezone.utc)
+    else:
+        # Accept "...Z" suffix (RFC 3339) which fromisoformat rejects pre-3.11
+        try:
+            now = datetime.datetime.fromisoformat(now_iso.replace("Z", "+00:00"))
+        except Exception:
+            now = datetime.datetime.now(datetime.timezone.utc)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=datetime.timezone.utc)
+
+    cutoff = now - datetime.timedelta(days=stale_threshold_days)
+
+    stale: list = []
+    for w in report.get("workflows", []):
+        last = w.get("last_dispatched")
+        if last is None:
+            stale.append({
+                "name": w.get("name"),
+                "worker_kind": w.get("worker_kind", ""),
+                "last_dispatched": None,
+            })
+            continue
+        try:
+            last_dt = datetime.datetime.fromisoformat(last.replace("Z", "+00:00"))
+            if last_dt.tzinfo is None:
+                last_dt = last_dt.replace(tzinfo=datetime.timezone.utc)
+        except Exception:
+            # Malformed timestamp → conservatively treat as stale (better
+            # surface a maintenance signal than hide it under a parse error).
+            stale.append({
+                "name": w.get("name"),
+                "worker_kind": w.get("worker_kind", ""),
+                "last_dispatched": last,
+            })
+            continue
+        if last_dt < cutoff:
+            stale.append({
+                "name": w.get("name"),
+                "worker_kind": w.get("worker_kind", ""),
+                "last_dispatched": last,
+            })
+
+    out = copy.deepcopy(report)
+    out["stale_workflows"] = stale
+    # WARN only when not already FAIL. FAIL absorbs WARN — the operator
+    # shouldn't see "stale" surfaced on a workflow that's already crashing.
+    out["warn"] = bool(stale) and bool(report.get("ok"))
+    return out
 
 
 if __name__ == "__main__":

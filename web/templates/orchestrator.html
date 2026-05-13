@@ -391,11 +391,7 @@
 {% if not workflow_coverage.available %}
     <p class="muted"><span class="badge badge-info">unavailable</span> Helper not importable.</p>
 {% else %}
-    {% if workflow_coverage.ok %}
-        <p><span class="badge badge-ok">OK</span>
-            All {{ workflow_coverage.workflows | length }} workflows route to a registered dispatcher
-            and pi workflows declare a provider.</p>
-    {% else %}
+    {% if not workflow_coverage.ok %}
         <p><span class="badge badge-warn">FAIL</span>
             {% if workflow_coverage.unroutable_workflows %}
                 {{ workflow_coverage.unroutable_workflows | length }} of
@@ -405,6 +401,15 @@
                 {{ workflow_coverage.pi_workflows_missing_provider | length }} pi workflow(s) missing provider.
             {% endif %}
         </p>
+    {% elif workflow_coverage.warn %}
+        <p><span class="badge badge-warn">WARN</span>
+            All {{ workflow_coverage.workflows | length }} workflows route, but
+            {{ workflow_coverage.stale_workflows | length }} workflow(s) stale
+            (no dispatch in 90d) — consider deprecating.</p>
+    {% else %}
+        <p><span class="badge badge-ok">OK</span>
+            All {{ workflow_coverage.workflows | length }} workflows route to a registered dispatcher
+            and pi workflows declare a provider.</p>
     {% endif %}
     <table>
         <thead>
@@ -433,14 +438,17 @@
                     <span class="badge badge-warn">no</span>
                 {% endif %}
                 </td>
+                {% set is_stale = workflow_coverage.stale_workflows and (w.name in (workflow_coverage.stale_workflows | map(attribute='name') | list)) %}
                 <td>
                 {% if w.last_dispatched %}
                     <code>{{ w.last_dispatched[:10] }}</code>
                     {% if w.last_dispatch_task_id %}
                         (<a href="/tasks/{{ w.last_dispatch_task_id }}"><code>{{ w.last_dispatch_task_id }}</code></a>)
                     {% endif %}
+                    {% if is_stale %}<span class="badge badge-warn">stale</span>{% endif %}
                 {% else %}
                     <span class="muted">never</span>
+                    {% if is_stale %}<span class="badge badge-warn">stale</span>{% endif %}
                 {% endif %}
                 </td>
             </tr>

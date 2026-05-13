@@ -3322,22 +3322,40 @@ fi
 # declared worker_kind against lib/spawn._DISPATCHERS.keys().
 COVERAGE_HELPER="$FRAMEWORK_ROOT/lib/workflow_coverage.py"
 if [ -f "$COVERAGE_HELPER" ]; then
+    # T-1803: extend with recency + stale flag. Exit codes:
+    #   0 = PASS (ok and not warn)
+    #   1 = FAIL (not ok — unroutable or missing-provider)
+    #   2 = WARN (ok but stale)
     COVERAGE_OUT=$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
 import sys
 sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
 import workflow_coverage
 r = workflow_coverage.check_workflow_dispatcher_coverage()
+r = workflow_coverage.enrich_with_dispatch_recency(r)
+r = workflow_coverage.flag_stale_workflows(r)
 print(workflow_coverage.format_audit_line(r))
-sys.exit(0 if r['ok'] else 1)
+if not r['ok']:
+    sys.exit(1)
+if r.get('warn'):
+    sys.exit(2)
+sys.exit(0)
 " 2>&1)
     COVERAGE_RC=$?
-    if [ "$COVERAGE_RC" = "0" ]; then
-        pass "Workflow dispatcher coverage: $COVERAGE_OUT"
-    else
-        fail "Workflow dispatcher coverage: $COVERAGE_OUT" \
-             "Workflow declares worker_kind without a spawn handler — runtime NotImplementedError trap" \
-             "Either add a handler to lib/spawn._DISPATCHERS, or change the workflow's worker_kind to a routable one (pi, ollama-loop, TermLink)"
-    fi
+    case "$COVERAGE_RC" in
+        0)
+            pass "Workflow dispatcher coverage: $COVERAGE_OUT"
+            ;;
+        2)
+            warn "Workflow dispatcher coverage: $COVERAGE_OUT" \
+                 "Workflows declared but not recently dispatched — consider deprecating" \
+                 "Run: bin/fw resolver workflows ; review which workflows are still relevant"
+            ;;
+        *)
+            fail "Workflow dispatcher coverage: $COVERAGE_OUT" \
+                 "Workflow declares worker_kind without a spawn handler — runtime NotImplementedError trap" \
+                 "Either add a handler to lib/spawn._DISPATCHERS, or change the workflow's worker_kind to a routable one (pi, ollama-loop, TermLink)"
+            ;;
+    esac
 fi
 
 echo ""
