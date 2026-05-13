@@ -849,3 +849,10 @@ decisions:
     date: 2026-05-13
     task: T-1809
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-124
+    decision: "File T-1818 (framework) + TermLink-side T-1636 as paired build tasks; both shipped under the v2 peer-consult slice 1 scope."
+    scope: project
+    date: 2026-05-13
+    task: T-1818
+    rationale: "Auto-captured from task file on completion"

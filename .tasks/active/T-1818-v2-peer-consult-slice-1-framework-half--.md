@@ -4,16 +4,16 @@ name: "v2 peer-consult slice 1 framework-half — inbox.queued event subscriber 
 description: >
   v2 peer-consult slice 1 framework-half — inbox.queued event subscriber + responder spawn-bridge (T-1804 cross-repo joint with TermLink T-243)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: ["arc:orchestrator-rethink", "cross-repo", "termlink", "peer-consult"]
-components: []
+components: [bin/fw, lib/peer.py, tests/unit/test_peer_subscribe.py]
 related_tasks: ["T-1804", "T-1797"]
 created: 2026-05-13T21:30:35Z
-last_update: 2026-05-13T21:30:35Z
-date_finished: null
+last_update: 2026-05-13T22:25:05Z
+date_finished: 2026-05-13T22:25:05Z
 ---
 
 # T-1818: v2 peer-consult slice 1 framework-half — inbox.queued event subscriber + responder spawn-bridge (T-1804 cross-repo joint with TermLink T-243)
@@ -186,8 +186,8 @@ bin/fw reviewer T-1818 2>&1 | grep -q "Overall:.*PASS"
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-f621a362
-- **Timestamp:** 2026-05-13T22:24:27Z
+- **Scan ID:** R-6e89aa6f
+- **Timestamp:** 2026-05-13T22:25:06Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -202,3 +202,6 @@ bin/fw reviewer T-1818 2>&1 | grep -q "Overall:.*PASS"
 - **Suppressed:** 2 (by override)
   - AC-verify-mismatch @ AC#3 (Agent)
   - AC-verify-mismatch @ AC#4 (Agent)
+
+### 2026-05-13T22:25:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
