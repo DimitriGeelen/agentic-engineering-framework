@@ -71,7 +71,7 @@ T-1713 GO decision frames work as three internal spikes (parser, comparison, ins
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 #
 # Toolchain hint (L-291): bash + bats only.
-bash -n lib/update-task.sh
+bash -n agents/task-create/update-task.sh
 test -f lib/task_pair_acd.sh && bash -n lib/task_pair_acd.sh
 bin/fw test bats tests/unit/test_task_pair_acd_parser.bats
 bin/fw test bats tests/unit/test_task_pair_acd_gate.bats
