@@ -1,0 +1,40 @@
+# v2 peer-consult responder map — consumed by lib/peer.py
+#
+# Each entry: a top-level key (display name in logs/spawns) and indented
+# scalar fields. Resolution precedence (in lib/peer.py:resolve_addressee):
+#   1. explicit addressee_session_id match (cfg.addressee == event.addressee)
+#   2. channel-prefix match (event.channel.startswith(cfg.channel))
+# First match wins — order entries from most-specific to most-general.
+#
+# Fields per entry:
+#   workflow  — path or label of the responder workflow (free-text; passed in
+#               preamble to the spawned TermLink worker)
+#   name      — short slug (used in spawned session name: peer-<name>)
+#   addressee — exact session id to match (optional)
+#   channel   — channel prefix to match (optional)
+# At least one of addressee/channel is required for the entry to match.
+
+# --- specific channel routes (design / escalation / triage) ---
+
+design-consult:
+  channel: dm:design-
+  workflow: workflows/design-dialogue.yaml
+  name: design-consult
+
+escalation-triage:
+  channel: dm:escalate-
+  workflow: workflows/escalation-triage.yaml
+  name: escalation-triage
+
+prompt-triage:
+  channel: dm:triage-
+  workflow: workflows/prompt-triage.yaml
+  name: prompt-triage
+
+# --- broad fallback (catches any DM not handled above) ---
+# Place last: channel matches use startswith, and "dm:" is the broadest prefix.
+
+dm-fallback:
+  channel: 'dm:'
+  workflow: workflows/cheap-research.yaml
+  name: dm-fallback

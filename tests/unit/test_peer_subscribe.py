@@ -231,6 +231,33 @@ def test_load_prompts_handles_missing_file(tmp_path):
     assert peer._load_prompts() == {}
 
 
+def test_load_prompts_reads_shipped_seed_from_disk(tmp_path):
+    """T-1819 pin: the shipped .context/peer-consult-prompts.yaml must parse
+    to a non-empty map where every entry has workflow + name + at least one
+    of addressee/channel. Catches accidental deletion / shape regression."""
+    os.environ["PROJECT_ROOT"] = str(REPO_ROOT)
+    spec = importlib.util.spec_from_file_location(
+        "peer_real_repo", REPO_ROOT / "lib" / "peer.py",
+    )
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    assert spec.loader is not None
+    spec.loader.exec_module(mod)
+    prompts = mod._load_prompts()
+    assert prompts, "shipped seed map is empty"
+    for key, cfg in prompts.items():
+        assert "workflow" in cfg, f"{key} missing workflow"
+        assert "name" in cfg, f"{key} missing name"
+        assert cfg.get("addressee") or cfg.get("channel"), (
+            f"{key} matches nothing (no addressee, no channel)"
+        )
+    # Sanity: a dm: channel resolves to something (fallback or specific).
+    workflow, name = mod.resolve_addressee(
+        {"addressee_session_id": "", "channel": "dm:random"}, prompts,
+    )
+    assert workflow and name, "dm:* channel did not resolve — fallback missing"
+
+
 def test_cursor_persists_across_runs(tmp_path):
     peer = _load_peer_module(tmp_path)
     peer._write_cursor("tl-hub", 42)
