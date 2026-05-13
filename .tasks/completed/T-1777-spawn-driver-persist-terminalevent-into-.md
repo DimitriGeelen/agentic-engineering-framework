@@ -4,16 +4,16 @@ name: "spawn driver: persist terminal_event into dispatches.jsonl outcome row fo
 description: >
   spawn driver: persist terminal_event into dispatches.jsonl outcome row for one-shot forensics
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, spawn, observability]
-components: []
+components: [bin/fw, lib/outcome.py, lib/resolver.py, lib/spawn.py, tests/unit/test_orchestrator_status_terminal_events.py, tests/unit/test_outcome.py, tests/unit/test_resolver_run.py, tests/unit/test_spawn.py]
 related_tasks: [T-1773, T-1775]
 created: 2026-05-09T21:25:53Z
-last_update: 2026-05-09T21:25:53Z
-date_finished: null
+last_update: 2026-05-13T21:09:52Z
+date_finished: 2026-05-13T21:09:52Z
 ---
 
 # T-1777: spawn driver: persist terminal_event into dispatches.jsonl outcome row for one-shot forensics
@@ -149,3 +149,15 @@ python3 -m pytest tests/unit/test_spawn.py tests/unit/test_resolver_run.py tests
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1777-spawn-driver-persist-terminalevent-into-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d99513fe
+- **Timestamp:** 2026-05-13T21:09:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T21:09:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
