@@ -814,3 +814,17 @@ decisions:
     date: 2026-05-13
     task: T-1807
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-119
+    decision: "Sort by ts descending (newest first) in both CLI and web."
+    scope: project
+    date: 2026-05-13
+    task: T-1808
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-120
+    decision: "Distinct \"Paused Dispatches\" section on `/approvals`, between Decisions (Tier-0 + GO/NO-GO) and Verifications (Human ACs). Distinct stat card in the summary bar (only when count > 0)."
+    scope: project
+    date: 2026-05-13
+    task: T-1808
+    rationale: "Auto-captured from task file on completion"

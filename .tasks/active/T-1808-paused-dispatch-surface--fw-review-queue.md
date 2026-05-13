@@ -4,16 +4,16 @@ name: "Paused-dispatch surface — fw review-queue + Watchtower /approvals (disp
 description: >
   Paused-dispatch surface — fw review-queue + Watchtower /approvals (dispatch-safety slice 4)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:dispatch-safety, slice-4]
-components: [lib/dispatch_pause.py, bin/fw, web/blueprints/approvals.py, web/templates/approvals.html, tests/unit/test_dispatch_pause.py]
+components: [bin/fw, lib/dispatch_pause.py, tests/unit/test_dispatch_pause.py, web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: [T-1805, T-1806, T-1807]
 created: 2026-05-13T16:04:06Z
-last_update: 2026-05-13T16:04:06Z
-date_finished: null
+last_update: 2026-05-13T17:13:22Z
+date_finished: 2026-05-13T17:13:22Z
 ---
 
 # T-1808: Paused-dispatch surface — fw review-queue + Watchtower /approvals (dispatch-safety slice 4)
@@ -135,3 +135,27 @@ out=$(bin/fw watchtower url 2>/dev/null); curl -sf "${out}/approvals" -o /dev/nu
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1808-paused-dispatch-surface--fw-review-queue.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-43244072
+- **Timestamp:** 2026-05-13T17:13:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/dispatch_pause.py` (new) exposes `list_paused_dispatches() -> List[Dict]`. Scans `.context/dispatches.jsonl` for rows where `outcome == "paused"`. For each, returns: dispatch_id, task_id, ts, age
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatches.jsonl in: `lib/dispatch_pause.py` (new) exposes `list_paused_dispatches() -> List[Dict]`. Scans `.context/dispatches.jsonl` for rows where `outcome == "paused"``
+- **AC#5 (Agent)** — `_build_approvals_context` in `web/blueprints/approvals.py` includes `paused_dispatches` (list) and `paused_count` (int) in its return dict. Total approval count includes paused_count.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/approvals.py in: `_build_approvals_context` in `web/blueprints/approvals.py` includes `paused_dispatches` (list) and `paused_count` (int) in its return dict. Total app`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_dispatch_pause.py -q 2>&1 | tail -5`
+
+### 2026-05-13T17:13:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

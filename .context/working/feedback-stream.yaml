@@ -6197,3 +6197,20 @@ scan_id: R-a4b1af95
 task_id: T-1807
 payload:
   task_file: .tasks/active/T-1807-workflow-schema-lint--pausethreshold-all.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T17:13:24Z'
+scan_id: R-43244072
+task_id: T-1808
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T17:13:24Z'
+scan_id: R-43244072
+task_id: T-1808
+payload:
+  task_file: .tasks/active/T-1808-paused-dispatch-surface--fw-review-queue.md
