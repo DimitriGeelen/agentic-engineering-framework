@@ -6877,3 +6877,20 @@ scan_id: R-451c0670
 task_id: T-1774
 payload:
   task_file: .tasks/active/T-1774-fw-resolver-run-cli-integration-of-spawn.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T21:20:31Z'
+scan_id: R-f1a58ffe
+task_id: T-1775
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T21:20:31Z'
+scan_id: R-f1a58ffe
+task_id: T-1775
+payload:
+  task_file: .tasks/active/T-1775-libollamalooppy--claude--p-worker-primit.md
