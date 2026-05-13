@@ -4,16 +4,16 @@ name: "Resolver risk-policy preamble injection (dispatch-safety slice 2)"
 description: >
   Resolver risk-policy preamble injection (dispatch-safety slice 2)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:dispatch-safety, slice-2]
-components: []
+components: [lib/resolver.py, tests/unit/test_resolver.py]
 related_tasks: []
 created: 2026-05-13T15:09:44Z
-last_update: 2026-05-13T15:13:40Z
-date_finished: null
+last_update: 2026-05-13T15:15:11Z
+date_finished: 2026-05-13T15:15:11Z
 ---
 
 # T-1806: Resolver risk-policy preamble injection (dispatch-safety slice 2)
@@ -134,3 +134,15 @@ python3 -c "import sys; sys.path.insert(0, 'lib'); from resolver import _risk_po
 
 ### 2026-05-13T15:13:40Z — status-update [task-update-agent]
 - **Change:** tags: +slice-2
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a9776d9f
+- **Timestamp:** 2026-05-13T15:15:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T15:15:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
