@@ -77,6 +77,10 @@ event fire + addressee resolution + responder spawn; (4) capture demo artefact.
 
 test -f docs/reports/T-1820-joint-smoke-demo.md
 grep -q "T-1636" docs/reports/T-1820-joint-smoke-demo.md
+# Live-smoke evidence: demo doc must have no placeholders left (live transcript filled in)
+! grep -q "WORKER-FILL\|POST-SMOKE" docs/reports/T-1820-joint-smoke-demo.md
+# Cross-repo commit captured: a TermLink-side commit hash must appear in the trail
+grep -qE '\| termlink +\| T-1636 +\| `[0-9a-f]{7,}`' docs/reports/T-1820-joint-smoke-demo.md
 python3 -m pytest tests/unit/test_peer_subscribe.py -q
 bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 
@@ -131,3 +135,19 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 ### 2026-05-13T23:12:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-01856120
+- **Timestamp:** 2026-05-13T23:25:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-repo`
+
+- **Suppressed:** 1 (by override)
+  - mock-only-integration @ AC vs Verification cross-check
