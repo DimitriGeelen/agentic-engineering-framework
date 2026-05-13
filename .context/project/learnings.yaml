@@ -2872,3 +2872,10 @@ X'` returning empty group."
   date: 2026-05-13
   context: Added via context agent
   application: TBD
+- id: L-373
+  learning: "fw termlink dispatch --timeout defaults to 600s (TERMLINK_WORKER_TIMEOUT). That ceiling is right for quick research / single-file edits but kills real Rust/multi-file builds mid-read. When dispatching task_type=build, pass --timeout 5400 (90min) or higher, AND pick --model sonnet for non-trivial implementation work. Evidence: T-1820 first dispatch killed mid-Rust-read at 211KB into result.jsonl (would have built within 22min wall once unblocked, but the 600s ceiling pre-empts it). Followup candidate: workflow-driven timeout per task_type so the default matches reality."
+  source: P-009
+  task: T-1820
+  date: 2026-05-13
+  context: Added via context agent
+  application: TBD
