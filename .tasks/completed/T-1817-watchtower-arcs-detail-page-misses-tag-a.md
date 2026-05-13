@@ -4,16 +4,16 @@ name: "Watchtower /arcs detail page misses tag-anchored tasks — _resolve_const
 description: >
   Watchtower /arcs detail page misses tag-anchored tasks — _resolve_constituents has no tag-based fallback (T-1813 web-sibling)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: ["arc:dispatch-safety", "bug", "watchtower", "data-source-drift"]
-components: ["web/blueprints/arcs.py", "tests/unit/test_arcs_routes.py"]
+components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py]
 related_tasks: ["T-1813", "T-1816"]
 created: 2026-05-13T20:46:24Z
-last_update: 2026-05-13T20:46:24Z
-date_finished: null
+last_update: 2026-05-13T20:52:36Z
+date_finished: 2026-05-13T20:52:36Z
 ---
 
 # T-1817: Watchtower /arcs detail page misses tag-anchored tasks — _resolve_constituents has no tag-based fallback (T-1813 web-sibling)
@@ -51,8 +51,8 @@ This is dispatch-safety arc closure-readiness sustainment: T-1816 made the page 
 
 ## Verification
 
-# Unit test pins merge behaviour
-pytest -q tests/unit/test_arcs_routes.py
+# Unit test pins merge behaviour (python3 -m for sys.path = CWD)
+python3 -m pytest -q tests/unit/test_arcs_routes.py
 # Live page renders all tag-anchored substrate tasks
 curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" -o /tmp/t1817-detail.html
 python3 -c "import re,sys; html=open('/tmp/t1817-detail.html').read(); tids=set(re.findall(r'/tasks/(T-\\d{3,5})', html)); needed={'T-1805','T-1806','T-1807','T-1808','T-1809','T-1810','T-1812','T-1813','T-1815','T-1816'}; missing=needed-tids; sys.exit(0 if not missing else (print(f'missing: {missing}'), 1)[1])"
@@ -116,9 +116,12 @@ bin/fw reviewer T-1817 2>&1 | grep -q "Overall:.*PASS"
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-dd4a54ac
-- **Timestamp:** 2026-05-13T20:51:12Z
+- **Scan ID:** R-56bb8181
+- **Timestamp:** 2026-05-13T20:52:43Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-13T20:52:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
