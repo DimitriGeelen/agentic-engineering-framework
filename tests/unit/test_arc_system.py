@@ -74,7 +74,14 @@ def test_arc_help_lists_all_verbs(project):
 
 
 def test_arc_create_writes_yaml_with_required_fields(project):
-    """D2 — `arc create` writes a YAML with id/name/status/anchor/created."""
+    """D2 — `arc create` writes a YAML with id/name/status/anchor/created.
+
+    T-1816: name/description/headline_mechanic are now yaml-safe-quoted, so we
+    parse the YAML and check structural fields rather than substring-matching
+    the raw text.
+    """
+    import yaml
+
     r = _run(
         [str(FW), "arc", "create", "test-arc", "--name", "Test arc", "--anchor", "T-1641",
          "--headline-mechanic", "user runs fw work-on and sees the test arc complete"],
@@ -83,10 +90,37 @@ def test_arc_create_writes_yaml_with_required_fields(project):
     assert r.returncode == 0, r.stderr + r.stdout
     arc_file = project / ".context" / "arcs" / "test-arc.yaml"
     assert arc_file.is_file(), "arc YAML not written"
-    text = arc_file.read_text()
-    for field in ("id: test-arc", "name: Test arc", "status: in-progress",
-                  "anchor_task: T-1641", "constituent_tasks: []", "created:"):
-        assert field in text, f"missing field/value '{field}' in arc yaml:\n{text}"
+    data = yaml.safe_load(arc_file.read_text())
+    assert data["id"] == "test-arc"
+    assert data["name"] == "Test arc"
+    assert data["status"] == "in-progress"
+    assert data["anchor_task"] == "T-1641"
+    assert data["constituent_tasks"] == []
+    assert "created" in data
+
+
+def test_arc_create_yaml_safe_with_colons_in_name(project):
+    """T-1816: arc YAML must parse cleanly when name/description contain colons.
+
+    Origin: dispatch-safety.yaml shipped with `name: Dispatch safety: Worker
+    uncertainty handling` — the unquoted colon caused yaml.safe_load to fail,
+    which 404'd Watchtower /arcs/dispatch-safety AND silently excluded the
+    arc from the /arcs list page.
+    """
+    import yaml
+
+    r = _run(
+        [str(FW), "arc", "create", "ds-test",
+         "--name", "Foo: a colon test",
+         "--description", "Desc: with colon # and hash -> and arrow",
+         "--headline-mechanic", "user observes that arc yaml with colons in name and description parses cleanly via yaml.safe_load"],
+        cwd=project,
+    )
+    assert r.returncode == 0, r.stderr + r.stdout
+    arc_file = project / ".context" / "arcs" / "ds-test.yaml"
+    data = yaml.safe_load(arc_file.read_text())
+    assert data["name"] == "Foo: a colon test"
+    assert data["description"] == "Desc: with colon # and hash -> and arrow"
 
 
 def test_arc_create_rejects_invalid_id(project):

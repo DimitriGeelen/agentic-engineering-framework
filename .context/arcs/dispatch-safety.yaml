@@ -1,0 +1,15 @@
+id: dispatch-safety
+name: "Dispatch safety: Worker uncertainty handling"
+description: v1 pause-to-operator + risk-policy preamble; v2 peer-consult (via T-1804). Workers safely handle mid-dispatch ambiguity by pausing on severity x likelihood threshold, exiting cleanly, and re-dispatching after operator resolution.
+status: in-progress
+anchor_task: 
+constituent_tasks: []
+headline_mechanic: "Agent dispatches a Worker; Worker hits an ambiguity whose severity x likelihood crosses\
+  \ the workflow pause_threshold; Worker emits pause_requested with question + risk\
+  \ assessment; Worker exits cleanly; operator sees [PAUSE] in Watchtower review queue;\
+  \ operator answers; Agent re-dispatches with resolution context linked via retry_of_dispatch_id;\
+  \ Worker completes correctly first-try"
+demo_evidence: null
+created: 2026-05-13T15:01:42Z
+closed_at: null
+decision: null

@@ -546,13 +546,19 @@ else
          "Rename one of each pair: edit filename AND 'id:' frontmatter to a fresh T-NNNN"
 fi
 
-# Validate all project YAML files parse correctly (T-207 regression test)
+# Validate all project YAML files parse correctly (T-207 regression test).
+# T-1816: extended to .context/arcs/ — broken arc YAML silently 404s the
+# /arcs/<id> page AND silently excludes the arc from the /arcs list page
+# (try/except in web/blueprints/arcs.py:_list_arcs swallows the parse error).
 yaml_fail_count=0
 yaml_pass_count=0
-for yf in "$PROJECT_ROOT/.context/project/"*.yaml; do
-    [ -f "$yf" ] || continue
-    yf_name=$(basename "$yf")
-    parse_err=$(python3 -c "
+for yaml_dir in "$PROJECT_ROOT/.context/project" "$PROJECT_ROOT/.context/arcs"; do
+    [ -d "$yaml_dir" ] || continue
+    for yf in "$yaml_dir"/*.yaml; do
+        [ -f "$yf" ] || continue
+        yf_name=$(basename "$yf")
+        yf_rel="${yf#$PROJECT_ROOT/}"
+        parse_err=$(python3 -c "
 import yaml, sys
 try:
     with open('$yf') as f:
@@ -564,15 +570,16 @@ try:
 except yaml.YAMLError as e:
     print(str(e).split(chr(10))[0]); sys.exit(1)
 " 2>&1)
-    # shellcheck disable=SC2181 # $? needed: parse_err captures output, exit code checked separately
-    if [ $? -eq 0 ]; then
-        yaml_pass_count=$((yaml_pass_count + 1))
-    else
-        yaml_fail_count=$((yaml_fail_count + 1))
-        fail "YAML parse error: $yf_name" \
-             "$parse_err" \
-             "Fix the YAML syntax in .context/project/$yf_name"
-    fi
+        # shellcheck disable=SC2181 # $? needed: parse_err captures output, exit code checked separately
+        if [ $? -eq 0 ]; then
+            yaml_pass_count=$((yaml_pass_count + 1))
+        else
+            yaml_fail_count=$((yaml_fail_count + 1))
+            fail "YAML parse error: $yf_name" \
+                 "$parse_err" \
+                 "Fix the YAML syntax in $yf_rel (quote values containing ':' or '#')"
+        fi
+    done
 done
 if [ "$yaml_fail_count" -eq 0 ] && [ "$yaml_pass_count" -gt 0 ]; then
     pass "All $yaml_pass_count project YAML files parse correctly"
