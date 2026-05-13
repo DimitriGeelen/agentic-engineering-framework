@@ -4,16 +4,16 @@ name: "Workflow coverage panel: per-workflow last-dispatch timestamp — surface
 description: >
   Workflow coverage panel: per-workflow last-dispatch timestamp — surface deprecation candidates (T-1799 follow-up)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:orchestrator-rethink, web, observability]
-components: [lib/workflow_coverage.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html, tests/unit/test_workflow_coverage.py, tests/unit/test_orchestrator_workflow_coverage.py]
+components: [lib/workflow_coverage.py, tests/unit/test_orchestrator_workflow_coverage.py, tests/unit/test_workflow_coverage.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: [T-1776, T-1797, T-1798, T-1799, T-1800, T-1801]
 created: 2026-05-13T06:35:00Z
-last_update: 2026-05-13T06:35:00Z
-date_finished: null
+last_update: 2026-05-13T06:35:51Z
+date_finished: 2026-05-13T06:35:51Z
 ---
 
 # T-1802: Workflow coverage panel: per-workflow last-dispatch timestamp — surface deprecation candidates (T-1799 follow-up)
@@ -118,3 +118,27 @@ Pure helper extension (`enrich_with_dispatch_recency`) keeps the audit-time chec
 ### 2026-05-13T06:35:00Z — task-created
 - **Action:** Created task
 - **Context:** Natural follow-up named in T-1799 Evolution + T-1801 Evolution; 5 of 8 declared workflows never dispatched on the live substrate.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-8fa230a2
+- **Timestamp:** 2026-05-13T06:35:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Reads `.context/dispatches.jsonl` (or supplied path), parses each line as JSON, groups by `workflow_id`, takes max `ts` per workflow.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatches.jsonl in: Reads `.context/dispatches.jsonl` (or supplied path), parses each line as JSON, groups by `workflow_id`, takes max `ts` per workflow.`
+- **AC#6 (Agent)** — `web/blueprints/orchestrator.py:_workflow_coverage()` calls `enrich_with_dispatch_recency(report)` after `check_workflow_dispatcher_coverage()`. If the enrich helper raises, the call is wrapped in try
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/orchestrator.py in: `web/blueprints/orchestrator.py:_workflow_coverage()` calls `enrich_with_dispatch_recency(report)` after `check_workflow_dispatcher_coverage()`. If th`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_workflow_coverage.py tests/unit/test_orchestrator_workflow_coverage.py -v`
+
+### 2026-05-13T06:35:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
