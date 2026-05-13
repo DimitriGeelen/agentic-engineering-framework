@@ -819,6 +819,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 - `fw task review T-XXX` — hand a task to the human via Watchtower (T-679, MANDATORY for human approvals)
 - `fw review-queue` — list active tasks awaiting human review, sorted GO-first (T-1536, CLI companion to /approvals)
 - `fw verify-acs [T-XXX] [--auto-check|--execute]` — check Human ACs
+- `fw pause list` / `fw pause resolve <dispatch_id> --answer "..."` — paused-dispatch chain (dispatch-safety arc slice 5: operator answers worker's `pause_requested`, retry envelope linked via `retry_of_dispatch_id`)
 
 **Inceptions and decisions:**
 - `fw inception start "name"` / `fw inception status` / `fw inception decide T-XXX go|no-go|defer --rationale "..."`
