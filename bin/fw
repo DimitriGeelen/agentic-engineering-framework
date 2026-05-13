@@ -4476,7 +4476,16 @@ for f in sorted(ACTIVE.glob("*.md")):
     verdict = extract_recommendation_state(text)
     rows.append((verdict, age_days, tid_v, name, unchecked))
 
-if not rows and not decision_rows:
+# T-1808: PAUSED section — workers awaiting operator resolution (dispatch-safety slice 4).
+paused_rows = []
+try:
+    sys.path.insert(0, str(ROOT / "lib"))
+    from dispatch_pause import list_paused_dispatches, format_age, truncate as _trunc
+    paused_rows = list_paused_dispatches(ROOT)
+except Exception:
+    paused_rows = []
+
+if not rows and not decision_rows and not paused_rows:
     print("No tasks awaiting human review.")
     sys.exit(0)
 
@@ -4505,6 +4514,21 @@ if decision_rows:
         print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
     print()
 
+# T-1808: PAUSED dispatches — Workers exited with pause_requested, awaiting answer.
+# Sits between DECISIONS and VERDICT (same urgency tier — blocks further work on that task).
+if paused_rows:
+    print(f"\033[1mPAUSED — Workers awaiting resolution ({len(paused_rows)})\033[0m")
+    print(f"\033[1m{'AGE':>5}  {'DISPATCH':<10}  {'TASK':<8}  QUESTION\033[0m")
+    for pr in paused_rows:
+        age_label = format_age(pr["age_seconds"])
+        did_short = (pr["dispatch_id"][:8] + "..") if len(pr["dispatch_id"]) > 8 else pr["dispatch_id"]
+        q = _trunc(pr["question"] or "(no question)", 60)
+        sev = pr["severity"] or "?"
+        # severity color: high=red, medium=yellow, low=grey
+        sev_col = {"high": "\033[31m", "medium": "\033[33m", "low": "\033[90m"}.get(sev, "\033[90m")
+        print(f"\033[36m{age_label:>5}\033[0m  {did_short:<10}  {pr['task_id']:<8}  {sev_col}[{sev}]\033[0m {q}")
+    print()
+
 if rows:
     print(f"\033[1mVERDICT — Human ACs awaiting verification ({len(rows)})\033[0m")
     print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
@@ -4523,10 +4547,11 @@ if defer: parts.append(f"\033[33m{defer} DEFER\033[0m")
 if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
 if unk: parts.append(f"\033[90m{unk} ?\033[0m")
 if no_rec: parts.append(f"\033[36m{no_rec} NO-REC\033[0m")
-total = len(rows) + len(decision_rows)
+total = len(rows) + len(decision_rows) + len(paused_rows)
 verif_only = f"{len(rows)} task(s) awaiting human review" if rows else ""
 dec_only = f"{len(decision_rows)} pending decision(s)" if decision_rows else ""
-summary = " · ".join(s for s in (dec_only, verif_only) if s)
+paused_only = f"{len(paused_rows)} paused dispatch(es)" if paused_rows else ""
+summary = " · ".join(s for s in (dec_only, paused_only, verif_only) if s)
 if parts:
     print(f"\n\033[2m{summary}\033[0m  ({' / '.join(parts)})")
 elif summary:
