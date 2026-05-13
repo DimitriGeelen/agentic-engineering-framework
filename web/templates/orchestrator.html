@@ -393,21 +393,37 @@
 {% else %}
     {% if workflow_coverage.ok %}
         <p><span class="badge badge-ok">OK</span>
-            All {{ workflow_coverage.workflows | length }} workflows route to a registered dispatcher.</p>
+            All {{ workflow_coverage.workflows | length }} workflows route to a registered dispatcher
+            and pi workflows declare a provider.</p>
     {% else %}
         <p><span class="badge badge-warn">FAIL</span>
-            {{ workflow_coverage.unroutable_workflows | length }} of
-            {{ workflow_coverage.workflows | length }} workflows declare an unroutable worker_kind.</p>
+            {% if workflow_coverage.unroutable_workflows %}
+                {{ workflow_coverage.unroutable_workflows | length }} of
+                {{ workflow_coverage.workflows | length }} workflows declare an unroutable worker_kind.
+            {% endif %}
+            {% if workflow_coverage.pi_workflows_missing_provider %}
+                {{ workflow_coverage.pi_workflows_missing_provider | length }} pi workflow(s) missing provider.
+            {% endif %}
+        </p>
     {% endif %}
     <table>
         <thead>
-            <tr><th>Workflow</th><th>worker_kind</th><th>Routable</th></tr>
+            <tr><th>Workflow</th><th>worker_kind</th><th>provider</th><th>Routable</th></tr>
         </thead>
         <tbody>
         {% for w in workflow_coverage.workflows %}
             <tr>
                 <td><code>{{ w.name }}</code></td>
                 <td>{% if w.worker_kind %}<code>{{ w.worker_kind }}</code>{% else %}<span class="muted">— (interactive)</span>{% endif %}</td>
+                <td>
+                {% if w.provider %}
+                    <code>{{ w.provider }}</code>
+                {% elif w.worker_kind == "pi" %}
+                    <span class="badge badge-warn">missing</span>
+                {% else %}
+                    <span class="muted">—</span>
+                {% endif %}
+                </td>
                 <td>
                 {% if not w.worker_kind %}
                     <span class="muted">n/a</span>
@@ -432,6 +448,14 @@
             none.
         {% endif %}
     </p>
+    {% if workflow_coverage.pi_workflows_missing_provider %}
+    <p class="muted">
+        Missing provider:
+        <code>{{ workflow_coverage.pi_workflows_missing_provider | map(attribute='name') | join(', ') }}</code>
+        (pi workflows without a <code>provider</code> field — <code>lib/spawn._spawn_pi</code> raises
+        <code>SpawnError</code> at runtime; T-1800 surfaces it at audit time).
+    </p>
+    {% endif %}
 {% endif %}
 
 <!-- Learned routing panel (T-1669 Step 3) -->

@@ -135,3 +135,46 @@ def test_panel_shows_declarable_but_unroutable_set(client):
     assert "Declarable but unroutable" in html
     # Today the set is {Task}; the test asserts the label is there but
     # doesn't hardcode Task — if the set changes, the label still renders.
+
+
+# ─── T-1801: provider column + missing-provider class ───────────────────────
+
+
+def test_panel_renders_provider_column(client):
+    """4th column header `provider` exists; pi rows render provider value;
+    non-pi rows render `—` (em-dash for empty)."""
+    c, tmp_path = client
+    _write_workflow(tmp_path, "wf-pi", "pi", provider="anthropic")
+    _write_workflow(tmp_path, "wf-ollama", "ollama-loop")  # no provider — fine
+
+    rv = c.get("/orchestrator")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    # 4th column header
+    assert "<th>provider</th>" in html
+    # pi row shows provider value
+    assert "anthropic" in html
+    # non-pi rows still render (look for ollama-loop name; the empty cell
+    # contains an em-dash inside <span class="muted">)
+    assert "wf-ollama" in html
+
+
+def test_panel_flags_pi_missing_provider(client):
+    """Pi workflow without provider → FAIL badge + missing-provider footer
+    line + row-level warn marker."""
+    c, tmp_path = client
+    _write_workflow(tmp_path, "wf-pi-bad", "pi")  # missing provider
+
+    rv = c.get("/orchestrator")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    # FAIL state (ok=False ANDs both classes)
+    assert "FAIL" in html
+    # Footer line surfaces missing-provider names
+    assert "Missing provider" in html
+    assert "wf-pi-bad" in html
+    # Row-level warn marker for pi-without-provider (cell contains "missing"
+    # badge — distinguishable from a non-pi empty cell which shows `—`)
+    assert "missing" in html
+    # Status line mentions the missing-provider class
+    assert "pi workflow(s) missing provider" in html
