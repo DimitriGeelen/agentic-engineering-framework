@@ -1796,75 +1796,9 @@ else:
     #   - default.yaml missing → soft warning
     if [ -d "$PROJECT_ROOT/.context/project/workflows" ]; then
         local _wf_lint_out _wf_errors _wf_warnings _wf_count
-        _wf_lint_out=$(python3 - "$PROJECT_ROOT" <<'PYEOF' 2>&1
-import sys, os, glob
-try:
-    import yaml
-except ImportError:
-    print("FAIL|python3 yaml module missing")
-    sys.exit(0)
-
-project_root = sys.argv[1]
-wf_dir = os.path.join(project_root, ".context/project/workflows")
-files = sorted(glob.glob(os.path.join(wf_dir, "*.yaml")))
-
-INLINE_FORBIDDEN = {"worker_kind","model","effort","prompt_template","prompt_strategy","meta_model","meta_template","allowed_tools","cost_cap_usd","cwd","provider","variants","outcome_evaluator","env"}
-DISPATCH_REQUIRED = {"task_type","worker_kind","model","effort","prompt_template","allowed_tools","cost_cap_usd","cwd"}
-# NOTE: keep in sync with lib/resolver.py:VALID_WORKER_KINDS (T-1734).
-VALID_WORKER_KINDS = {"Task","TermLink","pi","ollama-loop"}
-VALID_STRATEGIES = {"static","assembled","meta-prompted"}
-
-errors = []
-count = 0
-has_default = False
-
-for f in files:
-    rel = os.path.relpath(f, project_root)
-    count += 1
-    if os.path.basename(f) == "default.yaml":
-        has_default = True
-    try:
-        with open(f) as fh:
-            data = yaml.safe_load(fh) or {}
-    except yaml.YAMLError as e:
-        errors.append(f"{rel}: YAML parse error: {e}")
-        continue
-    if not isinstance(data, dict):
-        errors.append(f"{rel}: root must be a mapping")
-        continue
-    if "task_type" not in data:
-        errors.append(f"{rel}: missing required key 'task_type'")
-    if data.get("inline") is True:
-        offenders = INLINE_FORBIDDEN & set(data.keys())
-        if offenders:
-            errors.append(f"{rel}: inline:true cannot co-exist with dispatch fields: {sorted(offenders)}")
-        continue
-    missing = DISPATCH_REQUIRED - set(data.keys())
-    if missing:
-        errors.append(f"{rel}: missing required key(s): {sorted(missing)}")
-        continue
-    wk = data.get("worker_kind")
-    if wk not in VALID_WORKER_KINDS:
-        errors.append(f"{rel}: worker_kind={wk!r} not in {sorted(VALID_WORKER_KINDS)}")
-    pt = data.get("prompt_template")
-    if pt and not os.path.isfile(os.path.join(project_root, pt)):
-        errors.append(f"{rel}: prompt_template={pt!r} does not resolve to an existing file")
-    ps = data.get("prompt_strategy", "assembled")
-    if ps not in VALID_STRATEGIES:
-        errors.append(f"{rel}: prompt_strategy={ps!r} not in {sorted(VALID_STRATEGIES)}")
-    if ps == "meta-prompted" and "meta_model" not in data:
-        errors.append(f"{rel}: prompt_strategy=meta-prompted requires meta_model")
-    if ps != "meta-prompted" and "meta_model" in data:
-        errors.append(f"{rel}: meta_model set but prompt_strategy={ps!r} (must be meta-prompted)")
-
-if errors:
-    for e in errors:
-        print(f"ERROR|{e}")
-if not has_default and count > 0:
-    print("WARN|default.yaml missing — Q12 fallback will hard-error if any task_type lacks a workflow")
-print(f"COUNT|{count}")
-PYEOF
-)
+        # T-1807: lint logic lives in lib/workflow_lint.py so the pause-field
+        # rules can be unit-tested without invoking `fw doctor`.
+        _wf_lint_out=$(python3 -c "import sys; sys.path.insert(0, '$FW_LIB_DIR'); from workflow_lint import main; main('$PROJECT_ROOT')" 2>&1)
         _wf_errors=$(echo "$_wf_lint_out" | grep -c '^ERROR|' || true)
         _wf_warnings=$(echo "$_wf_lint_out" | grep -c '^WARN|' || true)
         _wf_count=$(echo "$_wf_lint_out" | grep '^COUNT|' | head -1 | sed 's/^COUNT|//' || echo 0)
@@ -1883,41 +1817,33 @@ PYEOF
         echo -e "  ${CYAN}INFO${NC}  No .context/project/workflows/ — orchestrator v1 not yet provisioned"
     fi
 
-    # Check (T-1735): VALID_WORKER_KINDS parity between bin/fw and lib/resolver.py.
+    # Check (T-1735): VALID_WORKER_KINDS parity between lib/workflow_lint.py and lib/resolver.py.
     # T-1734 closed a 5-month silent drift between these two tables; this check is
-    # the runtime witness that prevents recurrence.
+    # the runtime witness that prevents recurrence. After T-1807 the lint logic
+    # moved from bin/fw heredoc into lib/workflow_lint.py — the parity comparison
+    # now lives between the two python modules directly.
     local _wkp_out
     _wkp_out=$(python3 - <<PYEOF 2>/dev/null
-import re, sys
+import sys
 sys.path.insert(0, "$FW_LIB_DIR")
 try:
     from resolver import VALID_WORKER_KINDS as resolver_set
 except Exception as e:
     print(f"FAIL|cannot import lib/resolver.py: {e}")
     sys.exit(0)
-fw_path = "$FRAMEWORK_ROOT/bin/fw"
-fw_set = None
 try:
-    with open(fw_path) as fh:
-        for line in fh:
-            m = re.match(r'\s*VALID_WORKER_KINDS\s*=\s*\{([^}]+)\}', line)
-            if m:
-                fw_set = {s.strip().strip('"').strip("'") for s in m.group(1).split(',') if s.strip()}
-                break
+    from workflow_lint import VALID_WORKER_KINDS as lint_set
 except Exception as e:
-    print(f"FAIL|cannot read bin/fw: {e}")
+    print(f"FAIL|cannot import lib/workflow_lint.py: {e}")
     sys.exit(0)
-if fw_set is None:
-    print("FAIL|VALID_WORKER_KINDS literal not found in bin/fw (drift detection broken)")
-    sys.exit(0)
-only_fw = fw_set - resolver_set
-only_resolver = resolver_set - fw_set
-if not only_fw and not only_resolver:
-    print(f"OK|{sorted(fw_set)}")
+only_lint = lint_set - resolver_set
+only_resolver = resolver_set - lint_set
+if not only_lint and not only_resolver:
+    print(f"OK|{sorted(lint_set)}")
 else:
     diff_parts = []
-    if only_fw:
-        diff_parts.append(f"only in bin/fw: {sorted(only_fw)}")
+    if only_lint:
+        diff_parts.append(f"only in lib/workflow_lint.py: {sorted(only_lint)}")
     if only_resolver:
         diff_parts.append(f"only in lib/resolver.py: {sorted(only_resolver)}")
     print(f"WARN|drift detected — {'; '.join(diff_parts)}")
@@ -1926,7 +1852,7 @@ PYEOF
     case "$_wkp_out" in
         OK\|*)
             local _wkp_set="${_wkp_out#OK|}"
-            echo -e "  ${GREEN}OK${NC}  Worker-kinds parity (bin/fw ↔ lib/resolver.py): $_wkp_set"
+            echo -e "  ${GREEN}OK${NC}  Worker-kinds parity (lib/workflow_lint.py ↔ lib/resolver.py): $_wkp_set"
             ;;
         WARN\|*)
             local _wkp_msg="${_wkp_out#WARN|}"
