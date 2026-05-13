@@ -4,16 +4,16 @@ name: "fw outcome list — show terminal_event status flag per row (T-1777 surfa
 description: >
   fw outcome list — show terminal_event status flag per row (T-1777 surface)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, cli, observability]
-components: []
+components: [lib/outcome.py, tests/unit/test_outcome.py]
 related_tasks: [T-1777, T-1780, T-1781]
 created: 2026-05-11T09:10:00Z
-last_update: 2026-05-11T09:10:00Z
-date_finished: null
+last_update: 2026-05-13T21:07:34Z
+date_finished: 2026-05-13T21:07:34Z
 ---
 
 # T-1782: fw outcome list — show terminal_event status flag per row (T-1777 surface)
@@ -97,3 +97,15 @@ python3 -m pytest tests/unit/test_outcome.py tests/unit/test_orchestrator_status
 ### 2026-05-11T09:10:00Z — task-created
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Final symmetric slice of T-1777 surfacing
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ac2aadb4
+- **Timestamp:** 2026-05-13T21:07:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-13T21:07:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

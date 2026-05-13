@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1782: fw outcome list — show terminal_event status flag per row (T-1777 surface)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T21:07:43Z
+# ============================================================================
+
+task_id: T-1782
+task_name: "fw outcome list — show terminal_event status flag per row (T-1777 surface)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-11T09:10:00Z
+completed: 2026-05-13T21:07:34Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-11T10:51:48+02:00
+last_commit: 2026-05-11T10:51:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw outcome list — show terminal_event suffix per row
+
+# Key outcomes
+outcomes:
+  - "Add a helper `_dispatch_terminal_map()` that returns"
+  - "In `cmd_list`, after fetching rows, build the map once and append"
+  - "Map lookup is cheap (single file read, O(n) where n = dispatch"
+  - "`tests/unit/test_outcome.py` extends with:"
+  - "`python3 -m pytest tests/unit/test_outcome.py -v` exits 0."
+  - "No regression across arc-suite."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fw outcome list — show terminal_event suffix per row"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - "lib/outcome.py"
+  - ".tasks/active/T-1782-fw-outcome-list--show-terminalevent-stat.md"
+  - "tests/unit/test_outcome.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-11T10:51:48"
+    action: "T-1782: fw outcome list — show terminal_event suffix per row"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3597 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, cli, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3597
+  commits: 1
+  files_changed: 4
+  lines_added: 250
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1782-fw-outcome-list--show-terminalevent-stat.md
+generated_by: context-agent-hybrid
