@@ -4,16 +4,16 @@ name: "fix dispatch-safety arc YAML — unquoted colon in name field breaks Watc
 description: >
   fix dispatch-safety arc YAML — unquoted colon in name field breaks Watchtower /arcs page
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: ["arc:dispatch-safety", "bug", "yaml", "watchtower"]
-components: [".context/arcs/dispatch-safety.yaml", "lib/arc.sh", "web/blueprints/arcs.py"]
+components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py]
 related_tasks: ["T-1812", "T-1813", "T-1815"]
 created: 2026-05-13T20:15:46Z
-last_update: 2026-05-13T20:15:46Z
-date_finished: null
+last_update: 2026-05-13T20:28:54Z
+date_finished: 2026-05-13T20:28:54Z
 ---
 
 # T-1816: fix dispatch-safety arc YAML — unquoted colon in name field breaks Watchtower /arcs page
@@ -129,9 +129,12 @@ bash -n agents/audit/audit.sh
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-2bff1dd9
-- **Timestamp:** 2026-05-13T20:28:19Z
+- **Scan ID:** R-c94fad21
+- **Timestamp:** 2026-05-13T20:28:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-13T20:28:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

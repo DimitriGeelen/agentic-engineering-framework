@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1816: fix dispatch-safety arc YAML — unquoted colon in name field breaks Watchtower /arcs page
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-13T20:29:01Z
+# ============================================================================
+
+task_id: T-1816
+task_name: "fix dispatch-safety arc YAML — unquoted colon in name field breaks Watchtower /arcs page"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-13T20:15:46Z
+completed: 2026-05-13T20:28:54Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-13T22:28:37+02:00
+last_commit: 2026-05-13T22:28:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc YAML — fix unquoted colon in dispatch-safety.yaml + three-layer prevention
+
+# Key outcomes
+outcomes:
+  - "`.context/arcs/dispatch-safety.yaml` parses as valid YAML (`python3 -c \"import yaml; yaml.safe_load(open(...))\"` exits 0)."
+  - "Watchtower `/arcs/dispatch-safety` returns HTTP 200."
+  - "Watchtower `/arcs` page lists `dispatch-safety` (curl → grep hit confirmed)."
+  - "All `.context/arcs/*.yaml` files parse cleanly (all 4 verified — none have the same bug class)."
+  - "Audit check (structure section) verifies all arc YAML files parse, fails on any that don't (dogfooded: temp-broken embeddings-strategy.yaml → audit FAIL surfaced with mitigation path)."
+  - "`lib/arc.sh:arc_create` yaml-safe-quotes name/description/headline_mechanic via `yaml.safe_dump default_style='\"'`."
+  - "Unit test pins arc_create YAML safety with colons/hashes/arrows in name and description (`test_arc_create_yaml_safe_with_colons_in_name`)."
+  - "All 11 arc-system unit tests pass."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "arc YAML — fix unquoted colon in dispatch-safety.yaml + three-layer prevention"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".context/arcs/dispatch-safety.yaml"
+  - "lib/arc.sh"
+  - ".tasks/active/T-1816-fix-dispatch-safety-arc-yaml--unquoted-c.md"
+  - "tests/unit/test_arc_system.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-13T22:28:37"
+    action: "T-1816: arc YAML — fix unquoted colon in dispatch-safety.yaml + three-layer prevention"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["arc:dispatch-safety", "bug", "yaml", "watchtower"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 5
+  lines_added: 222
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1816-fix-dispatch-safety-arc-yaml--unquoted-c.md
+generated_by: context-agent-hybrid
