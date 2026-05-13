@@ -3378,9 +3378,10 @@ else
     for arc_yaml in "$ARC_DIR"/*.yaml; do
         # Parse arc fields (id, status, constituent_tasks).
         # Use python to avoid yaml-library coupling — simple line scan suffices.
-        eval "$(python3 - "$arc_yaml" <<'PY'
-import re, sys
+        eval "$(python3 - "$arc_yaml" "$PROJECT_ROOT" <<'PY'
+import re, sys, os, glob
 text = open(sys.argv[1]).read()
+project_root = sys.argv[2]
 def grab(field, default=""):
     m = re.search(rf'^{field}:\s*(.*?)$', text, re.MULTILINE)
     return m.group(1).strip() if m else default
@@ -3391,6 +3392,24 @@ m = re.match(r'\[(.*?)\]', ct_line)
 items = []
 if m and m.group(1).strip():
     items = [s.strip().strip('"').strip("'") for s in m.group(1).split(",") if s.strip()]
+# Tag-based fallback (T-1813): when constituent_tasks is empty, scan .tasks/ for
+# tasks tagged arc:<id>. Mirrors lib/arc.sh:_arc_tasks_with_tag so audit and
+# fw arc show use the same task-discovery pathway.
+if not items and arc_id:
+    tag_pattern = f"arc:{arc_id}"
+    seen = set()
+    for d in ("active", "completed"):
+        for f in glob.glob(os.path.join(project_root, ".tasks", d, "T-*.md")):
+            try:
+                tt = open(f).read()
+            except OSError:
+                continue
+            tags_m = re.search(r'^tags:\s*(.*?)$', tt, re.MULTILINE)
+            if tags_m and tag_pattern in tags_m.group(1):
+                id_m = re.search(r'^id:\s*(T-\d+)', tt, re.MULTILINE)
+                if id_m:
+                    seen.add(id_m.group(1))
+    items = sorted(seen)
 print(f'ARC_ID={arc_id!r}')
 print(f'ARC_STATUS={status!r}')
 print(f'ARC_TASKS=({" ".join(items)})')
