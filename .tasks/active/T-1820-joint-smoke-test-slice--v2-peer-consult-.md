@@ -98,27 +98,17 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-14 — coordination consultation dogfooded the slice we're building
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** Before dispatching the build worker, ran a coordination consultation worker (`t1636-coord`, Haiku, ~60s) to /opt/termlink asking (a) is anyone working T-1636, (b) is framework dispatch welcome, (c) what constraints. The pattern — framework agent asks TermLink-side peer for guidance before crossing the repo boundary — IS the v2 peer-consult slice we're about to smoke. We're using the manual `fw termlink dispatch` form because the automated inbox.queued seam (T-1636 itself) isn't live yet. The slice is the answer to a problem we're currently solving by hand.
+- **Plan impact:** None — the coord step was already implicit. Logging it explicit captures the dogfooding moment for the demo artefact.
+- **Triggered:** No new sub-task. Coord-worker result captured at `/tmp/tl-dispatch/t1636-coord/result.md`.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-05-14 — initial dispatch with 600s default timeout would have killed mid-Rust-read
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** First dispatch defaulted to `TERMLINK_WORKER_TIMEOUT=600` (10 min). The Rust build + test + commit was estimated at ~1.5-2h. The watchdog would have killed the worker mid-read (it was already 211KB into result.jsonl when I caught it). Killed via `termlink clean` (signal failed but session unregistered) and re-dispatched with `--timeout 5400 --model sonnet`.
+- **Plan impact:** None for T-1820's scope, but a learning: `--timeout` must match the estimated work time when dispatching real builds. The 600s default is for quick research / one-shot reads. Consider filing a follow-up for either (a) higher default when `task_type=build`, or (b) workflow-driven timeout (the v1 build workflow could declare `expected_duration: 90m`).
+- **Triggered:** Candidate follow-up — not filed yet, pending whether this is a recurring miss or a one-off. Logged here as evidence.
 
 ## Decisions
 
