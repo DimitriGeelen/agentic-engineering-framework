@@ -440,6 +440,14 @@ def _workflow_coverage() -> dict:
         report = workflow_coverage.check_workflow_dispatcher_coverage()
     except Exception:
         return {"available": False}
+    # T-1802: enrich each workflow row with last-dispatch timestamp +
+    # task_id. Wrap separately so a dispatches.jsonl issue doesn't kill
+    # the whole panel — coverage data still renders, recency column
+    # falls back to "never" for every row.
+    try:
+        report = workflow_coverage.enrich_with_dispatch_recency(report)
+    except Exception:
+        pass
     report["available"] = True
     return report
 

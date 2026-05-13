@@ -28,6 +28,7 @@ from typing import Any, Dict
 
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 WORKFLOWS_DIR = PROJECT_ROOT / ".context" / "project" / "workflows"
+DISPATCHES_JSONL = PROJECT_ROOT / ".context" / "dispatches.jsonl"
 LIB_DIR = Path(__file__).resolve().parent
 
 
@@ -168,6 +169,74 @@ def format_audit_line(report: Dict[str, Any]) -> str:
         )
         parts.append(f"{n_missing_provider} pi workflow(s) missing provider: {bad}")
     return "; ".join(parts)
+
+
+def enrich_with_dispatch_recency(
+    report: Dict[str, Any],
+    dispatches_path: Path = None,
+) -> Dict[str, Any]:
+    """Annotate each workflow row with ``last_dispatched`` + ``last_dispatch_task_id``.
+
+    Joins ``.context/dispatches.jsonl`` (per-dispatch records, one JSON object
+    per line) to the coverage report on ``workflow_id == workflow.name``,
+    taking max ``ts`` per workflow. Pure: returns a NEW report dict, does not
+    mutate input. Graceful on missing path or malformed JSONL.
+
+    T-1802: surfaces deprecation candidates on `/orchestrator` Workflow
+    coverage panel — workflows declared but never dispatched are visible
+    at a glance instead of buried in `fw orchestrator status` output.
+
+    Args:
+        report: A report dict from ``check_workflow_dispatcher_coverage``.
+        dispatches_path: Override for testing; defaults to
+            ``.context/dispatches.jsonl`` under PROJECT_ROOT.
+
+    Returns:
+        A new report dict. Each ``workflows[i]`` row gains:
+          - ``last_dispatched``: ISO8601 string or None
+          - ``last_dispatch_task_id``: task ID string or None
+    """
+    import copy
+    import json as _json  # local — module shouldn't fail to import on missing json
+
+    path = dispatches_path if dispatches_path is not None else DISPATCHES_JSONL
+    by_workflow: Dict[str, Dict[str, str]] = {}
+    if path.is_file():
+        try:
+            for line in path.read_text().splitlines():
+                if not line.strip():
+                    continue
+                try:
+                    d = _json.loads(line)
+                except Exception:
+                    continue
+                if not isinstance(d, dict):
+                    continue
+                wf = d.get("workflow_id")
+                ts = d.get("ts")
+                if not wf or not ts:
+                    continue
+                cur = by_workflow.get(wf)
+                if cur is None or ts > cur["ts"]:
+                    by_workflow[wf] = {
+                        "ts": ts,
+                        "task_id": d.get("task_id") or "",
+                    }
+        except Exception:
+            # Reading dispatches.jsonl must never crash the panel — degrade
+            # to "no recency known" for every workflow.
+            by_workflow = {}
+
+    enriched = copy.deepcopy(report)
+    for w in enriched.get("workflows", []):
+        hit = by_workflow.get(w.get("name"))
+        if hit:
+            w["last_dispatched"] = hit["ts"]
+            w["last_dispatch_task_id"] = hit["task_id"] or None
+        else:
+            w["last_dispatched"] = None
+            w["last_dispatch_task_id"] = None
+    return enriched
 
 
 if __name__ == "__main__":

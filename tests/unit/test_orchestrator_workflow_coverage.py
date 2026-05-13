@@ -159,6 +159,35 @@ def test_panel_renders_provider_column(client):
     assert "wf-ollama" in html
 
 
+def test_panel_renders_last_dispatched_column(client):
+    """T-1802: 5th column `Last dispatched` exists; dispatched workflows
+    show ISO date + task link; never-dispatched workflows show `never`."""
+    c, tmp_path = client
+    _write_workflow(tmp_path, "wf-fired", "pi", provider="anthropic")
+    _write_workflow(tmp_path, "wf-cold", "ollama-loop")
+
+    # Seed dispatches.jsonl with one record for wf-fired only
+    import json as _json
+    dispatches = tmp_path / ".context" / "dispatches.jsonl"
+    dispatches.write_text(_json.dumps({
+        "workflow_id": "wf-fired",
+        "ts": "2026-05-10T11:22:33+00:00",
+        "task_id": "T-9999",
+    }) + "\n")
+
+    rv = c.get("/orchestrator")
+    assert rv.status_code == 200
+    html = rv.data.decode()
+    # 5th column header
+    assert "<th>Last dispatched</th>" in html
+    # Fired workflow renders ISO date prefix
+    assert "2026-05-10" in html
+    # Task link rendered
+    assert 'href="/tasks/T-9999"' in html
+    # Cold workflow renders `never`
+    assert "never" in html
+
+
 def test_panel_flags_pi_missing_provider(client):
     """Pi workflow without provider → FAIL badge + missing-provider footer
     line + row-level warn marker."""

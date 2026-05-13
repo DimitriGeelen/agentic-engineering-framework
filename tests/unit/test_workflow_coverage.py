@@ -250,3 +250,103 @@ def test_format_audit_line_combines_both_failure_classes(coverage):
     line = wc.format_audit_line(wc.check_workflow_dispatcher_coverage())
     assert "unroutable worker_kind" in line
     assert "pi workflow(s) missing provider" in line
+
+
+# ─── T-1802: enrich_with_dispatch_recency ────────────────────────────────────
+
+
+def _write_dispatches(path: Path, records: list[dict]):
+    """Helper: write list of dispatch records as JSONL."""
+    import json
+    path.write_text("\n".join(json.dumps(r) for r in records) + "\n")
+
+
+def test_enrich_with_dispatch_recency_basic(coverage, tmp_path):
+    """Two dispatches across two workflows → max ts per workflow surfaces.
+
+    A workflow with multiple dispatches takes the latest ts."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-a", "pi", provider="anthropic")
+    _write_workflow(wf_dir, "wf-b", "ollama-loop")
+    _write_workflow(wf_dir, "wf-c", "TermLink")  # never dispatched
+
+    dispatches = tmp_path / "dispatches.jsonl"
+    _write_dispatches(dispatches, [
+        {"workflow_id": "wf-a", "ts": "2026-05-01T10:00:00Z", "task_id": "T-100"},
+        {"workflow_id": "wf-a", "ts": "2026-05-10T11:00:00Z", "task_id": "T-200"},
+        {"workflow_id": "wf-b", "ts": "2026-05-05T12:00:00Z", "task_id": "T-150"},
+    ])
+
+    report = wc.check_workflow_dispatcher_coverage()
+    enriched = wc.enrich_with_dispatch_recency(report, dispatches_path=dispatches)
+
+    rows = {w["name"]: w for w in enriched["workflows"]}
+    # wf-a: latest of two dispatches
+    assert rows["wf-a"]["last_dispatched"] == "2026-05-10T11:00:00Z"
+    assert rows["wf-a"]["last_dispatch_task_id"] == "T-200"
+    # wf-b: single dispatch
+    assert rows["wf-b"]["last_dispatched"] == "2026-05-05T12:00:00Z"
+    assert rows["wf-b"]["last_dispatch_task_id"] == "T-150"
+    # wf-c: never dispatched
+    assert rows["wf-c"]["last_dispatched"] is None
+    assert rows["wf-c"]["last_dispatch_task_id"] is None
+
+
+def test_enrich_with_dispatch_recency_missing_path(coverage, tmp_path):
+    """Non-existent dispatches path → every row last_dispatched=None.
+
+    Guard against `/orchestrator` crashing on a fresh consumer project."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-a", "pi", provider="anthropic")
+
+    nonexistent = tmp_path / "does-not-exist.jsonl"
+    report = wc.check_workflow_dispatcher_coverage()
+    enriched = wc.enrich_with_dispatch_recency(report, dispatches_path=nonexistent)
+
+    rows = {w["name"]: w for w in enriched["workflows"]}
+    assert rows["wf-a"]["last_dispatched"] is None
+    assert rows["wf-a"]["last_dispatch_task_id"] is None
+
+
+def test_enrich_with_dispatch_recency_malformed_jsonl_skipped(coverage, tmp_path):
+    """Malformed lines skipped, good lines counted (matches existing helper)."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-a", "pi", provider="anthropic")
+
+    dispatches = tmp_path / "dispatches.jsonl"
+    # Mix garbage and good
+    dispatches.write_text(
+        'not valid json\n'
+        '{"workflow_id": "wf-a", "ts": "2026-05-10T11:00:00Z", "task_id": "T-200"}\n'
+        '[just, a, list]\n'  # non-dict root
+        '\n'  # empty line
+        '{"workflow_id": "wf-a"}\n'  # missing ts → skipped
+    )
+
+    report = wc.check_workflow_dispatcher_coverage()
+    enriched = wc.enrich_with_dispatch_recency(report, dispatches_path=dispatches)
+    rows = {w["name"]: w for w in enriched["workflows"]}
+    assert rows["wf-a"]["last_dispatched"] == "2026-05-10T11:00:00Z"
+    assert rows["wf-a"]["last_dispatch_task_id"] == "T-200"
+
+
+def test_enrich_with_dispatch_recency_does_not_mutate_input(coverage, tmp_path):
+    """Pure function: input report's workflows still lack last_dispatched."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-a", "pi", provider="anthropic")
+    dispatches = tmp_path / "dispatches.jsonl"
+    _write_dispatches(dispatches, [
+        {"workflow_id": "wf-a", "ts": "2026-05-10T11:00:00Z", "task_id": "T-200"},
+    ])
+
+    report = wc.check_workflow_dispatcher_coverage()
+    # Snapshot input row keys before call
+    original_keys = set(report["workflows"][0].keys())
+
+    enriched = wc.enrich_with_dispatch_recency(report, dispatches_path=dispatches)
+
+    # Original report unchanged
+    assert set(report["workflows"][0].keys()) == original_keys
+    assert "last_dispatched" not in report["workflows"][0]
+    # Enriched copy gained the fields
+    assert "last_dispatched" in enriched["workflows"][0]
