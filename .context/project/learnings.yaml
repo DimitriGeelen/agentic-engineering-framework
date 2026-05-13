@@ -2865,3 +2865,10 @@ X'` returning empty group."
   date: 2026-05-13
   context: Class-level codification after second instance of the same data-source-drift pattern
   application: T-1817 — _scan_tasks_by_tag helper + merge logic in web/blueprints/arcs.py
+- id: L-372
+  learning: "set -e + var=$(cmd) after a separate 'local var' declaration is a regular assignment — cmd's non-zero exit triggers script exit BEFORE the next line runs, silently skipping all subsequent error-handling code (e.g. var_rc=$? + diagnostic echo + explicit exit N). To survive set -e: use 'local var=' on the same line as command sub (local's exit code masks cmd's), OR use the '|| rc=$?' idiom to absorb the failure. Test-environment mismatch: tests running shell snippets via 'bash -c \"...\"' without explicit 'set -euo pipefail' do NOT replicate production mode; mock-only-integration tests can pass while production silently breaks. Origin: T-1762 own-dogfood — gate refused itself silently for ~1 week (handover S-2026-0513-2333 flagged 'silent halt at substantive ✓', root caused 2026-05-14)."
+  source: P-001
+  task: T-1687
+  date: 2026-05-13
+  context: Added via context agent
+  application: TBD
