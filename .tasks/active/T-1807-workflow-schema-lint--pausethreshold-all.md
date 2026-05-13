@@ -4,16 +4,16 @@ name: "Workflow schema lint — pause_threshold, allow_pause, pause_preamble (di
 description: >
   Workflow schema lint — pause_threshold, allow_pause, pause_preamble (dispatch-safety slice 3)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:dispatch-safety, slice-3]
-components: [bin/fw, tests/unit/test_workflow_schema_pause_lint.py]
+components: [bin/fw, lib/workflow_lint.py, tests/unit/test_workflow_schema_pause_lint.py]
 related_tasks: [T-1805, T-1806]
 created: 2026-05-13T15:49:53Z
-last_update: 2026-05-13T15:49:53Z
-date_finished: null
+last_update: 2026-05-13T16:00:21Z
+date_finished: 2026-05-13T16:00:21Z
 ---
 
 # T-1807: Workflow schema lint — pause_threshold, allow_pause, pause_preamble (dispatch-safety slice 3)
@@ -51,8 +51,8 @@ Builds on [T-1805](T-1805) (substrate recognition) and [T-1806](T-1806) (preambl
 # Shell commands that MUST pass before work-completed.
 
 python3 -m pytest tests/unit/test_workflow_schema_pause_lint.py -q 2>&1 | tail -5
-bin/fw doctor 2>&1 | grep -E "Workflow schema" || (echo "FAIL: doctor schema check missing" && exit 1)
-bin/fw doctor 2>&1 | grep -E "Workflow schema:" | grep -E "lint clean|warning" || (echo "FAIL: existing workflows must remain clean" && exit 1)
+out=$(bin/fw doctor 2>&1 || true); echo "$out" | grep -q "Workflow schema" || (echo "FAIL: doctor schema check missing"; exit 1)
+out=$(bin/fw doctor 2>&1 || true); echo "$out" | grep "Workflow schema:" | grep -qE "lint clean|warning" || (echo "FAIL: existing workflows must remain clean"; exit 1)
 
 ## RCA
 
@@ -115,3 +115,20 @@ bin/fw doctor 2>&1 | grep -E "Workflow schema:" | grep -E "lint clean|warning" |
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1807-workflow-schema-lint--pausethreshold-all.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a4b1af95
+- **Timestamp:** 2026-05-13T16:02:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_workflow_schema_pause_lint.py -q 2>&1 | tail -5`
+
+### 2026-05-13T16:00:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

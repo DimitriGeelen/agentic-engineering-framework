@@ -95,7 +95,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-09'
+last_enriched: '2026-05-11'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -465,3 +465,5 @@ depended_by:
   type: called_by
 - target: tests/unit/test_cron_generate_shape.bats
   type: tests_by
+- target: tests/unit/test_orchestrator_status_terminal_events.py
+  type: called_by

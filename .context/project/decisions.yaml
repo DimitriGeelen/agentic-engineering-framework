@@ -758,3 +758,59 @@ decisions:
     date: 2026-05-05
     task: T-1757
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-111
+    decision: "Stale workflows surface as audit WARN, not FAIL. `report[\"ok\"]` unchanged by staleness; new `warn` field is independent."
+    scope: project
+    date: 2026-05-13
+    task: T-1803
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-112
+    decision: "Hardcode `STALE_THRESHOLD_DAYS = 90` as module constant; helper accepts `stale_threshold_days` param for test injectability."
+    scope: project
+    date: 2026-05-13
+    task: T-1803
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-113
+    decision: "Outcome status field becomes one of `success | error | paused`. The Worker-emitted terminal event has `type: pause_requested`."
+    scope: project
+    date: 2026-05-13
+    task: T-1805
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-114
+    decision: "Recognition layer only — no Worker behavior change, no schema change, no Resolver change."
+    scope: project
+    date: 2026-05-13
+    task: T-1805
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-115
+    decision: "The Resolver prepends the preamble; workflow `prompt_template` files do not include it."
+    scope: project
+    date: 2026-05-13
+    task: T-1806
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-116
+    decision: "Workflows must explicitly set `allow_pause: true` to get the preamble. Absent or `false` → no preamble."
+    scope: project
+    date: 2026-05-13
+    task: T-1806
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-117
+    decision: "Refactor `bin/fw doctor`'s embedded python heredoc into `lib/workflow_lint.py`. `bin/fw` now invokes it via a one-line subprocess."
+    scope: project
+    date: 2026-05-13
+    task: T-1807
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-118
+    decision: "Invalid values for `allow_pause`/`pause_threshold`/`pause_preamble` are ERROR (the workflow won't behave as the operator expects). Setting threshold/preamble without `allow_pause: true` is WARN (the workflow still runs, the field is just unused)."
+    scope: project
+    date: 2026-05-13
+    task: T-1807
+    rationale: "Auto-captured from task file on completion"

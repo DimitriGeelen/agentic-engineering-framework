@@ -1,44 +1,44 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-05-06T03:23:01.559393+00:00
-corpus_total: 1680
-bug_class_total: 358
+generated: 2026-05-13T03:23:01.916615+00:00
+corpus_total: 1700
+bug_class_total: 361
 bug_class_pct: 21
 h1_flagged: 326
-h1_pct_of_bug_class: 91
-h2_repeat_patterns: 69
+h1_pct_of_bug_class: 90
+h2_repeat_patterns: 70
 h3_flagged: 268
 h3_pct_of_bug_class: 74
-recent_30d_flagged: 170
+recent_30d_flagged: 120
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
-  - tid: "T-1014-fix-playwright-navigation-test-timeout--"
-    name: "Fix Playwright navigation test timeout — batch contention"
-  - tid: "T-1026-playwright-tests--docs-detail-review-acs"
-    name: "Playwright tests — docs detail, review ACs, POST error handling"
-  - tid: "T-1027-fix-graduation-page-playwright-test-time"
-    name: "Fix graduation page Playwright test timeout"
-  - tid: "T-1040-playwright-networkidle-migration--replac"
-    name: "Playwright networkidle migration — replace networkidle with domcontentloaded acr"
-  - tid: "T-1045-fix-playwright-test-server--enable-flask"
-    name: "Fix Playwright test server — enable Flask threaded mode to prevent sequential re"
-  - tid: "T-1051-playwright-response-time-regression-test"
-    name: "Playwright response time regression test — verify no route takes >5s"
-  - tid: "T-1053-version-bump-to-1586--332-playwright-tes"
-    name: "Version bump to 1.5.86 — 332 Playwright tests, timing report, performance regres"
-  - tid: "T-1069-one-time-horizon-status-data-cleanup--fi"
-    name: "One-time horizon-status data cleanup — fix 52 inconsistent tasks"
-  - tid: "T-1073-fix-playwright-test-suite--mass-failures"
-    name: "Fix Playwright test suite — mass failures across API and UI tests"
-  - tid: "T-1075-fix-project-boundary-false-positive--ter"
-    name: "Fix project boundary false positive — TermLink commands inside loops/pipes"
+  - tid: "T-1123-pickup-approvals-page-shows-inception-ta"
+    name: "Pickup: Approvals page shows inception tasks without recommendations — creates n"
+  - tid: "T-1127-pickup-u-003-send-file-reports-ok-on-hub"
+    name: "Pickup: U-003: send-file reports ok on hub acceptance, not delivery — silent fil"
+  - tid: "T-1133-pickup-gnu-date--d-in-framework-shell-sc"
+    name: "Pickup: GNU date -d in framework shell scripts fails silently on macOS — causes "
+  - tid: "T-1195-fix-g-044-replace-hardcoded-opt-consumer"
+    name: "Fix G-044: Replace hardcoded /opt/* consumer discovery with configurable path"
+  - tid: "T-1197-fix-g-041-replace-hardcoded-status-selec"
+    name: "Fix G-041: Replace hardcoded status selectors in kanban CSS/HTML with dynamic Ji"
+  - tid: "T-1198-fix-remaining-hardcoded-status-strings-i"
+    name: "Fix remaining hardcoded status strings in watchtower blueprints (core.py, metric"
+  - tid: "T-1199-fix-config-registry-parity--add-consumer"
+    name: "Fix config-registry-parity — add CONSUMER_SCAN_DIRS to web/blueprints/config.py"
+  - tid: "T-1201-fix-fw-task-review-terminal-overflow--wr"
+    name: "Fix fw task review terminal overflow — wrap URLs, compact output"
+  - tid: "T-1202-fix-duplicate-decision-block--exact-matc"
+    name: "Fix duplicate decision block — exact match on ## Decision in lib/inception.sh (T"
+  - tid: "T-1209-fix-watchtower-500-on-consumer-home--dat"
+    name: "Fix Watchtower 500 on consumer home — datetime.date vs datetime.datetime in stal"
 h2_top:
   - learning: "P-011"
-    task_count: 171
+    task_count: 180
   - learning: "P-010"
     task_count: 120
   - learning: "L-291"
-    task_count: 96
+    task_count: 102
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"

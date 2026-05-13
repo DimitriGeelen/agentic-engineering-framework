@@ -1,5 +1,12 @@
 {
   "hubs": {
+    "laptop-141": {
+      "concern_registered": false,
+      "consecutive_failures": 0,
+      "first_failure_at": null,
+      "last_class": null,
+      "last_failure_at": null
+    },
     "ring20-dashboard": {
       "concern_registered": false,
       "consecutive_failures": 0,

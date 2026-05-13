@@ -5840,3 +5840,360 @@ scan_id: R-3f4afbda
 task_id: T-1771
 payload:
   task_file: .tasks/active/T-1771-make-cron-drift-actionable-audit-summary.md
+---
+kind: scan_emitted
+timestamp: '2026-05-11T11:04:34Z'
+scan_id: R-2b2e3ad3
+task_id: T-1786
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-11T11:04:34Z'
+scan_id: R-2b2e3ad3
+task_id: T-1786
+payload:
+  task_file: .tasks/active/T-1786-fw-orchestrator-status---worker-kind-x-f.md
+---
+kind: scan_emitted
+timestamp: '2026-05-11T11:09:17Z'
+scan_id: R-e55f18fb
+task_id: T-1787
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-11T11:09:17Z'
+scan_id: R-e55f18fb
+task_id: T-1787
+payload:
+  task_file: .tasks/active/T-1787-fw-orchestrator-status---recent-n-contro.md
+---
+kind: scan_emitted
+timestamp: '2026-05-11T11:13:12Z'
+scan_id: R-1b4a45bc
+task_id: T-1788
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-11T11:13:12Z'
+scan_id: R-1b4a45bc
+task_id: T-1788
+payload:
+  task_file: .tasks/active/T-1788-fw-orchestrator-status-surface-model--by.md
+---
+kind: scan_emitted
+timestamp: '2026-05-11T11:17:36Z'
+scan_id: R-9bd3419a
+task_id: T-1789
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-11T11:17:36Z'
+scan_id: R-9bd3419a
+task_id: T-1789
+payload:
+  task_file: .tasks/active/T-1789-fw-orchestrator-routes-surface-route-cac.md
+---
+kind: scan_emitted
+timestamp: '2026-05-11T11:21:38Z'
+scan_id: R-081f5847
+task_id: T-1790
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-11T11:21:38Z'
+scan_id: R-081f5847
+task_id: T-1790
+payload:
+  task_file: .tasks/active/T-1790-fw-orchestrator-statusroutes---task-type.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T21:10:22Z'
+scan_id: R-54d186b0
+task_id: T-1791
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T21:10:22Z'
+scan_id: R-54d186b0
+task_id: T-1791
+payload:
+  task_file: .tasks/active/T-1791-fw-orchestrator-status---model-x-filter-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T21:16:17Z'
+scan_id: R-5a07b8e4
+task_id: T-1792
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T21:16:17Z'
+scan_id: R-5a07b8e4
+task_id: T-1792
+payload:
+  task_file: .tasks/active/T-1792-watchtower-orchestrator-add-dispatch-sub.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T21:20:07Z'
+scan_id: R-30770528
+task_id: T-1793
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T21:20:07Z'
+scan_id: R-30770528
+task_id: T-1793
+payload:
+  task_file: .tasks/active/T-1793-fw-orchestrator-status---workflow-resolv.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T21:28:05Z'
+scan_id: R-d8157f41
+task_id: T-1794
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T21:28:05Z'
+scan_id: R-d8157f41
+task_id: T-1794
+payload:
+  task_file: .tasks/active/T-1794-watchtower-orchestrator-extend-dispatch-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T21:31:24Z'
+scan_id: R-3ab1cfe2
+task_id: T-1795
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T21:31:24Z'
+scan_id: R-3ab1cfe2
+task_id: T-1795
+payload:
+  task_file: .tasks/active/T-1795-watchtower-orchestrator-extend-dispatch-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T21:36:47Z'
+scan_id: R-c7661781
+task_id: T-1796
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T21:36:47Z'
+scan_id: R-c7661781
+task_id: T-1796
+payload:
+  task_file: .tasks/active/T-1796-watchtower-orchestrator-add-outcome-qual.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T21:57:29Z'
+scan_id: R-a981ec0c
+task_id: T-1797
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T21:57:29Z'
+scan_id: R-a981ec0c
+task_id: T-1797
+payload:
+  task_file: .tasks/active/T-1797-termlink-worker-primitive--libtermlinkwo.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T22:07:38Z'
+scan_id: R-eb7cbf34
+task_id: T-1798
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T22:07:38Z'
+scan_id: R-eb7cbf34
+task_id: T-1798
+payload:
+  task_file: .tasks/active/T-1798-workflow-dispatcher-coverage-check--fw-a.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T22:11:41Z'
+scan_id: R-3034a80e
+task_id: T-1799
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T22:11:41Z'
+scan_id: R-3034a80e
+task_id: T-1799
+payload:
+  task_file: .tasks/active/T-1799-watchtower-orchestrator-add-workflow-cov.md
+---
+kind: scan_emitted
+timestamp: '2026-05-12T22:16:30Z'
+scan_id: R-3e83ed49
+task_id: T-1800
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-12T22:16:30Z'
+scan_id: R-3e83ed49
+task_id: T-1800
+payload:
+  task_file: .tasks/active/T-1800-provider-coverage-check--extend-workflow.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T06:29:55Z'
+scan_id: R-a0d2a739
+task_id: T-1801
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T06:29:55Z'
+scan_id: R-a0d2a739
+task_id: T-1801
+payload:
+  task_file: .tasks/active/T-1801-extend-workflow-coverage-panel-with-miss.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T06:35:54Z'
+scan_id: R-8fa230a2
+task_id: T-1802
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T06:35:54Z'
+scan_id: R-8fa230a2
+task_id: T-1802
+payload:
+  task_file: .tasks/active/T-1802-workflow-coverage-panel-per-workflow-las.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T06:51:36Z'
+scan_id: R-30b26bba
+task_id: T-1803
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T06:51:36Z'
+scan_id: R-30b26bba
+task_id: T-1803
+payload:
+  task_file: .tasks/active/T-1803-workflow-coverage-audit-stale-workflow-w.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T15:09:28Z'
+scan_id: R-2c12c51c
+task_id: T-1805
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T15:09:28Z'
+scan_id: R-2c12c51c
+task_id: T-1805
+payload:
+  task_file: .tasks/active/T-1805-pauserequested-terminalevent-class--subs.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T15:15:12Z'
+scan_id: R-a9776d9f
+task_id: T-1806
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T15:15:12Z'
+scan_id: R-a9776d9f
+task_id: T-1806
+payload:
+  task_file: .tasks/active/T-1806-resolver-risk-policy-preamble-injection-.md
+---
+kind: scan_emitted
+timestamp: '2026-05-13T16:02:03Z'
+scan_id: R-a4b1af95
+task_id: T-1807
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-13T16:02:03Z'
+scan_id: R-a4b1af95
+task_id: T-1807
+payload:
+  task_file: .tasks/active/T-1807-workflow-schema-lint--pausethreshold-all.md
