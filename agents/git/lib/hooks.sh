@@ -360,17 +360,21 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity (T-1593, T-1603)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity (T-1593, T-1603, T-1829)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.3
+# VERSION=1.4
 
 # T-1603: VERSION monotonicity check.
 # Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
 # ~440 patch versions dropped) as a side-effect of `git checkout` against a stale
 # ref. 12 consumers paid the cost (pins ahead of HEAD for 4 days). Block any push
-# that decreases VERSION on a branch (compare local-being-pushed vs remote
-# currently-at). Read git's stdin format: "<local-ref> <local-sha> <remote-ref> <remote-sha>"
+# whose local commit is NOT forward-in-time of the remote commit (compare via
+# git merge-base --is-ancestor). T-1829 added the ancestor refinement: a pure
+# sort -V comparison conflated "new commit lowers VERSION via tag-counter reset"
+# (forward in time, allowed) with "HEAD reset to older commit" (the cc38e98f5
+# class — local is ancestor of remote, blocked). Read git's stdin format:
+# "<local-ref> <local-sha> <remote-ref> <remote-sha>"
 _zero="0000000000000000000000000000000000000000"
 _block_lines=""
 # Need to capture stdin once; tee to FD 9 so the lightweight-tag loop below
@@ -396,11 +400,25 @@ while IFS=' ' read -r _local_ref _local_sha _remote_ref _remote_sha; do
     # Equal is OK — no change. Higher is OK — bump.
     [ "$_local_ver" = "$_remote_ver" ] && continue
     # Lower fails: sort -V says first is lower-or-equal; if remote sorts BEFORE
-    # local, local is higher → ok. If local sorts before remote, local is lower → block.
+    # local, local is higher → ok. If local sorts before remote, local is lower
+    # → check forward-in-time via ancestor relation (T-1829).
     _first=$(printf '%s\n%s\n' "$_local_ver" "$_remote_ver" | sort -V | head -1)
-    if [ "$_first" = "$_local_ver" ]; then
-        _block_lines="${_block_lines}${_block_lines:+
+    if [ "$_first" = "$_local_ver" ] && [ "$_local_ver" != "$_remote_ver" ]; then
+        # T-1829: tag-counter reset (e.g. v1.6.2 created after v1.5.X stamping)
+        # drops <commits-since-tag> back to 0, making local-VERSION numerically
+        # less than remote-VERSION despite local being forward in commit time.
+        # If the remote sha is locally known AND is an ancestor of local sha,
+        # the push is genuinely forward — allow. Otherwise fall back to the
+        # strict-block behaviour that T-1602 motivated (HEAD-reset rollback,
+        # local-is-ancestor-of-remote shape).
+        if [ "$_remote_sha" != "$_zero" ] \
+           && git cat-file -e "$_remote_sha" 2>/dev/null \
+           && git merge-base --is-ancestor "$_remote_sha" "$_local_sha" 2>/dev/null; then
+            :   # forward in commit time despite VERSION decrease — allow
+        else
+            _block_lines="${_block_lines}${_block_lines:+
 }  ${_local_ref#refs/heads/}: VERSION ${_local_ver} < remote ${_remote_ver}"
+        fi
     fi
 done <<EOF
 ${_stdin_buf}
