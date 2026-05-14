@@ -4,16 +4,16 @@ name: "find_project_root sentinel — skip .agentic-framework / rollback dirs (c
 description: >
   Consumer email-archive's F3-trap finding: agent CWD landed in .agentic-framework.rollback/ → find_project_root walked up, found .agentic-framework.rollback/.tasks/ (from vendored templates), returned .agentic-framework.rollback as PROJECT_ROOT. Boundary hook (T-559) then blocked all cd /opt/... commands. Root cause: bin/fw:61-71 find_project_root returns at the first dir with .framework.yaml OR .tasks/ — but .tasks/ alone is ambiguous (vendored framework has .tasks/templates/, rollback dir inherits it, uninitialized consumer has just .tasks/). Fix: drop a .fw-not-a-project sentinel in .agentic-framework/ and .agentic-framework.rollback/ at vendor/rollback time. find_project_root checks for sentinel and skips the dir. Source: framework:pickup offset 1 F3-trap finding (email-archive, 2026-05-04).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:project-shape-resilience, consumer-fleet, bug, fw-cli]
-components: []
+components: [bin/fw, lib/update.sh]
 related_tasks: [T-1838, T-1839, T-1840, T-559]
 created: 2026-05-14T22:09:58Z
-last_update: 2026-05-14T22:09:58Z
-date_finished: null
+last_update: 2026-05-14T22:14:38Z
+date_finished: 2026-05-14T22:14:38Z
 ---
 
 # T-1841: find_project_root sentinel — skip .agentic-framework / rollback dirs (consumer F3-trap)
@@ -177,3 +177,15 @@ grep -q "fw-not-a-project" lib/update.sh
 - `tests/unit/test_find_project_root_sentinel.bats`: 8/8 pass — walk skip + without-sentinel control + source pins + parse checks + backfill check
 - `bash -n bin/fw lib/update.sh`: clean
 - Consumer F3-trap (framework:pickup offset 1) closed by this fix
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-f784f443
+- **Timestamp:** 2026-05-14T22:14:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T22:14:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1841: find_project_root sentinel — skip .agentic-framework / rollback dirs (consumer F3-trap)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-14T22:14:44Z
+# ============================================================================
+
+task_id: T-1841
+task_name: "find_project_root sentinel — skip .agentic-framework / rollback dirs (consumer F3-trap)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-14T22:09:58Z
+completed: 2026-05-14T22:14:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-15T00:14:30+02:00
+last_commit: 2026-05-15T00:14:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  find_project_root sentinel — skip vendored/rollback dirs (consumer F3)
+
+# Key outcomes
+outcomes:
+  - "`bin/fw:find_project_root` skips any directory containing a `.fw-not-a-project` sentinel and continues the upward walk"
+  - "`bin/fw:do_vendor` writes `.fw-not-a-project` to `$dest/` after the include loop completes"
+  - "`lib/update.sh:_do_rollback` and the rollback-creation path (`cp -r vendored rollback_dir`) write `.fw-not-a-project` to `$rollback_dir/`"
+  - "Sentinel content includes a one-line explanation so a curious operator finds context (referencing T-1841)"
+  - "Bats test `tests/unit/test_find_project_root_sentinel.bats` pins (a) walk skips dir with sentinel, (b) walk stops at dir without sentinel, (c) sentinel content carries the explanation — 8/8 pass"
+  - "Existing project-root tests (if any) still pass — no existing test references find_project_root behaviour"
+  - "`bash -n bin/fw lib/update.sh` parses clean — verified"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/.fw-not-a-project"
+  - "bin/fw"
+  - "lib/update.sh"
+  - ".tasks/active/T-1841-findprojectroot-sentinel--skip-agentic-f.md"
+  - "tests/unit/test_find_project_root_sentinel.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T00:14:30"
+    action: "T-1841: find_project_root sentinel — skip vendored/rollback dirs (consumer F3)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:project-shape-resilience, consumer-fleet, bug, fw-cli]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 5
+  lines_added: 343
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1841-findprojectroot-sentinel--skip-agentic-f.md
+generated_by: context-agent-hybrid
