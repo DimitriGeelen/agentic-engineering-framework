@@ -45,7 +45,7 @@ event fire + addressee resolution + responder spawn; (4) capture demo artefact.
 ### Agent
 - [x] TermLink T-1636 implementation dispatched via `bin/fw termlink dispatch --project /opt/termlink --task T-1820 --timeout 5400 --model sonnet` with prompt enumerating the 5 locked constraints. Worker `t1636-build` running (started 2026-05-14T01:14:33+02:00). Initial dispatch at 10-min default timeout was killed mid-read — redispatched with 90-min timeout + sonnet for the Rust build.
 - [x] T-1636 build landed in /opt/termlink: cross-repo commit(s) reference T-1636, event class constant defined in events.rs, emit call inserted in deliver_pending, integration test added and passing (≤50 LOC total diff). **Evidence (worker exit 2026-05-13T23:36Z, code 0):** 3 files / 50 LOC (within budget); commits `f3927611` (impl) + `13a11741` (task update); architecture — emit lands inside `mirror_inbox_deposit_with` (no-consumer branch) via new `aggregator().inject()`; integration tests `inbox_queued_fires_for_no_consumer` + `inbox_queued_not_emitted_without_deposit` both pass; release build clean; zero deviations from the 5 locked constraints. Full report at `docs/reports/T-1820-joint-smoke-demo.md` §Worker report.
-- [ ] Live joint smoke executed: framework spawns a tagged TermLink consumer session, posts a DM into a `dm:design-*` channel addressed to that session, runs `fw peer subscribe --once`, observes (a) `inbox.queued` event polled, (b) addressee resolved to `design-consult` workflow, (c) responder spawn invoked. Captured as console transcript + cursor state. **DEPLOY-BLOCKED** — deployed `termlink` binary at `/root/.cargo/bin/termlink` (mtime 2026-05-01, v0.9.1701) predates today's T-1636 commits; the live hub does not yet fire the event. Restarting the shared hub on `0.0.0.0:9100` is high blast radius (terminates all TermLink sessions on host) and surfaced to operator for deploy decision rather than executed autonomously.
+- [ ] Live joint smoke executed: framework spawns a tagged TermLink consumer session, posts a DM into a `dm:design-*` channel addressed to that session, runs `fw peer subscribe --once`, observes (a) `inbox.queued` event polled, (b) addressee resolved to `design-consult` workflow, (c) responder spawn invoked. Captured as console transcript + cursor state. **PARTIAL after deploy:** binary `termlink 0.9.2104` now live on hub PID 4091515; framework subscriber polls cleanly (cursor written, exit 0, topic recognized — `next_seq: 342`); two user-facing CLI trigger attempts (file send to offline target; channel post with kill-9'd member) did NOT fire `inbox.queued`. The integration test on the TermLink side calls `mirror_inbox_deposit_with()` directly from inside the hub crate — passing the test does NOT prove any user-facing CLI flow currently exercises the new emit. Recommended split: file T-1821 follow-up for trigger investigation; T-1820 partial-ships substrate.
 - [-] Demo artefact written to `docs/reports/T-1820-joint-smoke-demo.md` containing: dispatch envelope, T-1636 build commit hashes, smoke transcript (timestamps + events seen + responder dispatch line), cursor advance evidence. **Partial:** dispatch envelope, commit hashes, worker report, coord transcript, harness plan, and Recommendation (HOLD pending operator deploy) all landed. Live smoke transcript + cursor advance fill in once operator picks a deploy path.
 - [x] No regression in framework-side peer tests: `python3 -m pytest tests/unit/test_peer_subscribe.py` 12/12 PASS.
 
@@ -120,6 +120,12 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 - **Plan impact:** Agent intentionally stopped at the deploy boundary per CLAUDE.md §"Executing actions with care" — a daemon restart with that blast radius needs human consent. T-1820 status stays `started-work`; AC#2 ticked (build), AC#5 ticked (no regression), AC#3 unticked (deploy-blocked), AC#4 partial (artefact landed, live transcript pending). Surfacing to operator via `fw task review T-1820` with two deploy options enumerated: (1) restart shared hub (one-time interrupt), (2) side-by-side hub on spare port (lower blast radius, more steps).
 - **Triggered:** No new sub-task — the post-deploy execution path is documented in the demo artefact's Recommendation section and the agent will resume on operator decision.
 
+### 2026-05-14 — post-deploy: substrate live, headline mechanic not observed in CLI smoke
+
+- **What changed:** Operator chose path 1 (shared-hub restart). Sequence executed: heads-up via `termlink inject` → dispatch worker `t1820-deploy` ran `cargo install --path /opt/termlink/crates/termlink-cli --force` (exit 0, ~7min) → new binary `termlink 0.9.2104` at `/root/.cargo/bin/termlink`, mtime today → `termlink hub stop && termlink hub start --tcp 0.0.0.0:9100 --json` (old PID 1113405 → new PID 4091515) → `bin/fw peer subscribe --once` against the live hub: exit 0, cursor written (`target_session: framework-agent, since: 0`), no errors → `event poll … --topic inbox.queued` returns `No events (next_seq: 342)` (topic recognized, no events fired). Two attempts to trigger the new emit from the CLI surface: (A) `termlink file send` to an offline target — file spooled, but with `T-1249: new-path send failed — falling back to legacy events` WARN, no event fired; (B) `channel post` to `dm:design-smoke-test` after kill-9'ing a member session — post landed at offset 2, no event fired. Trigger-spec dispatch worker `t1820-trigger-spec` (Haiku) confirmed the integration test calls `mirror_inbox_deposit_with()` **directly from inside the hub crate** — passing the test does NOT prove any user-facing CLI flow currently exercises the new emit.
+- **Plan impact:** PARTIAL-SHIP. Substrate is real and useful (deployment landed, hub runs new binary, subscriber polls the new hub for the new topic without error). Headline mechanic (live binary-to-binary observation) NOT yet demonstrated. Per §ACD/G-062 ("acknowledged failure better than false success"), agent does NOT close T-1820 GO on substrate-only evidence. Surfacing PARTIAL-SHIP with two options to the operator: (1) accept substrate + file T-1821 follow-up for trigger investigation, OR (2) keep T-1820 open and authorise another worker to extract the exact trigger spec and retry smoke. Agent's call: option (1) — bundling investigation into T-1820 conflates two scopes.
+- **Triggered:** Candidate follow-up — T-1821-joint-smoke-trigger-investigation (not yet filed; awaiting operator decision on which path to take).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -133,32 +139,41 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 
 ## Recommendation
 
-- **Recommendation:** **HOLD** — agent has stopped at a deploy boundary. Operator
-  picks the deploy path; agent resumes the live smoke + closure on the choice.
-- **Rationale:** five of six closure conditions are green (build shipped + tested
-  on `/opt/termlink` master per worker commits `f3927611` + `13a11741`; framework
-  half shipped + tested at T-1818/T-1819; coord consultation captured; cross-repo
-  wire shape locked by paired unit tests on both halves; reviewer Overall PASS
-  with Layer-1 cross-project-blast escalation correctly signalling human review).
-  Sixth (live binary-to-binary observation, AC#3) requires the rebuilt termlink
-  binary to be installed AND the hub restarted to pick it up. The shared hub on
-  `0.0.0.0:9100` is carrying active sessions for this host and remote consumers
-  — restarting it is high blast radius. Per CLAUDE.md §"Executing actions with
-  care", that needs operator consent rather than autonomous action.
-- **Evidence:**
-  - Worker exit code 0 at 2026-05-13T23:36Z (~22min wall, within 90min budget).
-  - 50 LOC diff (within ≤50 budget); 2 integration tests both pass; release build clean; 0 deviations from 5 locked constraints.
-  - Framework peer tests: 12/12 PASS (`python3 -m pytest tests/unit/test_peer_subscribe.py -q`).
-  - Demo artefact: `docs/reports/T-1820-joint-smoke-demo.md` (worker report, dispatch envelope, coord transcript, harness plan, two deploy options, post-deploy plan).
-  - Reviewer: Overall PASS / Needs Human yes (cross-project-blast Layer-1 is the cross-repo human-review signal, by design).
-  - Deployed termlink binary `/root/.cargo/bin/termlink` mtime 2026-05-01 / v0.9.1701 — predates today's commits; live emit not yet active.
+- **Recommendation:** **PARTIAL-SHIP** — close T-1820 as substrate-shipped + file
+  T-1821 follow-up for headline-mechanic trigger investigation. Agent will NOT
+  autonomously close T-1820 GO; surfacing the partial-ship framing to the
+  operator for explicit accept-or-reject (per §ACD discipline).
+- **Rationale:** post-deploy state — deploy landed cleanly (binary `termlink 0.9.2104`
+  active on hub PID 4091515, mtime today, framework subscriber polls the new hub
+  without error, `inbox.queued` topic recognized by `event poll`). Two user-facing
+  CLI trigger attempts (`file send` to offline target → fell back to legacy events
+  per `T-1249` warn; `channel post` to a topic with kill-9'd "member" → did not
+  fire) did NOT produce the new emit. The TermLink-side integration test passes
+  because it calls `mirror_inbox_deposit_with()` directly from inside the hub
+  crate — passing the test does NOT prove any CLI flow exercises the new emit
+  live. Substrate is real and useful; the headline-mechanic observation is a
+  distinct deliverable that deserves its own evidence bar (T-1821). Per
+  §ACD/G-062 ("acknowledged failure better than false success"), I am refusing
+  to close GO on substrate-only evidence.
+- **Evidence (green — what landed):**
+  - Worker `t1636-build` exit 0 at 23:36Z (~22min); 3 files / 50 LOC / 2 tests; commits `f3927611` + `13a11741` on `/opt/termlink` master.
+  - Worker `t1820-deploy` exit 0 (~7min); `cargo install` succeeded; new binary `termlink 0.9.2104` (was 0.9.1701), mtime today.
+  - Hub restarted: PID 1113405 → PID 4091515; new binary active.
+  - `bin/fw peer subscribe --once` against live hub: exit 0, cursor written, no errors.
+  - `event poll framework-agent --topic inbox.queued`: topic recognized (`next_seq: 342`, no error).
+  - Framework peer tests: 12/12 PASS.
+  - Demo artefact: `docs/reports/T-1820-joint-smoke-demo.md` (worker report, deploy log, two trigger attempts with exit states, why partial, recommended next move).
+  - Reviewer: Overall PASS / Needs Human yes (cross-project-blast Layer-1 is the cross-repo human-review signal).
+- **Evidence (red — what did NOT land):**
+  - No live `inbox.queued` event observed from outside the hub crate during this session.
+  - User-facing trigger path for the new emit is not yet identified (likely needs to read the integration test verbatim).
 
-**Operator deploy choice (please pick one in the Watchtower review):**
+**Operator choice (please pick one in the Watchtower review):**
 
-1. **Shared-hub restart** — `cargo install --path /opt/termlink/crates/termlink-cli` then `termlink hub stop && termlink hub start --tcp 0.0.0.0:9100 --json`. One-time TermLink interruption for every consumer on this host. Shortest path.
-2. **Side-by-side hub on a spare port** — leaves prod hub running; framework subscriber points at side hub for the smoke window. Lower blast radius, more steps.
+1. **Accept partial-ship** — close T-1820 as substrate-shipped, file T-1821 ("identify user-facing trigger for inbox.queued and complete the joint smoke") as a follow-up build task. Cleanest scope separation; lets T-1820 land while the trigger investigation gets its own evidence bar.
+2. **Keep T-1820 open** — authorise another investigation worker to extract the exact integration-test setup from `crates/termlink-hub/src/channel.rs` (lines 1780–1809 per trigger-spec worker) and retry the smoke against the precise precondition. ~10-15 min of agent + token cost.
 
-On your decision the agent will run the harness (consumer spawn → DM post → `bin/fw peer subscribe --once`), paste the live transcript + cursor advance into the demo, tick AC#3 + AC#4, re-issue Recommendation as GO, and transition T-1820 to work-completed.
+On your decision the agent either (1) files T-1821 + transitions T-1820 to work-completed with the partial framing on record, or (2) dispatches the investigation worker and re-attempts the smoke.
 
 ## Updates
 
@@ -173,8 +188,8 @@ On your decision the agent will run the harness (consumer spawn → DM post → 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-01458a6c
-- **Timestamp:** 2026-05-13T23:40:53Z
+- **Scan ID:** R-a64145bc
+- **Timestamp:** 2026-05-14T05:29:47Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes

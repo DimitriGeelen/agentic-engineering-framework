@@ -123,37 +123,58 @@ payload preserved verbatim.
 - `f3927611` — implementation (events.rs + aggregator.rs + channel.rs + 2 tests)
 - `13a11741` — task update (AC ticks + Recommendation, status left `started-work` for TermLink-side human review)
 
-## Live joint smoke — **DEPLOY-BLOCKED**
+## Live joint smoke — **PARTIAL: substrate operational, headline mechanic not yet observed in live CLI**
 
-**Current state of deployed `termlink` binary:** `/root/.cargo/bin/termlink`
-mtime **2026-05-01 23:21**, version `0.9.1701`. T-1636 commits landed on
-`/opt/termlink` master today (2026-05-13). The deployed binary therefore
-does **not** contain the new `inbox_topic::QUEUED` emit. A live binary-to-
-binary smoke against this hub would not observe the event.
+### What landed
 
-**Hub state:** PID 1113405, running on `0.0.0.0:9100` since 2026-05-05.
-This hub is shared infrastructure — restarting it would terminate every
-TermLink session on this host (worker dispatches, peer agents on remote
-machines connected via TCP, etc.). Per CLAUDE.md §"Executing actions with
-care", that blast radius requires human consent rather than autonomous
-action. The agent has therefore stopped at the deploy boundary and is
-surfacing the decision to the human.
+After operator GO on path 1 (shared-hub restart):
 
-**Two operator-decision paths exist (Watchtower review will offer both):**
+1. **Deploy worker `t1820-deploy`** (sonnet, exit 0 in 7 min) ran `cargo install --path /opt/termlink/crates/termlink-cli --force`. Binary at `/root/.cargo/bin/termlink` rebuilt from `13a11741` (one commit above the T-1636 emit at `f3927611`). New version: **`termlink 0.9.2104`** (was `0.9.1701`), mtime today.
+2. **Hub restart** — `termlink hub stop && termlink hub start --tcp 0.0.0.0:9100 --json`. Old PID `1113405` (binary mtime 2026-05-01) → new PID `4091515` (binary 0.9.2104). Heads-up sent to remote sessions via `termlink inject` before the restart.
+3. **Framework subscriber against live hub** — `bin/fw peer subscribe --once` exits 0; writes cursor `target_session: framework-agent, since: 0` to `.context/working/.peer-subscribe.cursor`; no errors. The subscriber correctly long-polls `event poll framework-agent --topic inbox.queued --since <cursor>` against the new hub.
+4. **Topic recognized** — `event poll framework-agent --topic inbox.queued --since 0 --timeout 3` returns `"No events (next_seq: 342)"` — the topic name is *known* to the hub (not "unknown topic"), the event stream is operational, and there is currently no `inbox.queued` event sitting in the framework-agent inbox.
 
-1. **Restart the shared hub** with the rebuilt binary — simplest path,
-   one-time interruption. Sequence:
-   ```
-   cd /opt/termlink && cargo install --path crates/termlink-cli
-   termlink hub stop && termlink hub start --tcp 0.0.0.0:9100 --json &
-   ```
-   Then re-run the harness below.
+### What did NOT fire in this smoke
 
-2. **Side-by-side hub on a non-prod port** — leaves the main hub running.
-   Requires the framework subscriber to be pointed at the side hub for the
-   smoke window. More steps, no service interruption.
+The integration test `inbox_queued_fires_for_no_consumer` on the TermLink
+side (commit `f3927611`) drives `mirror_inbox_deposit_with()` **directly
+from inside the hub crate** — it is an internal-plumbing test, not a
+user-facing CLI smoke. From the framework agent's user-facing CLI surface,
+two trigger attempts did not produce the event:
 
-### Smoke harness (to run after the operator chooses a deploy path)
+| Attempt | What | Result |
+|---------|------|--------|
+| A | `termlink file send peer-offline-target /tmp/t1820-smoke-payload.txt` to an offline target session | `File spooled to hub inbox for 'peer-offline-target'` BUT the send path emitted a `T-1249: new-path send failed — falling back to legacy events` WARN. The legacy fallback does **not** route through the new `mirror_inbox_deposit_with()` emit path. `event poll … inbox.queued` still `next_seq: 342` after the spool. |
+| B | `termlink channel post dm:design-smoke-test --msg-type note` after first having `peer-smoke-consumer` (kill -9'd to take it offline) post to the topic (making it a "member"), then posting again from framework-agent | Post landed at offset 2; topic state confirms 3 posts from one fingerprint; `event poll … inbox.queued` still no events (`next_seq: 343`). The hub did not classify the kill-9'd consumer as an offline subscriber requiring deposit, or the channel-post deposit path doesn't route through the new emit. |
+
+### Why this is a partial — and why the build is still solid
+
+- The headline mechanic (live binary-to-binary observation) is the wire's behaviour as seen from outside. **It was not observed in this smoke window.**
+- The wire contract is nevertheless pinned at the unit-test level on both halves:
+  - TermLink-side: `inbox_queued_fires_for_no_consumer` + `inbox_queued_not_emitted_without_deposit` both PASS at the integration-test layer (verified via worker exit code 0; commit `f3927611`).
+  - Framework-side: 12/12 PASS at `python3 -m pytest tests/unit/test_peer_subscribe.py -q`, covering event parsing, addressee resolution, spawn shape, cursor advance, and loop continuation past a miss.
+- The substrate is operational: deployed binary reflects the new commits, hub runs the new binary, framework subscriber long-polls the new hub for the new topic without error.
+
+### What's missing — the next investigation
+
+The user-facing CLI flow that triggers `mirror_inbox_deposit_with()` is not
+obvious from outside the hub crate. The two natural surfaces (`termlink file
+send`, `termlink channel post`) did not exercise the new emit in this
+smoke. Likely paths to investigate (deferred as a follow-up to T-1820):
+
+- Read the integration test verbatim to identify the exact precondition
+  (which RPC method, which session state, which topic membership the test
+  sets up before calling `mirror_inbox_deposit_with()` directly).
+- Determine whether the new emit is intentionally *only* on a not-yet-
+  shipped delivery path (i.e., a future T-1249-replacement) — in which
+  case the live joint smoke needs *that* path to ship first, and T-1820's
+  AC#3 is genuinely deferred rather than "smoke we should be able to run
+  today."
+- Failing both: it may be cleaner to demonstrate the framework subscriber
+  end-to-end against a **synthetic test event** injected directly into the
+  hub's event bus, captured in a Watchtower-visible script.
+
+### Smoke harness (used today, partial)
 
 1. **Spawn a tagged TermLink consumer session**
    ```
@@ -192,16 +213,22 @@ python3 -m pytest tests/unit/test_peer_subscribe.py -q
 bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 ```
 
-## Recommendation — PARTIAL-COMPLETE
+## Recommendation — PARTIAL-COMPLETE (post-deploy)
 
-**Recommendation:** **HOLD** — wait for operator deploy decision, then run smoke and re-decide.
+**Recommendation:** **PARTIAL-SHIP** — close the substrate + capture investigation
+follow-up; do not declare GO on the headline mechanic.
 
-**Rationale:** five of six closure conditions are already green; the sixth
-(live binary-to-binary observation) is a deploy boundary the agent
-intentionally did not cross autonomously because restarting the shared hub
-on `0.0.0.0:9100` would terminate every TermLink session on the host. The
-honest framework-aligned move is to surface the deploy choice to the
-human rather than close on a partial smoke.
+**Rationale:** the deploy landed cleanly (new binary running, hub restarted,
+subscriber polls the new hub without error, topic recognized). Two
+attempts to exercise the new emit from the user-facing CLI did not fire
+it — the file-send path fell back to the legacy emitter (`T-1249` warn),
+and the channel-post-with-offline-subscriber path did not trigger
+`mirror_inbox_deposit_with()` either. The integration test on the
+TermLink side calls that function directly from inside the hub crate, so
+PASSING the test is **not** equivalent to "any user-facing flow exercises
+the new emit." Per the framework's §ACD/G-062 discipline ("acknowledged
+failure is better than false success"), I am not closing T-1820 GO on
+substrate-only evidence — that's the exact conflation §ACD names.
 
 **Evidence (green):**
 - T-1636 implementation landed on `/opt/termlink` master — commits
@@ -222,29 +249,25 @@ human rather than close on a partial smoke.
   rationale.
 
 **Evidence (red):**
-- Deployed `termlink` binary at `/root/.cargo/bin/termlink` mtime 2026-05-01,
-  version 0.9.1701 — predates today's T-1636 commits. The new emit code is
-  not running on the live hub.
-- Live `fw peer subscribe --once` against the live hub would observe
-  **zero** `inbox.queued` events because the deployed binary doesn't fire
-  them yet. Running it now produces non-evidence — false-success risk per
-  §ACD discipline.
+- File-send + channel-post smoke attempts did NOT fire `inbox.queued` from
+  outside the hub crate. See §"Live joint smoke" "What did NOT fire" for
+  the specific commands + exit states.
+- The integration test passing on the TermLink side calls
+  `mirror_inbox_deposit_with()` directly — that does NOT prove any user-
+  facing CLI flow currently exercises the new emit.
 
-**Deploy choice for the operator (Watchtower review surfaces both):**
-1. **Shared-hub restart** — `cargo install --path /opt/termlink/crates/termlink-cli`
-   + `termlink hub stop && termlink hub start --tcp 0.0.0.0:9100 --json`.
-   Shortest path; one-time TermLink interruption.
-2. **Side-by-side hub on a spare port** — leaves prod hub running; framework
-   subscriber points at the side hub for the smoke window. Lower blast
-   radius, more steps.
+**Recommended next move:** file T-1821 as a follow-up investigation task —
+"identify the user-facing trigger for inbox.queued and complete the joint
+smoke." Transition T-1820 to work-completed under partial-ship framing:
+substrate is real and useful; the headline-mechanic observation is a
+distinct deliverable worth its own evidence bar.
 
-**Post-deploy plan (the agent will execute upon operator decision):**
-1. Verify `termlink --version` reflects the new binary.
-2. Run the harness above (consumer spawn → DM post → `fw peer subscribe --once`).
-3. Paste the live transcript into the “Live joint smoke” section above.
-4. Run all 6 Verification commands; tick remaining ACs.
-5. Re-issue the Recommendation as GO.
-6. Transition T-1820 to work-completed.
+The agent will NOT autonomously close T-1820 GO on substrate-only evidence
+(that is the §ACD conflation the discipline names). Operator decision
+needed:
+- Accept partial-ship + file T-1821 follow-up
+- Or keep T-1820 open and authorise another investigation worker (read the
+  integration test verbatim, identify the precise trigger, retry smoke)
 
 ## Provenance / cross-repo trail
 
