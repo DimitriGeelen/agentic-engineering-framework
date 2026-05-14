@@ -70,3 +70,37 @@ teardown() {
     result=$(bash -c 'echo $FRAMEWORK_ROOT')
     [ -n "$result" ]
 }
+
+# T-1822: vendored .agentic-framework/ resolution.
+# When FRAMEWORK_ROOT points at a vendored .agentic-framework/ with its own
+# .git (post-`fw vendor` shape) AND parent has .framework.yaml, prefer the
+# outer consumer as PROJECT_ROOT — otherwise cwd-inside-vendored-copy traps
+# consumer agents (session-fatal; B-1, fw-upgrade-incident-2026-05-14).
+@test "paths: vendored case — basename .agentic-framework + .framework.yaml parent → PROJECT_ROOT is parent" {
+    mkdir -p "$TEST_TEMP_DIR/consumer/.agentic-framework"
+    touch "$TEST_TEMP_DIR/consumer/.framework.yaml"
+    export FRAMEWORK_ROOT="$TEST_TEMP_DIR/consumer/.agentic-framework"
+    unset PROJECT_ROOT TASKS_DIR CONTEXT_DIR
+    unset _FW_PATHS_LOADED _FW_COMPAT_LOADED _FW_TASKS_LOADED _FW_YAML_LOADED _FW_ERRORS_LOADED
+    source "$ORIG_FRAMEWORK_ROOT/lib/paths.sh"
+    [ "$PROJECT_ROOT" = "$TEST_TEMP_DIR/consumer" ]
+}
+
+@test "paths: standalone — FRAMEWORK_ROOT not named .agentic-framework keeps git-toplevel resolution" {
+    export FRAMEWORK_ROOT="$ORIG_FRAMEWORK_ROOT"
+    unset PROJECT_ROOT TASKS_DIR CONTEXT_DIR
+    unset _FW_PATHS_LOADED _FW_COMPAT_LOADED _FW_TASKS_LOADED _FW_YAML_LOADED _FW_ERRORS_LOADED
+    source "$ORIG_FRAMEWORK_ROOT/lib/paths.sh"
+    expected="$(git -C "$ORIG_FRAMEWORK_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$ORIG_FRAMEWORK_ROOT")"
+    [ "$PROJECT_ROOT" = "$expected" ]
+}
+
+@test "paths: vendored basename without .framework.yaml parent does NOT collapse to parent" {
+    # Defensive: basename matches but no .framework.yaml — vendored branch must not fire.
+    mkdir -p "$TEST_TEMP_DIR/not-a-consumer/.agentic-framework"
+    export FRAMEWORK_ROOT="$TEST_TEMP_DIR/not-a-consumer/.agentic-framework"
+    unset PROJECT_ROOT TASKS_DIR CONTEXT_DIR
+    unset _FW_PATHS_LOADED _FW_COMPAT_LOADED _FW_TASKS_LOADED _FW_YAML_LOADED _FW_ERRORS_LOADED
+    source "$ORIG_FRAMEWORK_ROOT/lib/paths.sh"
+    [ "$PROJECT_ROOT" != "$TEST_TEMP_DIR/not-a-consumer" ]
+}
