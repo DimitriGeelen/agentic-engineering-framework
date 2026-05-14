@@ -132,6 +132,12 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 - **Plan impact:** Investigation done; conclusion is the same as PARTIAL-SHIP. The trigger isn't reachable from the current CLI surface; T-1636 ships the substrate, not the user-facing trigger. Recommendation re-issued: accept PARTIAL-SHIP and close T-1820 substrate-shipped, picking up the live smoke under T-1821 once TermLink wires the handler.
 - **Triggered:** T-1821 filed (framework-side tracker, captured/next, owner: agent, type: build). Cross-link added to this task's related_tasks if not already present.
 
+### 2026-05-14 — pickup envelope delivered to TermLink-side inbox
+
+- **What changed:** Operator chose option 2 (hold T-1820 open until TermLink resolves the handler gap) — and asked the right question: have we filed a pickup with TermLink? Answer was no until now. Dispatched `t1820-pickup-deliver` (Haiku, ~30s) to /opt/termlink which ran `bin/fw pickup send --type bug-report --priority high --task-id T-1636 --tags cross-repo,joint-smoke,T-1820,T-1636,T-1821` with the full working-hypothesis detail (handler registered in test only via `router::init_aggregator`, three resolution paths A/B/C). Envelope `P-041-bug-report.yaml` created in /opt/termlink's `.context/pickup/inbox/`; visible on `bin/fw pickup list`. The TermLink-side maintainer (or their next agent session) will see it on routine pickup processing.
+- **Plan impact:** Cross-repo signal is now formally on record in /opt/termlink, not just in our demo doc. Framework side can hold T-1820 open without needing to chase TermLink — they have the structured envelope to triage on their cadence. Closes the cross-repo coordination loop this slice can close from our side.
+- **Triggered:** No new sub-task. Awaiting TermLink-side pickup processing (`fw pickup process` on /opt/termlink, or routine agent review of inbox).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
