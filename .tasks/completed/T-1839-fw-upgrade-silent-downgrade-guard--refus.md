@@ -4,16 +4,16 @@ name: "fw upgrade silent-downgrade guard — refuse when target consumer's pinne
 description: >
   lib/upgrade.sh:1082-1112 performs direction-blind version overwrite. If consumer is at 1.6.260 and framework at 1.6.170, fw upgrade /opt/consumer would silently rewrite the consumer's .framework.yaml to 1.6.170 — a downgrade — recording the original as upgraded_from. T-1838 fixed the doctor advice that pointed operators toward this command; T-1839 closes the loop by making the command itself refuse the downgrade direction. Symmetric to the T-1542 fail-fast guard in do_upgrade. Surfaces same Layer 3 T-1828 family.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:project-shape-resilience, consumer-fleet, fw-upgrade]
-components: []
+components: [lib/upgrade.sh]
 related_tasks: [T-1838, T-1828, T-1542]
 created: 2026-05-14T21:53:34Z
-last_update: 2026-05-14T21:53:34Z
-date_finished: null
+last_update: 2026-05-14T21:57:35Z
+date_finished: 2026-05-14T21:57:35Z
 ---
 
 # T-1839: fw upgrade silent-downgrade guard — refuse when target consumer's pinned version is ahead of framework (T-1838 sibling)
@@ -171,3 +171,15 @@ grep -q "force-downgrade\|force_downgrade" lib/upgrade.sh
 - `tests/unit/test_upgrade_downgrade_guard.bats`: 9/9 source-pin + direction-primitive tests pass
 - `tests/unit/lib_upgrade.bats`: 12/12 still pass post-edit (no behind/match regression)
 - `bash -n lib/upgrade.sh`: clean
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-8339f600
+- **Timestamp:** 2026-05-14T21:57:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T21:57:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
