@@ -40,7 +40,11 @@ _make_consumer_with_concerns() {
 EOF
 )")
     cd "$consumer"
-    run "$FW_BIN" gaps
+    # Explicitly override PROJECT_ROOT to the synthetic consumer — otherwise
+    # the env-inherited PROJECT_ROOT from a parent process (e.g. update-task.sh
+    # verification gate) shadows the cwd-based resolution and fw queries the
+    # framework's own concerns.yaml instead of the synthetic fixture.
+    PROJECT_ROOT="$consumer" run "$FW_BIN" gaps
     [ "$status" -eq 0 ]
     [[ "$output" == *"<untitled>"* ]]
     [[ "$output" != *"KeyError"* ]]
@@ -57,7 +61,11 @@ EOF
 EOF
 )")
     cd "$consumer"
-    run "$FW_BIN" gaps
+    # Explicitly override PROJECT_ROOT to the synthetic consumer — otherwise
+    # the env-inherited PROJECT_ROOT from a parent process (e.g. update-task.sh
+    # verification gate) shadows the cwd-based resolution and fw queries the
+    # framework's own concerns.yaml instead of the synthetic fixture.
+    PROJECT_ROOT="$consumer" run "$FW_BIN" gaps
     [ "$status" -eq 0 ]
     # Defensive '?' placeholder renders rather than crash on missing id
     [[ "$output" != *"KeyError"* ]]
@@ -75,7 +83,11 @@ EOF
 EOF
 )")
     cd "$consumer"
-    run "$FW_BIN" gaps
+    # Explicitly override PROJECT_ROOT to the synthetic consumer — otherwise
+    # the env-inherited PROJECT_ROOT from a parent process (e.g. update-task.sh
+    # verification gate) shadows the cwd-based resolution and fw queries the
+    # framework's own concerns.yaml instead of the synthetic fixture.
+    PROJECT_ROOT="$consumer" run "$FW_BIN" gaps
     [ "$status" -eq 0 ]
     [[ "$output" == *"G-NORMAL"* ]]
     [[ "$output" == *"A normal well-formed concern"* ]]
