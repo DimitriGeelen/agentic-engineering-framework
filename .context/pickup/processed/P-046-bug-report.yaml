@@ -1,0 +1,13 @@
+pickup_id: P-046
+version: 1
+type: bug-report
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: "T-1826"
+  agent: "claude-code"
+  timestamp: "2026-05-14T14:25:32Z"
+payload:
+  summary: "Cross-hub relay stall: termlink-agent's framework:pickup offsets 9+10 never reached framework-agent (only seq 47 visible)"
+  detail: "OPS-1 from fw-upgrade-incident-2026-05-14. termlink-agent (tl-7zlfowtz on workstation-107-public) emitted two framework:pickup envelopes — offset 9 (T-1634 status-check 2026-05-13T13:29Z) and offset 10 (B-1 cwd-trap detail 2026-05-14T05:09Z). Both invisible from framework-agent's poll. Framework half is healthy: local outbound queue empty (0 pending in ~/.termlink/outbound.sqlite), local framework:pickup topic shows only seq=47 (G-082 ring20-management). The two envelopes appear stuck in TermLink-side state — outbound queue, hub buffer, or cross-hub relay. Request: investigate TermLink-agent's outbound queue + hub topology for stalled envelopes, replay or expire. Visibility gap to consider as a longer-term fix: receiver currently has no way to see 'envelope sent but not delivered' state — would benefit from a sender-side queue-status surface in fleet doctor."
+  priority: high
+  tags: [fw-upgrade-incident-2026-05-14, pickup, cross-hub, relay-stall]
