@@ -57,10 +57,20 @@ NC='\033[0m'
 FW_REAL_PATH="$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")"
 FW_BIN_DIR="$(cd "$(dirname "$FW_REAL_PATH")" && pwd)"
 
-# Find PROJECT_ROOT by walking up from cwd looking for .framework.yaml or .tasks/
+# Find PROJECT_ROOT by walking up from cwd looking for .framework.yaml or .tasks/.
+# T-1841: skip dirs containing .fw-not-a-project sentinel — these are vendored
+# framework copies (.agentic-framework/) or rollback dirs (.agentic-framework.rollback/)
+# that happen to carry .tasks/templates/ from the vendored framework's own structure.
+# Without this skip, an agent CWD inside such a dir would mis-resolve PROJECT_ROOT
+# to the vendored copy, triggering boundary-hook blocks on every `cd` to the real
+# consumer root.
 find_project_root() {
     local dir="$PWD"
     while [ "$dir" != "/" ]; do
+        if [ -f "$dir/.fw-not-a-project" ]; then
+            dir="$(dirname "$dir")"
+            continue
+        fi
         if [ -f "$dir/.framework.yaml" ] || [ -d "$dir/.tasks" ]; then
             echo "$dir"
             return 0
@@ -328,6 +338,18 @@ do_vendor() {
     # Create VERSION file
     echo "$FW_VERSION" > "$dest/VERSION"
     echo -e "  ${GREEN}✓${NC} VERSION ($FW_VERSION)"
+
+    # T-1841: write .fw-not-a-project sentinel so find_project_root walks past
+    # this vendored copy when the agent CWD ends up inside it. .tasks/templates/
+    # (shipped in vendored framework) would otherwise satisfy the .tasks/
+    # detection branch and mis-resolve the vendored dir as PROJECT_ROOT.
+    cat > "$dest/.fw-not-a-project" <<'SENTINEL'
+This file marks a vendored copy of the Agentic Engineering Framework — NOT a
+project root. fw's find_project_root skips any directory containing this file
+so an agent CWD inside .agentic-framework/ resolves to the real consumer
+project (the parent), not this vendored copy. T-1841.
+SENTINEL
+    echo -e "  ${GREEN}✓${NC} .fw-not-a-project (T-1841 sentinel)"
 
     # T-1323: Write .gitignore so runtime-generated __pycache__/ files inside
     # the vendored framework do not leak into the consumer's git index.

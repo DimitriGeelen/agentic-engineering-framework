@@ -1,0 +1,4 @@
+This file marks a vendored copy of the Agentic Engineering Framework — NOT a
+project root. fw's find_project_root skips any directory containing this file
+so an agent CWD inside .agentic-framework/ resolves to the real consumer
+project (the parent), not this vendored copy. T-1841.
