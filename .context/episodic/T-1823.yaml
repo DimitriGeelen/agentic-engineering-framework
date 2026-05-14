@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1823: web/test_app.py consumer-vs-framework data-shape bleed — 5-7 tests assume framework-repo state
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-14T14:22:34Z
+# ============================================================================
+
+task_id: T-1823
+task_name: "web/test_app.py consumer-vs-framework data-shape bleed — 5-7 tests assume framework-repo state"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-14T07:30:49Z
+completed: 2026-05-14T14:22:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-14T16:21:20+02:00
+last_commit: 2026-05-14T16:21:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  framework_repo pytest marker + consumer-mode auto-skip
+
+# Key outcomes
+outcomes:
+  - "`web/conftest.py` defines a `framework_repo` marker and registers it via `pytest_configure` (silences PytestUnknownMarkWarning). `_is_consumer_mode()` mirrors `bin/fw` Check 9 — FRAMEWORK_ROOT vs PROJECT_ROOT realpath comparison."
+  - "Auto-skip mechanism: `pytest_collection_modifyitems` hook adds skip marker to all `framework_repo`-tagged tests when `_is_consumer_mode()` returns True."
+  - "8 framework-repo-only tests in `web/test_app.py` got the `@pytest.mark.framework_repo` marker: TestErrorHandlers::test_404_for_nonexistent_task, TestDataIntegrity::test_gaps_page_shows_gaps + test_project_page_lists_docs + test_project_doc_renders_markdown, TestPhase3Integration::test_dashboard_has_system_health, TestNavigation::test_footer_shows_watchtower, TestEmptyTaskFiles::test_task_file_no_frontmatter + test_task_file_empty."
+  - "In framework-repo mode (current host), all 8 marker'd tests PASS — `python3 -m pytest web/test_app.py -k \"...\" -v` → 8 passed."
+  - "In simulated consumer mode (FRAMEWORK_ROOT=this repo, PROJECT_ROOT=tmpdir with .framework.yaml), all 8 marker'd tests SKIP — `python3 -m pytest web/test_app.py -k \"...\" -v` → 8 skipped."
+  - "No existing test loses coverage: full suite still 145/145 PASSED in framework-repo mode, non-marked tests run normally on consumer mode (verified test_csrf_via_header, test_404_for_invalid_task_id still PASS under simulated consumer)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1823-webtestapppy-consumer-vs-framework-data-.md"
+  - ".tasks/completed/T-1634-fw-upgrade-no-args-read-upstream-url-fro.md"
+  - "web/conftest.py"
+  - "web/test_app.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T16:21:20"
+    action: "T-1823: framework_repo pytest marker + consumer-mode auto-skip"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 411 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:project-shape-resilience, test-infra, fw-upgrade-incident-2026-05-14, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 411
+  commits: 1
+  files_changed: 4
+  lines_added: 182
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1823-webtestapppy-consumer-vs-framework-data-.md
+generated_by: context-agent-hybrid

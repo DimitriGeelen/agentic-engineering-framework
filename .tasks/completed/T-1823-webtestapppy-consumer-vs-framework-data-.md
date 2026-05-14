@@ -4,7 +4,7 @@ name: "web/test_app.py consumer-vs-framework data-shape bleed — 5-7 tests assu
 description: >
   FB-B (MEDIUM) reported independently by penelope (050-email-archive), claude-002-cpn (002-CPN), termlink-agent (010-termlink) on 2026-05-13/14. web/test_app.py contains 5-7 tests that assert framework-repo fixture data (G-001 in /gaps, '001-Vision' in /project, 'Watchtower v' prefix in footer, 'System Health' heading) which consumers cannot satisfy. fw doctor SKIPs 'Test infrastructure (consumer project — tests live in framework repo)' but fw test all runs them anyway — inconsistent intent. Suggested fix (consistent across reporters): add @pytest.mark.framework_repo and auto-skip when .framework.yaml exists at PROJECT_ROOT (i.e. running in consumer mode). OR have fw test all honor the same consumer-skip the doctor uses. Affected tests: TestErrorHandlers::test_404_for_nonexistent_task, TestDataIntegrity::test_gaps_page_shows_gaps, TestDataIntegrity::test_project_page_lists_docs, TestDataIntegrity::test_project_doc_renders_markdown, TestPhase3Integration::test_dashboard_has_system_health, TestNavigation::test_footer_shows_watchtower, TestEmptyTaskFiles::test_task_file_no_frontmatter, TestEmptyTaskFiles::test_task_file_empty.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [arc:project-shape-resilience, test-infra, fw-upgrade-incident-2026-05-14,
 components: []
 related_tasks: [T-1822, T-1634]
 created: 2026-05-14T07:30:49Z
-last_update: 2026-05-14T14:11:03Z
-date_finished: null
+last_update: 2026-05-14T14:22:11Z
+date_finished: 2026-05-14T14:22:11Z
 ---
 
 # T-1823: web/test_app.py consumer-vs-framework data-shape bleed — 5-7 tests assume framework-repo state
@@ -74,30 +74,6 @@ bash -c 'td=$(mktemp -d); touch "$td/.framework.yaml"; out=$(FRAMEWORK_ROOT=/opt
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
-
-## Evolution
-
 ### 2026-05-14 — marker-based opt-in over fw-test-web-side filter
 - **What changed:** Two implementation shapes considered: (A) make `fw test web` parse args and add `--ignore=...` or `-k 'not framework_repo'` when consumer-mode is detected; (B) move the consumer-detect logic into `web/conftest.py` so any `pytest`-driven invocation honors it (including direct pytest, IDE test runners, CI). Chose (B): the conftest approach is invocation-path-independent and doesn't require all consumers to upgrade `fw` to a newer version.
 - **Plan impact:** Zero changes to `bin/fw test web` block — same command works on framework-repo and consumers, with different behavior. `fw doctor` Check 9 SKIP heuristic now aligns with `fw test web` behavior (both via FRAMEWORK_ROOT != PROJECT_ROOT).
@@ -116,3 +92,19 @@ bash -c 'td=$(mktemp -d); touch "$td/.framework.yaml"; out=$(FRAMEWORK_ROOT=/opt
 
 ### 2026-05-14T14:11:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-68349a37
+- **Timestamp:** 2026-05-14T14:22:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-05-14T14:22:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
