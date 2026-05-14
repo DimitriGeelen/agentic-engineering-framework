@@ -2893,3 +2893,10 @@ X'` returning empty group."
   date: 2026-05-14
   context: Added via context agent
   application: TBD
+- id: L-376
+  learning: "VERSION tag-reset rollback class — creating a new v<M>.<m>.<p> tag resets the git-describe patch-counter to 0; T-1603 monotonicity hook reads this as a rollback even though commit time is newer; legitimate workaround is bypass-push (git push --no-verify) not undo-the-tag. Root cause is in agents/git/lib/hooks.sh:533-551 VERSION stamping algorithm; Level-C fix tracked under T-1829."
+  source: P-001
+  task: T-1828
+  date: 2026-05-14
+  context: Added via context agent
+  application: TBD
