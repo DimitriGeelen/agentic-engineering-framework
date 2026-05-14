@@ -2900,3 +2900,10 @@ X'` returning empty group."
   date: 2026-05-14
   context: Added via context agent
   application: TBD
+- id: L-377
+  learning: "Boundary-crossing-state invisibility class — every async boundary in the framework (cron jobs, hub federation, mirror sync, monitors) has the same vulnerability: terse local log + no cross-boundary surface + no audit surface + no alert. When ANY of them stalls or fails, the framework is BLIND until a consumer manually triggers a check. Pattern fix: per-boundary heartbeat file + audit-time stall detector. Two incidents on 2026-05-14 (T-1827 cross-hub envelope latency, T-1828 mirror sync silent stall) confirmed the class — both self-reported by affected consumers after hours of blindness, neither caught by infrastructure."
+  source: P-001
+  task: T-1830
+  date: 2026-05-14
+  context: Added via context agent
+  application: TBD
