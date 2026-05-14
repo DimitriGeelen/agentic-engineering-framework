@@ -134,9 +134,91 @@ Extend `fw audit` to walk every known cron in `.context/cron-registry.yaml`, par
 - `fw doctor` already surfaces some cron-state info (Cron registry in sync check) — the heartbeat addition is incremental
 - T-1771 already wired cron-registry sync check into `fw audit` — heartbeat addition extends the same audit surface
 
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-1830 go|no-go|defer --rationale "..." -->
+
 ## Updates
 
 ### 2026-05-14T19:10Z — task-created [framework-agent]
 - **Action:** Created umbrella inception covering T-1827 + T-1828 + T-1829 meta-RCA
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1830-fw-upgrade-incident-2026-05-14-meta-rca-.md
 - **Context:** Human asked for meta-RCA covering both incidents and an inception for structural remediation
+
+### 2026-05-14T19:24:11Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with bundled (Candidate 2 + Candidate 4) as the V1 slice, defer Candidate 3 (Watchtower panel) to a V2 follow-up.
+
+Rationale: Candidate 2 (heartbeat + last-success) is the smallest universal mechanism that detects BOTH failure classes (explicit fail + silent stall). Candidate 4 (audit-time detector) is the lowest-friction surface — it uses the existing fw audit cadence and handover gates, so the alert path is already wired. Together they catch the T-1827/T-1828 class in <15min via audit, with a clear migration path: retrofit one boundary at a time (start with mirror sync as proof, then pickup-bridge, then peer-subscribe, then watchtower-rss/liveness/escalation-drift). Candidate 1 (stderr capture) is a useful auxiliary but doesn't cover stalls without errors. Candidate 3 (Watchtower panel) is high-value but high-cost — defer until heartbeat data exists to populate it.
+
+Evidence:
+- T-1827 + T-1828 are 2 incidents of the same class within 24h
+- Existing cron infrastructure (.context/cron-registry.yaml, .context/monitors/) provides a known list of boundaries to retrofit
+- `fw doctor` already surfaces some cron-state info (Cron registry in sync check) — the heartbeat addition is incremental
+- T-1771 already wired cron-registry sync check into `fw audit` — heartbeat addition extends the same audit surface
+
+### 2026-05-14T19:24:32Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with bundled (Candidate 2 + Candidate 4) as the V1 slice, defer Candidate 3 (Watchtower panel) to a V2 follow-up.
+
+Rationale: Candidate 2 (heartbeat + last-success) is the smallest universal mechanism that detects BOTH failure classes (explicit fail + silent stall). Candidate 4 (audit-time detector) is the lowest-friction surface — it uses the existing fw audit cadence and handover gates, so the alert path is already wired. Together they catch the T-1827/T-1828 class in <15min via audit, with a clear migration path: retrofit one boundary at a time (start with mirror sync as proof, then pickup-bridge, then peer-subscribe, then watchtower-rss/liveness/escalation-drift). Candidate 1 (stderr capture) is a useful auxiliary but doesn't cover stalls without errors. Candidate 3 (Watchtower panel) is high-value but high-cost — defer until heartbeat data exists to populate it.
+
+Evidence:
+- T-1827 + T-1828 are 2 incidents of the same class within 24h
+- Existing cron infrastructure (.context/cron-registry.yaml, .context/monitors/) provides a known list of boundaries to retrofit
+- `fw doctor` already surfaces some cron-state info (Cron registry in sync check) — the heartbeat addition is incremental
+- T-1771 already wired cron-registry sync check into `fw audit` — heartbeat addition extends the same audit surface
+
+### 2026-05-14T19:27:26Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with bundled (Candidate 2 + Candidate 4) as the V1 slice, defer Candidate 3 (Watchtower panel) to a V2 follow-up.
+
+Rationale: Candidate 2 (heartbeat + last-success) is the smallest universal mechanism that detects BOTH failure classes (explicit fail + silent stall). Candidate 4 (audit-time detector) is the lowest-friction surface — it uses the existing fw audit cadence and handover gates, so the alert path is already wired. Together they catch the T-1827/T-1828 class in <15min via audit, with a clear migration path: retrofit one boundary at a time (start with mirror sync as proof, then pickup-bridge, then peer-subscribe, then watchtower-rss/liveness/escalation-drift). Candidate 1 (stderr capture) is a useful auxiliary but doesn't cover stalls without errors. Candidate 3 (Watchtower panel) is high-value but high-cost — defer until heartbeat data exists to populate it.
+
+Evidence:
+- T-1827 + T-1828 are 2 incidents of the same class within 24h
+- Existing cron infrastructure (.context/cron-registry.yaml, .context/monitors/) provides a known list of boundaries to retrofit
+- `fw doctor` already surfaces some cron-state info (Cron registry in sync check) — the heartbeat addition is incremental
+- T-1771 already wired cron-registry sync check into `fw audit` — heartbeat addition extends the same audit surface
+
+### 2026-05-14T20:09:16Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with bundled (Candidate 2 + Candidate 4) as the V1 slice, defer Candidate 3 (Watchtower panel) to a V2 follow-up.
+
+Rationale: Candidate 2 (heartbeat + last-success) is the smallest universal mechanism that detects BOTH failure classes (explicit fail + silent stall). Candidate 4 (audit-time detector) is the lowest-friction surface — it uses the existing fw audit cadence and handover gates, so the alert path is already wired. Together they catch the T-1827/T-1828 class in <15min via audit, with a clear migration path: retrofit one boundary at a time (start with mirror sync as proof, then pickup-bridge, then peer-subscribe, then watchtower-rss/liveness/escalation-drift). Candidate 1 (stderr capture) is a useful auxiliary but doesn't cover stalls without errors. Candidate 3 (Watchtower panel) is high-value but high-cost — defer until heartbeat data exists to populate it.
+
+Evidence:
+- T-1827 + T-1828 are 2 incidents of the same class within 24h
+- Existing cron infrastructure (.context/cron-registry.yaml, .context/monitors/) provides a known list of boundaries to retrofit
+- `fw doctor` already surfaces some cron-state info (Cron registry in sync check) — the heartbeat addition is incremental
+- T-1771 already wired cron-registry sync check into `fw audit` — heartbeat addition extends the same audit surface
+
+### 2026-05-14T20:09:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with bundled (Candidate 2 + Candidate 4) as the V1 slice, defer Candidate 3 (Watchtower panel) to a V2 follow-up.
+
+Rationale: Candidate 2 (heartbeat + last-success) is the smallest universal mechanism that detects BOTH failure classes (explicit fail + silent stall). Candidate 4 (audit-time detector) is the lowest-friction surface — it uses the existing fw audit cadence and handover gates, so the alert path is already wired. Together they catch the T-1827/T-1828 class in <15min via audit, with a clear migration path: retrofit one boundary at a time (start with mirror sync as proof, then pickup-bridge, then peer-subscribe, then watchtower-rss/liveness/escalation-drift). Candidate 1 (stderr capture) is a useful auxiliary but doesn't cover stalls without errors. Candidate 3 (Watchtower panel) is high-value but high-cost — defer until heartbeat data exists to populate it.
+
+Evidence:
+- T-1827 + T-1828 are 2 incidents of the same class within 24h
+- Existing cron infrastructure (.context/cron-registry.yaml, .context/monitors/) provides a known list of boundaries to retrofit
+- `fw doctor` already surfaces some cron-state info (Cron registry in sync check) — the heartbeat addition is incremental
+- T-1771 already wired cron-registry sync check into `fw audit` — heartbeat addition extends the same audit surface
+
+### 2026-05-14T20:09:31Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with bundled (Candidate 2 + Candidate 4) as the V1 slice, defer Candidate 3 (Watchtower panel) to a V2 follow-up.
+
+Rationale: Candidate 2 (heartbeat + last-success) is the smallest universal mechanism that detects BOTH failure classes (explicit fail + silent stall). Candidate 4 (audit-time detector) is the lowest-friction surface — it uses the existing fw audit cadence and handover gates, so the alert path is already wired. Together they catch the T-1827/T-1828 class in <15min via audit, with a clear migration path: retrofit one boundary at a time (start with mirror sync as proof, then pickup-bridge, then peer-subscribe, then watchtower-rss/liveness/escalation-drift). Candidate 1 (stderr capture) is a useful auxiliary but doesn't cover stalls without errors. Candidate 3 (Watchtower panel) is high-value but high-cost — defer until heartbeat data exists to populate it.
+
+Evidence:
+- T-1827 + T-1828 are 2 incidents of the same class within 24h
+- Existing cron infrastructure (.context/cron-registry.yaml, .context/monitors/) provides a known list of boundaries to retrofit
+- `fw doctor` already surfaces some cron-state info (Cron registry in sync check) — the heartbeat addition is incremental
+- T-1771 already wired cron-registry sync check into `fw audit` — heartbeat addition extends the same audit surface

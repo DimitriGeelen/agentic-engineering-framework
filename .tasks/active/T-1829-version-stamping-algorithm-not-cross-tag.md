@@ -47,6 +47,10 @@ This is an **inception** task because there are multiple viable approaches with 
 # bats tests/unit/test_version_stamp_monotonic.bats  (filed by the build task)
 # git push --dry-run github master  (should succeed without --no-verify)
 
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-1829 go|no-go|defer --rationale "..." -->
+
 ## Decisions
 
 ### 2026-05-14 — choose this is inception not build
@@ -128,6 +132,58 @@ Evidence:
 - T-1602 protection class (real-rollback) is preserved: if `local < remote` AND `remote_sha NOT ancestor of local_sha`, that's a divergence → still blocks.
 
 ### 2026-05-14T19:11:41Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with Candidate D (C + B observability), defer A and B as alternatives if C proves incorrect.
+
+Rationale: Candidate C is the smallest-blast-radius fix that addresses the root cause. The current VERSION file format is preserved (no consumer impact). The hook upgrade is purely additive — `local < remote` no longer auto-blocks; it asks "is remote an ancestor of local?". The bundled mirror-sync stderr logging (B) is cheap insurance against the next class. Candidates A and B require consumer migration; that cost is hard to justify when C is available.
+
+Evidence:
+- T-1828 RCA shows this is the SECOND incident of the class; if we don't fix the root cause, will hit again on next tag.
+- `git merge-base --is-ancestor` is O(graph traversal), measured fast on this 2000+ commit history (<100ms).
+- Mirror-sync stderr capture is a 3-line change to `lib/mirror.sh` `do_mirror_sync_to`.
+- T-1602 protection class (real-rollback) is preserved: if `local < remote` AND `remote_sha NOT ancestor of local_sha`, that's a divergence → still blocks.
+
+### 2026-05-14T19:24:06Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with Candidate D (C + B observability), defer A and B as alternatives if C proves incorrect.
+
+Rationale: Candidate C is the smallest-blast-radius fix that addresses the root cause. The current VERSION file format is preserved (no consumer impact). The hook upgrade is purely additive — `local < remote` no longer auto-blocks; it asks "is remote an ancestor of local?". The bundled mirror-sync stderr logging (B) is cheap insurance against the next class. Candidates A and B require consumer migration; that cost is hard to justify when C is available.
+
+Evidence:
+- T-1828 RCA shows this is the SECOND incident of the class; if we don't fix the root cause, will hit again on next tag.
+- `git merge-base --is-ancestor` is O(graph traversal), measured fast on this 2000+ commit history (<100ms).
+- Mirror-sync stderr capture is a 3-line change to `lib/mirror.sh` `do_mirror_sync_to`.
+- T-1602 protection class (real-rollback) is preserved: if `local < remote` AND `remote_sha NOT ancestor of local_sha`, that's a divergence → still blocks.
+
+### 2026-05-14T19:24:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with Candidate D (C + B observability), defer A and B as alternatives if C proves incorrect.
+
+Rationale: Candidate C is the smallest-blast-radius fix that addresses the root cause. The current VERSION file format is preserved (no consumer impact). The hook upgrade is purely additive — `local < remote` no longer auto-blocks; it asks "is remote an ancestor of local?". The bundled mirror-sync stderr logging (B) is cheap insurance against the next class. Candidates A and B require consumer migration; that cost is hard to justify when C is available.
+
+Evidence:
+- T-1828 RCA shows this is the SECOND incident of the class; if we don't fix the root cause, will hit again on next tag.
+- `git merge-base --is-ancestor` is O(graph traversal), measured fast on this 2000+ commit history (<100ms).
+- Mirror-sync stderr capture is a 3-line change to `lib/mirror.sh` `do_mirror_sync_to`.
+- T-1602 protection class (real-rollback) is preserved: if `local < remote` AND `remote_sha NOT ancestor of local_sha`, that's a divergence → still blocks.
+
+### 2026-05-14T19:27:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with Candidate D (C + B observability), defer A and B as alternatives if C proves incorrect.
+
+Rationale: Candidate C is the smallest-blast-radius fix that addresses the root cause. The current VERSION file format is preserved (no consumer impact). The hook upgrade is purely additive — `local < remote` no longer auto-blocks; it asks "is remote an ancestor of local?". The bundled mirror-sync stderr logging (B) is cheap insurance against the next class. Candidates A and B require consumer migration; that cost is hard to justify when C is available.
+
+Evidence:
+- T-1828 RCA shows this is the SECOND incident of the class; if we don't fix the root cause, will hit again on next tag.
+- `git merge-base --is-ancestor` is O(graph traversal), measured fast on this 2000+ commit history (<100ms).
+- Mirror-sync stderr capture is a 3-line change to `lib/mirror.sh` `do_mirror_sync_to`.
+- T-1602 protection class (real-rollback) is preserved: if `local < remote` AND `remote_sha NOT ancestor of local_sha`, that's a divergence → still blocks.
+
+### 2026-05-14T20:09:11Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Recommendation: GO with Candidate D (C + B observability), defer A and B as alternatives if C proves incorrect.

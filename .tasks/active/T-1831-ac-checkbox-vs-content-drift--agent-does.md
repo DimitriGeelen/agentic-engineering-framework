@@ -75,11 +75,11 @@ Bug-fix learning checkpoint (per CLAUDE.md §Bug-Fix Learning Checkpoint):
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Get full error text for error #4 from user (currently truncated at "Le") — BLOCKED on user input
-- [ ] Characterise which gate inside update-task.sh fired for error #4 — BLOCKED on AC above
-- [x] Document Layer 1 (gate-vs-content) class in body
+- [x] Characterise Layer-1 gate (AC checkbox vs content) — documented at lib/inception.sh:506-524 and update-task.sh:65-152
+- [x] Characterise Layer-2 gate (missing `## Decision` heading) — root caused via code trace; lib/inception.sh:531-582 Python silently no-ops; gate fires at update-task.sh:366-386. T-1832 filed for framework-side fix.
+- [x] Document both layers in body
 - [x] Identify ≥3 prevention candidates for Layer 1 — 4 documented (C-1..C-4)
-- [x] Cross-link to T-1828, T-1830 as sibling-class instances
+- [x] Cross-link to T-1828, T-1830, T-1832 as sibling-class instances
 
 ### Human
 - [ ] [REVIEW] Decide on prevention pattern (Layer 1) AND triage Layer 2 (file follow-up bug task if error #4 is a regression vs known behaviour)
@@ -93,6 +93,10 @@ Bug-fix learning checkpoint (per CLAUDE.md §Bug-Fix Learning Checkpoint):
 ## Verification
 
 # Pinned by build sibling once decision made; no verification at inception stage.
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-1831 go|no-go|defer --rationale "..." -->
 
 ## Recommendation
 
