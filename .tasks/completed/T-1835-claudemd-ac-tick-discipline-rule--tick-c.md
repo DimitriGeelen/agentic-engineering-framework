@@ -4,7 +4,7 @@ name: "CLAUDE.md AC-tick discipline rule — tick checkboxes as content is writt
 description: >
   T-1831 C-4 build sibling. Codify in CLAUDE.md §Verification Before Completion: agent must tick each Agent AC checkbox as soon as the corresponding content/work is in place, NOT after-the-fact. Origin: S-2026-0514 errors 1-3 — agent wrote AC content (RCA, candidates, recommendation) in task body but did not progressively tick boxes; gate measured [x] markers, not body content, blocked completion + decide with misleading error. Same antifragility class as T-1828: gate measures proxy that diverged from reality. Prevention pattern is documentation hygiene — costs nothing, reframes mental model.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [fw-upgrade-incident-2026-05-14, claude-md, governance, ac-discipline]
 components: []
 related_tasks: []
 created: 2026-05-14T20:52:33Z
-last_update: 2026-05-14T20:53:18Z
-date_finished: null
+last_update: 2026-05-14T20:54:51Z
+date_finished: 2026-05-14T20:54:51Z
 ---
 
 # T-1835: CLAUDE.md AC-tick discipline rule — tick checkboxes as content is written, not after-the-fact (T-1831 C-4 build)
@@ -126,3 +126,15 @@ grep -q "Progressive AC ticking" CLAUDE.md
 
 ### 2026-05-14T20:53:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a11c58fd
+- **Timestamp:** 2026-05-14T20:54:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T20:54:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
