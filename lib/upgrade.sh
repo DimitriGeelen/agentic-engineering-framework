@@ -125,11 +125,16 @@ do_upgrade() {
     # Empty by default — bare-from-consumer detection falls back to
     # $target_dir/.framework.yaml's upstream_repo field.
     local from_upstream=""
+    # T-1839: opt-in escape hatch for legitimate downgrade scenarios (e.g.
+    # operator rolling consumer back to an older framework version on purpose).
+    # Default refuses ahead→behind direction with diagnostic + T-1828 context.
+    local force_downgrade=false
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run) dry_run=true; shift ;;
             --force) force=true; shift ;;
+            --force-downgrade) force_downgrade=true; shift ;;
             --dedupe-user-hooks) dedupe_user_hooks=true; shift ;;
             --from-upstream)
                 from_upstream="$2"; shift 2 ;;
@@ -146,6 +151,9 @@ do_upgrade() {
                 echo "Options:"
                 echo "  --dry-run               Show what would change without modifying files"
                 echo "  --force                 Overwrite even if project files are newer"
+                echo "  --force-downgrade       Allow upgrade to rewrite the consumer's pinned version"
+                echo "                          to a LOWER framework version (T-1839 guard bypass)."
+                echo "                          Default: refuse with diagnostic referencing T-1828."
                 echo "  --dedupe-user-hooks     Remove framework hooks from \$HOME/.claude/settings.json"
                 echo "                          that duplicate project-level (T-1481, addresses OBS-023)."
                 echo "                          A timestamped backup is created before modification."
@@ -1082,6 +1090,26 @@ MCPJSON
         if [ "$current_pinned" = "$fw_version" ]; then
             echo -e "  ${GREEN}OK${NC}  Version $fw_version already recorded"
         else
+            # T-1839: silent-downgrade guard. If consumer's pinned version is
+            # AHEAD of the framework's version, refuse to rewrite — that would
+            # be a silent downgrade. T-1828 family: framework VERSION rollback
+            # leaves consumers in this state, and pre-T-1838 doctor advice
+            # could send operators here unwittingly.
+            if [ -n "$current_pinned" ] && [ "$current_pinned" != "$fw_version" ]; then
+                local _direction
+                if [ "$(printf '%s\n%s\n' "$current_pinned" "$fw_version" | sort -V | tail -1)" = "$current_pinned" ]; then
+                    _direction="ahead"
+                else
+                    _direction="behind"
+                fi
+                if [ "$_direction" = "ahead" ] && [ "$force_downgrade" != true ]; then
+                    echo -e "  ${RED}REFUSED${NC}  Consumer v$current_pinned is AHEAD of framework v$fw_version."
+                    echo -e "          Running fw upgrade here would downgrade the pinned version."
+                    echo -e "          Framework VERSION likely rolled back (see T-1828)."
+                    echo -e "          To proceed anyway: re-run with ${BOLD}--force-downgrade${NC}."
+                    return 1
+                fi
+            fi
             changes=$((changes + 1))
             if [ "$dry_run" = true ]; then
                 echo -e "  ${CYAN}WOULD UPDATE${NC}  version: ${current_pinned:-<none>} → $fw_version"
