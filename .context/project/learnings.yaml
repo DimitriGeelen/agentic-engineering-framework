@@ -2879,3 +2879,17 @@ X'` returning empty group."
   date: 2026-05-13
   context: Added via context agent
   application: TBD
+- id: L-374
+  learning: "URL-prefix sniff regexes that decide between \"treat-as-URL\" and \"shorthand-rewrite\" must include the full scheme set used by tests (https, ssh, git, AND file). Symptom of incomplete whitelist: file:// falls through to shorthand-rewrite path, producing nonsense like https://github.com/file:///tmp/x.git. Detection is silent in unit tests that only assert \"URL is preserved\" — only a live-clone test catches it because the malformed URL fails the clone step. Defense: live-clone test with file:// upstream is the canonical regression check for any URL-resolution code path. Origin T-1634 (under T-1542 arc): live-clone bats test caught file:// missing from ^(https?|ssh|git)://|^git@ regex; fix was adding file to the alternation. Generalised lesson: when sniffing input-type by prefix, enumerate the test-fixture schemes too, not just the production ones."
+  source: P-001
+  task: T-1542
+  date: 2026-05-14
+  context: Added via context agent
+  application: TBD
+- id: L-375
+  learning: "Vendored-cwd-trap: when a script is invoked from inside .agentic-framework/ (the consumer-vendored copy of the framework), FRAMEWORK_ROOT path-resolution canonicalises to the vendored copy, not the source-of-truth. All path-relative operations (read templates, write outputs, locate sibling scripts) target the vendored shadow instead of the consumer project root. Specific high-blast-radius case: fw upgrade. When run from inside .agentic-framework/, the upgrade operation targets the vendored copy as both source AND target — write conflicts, partial state, session-fatal mid-stream. Structural prevention (T-1542 arc, T-1822 + T-1634): detect bare-from-consumer (FRAMEWORK_ROOT canonicalises to $target_dir/.agentic-framework) and either error with 3-path remediation OR auto-clone upstream to tempdir and exec there. Generalised lesson: any script that resolves \"where am I\" from $0 / script_dir must detect when \"where I am\" equals \"what I am being asked to operate on\" and route differently. Class: cwd-trap / self-target. Test pattern: bats fixture with proj/.agentic-framework/ (own .git) + invoke from inside, assert the script either rejects with actionable error or routes to upstream."
+  source: P-001
+  task: T-1542
+  date: 2026-05-14
+  context: Added via context agent
+  application: TBD
