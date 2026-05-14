@@ -4,16 +4,16 @@ name: "Gate diagnostic upgrade — surface body-vs-checkbox drift in AC-unchecke
 description: >
   T-1831 C-3 build sibling. Enhance the error message in P-010 (update-task.sh:110) and inception-decide preflight (lib/inception.sh:517) when ACs are unchecked: append a hint pointing at CLAUDE.md §Progressive AC ticking, and (when a ## Recommendation block is filled) explicitly suggest 'AC content likely present — tick the boxes if work is complete'. Origin: S-2026-0514 errors 1-3 — agent wrote content, didn't tick, gate refused with no signal that the fix is 'tick the box', leading to repeated retries. Sibling to T-1835 (C-4 documentation half).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [fw-upgrade-incident-2026-05-14, gate-diagnostic, ac-discipline, bug]
-components: []
+components: [agents/task-create/update-task.sh, lib/inception.sh]
 related_tasks: []
 created: 2026-05-14T20:56:18Z
-last_update: 2026-05-14T20:56:26Z
-date_finished: null
+last_update: 2026-05-14T20:59:15Z
+date_finished: 2026-05-14T20:59:15Z
 ---
 
 # T-1836: Gate diagnostic upgrade — surface body-vs-checkbox drift in AC-unchecked error message (T-1831 C-3 build)
@@ -123,3 +123,15 @@ bats tests/unit/p010_gate_diagnostic_body_drift_hint.bats
 
 ### 2026-05-14T20:56:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c874cfa1
+- **Timestamp:** 2026-05-14T20:59:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T20:59:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

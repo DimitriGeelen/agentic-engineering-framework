@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1836: Gate diagnostic upgrade — surface body-vs-checkbox drift in AC-unchecked error message (T-1831 C-3 build)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-14T20:59:20Z
+# ============================================================================
+
+task_id: T-1836
+task_name: "Gate diagnostic upgrade — surface body-vs-checkbox drift in AC-unchecked error message (T-1831 C-3 build)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-14T20:56:18Z
+completed: 2026-05-14T20:59:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-14T22:59:09+02:00
+last_commit: 2026-05-14T22:59:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  gate diagnostic upgrade — body-vs-checkbox drift hint (T-1831 C-3)
+
+# Key outcomes
+outcomes:
+  - "update-task.sh P-010 error message appends Progressive-AC-ticking hint when ACs unchecked"
+  - "lib/inception.sh decide-preflight error message appends the same hint"
+  - "Hint references CLAUDE.md §Progressive AC ticking explicitly"
+  - "When `## Recommendation` block is filled (non-template), error message includes \"AC content likely present — tick the boxes if work is complete\""
+  - "Bats test exercising the augmented messages"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - "lib/inception.sh"
+  - ".tasks/active/T-1836-gate-diagnostic-upgrade--surface-body-vs.md"
+  - "tests/unit/p010_gate_diagnostic_body_drift_hint.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T22:59:09"
+    action: "T-1836: gate diagnostic upgrade — body-vs-checkbox drift hint (T-1831 C-3)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fw-upgrade-incident-2026-05-14, gate-diagnostic, ac-discipline, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 276
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1836-gate-diagnostic-upgrade--surface-body-vs.md
+generated_by: context-agent-hybrid
