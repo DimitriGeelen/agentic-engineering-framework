@@ -60,19 +60,17 @@ grep -q "Progressive AC ticking" CLAUDE.md
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** S-2026-0514 errors 1-3 — agent wrote AC content (RCA, candidates, recommendation) in task body but did NOT progressively tick the `- [ ]` checkboxes. Completion gate (P-010) and inception-decide preflight (T-1503) refused with "Cannot complete — N/N agent AC unchecked", surfaced repeatedly to user before agent recognized the class.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** missing procedural rule in CLAUDE.md. The agent's workflow had no documented expectation about WHEN to tick AC boxes during work. The implicit assumption was "tick at the end before completion" — that expectation interacts badly with the gate, which counts `[x]` markers, not body content. After-the-fact ticking (only after the gate fires) is the exact pattern the gate exists to prevent.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:**
+- §Verification Before Completion told agent to *check* boxes before completion but did not specify WHEN ticks should happen during work.
+- No structural reminder (hook, lint, audit) detects "AC content present, checkbox not ticked".
+- Same antifragility class as T-1828: gate measures proxy (checkbox state) that diverged from reality (body content).
+- T-1831 inception caught the pattern; this build task lands the documentation fix.
+
+**Prevention:** CLAUDE.md §Verification Before Completion now includes a "Progressive AC ticking (T-1831 C-4)" paragraph explicit: tick each box as the content is in place, not after-the-fact. Cross-linked to T-1828 for the antifragility-class framing. Future agents reading CLAUDE.md before starting work get the rule directly. C-3 (gate diagnostic upgrade — surface body-content-vs-checkbox drift in the gate error message) is filed as a separate task; this one is the documentation half.
 
 ## Evolution
 
