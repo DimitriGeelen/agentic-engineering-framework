@@ -105,6 +105,16 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+## Decision
+
+<!-- Filled at completion of inception tasks via:
+     fw inception decide T-XXX go|no-go|defer --rationale "..."
+
+     For non-inception tasks this section is ignored. Kept in template
+     so `fw inception decide` (lib/inception.sh) finds the anchor heading
+     without auto-creating; T-1832 added auto-create as fallback for
+     legacy tasks lacking this section. -->
+
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.

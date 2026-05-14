@@ -29,10 +29,10 @@ The user sees: agent says "decision recorded", framework says "no decision recor
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Patch `lib/inception.sh` Python script: when `## Decision` heading absent, EITHER (a) auto-create the section before writing OR (b) error with helpful message naming the missing heading
-- [ ] Bats test in `tests/unit/` exercising both code paths (heading present → writes; heading absent → errors-or-creates)
-- [ ] Update inception task template (default.md) to include the `## Decision` (singular) placeholder section — currently only inception.md has it
-- [ ] Sweep existing active inception tasks for the missing-heading state; add the section to any found (T-1829/T-1830/T-1831 already patched as part of this RCA)
+- [x] Patch `lib/inception.sh` Python script: when `## Decision` heading absent, EITHER (a) auto-create the section before writing OR (b) error with helpful message naming the missing heading
+- [x] Bats test in `tests/unit/` exercising both code paths (heading present → writes; heading absent → errors-or-creates)
+- [x] Update inception task template (default.md) to include the `## Decision` (singular) placeholder section — currently only inception.md has it
+- [x] Sweep existing active inception tasks for the missing-heading state; add the section to any found (T-1829/T-1830/T-1831 already patched as part of this RCA)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -60,21 +60,26 @@ The user sees: agent says "decision recorded", framework says "no decision recor
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
+bats tests/unit/inception_decide_auto_create_decision_section.bats
+grep -q "^## Decision$" .tasks/templates/default.md
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw inception decide T-XXX go --rationale "..."` reports success (exit 0) at the inception-decide preflight but then the downstream `update-task.sh --status work-completed` fails with `Cannot complete inception task - no decision recorded`. User sees: agent says decision recorded, framework says it isn't. Reproduced in S-2026-0514 on T-1829 (after errors 4-5) and T-1830/T-1831 (errors 5-6).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `lib/inception.sh:531-582` Python script iterates lines looking for `line.strip() == '## Decision'` (singular). When the heading is absent — which happens for tasks created with templates that have only `## Decisions` (plural, the default.md state pre-T-1832), or tasks where the heading was edited out — the `decision_written` flag stays `False`. The loop completes, the file is rewritten verbatim (no Decision block), the function returns 0. The caller then ticks the Human AC and invokes `update-task.sh --status work-completed`. `check_inception_decision` at `update-task.sh:366` grep-checks for `^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b`, finds nothing, and refuses the transition with the misleading "no decision recorded" error.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:**
+- Python decide-handler relied on heading-existence as both an anchor AND an invariant — no fallback for missing-anchor case.
+- Template asymmetry: `inception.md` template had both `## Decisions` (plural) and `## Decision` (singular placeholder); `default.md` had only `## Decisions`. Inception tasks created via the default-template path inherited the broken structure.
+- The two-gate split (inception-decide preflight at lib/inception.sh:506-524 measures AC checkbox state; update-task.sh:366 measures Decision-block presence) means the first gate succeeds even when the second gate is destined to fail. Same antifragility class as T-1828 (gate measures proxy that diverges from reality).
+- Silent no-op pattern: the Python emits no warning when its sole purpose (write the decision) fails — the function trusts its caller's caller (update-task.sh:366) to surface the problem, which it does with a misleading message.
+
+**Prevention:** (this task's fix)
+- Python decide-handler now synthesizes the `## Decision` block when missing — inserts before `## Updates`, else `## Recommendation`, else EOF.
+- stderr WARNING emitted with `[T-1832]` marker so auto-creation is visible (not silent).
+- `default.md` template updated to include `## Decision` placeholder — new tasks get the anchor for free; auto-create is fallback for legacy tasks.
+- Bats test pins both paths (heading-present normal path; heading-absent auto-create with warning) at `tests/unit/inception_decide_auto_create_decision_section.bats`.
 
 ## Evolution
 

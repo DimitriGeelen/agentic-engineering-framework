@@ -577,6 +577,49 @@ for line in lines:
         continue
     new_lines.append(line)
 
+# T-1832: auto-create `## Decision` section when missing.
+# Layer 2 root cause of S-2026-0514 errors 4-5: when a task lacks the singular
+# `## Decision` heading (default.md template only has `## Decisions` plural),
+# this script silently no-ops — decision_written stays False, no block written.
+# Caller then ticks ACs and invokes update-task.sh --status work-completed,
+# which fails at check_inception_decision (`**Decision**:` grep) emitting the
+# misleading "no decision recorded" error. Fix: synthesize the section before
+# `## Updates` (or `## Recommendation` as fallback, or at EOF), emit a warning
+# to stderr so the auto-creation is visible. Subsequent decide calls take the
+# normal path (the heading now exists).
+if not decision_written:
+    decision_block = [
+        '## Decision',
+        '',
+        f'**Decision**: {decision}',
+        '',
+        f'**Rationale**: {rationale}',
+        '',
+        f'**Date**: {timestamp}',
+        '',
+    ]
+    # Insertion priority: before `## Updates`, then before `## Recommendation`, then EOF.
+    insert_at = None
+    for anchor in ('## Updates', '## Recommendation'):
+        for i, line in enumerate(new_lines):
+            if line.strip() == anchor:
+                insert_at = i
+                break
+        if insert_at is not None:
+            break
+    if insert_at is None:
+        # Append at EOF — ensure trailing newline gap.
+        if new_lines and new_lines[-1] != '':
+            new_lines.append('')
+        new_lines.extend(decision_block)
+    else:
+        new_lines = new_lines[:insert_at] + decision_block + new_lines[insert_at:]
+    sys.stderr.write(
+        f"WARNING [T-1832]: task file lacked '## Decision' heading — auto-created the section. "
+        f"Consider adding the placeholder section explicitly in future. "
+        f"(default.md template now includes it for new tasks.)\n"
+    )
+
 with open(task_file, 'w') as f:
     f.write('\n'.join(new_lines))
 PYDECIDE
