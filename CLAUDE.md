@@ -677,6 +677,8 @@ Before setting any task to `work-completed`:
 5. Do NOT call `fw task update --status work-completed` until all agent ACs pass
 6. The verification gate (P-011) enforces this structurally — this rule makes you check BEFORE hitting the gate
 
+**Progressive AC ticking (T-1831 C-4):** Tick each Agent AC checkbox `- [ ]` → `- [x]` **as soon as the corresponding content/work is in place**, NOT after-the-fact when the gate fires. The completion gate (P-010) and the inception-decide preflight count `[x]` markers — they cannot read body content. Writing the RCA/candidates/recommendation in the body does NOT tick the boxes; you have to do it explicitly. After-the-fact ticking (only after the gate refuses) is the exact pattern the gate exists to prevent — and the user has caught it. Treat each AC as a milestone: when you complete the work for AC #N, your very next edit ticks that box. Origin: S-2026-0514 errors 1-3 in fw-upgrade-incident-2026-05-14 cluster — same antifragility class as T-1828 (gate measures proxy that diverged from reality).
+
 ### Consumer-Facing Command Hygiene (T-1633, T-1635)
 
 Any change to `fw upgrade`, `fw vendor`, or `fw init` (the three consumer-facing setup commands) MUST keep `tests/unit/upgrade_fresh_machine_simulation.bats` green. The simulation builds a synthetic consumer (vendored `.agentic-framework/` + `file://` upstream) and runs the consumer's vendored fw under `env -i` with minimal PATH — catching the class where a command silently depends on the framework developer's local filesystem layout.
