@@ -165,6 +165,7 @@ class TestErrorHandlers:
         resp = client.get("/tasks/INVALID")
         assert resp.status_code == 404
 
+    @pytest.mark.framework_repo
     def test_404_for_nonexistent_task(self, client):
         resp = client.get("/tasks/T-999")
         assert resp.status_code == 404
@@ -401,6 +402,7 @@ class TestDataIntegrity:
         html = resp.data.decode()
         assert "task" in html.lower() or "Task" in html
 
+    @pytest.mark.framework_repo
     def test_gaps_page_shows_gaps(self, client):
         resp = client.get("/gaps")
         html = resp.data.decode()
@@ -421,11 +423,13 @@ class TestDataIntegrity:
         html = resp.data.decode()
         assert "Antifragility" in html or "D1" in html
 
+    @pytest.mark.framework_repo
     def test_project_page_lists_docs(self, client):
         resp = client.get("/project")
         html = resp.data.decode()
         assert "001-Vision" in html or "Vision" in html
 
+    @pytest.mark.framework_repo
     def test_project_doc_renders_markdown(self, client):
         resp = client.get("/project/001-Vision")
         assert resp.status_code == 200
@@ -471,6 +475,7 @@ class TestNavigation:
         html = resp.data.decode()
         assert "ambient-strip" in html
 
+    @pytest.mark.framework_repo
     def test_footer_shows_watchtower(self, client):
         resp = client.get("/")
         html = resp.data.decode()
@@ -569,6 +574,7 @@ class TestPhase3Integration:
         html = resp.data.decode()
         assert "Metrics" in html
 
+    @pytest.mark.framework_repo
     def test_dashboard_has_system_health(self, client):
         resp = client.get("/")
         html = resp.data.decode()
@@ -1084,6 +1090,7 @@ class TestMissingDirectories:
 class TestEmptyTaskFiles:
     """Task views handle edge-case task files."""
 
+    @pytest.mark.framework_repo
     def test_task_file_no_frontmatter(self, client, tmp_path, monkeypatch):
         """Task file with no YAML frontmatter is skipped in listing."""
         active = tmp_path / ".tasks" / "active"
@@ -1098,6 +1105,7 @@ class TestEmptyTaskFiles:
         assert resp.status_code == 200
         assert b"T-998" not in resp.data
 
+    @pytest.mark.framework_repo
     def test_task_file_empty(self, client, tmp_path, monkeypatch):
         """Empty task file is skipped in listing."""
         active = tmp_path / ".tasks" / "active"
