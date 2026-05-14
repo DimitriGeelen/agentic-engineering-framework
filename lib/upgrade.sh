@@ -121,12 +121,20 @@ do_upgrade() {
     local dry_run=false
     local force=false
     local dedupe_user_hooks=false
+    # T-1634: explicit upstream URL for bare-from-consumer auto-clone path.
+    # Empty by default — bare-from-consumer detection falls back to
+    # $target_dir/.framework.yaml's upstream_repo field.
+    local from_upstream=""
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run) dry_run=true; shift ;;
             --force) force=true; shift ;;
             --dedupe-user-hooks) dedupe_user_hooks=true; shift ;;
+            --from-upstream)
+                from_upstream="$2"; shift 2 ;;
+            --from-upstream=*)
+                from_upstream="${1#--from-upstream=}"; shift ;;
             -h|--help)
                 echo -e "${BOLD}fw upgrade${NC} - Sync framework improvements to consumer project"
                 echo ""
@@ -141,6 +149,10 @@ do_upgrade() {
                 echo "  --dedupe-user-hooks     Remove framework hooks from \$HOME/.claude/settings.json"
                 echo "                          that duplicate project-level (T-1481, addresses OBS-023)."
                 echo "                          A timestamped backup is created before modification."
+                echo "  --from-upstream URL     Clone the given upstream framework repo to a tempdir and"
+                echo "                          use it as the upgrade source (T-1634). Bypasses the"
+                echo "                          upstream_repo field in .framework.yaml. Tempdir is"
+                echo "                          cleaned up on exit."
                 echo "  -h, --help              Show this help"
                 echo ""
                 echo "What gets upgraded:"
@@ -200,34 +212,97 @@ do_upgrade() {
     local _fw_root_canon
     _fw_root_canon=$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P) || _fw_root_canon="$FRAMEWORK_ROOT"
     if [ -n "$_consumer_vendor_canon" ] && [ "$_fw_root_canon" = "$_consumer_vendor_canon" ]; then
-        echo -e "${RED}ERROR: fw upgrade invoked from inside the consumer's vendored framework${NC}" >&2
-        echo "" >&2
-        echo "  FRAMEWORK_ROOT: $_fw_root_canon" >&2
-        echo "  target_dir:     $target_dir" >&2
-        echo "  Vendored copy:  $_consumer_vendor_canon" >&2
-        echo "" >&2
-        echo "  Source and target collapse — do_vendor would self-copy and corrupt state." >&2
-        echo "  No changes made." >&2
-        echo "" >&2
-        echo -e "${BOLD}Run from an upstream framework repo with explicit target:${NC}" >&2
-        echo "" >&2
-        # Best-effort upstream discovery: ~/.local/bin/fw symlink (legacy global install)
-        local _upstream=""
-        local _shim="$HOME/.local/bin/fw"
-        if [ -L "$_shim" ]; then
-            local _link_target
-            _link_target=$(readlink -f "$_shim" 2>/dev/null || echo "")
-            if [ -n "$_link_target" ] && [ -f "$(dirname "$_link_target")/../FRAMEWORK.md" ]; then
-                _upstream=$(cd "$(dirname "$_link_target")/.." 2>/dev/null && pwd -P) || _upstream=""
+        # T-1634: bare-from-consumer auto-clone path. Source and target
+        # collapse — instead of erroring (T-1542 behaviour), try to clone
+        # upstream to a tempdir and re-run with that as source.
+
+        # Resolve upstream URL: --from-upstream flag > .framework.yaml upstream_repo
+        local _upstream_url="$from_upstream"
+        if [ -z "$_upstream_url" ] && [ -f "$target_dir/.framework.yaml" ]; then
+            _upstream_url=$(grep "^upstream_repo:" "$target_dir/.framework.yaml" 2>/dev/null \
+                | head -1 \
+                | sed -E 's/^upstream_repo:[[:space:]]*//' \
+                | sed -E 's/[[:space:]]+$//')
+            # Normalise GitHub shorthand (owner/repo) to full URL.
+            # Recognised URL prefixes: http(s)://, ssh://, git://, file://,
+            # git@host:path (SSH shorthand). Everything else is treated as
+            # owner/repo and expanded to a GitHub HTTPS URL.
+            if [ -n "$_upstream_url" ] \
+               && ! echo "$_upstream_url" | grep -qE '^(https?|ssh|git|file)://|^git@'; then
+                _upstream_url="https://github.com/${_upstream_url}.git"
             fi
         fi
-        if [ -n "$_upstream" ] && [ "$_upstream" != "$_fw_root_canon" ]; then
-            echo "  cd $_upstream && bin/fw upgrade $target_dir" >&2
-        else
-            echo "  cd /path/to/agentic-engineering-framework && bin/fw upgrade $target_dir" >&2
+
+        if [ -z "$_upstream_url" ]; then
+            echo -e "${RED}ERROR: fw upgrade invoked from inside the consumer's vendored framework, and no upstream URL is known${NC}" >&2
+            echo "" >&2
+            echo "  FRAMEWORK_ROOT: $_fw_root_canon" >&2
+            echo "  target_dir:     $target_dir" >&2
+            echo "  Vendored copy:  $_consumer_vendor_canon" >&2
+            echo "" >&2
+            echo "  Source and target collapse — would self-copy and corrupt state." >&2
+            echo "  No changes made." >&2
+            echo "" >&2
+            echo -e "${BOLD}Remediation (pick one):${NC}" >&2
+            echo "" >&2
+            echo "  1. Add the upstream URL to .framework.yaml (one-time, persists):" >&2
+            echo "       echo 'upstream_repo: https://github.com/OWNER/REPO.git' >> $target_dir/.framework.yaml" >&2
+            echo "       fw upgrade" >&2
+            echo "" >&2
+            echo "  2. Specify upstream URL inline:" >&2
+            echo "       fw upgrade --from-upstream https://github.com/OWNER/REPO.git" >&2
+            echo "" >&2
+            echo "  3. Run from an upstream framework checkout with explicit target:" >&2
+            echo "       cd /path/to/agentic-engineering-framework && bin/fw upgrade $target_dir" >&2
+            echo "" >&2
+            return 1
         fi
-        echo "" >&2
-        return 1
+
+        echo -e "${BOLD}Bare-from-consumer detected — auto-cloning upstream${NC}"
+        echo "  Upstream URL:  $_upstream_url"
+        echo "  Target:        $target_dir"
+        echo ""
+
+        # Tempdir with trap-based cleanup. Use a sentinel filename component
+        # so a stuck/corrupted dir is easy to identify and clean up manually.
+        local _tmpd
+        _tmpd=$(mktemp -d -t fw-upstream-XXXXXX) || {
+            echo -e "${RED}ERROR: mktemp failed${NC}" >&2
+            return 1
+        }
+        # shellcheck disable=SC2064  # expand _tmpd now, not at trap time
+        trap "rm -rf '$_tmpd'" EXIT INT TERM HUP
+
+        if [ "$dry_run" = true ]; then
+            echo "  [dry-run] would clone $_upstream_url into $_tmpd/fw"
+            echo "  [dry-run] would re-invoke: $_tmpd/fw/bin/fw upgrade $target_dir --dry-run"
+            rm -rf "$_tmpd"
+            trap - EXIT INT TERM HUP
+            return 0
+        fi
+
+        echo -n "  Cloning... "
+        if ! git clone --depth=1 --quiet "$_upstream_url" "$_tmpd/fw" 2>"$_tmpd/clone.err"; then
+            echo "FAILED"
+            echo -e "${RED}ERROR: git clone failed${NC}" >&2
+            sed 's/^/    /' "$_tmpd/clone.err" >&2 2>/dev/null || true
+            return 1
+        fi
+        echo "ok"
+
+        # Replay arg flags to the upstream's bin/fw
+        local _replay_args=("upgrade" "$target_dir")
+        [ "$force" = true ] && _replay_args+=("--force")
+        [ "$dedupe_user_hooks" = true ] && _replay_args+=("--dedupe-user-hooks")
+        # NOTE: do not replay --from-upstream — the upstream IS the source
+        # now, the target is local-path-based from the upstream's PoV.
+
+        echo -e "  ${GREEN}Handing off to upstream's bin/fw:${NC} ${_replay_args[*]}"
+        echo ""
+        "$_tmpd/fw/bin/fw" "${_replay_args[@]}"
+        local _rc=$?
+        # trap fires on return — tempdir cleaned up
+        return $_rc
     fi
 
     # T-1217: Self-vendor — refresh framework's own .agentic-framework/ before pushing to consumers.

@@ -4,15 +4,15 @@ name: "fw upgrade no-args: read upstream URL from .framework.yaml + git-fetch in
 description: >
   T-1633 child 1/2. Add upstream URL field to .framework.yaml seeded by fw init/vendor. fw upgrade with no args clones upstream to tempdir, uses as source for vendor+sync, bumps version, cleans up. Zero local-path knowledge required. T-1542 guard remains as defensive safety net.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [from-T-1633, upgrade, upstream, arc:project-shape-resilience]
 components: []
 related_tasks: [T-1633, T-1542]
 created: 2026-05-01T10:30:30Z
-last_update: 2026-05-02T10:07:11Z
+last_update: 2026-05-14T14:04:05Z
 date_finished: null
 ---
 
@@ -20,14 +20,18 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by penelope, claude-002-cpn, termlink-agent during fw-upgrade-incident-2026-05-14. When a consumer runs `fw upgrade` from inside its project root (no args), the framework currently errors out — it can't find a framework source dir from the consumer perspective. T-1542 added a defensive guard that explains the situation; T-1634 (this task) is the actual fix: when called bare-from-consumer AND `.framework.yaml` has an `upstream_repo:` field, clone the upstream to a tempdir, use it as the upgrade source, then clean up. Closes the loop so the three sibling fixes (T-1822/T-1824/T-1825) can actually reach consumers without manual re-vendor.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/upgrade.sh` bare-from-consumer path: clones upstream to `mktemp -d -t fw-upstream-XXXXXX`, traps `EXIT INT TERM HUP` for cleanup, hands off to the temp clone's `bin/fw upgrade $target_dir [args...]`. Replays `--force` and `--dedupe-user-hooks`; does NOT replay `--from-upstream` (already-resolved).
+- [x] `lib/init.sh` upstream seeding preserved — line 209-237 untouched; consumer .framework.yaml files continue to get seeded with `upstream_repo:` from the framework's git remote (no behavior change).
+- [x] `fw upgrade --from-upstream <url>` explicit flag added: parsed at line 130-133, takes precedence over `.framework.yaml` upstream_repo, used for first-time upgrades / manual override.
+- [x] Missing-upstream error message rewritten with 3 remediation paths: (1) add `upstream_repo:` to .framework.yaml, (2) inline `--from-upstream URL`, (3) cd to upstream checkout. Preserves T-1542 guard fields (FRAMEWORK_ROOT, target_dir, Vendored copy:).
+- [x] `tests/unit/upgrade_auto_clone.bats` adds 7 tests: --help, flag parsing, no-upstream error message shape, dry-run plan, --from-upstream override, GitHub-shorthand normalisation, live file:// clone with stub upstream.
+- [x] Existing tests pass: 23/23 across lib_upgrade.bats (12), upgrade_auto_clone.bats (7), test_upgrade_self_target_guard.bats (4).
+- [x] No regression of T-1542 guard: the 4 self-target-guard tests still pass — error path preserves `FRAMEWORK_ROOT:`, `target_dir:`, `Vendored copy:`, `Source and target collapse`, `No changes made.`, and `bin/fw upgrade $target_dir` recommendation.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -46,32 +50,28 @@ date_finished: null
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+bash -n lib/upgrade.sh
+bash -c 'out=$(bin/fw test unit -- tests/unit/upgrade_auto_clone.bats 2>&1); echo "$out" | grep -q "^not ok" && exit 1; [ "$(echo "$out" | grep -c "^ok ")" -eq 7 ]'
+bash -c 'out=$(bin/fw test unit -- tests/unit/test_upgrade_self_target_guard.bats 2>&1); echo "$out" | grep -q "^not ok" && exit 1; [ "$(echo "$out" | grep -c "^ok ")" -eq 4 ]'
+bash -c 'out=$(bin/fw test unit -- tests/unit/lib_upgrade.bats 2>&1); echo "$out" | grep -q "^not ok" && exit 1; [ "$(echo "$out" | grep -c "^ok ")" -eq 12 ]'
+grep -q "from-upstream" lib/upgrade.sh
+grep -q "Bare-from-consumer detected — auto-cloning upstream" lib/upgrade.sh
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+<!-- Not bug-class (feature task — adds new code path, no bug to RCA). -->
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+## Evolution
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+### 2026-05-14 — substantive fix changed shape: hand-off, not in-process re-source
+- **What changed:** Original task spec said "clones upstream and uses as source for vendor+sync". Two possible implementation shapes emerged: (a) in-process — clone, then re-source upstream's lib/upgrade.sh and call do_upgrade with new FRAMEWORK_ROOT; or (b) hand-off — clone, then invoke upstream's `bin/fw upgrade $target_dir [args...]` as a subprocess. Chose (b) because: (i) cleaner process isolation, (ii) the upstream's bin/fw runs with the upstream's CLAUDE.md / hooks / governance, (iii) trap-based cleanup is reliable when the parent shell controls the lifecycle. Hand-off also matches the user mental model — "upgrade me from the upstream" is functionally the same as "go run that upstream's fw on my repo".
+- **Plan impact:** No source-as-library coupling. Replay only the flags that affect the upgrade itself (`--force`, `--dedupe-user-hooks`), not `--from-upstream` (already resolved).
+- **Triggered:** No new sub-task. The hand-off shape was reached directly during implementation — recorded here so future readers understand why it's not source-and-call.
 
-## Decisions
+### 2026-05-14 — file:// URL normalisation bug caught by live-clone test
+- **What changed:** First test pass: 6/7. The live-clone test failed because `file://...` URLs were misclassified as GitHub-shorthand and rewritten to `https://github.com/file:///...git`. The URL-protocol regex only allowed `http(s)/ssh/git://`. Added `file` to the recognised prefix set.
+- **Plan impact:** None — caught and fixed before commit. But it shows the value of the live-clone test (the 5 mocked tests would have green-lit a bug that would have broken consumers using local-path upstreams, e.g., offline mirrors).
+- **Triggered:** None directly, but reinforces a learning candidate: "URL-protocol whitelists in shell are easy to forget non-standard prefixes — prefer a live-clone test over a regex-shape test."
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -91,3 +91,7 @@ date_finished: null
 
 ### 2026-05-02T10:07:11Z — status-update [task-update-agent]
 - **Change:** tags: +arc:project-shape-resilience
+
+### 2026-05-14T14:04:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
