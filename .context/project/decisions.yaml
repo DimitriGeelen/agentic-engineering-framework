@@ -856,3 +856,24 @@ decisions:
     date: 2026-05-13
     task: T-1818
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-125
+    decision: "Seed with four channel-prefix entries (design-consult, escalation-triage, prompt-triage, dm-fallback). No explicit-addressee entry shipped."
+    scope: project
+    date: 2026-05-13
+    task: T-1819
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-126
+    decision: "Include `dm-fallback: channel: 'dm:'` as the last map entry, routing any unmatched DM channel to `workflows/cheap-research.yaml`."
+    scope: project
+    date: 2026-05-13
+    task: T-1819
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-127
+    decision: "Three dry-run/handoff bats tests using `env -i` + minimal PATH against a `file://` upstream bare repo cloned from FRAMEWORK_ROOT. No docker."
+    scope: project
+    date: 2026-05-14
+    task: T-1635
+    rationale: "Auto-captured from task file on completion"

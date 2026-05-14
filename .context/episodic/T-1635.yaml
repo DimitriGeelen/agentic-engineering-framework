@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1635: fw upgrade fresh-machine simulation guard — clean container test, blocking on framework release
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-14T15:33:08Z
+# ============================================================================
+
+task_id: T-1635
+task_name: "fw upgrade fresh-machine simulation guard — clean container test, blocking on framework release"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T10:30:42Z
+completed: 2026-05-14T15:32:52Z
+duration_days: 13
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "New bats test `tests/unit/upgrade_fresh_machine_simulation.bats` exists with 3 tests covering: (a) vendored `bin/fw --version` in scrubbed env, (b) `bin/fw upgrade --dry-run` completes in scrubbed env, (c) dry-run plan surfaces both the bare-from-consumer message and the auto-clone target URL (regression guard on T-1542 + T-1634)"
+  - "Tests use a `fresh_run` helper that does `cd \"$proj\" && env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=$tmp/home <fw> ...` — strips all developer-environment leakage; cd into consumer is required because PROJECT_ROOT is otherwise resolved by walking up cwd which on a dev host with `/opt/999-AEF/.framework.yaml` reaches the framework's vendored copy instead of the test's consumer (issue captured in the test comment)"
+  - "Tests build a synthetic upstream bare repo (`git clone --bare --shared $FRAMEWORK_ROOT`) and a synthetic consumer (`proj/.agentic-framework/` + `proj/.framework.yaml` with `upstream_repo: file://...`)"
+  - "Tests pass against current HEAD: `bats tests/unit/upgrade_fresh_machine_simulation.bats` → 3/3 ok in ~12 seconds"
+  - "Test file is auto-picked up by `bin/fw test unit` (no manual wiring required — bin/fw:5829 discovers `tests/unit/*.bats`)"
+  - "CLAUDE.md gets a \"Consumer-Facing Command Hygiene\" section (under \"Verification Before Completion\") codifying the rule + pointing at the test, with T-1633 origin"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-14 — slim slice without docker; defer live full-upgrade to release-gate variant"
+    chose: "Three dry-run/handoff bats tests using `env -i` + minimal PATH against a `file://` upstream bare repo cloned from FRAMEWORK_ROOT. No docker."
+    rationale: "(a) Catches the load-bearing classes — vendored fw won't even start in scrubbed env; bare-from-consumer detection breaks; auto-clone URL malformed — in ~12s; (b) docker dependency would force every consumer / CI runner to install + maintain it; (c) the path beyond auto-clone re-exec is the \"framework → consumer\" path already covered by `tests/unit/lib_upgrade.bats`."
+    alternatives_rejected: ["Live full-upgrade test as part of this slice. Measured cost: ~8 min real (~9 min CPU) for the rsync of 65MB lib/ + docs regen. Impractical as a unit-test gate. Filed as Evolution follow-up for docker-container release-gate variant."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 19022 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1633, simulation, release-gate, outward-guard, arc:project-shape-resilience]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19022
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1635-fw-upgrade-fresh-machine-simulation-guar.md
+generated_by: context-agent-hybrid

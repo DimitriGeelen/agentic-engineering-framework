@@ -677,6 +677,12 @@ Before setting any task to `work-completed`:
 5. Do NOT call `fw task update --status work-completed` until all agent ACs pass
 6. The verification gate (P-011) enforces this structurally — this rule makes you check BEFORE hitting the gate
 
+### Consumer-Facing Command Hygiene (T-1633, T-1635)
+
+Any change to `fw upgrade`, `fw vendor`, or `fw init` (the three consumer-facing setup commands) MUST keep `tests/unit/upgrade_fresh_machine_simulation.bats` green. The simulation builds a synthetic consumer (vendored `.agentic-framework/` + `file://` upstream) and runs the consumer's vendored fw under `env -i` with minimal PATH — catching the class where a command silently depends on the framework developer's local filesystem layout.
+
+**Why this rule exists:** T-1633 origin — `fw upgrade` worked on the framework developer's `/opt/999-Agentic-Engineering-Framework` but crashed on every consumer in the wild because path knowledge was implicitly hard-coded. Every consumer-facing flow must run from a clean environment with no developer artifacts; the bats simulation is the cheapest enforcement (no docker dependency, runs in any CI/dev environment). A docker-container variant remains a release-gate follow-up for higher-confidence "true fresh machine" coverage.
+
 ### Presenting Work for Human Review (T-679)
 When agent ACs are complete and human ACs remain:
 
