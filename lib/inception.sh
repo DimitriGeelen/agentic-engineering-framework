@@ -519,6 +519,22 @@ do_inception_decide() {
                 echo "Unchecked Agent ACs:" >&2
                 echo "$_agent_acs" | grep -E '^\s*-\s*\[ \]' | head -10 >&2
                 echo "" >&2
+                # T-1836 (T-1831 C-3): body-vs-checkbox drift hint at decide-preflight.
+                local _rec_block _rec_filled=false
+                _rec_block=$(sed -n '/^## Recommendation/,/^## /p' "$task_file" 2>/dev/null | sed '$d')
+                if [ -n "$_rec_block" ] && echo "$_rec_block" | grep -qE '^\*\*(Recommendation|Rationale|Evidence)(:\*\*|\*\*:)'; then
+                    _rec_filled=true
+                fi
+                if [ "$_rec_filled" = true ]; then
+                    echo -e "${YELLOW}Hint:${NC} task body has a filled \`## Recommendation\` block — AC content likely present." >&2
+                    echo "  Tick the [x] boxes for each AC whose work is in place, then re-run decide." >&2
+                    echo "  See CLAUDE.md §Verification Before Completion → Progressive AC ticking (T-1831 C-4)." >&2
+                    echo "" >&2
+                else
+                    echo -e "${YELLOW}Hint:${NC} tick AC boxes as content is written, not after-the-fact." >&2
+                    echo "  See CLAUDE.md §Verification Before Completion → Progressive AC ticking (T-1831 C-4)." >&2
+                    echo "" >&2
+                fi
                 echo -e "${YELLOW}Why this gate exists:${NC} recording the decision before validating ACs would" >&2
                 echo "leave the task body with Decision=$decision_upper but status stuck at started-work" >&2
                 echo "(T-1503/P-010). Tick the ACs (or remove them if not needed), then re-run." >&2

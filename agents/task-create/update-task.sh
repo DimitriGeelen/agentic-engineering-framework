@@ -114,6 +114,28 @@ check_acceptance_criteria() {
                 echo "$ac_section" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
             fi
             echo "" >&2
+            # T-1836 (T-1831 C-3): surface body-vs-checkbox drift hint.
+            # Detect whether the task has a filled (non-template) ## Recommendation
+            # block — strong signal that substantive content was written. When
+            # present, prompt agent to tick boxes that correspond to completed work
+            # rather than re-doing the work. CLAUDE.md §Progressive AC ticking is
+            # the procedural rule; this message surfaces it at the point of refusal.
+            local _rec_block _rec_filled=false
+            _rec_block=$(sed -n '/^## Recommendation/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
+            if [ -n "$_rec_block" ] && echo "$_rec_block" | grep -qE '^\*\*(Recommendation|Rationale|Evidence)(:\*\*|\*\*:)'; then
+                _rec_filled=true
+            fi
+            if [ "$_rec_filled" = true ]; then
+                echo -e "${YELLOW}Hint:${NC} task body has a filled \`## Recommendation\` block — AC content likely present." >&2
+                echo "  Tick the [x] boxes for each AC whose work is in place." >&2
+                echo "  Re-doing the work is not the answer; this is the body-vs-checkbox drift class." >&2
+                echo "  See CLAUDE.md §Verification Before Completion → Progressive AC ticking (T-1831 C-4)." >&2
+                echo "" >&2
+            else
+                echo -e "${YELLOW}Hint:${NC} if you wrote AC content in the body but didn't tick boxes, see" >&2
+                echo "  CLAUDE.md §Verification Before Completion → Progressive AC ticking (T-1831 C-4)." >&2
+                echo "" >&2
+            fi
             echo "Options:" >&2
             echo "  1. Check the criteria in the task file, then retry" >&2
             echo "  2. Use --skip-acceptance-criteria to bypass (logged)" >&2
