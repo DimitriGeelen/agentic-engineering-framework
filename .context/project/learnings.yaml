@@ -2907,3 +2907,10 @@ X'` returning empty group."
   date: 2026-05-14
   context: Added via context agent
   application: TBD
+- id: L-378
+  learning: "Agent must never quote secret values verbatim in chat output — even when discussing a leak. Quoting propagates the secret to session JSONL transcripts, Anthropic conversation logs, FleetView, and any downstream tooling that harvests these surfaces (e.g., T-1736 spike). Recursive contamination: a secret quoted in this session's transcript will be re-harvested by any future spike scraping ~/.claude/projects/. Refer to secrets by location ('the value on line N', 'the AAD secret in commit X') without ever typing the string. Origin: S-2026-0514 session, while diagnosing T-1828 mirror-block, I quoted MS_OAUTH_CLIENT_SECRET twice — Dimitri caught 'major violation'."
+  source: P-001
+  task: T-1828
+  date: 2026-05-14
+  context: Added via context agent
+  application: TBD

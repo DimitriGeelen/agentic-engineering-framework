@@ -10,7 +10,7 @@ owner: agent
 horizon: now
 tags: [bug, fw-upgrade-incident-2026-05-14, mirror, version-monotonicity]
 components: [bin-fw, lib-mirror, agents-git-lib-hooks, lib-upgrade]
-related_tasks: [T-1542, T-1594, T-1602, T-1603, T-1822, T-1823, T-1824, T-1825, T-1634, T-1826, T-1827]
+related_tasks: [T-1542, T-1594, T-1602, T-1603, T-1822, T-1823, T-1824, T-1825, T-1634, T-1826, T-1827, T-1833, T-1834]
 created: 2026-05-14T18:22:32Z
 last_update: 2026-05-14T18:22:32Z
 date_finished: null
@@ -87,6 +87,13 @@ git ls-remote https://github.com/DimitriGeelen/agentic-engineering-framework.git
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1828-github-mirror-stalled--version-tag-reset.md
 - **Context:** Initial task creation; root cause identified before filing.
+
+### 2026-05-14T20:30:00Z — Layer 3 discovery: bypass push blocked by GitHub secret-scanning
+- **Action:** Tier 0 approved bypass push attempted (`git push --no-verify github master`). Local pre-push hook passed (T-1603 bypass worked). **GitHub-side push-protection rejected** the push: a Microsoft Azure AD OAuth client secret is embedded in commit `79e3361` (T-1736 spike), file `.context/spikes/T-1736-prompts.jsonl` line 1581.
+- **Root cause (Layer 3):** T-1736 spike (prompt-triage classifier) harvested Claude Code session JSONLs from outside PROJECT_ROOT (path-isolation violation per feedback_path_isolation_strict). One harvested session-summary entry contained a real (or once-real) OAuth client secret. Filed as **T-1833** (inception — path-isolation in spike-harvest tooling).
+- **Mitigation:** removed offending file from HEAD via `git rm .context/spikes/T-1736-prompts.jsonl` → commit `7fba568e7`. Secret remains in history (commit 79e3361). Push still blocked until history rewrite.
+- **Path to closure:** T-1834 (build, Tier 0) — `git filter-repo` to purge the file from history + force-push to OneDev + GitHub. Sequence after secret rotation verification in 050-email-archive's Azure AD app.
+- **L-378 captured:** agent must never quote secret values verbatim in chat (recursive contamination via session JSONL).
 
 ## Recommendation
 
