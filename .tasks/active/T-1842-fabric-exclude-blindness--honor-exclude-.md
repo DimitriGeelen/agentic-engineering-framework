@@ -8,11 +8,11 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [consumer-pickup, fabric, bug]
+tags: [consumer-pickup, fabric, bug, arc:project-shape-resilience]
 components: []
 related_tasks: []
 created: 2026-05-14T22:30:42Z
-last_update: 2026-05-14T22:32:42Z
+last_update: 2026-05-14T22:38:34Z
 date_finished: null
 ---
 
@@ -80,27 +80,15 @@ What the prevention does **not** cover (out of scope for this task):
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-14 — fits project-shape-resilience arc retroactively
+- **What changed:** Originally filed as a standalone fabric-bug. During Recommendation drafting it became clear this is the same class as the rest of the arc: framework code that assumes one project shape (no `node_modules/`) and silently misbehaves on another (consumer with bulk-excluded trees). Framework's own drift always read `unregistered: 0` because the framework has no node_modules; the framework was blind to its own bug.
+- **Plan impact:** Tagged `arc:project-shape-resilience` post-implementation. Triggers Evolution gate (this section). RCA section 3 already names the class explicitly ("same shape as G-063 (project-shape conflation)").
+- **Triggered:** No new tasks — the prevention (DRY test + synthetic fixture exercising a node_modules-shaped tree) is in scope. If schema-vs-reader divergence surfaces elsewhere (e.g. `audit/watch.yaml`, `cron-registry.yaml` keys silently dropped), file as a separate lint task — out of scope here.
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-05-14 — exclude semantics: top-level vs per-pattern
+- **What changed:** Penelope's RCA (offset 5) referenced top-level `exclude:`. The framework's own `watch-patterns.yaml` uses per-pattern `exclude:` (under each pattern dict). I initially assumed only per-pattern needed support; reading both reports confirmed both shapes are valid.
+- **Plan impact:** Helper supports both — top-level applies to all patterns, per-pattern adds to that. No schema migration required; existing files (per-pattern) keep working; new ones (top-level for bulk exclusion) just work.
+- **Triggered:** Test case 2 (per-pattern), test case 3 (top-level), test case 6 (deduplication when patterns overlap with different excludes). All shipped.
 
 ## Recommendation
 
@@ -151,3 +139,6 @@ What the prevention does **not** cover (out of scope for this task):
 
 ### 2026-05-14T22:32:42Z — status-update [task-update-agent]
 - **Change:** tags: +bug
+
+### 2026-05-14T22:38:34Z — status-update [task-update-agent]
+- **Change:** tags: +arc:project-shape-resilience
