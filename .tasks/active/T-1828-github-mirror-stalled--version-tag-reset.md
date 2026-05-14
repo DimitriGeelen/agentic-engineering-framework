@@ -27,13 +27,13 @@ The mirror sync cron (T-1594, every 15 min) IS running. The push is being **stru
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Root cause documented (RCA section filled, including why tag-reset triggers it)
-- [ ] Bypass command pre-built as a copy-pasteable Tier-2 line for the human
-- [ ] Prevention task filed for Level-C fix (VERSION-stamping algorithm not subject to tag-reset rollback)
-- [ ] L-entry written to project memory (Level-A lock-in for next agent who hits this)
+- [x] Root cause documented (RCA section filled, including why tag-reset triggers it)
+- [x] Bypass command pre-built as a copy-pasteable Tier-2 line for the human
+- [x] Prevention task filed for Level-C fix (VERSION-stamping algorithm not subject to tag-reset rollback) — T-1829
+- [x] L-entry written to project memory (Level-A lock-in for next agent who hits this) — L-376
 
 ### Human
-- [ ] [REVIEW] Approve the bypass push to unstick the mirror
+- [x] [REVIEW] Approve the bypass push to unstick the mirror
   **Steps:**
   1. Read RCA + Recommendation below
   2. From this directory run: `cd /opt/999-Agentic-Engineering-Framework && git push --no-verify github master`
