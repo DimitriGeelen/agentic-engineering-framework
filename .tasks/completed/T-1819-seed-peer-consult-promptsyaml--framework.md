@@ -4,16 +4,16 @@ name: "seed peer-consult-prompts.yaml — framework-half runtime gap + joint smo
 description: >
   T-1818 shipped the subscriber loop but the runtime prompts map .context/peer-consult-prompts.yaml is missing — without it every event resolves to miss. Seed the map with a default-fallback entry + at least one explicit channel/addressee binding, and coordinate with TermLink-side T-1636 emitter status so the joint smoke-test slice is sequencable.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, termlink, peer-consult, cross-repo]
-components: []
+components: [tests/unit/test_peer_subscribe.py]
 related_tasks: [T-1818, T-1804, T-1797]
 created: 2026-05-13T23:01:36Z
-last_update: 2026-05-13T23:01:36Z
-date_finished: null
+last_update: 2026-05-13T23:10:57Z
+date_finished: 2026-05-13T23:10:57Z
 ---
 
 # T-1819: seed peer-consult-prompts.yaml — framework-half runtime gap + joint smoke-readiness with TermLink T-1636
@@ -144,9 +144,12 @@ bin/fw reviewer T-1819 2>&1 | grep -q "Overall:.*PASS"
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-eff0758e
-- **Timestamp:** 2026-05-13T23:04:49Z
+- **Scan ID:** R-d2f1bf41
+- **Timestamp:** 2026-05-13T23:10:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-13T23:10:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

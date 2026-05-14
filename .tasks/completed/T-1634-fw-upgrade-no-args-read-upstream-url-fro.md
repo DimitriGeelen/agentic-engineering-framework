@@ -4,16 +4,16 @@ name: "fw upgrade no-args: read upstream URL from .framework.yaml + git-fetch in
 description: >
   T-1633 child 1/2. Add upstream URL field to .framework.yaml seeded by fw init/vendor. fw upgrade with no args clones upstream to tempdir, uses as source for vendor+sync, bumps version, cleans up. Zero local-path knowledge required. T-1542 guard remains as defensive safety net.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [from-T-1633, upgrade, upstream, arc:project-shape-resilience]
-components: []
+components: [lib/paths.sh, lib/upgrade.sh, tests/unit/lib_paths.bats]
 related_tasks: [T-1633, T-1542]
 created: 2026-05-01T10:30:30Z
-last_update: 2026-05-14T14:04:05Z
-date_finished: null
+last_update: 2026-05-14T14:10:11Z
+date_finished: 2026-05-14T14:10:11Z
 ---
 
 # T-1634: fw upgrade no-args: read upstream URL from .framework.yaml + git-fetch instead of local source
@@ -95,3 +95,15 @@ grep -q "Bare-from-consumer detected — auto-cloning upstream" lib/upgrade.sh
 ### 2026-05-14T14:04:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0ce5492d
+- **Timestamp:** 2026-05-14T14:10:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T14:10:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

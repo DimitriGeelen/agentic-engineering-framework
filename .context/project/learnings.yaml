@@ -2914,3 +2914,10 @@ X'` returning empty group."
   date: 2026-05-14
   context: Added via context agent
   application: TBD
+- id: L-379
+  learning: "Python scripts that anchor on heading existence to write content MUST emit a visible warning when the anchor is absent — silent no-op + downstream gate failure is a misleading-error class (see T-1832: lib/inception.sh '## Decision' anchor). Template asymmetry (default.md vs inception.md) is a hidden coupling that breaks anchor-dependent code; keep templates aligned. Test pattern: assert auto-create when anchor missing, normal-path when present, stderr warning in both anchor-missing paths."
+  source: P-001
+  task: T-1832
+  date: 2026-05-14
+  context: Added via context agent
+  application: TBD

@@ -4,16 +4,16 @@ name: "lib/inception.sh Python decide-handler silently no-ops when '## Decision'
 description: >
   Found in S-2026-0514 session via errors 4+5. lib/inception.sh:531-582 Python script searches for line.strip() == '## Decision' (singular). If absent (custom-body inception tasks, or template variants using '## Decisions' plural only), decision_written stays False, no Decision block is written, but inception.sh returns 0. Caller's tick + Updates-entry steps run normally. Then update-task.sh's check_inception_decision at line 366 (looking for '**Decision**:' line-start) fails with 'no decision recorded' — error appears AFTER decision was 'successfully recorded' per the CLI. Same class as T-1828: gate measures proxy that diverged from reality. Fix: Python should ERROR if heading absent (or auto-create the section before writing). Sibling to T-1831 Layer 1 (AC checkbox).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bug, fw-upgrade-incident-2026-05-14, gate-vs-content-drift, lib-inception]
-components: []
+components: [lib/inception.sh]
 related_tasks: [T-1828, T-1829, T-1830, T-1831]
 created: 2026-05-14T20:13:43Z
-last_update: 2026-05-14T20:13:43Z
-date_finished: null
+last_update: 2026-05-14T20:49:40Z
+date_finished: 2026-05-14T20:49:40Z
 ---
 
 # T-1832: lib/inception.sh Python decide-handler silently no-ops when '## Decision' heading absent — Layer 2 of T-1831 RCA
@@ -122,3 +122,15 @@ grep -q "^## Decision$" .tasks/templates/default.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1832-libinceptionsh-python-decide-handler-sil.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7242d630
+- **Timestamp:** 2026-05-14T20:49:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T20:49:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

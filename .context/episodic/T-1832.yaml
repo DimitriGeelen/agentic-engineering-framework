@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1832: lib/inception.sh Python decide-handler silently no-ops when '## Decision' heading absent — Layer 2 of T-1831 RCA
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-14T20:49:46Z
+# ============================================================================
+
+task_id: T-1832
+task_name: "lib/inception.sh Python decide-handler silently no-ops when '## Decision' heading absent — Layer 2 of T-1831 RCA"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-14T20:13:43Z
+completed: 2026-05-14T20:49:40Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-14T22:49:35+02:00
+last_commit: 2026-05-14T22:49:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  auto-create '## Decision' section when missing (Layer 2 fix)
+
+# Key outcomes
+outcomes:
+  - "Patch `lib/inception.sh` Python script: when `## Decision` heading absent, EITHER (a) auto-create the section before writing OR (b) error with helpful message naming the missing heading"
+  - "Bats test in `tests/unit/` exercising both code paths (heading present → writes; heading absent → errors-or-creates)"
+  - "Update inception task template (default.md) to include the `## Decision` (singular) placeholder section — currently only inception.md has it"
+  - "Sweep existing active inception tasks for the missing-heading state; add the section to any found (T-1829/T-1830/T-1831 already patched as part of this RCA)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "auto-create '## Decision' section when missing (Layer 2 fix)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/inception.sh"
+  - ".tasks/active/T-1832-libinceptionsh-python-decide-handler-sil.md"
+  - ".tasks/templates/default.md"
+  - "tests/unit/inception_decide_auto_create_decision_section.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T22:49:35"
+    action: "T-1832: auto-create '## Decision' section when missing (Layer 2 fix)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 35 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, fw-upgrade-incident-2026-05-14, gate-vs-content-drift, lib-inception]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 35
+  commits: 1
+  files_changed: 4
+  lines_added: 274
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1832-libinceptionsh-python-decide-handler-sil.md
+generated_by: context-agent-hybrid

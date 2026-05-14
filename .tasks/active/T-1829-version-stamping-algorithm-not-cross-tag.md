@@ -4,16 +4,16 @@ name: "VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-
 description: >
   Level-C fix for the class T-1828 surfaced. Current VERSION stamping in agents/git/lib/hooks.sh uses `git describe --tags --match 'v[0-9]*'` and stamps `<major>.<minor>.<commits-since-tag>`. The commits-since-tag counter resets to 0 at each new v<M>.<m>.<p> tag, causing local VERSION to numerically drop below remote VERSION at the next push. T-1603 pre-push hook then blocks as monotonicity violation even when commit time is strictly newer. Need a stamping algorithm OR a hook upgrade that handles cross-tag-monotonicity correctly.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: next
 tags: [version-monotonicity, mirror-sync, fw-upgrade-incident-2026-05-14]
 components: [agents-git-lib-hooks, lib-mirror, VERSION]
 related_tasks: [T-1602, T-1603, T-1828]
 created: 2026-05-14T18:24:14Z
-last_update: 2026-05-14T18:29:55Z
-date_finished: null
+last_update: 2026-05-14T20:29:30Z
+date_finished: 2026-05-14T20:29:30Z
 ---
 
 # T-1829: VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828 class
@@ -49,7 +49,19 @@ This is an **inception** task because there are multiple viable approaches with 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-1829 go|no-go|defer --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO with Candidate D (C + B observability), defer A and B as alternatives if C proves incorrect.
+
+Rationale: Candidate C is the smallest-blast-radius fix that addresses the root cause. The current VERSION file format is preserved (no consumer impact). The hook upgrade is purely additive — `local < remote` no longer auto-blocks; it asks "is remote an ancestor of local?". The bundled mirror-sync stderr logging (B) is cheap insurance against the next class. Candidates A and B require consumer migration; that cost is hard to justify when C is available.
+
+Evidence:
+- T-1828 RCA shows this is the SECOND incident of the class; if we don't fix the root cause, will hit again on next tag.
+- `git merge-base --is-ancestor` is O(graph traversal), measured fast on this 2000+ commit history (<100ms).
+- Mirror-sync stderr capture is a 3-line change to `lib/mirror.sh` `do_mirror_sync_to`.
+- T-1602 protection class (real-rollback) is preserved: if `local < remote` AND `remote_sha NOT ancestor of local_sha`, that's a divergence → still blocks.
+
+**Date**: 2026-05-14T20:29:30Z
 
 ## Decisions
 
@@ -195,3 +207,29 @@ Evidence:
 - `git merge-base --is-ancestor` is O(graph traversal), measured fast on this 2000+ commit history (<100ms).
 - Mirror-sync stderr capture is a 3-line change to `lib/mirror.sh` `do_mirror_sync_to`.
 - T-1602 protection class (real-rollback) is preserved: if `local < remote` AND `remote_sha NOT ancestor of local_sha`, that's a divergence → still blocks.
+
+### 2026-05-14T20:29:30Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with Candidate D (C + B observability), defer A and B as alternatives if C proves incorrect.
+
+Rationale: Candidate C is the smallest-blast-radius fix that addresses the root cause. The current VERSION file format is preserved (no consumer impact). The hook upgrade is purely additive — `local < remote` no longer auto-blocks; it asks "is remote an ancestor of local?". The bundled mirror-sync stderr logging (B) is cheap insurance against the next class. Candidates A and B require consumer migration; that cost is hard to justify when C is available.
+
+Evidence:
+- T-1828 RCA shows this is the SECOND incident of the class; if we don't fix the root cause, will hit again on next tag.
+- `git merge-base --is-ancestor` is O(graph traversal), measured fast on this 2000+ commit history (<100ms).
+- Mirror-sync stderr capture is a 3-line change to `lib/mirror.sh` `do_mirror_sync_to`.
+- T-1602 protection class (real-rollback) is preserved: if `local < remote` AND `remote_sha NOT ancestor of local_sha`, that's a divergence → still blocks.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-5726ff30
+- **Timestamp:** 2026-05-14T20:29:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T20:29:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

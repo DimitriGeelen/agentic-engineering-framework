@@ -4,16 +4,16 @@ name: "AC-checkbox-vs-content drift — agent does substantive work in body, gat
 description: >
   Same class as T-1828: gate measures a proxy that diverges from reality. Agent writes ACs content (RCA, candidates, recommendation) in task body but does NOT progressively tick checkboxes. Gate (P-010 for status work-completed, inception-decide preflight at lib/inception.sh:506-524 for decide) fires correctly — content is there to a human reader, but trackable signal says incomplete. Plus error 4 (T-1829 still blocked after checkbox fix) is past preflight — DIFFERENT gate fired inside update-task.sh, full error text needed.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [bug, fw-upgrade-incident-2026-05-14, gate-vs-content-drift, antifragility, user-reported-error]
 components: [agents-task-create-update-task, lib-inception]
 related_tasks: [T-1828, T-1829, T-1830, T-1603, T-1503]
 created: 2026-05-14T19:30:02Z
-last_update: 2026-05-14T19:30:02Z
-date_finished: null
+last_update: 2026-05-14T20:29:45Z
+date_finished: 2026-05-14T20:29:45Z
 ---
 
 # T-1831: AC-checkbox-vs-content drift — gate measures checkbox, content lives in body
@@ -96,7 +96,18 @@ Bug-fix learning checkpoint (per CLAUDE.md §Bug-Fix Learning Checkpoint):
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-1831 go|no-go|defer --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO with C-3 (gate diagnostic upgrade) + C-4 (CLAUDE.md rule) as V1 slice. Defer C-1/C-2 (body-content inference) to follow-ups.
+
+Rationale: C-3 is a small, mechanical change to the existing gate messages — surface "here's AC #N, is its content present?" instead of just "AC unchecked". C-4 is documentation hygiene that costs nothing but reframes the agent's mental model. Together they catch the class WITHOUT introducing new structural complexity. C-1 (body-content inference) is interesting but fragile — false positives would erode trust in the gate (a bigger antifragility loss than the current friction). C-2 (PostToolUse hint) is high-noise — every task edit would potentially trigger a hint.
+
+Evidence:
+- 3 of 4 errors in this session are Layer 1 — class hit 3x in one session is a tooling signal (Level C per Error Escalation Ladder).
+- T-1828 same-class structural shape (gate-vs-reality drift) confirms this is not a one-off.
+- Sibling to T-1830 (boundary-crossing invisibility) — both are "gate measures a proxy that diverges from what it should be measuring".
+
+**Date**: 2026-05-14T20:29:45Z
 
 ## Recommendation
 
@@ -108,3 +119,35 @@ Bug-fix learning checkpoint (per CLAUDE.md §Bug-Fix Learning Checkpoint):
 - 3 of 4 errors in this session are Layer 1 — class hit 3x in one session is a tooling signal (Level C per Error Escalation Ladder).
 - T-1828 same-class structural shape (gate-vs-reality drift) confirms this is not a one-off.
 - Sibling to T-1830 (boundary-crossing invisibility) — both are "gate measures a proxy that diverges from what it should be measuring".
+
+### 2026-05-14T20:29:45Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with C-3 (gate diagnostic upgrade) + C-4 (CLAUDE.md rule) as V1 slice. Defer C-1/C-2 (body-content inference) to follow-ups.
+
+Rationale: C-3 is a small, mechanical change to the existing gate messages — surface "here's AC #N, is its content present?" instead of just "AC unchecked". C-4 is documentation hygiene that costs nothing but reframes the agent's mental model. Together they catch the class WITHOUT introducing new structural complexity. C-1 (body-content inference) is interesting but fragile — false positives would erode trust in the gate (a bigger antifragility loss than the current friction). C-2 (PostToolUse hint) is high-noise — every task edit would potentially trigger a hint.
+
+Evidence:
+- 3 of 4 errors in this session are Layer 1 — class hit 3x in one session is a tooling signal (Level C per Error Escalation Ladder).
+- T-1828 same-class structural shape (gate-vs-reality drift) confirms this is not a one-off.
+- Sibling to T-1830 (boundary-crossing invisibility) — both are "gate measures a proxy that diverges from what it should be measuring".
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-82aba7b1
+- **Timestamp:** 2026-05-14T20:29:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Characterise Layer-1 gate (AC checkbox vs content) — documented at lib/inception.sh:506-524 and update-task.sh:65-152
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/inception.sh in: Characterise Layer-1 gate (AC checkbox vs content) — documented at lib/inception.sh:506-524 and update-task.sh:65-152`
+- **AC#2 (Agent)** — Characterise Layer-2 gate (missing `## Decision` heading) — root caused via code trace; lib/inception.sh:531-582 Python silently no-ops; gate fires at update-task.sh:366-386. T-1832 filed for framewor
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/inception.sh in: Characterise Layer-2 gate (missing `## Decision` heading) — root caused via code trace; lib/inception.sh:531-582 Python silently no-ops; gate fires at`
+
+### 2026-05-14T20:29:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
