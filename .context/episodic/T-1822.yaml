@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1822: fix project-boundary cwd-trap — vendored .agentic-framework/ cwd traps consumer agent (session-fatal)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-14T14:00:20Z
+# ============================================================================
+
+task_id: T-1822
+task_name: "fix project-boundary cwd-trap — vendored .agentic-framework/ cwd traps consumer agent (session-fatal)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-14T07:30:21Z
+completed: 2026-05-14T14:00:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-14T09:34:12+02:00
+last_commit: 2026-05-14T09:34:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix project-boundary cwd-trap in vendored .agentic-framework/
+
+# Key outcomes
+outcomes:
+  - "`lib/paths.sh` detects vendored case: when `FRAMEWORK_ROOT` basename is `.agentic-framework` AND its parent contains `.framework.yaml`, sets `PROJECT_ROOT` to the parent."
+  - "Standalone framework checkouts (FRAMEWORK_ROOT not named `.agentic-framework`, or parent has no `.framework.yaml`) keep the existing git-toplevel resolution — no regression."
+  - "Unit test added in `tests/unit/lib_paths.bats` exercising both branches (vendored + standalone) via fixture directories under `/tmp` (tests 6, 7, 8)."
+  - "Existing PROJECT_ROOT-sensitive tests still pass (`fw test unit -- tests/unit/lib_paths.bats` → 8/8 ok)."
+  - "Reproduction from termlink-agent's report no longer traps: with vendored `.agentic-framework/` (own `.git`, parent `.framework.yaml`), `cd $PROJECT_ROOT_OUTER` from inside `.agentic-framework/` is allowed by the boundary hook — verified live `PROJECT_ROOT=/tmp/.../consumer` resolves to parent."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix project-boundary cwd-trap in vendored .agentic-framework/"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/paths.sh"
+  - ".tasks/active/T-1822-fix-project-boundary-cwd-trap--vendored-.md"
+  - "tests/unit/lib_paths.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T09:34:12"
+    action: "T-1822: fix project-boundary cwd-trap in vendored .agentic-framework/"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 389 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:project-shape-resilience, project-boundary, fw-upgrade-incident-2026-05-14, T-559, T-1542, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 389
+  commits: 1
+  files_changed: 3
+  lines_added: 160
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1822-fix-project-boundary-cwd-trap--vendored-.md
+generated_by: context-agent-hybrid
