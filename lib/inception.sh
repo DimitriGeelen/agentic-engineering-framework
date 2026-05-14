@@ -311,6 +311,13 @@ with open(task_file) as f:
 PATTERNS = [
     re.compile(r'\[REVIEW\].*go/?no-go decision', re.IGNORECASE),
     re.compile(r'\[RUBBER-STAMP\].*[Rr]ecord.*decision'),
+    # T-1837: broader '[REVIEW] Decide ...' coverage. The original literal
+    # 'go/no-go decision' phrasing missed real-world variants like
+    # 'Decide go/no-go AND which approach' (T-1829), 'Decide GO/NO-GO/DEFER on...'
+    # (T-1830), 'Decide on prevention pattern' (T-1831). For inception tasks
+    # — the only context this function runs — '[REVIEW] Decide ...' is
+    # canonically the go/no-go authorization, so a broad match is safe.
+    re.compile(r'\[REVIEW\].*\bdecide\b', re.IGNORECASE),
 ]
 
 # T-1194: when Recommendation section exists, also tick the 3 ceremonial
