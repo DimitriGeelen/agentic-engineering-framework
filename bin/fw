@@ -1493,10 +1493,19 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
             local cname cversion
             cname=$(basename "$consumer_dir")
             cversion=$(grep "^version:" "$fw_yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
-            # Check version match
+            # Check version match — distinguish behind vs ahead (T-1838).
+            # T-1828 scenario: framework VERSION can be rolled back (tag-counter reset),
+            # producing consumer > framework. Suggesting `fw upgrade` in that direction
+            # would silently downgrade the consumer's pinned version.
             local version_ok=true
+            local version_relation="match"
             if [ -n "$cversion" ] && [ "$cversion" != "$FW_VERSION" ]; then
                 version_ok=false
+                if [ "$(printf '%s\n%s\n' "$cversion" "$FW_VERSION" | sort -V | tail -1)" = "$cversion" ]; then
+                    version_relation="ahead"
+                else
+                    version_relation="behind"
+                fi
             fi
             # Check hooks by type (reuse T-615 logic)
             local consumer_settings="$consumer_dir/.claude/settings.json"
@@ -1531,21 +1540,28 @@ else:
     print(f'ok {len(consumer_hooks)}/{len(fw_hooks)}')
 " 2>/dev/null || echo "parse-error")
             fi
-            # Report
+            # Report (T-1838: asymmetric remediation for consumer-ahead case)
             if [ "$version_ok" = true ] && [[ "$hook_info" == ok* ]]; then
                 local hook_counts="${hook_info#ok }"
                 echo -e "  ${GREEN}OK${NC}  $cname (v$cversion, $hook_counts hooks)"
             else
                 local reasons=""
-                if [ "$version_ok" = false ]; then
+                if [ "$version_relation" = "behind" ]; then
                     reasons="v$cversion → v$FW_VERSION"
+                elif [ "$version_relation" = "ahead" ]; then
+                    reasons="v$cversion is AHEAD of framework v$FW_VERSION"
                 fi
                 if [[ "$hook_info" == missing* ]]; then
                     [ -n "$reasons" ] && reasons="$reasons, "
                     reasons="$reasons$hook_info"
                 fi
                 echo -e "  ${YELLOW}WARN${NC}  $cname ($reasons)"
-                echo -e "         Run: fw upgrade $consumer_dir"
+                if [ "$version_relation" = "ahead" ]; then
+                    echo -e "         DO NOT run \`fw upgrade $consumer_dir\` — would downgrade v$cversion → v$FW_VERSION."
+                    echo -e "         Framework VERSION likely rolled back (see T-1828). Wait for framework to catch up."
+                else
+                    echo -e "         Run: fw upgrade $consumer_dir"
+                fi
                 warnings=$((warnings + 1))
                 consumer_issues=$((consumer_issues + 1))
             fi
