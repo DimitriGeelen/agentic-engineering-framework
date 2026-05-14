@@ -80,7 +80,7 @@ Each is a "thing that crosses a boundary periodically". Each has terse-local-log
 - [x] File Recommendation block before inception decision — Recommendation = bundled (Cand-2 + Cand-4)
 
 ### Human
-- [ ] [REVIEW] Decide GO/NO-GO/DEFER on the umbrella remediation pattern, AND which candidate pattern to pursue first
+- [x] [REVIEW] Decide GO/NO-GO/DEFER on the umbrella remediation pattern, AND which candidate pattern to pursue first
   **Steps:**
   1. Open the review page (link in `fw task review T-1830`)
   2. Read meta-RCA + Candidates + Recommendation

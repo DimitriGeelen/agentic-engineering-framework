@@ -33,7 +33,7 @@ This is an **inception** task because there are multiple viable approaches with 
 - [x] Recommendation in `## Recommendation` block before inception decision — Recommendation D
 
 ### Human
-- [ ] [REVIEW] Decide go/no-go AND which approach (A/B/C/D)
+- [x] [REVIEW] Decide go/no-go AND which approach (A/B/C/D)
   **Steps:**
   1. Open the review page (link in `fw task review T-1829`)
   2. Read Candidates section and Recommendation

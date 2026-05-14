@@ -82,7 +82,7 @@ Bug-fix learning checkpoint (per CLAUDE.md §Bug-Fix Learning Checkpoint):
 - [x] Cross-link to T-1828, T-1830, T-1832 as sibling-class instances
 
 ### Human
-- [ ] [REVIEW] Decide on prevention pattern (Layer 1) AND triage Layer 2 (file follow-up bug task if error #4 is a regression vs known behaviour)
+- [x] [REVIEW] Decide on prevention pattern (Layer 1) AND triage Layer 2 (file follow-up bug task if error #4 is a regression vs known behaviour)
   **Steps:**
   1. Open `fw task review T-1831` link
   2. Paste full text of error #4 (the `=== Task Update === ...` one) — without that we cannot characterise Layer 2
