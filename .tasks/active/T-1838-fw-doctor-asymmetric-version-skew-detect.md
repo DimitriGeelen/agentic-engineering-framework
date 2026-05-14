@@ -64,7 +64,8 @@ Fix scope: introduce `version_relation` (match | behind | ahead) via `sort -V` c
 
 bash -n bin/fw
 test -f tests/unit/test_doctor_consumer_version_ahead.bats
-bats tests/unit/test_doctor_consumer_version_ahead.bats 2>&1 | grep -qE "^ok 3 |^ok 4 "
+# Capture bats output first to avoid SIGPIPE from `grep -q` short-circuit under pipefail
+bats tests/unit/test_doctor_consumer_version_ahead.bats > /tmp/t1838-bats.out 2>&1 && grep -qE "^ok 3 |^ok 4 " /tmp/t1838-bats.out
 grep -q "version_relation" bin/fw
 grep -q "AHEAD of framework\|is AHEAD" bin/fw
 
