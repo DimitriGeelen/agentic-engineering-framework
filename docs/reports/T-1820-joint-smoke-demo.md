@@ -157,22 +157,42 @@ two trigger attempts did not produce the event:
 
 ### What's missing — the next investigation
 
-The user-facing CLI flow that triggers `mirror_inbox_deposit_with()` is not
-obvious from outside the hub crate. The two natural surfaces (`termlink file
-send`, `termlink channel post`) did not exercise the new emit in this
-smoke. Likely paths to investigate (deferred as a follow-up to T-1820):
+Two investigation workers dispatched to clarify the trigger:
 
-- Read the integration test verbatim to identify the exact precondition
-  (which RPC method, which session state, which topic membership the test
-  sets up before calling `mirror_inbox_deposit_with()` directly).
-- Determine whether the new emit is intentionally *only* on a not-yet-
-  shipped delivery path (i.e., a future T-1249-replacement) — in which
-  case the live joint smoke needs *that* path to ship first, and T-1820's
-  AC#3 is genuinely deferred rather than "smoke we should be able to run
-  today."
-- Failing both: it may be cleaner to demonstrate the framework subscriber
-  end-to-end against a **synthetic test event** injected directly into the
-  hub's event bus, captured in a Watchtower-visible script.
+1. **`t1820-trigger-spec` (Haiku)** — confirmed the integration test calls
+   `mirror_inbox_deposit_with()` directly (`crates/termlink-hub/src/channel.rs`
+   lines 1780–1809). Helper stack: `tmp_bus → router::init_aggregator →
+   mirror_inbox_deposit_with → aggregator.subscribe/inject`.
+2. **`t1820-trigger-extract` (Haiku)** — reported "CLI trigger exists now:
+   `termlink channel post inbox:<session-id> --msg-type file.init '<json>'`".
+
+I tried that recipe live, **three times** to `inbox:tl-design-smoke-target`
+with `--msg-type file.init`. All three posts landed at offsets 0/1/2 on the
+topic, but **none produced an `inbox.queued` event** on:
+
+- `event poll framework-agent --topic inbox.queued` (still `next_seq: 344`)
+- `event topics` across all live sessions (no `inbox.queued` topic)
+
+**Working hypothesis:** the handler registration that injects `inbox.queued`
+into the aggregator happens *inside the test* via `init_aggregator(...)` —
+not at hub startup. The live hub therefore has no handler picking up the
+`channel post` and injecting the event, even though the post itself lands.
+If true, the new emit is reachable only by code that runs `init_aggregator`
+in-process — which is presently the integration test only.
+
+This needs the TermLink-side maintainer's call:
+- Option A: ship a `router::init_aggregator` invocation at hub startup so
+  the handler is live → the recipe above starts working from CLI.
+- Option B: declare T-1636 as substrate-only-this-slice and wire the
+  user-facing trigger in a follow-up TermLink task (e.g., T-1636-b: register
+  the aggregator handler at hub boot).
+- Option C: pair this with the next TermLink delivery-path change so the
+  emit is wired in production, not just tests.
+
+Filed as **T-1821** on the framework side to track the joint smoke from our
+end: when TermLink resolves A/B/C, we re-run the smoke against the live
+hub and tick T-1820's AC#3 (or close T-1820 substrate-shipped and ship the
+live observation under T-1821).
 
 ### Smoke harness (used today, partial)
 

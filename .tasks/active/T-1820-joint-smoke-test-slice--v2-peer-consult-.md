@@ -10,7 +10,7 @@ owner: agent
 horizon: now
 tags: [arc:orchestrator-rethink, termlink, peer-consult, cross-repo, joint-smoke]
 components: []
-related_tasks: [T-1818, T-1819, T-1804, T-1797]
+related_tasks: [T-1818, T-1819, T-1804, T-1797, T-1821]
 created: 2026-05-13T23:05:51Z
 last_update: 2026-05-13T23:12:01Z
 date_finished: null
@@ -126,6 +126,12 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 - **Plan impact:** PARTIAL-SHIP. Substrate is real and useful (deployment landed, hub runs new binary, subscriber polls the new hub for the new topic without error). Headline mechanic (live binary-to-binary observation) NOT yet demonstrated. Per §ACD/G-062 ("acknowledged failure better than false success"), agent does NOT close T-1820 GO on substrate-only evidence. Surfacing PARTIAL-SHIP with two options to the operator: (1) accept substrate + file T-1821 follow-up for trigger investigation, OR (2) keep T-1820 open and authorise another worker to extract the exact trigger spec and retry smoke. Agent's call: option (1) — bundling investigation into T-1820 conflates two scopes.
 - **Triggered:** Candidate follow-up — T-1821-joint-smoke-trigger-investigation (not yet filed; awaiting operator decision on which path to take).
 
+### 2026-05-14 — investigation worker dispatched, CLI trigger still not reachable
+
+- **What changed:** Operator chose option 2 ("keep T-1820 open + investigate"). Dispatched `t1820-trigger-extract` (Haiku, ~3min) to read `crates/termlink-hub/src/channel.rs` lines 1780–1809 verbatim. Worker reported "CLI trigger exists now: `termlink channel post inbox:<session-id> --msg-type file.init '<json>'` — no new commands needed." Tested the recipe live: **three posts** to `inbox:tl-design-smoke-target` with `--msg-type file.init`, each landed at offsets 0/1/2, **no `inbox.queued` event** fired on `framework-agent`'s stream (`next_seq` stuck at 344) and no `inbox.queued` topic appeared on any session's `event topics` list. Working hypothesis: the handler that injects `inbox.queued` into the aggregator runs inside the integration test via `init_aggregator(...)` — not at hub startup. The live hub therefore has no handler picking up the `channel post` to inject the event. T-1821 filed as the framework-side tracker for re-running the smoke once TermLink wires the aggregator handler at hub boot (or ships the user-facing trigger path).
+- **Plan impact:** Investigation done; conclusion is the same as PARTIAL-SHIP. The trigger isn't reachable from the current CLI surface; T-1636 ships the substrate, not the user-facing trigger. Recommendation re-issued: accept PARTIAL-SHIP and close T-1820 substrate-shipped, picking up the live smoke under T-1821 once TermLink wires the handler.
+- **Triggered:** T-1821 filed (framework-side tracker, captured/next, owner: agent, type: build). Cross-link added to this task's related_tasks if not already present.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -168,12 +174,40 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
   - No live `inbox.queued` event observed from outside the hub crate during this session.
   - User-facing trigger path for the new emit is not yet identified (likely needs to read the integration test verbatim).
 
-**Operator choice (please pick one in the Watchtower review):**
+**Investigation outcome (option 2 executed):**
 
-1. **Accept partial-ship** — close T-1820 as substrate-shipped, file T-1821 ("identify user-facing trigger for inbox.queued and complete the joint smoke") as a follow-up build task. Cleanest scope separation; lets T-1820 land while the trigger investigation gets its own evidence bar.
-2. **Keep T-1820 open** — authorise another investigation worker to extract the exact integration-test setup from `crates/termlink-hub/src/channel.rs` (lines 1780–1809 per trigger-spec worker) and retry the smoke against the precise precondition. ~10-15 min of agent + token cost.
+Worker `t1820-trigger-extract` read `channel.rs:1780-1809` and reported the
+recipe `termlink channel post inbox:<id> --msg-type file.init '<json>'`. I
+tested it three times against `inbox:tl-design-smoke-target` — every post
+landed (offsets 0/1/2) but no `inbox.queued` event fired on framework-agent's
+stream or appeared in any session's `event topics`. **The conclusion lines
+up with PARTIAL-SHIP:** the handler that injects `inbox.queued` into the
+aggregator is registered inside the integration test via
+`router::init_aggregator(...)`, not at hub startup. The live hub has no
+handler picking up the post.
 
-On your decision the agent either (1) files T-1821 + transitions T-1820 to work-completed with the partial framing on record, or (2) dispatches the investigation worker and re-attempts the smoke.
+T-1820's substrate work is real and useful (deploy landed, framework
+subscriber operational against the new hub, topic recognized). The headline
+mechanic requires TermLink to either (a) call `init_aggregator` at hub
+startup, (b) add a CLI command that bridges the post to an in-process
+aggregator subscriber, or (c) bundle this with the next delivery-path
+change so the emit fires in production.
+
+**T-1821 filed** as the framework-side tracker for the live smoke when
+TermLink resolves the handler-registration gap.
+
+**Operator decision (please pick one in the Watchtower review):**
+
+1. **Accept PARTIAL-SHIP** — agent transitions T-1820 to work-completed
+   (substrate shipped, headline mechanic deferred to T-1821 with live demo
+   conditional on TermLink resolving the handler gap). Recommended.
+2. **Hold T-1820 open until TermLink resolves the gap** — keep the framework-
+   side task open; close it the same day TermLink ships the handler fix and
+   the live smoke runs green. Higher coupling, longer-lived task; loses the
+   "one task = one deliverable" discipline.
+
+Agent's call: **option 1**. The substrate is a real ship. T-1821 captures
+the next move at the right scope. Operator confirms or overrides.
 
 ## Updates
 
@@ -188,8 +222,8 @@ On your decision the agent either (1) files T-1821 + transitions T-1820 to work-
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-a64145bc
-- **Timestamp:** 2026-05-14T05:29:47Z
+- **Scan ID:** R-970b117a
+- **Timestamp:** 2026-05-14T05:50:07Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
