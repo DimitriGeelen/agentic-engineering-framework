@@ -2928,3 +2928,10 @@ X'` returning empty group."
   date: 2026-05-14
   context: Added via context agent
   application: TBD
+- id: L-381
+  learning: "When bats tests use 'cd synthetic_consumer' + 'run FW_BIN <verb>' to exercise a project-root-resolving fw command, the parent process's PROJECT_ROOT env var leaks into the bats subshell and overrides cwd-based detection. Direct invocation (env-clean) passes; verification-gate invocation (env-poisoned) fails. Fix: pass 'PROJECT_ROOT=synthetic run FW_BIN <verb>' explicitly. Discovered: T-1840 fw-gaps defensive-get bats."
+  source: P-011
+  task: T-1828
+  date: 2026-05-14
+  context: Added via context agent
+  application: TBD

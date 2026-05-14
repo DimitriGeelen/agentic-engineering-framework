@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1840: fw gaps: defensive .get() for missing 'title'/'id' fields (consumer report F4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-14T22:06:54Z
+# ============================================================================
+
+task_id: T-1840
+task_name: "fw gaps: defensive .get() for missing 'title'/'id' fields (consumer report F4)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-14T22:03:00Z
+completed: 2026-05-14T22:06:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-15T00:05:46+02:00
+last_commit: 2026-05-15T00:06:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw gaps defensive .get() for missing title/id (consumer F4). bats test — explicit PROJECT_ROOT override for synthetic fixture
+
+# Key outcomes
+outcomes:
+  - "`bin/fw:4864` uses `gap.get('id', '?')` and `gap.get('title', '<untitled>')` instead of direct subscripts"
+  - "`bin/fw` parses with `bash -n` post-edit"
+  - "Synthetic test: a temp concerns.yaml with a watching entry missing `title:` field runs `fw gaps` without traceback and renders `<untitled>` in the output"
+  - "Synthetic test: a temp concerns.yaml with a watching entry having both `id:` and `title:` renders both unchanged (no regression for the well-formed case)"
+  - "Bats test `tests/unit/test_gaps_missing_title_defaults.bats` pins both behaviours — 5/5 pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "bats test — explicit PROJECT_ROOT override for synthetic fixture"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1840-fw-gaps-defensive-get-for-missing-titlei.md"
+  - "tests/unit/test_gaps_missing_title_defaults.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T00:05:46"
+    action: "T-1840: fw gaps defensive .get() for missing title/id (consumer F4)"
+  - time: "2026-05-15T00:06:44"
+    action: "T-1840: bats test — explicit PROJECT_ROOT override for synthetic fixture"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [consumer-fleet, fw-cli, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 3
+  lines_added: 269
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1840-fw-gaps-defensive-get-for-missing-titlei.md
+generated_by: context-agent-hybrid

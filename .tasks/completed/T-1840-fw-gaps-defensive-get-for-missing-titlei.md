@@ -4,16 +4,16 @@ name: "fw gaps: defensive .get() for missing 'title'/'id' fields (consumer repor
 description: >
   Consumer email-archive reported via framework:pickup offset 2: fw gaps crashes with KeyError on concerns.yaml entries lacking 'title' field. Reproduced in bin/fw:4864 (print(f"  {gap['id']} [{sev}]  {gap['title']}")) — both gap['id'] and gap['title'] use direct dict subscript. When concerns predates the title-field requirement (older consumer trees), the CLI is fully broken with no visibility into the project's own gaps. Suggested fix from reporter: c.get('title', '<untitled>'). Apply same defense to gap['id']. Source: framework:pickup F4 finding, evidence at consumer T-1382, commit 273894fd.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [consumer-fleet, fw-cli, bug]
-components: []
+components: [bin/fw]
 related_tasks: [T-1838, T-1839]
 created: 2026-05-14T22:03:00Z
-last_update: 2026-05-14T22:03:00Z
-date_finished: null
+last_update: 2026-05-14T22:06:49Z
+date_finished: 2026-05-14T22:06:49Z
 ---
 
 # T-1840: fw gaps: defensive .get() for missing 'title'/'id' fields (consumer report F4)
@@ -156,3 +156,15 @@ grep -q "gap.get('title'" bin/fw
 - `tests/unit/test_gaps_missing_title_defaults.bats`: 5/5 — covers missing-title / missing-id / well-formed / source-pin / parse-check
 - Consumer F4 report (framework:pickup offset 2, sender d1993c2c3ec44c94, 2026-05-04) closed by this fix
 - Bash parse: clean
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a1e7c9f1
+- **Timestamp:** 2026-05-14T22:06:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T22:06:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
