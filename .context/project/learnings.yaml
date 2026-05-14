@@ -2921,3 +2921,10 @@ X'` returning empty group."
   date: 2026-05-14
   context: Added via context agent
   application: TBD
+- id: L-380
+  learning: "Never pipe long-output producers (bats, dotnet build, fw audit) to grep -q inside Verification blocks. P-011 runs verification under set -eo pipefail. grep -q closes stdin on first match and the producer SIGPIPEs (exit 141), which pipefail reports as a verification failure even when the pattern matched. Capture producer output to a tempfile first, then grep the file. Discovered: T-1838 verification grep-q to bats exited 141 despite the line existing in the captured rerun."
+  source: P-011
+  task: T-1828
+  date: 2026-05-14
+  context: Added via context agent
+  application: TBD

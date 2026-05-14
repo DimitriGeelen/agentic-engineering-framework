@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1838: fw doctor asymmetric version-skew detection — distinguish consumer-behind from consumer-ahead-of-framework (T-1828 surfaces)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-14T21:51:07Z
+# ============================================================================
+
+task_id: T-1838
+task_name: "fw doctor asymmetric version-skew detection — distinguish consumer-behind from consumer-ahead-of-framework (T-1828 surfaces)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-14T21:33:14Z
+completed: 2026-05-14T21:51:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-14T23:50:03+02:00
+last_commit: 2026-05-14T23:50:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw doctor asymmetric version-skew detection — block silent-downgrade advice. fix verification command — capture bats output, avoid SIGPIPE-141
+
+# Key outcomes
+outcomes:
+  - "`bin/fw` consumer fleet block (lines ~1494-1551) computes `version_relation` (match/behind/ahead) via `sort -V` comparison of `$cversion` and `$FW_VERSION`"
+  - "Consumer-behind branch preserves existing behaviour: WARN with `v$cversion → v$FW_VERSION` reasons + `Run: fw upgrade $consumer_dir`"
+  - "Consumer-ahead branch emits a distinct WARN reading `v$cversion is AHEAD of framework v$FW_VERSION` and the remediation line tells the operator NOT to run `fw upgrade` (would downgrade) and references T-1828"
+  - "Hooks-missing check still surfaces independently of the version axis (a consumer-ahead with missing hooks must still report the missing hooks; the warning must not advise upgrade)"
+  - "Bats regression test `tests/unit/test_doctor_consumer_version_ahead.bats` covers (a) consumer-behind keeps \"fw upgrade\" suggestion, (b) consumer-ahead suppresses \"fw upgrade\" suggestion and mentions T-1828, (c) match case stays OK — 9/9 pass"
+  - "`bash -n bin/fw` parses clean post-edit"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix verification command — capture bats output, avoid SIGPIPE-141"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1838-fw-doctor-asymmetric-version-skew-detect.md"
+  - "tests/unit/test_doctor_consumer_version_ahead.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T23:50:03"
+    action: "T-1838: fw doctor asymmetric version-skew detection — block silent-downgrade advice"
+  - time: "2026-05-14T23:50:33"
+    action: "T-1838: fix verification command — capture bats output, avoid SIGPIPE-141"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:project-shape-resilience, consumer-fleet, fw-doctor]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 2
+  files_changed: 3
+  lines_added: 269
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1838-fw-doctor-asymmetric-version-skew-detect.md
+generated_by: context-agent-hybrid
