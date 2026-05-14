@@ -4,7 +4,7 @@ name: "github mirror stalled — VERSION tag-reset trips T-1603 hook, blocks fix
 description: >
   GitHub mirror at 9d52cee27 (T-1725, 2026-05-04), 294 commits behind origin. Auto-recover cron (T-1594) push-failing every 15 min for hours. Root cause: VERSION stamping via `git describe` counter resets at each new tag — v1.6.2 created after last GitHub push, dropped stamped VERSION from 1.6.260 to 1.6.148. T-1603 pre-push hook (correctly per spec) blocks as monotonicity violation. fix-shipped commits for T-1822/T-1823/T-1824/T-1825/T-1634 cannot reach GitHub-cloning consumers; /opt/termlink reports they cannot `fw upgrade` to pick up cwd-trap fix.
 
-status: started-work
+status: issues
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [bug, fw-upgrade-incident-2026-05-14, mirror, version-monotonicity]
 components: [bin-fw, lib-mirror, agents-git-lib-hooks, lib-upgrade]
 related_tasks: [T-1542, T-1594, T-1602, T-1603, T-1822, T-1823, T-1824, T-1825, T-1634, T-1826, T-1827, T-1833, T-1834]
 created: 2026-05-14T18:22:32Z
-last_update: 2026-05-14T18:22:32Z
+last_update: 2026-05-14T20:43:38Z
 date_finished: null
 ---
 
@@ -107,3 +107,6 @@ git ls-remote https://github.com/DimitriGeelen/agentic-engineering-framework.git
 - Hook output captured: `"master: VERSION 1.6.160 < remote 1.6.260"`
 - `git describe --tags --match 'v[0-9]*'` returns `v1.6.2-148-g8158d577e` locally, `v1.6.1-34-g9d52cee27` at github HEAD — confirms tag-reset cause
 - T-1822 fix (cwd-trap, what /opt/termlink needs) is in commit `508783801` which is in the stuck 294-commit chain
+
+### 2026-05-14T20:43:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → issues
