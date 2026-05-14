@@ -17,30 +17,21 @@ do_drift() {
     local stale=0
 
     if [ -f "$watch_file" ]; then
-        # T-1320: enable recursive ** matching to align with fw audit (Python glob).
-        shopt -s globstar nullglob 2>/dev/null || true
+        # T-1842: delegate pattern expansion to expand_patterns.py — single
+        # source of truth for glob + exclude. Was previously a parallel copy
+        # of do_scan's reader and dropped exclude: identically (Penelope
+        # T-1458, 22-day undetected silent-junk class).
         local registered
         registered=$(grep "^location:" "$COMPONENTS_DIR"/*.yaml 2>/dev/null | sed 's/.*location: //' | sort -u)
 
         echo -e "${CYAN}Unregistered components:${NC}"
-        while IFS= read -r glob_pattern; do
-            [ -z "$glob_pattern" ] && continue
-            for file in $glob_pattern; do
-                [ -f "$file" ] || continue
-                local rel_path
-                rel_path=$(realpath --relative-to="$PROJECT_ROOT" "$file" 2>/dev/null || echo "$file")
-                if ! echo "$registered" | grep -qx "$rel_path" 2>/dev/null; then
-                    echo "  ! $rel_path"
-                    unregistered=$((unregistered + 1))
-                fi
-            done
-        done < <(python3 -c "
-import yaml
-with open('$watch_file') as f:
-    data = yaml.safe_load(f)
-for p in data.get('patterns', []):
-    print(p['glob'])
-" 2>/dev/null)
+        while IFS= read -r rel_path; do
+            [ -z "$rel_path" ] && continue
+            if ! echo "$registered" | grep -qx "$rel_path" 2>/dev/null; then
+                echo "  ! $rel_path"
+                unregistered=$((unregistered + 1))
+            fi
+        done < <(python3 "$LIB_DIR/expand_patterns.py" "$watch_file" "$PROJECT_ROOT" 2>/dev/null)
         [ "$unregistered" -eq 0 ] && echo "  (none)"
     fi
 

@@ -283,32 +283,22 @@ do_scan() {
     local registered
     registered=$(grep "^location:" "$COMPONENTS_DIR"/*.yaml 2>/dev/null | sed 's/.*location: //' | sort -u)
 
-    # Parse watch patterns and find unregistered files
-    # T-1320: enable recursive ** matching to align with fw audit (Python glob).
-    shopt -s globstar nullglob 2>/dev/null || true
+    # T-1842: delegate pattern expansion to expand_patterns.py — single source
+    # of truth for glob + exclude (per-pattern + top-level). Previously this
+    # block read patterns: only and silently dropped exclude:, producing
+    # 5946/6339 (93.8%) junk cards in projects with node_modules/ (Penelope
+    # T-1458). Sharing the helper with do_drift keeps the predicate honest.
     local created=0
     local skipped=0
 
-    while IFS= read -r glob_pattern; do
-        [ -z "$glob_pattern" ] && continue
-        for file in $glob_pattern; do
-            [ -f "$file" ] || continue
-            local rel_path
-            rel_path=$(python3 -c "import os; print(os.path.relpath(os.path.abspath('$file'), os.path.abspath('$PROJECT_ROOT')))" 2>/dev/null || echo "$file")
-            if echo "$registered" | grep -qx "$rel_path" 2>/dev/null; then
-                skipped=$((skipped + 1))
-            else
-                # Create skeleton via register
-                do_register "$rel_path" > /dev/null 2>&1 && created=$((created + 1)) || true
-            fi
-        done
-    done < <(python3 -c "
-import yaml
-with open('$watch_file') as f:
-    data = yaml.safe_load(f)
-for p in data.get('patterns', []):
-    print(p['glob'])
-")
+    while IFS= read -r rel_path; do
+        [ -z "$rel_path" ] && continue
+        if echo "$registered" | grep -qx "$rel_path" 2>/dev/null; then
+            skipped=$((skipped + 1))
+        else
+            do_register "$rel_path" > /dev/null 2>&1 && created=$((created + 1)) || true
+        fi
+    done < <(python3 "$LIB_DIR/expand_patterns.py" "$watch_file" "$PROJECT_ROOT" 2>/dev/null)
 
     echo -e "${GREEN}Scan complete${NC}"
     echo "  Created: $created skeleton cards"
