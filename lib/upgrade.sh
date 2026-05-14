@@ -1087,9 +1087,14 @@ EOF
     # do_vendor now ships a .gitignore that prevents future leaks; this advisory
     # tells the consumer how to clean up files already added to their git index.
     if [ -d "$target_dir/.agentic-framework" ] && command -v git &>/dev/null; then
+        # T-1824: use `wc -l` rather than `grep -c ... || echo 0`. grep -c exits 1
+        # on zero matches DESPITE outputting `0`; the || echo 0 then appends a
+        # second line so pyc_count becomes "0\n0" and breaks the integer test
+        # below. wc -l always exits 0 — and prints 0 on empty input — so a
+        # single newline-free integer is captured.
         local pyc_count
         pyc_count=$(cd "$target_dir" && git ls-files .agentic-framework/ 2>/dev/null \
-            | grep -c -E '__pycache__|\.pyc$' 2>/dev/null || echo 0)
+            | grep -E '__pycache__|\.pyc$' | wc -l)
         if [ "$pyc_count" -gt 0 ]; then
             echo ""
             echo -e "${YELLOW}WARN${NC}  Vendored framework has $pyc_count tracked __pycache__/.pyc file(s)"
