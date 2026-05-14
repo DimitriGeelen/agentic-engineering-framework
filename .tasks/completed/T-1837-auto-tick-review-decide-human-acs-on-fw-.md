@@ -4,16 +4,16 @@ name: "Auto-tick '[REVIEW] Decide...' Human ACs on fw inception decide — patte
 description: >
   tick_inception_decide_acs PATTERNS only match '[REVIEW]...go/no-go decision' literal phrasing. Caught in S-2026-0514 cluster: T-1829/T-1830/T-1831 Human ACs read '[REVIEW] Decide go/no-go AND which approach', '[REVIEW] Decide GO/NO-GO/DEFER on the umbrella...', '[REVIEW] Decide on prevention pattern (Layer 1)' — wording diverged from regex. User decided all three via Watchtower; decisions recorded in task body as **Decision**: GO; but the AC checkboxes did NOT auto-tick → tasks stuck in partial-complete asking for re-review. Same antifragility class as T-1828/T-1832 (gate measures proxy diverged from reality). Fix: broaden regex to '\[REVIEW\].*\bdecide\b' (case-insensitive) — for inception tasks, '[REVIEW] Decide ...' canonically IS the go/no-go authorization. Add bats test pinning all three real-world wordings.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [fw-upgrade-incident-2026-05-14, gate-vs-content-drift, ac-discipline, bug]
-components: []
+components: [lib/inception.sh]
 related_tasks: []
 created: 2026-05-14T21:14:36Z
-last_update: 2026-05-14T21:14:45Z
-date_finished: null
+last_update: 2026-05-14T21:16:57Z
+date_finished: 2026-05-14T21:16:57Z
 ---
 
 # T-1837: Auto-tick '[REVIEW] Decide...' Human ACs on fw inception decide — pattern coverage gap (cluster Layer 1.5)
@@ -121,3 +121,15 @@ bats tests/unit/tick_inception_decide_acs_review_decide_coverage.bats
 
 ### 2026-05-14T21:14:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-34af257b
+- **Timestamp:** 2026-05-14T21:16:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T21:16:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
