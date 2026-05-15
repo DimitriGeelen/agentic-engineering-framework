@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1800: provider-coverage check — extend workflow_coverage to flag pi workflows missing provider field (T-1798 sibling gap)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T21:21:59Z
+# ============================================================================
+
+task_id: T-1800
+task_name: "provider-coverage check — extend workflow_coverage to flag pi workflows missing provider field (T-1798 sibling gap)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-13T00:00:00Z
+completed: 2026-05-12T22:16:29Z
+duration_days: -1
+updates_count: 1
+first_commit: 2026-05-13T00:16:24+02:00
+last_commit: 2026-05-13T00:17:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  provider-coverage check — sibling gap to T-1798 (pi-missing-provider). status transition to completed
+
+# Key outcomes
+outcomes:
+  - "`lib/workflow_coverage.py:check_workflow_dispatcher_coverage()`"
+  - "`report[\"ok\"]` becomes False when either `unroutable_workflows`"
+  - "`format_audit_line` mentions the missing-provider count when present."
+  - "Audit FAIL surfaces both classes (unroutable workflow + pi-missing-"
+  - "`tests/unit/test_workflow_coverage.py` extends with:"
+  - "`python3 -m pytest tests/unit/test_workflow_coverage.py -v` exits 0"
+  - "Live audit: `bash agents/audit/audit.sh -s orchestrator` still PASS"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/workflow_coverage.py"
+  - ".tasks/active/T-1800-provider-coverage-check--extend-workflow.md"
+  - ".tasks/completed/T-1798-workflow-dispatcher-coverage-check--fw-a.md"
+  - ".tasks/completed/T-1800-provider-coverage-check--extend-workflow.md"
+  - "tests/unit/test_orchestrator_workflow_coverage.py"
+  - "tests/unit/test_workflow_coverage.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-13T00:16:24"
+    action: "T-1800: provider-coverage check — sibling gap to T-1798 (pi-missing-provider)"
+  - time: "2026-05-13T00:17:15"
+    action: "T-1800: status transition to completed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, audit, prevention, contract-gap]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 2
+  files_changed: 6
+  lines_added: 285
+  lines_removed: 41
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1800-provider-coverage-check--extend-workflow.md
+generated_by: context-agent-hybrid

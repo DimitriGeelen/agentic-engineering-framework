@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1634: fw upgrade no-args: read upstream URL from .framework.yaml + git-fetch instead of local source
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T21:21:58Z
+# ============================================================================
+
+task_id: T-1634
+task_name: "fw upgrade no-args: read upstream URL from .framework.yaml + git-fetch instead of local source"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-01T10:30:30Z
+completed: 2026-05-14T14:10:11Z
+duration_days: 13
+updates_count: 3
+first_commit: 2026-05-14T16:10:04+02:00
+last_commit: 2026-05-14T16:10:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade --from-upstream + auto-clone when bare-from-consumer
+
+# Key outcomes
+outcomes:
+  - "`lib/upgrade.sh` bare-from-consumer path: clones upstream to `mktemp -d -t fw-upstream-XXXXXX`, traps `EXIT INT TERM HUP` for cleanup, hands off to the temp clone's `bin/fw upgrade $target_dir [args...]`. Replays `--force` and `--dedupe-user-hooks`; does NOT replay `--from-upstream` (already-resolved)."
+  - "`lib/init.sh` upstream seeding preserved — line 209-237 untouched; consumer .framework.yaml files continue to get seeded with `upstream_repo:` from the framework's git remote (no behavior change)."
+  - "`fw upgrade --from-upstream <url>` explicit flag added: parsed at line 130-133, takes precedence over `.framework.yaml` upstream_repo, used for first-time upgrades / manual override."
+  - "Missing-upstream error message rewritten with 3 remediation paths: (1) add `upstream_repo:` to .framework.yaml, (2) inline `--from-upstream URL`, (3) cd to upstream checkout. Preserves T-1542 guard fields (FRAMEWORK_ROOT, target_dir, Vendored copy:)."
+  - "`tests/unit/upgrade_auto_clone.bats` adds 7 tests: --help, flag parsing, no-upstream error message shape, dry-run plan, --from-upstream override, GitHub-shorthand normalisation, live file:// clone with stub upstream."
+  - "Existing tests pass: 23/23 across lib_upgrade.bats (12), upgrade_auto_clone.bats (7), test_upgrade_self_target_guard.bats (4)."
+  - "No regression of T-1542 guard: the 4 self-target-guard tests still pass — error path preserves `FRAMEWORK_ROOT:`, `target_dir:`, `Vendored copy:`, `Source and target collapse`, `No changes made.`, and `bin/fw upgrade $target_dir` recommendation."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/upgrade.sh"
+  - ".tasks/active/T-1634-fw-upgrade-no-args-read-upstream-url-fro.md"
+  - "tests/unit/upgrade_auto_clone.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T16:10:04"
+    action: "T-1634: fw upgrade --from-upstream + auto-clone when bare-from-consumer"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18939 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [from-T-1633, upgrade, upstream, arc:project-shape-resilience]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18939
+  commits: 1
+  files_changed: 3
+  lines_added: 276
+  lines_removed: 52
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1634-fw-upgrade-no-args-read-upstream-url-fro.md
+generated_by: context-agent-hybrid
