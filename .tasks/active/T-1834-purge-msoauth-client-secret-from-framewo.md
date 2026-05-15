@@ -12,7 +12,7 @@ tags: [bug, fw-upgrade-incident-2026-05-14, security, tier0, git-history, follow
 components: []
 related_tasks: []
 created: 2026-05-14T20:42:14Z
-last_update: 2026-05-15T07:38:02Z
+last_update: 2026-05-15T08:00:28Z
 date_finished: null
 ---
 
@@ -148,7 +148,7 @@ Sequencing — each step is a hard prerequisite for the next.
 
 ## Recommendation
 
-**GO — historical hygiene COMPLETE.** Mirror unstuck, GH013 cleared, blob purged from both remotes. Security incident **remains OPEN** because rotation was declined.
+**Recommendation:** GO — historical hygiene COMPLETE. Mirror unstuck, GH013 cleared, blob purged from both remotes. Security incident **remains OPEN** because rotation was declined.
 
 **Rationale:** Sovereign-directed proceed-without-rotation. Purge executed end-to-end:
 filter-repo rewrote 6576 commits in 4.14s; both remotes accepted force-push at the same
