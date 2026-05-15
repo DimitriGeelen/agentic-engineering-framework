@@ -2850,27 +2850,36 @@ case "$cmd" in
             echo "  for a bounded window; suppressions are logged to feedback-stream.yaml."
             exit 0
         fi
+        # T-1642: PYTHONPATH=$FRAMEWORK_ROOT so `python3 -m lib.reviewer.*` resolves
+        # in vendored consumer projects where lib/ lives at .agentic-framework/lib/
+        # rather than at the project root. Framework-repo-self is unaffected
+        # (PROJECT_ROOT == FRAMEWORK_ROOT there, no behaviour change).
         if [ "${1:-}" = "audit" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.audit "$@"
         fi
         if [ "${1:-}" = "override" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.override_cli "$@"
         fi
         if [ "${1:-}" = "drift" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.drift_cli "$@"
         fi
         if [ "${1:-}" = "reverify" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.reverify_cli "$@"
         fi
         exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            PYTHONPATH="$FRAMEWORK_ROOT" \
             python3 -m lib.reviewer.static_scan "$@"
         ;;
     self-audit)
