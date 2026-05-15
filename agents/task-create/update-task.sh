@@ -1415,7 +1415,14 @@ with open(path, 'w') as f:
             # T-1371 (G-054): Capture stdout/stderr/exit-code to diagnose silent failures.
             # Log every invocation (not only on failure) so the forensic context (PROJECT_ROOT,
             # CONTEXT_DIR, env) is captured when the next silent failure occurs.
-            EPISODIC_LOG="$CONTEXT_DIR/working/.last-episodic-gen.log"
+            #
+            # T-1860: per-task log file + append. Previous single rolling log was
+            # truncated on every invocation — the moment a silent failure occurred,
+            # the failing run's context was already overwritten by the next task's
+            # successful run. Per-task files isolate forensics; append preserves
+            # re-run history within a task. Discovered when T-1859 backfilled
+            # T-1829/T-1830/T-1831 episodics and the diagnostic log was unrecoverable.
+            EPISODIC_LOG="$CONTEXT_DIR/working/episodic-gen/$TASK_ID.log"
             mkdir -p "$(dirname "$EPISODIC_LOG")" 2>/dev/null || true
             {
                 echo "=== episodic-gen invocation: $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
@@ -1426,7 +1433,7 @@ with open(path, 'w') as f:
                 echo "CONTEXT_AGENT: $CONTEXT_AGENT"
                 echo "cwd: $(pwd)"
                 echo "--- context.sh output ---"
-            } > "$EPISODIC_LOG" 2>&1
+            } >> "$EPISODIC_LOG" 2>&1
             set +e
             PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" >> "$EPISODIC_LOG" 2>&1
             EPISODIC_EXIT=$?

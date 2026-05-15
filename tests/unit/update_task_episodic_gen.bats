@@ -69,6 +69,57 @@ teardown() {
     [ -f "$PROJECT/.context/episodic/T-9001.yaml" ]
 }
 
+@test "T-1860: episodic-gen log lands at per-task path .context/working/episodic-gen/<TASK>.log" {
+    # Use a non-bug-class fixture (no fix/bug/error/regression in the title) so
+    # the T-1550 RCA gate doesn't refuse — orthogonal to what this test pins.
+    cat > "$PROJECT/.tasks/active/T-9002-feature.md" <<'EOF'
+---
+id: T-9002
+name: "Episodic-gen log path canary"
+description: "test"
+status: started-work
+workflow_type: build
+horizon: now
+owner: agent
+created: 2026-04-20T22:00:00Z
+last_update: 2026-04-20T22:00:00Z
+tags: []
+---
+
+# T-9002: Episodic-gen log path canary
+
+## Acceptance Criteria
+
+### Agent
+- [x] Done
+
+## Updates
+
+### 2026-04-20T22:00:00Z — task-created [task-create-agent]
+EOF
+    cd "$PROJECT"
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9002 --status work-completed
+    [ "$status" -eq 0 ]
+    # New per-task path exists; old single rolling log does NOT
+    [ -f "$PROJECT/.context/working/episodic-gen/T-9002.log" ]
+    [ ! -f "$PROJECT/.context/working/.last-episodic-gen.log" ]
+    # Log contains a recognizable header
+    grep -q "^=== episodic-gen invocation:" "$PROJECT/.context/working/episodic-gen/T-9002.log"
+    grep -q "^task_id: T-9002" "$PROJECT/.context/working/episodic-gen/T-9002.log"
+}
+
+@test "T-1860: source-of-truth — update-task.sh writes per-task log with append (no single-truncate regression)" {
+    # Pin the structural fix: agents/task-create/update-task.sh must use a per-task
+    # EPISODIC_LOG path AND append (>>) — not single rolling log with truncate (>).
+    src="$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
+    grep -q 'EPISODIC_LOG=.*working/episodic-gen/\$TASK_ID\.log' "$src"
+    # Header write must use >> (append), not > (truncate). Match the exact closing
+    # brace from the header block.
+    grep -E 'echo "--- context\.sh output ---"' -A 1 "$src" | grep -q '>>\s*"\$EPISODIC_LOG"'
+    # And the older single rolling path must not reappear
+    ! grep -q '\.last-episodic-gen\.log' "$src"
+}
+
 @test "update-task.sh prints silent-failure warning when episodic not created" {
     # Guard rail on T-1169's detection: if gen ever breaks silently, the warning
     # must appear. Force the failure by making context.sh non-executable.
