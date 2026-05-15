@@ -17,11 +17,25 @@
 
 set -euo pipefail
 
-# Resolve PROJECT_ROOT: prefer env var (set by cron line), fall back to a
-# walk-up from this script's location (vendored at $PROJECT_ROOT/.agentic-framework/agents/context/).
+# Resolve PROJECT_ROOT: prefer env var (set by cron line); fall back to walking
+# up from this script's location looking for the project shape marker
+# (.framework.yaml for consumers, FRAMEWORK.md for the framework repo itself).
+# T-1868 (G-063): the prior fixed-depth `../../..` form was vendored-only and
+# silently resolved to `/opt/.tasks/active` when run inside the framework repo.
 if [ -z "${PROJECT_ROOT:-}" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+    _walk="$SCRIPT_DIR"
+    while [ "$_walk" != "/" ]; do
+        if [ -f "$_walk/.framework.yaml" ] || [ -f "$_walk/FRAMEWORK.md" ]; then
+            PROJECT_ROOT="$_walk"
+            break
+        fi
+        _walk="$(dirname "$_walk")"
+    done
+    if [ -z "${PROJECT_ROOT:-}" ]; then
+        echo "revisit-due-scan: cannot resolve PROJECT_ROOT (no .framework.yaml or FRAMEWORK.md marker found walking up from $SCRIPT_DIR)" >&2
+        exit 1
+    fi
 fi
 
 TASKS_DIR="$PROJECT_ROOT/.tasks/active"
