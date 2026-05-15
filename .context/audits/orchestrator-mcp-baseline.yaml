@@ -22,9 +22,12 @@
 # Update 2026-05-06 (T-1760): added 18 more termlink_agent_* analytics primitives
 # (stats/rates/depths/volumes — all read-shaped names). Same convention-based
 # classification rule. Baseline 136 → 154.
+# Update 2026-05-15 (T-1867): added 14 more termlink_agent_* analytics primitives
+# (presence/streaks/silences/top-N — all read-shaped names). Same convention-based
+# classification rule. Baseline 154 → 168.
 
-baseline_count: 154
-last_verified: 2026-05-06
+baseline_count: 168
+last_verified: 2026-05-15
 
 gated:
   description: "Enforces check_task_governance() — TERMLINK_TASK_GOVERNANCE=1 requires task_id"
@@ -89,7 +92,7 @@ mutators_ungated:
 
 readonly_exempt:
   description: "Passive/observational — gating optional. Adding new entries here requires an explicit reason in the commit body."
-  count: 108
+  count: 122
   tools:
     - termlink_ping
     - termlink_status
@@ -208,3 +211,21 @@ readonly_exempt:
     - termlink_agent_top_reacted
     - termlink_agent_top_replied
     - termlink_agent_user_summary
+    # T-1867: 14 analytics primitives surfaced 2026-05-15 — all read-shaped
+    # names per the established convention (presence/streaks/silences/top-N
+    # rankings/summaries — no write verbs). Naming-convention classification;
+    # handler-level review deferred (TermLink source outside PROJECT_ROOT).
+    - termlink_agent_age_distribution
+    - termlink_agent_burst_detect
+    - termlink_agent_idle_threads
+    - termlink_agent_post_streak
+    - termlink_agent_presence_now
+    - termlink_agent_reaction_rate
+    - termlink_agent_recent_threads
+    - termlink_agent_response_received
+    - termlink_agent_silence_gap
+    - termlink_agent_thread_size_dist
+    - termlink_agent_top_pinners
+    - termlink_agent_top_starrers
+    - termlink_agent_top_thread_starters
+    - termlink_agent_topic_summary
