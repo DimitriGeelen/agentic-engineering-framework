@@ -2998,3 +2998,10 @@ X'` returning empty group."
   date: 2026-05-15
   context: Added via context agent
   application: deployed via T-1870 — CTL-028 audit check + bats tests
+- id: L-391
+  learning: "Verification commands in `## Verification` MUST NOT invoke `bin/fw audit` directly. CTL-013 runs the verification block from within an already-running audit; the inner `bin/fw audit` hits the audit-exclusive-lock and exits with 'Another audit is already running — exiting'. Downstream pattern-grep then never matches, so CTL-013 reports the task as broken when nothing has actually broken. Safe pattern: grep the most recent saved audit YAML report instead — `ls -t .context/audits/[0-9]*.yaml | head -1 | xargs -I{} grep -q 'fail: 0' {}`. Same evidence, no recursive invocation. Origin: T-1847 verification line `bin/fw audit 2>&1 | grep -q 'Fail: 0'` was a latent bug at completion (just happened to pass when no audit was running concurrently), surfaced when CTL-013 ran for the first time after T-1847 became one of the 3 most-recent completed tasks (via T-1870 backfill commit b21f977f)."
+  source: P-011
+  task: T-1687
+  date: 2026-05-15
+  context: Discovered during CTL-013 false-positive triage after T-1870 baseline cleanup
+  application: T-1847 verification updated to read saved audit YAML report
