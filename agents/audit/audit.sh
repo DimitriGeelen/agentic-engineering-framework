@@ -2098,7 +2098,18 @@ for task_file in $recent_completed; do
     if [ ${#verify_cmds[@]} -gt 0 ]; then
         cmd_pass=0
         cmd_fail=0
+        cmd_skipped=0
         for cmd in "${verify_cmds[@]}"; do
+            # T-1870/L-391: a verification line that invokes `bin/fw audit`
+            # (or `fw audit`) cannot run during CTL-013 — we're already inside
+            # the audit lock, so the nested call exits "Another audit is
+            # already running" and any downstream grep fails. Skip rather
+            # than report a false positive. Safe pattern in such tasks:
+            # grep the most recent saved audit YAML instead.
+            if echo "$cmd" | grep -qE '(\bbin/)?fw +audit\b'; then
+                cmd_skipped=$((cmd_skipped + 1))
+                continue
+            fi
             if [ -n "${FW_AUDIT_VERIFY_DEBUG:-}" ]; then
                 # T-1475: capture stderr/stdout so CTL-013 false positives can be
                 # diagnosed (OBS-022 — audit reports bats fails, isolated runs pass).
@@ -2145,7 +2156,11 @@ for task_file in $recent_completed; do
             fi
         done
         if [ "$cmd_fail" -eq 0 ]; then
-            pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass"
+            if [ "$cmd_skipped" -gt 0 ]; then
+                pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass ($cmd_skipped skipped — nested-audit invocation)"
+            else
+                pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass"
+            fi
         else
             warn "CTL-013: $task_id verification re-run: $cmd_fail command(s) failing" \
                  "Verification commands that passed at completion now fail" \
