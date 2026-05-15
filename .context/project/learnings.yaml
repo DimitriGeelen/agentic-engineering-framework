@@ -2949,3 +2949,10 @@ X'` returning empty group."
   date: 2026-05-15
   context: Added via context agent
   application: TBD
+- id: L-384
+  learning: "Forensic logs that truncate-on-write defeat their own purpose: by the time you need the log (next failure), the previous failure's context is overwritten by the next success. Use append (>>) + per-actor scoping (per-task / per-session / per-job log files), not a single rolling log with single-redirect (>). When implementing diagnostic capture for silent-failure classes, the file-mode choice is load-bearing — single redirect optimizes for 'last run' but the actual purpose is 'previous failure'. Origin: T-1860 — T-1371/G-054 mechanism erased its own forensic value by truncating; T-1859 surfaced this when 3 episodics were missing and the log only held the latest successful run."
+  source: P-011
+  task: T-1860
+  date: 2026-05-15
+  context: Added directly to learnings.yaml (fw context add-learning was gated; learning captured manually under T-1860 closure)
+  application: TBD
