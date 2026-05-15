@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1830: fw-upgrade-incident-2026-05-14 meta-RCA umbrella — boundary-crossing invisibility class
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T18:18:35Z
+# ============================================================================
+
+task_id: T-1830
+task_name: "fw-upgrade-incident-2026-05-14 meta-RCA umbrella — boundary-crossing invisibility class"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-14T19:10:00Z
+completed: 2026-05-14T20:29:38Z
+duration_days: 0
+updates_count: 8
+first_commit: 2026-05-14T21:14:50+02:00
+last_commit: 2026-05-14T21:26:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  meta-RCA umbrella + check off T-1828/T-1829 Agent ACs. meta-RCA research artefact + L-377 — boundary-crossing-state invisibility class
+
+# Key outcomes
+outcomes:
+  - "Document the meta-RCA in this task body (above) and cross-link to T-1827, T-1828, T-1829"
+  - "Inventory the framework's async boundaries (cron jobs, monitors, cross-hub relays, mirror pushes) and characterise each one's current observability surface — at least 5 named (see boundary list under \"Shared root class\")"
+  - "Identify at least 3 candidate remediation patterns — 4 documented (cron-stderr / heartbeat / Watchtower panel / audit-time detector)"
+  - "File Recommendation block before inception decision — Recommendation = bundled (Cand-2 + Cand-4)"
+  - "[REVIEW] Decide GO/NO-GO/DEFER on the umbrella remediation pattern, AND which candidate pattern to pursue first"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".context/working/focus.yaml"
+  - "docs/reports/T-1830-fw-upgrade-incident-meta-rca.md"
+  - ".tasks/active/T-1828-github-mirror-stalled--version-tag-reset.md"
+  - ".tasks/active/T-1829-version-stamping-algorithm-not-cross-tag.md"
+  - ".tasks/active/T-1830-fw-upgrade-incident-2026-05-14-meta-rca-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T21:14:50"
+    action: "T-1830: meta-RCA umbrella + check off T-1828/T-1829 Agent ACs"
+  - time: "2026-05-14T21:26:11"
+    action: "T-1830: meta-RCA research artefact + L-377 — boundary-crossing-state invisibility class"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 79 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fw-upgrade-incident-2026-05-14, meta-rca, observability, structural-remediation, umbrella]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 79
+  commits: 2
+  files_changed: 6
+  lines_added: 287
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1830-fw-upgrade-incident-2026-05-14-meta-rca-.md
+generated_by: context-agent-hybrid

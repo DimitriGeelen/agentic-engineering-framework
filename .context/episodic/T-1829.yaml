@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1829: VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828 class
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T18:18:30Z
+# ============================================================================
+
+task_id: T-1829
+task_name: "VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828 class"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-14T18:24:14Z
+completed: 2026-05-14T20:29:30Z
+duration_days: 0
+updates_count: 10
+first_commit: 2026-05-14T20:30:04+02:00
+last_commit: 2026-05-14T20:30:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception content — 4 candidates for cross-tag-monotonic VERSION
+
+# Key outcomes
+outcomes:
+  - "Document at least 3 candidate fixes with trade-offs (algorithm change vs hook change vs hybrid) — 4 candidates documented below (A/B/C/D)"
+  - "For each candidate: characterise migration impact on existing consumers (VERSION pins, parsers, semver-style filters)"
+  - "For each candidate: identify the regression class it could introduce (e.g., \"stamping algorithm that ignores tags loses release-train signal\")"
+  - "Recommendation in `## Recommendation` block before inception decision — Recommendation D"
+  - "[REVIEW] Decide go/no-go AND which approach (A/B/C/D)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-14 — choose this is inception not build"
+    chose: "workflow_type=inception (NOT build)."
+    rationale: "the design has multiple viable approaches with different blast radius. The hook is critical infrastructure (mistake here = mirror stays broken or worse, real rollbacks slip through). T-1603 was added because a legitimate-rollback class slipped — we cannot weaken protection casually."
+    alternatives_rejected: ["going straight to build with a chosen algorithm. The wrong choice would couple consumer VERSION pins to the framework's tag-creation policy, OR weaken the rollback gate to noise."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-1829-version-stamping-algorithm-not-cross-tag.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T20:30:04"
+    action: "T-1829: inception content — 4 candidates for cross-tag-monotonic VERSION"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 125 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [version-monotonicity, mirror-sync, fw-upgrade-incident-2026-05-14]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 125
+  commits: 2
+  files_changed: 4
+  lines_added: 307
+  lines_removed: 83
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1829-version-stamping-algorithm-not-cross-tag.md
+generated_by: context-agent-hybrid

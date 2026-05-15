@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1831: AC-checkbox-vs-content drift — agent does substantive work in body, gate measures only checkbox state, blocks legitimate completion + decide flows (RCA from 4 errors in S-2026-0514 session)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T18:18:36Z
+# ============================================================================
+
+task_id: T-1831
+task_name: "AC-checkbox-vs-content drift — agent does substantive work in body, gate measures only checkbox state, blocks legitimate completion + decide flows (RCA from 4 errors in S-2026-0514 session)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-14T19:30:02Z
+completed: 2026-05-14T20:29:45Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-05-14T21:32:20+02:00
+last_commit: 2026-05-14T21:32:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA + inception for AC-checkbox-vs-content drift class (4 user errors)
+
+# Key outcomes
+outcomes:
+  - "Characterise Layer-1 gate (AC checkbox vs content) — documented at lib/inception.sh:506-524 and update-task.sh:65-152"
+  - "Characterise Layer-2 gate (missing `## Decision` heading) — root caused via code trace; lib/inception.sh:531-582 Python silently no-ops; gate fires at update-task.sh:366-386. T-1832 filed for framework-side fix."
+  - "Document both layers in body"
+  - "Identify ≥3 prevention candidates for Layer 1 — 4 documented (C-1..C-4)"
+  - "Cross-link to T-1828, T-1830, T-1832 as sibling-class instances"
+  - "[REVIEW] Decide on prevention pattern (Layer 1) AND triage Layer 2 (file follow-up bug task if error #4 is a regression vs known behaviour)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "RCA + inception for AC-checkbox-vs-content drift class (4 user errors)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-1831-ac-checkbox-vs-content-drift--agent-does.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T21:32:20"
+    action: "T-1831: RCA + inception for AC-checkbox-vs-content drift class (4 user errors)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 59 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, fw-upgrade-incident-2026-05-14, gate-vs-content-drift, antifragility, user-reported-error]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 59
+  commits: 2
+  files_changed: 4
+  lines_added: 205
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1831-ac-checkbox-vs-content-drift--agent-does.md
+generated_by: context-agent-hybrid
