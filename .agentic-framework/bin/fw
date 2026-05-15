@@ -2561,6 +2561,7 @@ PYTASK_VERIFY
             echo "                    Triage flags (T-1628): --compact, --by-age,"
             echo "                    --rubber-stamp-only, --review-only"
             echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
+            echo "  revisit-due       Show tasks whose revisit_at is <= today UTC (G-053 / T-1452)"
             echo ""
             echo "Usage:"
             echo '  fw task create --name "Fix bug" --type build --owner human'
@@ -2774,6 +2775,28 @@ PYREID
             echo -e "${GREEN}Task reid complete:${NC}"
             echo "  OLD: $old_file"
             echo "  NEW: $new_file"
+            ;;
+        revisit-due)
+            # T-1453: On-demand revisit_at scan. Reuses T-1452 cron scanner so
+            # the CLI and the daily handover banner share one implementation.
+            # The scan rewrites .context/working/.revisits-due.txt fresh each
+            # call, so output reflects current frontmatter — not yesterday's cron.
+            SCAN="$AGENTS_DIR/context/revisit-due-scan.sh"
+            if [ ! -x "$SCAN" ]; then
+                echo -e "${RED}ERROR: revisit-due-scan.sh missing or not executable at $SCAN${NC}" >&2
+                exit 1
+            fi
+            PROJECT_ROOT="$PROJECT_ROOT" "$SCAN"
+            OUT="$PROJECT_ROOT/.context/working/.revisits-due.txt"
+            today=$(date -u +%Y-%m-%d)
+            if [ -s "$OUT" ]; then
+                ripe_count=$(wc -l < "$OUT" | tr -d ' ')
+                echo -e "${BOLD}Ripe revisits ($today UTC) — ${ripe_count} task(s):${NC}"
+                echo ""
+                cat "$OUT"
+            else
+                echo "No revisits due today ($today UTC)"
+            fi
             ;;
         *)
             echo -e "${RED}Unknown task subcommand: $subcmd${NC}"
