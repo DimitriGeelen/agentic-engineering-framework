@@ -9,7 +9,7 @@ kind: agent
 tags: [handoff, research, traceability, governance, pickup-safety]
 variables: []
 created: 2026-05-15T11:50:00Z
-updated: 2026-05-15T13:55:00Z
+updated: 2026-05-15T14:25:00Z
 ---
 
 You are producing a HANDOFF DOCUMENT that a separate agent (working in
@@ -42,6 +42,16 @@ Use exactly the sections below, in this order, with these exact H2 names.
     handoff_id: HANDOFF-<slug>-<YYYY-MM-DD>
     version: 1                                # bump on revisions
     supersedes: <prior_handoff_id|null>       # if this replaces an earlier handoff
+    depends_on_handoffs: []                    # blocking — see §11.5. The §5 recommendation
+                                               # in THIS handoff cannot be acted on until each
+                                               # listed handoff has reached §5: GO AND its
+                                               # first deliverable has shipped. Receiving
+                                               # agent halts and surfaces to the human if
+                                               # either condition is unmet.
+    related_handoffs: []                       # informational only — "see also" references.
+                                               # NOT enforced by §11.5. Use this for context-
+                                               # adjacent work; reserve depends_on_handoffs:
+                                               # for genuinely blocking dependencies.
     topic: "<one-line topic name>"
     research_dates: <YYYY-MM-DD>..<YYYY-MM-DD>
     researcher: "<your agent name + human collaborator name>"
@@ -122,7 +132,7 @@ or what the human will accept.)
 Pick ONE of:
 - **GO** — build now, with the scope in §7. Cite supporting Findings/Decisions: "supports: F1, F3, D2"
 - **GO-WITH-MODIFICATIONS** — list what to change before building. Cite which Finding/Assumption forces the modification.
-- **DEFER** — park, with the trigger that would unpark it (e.g. "A2 resolved" or "F4 confirmed by measurement").
+- **DEFER** — park, with the trigger that would unpark it (e.g. "A2 resolved", "F4 confirmed by measurement", or "HANDOFF-<id> ships its first deliverable" — in which case also list it in `depends_on_handoffs:`).
 - **NO-GO** — don't build, with the reasoning. Cite the blocking Finding/Assumption.
 
 If GO or GO-WITH-MODIFICATIONS: state the FIRST deliverable in one
@@ -229,6 +239,22 @@ Before acting on this handoff, the receiving agent should verify:
       have been closed and superseded.)
 - [ ] No newer handoff supersedes this one (search prompts/, docs/reports/
       for `supersedes: <this handoff_id>`).
+- [ ] Every handoff listed in `depends_on_handoffs:` (frontmatter) has
+      reached **both** of these states:
+      1. Its §5 recommendation is **GO** (not DEFER, not NO-GO, not unresolved).
+      2. Its first deliverable has **shipped** (the task created from its §5
+         first-deliverable sentence has reached `work-completed` and the
+         commit has landed on master).
+      Failure modes are different and report differently:
+      - §5 not GO → "<handoff_id> recommendation is <verdict>; this handoff
+        depends on it and may never materialise. Surface to human."
+      - §5 is GO but first deliverable not shipped → "<handoff_id> reached
+        GO at <timestamp>; first deliverable <task_id> is <status>. This
+        handoff cannot proceed until that deliverable lands. Halt and wait
+        / surface to human."
+      Do NOT silently proceed. The `related_handoffs:` field exists for
+      non-blocking "see also" references — if a listed dependency turns
+      out to be misclassified, the human will move it to `related_handoffs:`.
 - [ ] Every tool / command cited in §7 Verification is installed and on PATH
       (or the task's Verification commands cleanly skip when not — `command -v X && …`).
 - [ ] Every Assumption in §4a still holds (check via the `How to test:` field).
