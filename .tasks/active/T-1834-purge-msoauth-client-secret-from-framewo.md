@@ -4,16 +4,16 @@ name: "Purge MS_OAUTH client secret from framework git history — filter-repo c
 description: >
   Follow-up to T-1828 mirror-unstick. Secret (Azure AD OAuth client secret originally from 050-email-archive .env) is embedded in framework git history at commit 79e3361 (T-1736: Spike B), file .context/spikes/T-1736-prompts.jsonl line 1581. The file was removed from HEAD in commit 7fba568e7 but remains in history. GitHub secret-scanning blocks push of any commit range containing 79e3361. Plan: git filter-repo --invert-paths --path .context/spikes/T-1736-prompts.jsonl, then force-push to BOTH OneDev (origin) and GitHub. Tier 0 — requires explicit human approval before history rewrite. All framework consumers must re-clone or hard-reset after force-push. Sequence with: (a) verify MS_OAUTH_CLIENT_SECRET rotated in 050-email-archive Azure app first (b) snapshot current refs to .git/refs-backup (c) filter-repo (d) force-push origin (e) force-push github (f) notify consumers via framework:pickup. Blocks T-1828 closure.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, fw-upgrade-incident-2026-05-14, security, tier0, git-history, follow-up]
-components: []
+components: [agents/git/lib/hooks.sh, agents/git/lib/secret-scan.sh, tests/unit/test_secret_scan.bats]
 related_tasks: []
 created: 2026-05-14T20:42:14Z
-last_update: 2026-05-15T08:00:28Z
-date_finished: null
+last_update: 2026-05-15T08:02:00Z
+date_finished: 2026-05-15T08:02:00Z
 ---
 
 # T-1834: Purge MS_OAUTH client secret from framework git history — filter-repo commit 79e3361 (T-1828 follow-up, Tier 0)
@@ -178,3 +178,21 @@ gone from history).
 ### 2026-05-15T07:38:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1e771e25
+- **Timestamp:** 2026-05-15T08:02:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 2
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `Force-push`
+  2. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `Cross-repo`
+
+### 2026-05-15T08:02:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
