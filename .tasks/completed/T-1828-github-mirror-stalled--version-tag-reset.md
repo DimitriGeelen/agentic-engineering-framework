@@ -4,16 +4,16 @@ name: "github mirror stalled — VERSION tag-reset trips T-1603 hook, blocks fix
 description: >
   GitHub mirror at 9d52cee27 (T-1725, 2026-05-04), 294 commits behind origin. Auto-recover cron (T-1594) push-failing every 15 min for hours. Root cause: VERSION stamping via `git describe` counter resets at each new tag — v1.6.2 created after last GitHub push, dropped stamped VERSION from 1.6.260 to 1.6.148. T-1603 pre-push hook (correctly per spec) blocks as monotonicity violation. fix-shipped commits for T-1822/T-1823/T-1824/T-1825/T-1634 cannot reach GitHub-cloning consumers; /opt/termlink reports they cannot `fw upgrade` to pick up cwd-trap fix.
 
-status: issues
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bug, fw-upgrade-incident-2026-05-14, mirror, version-monotonicity]
-components: [bin-fw, lib-mirror, agents-git-lib-hooks, lib-upgrade]
+components: [C-004, agents/git/lib/hooks.sh, agents/git/lib/secret-scan.sh, bin/fw, lib/inception.sh, lib/mirror.sh, lib/upgrade.sh, tests/unit/test_doctor_consumer_version_ahead.bats, tests/unit/test_mirror_stderr_capture.bats, tests/unit/test_pre_push_monotonic_ancestor.bats, tests/unit/test_secret_scan.bats, tests/unit/test_upgrade_downgrade_guard.bats, web/templates/prompt_detail.html]
 related_tasks: [T-1542, T-1594, T-1602, T-1603, T-1822, T-1823, T-1824, T-1825, T-1634, T-1826, T-1827, T-1833, T-1834]
 created: 2026-05-14T18:22:32Z
-last_update: 2026-05-14T20:43:38Z
-date_finished: null
+last_update: 2026-05-15T20:19:25Z
+date_finished: 2026-05-15T20:19:25Z
 ---
 
 # T-1828: github mirror stalled — VERSION tag-reset trips T-1603 hook, blocks fix-shipped commits from reaching GitHub consumers
@@ -88,6 +88,13 @@ git ls-remote https://github.com/DimitriGeelen/agentic-engineering-framework.git
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1828-github-mirror-stalled--version-tag-reset.md
 - **Context:** Initial task creation; root cause identified before filing.
 
+### 2026-05-15T20:16:00Z — Resolved: autonomous heal via T-1834 history purge
+
+- **Status:** Mirror back in sync. `git ls-remote github HEAD` returns `7bac0aa5` matching local HEAD.
+- **Resolution path:** T-1834 (history-purge of MS_OAUTH secret from commit `79e3361`) completed in commit `53293e76`. After history rewrite + force-push, GitHub push-protection no longer blocks. The T-1594 mirror sync cron then succeeded at 2026-05-15T19:30:05Z and has held green every 15min since (4 consecutive `synced` log entries: 19:30, 19:45, 20:00, 20:15).
+- **Verification:** the AC's `git ls-remote ... | grep -q $(git rev-parse HEAD)` line returns PASS (also re-run capture-then-grep form to inoculate against L-387; passes).
+- **State at close:** github HEAD = `7bac0aa5` = local HEAD; mirror-sync.log clean since the purge; T-1603 hook untouched (the bypass was historical, not permanent); Level-C follow-up T-1829 already filed for cross-tag-monotonic VERSION stamping.
+
 ### 2026-05-14T20:30:00Z — Layer 3 discovery: bypass push blocked by GitHub secret-scanning
 - **Action:** Tier 0 approved bypass push attempted (`git push --no-verify github master`). Local pre-push hook passed (T-1603 bypass worked). **GitHub-side push-protection rejected** the push: a Microsoft Azure AD OAuth client secret is embedded in commit `79e3361` (T-1736 spike), file `.context/spikes/T-1736-prompts.jsonl` line 1581.
 - **Root cause (Layer 3):** T-1736 spike (prompt-triage classifier) harvested Claude Code session JSONLs from outside PROJECT_ROOT (path-isolation violation per feedback_path_isolation_strict). One harvested session-summary entry contained a real (or once-real) OAuth client secret. Filed as **T-1833** (inception — path-isolation in spike-harvest tooling).
@@ -110,3 +117,15 @@ git ls-remote https://github.com/DimitriGeelen/agentic-engineering-framework.git
 
 ### 2026-05-14T20:43:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → issues
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-db18c705
+- **Timestamp:** 2026-05-15T20:19:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-15T20:19:25Z — status-update [task-update-agent]
+- **Change:** status: issues → work-completed

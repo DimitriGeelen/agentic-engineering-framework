@@ -1,0 +1,193 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1828: github mirror stalled — VERSION tag-reset trips T-1603 hook, blocks fix-shipped commits from reaching GitHub consumers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:19:30Z
+# ============================================================================
+
+task_id: T-1828
+task_name: "github mirror stalled — VERSION tag-reset trips T-1603 hook, blocks fix-shipped commits from reaching GitHub consumers"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-14T18:22:32Z
+completed: 2026-05-15T20:19:25Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-05-14T20:25:05+02:00
+last_commit: 2026-05-15T14:14:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA + L-376 — github mirror stalled (VERSION tag-reset trips T-1603). Layer 3 RCA — path-isolation in spike harvest blocks mirror push. status → issues (blocked on T-1834 history rewrite). archive T-1832 (auto-create Decision section) + L-379. archive T-1835 (CLAUDE.md AC-tick rule) — C-4 build slice. archive T-1836 (gate diagnostic upgrade) — C-3 build slice. archive T-1837 (auto-tick PATTERNS broadened) + retroactive close trio. archive T-1838 (fw doctor asymmetric version-skew detection). archive T-1839 (fw upgrade silent-downgrade guard). archive T-1840 (fw gaps defensive .get() — consumer F4). archive T-1841 + session wrap (4 consumer-fw-upgrade fixes). move T-1834 cross-repo handout to docs/reports/ (in /file/ route whitelist). archive T-1834 fleet-dispatch message (4 remote agents notified 2026-05-15T08:18). extend fw audit with secret-scan + large-file scan-tree (T-1844/T-1845 follow-up). add research-handoff-document prompt (107/P-007). refine research-handoff-document prompt (107/P-007) — traceability + execution-safety. surface Updated timestamp in Watchtower prompt-detail page. v3 of research-handoff-document — depends_on_handoffs (blocking) + related_handoffs (informational)
+
+# Key outcomes
+outcomes:
+  - "Root cause documented (RCA section filled, including why tag-reset triggers it)"
+  - "Bypass command pre-built as a copy-pasteable Tier-2 line for the human"
+  - "Prevention task filed for Level-C fix (VERSION-stamping algorithm not subject to tag-reset rollback) — T-1829"
+  - "L-entry written to project memory (Level-A lock-in for next agent who hits this) — L-376"
+  - "[REVIEW] Approve the bypass push to unstick the mirror"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "archive T-1841 + session wrap (4 consumer-fw-upgrade fixes)"
+    source: git-mined
+  - description: "status → issues (blocked on T-1834 history rewrite)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-14 — bypass mechanism"
+    chose: "`git push --no-verify github master` as one-shot bypass; file Level-C follow-up for algorithmic fix."
+    rationale: "the 294-commit history cannot be rewritten (visible on origin/master and many consumer-vendored copies). Bumping VERSION past 1.6.260 with a synthetic commit would make THIS push work but doesn't fix the underlying class. `--no-verify` is what the T-1603 hook itself documents as the bypass path (line 50 of the hook)."
+    alternatives_rejected: [""]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".context/episodic/T-1832.yaml"
+  - ".context/episodic/T-1835.yaml"
+  - ".context/episodic/T-1836.yaml"
+  - ".context/episodic/T-1837.yaml"
+  - ".context/episodic/T-1838.yaml"
+  - ".context/episodic/T-1839.yaml"
+  - ".context/episodic/T-1840.yaml"
+  - ".context/episodic/T-1841.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/working/focus.yaml"
+  - "docs/generated/components/agents-fabric-lib-expand_patterns.md"
+  - "docs/generated/components/lib-dispatch_pause.md"
+  - "docs/generated/components/lib-ollama_loop.md"
+  - "docs/generated/components/lib-pause_cli.md"
+  - "docs/generated/components/lib-pause.md"
+  - "docs/generated/components/lib-pause_resolve.md"
+  - "docs/generated/components/lib-peer.md"
+  - "docs/generated/components/lib-pi_worker.md"
+  - "docs/generated/components/lib-render_surface.md"
+  - "docs/generated/components/lib-task_pair_acd.md"
+  - "docs/generated/components/lib-task_pair_acd-py.md"
+  - "docs/generated/components/lib-termlink_worker.md"
+  - "docs/generated/components/lib-workflow_coverage.md"
+  - "docs/generated/components/lib-workflow_lint.md"
+  - "docs/generated/components/tests-playwright-test_fabric_graph_cold_load.md"
+  - "docs/generated/components/tests-playwright-test_review_code_inline.md"
+  - "docs/generated/components/tests-unit-test_ac_body_html_comment.md"
+  - "docs/generated/components/tests-unit-test_cron_generate_shape.md"
+  - "docs/generated/components/tests-unit-test_dispatch_pause.md"
+  - "docs/generated/components/tests-unit-test_doctor_consumer_version_ahead.md"
+  - "docs/generated/components/tests-unit-test_fabric_exclude.md"
+  - "docs/generated/components/tests-unit-test_file_route_extensions.md"
+  - "docs/generated/components/tests-unit-test_gaps_missing_title_defaults.md"
+  - "docs/generated/components/tests-unit-test_mirror_stderr_capture.md"
+  - "docs/generated/components/tests-unit-test_ollama_loop.md"
+  - "docs/generated/components/tests-unit-test_orchestrator_routes.md"
+  - "docs/generated/components/tests-unit-test_orchestrator_status_terminal_events.md"
+  - "docs/generated/components/tests-unit-test_orchestrator_workflow_coverage.md"
+  - "docs/generated/components/tests-unit-test_pause_resolve.md"
+  - "docs/generated/components/tests-unit-test_peer_subscribe.md"
+  - "docs/generated/components/tests-unit-test_pi_worker.md"
+  - "docs/generated/components/tests-unit-test_pre_push_monotonic_ancestor.md"
+  - "docs/generated/components/tests-unit-test_resolver_run.md"
+  - "docs/generated/components/tests-unit-test_review_paused_resolve.md"
+  - "docs/generated/components/tests-unit-test_task_pair_acd_gate.md"
+  - "docs/generated/components/tests-unit-test_task_pair_acd_parser.md"
+  - "docs/generated/components/tests-unit-test_termlink_worker.md"
+  - "docs/generated/components/tests-unit-test_upgrade_downgrade_guard.md"
+  - "docs/generated/components/tests-unit-test_workflow_coverage.md"
+  - "docs/generated/components/tests-unit-test_workflow_schema_pause_lint.md"
+  - "docs/generated/components/tests-unit-upgrade_fresh_machine_simulation.md"
+  - "docs/generated/components/tools-audit-swallowed-errors.md"
+  - "docs/reports/T-1834-cross-repo-purge-prompt.md"
+  - "docs/reports/T-1834-dispatch-message.txt"
+  - "docs/screenshots/T-1828-prompt-page-metadata.png"
+  - "docs/screenshots/T-1828-prompt-page-with-updated.png"
+  - ".fabric/components/tests-unit-test_doctor_consumer_version_ahead.yaml"
+  - ".fabric/components/tests-unit-test_gaps_missing_title_defaults.yaml"
+  - ".fabric/components/tests-unit-test_upgrade_downgrade_guard.yaml"
+  - "prompts/research-handoff-document.md"
+  - ".tasks/active/T-1687-install--apply-grill-with-docs-skill--gr.md"
+  - ".tasks/active/T-1828-github-mirror-stalled--version-tag-reset.md"
+  - ".tasks/active/T-1829-version-stamping-algorithm-not-cross-tag.md"
+  - ".tasks/active/T-1830-fw-upgrade-incident-2026-05-14-meta-rca-.md"
+  - ".tasks/active/T-1831-ac-checkbox-vs-content-drift--agent-does.md"
+  - ".tasks/active/T-1833-t-1736-spike-harvest-read-session-jsonls.md"
+  - ".tasks/active/T-1834-purge-msoauth-client-secret-from-framewo.md"
+  - ".tasks/completed/T-1634-fw-upgrade-no-args-read-upstream-url-fro.md"
+  - ".tasks/completed/T-1635-fw-upgrade-fresh-machine-simulation-guar.md"
+  - ".tasks/completed/T-1819-seed-peer-consult-promptsyaml--framework.md"
+  - ".tasks/completed/T-1832-libinceptionsh-python-decide-handler-sil.md"
+  - ".tasks/completed/T-1835-claudemd-ac-tick-discipline-rule--tick-c.md"
+  - ".tasks/completed/T-1836-gate-diagnostic-upgrade--surface-body-vs.md"
+  - ".tasks/completed/T-1837-auto-tick-review-decide-human-acs-on-fw-.md"
+  - ".tasks/completed/T-1839-fw-upgrade-silent-downgrade-guard--refus.md"
+  - ".tasks/completed/T-1840-fw-gaps-defensive-get-for-missing-titlei.md"
+  - ".tasks/completed/T-1841-findprojectroot-sentinel--skip-agentic-f.md"
+  - ".tasks/completed/T-1845-pre-commit-large-file-gate--untrack-acci.md"
+  - "web/templates/prompt_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T20:25:05"
+    action: "T-1828: RCA + L-376 — github mirror stalled (VERSION tag-reset trips T-1603)"
+  - time: "2026-05-14T22:43:10"
+    action: "T-1828: Layer 3 RCA — path-isolation in spike harvest blocks mirror push"
+  - time: "2026-05-14T22:43:59"
+    action: "T-1828: status → issues (blocked on T-1834 history rewrite)"
+  - time: "2026-05-14T22:50:48"
+    action: "T-1828: archive T-1832 (auto-create Decision section) + L-379"
+  - time: "2026-05-14T22:55:23"
+    action: "T-1828: archive T-1835 (CLAUDE.md AC-tick rule) — C-4 build slice"
+  - time: "2026-05-14T22:59:52"
+    action: "T-1828: archive T-1836 (gate diagnostic upgrade) — C-3 build slice"
+  - time: "2026-05-14T23:17:36"
+    action: "T-1828: archive T-1837 (auto-tick PATTERNS broadened) + retroactive close trio"
+  - time: "2026-05-14T23:52:49"
+    action: "T-1828: archive T-1838 (fw doctor asymmetric version-skew detection)"
+  - time: "2026-05-14T23:58:21"
+    action: "T-1828: archive T-1839 (fw upgrade silent-downgrade guard)"
+  - time: "2026-05-15T00:07:50"
+    action: "T-1828: archive T-1840 (fw gaps defensive .get() — consumer F4)"
+  - time: "2026-05-15T00:15:25"
+    action: "T-1828: archive T-1841 + session wrap (4 consumer-fw-upgrade fixes)"
+  - time: "2026-05-15T10:07:06"
+    action: "T-1828: move T-1834 cross-repo handout to docs/reports/ (in /file/ route whitelist)"
+  - time: "2026-05-15T10:17:37"
+    action: "T-1828: archive T-1834 fleet-dispatch message (4 remote agents notified 2026-05-15T08:18)"
+  - time: "2026-05-15T13:44:00"
+    action: "T-1828: extend fw audit with secret-scan + large-file scan-tree (T-1844/T-1845 follow-up)"
+  - time: "2026-05-15T13:56:53"
+    action: "T-1828: add research-handoff-document prompt (107/P-007)"
+  - time: "2026-05-15T14:05:03"
+    action: "T-1828: refine research-handoff-document prompt (107/P-007) — traceability + execution-safety"
+  - time: "2026-05-15T14:11:08"
+    action: "T-1828: surface Updated timestamp in Watchtower prompt-detail page"
+  - time: "2026-05-15T14:14:37"
+    action: "T-1828: v3 of research-handoff-document — depends_on_handoffs (blocking) + related_handoffs (informational)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 19 commit(s), 1556 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, fw-upgrade-incident-2026-05-14, mirror, version-monotonicity]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1556
+  commits: 19
+  files_changed: 73
+  lines_added: 2791
+  lines_removed: 130
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1828-github-mirror-stalled--version-tag-reset.md
+generated_by: context-agent-hybrid
