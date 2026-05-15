@@ -119,11 +119,15 @@ is the next agent action.
 - [x] Research artefact exists at `docs/reports/T-1846-arc-grooming-inception.md`
       (created at filing time; updated as dialogue produces findings — C-001 discipline)
 - [x] Handoff stored verbatim at `.context/handoffs/HANDOFF-arc-grooming-2026-05-15.md`
-- [ ] Q1, Q2, Q3 answers recorded in research artefact `## Dialogue Log` with timestamps
-- [ ] Build-slice manifest produced in research artefact `## Build Slice Manifest`
-      with concrete `fw task create` / `fw work-on --type build` invocations for
-      T-NEW-2..9, each carrying title, tags, components, related_tasks, dependencies,
-      and a one-line AC stub matching handoff §7
+- [x] Q1, Q2, Q3 answers recorded in research artefact `## Dialogue Log` with timestamps
+      (Q1=Tier-1 block, Q2=committable report, Q3=delegated → both T-1717/T-1719 →
+      `arc_id: embeddings-strategy`)
+- [x] Build-slice manifest produced in research artefact `## 4 Build-slice manifest`
+      with 10 slices (T-NEW-1.5 + T-NEW-2..9), each carrying type, dependencies,
+      one-line scope; concrete `fw task create` invocations remain to be authored
+      per slice at filing time post decide-go
+- [x] **D-Immutability** structural principle captured (§3a) — arc records are
+      immutable like task records; abandonment is a status; arc IDs never renumber
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -199,14 +203,69 @@ Per HANDOFF-arc-grooming-2026-05-15 §5 GO with §11.5 pre-action checks all PAS
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-15 — D-Immutability (arc records never deleted)
+
+- **Chose:** Arc YAML records in `.context/arcs/` are immutable. Abandonment is a
+  status update on the `status:` field; the file persists. Arc IDs (once allocated
+  via T-NEW-1.5) are never renumbered, never reused.
+- **Why:** Matches existing task semantics (tasks in completed/ are never deleted).
+  Preserves cross-arc traceability (G-064 closure pilots, predecessor chains).
+  Eliminates the deleted-arc cascade failure mode that drove the original
+  audit-warning-only stance on Q1.
+- **Rejected:** Allow deletion via `fw arc delete` or rm — would break references
+  retroactively and create unfixable hostage states for any task pointing at the
+  deleted arc.
+- **Edge case acknowledged:** Truly-mistaken-creation-zero-references — manual rm
+  is acceptable when nothing yet points at it; once referenced, `fw arc abandon`.
+- **Decided-by:** human-initiated, agent-agreed
+- **Operationalises:** Q1 flip to Tier-1 block, T-NEW-1.5, T-NEW-5a, T-NEW-6
+- **Reversibility:** costly (loosening immutability later is theoretically possible
+  but would invalidate the validation contract this enables)
+
+### 2026-05-15 — Q1 flip: Tier-1 block (not audit warning)
+
+- **Chose:** `arc_id:` referencing a non-existent arc → Tier-1 block at task save.
+- **Why:** Predicated on D-Immutability. With immutability, valid references stay
+  valid forever; the original handoff fear (deleted-arc cascade creates hostage
+  state) cannot occur. Block-on-save gives faster feedback and structural rather
+  than 30-min-cron enforcement.
+- **Rejected:** Audit warning (original handoff §6 default). Superseded by
+  D-Immutability changing the cost calculus.
+- **Decided-by:** human
+- **Operationalises:** T-NEW-2 validation hook
+- **Reversibility:** cheap (loosen to warning is a one-config flip)
+
+### 2026-05-15 — T-NEW-1.5 added: sequential arc-NNN IDs
+
+- **Chose:** Adopt `arc-NNN` sequential immutable IDs for arcs (matching task ID
+  model). Add as T-NEW-1.5 slice in the build manifest.
+- **Why:** Slug-as-identity breaks on rename and on intentional name reuse. Sequential
+  IDs match how tasks work (T-NNNN, never renumbered). Bounded migration cost
+  (4 existing arcs map to arc-001..004).
+- **Rejected:** Keep slug-as-identity — simpler short term, but the rename brittleness
+  and the lack of D-Immutability anchor undermine validation guarantees.
+- **Decided-by:** human-initiated, agent-agreed
+- **Operationalises:** identity stability for D-Immutability; gives T-NEW-2 a stable
+  validation target
+- **Reversibility:** moderate (renaming back to slug-as-identity post-allocation
+  would require coordinated rewrite across `lib/arc.sh`, Watchtower routing,
+  any task already migrated)
+
+### 2026-05-15 — Q3 per-task: T-1717 and T-1719 → arc_id: embeddings-strategy
+
+- **Chose:** Both dual-arc-tagged tasks get `arc_id: embeddings-strategy` as
+  canonical home. Cross-link to orchestrator-rethink survives via the
+  `G-064-closure-pilot` regular tag and existing `related_tasks` chain.
+- **Why:** Read both task bodies — T-1717 is "Embeddings generation strategy for
+  context and component fabric" (workflow_type: inception); pain points are all
+  retrieval-related; components touched are embeddings-substrate hooks. T-1719
+  is the explicit `T-1717-implementation` build slice. Both are embeddings-strategy
+  work that happens to advance orchestrator-rethink's G-064 closure.
+- **Rejected:** Alphabetical-auto (would land same answer accidentally — fine, but
+  for principled reasons not the alphabet). Block-and-ask-human (delegated to
+  agent by human). Add secondary_arc_ids field (scope creep).
+- **Decided-by:** agent (delegated by human "you decide")
+- **Reversibility:** cheap (post-migration edit of frontmatter)
 
 ## Decision
 

@@ -38,64 +38,84 @@ inception's job is to:
 
 ### Q1: `arc_id:` validation tier — Tier-1 block on task save, or audit warning only?
 
-- **Default (handoff §6):** Audit warning. Tier-1 block creates unfixable states
-  if an arc is deleted while tasks reference it.
-- **Trade-off:**
-  - **Block** → typos caught at save; downside: deleted-arc cascade.
-  - **Warn** → typos surface at next audit cycle; downside: stale references can
-    accumulate quietly.
-- **Recommendation:** Audit warning. Matches D4 (anchor-task missing is also warn-only).
-  Symmetric failure model.
-- **Human's answer:** _pending_
-- **Decided at:** _pending_
+- **Human's answer (2026-05-15):** **Tier-1 block**, BUT conditional on a separate
+  structural axiom the human surfaced — see D-Immutability below. With that axiom,
+  the hostage-state failure mode I worried about is eliminated, and block-on-save
+  becomes the better choice (faster feedback, structural rather than 30-min-cron).
+- **Original handoff recommendation:** Audit warning, fearing the deleted-arc cascade.
+  **Superseded** by D-Immutability — there is no deleted-arc cascade because arcs
+  are never deleted.
+- **Decided at:** 2026-05-15 (this inception)
+- **Implementation note:** Validation triggers only when `arc_id:` is set and
+  non-empty. Empty `arc_id:` (unassigned task) passes through. The check resolves
+  against `.context/arcs/*.yaml` filenames (or `id:` field, post T-NEW-1.5).
 
 ### Q2: `arc_id:` migration — emit committable report at `.context/audits/arc-id-migration-<date>.yaml`?
 
-- **Default (handoff §6):** Yes — emit and commit. Matches existing pattern of one-shot
-  governance events being audit-trailed (`arc-bypass.jsonl`).
-- **Trade-off:**
-  - **Committable report** → migration is one durable auditable event; can be referenced
-    later; recovers reverse-mapping if migration ever needs undo.
-  - **Non-committable** → less repository noise; harder to reconstruct what happened.
-- **Recommendation:** Yes, committable.
-- **Human's answer:** _pending_
-- **Decided at:** _pending_
+- **Human's answer (2026-05-15):** **Yes, committable.** "Traceability and low cost,
+  that is a yes." No serious strawman against. Matches existing `arc-bypass.jsonl`
+  pattern for one-shot governance events.
+- **Decided at:** 2026-05-15 (this inception)
 
 ### Q3: Multi-arc tagged tasks — what does the migration do?
 
-- **Context:** §11.5 verified there are **2** genuinely multi-arc-tagged tasks
-  across `.tasks/{active,completed}/`:
-  - **T-1717** — tags: `[arc:embeddings-strategy, arc:orchestrator-rethink, T-1715-family, G-064-closure-pilot, T-679-family, structural-fix]`
-  - **T-1719** — tags: `[arc:embeddings-strategy, arc:orchestrator-rethink, T-1717-implementation, G-064-closure-pilot, vertical-slice-1, blocked-on-t-1717-go]`
+- **Human's answer (2026-05-15):** Delegated to agent ("you decide"). Agent makes
+  per-task call based on actual task content (option (b) executed inline).
+- **Decided at:** 2026-05-15 (this inception)
 
-  Both sit deliberately at the embeddings-strategy ∩ orchestrator-rethink
-  intersection (G-064 closure pilot work). The dual-arc relationship is
-  semantic, not accidental. **Both tasks need a human decision on which arc
-  becomes the canonical `arc_id:` value — auto-picking alphabetically here
-  would silently break the cross-arc relationship that was intentional.**
+**Per-task canonical-arc decisions:**
 
-  (Note: an initial scan flagged T-1843 as multi-arc, but its body-text
-  references inflated the match; its `tags:` line carries only
-  `arc:project-shape-resilience`.)
+- **T-1717** → `arc_id: embeddings-strategy`
+  - Evidence: title "Embeddings generation strategy for context and component fabric";
+    workflow_type inception; pain points all retrieval-related (catastrophic amnesia,
+    decision-quality drift, arc-coherence failure); components touched (evolution_log,
+    update-task.sh, inception lib) are embeddings-substrate governance hooks;
+    headline mechanic referenced by T-1719 is `fw recall → resolver routes to
+    optimal embedding provider`. The `arc:orchestrator-rethink` tag is a genuine
+    cross-link (G-064 closure pilot) but the WORK is embeddings-strategy.
+- **T-1719** → `arc_id: embeddings-strategy`
+  - Evidence: tag `T-1717-implementation` and BLOCKED-on-T-1717 status make this
+    the explicit build slice of T-1717. Inherits canonical home.
 
-- **Default (handoff §6):** Pick alphabetically-first `arc:*` tag as `arc_id:`,
-  leave the other tag(s) in place, warn loudly in the migration report, list
-  affected task IDs for human follow-up.
-- **Refinement given the evidence:** For T-1717/T-1719 specifically, the
-  intersection is meaningful (G-064 closure pilot). Three options:
-  - **a) Auto-pick alphabetically + leave `arc:orchestrator-rethink` as a
-    secondary tag, document the constraint that one task can belong to only
-    one canonical arc** — keeps the cross-arc semantic visible but downgraded.
-  - **b) Block migration on these 2 tasks and resolve manually first** —
-    explicit human choice per task before the bulk migration runs.
-  - **c) Add a new `secondary_arc_ids:` field on tasks** — formalises the
-    intersection, but adds complexity to the schema this inception just
-    introduced. Probably scope creep.
-- **Recommendation:** Option (b). With only 2 affected tasks and a meaningful
-  cross-arc relationship, the 60-second manual choice per task is the right
-  trade-off; option (a) silently degrades the data, option (c) inflates scope.
-- **Human's answer:** _pending_
-- **Decided at:** _pending_
+**Cross-link preservation:** Both tasks retain `G-064-closure-pilot` as a regular
+tag (non-arc tag, preserved through migration). `related_tasks` chain already
+links to T-1696/T-1697/T-1698 (orchestrator substrate work), so the cross-arc
+relationship survives via that chain.
+
+**Initial false-positive correction:** An earlier scan flagged T-1843 as multi-arc;
+its `tags:` line carries only `arc:project-shape-resilience`. Body-text mentions
+of `arc:` inflated the initial regex. T-1843 is single-arc.
+
+## 3a. Structural decisions surfaced during inception dialogue
+
+### D-Immutability: arc records (like task records) are immutable
+
+- **Decided 2026-05-15, human-initiated, agent-agreed.**
+- **The rule:** Arc YAML records in `.context/arcs/` are **never deleted**. Once
+  created, an arc persists forever. State transitions (in-progress, closed,
+  abandoned, future "in-progress-again-after-resurrection") happen via the
+  `status:` field; the file itself stays.
+- **Arc IDs are immutable.** Once `arc-001` is allocated, it stays `arc-001` forever.
+  Renaming the slug is allowed; renumbering the ID is not.
+- **Why:** Matches existing task semantics — tasks in `.tasks/completed/` are never
+  deleted either. Preserves traceability for cross-arc references (predecessor
+  chains, G-064 closure pilots, etc.). Eliminates the "deleted-arc cascade" failure
+  mode that drove the original Q1 default of audit-warning.
+- **Implication for Q1:** Tier-1 block on `arc_id:` validation is now safe — there
+  is no path by which a valid reference goes invalid. Block-on-save becomes the
+  better choice.
+- **Implication for `fw arc abandon` (T-NEW-6):** Abandonment is a status update,
+  not a deletion. The arc YAML remains queryable, referenceable, and (in principle)
+  re-openable.
+- **Edge case:** Truly mistaken arc creation (fat-finger, agent error) with zero
+  references — manual `rm` is acceptable as an escape valve at this stage (no
+  traceability loss when nothing points at it). Once any reference exists,
+  `fw arc abandon` is the principled path. No special "cancel" verb needed for v1.
+- **Long-term archival:** At worst, arc body content could be compacted with full
+  body archived (e.g. `.context/arcs/archived/`). Not needed for v1 — defer to
+  when archival becomes a real concern. We have 4 arcs today.
+- **Operationalised by:** T-NEW-1.5 (immutable ID allocation), T-NEW-5a (state machine
+  treats abandoned as status not deletion), T-NEW-6 (`fw arc abandon` semantics).
 
 ## 4. Build-slice manifest (filled after Q1/Q2/Q3 resolved)
 
@@ -105,15 +125,21 @@ Each slice maps to a T-NEW-<n> in the handoff §7. The manifest below is the
 
 | Slice | Task (proposed name) | Type | Deps | One-line scope |
 |---|---|---|---|---|
-| T-NEW-2 | Add `arc_id:` to task frontmatter schema | build | T-1846 | Field + template + CLAUDE.md doc |
-| T-NEW-3 | One-shot migration `tags:[arc:*]` → `arc_id:` | build | T-NEW-2 | Idempotent script + Q2 report + Q3 handling |
+| T-NEW-1.5 | Introduce `arc-NNN` sequential ID scheme | build | T-1846 | `id:` field on arc YAML; allocate counter; migrate 4 existing arcs to arc-001..004; Watchtower URL routing accepts slug + ID; encode D-Immutability semantics |
+| T-NEW-2 | Add `arc_id:` to task frontmatter schema | build | T-NEW-1.5 | Field + template + CLAUDE.md doc; **Tier-1 block on save when set + non-empty + does-not-resolve** |
+| T-NEW-3 | One-shot migration `tags:[arc:*]` → `arc_id:` | build | T-NEW-2 | Idempotent script + Q2 committable report; T-1717/T-1719 → `arc_id: embeddings-strategy` (per Q3 decisions); other migrations alphabetical-default (none expected — Q3 verified only 2 multi-arc cases) |
 | T-NEW-4 | Mark `constituent_tasks:` deprecated | build | T-NEW-3 | Comment + deprecation note in T-1653 artefact |
-| T-NEW-5a | Lifecycle state machine refactor (back-end) | build | T-1846 | Add `draft` + `abandoned` to `lib/arc.sh` |
+| T-NEW-5a | Lifecycle state machine refactor (back-end) | build | T-1846 | Add `draft` + `abandoned` to `lib/arc.sh`; D-Immutability: abandoned is status, not deletion |
 | T-NEW-5b | Lifecycle UI in Watchtower | build | T-NEW-5a | `/arcs` filter tabs per state |
-| T-NEW-6 | `fw arc abandon` CLI verb | build | T-NEW-5a | Mirrors `fw arc close` §ACD pattern |
+| T-NEW-6 | `fw arc abandon` CLI verb | build | T-NEW-5a | Mirrors `fw arc close` §ACD pattern; YAML stays, status flips |
 | T-NEW-7 | Stale-arc audit warning (30d) | build | T-NEW-3 | New audit check + Watchtower badge |
 | T-NEW-8 | Anchor-task existence audit check | build | T-1846 | Warning only, never block |
-| T-NEW-9 | Write `012-ArcSystem.md` + update `FRAMEWORK.md` | build | T-NEW-2, T-NEW-3, T-NEW-5*, T-NEW-6 | Promote Arc to canonical doc set |
+| T-NEW-9 | Write `012-ArcSystem.md` + update `FRAMEWORK.md` | build | T-NEW-1.5, T-NEW-2, T-NEW-3, T-NEW-5*, T-NEW-6 | Promote Arc to canonical doc set; document D-Immutability |
+
+**Note on T-NEW-1.5 (new slice from inception dialogue):** Sequential `arc-NNN` IDs
+adopt the same identity model as tasks. Adds one slice; the cost is bounded
+(4 existing arcs to migrate; clear before/after mapping). Required by D-Immutability
+and gives T-NEW-2 a stable target for the Tier-1 validation block.
 
 **Note on T-NEW-5 split:** handoff sized as `novel_mechanism: yes / verdict: needs-split`.
 Splitting into 5a (back-end state machine in `lib/arc.sh`) and 5b (Watchtower rendering)
@@ -141,23 +167,61 @@ lets the refactor land before any UI regression risk.
 - **Q:** §11.5 verification of handoff before any task creation.
 - **Outcome:** All checks PASS. Filed inception. Awaiting Q1/Q2/Q3 from human.
 
-### Entry 1 — Q1 (pending)
+### Entry 1 — Q1 (resolved 2026-05-15)
 
 - **Q (agent → human):** `arc_id:` validation tier — Tier-1 block, or audit warning?
-- **A (human):** _awaiting_
-- **Decided at:** _pending_
+- **A (human):** Tier-1 block — BUT predicated on the immutability principle (next
+  entry). Reasoning: typos are rare (programmatic references); abandonment isn't
+  a deletion (immutability axiom); staging-order should not be possible (block at
+  creation time forces correct sequencing — create arc first, then file tasks).
+- **Agent reflection:** Agreed. With D-Immutability, the hostage-state failure mode
+  is eliminated and Tier-1 block becomes the safer/faster choice. Flipped from
+  original handoff recommendation (audit warning) to block.
+- **Decided at:** 2026-05-15
 
-### Entry 2 — Q2 (pending)
+### Entry 2 — D-Immutability surfaced (2026-05-15)
+
+- **Q (human → agent):** Reflect on whether arc records should be deletable. "We will
+  not delete these arc IDs — abandoned is a status update, arc_id and body persist;
+  at worst they might be compacted with the body archived for possible reference."
+- **A (agent):** Strong agreement. Matches existing task semantics (`.tasks/completed/`
+  never deletes either). Preserves cross-arc traceability. Eliminates the deleted-arc
+  cascade. Flagged one edge case: truly-mistaken-creation-zero-references where
+  manual `rm` is the practical escape valve. No special verb needed for v1.
+- **Outcome:** Captured as **D-Immutability** structural decision (§3a). Drives Q1's
+  flip to Tier-1 block. Drives T-NEW-1.5 (sequential immutable IDs). Drives T-NEW-5a/
+  T-NEW-6 semantics (abandoned = status, not deletion).
+- **Decided at:** 2026-05-15
+
+### Entry 3 — Q2 (resolved 2026-05-15)
 
 - **Q (agent → human):** Committable migration report at `.context/audits/arc-id-migration-<date>.yaml`?
-- **A (human):** _awaiting_
-- **Decided at:** _pending_
+- **A (human):** Yes. "Traceability and low cost, that is a yes." No strong strawman against.
+- **Decided at:** 2026-05-15
 
-### Entry 3 — Q3 (pending)
+### Entry 4 — Q3 (resolved 2026-05-15 by delegation)
 
-- **Q (agent → human):** Multi-arc-tagged task handling (alphabetical-first auto, or block migration, or other)?
-- **A (human):** _awaiting_
-- **Decided at:** _pending_
+- **Q (agent → human):** Multi-arc-tagged task handling (alphabetical-first auto,
+  or block migration, or new schema field)?
+- **A (human):** "You decide" — delegated to agent given the agent's familiarity with
+  the task content and the low-stakes/reversible nature of the call.
+- **Agent decision:** Read T-1717 and T-1719 task body + frontmatter; both are
+  primarily embeddings-strategy work with orchestrator-rethink cross-link via G-064
+  closure pilot. **Canonical assignment: both → `arc_id: embeddings-strategy`.**
+  Cross-link survives via `G-064-closure-pilot` tag and existing `related_tasks`
+  chain. Migration script for general case uses alphabetical-default (none expected
+  outside these 2; Q3 prevalence scan returned only these).
+- **Decided at:** 2026-05-15
+
+### Entry 5 — Sequential arc IDs surfaced (2026-05-15)
+
+- **Q (human → agent):** Should arc IDs be sequential like task IDs (`arc-NNN` vs
+  slug-as-identity)?
+- **A (agent):** Yes — better identity stability (slug renames don't break refs),
+  same mental model as tasks, bounded migration cost (4 arcs).
+- **Outcome:** New slice T-NEW-1.5 added to manifest. Sequential IDs are also
+  immutable per D-Immutability (once allocated, never renumbered, never reused).
+- **Decided at:** 2026-05-15
 
 ## 7. Out-of-scope reminders (do NOT do under this inception)
 
