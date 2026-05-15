@@ -82,6 +82,10 @@ depended_by:
   type: called_by
 - target: tests/unit/test_pre_push_monotonic_ancestor.bats
   type: tests_by
+- target: tests/unit/audit_ctl028_completed_status_consistency.bats
+  type: called_by
+- target: tests/unit/audit_ctl028_completed_status_consistency.bats
+  type: tests_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-05-15'
+last_enriched: '2026-05-16'

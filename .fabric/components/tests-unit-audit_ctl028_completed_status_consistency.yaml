@@ -4,17 +4,21 @@ type: script
 subsystem: unknown
 location: tests/unit/audit_ctl028_completed_status_consistency.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: C-004
+  type: calls
+- target: agents/audit/completed-task-scan.py
+  type: calls
+- target: agents/audit/active-task-scan.py
+  type: calls
+- target: C-004
+  type: tests
+- target: agents/audit/completed-task-scan.py
+  type: tests
+- target: agents/audit/active-task-scan.py
+  type: tests
+depended_by: []
 last_verified: 2026-05-15
 created_by: unknown
+last_enriched: '2026-05-16'
