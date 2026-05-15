@@ -62,7 +62,7 @@ Same audit-data category (T-1573 F8), now with one more layer of signal-to-noise
 ## Verification
 
 bats tests/unit/audit_gate_bypass_log.bats
-bin/fw audit --section enforcement 2>&1 | grep -qE "Gate-bypass log: [0-9]+ safety \+ [0-9]+ drift"
+out=$(bin/fw audit --section enforcement 2>&1); echo "$out" | grep -qE "Gate-bypass log: [0-9]+ safety \+ [0-9]+ drift"
 
 ## RCA
 
