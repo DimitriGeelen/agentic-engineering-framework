@@ -64,7 +64,11 @@ Source decisions to honour (from T-1846):
 test -f .context/arcs/arc-grooming.yaml
 python3 -c "import yaml; yaml.safe_load(open('.context/arcs/arc-grooming.yaml'))"
 test $(grep -lE 'arc:arc-grooming' .tasks/active/*.md | grep -v T-1846 | grep -v T-1847 | wc -l) -ge 10
-bin/fw audit 2>&1 | grep -q "Fail: 0"
+# T-1870: CTL-013 chicken-and-egg — running `bin/fw audit` from inside audit's
+# own CTL-013 verify-rerun loop hits the audit lock and returns "Another audit
+# is already running", so grep "Fail: 0" never matches. Check the last audit
+# YAML report instead (same evidence, no nested audit).
+ls -t .context/audits/[0-9]*.yaml 2>/dev/null | head -1 | xargs -I{} grep -q "fail: 0" {}
 
 ## RCA
 
