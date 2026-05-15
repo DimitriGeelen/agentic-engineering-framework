@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1870: audit check — completed/ task with status != work-completed (DESYNC class, L-390 prevention)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T22:12:45Z
+# ============================================================================
+
+task_id: T-1870
+task_name: "audit check — completed/ task with status != work-completed (DESYNC class, L-390 prevention)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T21:43:44Z
+completed: 2026-05-15T22:12:38Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "New audit check `CTL-028 / completed_dir_status_consistency` added — extends `agents/audit/completed-task-scan.py` (single-pass scanner) + emits WARN block in `agents/audit/audit.sh`"
+  - "Scans `.tasks/completed/*.md`; flags WARN when frontmatter `status:` is not `work-completed`"
+  - "WARN message names each offending task ID + observed status (verified: `CTL-028: T-1846 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)`)"
+  - "Bats test under `tests/unit/audit_ctl028_completed_status_consistency.bats` pins 4 cases: pass (work-completed), fail (started-work), mixed dir (filtered), audit.sh integration (end-to-end WARN surfaces)"
+  - "Audit re-run captures 8 desyncs at filing time (T-1501, T-1845, T-1846, T-1847, T-1858, T-1860, T-1861, T-1862) — baseline; new desyncs after this lands are WARN delta"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1870-audit-check--completed-task-with-status-.md
+generated_by: context-agent-hybrid

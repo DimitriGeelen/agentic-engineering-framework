@@ -4,7 +4,7 @@ name: "audit check — completed/ task with status != work-completed (DESYNC cla
 description: >
   audit check — completed/ task with status != work-completed (DESYNC class, L-390 prevention)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-15T21:43:44Z
-last_update: 2026-05-15T21:43:44Z
-date_finished: null
+last_update: 2026-05-15T22:12:38Z
+date_finished: 2026-05-15T22:12:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -28,11 +28,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] New audit check `completed_dir_status_consistency` added (e.g. in `agents/audit/audit.sh` or new module under `lib/`)
-- [ ] Scans `.tasks/completed/*.md`; flags WARN when frontmatter `status:` is not `work-completed`
-- [ ] WARN message names each offending task ID + observed status (e.g. `T-1846 has status: started-work`)
-- [ ] Bats test under `tests/unit/` pins both pass case (well-formed completed task) and fail case (status=started-work in completed/)
-- [ ] Audit re-run captures 7 desyncs at filing time (T-1501, T-1845, T-1846, T-1847, T-1858, T-1860, T-1861, T-1862) — those are the baseline; new desyncs after this lands are WARN delta
+- [x] New audit check `CTL-028 / completed_dir_status_consistency` added — extends `agents/audit/completed-task-scan.py` (single-pass scanner) + emits WARN block in `agents/audit/audit.sh`
+- [x] Scans `.tasks/completed/*.md`; flags WARN when frontmatter `status:` is not `work-completed`
+- [x] WARN message names each offending task ID + observed status (verified: `CTL-028: T-1846 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)`)
+- [x] Bats test under `tests/unit/audit_ctl028_completed_status_consistency.bats` pins 4 cases: pass (work-completed), fail (started-work), mixed dir (filtered), audit.sh integration (end-to-end WARN surfaces)
+- [x] Audit re-run captures 8 desyncs at filing time (T-1501, T-1845, T-1846, T-1847, T-1858, T-1860, T-1861, T-1862) — baseline; new desyncs after this lands are WARN delta
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -54,6 +54,9 @@ date_finished: null
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
+
+bats tests/unit/audit_ctl028_completed_status_consistency.bats
+out=$(python3 agents/audit/completed-task-scan.py .tasks .context/episodic docs/reports 2>&1); echo "$out" | python3 -c "import sys,json; d=json.load(sys.stdin); assert any(i['id']=='T-1846' for i in d.get('status_desync',[])), 'baseline desync T-1846 missing'; print('baseline ok')"
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
@@ -136,3 +139,20 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1870-audit-check--completed-task-with-status-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-3abbba7e
+- **Timestamp:** 2026-05-15T22:12:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/audit_ctl028_completed_status_consistency.bats`
+
+### 2026-05-15T22:12:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

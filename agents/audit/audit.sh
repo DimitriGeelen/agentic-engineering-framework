@@ -2156,6 +2156,31 @@ for task_file in $recent_completed; do
 done
 shopt -u nullglob
 
+# CTL-028 OE: completed/ frontmatter status consistency (T-1870, L-390)
+# Detect tasks moved to .tasks/completed/ via `git mv` (or any path that bypasses
+# `fw task update --status work-completed`) — frontmatter status remains the
+# pre-move value (typically `started-work`). Detective for the file-move-without-
+# state-machine class. CTL-012 catches the AC consequence; this catches the bare
+# metadata desync.
+status_desync_fail=0
+if [ -n "$COMPLETED_SCAN" ]; then
+    while IFS='|' read -r task_id observed_status; do
+        [ -z "$task_id" ] && continue
+        warn "CTL-028: $task_id is in .tasks/completed/ but frontmatter status='$observed_status' (expected: work-completed)" \
+             "Likely cause: git mv bypassed the state machine (L-390)" \
+             "Fix: bin/fw task update $task_id --status work-completed --force, or hand-edit frontmatter to status: work-completed + set date_finished"
+        status_desync_fail=$((status_desync_fail + 1))
+    done < <(echo "$COMPLETED_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data.get('status_desync', []):
+    print(f\"{item['id']}|{item['status']}\")
+" 2>/dev/null)
+fi
+if [ "$status_desync_fail" -eq 0 ]; then
+    pass "CTL-028: All completed/ tasks have frontmatter status: work-completed"
+fi
+
 # CTL-019 OE: Auto-Restart — claude-fw wrapper exists
 if [ -x "$FRAMEWORK_ROOT/bin/claude-fw" ]; then
     pass "CTL-019: claude-fw wrapper installed and executable"

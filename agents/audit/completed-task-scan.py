@@ -11,10 +11,13 @@ Output (JSON):
     "missing_episodic": ["T-123", ...],
     "missing_research": ["T-456", ...],
     "unchecked_ac": [{"id": "T-789", "line": "- [ ] criterion"}],
+    "status_desync": [{"id": "T-1846", "status": "started-work"}],
     "stats": {"total": N, "inception_count": M}
   }
 
 T-955: Merge loops 3/4/7 into single-pass Python scan.
+T-1870: Add status_desync — completed/ tasks whose frontmatter status != work-completed
+        (L-390: git-mv bypasses fw task update --status work-completed → desync).
 """
 
 import json
@@ -26,11 +29,12 @@ import sys
 def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
     completed_dir = os.path.join(tasks_dir, "completed")
     if not os.path.isdir(completed_dir):
-        return {"missing_episodic": [], "missing_research": [], "unchecked_ac": [], "stats": {"total": 0, "inception_count": 0}}
+        return {"missing_episodic": [], "missing_research": [], "unchecked_ac": [], "status_desync": [], "stats": {"total": 0, "inception_count": 0}}
 
     missing_episodic = []
     missing_research = []
     unchecked_ac = []
+    status_desync = []
     total = 0
     inception_count = 0
 
@@ -59,16 +63,24 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
         # Extract frontmatter fields (simple grep-equivalent)
         task_id = ""
         workflow_type = ""
+        status = ""
         for line in content.split("\n"):
             if line.startswith("id:"):
                 task_id = line.split(":", 1)[1].strip().strip('"')
             elif line.startswith("workflow_type:"):
                 workflow_type = line.split(":", 1)[1].strip().strip('"')
+            elif line.startswith("status:"):
+                status = line.split(":", 1)[1].strip().strip('"')
             elif line.startswith("---") and task_id:
                 break  # past frontmatter
 
         if not task_id:
             continue
+
+        # T-1870 (L-390): completed/ task with status != work-completed indicates
+        # git-mv bypass of `fw task update --status work-completed` state machine.
+        if status and status != "work-completed":
+            status_desync.append({"id": task_id, "status": status})
 
         # Loop 3: Episodic coverage check
         episodic_file = os.path.join(episodic_dir, f"{task_id}.yaml")
@@ -130,6 +142,7 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
         "missing_episodic": missing_episodic,
         "missing_research": missing_research,
         "unchecked_ac": unchecked_ac,
+        "status_desync": status_desync,
         "stats": {"total": total, "inception_count": inception_count},
     }
 
