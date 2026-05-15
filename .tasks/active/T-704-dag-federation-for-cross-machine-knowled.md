@@ -4,15 +4,15 @@ name: "DAG federation for cross-machine knowledge graphs"
 description: >
   Cross-machine knowledge graphs without central coordination. Relevant for TermLink multi-agent. Score: 18/20 (D1:4 D2:5 D3:4 D4:5). Source: T-697 pattern harvest #9.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: [federation, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:58:02Z
-last_update: 2026-04-28T20:02:47Z
+last_update: 2026-05-15T19:54:39Z
 date_finished: null
 ---
 
@@ -139,3 +139,8 @@ Evidence:
 ### 2026-04-28T20:02:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-05-15T19:54:39Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+- **Reason:** T-1865 sweep: DEFER limbo recovery

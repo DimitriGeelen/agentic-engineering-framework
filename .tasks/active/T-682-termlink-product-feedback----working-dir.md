@@ -4,15 +4,15 @@ name: "TermLink product feedback — --working-dir flag for spawn + MCP as defau
 description: >
   F-6: TermLink spawn has no --working-dir flag, requiring a separate cd step after spawn. Also TermLink MCP server should be recommended as default for AI agent integrations. File as feature requests for TermLink product (Vincent). Discovered during T-679.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T21:37:45Z
-last_update: 2026-04-28T20:02:47Z
+last_update: 2026-05-15T19:54:39Z
 date_finished: null
 ---
 
@@ -133,3 +133,8 @@ Evidence:
 ### 2026-04-28T20:02:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-05-15T19:54:39Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+- **Reason:** T-1865 sweep: DEFER limbo recovery

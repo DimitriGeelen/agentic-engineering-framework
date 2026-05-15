@@ -665,6 +665,18 @@ PYDECIDE
 - **Rationale:** $rationale
 EOF
 
+    # T-1865: park task on DEFER decision (horizon=later + auto-demote to captured
+    # via T-1068 invariant). Previously DEFER left status=started-work/horizon=now,
+    # which made the task score against D13 inception-limbo forever AND keep
+    # appearing in handover's "Work In Progress" alongside its "Deferred"
+    # classification. The legitimate state for a DEFER decision is parked, not
+    # active. Same `--skip-sovereignty` rationale as the GO/NO-GO branch below.
+    if [ "$decision" = "defer" ]; then
+        echo ""
+        "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --horizon later --skip-sovereignty --reason "Inception decision: DEFER — parking task" 2>&1 || \
+            echo -e "${YELLOW}Note: horizon update failed; recover with: bin/fw inception sweep${NC}" >&2
+    fi
+
     # Complete task if go or no-go (not defer)
     # --skip-sovereignty bypasses only R-033 (sovereignty gate) because inception decide
     # itself required Tier 0 approval — human authority was already exercised (T-637).
@@ -775,16 +787,24 @@ do_inception_sweep() {
         #   class 1 — status: work-completed + decision recorded (sweep ticks AC + moves)
         #   class 2 — status: started-work + GO/NO-GO recorded (decide ran but status
         #             update was swallowed; promote to work-completed first)
-        # DEFER on a started-work task is the legitimate "keep exploring" state and
-        # is left untouched — only closing decisions (GO/NO-GO) trigger promotion.
-        local current_status
+        # T-1865: class 3 added — status: started-work + DEFER recorded. Pre-T-1865
+        # do_inception_decide left state untouched on DEFER, leaving these tasks in
+        # work-in-progress forever. Recovery path = park (horizon=later, which
+        # auto-demotes to captured via T-1068).
+        local current_status defer_park=false
         # T-1557 / L-302: pipefail guard
         current_status=$( { grep '^status:' "$f" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
         case "$current_status" in
             work-completed) ;;
             started-work)
-                # Only class 2 candidates: must be a closing decision
-                grep -qE '^\*\*Decision\*\*: (GO|NO-GO)' "$f" || continue
+                # Class 2 OR class 3 — must have a decision recorded
+                if grep -qE '^\*\*Decision\*\*: (GO|NO-GO)' "$f"; then
+                    : # class 2 — promote + move
+                elif grep -qE '^\*\*Decision\*\*: DEFER' "$f"; then
+                    defer_park=true
+                else
+                    continue
+                fi
                 ;;
             *) continue ;;
         esac
@@ -799,7 +819,25 @@ do_inception_sweep() {
             local dec
             # T-1557 / L-302: pipefail guard
             dec=$( { grep -E "^\*\*Decision\*\*:" "$f" 2>/dev/null || true; } | head -1 | sed 's/^\*\*Decision\*\*: //; s/ .*//')
-            echo "  $tid: status=$current_status decision=$dec"
+            local recovery=""
+            [ "$defer_park" = true ] && recovery=" (T-1865 park: horizon→later)"
+            echo "  $tid: status=$current_status decision=$dec$recovery"
+            continue
+        fi
+
+        # T-1865 class 3: DEFER on started-work → park. Set both --status
+        # captured and --horizon later explicitly. Two reasons we do NOT rely
+        # on the T-1068 auto-demote path: (a) the T-1589 shipping-evidence
+        # exception fires when a Recommendation block is present, even if the
+        # Recommendation says NO-GO/GO and the Decision says DEFER (real case:
+        # T-1685, NO-GO recommendation + DEFER decision); (b) the sweep
+        # already KNOWS the Decision is DEFER (case selector above), so the
+        # transition is forced regardless of body inconsistencies. No move
+        # to completed/ — deferred tasks stay parked in active/.
+        if [ "$defer_park" = true ]; then
+            "$AGENTS_DIR/task-create/update-task.sh" "$tid" --status captured --horizon later --skip-sovereignty --skip-acceptance-criteria --reason "T-1865 sweep: DEFER limbo recovery" >/dev/null 2>&1 || true
+            promoted=$((promoted+1))
+            echo "  $tid: parked started-work + DEFER → captured/later (T-1865 recovery)"
             continue
         fi
 

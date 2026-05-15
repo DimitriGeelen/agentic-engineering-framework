@@ -4,15 +4,15 @@ name: "fw audit refactor — first real consumer of the orchestrator, route slow
 description: >
   Inception: fw audit refactor — first real consumer of the orchestrator, route slow analytical checks through fw termlink dispatch
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-05-02T18:50:52Z
-last_update: 2026-05-02T18:55:18Z
+last_update: 2026-05-15T19:55:15Z
 date_finished: null
 ---
 
@@ -149,3 +149,13 @@ Evidence:
 - T-1688 sibling survey confirms the same finding across all 18 autonomous workloads
 
 Implications: This NO-GO is structural confirmation of G-064 — the framework's existing autonomous workload is not LLM-amenable. Closure of G-064 needs either a NEW autonomous consumer (T-1684 cron health-check, escalation-scan v0.5) or explicit acceptance of opt-in-only orchestrator. T-1685 does not block any closure path; it cleanly rules out audit refactor as a candidate.
+
+### 2026-05-15T19:54:39Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: preserved at started-work (T-1589 shipping evidence)
+- **Reason:** T-1865 sweep: DEFER limbo recovery
+
+### 2026-05-15T19:55:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: later → later
+- **Reason:** T-1865 sweep: DEFER limbo recovery

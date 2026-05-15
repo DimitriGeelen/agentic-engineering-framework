@@ -1111,7 +1111,12 @@ horizon: $NEW_HORIZON" "$TASK_FILE"
             # breaking the equality check. Use a single command, ignore exit.
             _has_rec=$(grep -c "^\*\*Recommendation:\*\*" "$TASK_FILE" 2>/dev/null) || _has_rec=0
             _agent_unchecked=$(awk '/^### Agent/,/^### Human|^## /' "$TASK_FILE" 2>/dev/null | grep -c '^- \[ \]') || _agent_unchecked=0
-            if [ "$_has_rec" -ge 1 ] && [ "$_agent_unchecked" = "0" ]; then
+            # T-1865: a DEFER Recommendation is NOT shipping evidence — it's an
+            # explicit "park this" verdict. Demoting started-work → captured
+            # is the right behaviour. Only GO/NO-GO Recommendations indicate
+            # awaiting-review state that the T-1589 exception protects.
+            _rec_is_defer=$(grep -c "^\*\*Recommendation:\*\*.*DEFER" "$TASK_FILE" 2>/dev/null) || _rec_is_defer=0
+            if [ "$_has_rec" -ge 1 ] && [ "$_agent_unchecked" = "0" ] && [ "$_rec_is_defer" -eq 0 ]; then
                 echo -e "${CYAN}Status:  preserved at started-work (T-1589: shipping evidence — Recommendation + all Agent ACs checked)${NC}"
                 CHANGES+=("status: preserved at started-work (T-1589 shipping evidence)")
             else

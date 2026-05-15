@@ -4,15 +4,15 @@ name: "Export docs section as PDF/DOCX/other formats"
 description: >
   Inception: Export docs section as PDF/DOCX/other formats
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-15T17:53:15Z
-last_update: 2026-04-28T20:02:46Z
+last_update: 2026-05-15T19:54:38Z
 date_finished: null
 ---
 
@@ -153,3 +153,8 @@ Evidence:
 
 ### 2026-04-28T20:02:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-15T19:54:38Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+- **Reason:** T-1865 sweep: DEFER limbo recovery

@@ -4,15 +4,15 @@ name: "Swap local Watchtower Werkzeug dev server for gunicorn — saturation und
 description: >
   Local Watchtower (python -m web.app on :3000) saturates after long uptime under browser auto-refresh + htmx polling. 33h uptime + LAN browser open → 52% CPU, /health responds but / hangs >10s, sequential localhost curls all timeout. T-1122 (TermLink) concluded WSGI swap was unwarranted because Flask-SocketIO threading mode "should" handle load; today's evidence contradicts that. T-1309 covers systemd wrapping (restart hygiene), separate concern. This inception asks: should we run gunicorn locally too, instead of Werkzeug dev server?
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: later
 tags: [watchtower, performance, wsgi, from-saturation-incident]
 components: []
 related_tasks: [T-1122, T-1309]
 created: 2026-04-30T07:25:07Z
-last_update: 2026-04-30T07:25:07Z
+last_update: 2026-05-15T19:54:39Z
 date_finished: null
 ---
 
@@ -133,3 +133,8 @@ All three documented in `docs/reports/T-1611-werkzeug-vs-gunicorn-local.md`.
 - **Action:** Recorded inception decision
 - **Decision:** DEFER
 - **Rationale:** Cheaper one-line fix (Werkzeug `threaded=True` + explicit SocketIO `async_mode='threading'`) not yet tried. Gunicorn path blocked on missing eventlet/gevent deps + prod recipe lives on LXC 170 (not in repo). T-1309 already covers always-on hygiene via systemd. Memory profile (651MB RSS cold-start) suggests leak risk that gunicorn alone wouldn't fix. Sequence as T-1611-A (cheap fix), T-1611-B (RSS observation), T-1611-C (gunicorn swap only if needed).
+
+### 2026-05-15T19:54:39Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+- **Reason:** T-1865 sweep: DEFER limbo recovery

@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1863: update-task.sh move-on-complete leaks duplicate active+completed orphan — add post-move check + pre-commit gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T19:44:13Z
+# ============================================================================
+
+task_id: T-1863
+task_name: "update-task.sh move-on-complete leaks duplicate active+completed orphan — add post-move check + pre-commit gate"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T19:36:31Z
+completed: 2026-05-15T19:43:26Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-15T21:42:58+02:00
+last_commit: 2026-05-15T21:43:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-052 prevention — pre-commit dup-task scan + update-task post-move orphan guard. rewrite Verification with capture-then-grep (L-387 SIGPIPE class)
+
+# Key outcomes
+outcomes:
+  - "Post-move sanity check in `update-task.sh`: after the `git mv`/`mv`"
+  - "Add a pre-commit hook (or extend the commit-msg/`check-tier0.sh` chain)"
+  - "Regression test in `tests/unit/`: pin both the post-move check (refuses"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/git/lib/dup-task-scan.sh"
+  - "agents/git/lib/hooks.sh"
+  - "agents/task-create/update-task.sh"
+  - ".fabric/components/agents-git-lib-dup-task-scan.yaml"
+  - ".tasks/active/T-1863-update-tasksh-move-on-complete-leaks-dup.md"
+  - "tests/unit/update_task_orphan_guard.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T21:42:58"
+    action: "T-1863: G-052 prevention — pre-commit dup-task scan + update-task post-move orphan guard"
+  - time: "2026-05-15T21:43:22"
+    action: "T-1863: rewrite Verification with capture-then-grep (L-387 SIGPIPE class)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, audit, integrity]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 6
+  lines_added: 361
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1863-update-tasksh-move-on-complete-leaks-dup.md
+generated_by: context-agent-hybrid

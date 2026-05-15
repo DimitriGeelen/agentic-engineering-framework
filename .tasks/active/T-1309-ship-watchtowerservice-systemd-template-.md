@@ -4,15 +4,15 @@ name: "Ship watchtower.service systemd template + make fw watchtower start syste
 description: >
   Inception triggered by termlink T-1122 DEFER recommendation. Research artifact at /opt/termlink/docs/reports/T-1122-watchtower-wsgi-migration-recommendation.md. Core finding: the restart-race symptom that motivated WSGI migration is a process-management problem, not a WSGI-server problem. Swap is unwarranted on a single-host LAN tool with Flask-SocketIO threading mode. Real fix is systemd wrapping. See research artifact for full reasoning + 3 proposed follow-ups (systemd unit template, fw watchtower start systemd-aware, Werkzeug warning suppression).
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: [watchtower, systemd, reliability, from-termlink]
 components: []
 related_tasks: []
 created: 2026-04-18T20:02:19Z
-last_update: 2026-04-28T20:02:46Z
+last_update: 2026-05-15T19:54:38Z
 date_finished: null
 ---
 
@@ -134,3 +134,8 @@ Evidence:
 
 ### 2026-04-28T20:02:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-15T19:54:38Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+- **Reason:** T-1865 sweep: DEFER limbo recovery
