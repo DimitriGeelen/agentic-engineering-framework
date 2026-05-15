@@ -880,6 +880,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 - `fw outcome backprop <task_id>` — append outcome rows to `dispatch-outcomes.jsonl` for matching dispatches (best-effort hook also fires from `update-task.sh` on `--status work-completed`)
 - `fw outcome read <dispatch_id>` — merged dispatch + latest outcome (joins both JSONL files)
 - `fw outcome list <task_id>` — all outcome events for a task
+- `fw peer subscribe [--once]` — long-poll inbox.queued events + spawn responders (v2 peer-consult subscriber + responder spawn-bridge; cron mode)
 
 **Reviewer (anti-pattern static scan, T-1443):**
 - `fw reviewer T-XXX` — scan one task; writes verdict to `## Reviewer Verdict` block
