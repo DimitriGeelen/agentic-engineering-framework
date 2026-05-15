@@ -1022,25 +1022,50 @@ fi
 # T-1573 / F8: Surface .gate-bypass-log.yaml — auth-flag bypasses
 # (--skip-sovereignty, --skip-acceptance-criteria, --skip-rca, etc.) are
 # logged by update-task.sh:32-42 but nothing read the file before now.
+#
+# T-1862: split entries into SAFETY bypasses (--skip-* / --scope-reduction-acknowledged)
+# vs OPERATIONAL overrides (--switch-focus). The former are correctness-gate skips
+# and warrant a low threshold; the latter are routine cross-task work signals
+# from T-1730 and should not contribute to the WARN count. Before this split,
+# 51 normal --switch-focus events drowned out 3 genuine safety bypasses.
 GATE_BYPASS_LOG="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
 if [ -f "$GATE_BYPASS_LOG" ]; then
     gb_total=$(grep -c "^- timestamp:" "$GATE_BYPASS_LOG" 2>/dev/null || echo 0)
-    # Count entries with timestamp in last 7 days
     cutoff=$(date -u -d "7 days ago" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || \
              date -u -v-7d +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "1970-01-01T00:00:00Z")
-    gb_recent=$(awk -v cutoff="$cutoff" '
+    # T-1862: per-class counts. Awk walks entries, classifies by flag.
+    read -r gb_safety gb_drift < <(awk -v cutoff="$cutoff" '
+        BEGIN { in_window=0; current_flag="" }
         /^- timestamp:/ {
+            # New entry: emit prior classification (if any), reset.
+            if (in_window && current_flag != "") {
+                if (current_flag == "--switch-focus") drift++; else safety++
+            }
             ts=$0; gsub(/.*timestamp: ['"'"'"]?/, "", ts); gsub(/['"'"'"]?$/, "", ts);
-            if (ts >= cutoff) c++
+            in_window = (ts >= cutoff)
+            current_flag = ""
         }
-        END { print c+0 }
-    ' "$GATE_BYPASS_LOG" 2>/dev/null || echo 0)
-    if [ "$gb_recent" -gt 10 ]; then
-        warn "Gate-bypass log: $gb_recent bypasses in last 7 days" \
-             "$gb_total total entries; bypass-as-pattern signal" \
-             "Review .context/working/.gate-bypass-log.yaml — investigate caller distribution"
+        /^  flag:/ {
+            f=$0; gsub(/.*flag: ['"'"'"]?/, "", f); gsub(/['"'"'"]?$/, "", f);
+            current_flag = f
+        }
+        END {
+            # Tail entry.
+            if (in_window && current_flag != "") {
+                if (current_flag == "--switch-focus") drift++; else safety++
+            }
+            print safety+0, drift+0
+        }
+    ' "$GATE_BYPASS_LOG" 2>/dev/null)
+    gb_safety="${gb_safety:-0}"
+    gb_drift="${gb_drift:-0}"
+    gb_recent=$((gb_safety + gb_drift))
+    if [ "$gb_safety" -gt 3 ]; then
+        warn "Gate-bypass log: $gb_safety safety bypasses in last 7 days (+ $gb_drift drift overrides)" \
+             "$gb_total total entries; safety-bypass-as-pattern signal" \
+             "Review .context/working/.gate-bypass-log.yaml — investigate --skip-* / --scope-reduction-acknowledged callers"
     else
-        pass "Gate-bypass log: $gb_recent in last 7 days ($gb_total total)"
+        pass "Gate-bypass log: $gb_safety safety + $gb_drift drift in last 7 days ($gb_total total)"
     fi
 else
     pass "Gate-bypass log: clean (no bypasses recorded)"

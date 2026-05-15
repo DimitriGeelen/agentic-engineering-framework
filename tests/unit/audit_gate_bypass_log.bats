@@ -70,6 +70,60 @@ EOF
     [[ "$output" == *"WARN"* ]]
 }
 
+@test "T-1862: many --switch-focus drift overrides + few safety bypasses → PASS not WARN" {
+    log="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+    : > "$log"
+    today=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    # 20 drift overrides (operational noise) + 2 safety bypasses (below threshold of 3)
+    for i in $(seq 1 20); do
+        cat >> "$log" <<EOF
+- timestamp: '$today'
+  task: 'T-92$(printf "%02d" $i)'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+EOF
+    done
+    for i in $(seq 1 2); do
+        cat >> "$log" <<EOF
+- timestamp: '$today'
+  task: 'T-94$(printf "%02d" $i)'
+  flag: '--skip-rca'
+  caller: 'check_rca_for_bugfix'
+  reason: 'test'
+EOF
+    done
+    run "$AUDIT" --section enforcement
+    [ "$status" -le 1 ]
+    # PASS — safety count (2) is below threshold of 3
+    [[ "$output" == *"Gate-bypass log: 2 safety + 20 drift"* ]]
+    [[ "$output" == *"PASS"* ]]
+}
+
+@test "T-1862: 4+ safety bypasses → WARN even with few drift overrides" {
+    log="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+    : > "$log"
+    today=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    # 4 safety bypasses (above threshold) + 1 drift override
+    for i in $(seq 1 4); do
+        cat >> "$log" <<EOF
+- timestamp: '$today'
+  task: 'T-95$(printf "%02d" $i)'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'test'
+EOF
+    done
+    cat >> "$log" <<EOF
+- timestamp: '$today'
+  task: 'T-9600'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+EOF
+    run "$AUDIT" --section enforcement
+    [[ "$output" == *"4 safety bypasses"* ]]
+    [[ "$output" == *"WARN"* ]]
+}
+
 @test "T-1861: log_gate_bypass escapes embedded single quotes in REASON (YAML parses)" {
     # Source the function. update-task.sh has top-level side effects when sourced
     # directly, so extract just log_gate_bypass via a subshell.
@@ -108,6 +162,7 @@ EOF
     done
     run "$AUDIT" --section enforcement
     # 15 total but 0 in last 7d → PASS (low recent count)
-    [[ "$output" == *"Gate-bypass log: 0 in last 7 days"* ]]
+    # T-1862: output now reports per-class counts; both classes 0 in window.
+    [[ "$output" == *"Gate-bypass log: 0 safety + 0 drift in last 7 days"* ]]
     [[ "$output" == *"15 total"* ]]
 }
