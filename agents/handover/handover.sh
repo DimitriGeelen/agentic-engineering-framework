@@ -503,6 +503,19 @@ if [ -f "$ARC_FOCUS_FILE" ]; then
         fi
     fi
 fi
+
+# T-1452 / G-053: surface ripe revisit_at deferrals (populated by daily
+# revisit-due-scan.sh cron). Silent when the file is absent or empty.
+REVISITS_FILE="$PROJECT_ROOT/.context/working/.revisits-due.txt"
+if [ -s "$REVISITS_FILE" ]; then
+    echo "## Revisits Ripe Today"
+    echo ""
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        echo "- $line"
+    done < "$REVISITS_FILE"
+    echo ""
+fi
 )
 ## Work in Progress
 
