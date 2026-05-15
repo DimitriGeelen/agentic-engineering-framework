@@ -102,9 +102,11 @@ pending_updates:
   host: ct301
   agent: agent
   created: '2026-05-02T11:00:06Z'
-  status: pending
-  resolved_date: null
-  resolution_note: null
+  status: resolved
+  resolved_date: '2026-05-15T20:42:08Z'
+  resolution_note: 'ct301 onedev migration completed long ago (>13 days). Subsequent
+    pushes confirmed working: current origin HEAD matches local at 3f0413eb. The 502
+    was transient migration-window state — stale entry now cleared. T-1687 housekeeping.'
 - id: U-007
   command: 'bin/fw termlink remote inject termlink-agent --enter ''cd /opt/termlink
     && please review docs/proposals/T-1804-cross-agent-conversation-substrate.md (mirrored
