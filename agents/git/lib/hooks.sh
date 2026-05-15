@@ -283,6 +283,30 @@ if [ "$_rc" -ne 0 ]; then
     exit 1
 fi
 
+# T-1863: Duplicate-task-ID gate — G-052 prevention at the commit boundary.
+# Catches active/T-NNNN + completed/T-NNNN orphans before they land in git
+# (was previously only caught at audit time, often days after the leak).
+DUP_TASK_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/dup-task-scan.sh"
+if [ -x "$DUP_TASK_SCANNER" ]; then
+    _dt_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$DUP_TASK_SCANNER" scan-staged 2>&1)
+    _dt_rc=$?
+    if [ "$_dt_rc" -ne 0 ]; then
+        echo "" >&2
+        echo "ERROR: Commit blocked — duplicate task IDs in staged tree:" >&2
+        echo "" >&2
+        echo "$_dt_hits" >&2
+        echo "" >&2
+        echo "Resolve: keep the canonical version (usually .tasks/completed/),"  >&2
+        echo "         git rm the orphan, and re-commit. Cross-check status:"   >&2
+        echo "           grep '^status:' .tasks/{active,completed}/T-NNNN-*.md" >&2
+        echo "" >&2
+        echo "Bypass: git commit --no-verify   (Tier 0, logged)"                >&2
+        echo "" >&2
+        echo "Origin: T-1863 — T-1859 active+completed orphan caught 3 days late." >&2
+        exit 1
+    fi
+fi
+
 # T-1845: Large-file gate — sibling prevention to secret-scan. Blocks staged
 # files >10MiB by default; allowlist exempts deliberate vendored cases.
 LARGE_FILE_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/large-file-scan.sh"

@@ -853,6 +853,7 @@ if [ -n "$NEW_STATUS" ]; then
                 # in the index together — avoids leaving the active/* deletion
                 # as an unstaged working-tree change that pollutes subsequent
                 # commits and requires a cleanup follow-up.
+                _t1863_orig="$TASK_FILE"
                 if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
                     git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
                         || mv "$TASK_FILE" "$DEST"
@@ -860,6 +861,17 @@ if [ -n "$NEW_STATUS" ]; then
                     mv "$TASK_FILE" "$DEST"
                 fi
                 TASK_FILE="$DEST"
+                # T-1863: post-move sanity — if source still exists, the move
+                # is incomplete and we'd land in a G-052 orphan state. Refuse
+                # so the agent fixes it before --status work-completed commits.
+                if [ -e "$_t1863_orig" ] && [ "$_t1863_orig" != "$DEST" ]; then
+                    echo -e "${RED}ERROR: post-move orphan detected (T-1863)${NC}" >&2
+                    echo "  Source still exists: $_t1863_orig" >&2
+                    echo "  Destination:         $DEST" >&2
+                    echo "  Both versions would create a G-052 duplicate-task-ID violation." >&2
+                    echo "  Fix: git rm '$_t1863_orig' (the destination is canonical)" >&2
+                    exit 1
+                fi
                 echo -e "${GREEN}Moved to completed/${NC}"
 
                 # Generate episodic if not already present
@@ -1249,6 +1261,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
         if [ "$(dirname "$TASK_FILE")" != "$TASKS_DIR/completed" ]; then
             # T-1523: git mv when tracked so both rename sides stage atomically
+            _t1863_orig="$TASK_FILE"
             if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
                 git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
                     || mv "$TASK_FILE" "$DEST"
@@ -1256,6 +1269,16 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 mv "$TASK_FILE" "$DEST"
             fi
             TASK_FILE="$DEST"
+            # T-1863: post-move orphan check — same rationale as the T-193
+            # re-run path above. Refuse rather than land in G-052 silently.
+            if [ -e "$_t1863_orig" ] && [ "$_t1863_orig" != "$DEST" ]; then
+                echo -e "${RED}ERROR: post-move orphan detected (T-1863)${NC}" >&2
+                echo "  Source still exists: $_t1863_orig" >&2
+                echo "  Destination:         $DEST" >&2
+                echo "  Both versions would create a G-052 duplicate-task-ID violation." >&2
+                echo "  Fix: git rm '$_t1863_orig' (the destination is canonical)" >&2
+                exit 1
+            fi
             echo -e "${GREEN}Moved to completed/${NC}"
 
             # T-709: Push notification — task completed
