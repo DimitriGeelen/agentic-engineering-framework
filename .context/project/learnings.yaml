@@ -2977,3 +2977,10 @@ X'` returning empty group."
   date: 2026-05-15
   context: Discovered while running T-1862 completion gate.
   application: TBD
+- id: L-388
+  learning: "When an audit check names a recovery command as its mitigation (e.g. D13 → 'bin/fw inception sweep'), the audit and the recovery code MUST agree on the eligible task class. T-1865 origin: D13 flagged DEFER limbo tasks as class B but sweep explicitly skipped DEFER, so the mitigation was a dead end and 6 tasks accumulated as limbo for months. Prevention pattern: any new audit class that names a sweep/recover command should add a matching recovery branch in that command AND a bats test that walks the audit-flag → sweep-recover round-trip end-to-end. Class divergence between detector and recoverer = silent zombie state."
+  source: P-001
+  task: T-1865
+  date: 2026-05-15
+  context: Added via context agent
+  application: TBD
