@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1819: seed peer-consult-prompts.yaml — framework-half runtime gap + joint smoke-readiness with TermLink T-1636
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T21:26:50Z
+# ============================================================================
+
+task_id: T-1819
+task_name: "seed peer-consult-prompts.yaml — framework-half runtime gap + joint smoke-readiness with TermLink T-1636"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-13T23:01:36Z
+completed: 2026-05-13T23:10:57Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-14T01:05:22+02:00
+last_commit: 2026-05-14T01:05:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  seed peer-consult-prompts.yaml — framework-half runtime gap closed
+
+# Key outcomes
+outcomes:
+  - "`.context/peer-consult-prompts.yaml` exists and parses via `lib/peer.py:_load_prompts` returning ≥1 entry with required keys (`workflow`, `name`, and at least one of `addressee`/`channel`)."
+  - "Seed includes both specific channel-prefix routes (design / escalation / triage) AND a broad `dm:` fallback that catches unmatched DM channels — per Evolution, explicit-addressee entry was dropped (no stable long-lived addressee exists; placeholder would mislead)."
+  - "`tests/unit/test_peer_subscribe.py` extended with a test that reads the seeded file from disk (no fixture override) and verifies `resolve_addressee` returns a non-None workflow for a representative event."
+  - "All existing peer_subscribe tests still pass (no regression) — 12/12 PASS."
+  - "TermLink-side T-1636 status re-confirmed via `fw termlink dispatch --project /opt/termlink` and result captured at `/tmp/tl-dispatch/t1636-recheck/result.md`; summary copied to this task's `## Evolution` section."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-14 — channel-only seed (no explicit addressee in shipped file)"
+    chose: "Seed with four channel-prefix entries (design-consult, escalation-triage, prompt-triage, dm-fallback). No explicit-addressee entry shipped."
+    rationale: "No stable long-lived session ID exists yet for the framework-agent role; adding a placeholder addressee would document a contract that doesn't reflect reality. Channel routing is the slice-1 actual flow."
+    alternatives_rejected: ["(a) Include the current framework-agent session ID as an example — would break on next session restart, mislead readers. (b) Seed with `addressee: PLACEHOLDER` comment — comments work but the AC asked for a real binding, and the binding only makes sense once a real consult endpoint exists."]
+  - decision: "2026-05-14 — broad `dm:` fallback included as the last entry"
+    chose: "Include `dm-fallback: channel: 'dm:'` as the last map entry, routing any unmatched DM channel to `workflows/cheap-research.yaml`."
+    rationale: "Without a catch-all, every channel not matching the three specific prefixes (`dm:design-`, `dm:escalate-`, `dm:triage-`) miss-logs. A non-zero miss rate is fine for ambient noise (random DMs), but the slice-1 acceptance was \"subscriber routes real events\" — a fallback ensures any genuine consult attempt gets routed to *some* responder. Cheap-research is the lowest-cost responder available, matching the \"safer than no responder\" stance."
+    alternatives_rejected: ["(a) No fallback — guarantees most events miss; defeats the slice. (b) Fallback to design-dialogue — too heavy a default; cheap-research is the right floor."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/peer-consult-prompts.yaml"
+  - ".tasks/active/T-1819-seed-peer-consult-promptsyaml--framework.md"
+  - "tests/unit/test_peer_subscribe.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T01:05:22"
+    action: "T-1819: seed peer-consult-prompts.yaml — framework-half runtime gap closed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:orchestrator-rethink, termlink, peer-consult, cross-repo]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 3
+  lines_added: 219
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1819-seed-peer-consult-promptsyaml--framework.md
+generated_by: context-agent-hybrid
