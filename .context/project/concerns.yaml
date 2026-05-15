@@ -1716,6 +1716,7 @@ concerns:
   - 'T-1635 (captured): `fw upgrade` fresh-machine simulation guard — clean-container test was missing; would have caught T-1542/T-1634 before they shipped.'
   - 'T-1673 (completed 2026-05-02): cross-repo fabric cards (absolute paths, T-1652) falsely reported as orphan — `[ ! -f "$PROJECT_ROOT/$loc" ]` assumed all locations were PROJECT_ROOT-relative. Same conflation, different surface (fabric drift).'
   - 'This-session anchor (2026-05-02): `bin/fw config list` from the framework repo prints "No .framework.yaml found at ..." and exits 1 — same error a broken consumer sees. lib/config-file.sh:177-181 hard-fails when the marker is absent.'
+  - 'T-1868 (completed 2026-05-15): agents/context/revisit-due-scan.sh used fixed-depth `../../..` PROJECT_ROOT walk-up — vendored-shape only; silently exited 0 in framework-repo for 14 days. Fix: marker walk-up (.framework.yaml | FRAMEWORK.md) — same pattern bin/fw uses. L-389 captures the script-level instance of this class.'
   trigger: 'Any framework command invoked from a non-initialized-consumer context. Symptoms: hard-fail with consumer-error message, silent fall-through to confusing default, or upgrade/init flow abort. The class is "framework code did not detect which shape it was running in."'
   status: watching
   closure_criteria: 'A single fw_project_context() classifier function + audit demonstrating <=2 ad-hoc shape-detection sites remain in lib/. AND a per-public-verb three-shape test fixture (framework / consumer-init / consumer-fresh) asserting sensible behavior in each. AND no new instances filed for 3 months.'
@@ -1729,9 +1730,9 @@ concerns:
     lever_3_shipped: false
     blocking_decision: "T-1675 inception awaits human GO/NO-GO/DEFER"
   created: 2026-05-02
-  last_reviewed: 2026-05-02
+  last_reviewed: 2026-05-15
   related_task: T-1675
-  related_tasks_extra: [T-1257, T-1542, T-1634, T-1635, T-1673]
+  related_tasks_extra: [T-1257, T-1542, T-1634, T-1635, T-1673, T-1868]
 - id: G-064
   type: gap
   title: "Orchestrator substrate has zero production consumers — arc shipped infrastructure, not behaviour change"
