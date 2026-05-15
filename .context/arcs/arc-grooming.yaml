@@ -1,0 +1,46 @@
+id: arc-grooming
+name: "Arc grooming \u2014 canonicalisation, lifecycle, audit, doc"
+description: "Implements HANDOFF-arc-grooming-2026-05-15 via 10 build slices (T-NEW-1.5..9). Anchor:\
+  \ T-1846 inception decide-go GO. Encodes D-Immutability (arc records never deleted;\
+  \ IDs never renumber)."
+status: in-progress
+anchor_task: T-1846
+constituent_tasks: []
+headline_mechanic: "agent runs fw arc create test \u2192 arc-005 sequential ID auto-allocated; agent\
+  \ writes arc_id: arc-005 on a task \u2192 save blocks if arc-005 doesn't exist (Tier-1);\
+  \ fw audit reports tag\u2192arc_id parity and 30-day stale-arc warnings; fw arc\
+  \ abandon flips status without deleting YAML \u2014 observable: every task has one\
+  \ canonical arc_id resolving to an immutable arc, lifecycle has draft/in-progress/closed/abandoned\
+  \ tabs in Watchtower, 012-ArcSystem.md exists at repo root and FRAMEWORK.md indexes\
+  \ it"
+demo_evidence: null
+created: 2026-05-15T14:49:04Z
+closed_at: null
+decision: "GO (inception T-1846 decide-go recorded by human via Watchtower 2026-05-15; rationale: HANDOFF-arc-grooming-2026-05-15 §5 GO with §11.5 pre-action checks all PASS, plus D-Immutability axiom captured during inception dialogue, plus T-NEW-1.5 sequential arc-NNN ID scheme added)"
+
+# Slice dependency chain (encoded as comment for reader; real deps live in
+# each task's related_tasks + body text). T-NEW-* labels map to actual T-XXXX
+# IDs allocated at filing time — see anchor_task T-1846 §4 build-slice manifest.
+#
+#   T-1846 [inception, decided GO]
+#     │
+#     ├── T-NEW-1.5  Sequential arc-NNN IDs (immutable; matches T-NNNN)
+#     │     │
+#     │     └── T-NEW-2  arc_id: field on task frontmatter + Tier-1 block
+#     │           │
+#     │           └── T-NEW-3  one-shot tags→arc_id migration + Q2 report
+#     │                 │
+#     │                 ├── T-NEW-4  deprecate constituent_tasks:
+#     │                 ├── T-NEW-7  stale-arc audit (30d)
+#     │                 └── T-NEW-9  012-ArcSystem.md + FRAMEWORK.md
+#     │
+#     ├── T-NEW-5a  state machine: add draft + abandoned
+#     │     │
+#     │     ├── T-NEW-5b  Watchtower UI: lifecycle tabs
+#     │     └── T-NEW-6   fw arc abandon CLI verb
+#     │
+#     └── T-NEW-8   anchor-task existence audit check
+#
+# Parallel root paths: 1.5 / 5a / 8 can start as soon as their parent (T-1846)
+# lands. T-NEW-9 is the last slice (waits for 1.5, 2, 3, 5a, 5b, 6 to ship)
+# because it documents the post-refactor state.
