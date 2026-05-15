@@ -1,13 +1,15 @@
 """Approvals blueprint — Unified approval surface (T-611, T-639).
 
-Shows three urgency-ordered sections:
+Shows four urgency-ordered sections:
   A. Tier 0 approvals (agent blocked)
   B. Pending GO/NO-GO inception decisions
-  C. Tasks with unchecked Human ACs
+  C. Paused dispatches (T-1808 / dispatch-safety slice 4)
+  D. Tasks with unchecked Human ACs
 """
 
 import os
 import re
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +18,18 @@ import yaml
 from flask import Blueprint, request
 
 from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict
+
+# T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
+sys.path.insert(0, str(PROJECT_ROOT / "lib"))
+try:
+    from dispatch_pause import list_paused_dispatches, format_age, truncate as _trunc_q
+except Exception:  # pragma: no cover - fallback for consumer projects without lib/
+    def list_paused_dispatches(_=None):
+        return []
+    def format_age(_):
+        return "?"
+    def _trunc_q(s, w):
+        return s
 
 bp = Blueprint("approvals", __name__)
 
@@ -337,6 +351,20 @@ def _count_deferred_inceptions():
     return count
 
 
+def _load_paused_dispatches():
+    """T-1808: load paused dispatches and decorate for template rendering."""
+    rows = list_paused_dispatches(PROJECT_ROOT)
+    out = []
+    for r in rows:
+        out.append({
+            **r,
+            "dispatch_id_short": (r["dispatch_id"][:8] + "..") if len(r["dispatch_id"]) > 8 else r["dispatch_id"],
+            "age_label": format_age(r["age_seconds"]),
+            "question_short": _trunc_q(r["question"] or "(no question)", 120),
+        })
+    return out
+
+
 def _build_approvals_context():
     """Build template context for approvals page."""
     pending_tier0 = _load_pending_approvals()
@@ -344,6 +372,7 @@ def _build_approvals_context():
     pending_go = _load_pending_go_decisions()
     pending_acs = _load_pending_human_acs()
     deferred_count = _count_deferred_inceptions()
+    paused_dispatches = _load_paused_dispatches()  # T-1808
 
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
     go_count = len(pending_go)
@@ -351,7 +380,8 @@ def _build_approvals_context():
         sum(1 for ac in t["human_acs"] if not ac["checked"])
         for t in pending_acs
     )
-    total = tier0_count + go_count + len(pending_acs)
+    paused_count = len(paused_dispatches)  # T-1808
+    total = tier0_count + go_count + len(pending_acs) + paused_count
 
     # Count tasks ready for batch completion (all human ACs checked)
     ready_count = sum(
@@ -364,10 +394,12 @@ def _build_approvals_context():
         resolved_tier0=resolved_tier0,
         pending_go=pending_go,
         pending_acs=pending_acs,
+        paused_dispatches=paused_dispatches,
         tier0_count=tier0_count,
         go_count=go_count,
         ac_count=ac_count,
         ac_task_count=len(pending_acs),
+        paused_count=paused_count,
         total_count=total,
         active_count=tier0_count,
         ready_count=ready_count,

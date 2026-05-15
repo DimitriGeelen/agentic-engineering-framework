@@ -15,12 +15,14 @@ Add a pattern to project memory
 - **Sequential TDD:** Fresh agent per implementation task with review between.
 - **TermLink parallel workers:** Spawn TermLink sessions for isolated heavy work. `termlink interact --json` for sync commands, `termlink pty inject/output` for interactive control. Cleanup with `termlink signal SIGTERM` + `termlink clean`. Preferred over Task agents when context isolation matters.
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-001` | called_by |
 | `agents/context/context.sh` | called-by |
+| `tests/unit/context_pattern.bats` | called_by |
+| `tests/unit/context_pattern.bats` | tests_by |
 
 ## Documentation
 

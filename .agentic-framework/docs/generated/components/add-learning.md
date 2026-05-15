@@ -17,12 +17,14 @@ Add a learning to project memory
 |--------|-------------|
 | `F-001` | writes |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-001` | calls |
 | `C-001` | called_by |
+| `tests/unit/context_learning.bats` | called_by |
+| `tests/unit/context_learning.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `add-learning.yaml`*

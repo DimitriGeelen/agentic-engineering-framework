@@ -12,6 +12,13 @@ Build a self-contained git topology with three local bare repos acting as
 four cases the auto-recovery contract must distinguish:
 in-sync, ancestor (fast-forward), diverged, unreachable.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/mirror.sh` | calls |
+| `lib/mirror.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_mirror_sync.yaml`*
 *Last verified: 2026-04-28*

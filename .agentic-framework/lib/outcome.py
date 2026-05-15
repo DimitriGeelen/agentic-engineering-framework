@@ -251,6 +251,57 @@ def read_dispatch(dispatch_id_prefix: str) -> Optional[Dict[str, Any]]:
     return merged
 
 
+def _dispatch_terminal_map() -> Dict[str, Dict[str, Any]]:
+    """Build {dispatch_id: terminal_event} from dispatches.jsonl.
+
+    Skips rows without terminal_event. Single-pass; O(n) build, O(1) lookup
+    afterwards. Empty dict if log missing or no row carries the field.
+    (T-1782 — pair to T-1780 / T-1781 surfaces of T-1777-persisted data.)
+    """
+    out: Dict[str, Dict[str, Any]] = {}
+    if not DISPATCHES_LOG.exists():
+        return out
+    with DISPATCHES_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            te = row.get("terminal_event")
+            did = row.get("dispatch_id")
+            if did and isinstance(te, dict) and te.get("type"):
+                out[did] = te
+    return out
+
+
+def _terminal_suffix(te: Optional[Dict[str, Any]]) -> str:
+    """Render `terminal=<type>(<suffix>)` per T-1781 idiom; "" if absent.
+
+    T-1805 / ADR-0004: `pause_requested` events get a `(question="...")`
+    suffix when the Worker provided a question — gives operators scan-time
+    triage signal without cracking open events.jsonl.
+    """
+    if not isinstance(te, dict) or not te.get("type"):
+        return ""
+    ttype = te["type"]
+    suffix = ""
+    if ttype == "error" and "retryable" in te:
+        suffix = "(retryable)" if te["retryable"] else "(non-retryable)"
+    elif ttype == "result" and te.get("is_error") is True:
+        suffix = "(is_error)"
+    elif ttype == "pause_requested":
+        # T-1805: short question summary for at-a-glance triage
+        q = (te.get("question") or "").strip()
+        if q:
+            if len(q) > 40:
+                q = q[:37] + "..."
+            suffix = f"(question={q!r})"
+    return f" terminal={ttype}{suffix}"
+
+
 def list_outcomes_for_task(task_id: str) -> List[Dict[str, Any]]:
     """Return all outcome rows for a task_id from outcomes log."""
     if not OUTCOMES_LOG.exists():
@@ -304,6 +355,10 @@ def cmd_backprop(args: argparse.Namespace) -> int:
 
 
 def cmd_read(args: argparse.Namespace) -> int:
+    n = getattr(args, "tail_events", None)
+    if n is not None and n < 1:
+        print("outcome: --tail-events N must be >= 1", file=sys.stderr)
+        return 1
     merged = read_dispatch(args.dispatch_id)
     if not merged:
         print(f"outcome: no dispatch matching '{args.dispatch_id}'", file=sys.stderr)
@@ -317,6 +372,29 @@ def cmd_read(args: argparse.Namespace) -> int:
         print(f"task_type:      {merged.get('task_type')}")
         print(f"worker_kind:    {merged.get('worker_kind')}")
         print(f"model:          {merged.get('model')}")
+        # T-1780: surface terminal_event sub-fields (mirrors T-1778 pattern
+        # in resolver cmd_run / cmd_explain). Quiet on agent.done / missing.
+        te = merged.get("terminal_event")
+        if isinstance(te, dict) and te.get("type"):
+            print(f"terminal:       {te['type']}")
+            if te["type"] == "error" and "retryable" in te:
+                print(f"retryable:      {te['retryable']}")
+            elif te["type"] == "result" and "is_error" in te:
+                print(f"is_error:       {te['is_error']}")
+            elif te["type"] == "pause_requested":
+                # T-1805 / ADR-0004: pause-specific fields (one per line)
+                if te.get("question"):
+                    print(f"question:       {te['question']}")
+                a = te.get("assessment")
+                if isinstance(a, dict):
+                    if "severity" in a:
+                        print(f"severity:       {a['severity']}")
+                    if "likelihood" in a:
+                        print(f"likelihood:     {a['likelihood']}")
+                elif a:
+                    print(f"assessment:     {a}")
+                if te.get("state_ref"):
+                    print(f"state_ref:      {te['state_ref']}")
         oe = merged.get("outcome_event")
         if oe:
             o = oe.get("outcome", {})
@@ -326,7 +404,74 @@ def cmd_read(args: argparse.Namespace) -> int:
             print(f"  ac_checked/total:    {o.get('ac_checked')}/{o.get('ac_total')}")
         else:
             print("outcome_event:  (none — back-prop has not fired)")
+        # T-1783: optional --tail-events N tail of <blob_dir>/events.jsonl.
+        # Opt-in (default behavior unchanged when flag omitted).
+        n = getattr(args, "tail_events", None)
+        if n is not None:
+            _render_event_tail(merged, n)
     return 0
+
+
+def _event_summary(event: Dict[str, Any]) -> str:
+    """Render a single event as `<type> (<key-summary>)` per T-1783 idiom."""
+    etype = event.get("type", "?")
+    summary = ""
+    if etype == "error":
+        retry = event.get("retryable")
+        msg = (event.get("message") or "")[:60]
+        parts = []
+        if retry is not None:
+            parts.append(f"retryable={retry}")
+        if msg:
+            parts.append(f"message={msg!r}")
+        summary = ", ".join(parts)
+    elif etype == "result":
+        is_err = event.get("is_error")
+        if is_err is not None:
+            summary = f"is_error={is_err}"
+    elif etype == "pause_requested":
+        # T-1805: question summary for event-tail visibility
+        q = (event.get("question") or "")[:40]
+        if q:
+            summary = f"question={q!r}"
+    elif etype == "agent.done":
+        summary = ""
+    else:
+        # Unknown type — fall back to a truncated json dump for visibility.
+        try:
+            blob = json.dumps({k: v for k, v in event.items() if k != "type"})
+            summary = blob[:60]
+        except (TypeError, ValueError):
+            summary = ""
+    if summary:
+        return f"{etype} ({summary})"
+    return etype
+
+
+def _render_event_tail(merged: Dict[str, Any], n: int) -> None:
+    """Print the last N events from <blob_dir>/events.jsonl as a summary list."""
+    blob_dir = merged.get("blob_dir")
+    if not blob_dir:
+        print("events:         (no event log for this dispatch)")
+        return
+    events_path = Path(blob_dir) / "events.jsonl"
+    if not events_path.exists():
+        print("events:         (no event log for this dispatch)")
+        return
+    events: List[Dict[str, Any]] = []
+    with events_path.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                events.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue  # T-1783: malformed lines skipped, do not crash
+    tail = events[-n:]
+    print(f"events (last {len(tail)} of {len(events)}):")
+    for ev in tail:
+        print(f"  · {_event_summary(ev)}")
 
 
 def cmd_list(args: argparse.Namespace) -> int:
@@ -337,12 +482,17 @@ def cmd_list(args: argparse.Namespace) -> int:
     if not rows:
         print(f"(no outcome events for {args.task_id})")
         return 0
+    # T-1782: one-pass build of {did → terminal_event}; lookup O(1) per row.
+    term_map = _dispatch_terminal_map()
     for r in rows:
         o = r.get("outcome", {})
         ok = "✓" if o.get("verification_passed") and o.get("ac_satisfied") else "·"
+        did = r.get("dispatch_id", "?")
+        suffix = _terminal_suffix(term_map.get(did))
         print(
-            f"{ok} {r.get('ts', '?')} [{r.get('dispatch_id', '?')[:8]}] "
+            f"{ok} {r.get('ts', '?')} [{did[:8]}] "
             f"ac={o.get('ac_checked', '?')}/{o.get('ac_total', '?')}"
+            f"{suffix}"
         )
     return 0
 
@@ -370,6 +520,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     sp_r = sub.add_parser("read", help="Read merged dispatch + latest outcome")
     sp_r.add_argument("dispatch_id", help="Dispatch UUID (or prefix)")
     sp_r.add_argument("--json", action="store_true")
+    sp_r.add_argument("--tail-events", type=int, default=None,
+                      metavar="N",
+                      help="Tail last N events from <blob_dir>/events.jsonl (T-1783)")
     sp_r.set_defaults(func=cmd_read)
 
     sp_l = sub.add_parser("list", help="List all outcome events for a task")

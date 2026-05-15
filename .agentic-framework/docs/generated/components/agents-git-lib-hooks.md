@@ -17,11 +17,12 @@ Git Agent - Hook installation subcommand
 | `lib/config.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/git/git.sh` | called_by |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
 
 ## Related
 

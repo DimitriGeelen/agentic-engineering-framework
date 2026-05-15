@@ -10,11 +10,12 @@
 
 May succeed or fail depending on task existence, but should not 400
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/cockpit.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_scan.yaml`*

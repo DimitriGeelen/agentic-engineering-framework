@@ -14,10 +14,10 @@ Exit codes (Claude Code PreToolUse semantics):
 0 — Allow tool execution
 2 — Block tool execution (stderr shown to agent)
 For Write/Edit: extracts file_path, blocks if outside PROJECT_ROOT.
-For Bash: detects cd+write patterns targeting other projects.
-Allowed exceptions:
+For Bash: detects cd, write, fw-on-other-project, AND read-side outside-path
+arguments (T-1702 / G-065 — read-blind hole closed 2026-05-03).
+Allowed exceptions (Bash + Write):
 /tmp/**                — Agent dispatch working files
-/root/.claude/**       — Claude Code memory/settings
 
 ## Dependencies (4)
 
@@ -28,11 +28,14 @@ Allowed exceptions:
 | `lib/paths.sh` | calls |
 | `lib/config.sh` | calls |
 
-## Used By (1)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `.claude/settings.json` | triggers |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| `tests/unit/test_boundary_hook_arguments.bats` | called_by |
+| `tests/unit/test_boundary_hook_arguments.bats` | tests_by |
 
 ## Related
 

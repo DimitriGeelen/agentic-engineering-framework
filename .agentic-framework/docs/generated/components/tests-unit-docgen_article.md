@@ -11,11 +11,12 @@
 Unit tests for agents/docgen/generate-article.sh
 Origin: T-942
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/docgen/generate-article.sh` | calls |
+| `agents/docgen/generate-article.sh` | tests |
 
 ## Related
 

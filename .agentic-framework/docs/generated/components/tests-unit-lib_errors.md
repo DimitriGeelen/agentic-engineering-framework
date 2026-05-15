@@ -11,11 +11,12 @@
 Unit tests for lib/errors.sh
 Tests die, error, warn, info, success, block output functions
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/errors.sh` | calls |
+| `lib/errors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_errors.yaml`*

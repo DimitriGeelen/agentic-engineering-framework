@@ -11,11 +11,12 @@
 Unit tests for lib/build.sh — TypeScript compilation via esbuild
 Tests: early exits (no src, no .ts), stale guard, verbose flag, npx missing
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/build.sh` | calls |
+| `lib/build.sh` | tests |
 
 ## Related
 

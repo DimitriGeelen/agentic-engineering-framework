@@ -28,7 +28,7 @@ Performance target: <100ms per invocation
 | `lib/paths.sh` | calls |
 | `lib/config.sh` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -36,6 +36,7 @@ Performance target: <100ms per invocation
 | `agents/onboarding-test/test-onboarding.sh` | called_by |
 | `agents/audit/self-audit.sh` | read_by |
 | `C-009` | triggers_by |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
 
 ## Documentation
 

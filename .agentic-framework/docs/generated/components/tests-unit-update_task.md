@@ -11,11 +11,14 @@
 Unit tests for agents/task-create/update-task.sh
 Origin: T-928
 
-## Dependencies (1)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/task-create/update-task.sh` | calls |
+| `agents/task-create/create-task.sh` | calls |
+| `agents/task-create/update-task.sh` | tests |
+| `agents/task-create/create-task.sh` | tests |
 
 ## Related
 

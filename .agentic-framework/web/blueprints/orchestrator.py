@@ -232,6 +232,233 @@ def _route_cache_learned() -> dict:
     }
 
 
+def _dispatch_substrate() -> dict:
+    """T-1792 — surface dispatch substrate (`.context/dispatches.jsonl`) for /orchestrator.
+
+    Mirrors `fw orchestrator status`'s headline shape so the web view has
+    CLI parity. Minimum slice: totals + by_model. by_task_type /
+    by_worker_kind / outcomes are deferred to follow-on slices (separate
+    tasks) — keep this panel scoped to the routing-decision view that
+    T-1788 introduced on the CLI.
+
+    Synthetic rows (`task_id` startswith `T-stress-`) are excluded from
+    `total` and `by_model`, consistent with the CLI's `_is_synthetic`
+    rule (T-1712). Synthetic count is surfaced separately for context.
+
+    Returns:
+      {
+        "available": bool,
+        "path": str,
+        "total": int,                # real dispatches only
+        "synthetic_total": int,
+        "by_model": [{"model": "X", "count": N}, ...],              # sorted count desc
+        "by_task_type": [{"task_type": "X", "count": N}, ...],      # sorted count desc
+        "by_worker_kind": [{"worker_kind": "X", "count": N}, ...],  # sorted count desc
+      }
+
+    T-1794: added `by_task_type` companion. T-1795: added `by_worker_kind`.
+    Same row-exclusion rule for all three (rows missing the field are
+    excluded from that breakdown only — they still contribute to `total`).
+    """
+    empty = {
+        "available": False,
+        "path": "",
+        "total": 0,
+        "synthetic_total": 0,
+        "by_model": [],
+        "by_task_type": [],
+        "by_worker_kind": [],
+    }
+    path = PROJECT_ROOT / ".context" / "dispatches.jsonl"
+    if not path.is_file():
+        return {**empty, "path": str(path)}
+    real_rows: list[dict] = []
+    synthetic_count = 0
+    try:
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue  # skip malformed line, continue parsing
+            tid = row.get("task_id") or ""
+            if tid.startswith("T-stress-"):
+                synthetic_count += 1
+                continue
+            real_rows.append(row)
+    except OSError:
+        return {**empty, "path": str(path)}
+    model_counter: Counter = Counter()
+    task_type_counter: Counter = Counter()
+    worker_kind_counter: Counter = Counter()
+    for row in real_rows:
+        model = row.get("model")
+        if model:
+            model_counter[model] += 1
+        tt = row.get("task_type")
+        if tt:
+            task_type_counter[tt] += 1
+        wk = row.get("worker_kind")
+        if wk:
+            worker_kind_counter[wk] += 1
+    def _to_rows(counter: Counter, key: str) -> list[dict]:
+        return [
+            {key: k, "count": v}
+            for k, v in sorted(counter.items(), key=lambda kv: (-kv[1], kv[0]))
+        ]
+    return {
+        "available": True,
+        "path": str(path),
+        "total": len(real_rows),
+        "synthetic_total": synthetic_count,
+        "by_model": _to_rows(model_counter, "model"),
+        "by_task_type": _to_rows(task_type_counter, "task_type"),
+        "by_worker_kind": _to_rows(worker_kind_counter, "worker_kind"),
+    }
+
+
+def _outcome_quality() -> dict:
+    """T-1796 — surface outcome-quality (verification pass/fail per task_type).
+
+    Mirrors `fw orchestrator status --outcomes` verification-style
+    aggregation. Reads dispatches.jsonl + dispatch-outcomes.jsonl,
+    joins on dispatch_id, dedupes by latest ts (T-1757 rule), excludes
+    synthetic dispatches, returns per-task-type pass/fail counts.
+
+    Returns:
+      {
+        "available": bool,
+        "total_outcomes": int,         # after dedup + synthetic-exclusion
+        "by_task_type": [{
+            "task_type": str,
+            "passed": int,
+            "failed": int,
+            "total": int,
+            "pass_rate": float,        # 0..1
+        }, ...],                        # sorted total desc
+      }
+
+    Notes:
+    - "verdict-style" outcomes (escalation-scan-v0.5 shape) are still
+      counted toward `total_outcomes` but contribute to neither passed
+      nor failed (no verification_passed field).
+    """
+    empty: dict = {"available": False, "total_outcomes": 0, "by_task_type": []}
+    dispatches_path = PROJECT_ROOT / ".context" / "dispatches.jsonl"
+    outcomes_path = PROJECT_ROOT / ".context" / "dispatch-outcomes.jsonl"
+    if not outcomes_path.is_file():
+        return empty
+    # Build dispatch_id -> task_type map for non-synthetic dispatches.
+    did_to_type: dict[str, str] = {}
+    if dispatches_path.is_file():
+        try:
+            for line in dispatches_path.read_text().splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                tid = row.get("task_id") or ""
+                if tid.startswith("T-stress-"):
+                    continue
+                did = row.get("dispatch_id")
+                if did:
+                    did_to_type[did] = row.get("task_type") or "?"
+        except OSError:
+            return empty
+    # Dedupe outcomes by dispatch_id, latest ts wins (T-1757).
+    latest_per_did: dict[str, dict] = {}
+    try:
+        for line in outcomes_path.read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            did = row.get("dispatch_id")
+            if not did or did not in did_to_type:
+                continue  # outcome for synthetic or unknown dispatch
+            prev = latest_per_did.get(did)
+            if prev is None or (row.get("ts") or "") > (prev.get("ts") or ""):
+                latest_per_did[did] = row
+    except OSError:
+        return empty
+    # Aggregate per task_type.
+    per_type: dict[str, dict] = {}
+    for did, o in latest_per_did.items():
+        tt = did_to_type[did]
+        bucket = per_type.setdefault(tt, {"passed": 0, "failed": 0, "total": 0})
+        bucket["total"] += 1
+        outcome_body = o.get("outcome", {}) or {}
+        if "verification_passed" in outcome_body:
+            if bool(outcome_body["verification_passed"]):
+                bucket["passed"] += 1
+            else:
+                bucket["failed"] += 1
+    rows = []
+    for tt, b in per_type.items():
+        decided = b["passed"] + b["failed"]
+        rate = (b["passed"] / decided) if decided else 0.0
+        rows.append({
+            "task_type": tt,
+            "passed": b["passed"],
+            "failed": b["failed"],
+            "total": b["total"],
+            "pass_rate": rate,
+        })
+    rows.sort(key=lambda r: (-r["total"], r["task_type"]))
+    return {
+        "available": True,
+        "total_outcomes": len(latest_per_did),
+        "by_task_type": rows,
+    }
+
+
+def _workflow_coverage() -> dict:
+    """T-1799: workflow → dispatcher coverage report for the web panel.
+
+    Thin facade over ``lib.workflow_coverage.check_workflow_dispatcher_coverage``.
+    Returns ``{"available": False}`` when the helper can't be imported (e.g.
+    consumer projects without the framework's lib/ on path) so the template
+    can show an empty state instead of crashing.
+    """
+    import sys
+    lib_dir = PROJECT_ROOT / "lib"
+    if str(lib_dir) not in sys.path:
+        sys.path.insert(0, str(lib_dir))
+    try:
+        import workflow_coverage  # noqa: PLC0415
+    except Exception:
+        return {"available": False}
+    try:
+        report = workflow_coverage.check_workflow_dispatcher_coverage()
+    except Exception:
+        return {"available": False}
+    # T-1802: enrich each workflow row with last-dispatch timestamp +
+    # task_id. Wrap separately so a dispatches.jsonl issue doesn't kill
+    # the whole panel — coverage data still renders, recency column
+    # falls back to "never" for every row.
+    try:
+        report = workflow_coverage.enrich_with_dispatch_recency(report)
+    except Exception:
+        pass
+    # T-1803: flag stale workflows (no dispatch in 90d) as WARN. Same
+    # try/except guard — staleness is a maintenance signal, not a
+    # crash-the-panel condition.
+    try:
+        report = workflow_coverage.flag_stale_workflows(report)
+    except Exception:
+        pass
+    report["available"] = True
+    return report
+
+
 def _arc_tasks() -> list[dict]:
     """Surface T-1641 + follow-up arc parents for the cross-link panel."""
     targets = ["T-1641", "T-1642", "T-1643", "T-1644", "T-1645", "T-1646", "T-1647"]
@@ -334,4 +561,7 @@ def orchestrator_page():
         arc_tasks=_arc_tasks(),
         recent_dispatches=_recent_dispatches(),
         learned=_route_cache_learned(),
+        substrate=_dispatch_substrate(),
+        outcome_quality=_outcome_quality(),
+        workflow_coverage=_workflow_coverage(),
     )

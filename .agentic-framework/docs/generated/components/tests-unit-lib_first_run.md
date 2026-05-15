@@ -11,11 +11,12 @@
 Unit tests for lib/first-run.sh (fw first-run)
 Origin: T-945
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/first-run.sh` | calls |
+| `lib/first-run.sh` | tests |
 
 ## Related
 

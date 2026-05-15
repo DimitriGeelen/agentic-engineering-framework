@@ -21,11 +21,13 @@ Written 2026-04-22 under T-1189 to repair T-977 false-complete (G-015 Hit #2).
 |--------|-------------|
 | `.claude/settings.json` | writes |
 
-## Used By (1)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `tests/unit/hook_enable_absolute_path.bats` | called_by |
+| `tests/unit/hook_enable_absolute_path.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-hook-enable.yaml`*

@@ -16,7 +16,7 @@ Usage:
 ./agents/task-create/update-task.sh T-XXX --owner claude-code
 ./agents/task-create/update-task.sh T-XXX --status blocked --reason "Waiting on API key"
 
-## Dependencies (7)
+## Dependencies (9)
 
 | Target | Relationship |
 |--------|-------------|
@@ -27,8 +27,10 @@ Usage:
 | `lib/keylock.sh` | calls |
 | `lib/review.sh` | calls |
 | `lib/notify.sh` | calls |
+| `lib/evolution_log.sh` | calls |
+| `lib/reviewer/static_scan.py` | calls |
 
-## Used By (7)
+## Used By (15)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -39,6 +41,14 @@ Usage:
 | `tests/unit/update_task.bats` | called_by |
 | `docs/reports/T-1067-horizon-status-invariants.md` | references_by |
 | `tests/unit/update_task_episodic_gen.bats` | called_by |
+| `lib/arc.sh` | called_by |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| `tests/unit/skip_ac_partial_complete.bats` | called_by |
+| `tests/unit/skip_ac_partial_complete.bats` | tests_by |
+| `tests/unit/update_task.bats` | tests_by |
+| `tests/unit/update_task_episodic_gen.bats` | tests_by |
+| `tests/unit/update_task_yaml_components_emit.bats` | called_by |
+| `tests/unit/update_task_yaml_components_emit.bats` | tests_by |
 
 ## Documentation
 

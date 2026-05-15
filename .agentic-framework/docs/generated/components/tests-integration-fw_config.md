@@ -11,12 +11,13 @@
 Integration tests for fw config subcommand
 Origin: T-927
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/config-file.sh` | calls |
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ## Related
 

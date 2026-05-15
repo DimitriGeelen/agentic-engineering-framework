@@ -7,6 +7,13 @@
         <span class="stat-label">Decisions</span>
         <span class="stat-breakdown">{{ tier0_count }} Tier 0 · {{ go_count }} GO/NO-GO</span>
     </a>
+    {% if paused_count and paused_count > 0 %}
+    <a href="#section-paused" class="approval-stat approval-stat-group ac-active" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ paused_count }}</span>
+        <span class="stat-label">Paused</span>
+        <span class="stat-breakdown">Workers awaiting answer</span>
+    </a>
+    {% endif %}
     <a href="#section-verifications" class="approval-stat approval-stat-group {{ 'ac-active' if ac_count else '' }}" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ ac_count }}</span>
         <span class="stat-label">Verifications</span>
@@ -176,6 +183,38 @@
             </button>
         </div>
     </form>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- T-1808 (dispatch-safety slice 4): Paused dispatches — Workers awaiting operator answer -->
+{% if paused_dispatches %}
+<h2 id="section-paused" class="approvals-group-heading">Paused Dispatches</h2>
+<div class="section-header">
+    <h3>Workers Awaiting Resolution</h3>
+    <small>{{ paused_count }} dispatch{{ '' if paused_count == 1 else 'es' }} — Worker emitted <code>pause_requested</code>, exited cleanly, waiting for your answer</small>
+</div>
+{% for pd in paused_dispatches %}
+<div class="approval-card pending">
+    <div class="approval-risk">
+        {% if pd.severity == 'high' %}<span style="color:#ef4444;">[HIGH]</span>
+        {% elif pd.severity == 'medium' %}<span style="color:#f59e0b;">[MED]</span>
+        {% elif pd.severity == 'low' %}<span style="color:#6b7280;">[LOW]</span>
+        {% else %}<span style="color:#6b7280;">[?]</span>{% endif %}
+        <a href="/review/{{ pd.task_id }}" style="text-decoration:none;">{{ pd.task_id }}</a>
+        <span style="color:var(--pico-muted-color); font-weight:normal; font-size:0.85rem;">— {{ pd.question_short or '(no question)' }}</span>
+    </div>
+    <div class="approval-meta">
+        Dispatch <code>{{ pd.dispatch_id_short }}</code>
+        · paused {{ pd.age_label }} ago
+        · severity: <strong>{{ pd.severity or '?' }}</strong>
+        · likelihood: <strong>{{ pd.likelihood or '?' }}</strong>
+        {% if pd.worker_kind %} · worker: {{ pd.worker_kind }}{% endif %}
+        {% if pd.state_ref %} · state: <code>{{ pd.state_ref }}</code>{% endif %}
+    </div>
+    <div style="font-size:0.8rem; color:var(--pico-muted-color);">
+        Answer via <a href="/review/{{ pd.task_id }}">/review/{{ pd.task_id }}</a> — the agent will read your resolution and re-dispatch (slice 5).
+    </div>
 </div>
 {% endfor %}
 {% endif %}
@@ -399,7 +438,7 @@ function filterACs(filter) {
 {% endif %}
 
 <!-- Empty state -->
-{% if not pending_tier0 and not pending_go and not pending_acs %}
+{% if not pending_tier0 and not pending_go and not pending_acs and not paused_dispatches %}
 <div class="empty-state">
     <p>Nothing needs your attention.</p>
     <p><small>Tier 0 gates, inception decisions, and human acceptance criteria will appear here when pending.</small></p>

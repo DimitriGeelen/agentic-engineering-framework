@@ -9,11 +9,14 @@
 Unit tests for lib/promote.sh
 Tests do_promote routing, help, and error handling
 
-## Dependencies (1)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/promote.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/promote.sh` | tests |
+| `lib/colors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_promote.yaml`*

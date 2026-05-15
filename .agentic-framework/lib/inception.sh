@@ -311,6 +311,13 @@ with open(task_file) as f:
 PATTERNS = [
     re.compile(r'\[REVIEW\].*go/?no-go decision', re.IGNORECASE),
     re.compile(r'\[RUBBER-STAMP\].*[Rr]ecord.*decision'),
+    # T-1837: broader '[REVIEW] Decide ...' coverage. The original literal
+    # 'go/no-go decision' phrasing missed real-world variants like
+    # 'Decide go/no-go AND which approach' (T-1829), 'Decide GO/NO-GO/DEFER on...'
+    # (T-1830), 'Decide on prevention pattern' (T-1831). For inception tasks
+    # — the only context this function runs — '[REVIEW] Decide ...' is
+    # canonically the go/no-go authorization, so a broad match is safe.
+    re.compile(r'\[REVIEW\].*\bdecide\b', re.IGNORECASE),
 ]
 
 # T-1194: when Recommendation section exists, also tick the 3 ceremonial
@@ -519,6 +526,22 @@ do_inception_decide() {
                 echo "Unchecked Agent ACs:" >&2
                 echo "$_agent_acs" | grep -E '^\s*-\s*\[ \]' | head -10 >&2
                 echo "" >&2
+                # T-1836 (T-1831 C-3): body-vs-checkbox drift hint at decide-preflight.
+                local _rec_block _rec_filled=false
+                _rec_block=$(sed -n '/^## Recommendation/,/^## /p' "$task_file" 2>/dev/null | sed '$d')
+                if [ -n "$_rec_block" ] && echo "$_rec_block" | grep -qE '^\*\*(Recommendation|Rationale|Evidence)(:\*\*|\*\*:)'; then
+                    _rec_filled=true
+                fi
+                if [ "$_rec_filled" = true ]; then
+                    echo -e "${YELLOW}Hint:${NC} task body has a filled \`## Recommendation\` block — AC content likely present." >&2
+                    echo "  Tick the [x] boxes for each AC whose work is in place, then re-run decide." >&2
+                    echo "  See CLAUDE.md §Verification Before Completion → Progressive AC ticking (T-1831 C-4)." >&2
+                    echo "" >&2
+                else
+                    echo -e "${YELLOW}Hint:${NC} tick AC boxes as content is written, not after-the-fact." >&2
+                    echo "  See CLAUDE.md §Verification Before Completion → Progressive AC ticking (T-1831 C-4)." >&2
+                    echo "" >&2
+                fi
                 echo -e "${YELLOW}Why this gate exists:${NC} recording the decision before validating ACs would" >&2
                 echo "leave the task body with Decision=$decision_upper but status stuck at started-work" >&2
                 echo "(T-1503/P-010). Tick the ACs (or remove them if not needed), then re-run." >&2
@@ -577,6 +600,49 @@ for line in lines:
         continue
     new_lines.append(line)
 
+# T-1832: auto-create `## Decision` section when missing.
+# Layer 2 root cause of S-2026-0514 errors 4-5: when a task lacks the singular
+# `## Decision` heading (default.md template only has `## Decisions` plural),
+# this script silently no-ops — decision_written stays False, no block written.
+# Caller then ticks ACs and invokes update-task.sh --status work-completed,
+# which fails at check_inception_decision (`**Decision**:` grep) emitting the
+# misleading "no decision recorded" error. Fix: synthesize the section before
+# `## Updates` (or `## Recommendation` as fallback, or at EOF), emit a warning
+# to stderr so the auto-creation is visible. Subsequent decide calls take the
+# normal path (the heading now exists).
+if not decision_written:
+    decision_block = [
+        '## Decision',
+        '',
+        f'**Decision**: {decision}',
+        '',
+        f'**Rationale**: {rationale}',
+        '',
+        f'**Date**: {timestamp}',
+        '',
+    ]
+    # Insertion priority: before `## Updates`, then before `## Recommendation`, then EOF.
+    insert_at = None
+    for anchor in ('## Updates', '## Recommendation'):
+        for i, line in enumerate(new_lines):
+            if line.strip() == anchor:
+                insert_at = i
+                break
+        if insert_at is not None:
+            break
+    if insert_at is None:
+        # Append at EOF — ensure trailing newline gap.
+        if new_lines and new_lines[-1] != '':
+            new_lines.append('')
+        new_lines.extend(decision_block)
+    else:
+        new_lines = new_lines[:insert_at] + decision_block + new_lines[insert_at:]
+    sys.stderr.write(
+        f"WARNING [T-1832]: task file lacked '## Decision' heading — auto-created the section. "
+        f"Consider adding the placeholder section explicitly in future. "
+        f"(default.md template now includes it for new tasks.)\n"
+    )
+
 with open(task_file, 'w') as f:
     f.write('\n'.join(new_lines))
 PYDECIDE
@@ -598,6 +664,18 @@ PYDECIDE
 - **Decision:** $decision_upper
 - **Rationale:** $rationale
 EOF
+
+    # T-1865: park task on DEFER decision (horizon=later + auto-demote to captured
+    # via T-1068 invariant). Previously DEFER left status=started-work/horizon=now,
+    # which made the task score against D13 inception-limbo forever AND keep
+    # appearing in handover's "Work In Progress" alongside its "Deferred"
+    # classification. The legitimate state for a DEFER decision is parked, not
+    # active. Same `--skip-sovereignty` rationale as the GO/NO-GO branch below.
+    if [ "$decision" = "defer" ]; then
+        echo ""
+        "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --horizon later --skip-sovereignty --reason "Inception decision: DEFER — parking task" 2>&1 || \
+            echo -e "${YELLOW}Note: horizon update failed; recover with: bin/fw inception sweep${NC}" >&2
+    fi
 
     # Complete task if go or no-go (not defer)
     # --skip-sovereignty bypasses only R-033 (sovereignty gate) because inception decide
@@ -709,16 +787,24 @@ do_inception_sweep() {
         #   class 1 — status: work-completed + decision recorded (sweep ticks AC + moves)
         #   class 2 — status: started-work + GO/NO-GO recorded (decide ran but status
         #             update was swallowed; promote to work-completed first)
-        # DEFER on a started-work task is the legitimate "keep exploring" state and
-        # is left untouched — only closing decisions (GO/NO-GO) trigger promotion.
-        local current_status
+        # T-1865: class 3 added — status: started-work + DEFER recorded. Pre-T-1865
+        # do_inception_decide left state untouched on DEFER, leaving these tasks in
+        # work-in-progress forever. Recovery path = park (horizon=later, which
+        # auto-demotes to captured via T-1068).
+        local current_status defer_park=false
         # T-1557 / L-302: pipefail guard
         current_status=$( { grep '^status:' "$f" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
         case "$current_status" in
             work-completed) ;;
             started-work)
-                # Only class 2 candidates: must be a closing decision
-                grep -qE '^\*\*Decision\*\*: (GO|NO-GO)' "$f" || continue
+                # Class 2 OR class 3 — must have a decision recorded
+                if grep -qE '^\*\*Decision\*\*: (GO|NO-GO)' "$f"; then
+                    : # class 2 — promote + move
+                elif grep -qE '^\*\*Decision\*\*: DEFER' "$f"; then
+                    defer_park=true
+                else
+                    continue
+                fi
                 ;;
             *) continue ;;
         esac
@@ -733,7 +819,25 @@ do_inception_sweep() {
             local dec
             # T-1557 / L-302: pipefail guard
             dec=$( { grep -E "^\*\*Decision\*\*:" "$f" 2>/dev/null || true; } | head -1 | sed 's/^\*\*Decision\*\*: //; s/ .*//')
-            echo "  $tid: status=$current_status decision=$dec"
+            local recovery=""
+            [ "$defer_park" = true ] && recovery=" (T-1865 park: horizon→later)"
+            echo "  $tid: status=$current_status decision=$dec$recovery"
+            continue
+        fi
+
+        # T-1865 class 3: DEFER on started-work → park. Set both --status
+        # captured and --horizon later explicitly. Two reasons we do NOT rely
+        # on the T-1068 auto-demote path: (a) the T-1589 shipping-evidence
+        # exception fires when a Recommendation block is present, even if the
+        # Recommendation says NO-GO/GO and the Decision says DEFER (real case:
+        # T-1685, NO-GO recommendation + DEFER decision); (b) the sweep
+        # already KNOWS the Decision is DEFER (case selector above), so the
+        # transition is forced regardless of body inconsistencies. No move
+        # to completed/ — deferred tasks stay parked in active/.
+        if [ "$defer_park" = true ]; then
+            "$AGENTS_DIR/task-create/update-task.sh" "$tid" --status captured --horizon later --skip-sovereignty --skip-acceptance-criteria --reason "T-1865 sweep: DEFER limbo recovery" >/dev/null 2>&1 || true
+            promoted=$((promoted+1))
+            echo "  $tid: parked started-work + DEFER → captured/later (T-1865 recovery)"
             continue
         fi
 

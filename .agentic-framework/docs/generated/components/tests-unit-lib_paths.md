@@ -11,11 +11,12 @@
 Unit tests for lib/paths.sh
 Tests path resolution: FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/paths.sh` | calls |
+| `lib/paths.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_paths.yaml`*

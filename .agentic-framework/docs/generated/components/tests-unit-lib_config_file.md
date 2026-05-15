@@ -11,11 +11,12 @@
 Unit tests for lib/config-file.sh — fw config set/get/list
 Origin: T-896
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/config-file.sh` | calls |
+| `lib/config-file.sh` | tests |
 
 ## Related
 

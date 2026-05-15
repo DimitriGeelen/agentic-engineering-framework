@@ -151,7 +151,12 @@ audit_inception_recommendation() {
     # heading. Without the optional `[-*]?` bullet marker the gate rejected
     # T-844 and T-705 (both DEFER'd weeks ago, with live `- **Recommendation:**`
     # lines on disk).
-    if printf '%s\n' "$stripped" | grep -qE '^[[:space:]]*[-*]?[[:space:]]*\*\*Recommendation:\*\*[[:space:]]*[A-Za-z]'; then
+    # T-1746: also accept inner emphasis on the verdict — `**Recommendation:**
+    # **GO**`, `*GO*`, etc. The `\*{0,2}` after the prefix lets the verdict
+    # carry markdown emphasis (which agent-authored Recommendations frequently
+    # use for visual weight). Without it the gate silently rejected T-1744 GO
+    # four times via Watchtower (origin: T-1745 RCA).
+    if printf '%s\n' "$stripped" | grep -qE '^[[:space:]]*[-*]?[[:space:]]*\*\*Recommendation:\*\*[[:space:]]*\*{0,2}[A-Za-z]'; then
         return 0
     fi
     return 1

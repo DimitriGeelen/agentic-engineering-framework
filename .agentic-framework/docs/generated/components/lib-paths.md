@@ -28,7 +28,7 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | `lib/tasks.sh` | calls |
 | `lib/yaml.sh` | calls |
 
-## Used By (46)
+## Used By (52)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -78,6 +78,12 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | `tests/unit/lib_paths.bats` | called_by |
 | `agents/context/block-task-tools.sh` | called_by |
 | `agents/git/lib/hooks.sh` | called_by |
+| `tests/unit/lib_paths.bats` | tests_by |
+| `tests/unit/lib_review.bats` | called_by |
+| `tests/unit/lib_review.bats` | tests_by |
+| `tests/unit/lib_validate_init.bats` | called_by |
+| `tests/unit/lib_validate_init.bats` | tests_by |
+| `tests/unit/test_enrich_bats_parser.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-paths.yaml`*

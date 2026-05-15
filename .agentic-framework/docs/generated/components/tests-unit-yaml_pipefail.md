@@ -14,6 +14,15 @@ same invariant for the foundation helpers (lib/yaml.sh:get_yaml_field +
 lib/config.sh:_fw_config_file_val) so future callers cannot reintroduce
 the trap by writing bare `var=$(get_yaml_field ...)` assignments.
 
+## Dependencies (4)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/yaml.sh` | calls |
+| `lib/config.sh` | calls |
+| `lib/config.sh` | tests |
+| `lib/yaml.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-yaml_pipefail.yaml`*
 *Last verified: 2026-04-27*

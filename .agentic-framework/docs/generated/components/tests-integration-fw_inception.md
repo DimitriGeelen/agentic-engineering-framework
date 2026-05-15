@@ -14,11 +14,12 @@ fw inception           — show help
 fw inception status    — list inception tasks
 fw inception start     — create inception task
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_inception.yaml`*

@@ -11,11 +11,12 @@
 Unit tests for lib/preflight.sh
 Tests detect_pkg_manager(), individual check functions, and do_preflight --quiet
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/preflight.sh` | calls |
+| `lib/preflight.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_preflight.yaml`*

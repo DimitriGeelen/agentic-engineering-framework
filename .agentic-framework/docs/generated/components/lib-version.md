@@ -15,12 +15,13 @@ Single source of truth: FW_VERSION in bin/fw line 14
 All other VERSION files are derived copies.
 Part of: Agentic Engineering Framework (T-606)
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `tests/unit/lib_version.bats` | called-by |
 | `tests/unit/lib_version.bats` | called_by |
+| `tests/unit/lib_version.bats` | tests_by |
 
 ## Related
 

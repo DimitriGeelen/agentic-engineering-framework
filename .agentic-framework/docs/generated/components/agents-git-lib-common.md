@@ -8,11 +8,15 @@
 
 Common utilities for git agent
 
-## Used By (1)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/git/git.sh` | called_by |
+| `tests/unit/git_common.bats` | called_by |
+| `tests/unit/git_common.bats` | tests_by |
+| `tests/unit/git_log.bats` | called_by |
+| `tests/unit/git_log.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-common.yaml`*

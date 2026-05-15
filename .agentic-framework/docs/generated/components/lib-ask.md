@@ -39,20 +39,22 @@ The `horizon` field controls when a task should be considered for work:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `?` | uses |
 | `lib/paths.sh` | calls |
+| `lib/ask.py` | calls |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/lib_ask.bats` | tested_by |
 | `tests/unit/lib_ask.bats` | called_by |
+| `tests/unit/lib_ask.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ask.yaml`*

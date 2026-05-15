@@ -11,11 +11,12 @@
 Unit tests for lib/colors.sh
 Tests TTY-aware, NO_COLOR-respecting color variable setup
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/colors.sh` | calls |
+| `lib/colors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_colors.yaml`*

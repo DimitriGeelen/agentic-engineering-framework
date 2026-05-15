@@ -16,11 +16,12 @@ fw bus manifest     — show results summary
 fw bus read         — read results
 fw bus clear        — clear results
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_bus.yaml`*

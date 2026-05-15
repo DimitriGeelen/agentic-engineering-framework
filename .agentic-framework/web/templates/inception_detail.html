@@ -391,6 +391,19 @@
         </p>
     </div>
     {% endif %}
+    {# T-1746: warning banner for partial-success path (primary decision landed, side-effect failed). #}
+    {# Without this block the `?warning=` redirect from the decide handler renders nothing — the user #}
+    {# sees a clean reload and assumes success. T-1745 RCA RC3. #}
+    {% if request.args.get('warning') %}
+    <div role="alert" style="background: #fef3c7; border: 1px solid #f59e0b; color: #78350f; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.75rem; font-size: 0.85rem;">
+        <strong>Decision recorded with warning.</strong>
+        <code style="display: block; margin-top: 0.4rem; white-space: pre-wrap; background: rgba(255,255,255,0.5); padding: 0.4rem; border-radius: 4px;">{{ request.args.get('warning') }}</code>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem; opacity: 0.85;">
+            The primary decision landed, but a side-effect (episodic generation, review emit) reported a warning.
+            Verify the <code>## Decision</code> block on this task before continuing.
+        </p>
+    </div>
+    {% endif %}
     {% if dec != 'pending' %}
     <p style="font-size: 0.85rem; color: var(--pico-muted-color); margin-bottom: 0.75rem;">
         Current decision: <strong>{{ dec | upper }}</strong>. Recording a new decision replaces the

@@ -19,7 +19,7 @@ for a project to use the framework.
 | `lib/preflight.sh` | calls |
 | `C-001` | calls |
 
-## Used By (8)
+## Used By (13)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -31,6 +31,11 @@ for a project to use the framework.
 | `tests/unit/lib_init.bats` | called-by |
 | `tests/unit/lib_init.bats` | called_by |
 | `tests/unit/hook_absolute_paths.bats` | called_by |
+| `tests/unit/focus_drift_gate.bats` | called_by |
+| `tests/unit/focus_drift_gate.bats` | tests_by |
+| `tests/unit/hook_absolute_paths.bats` | tests_by |
+| `tests/unit/hook_enable_absolute_path.bats` | tests_by |
+| `tests/unit/lib_init.bats` | tests_by |
 
 ## Related
 

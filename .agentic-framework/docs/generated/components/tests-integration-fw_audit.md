@@ -14,11 +14,12 @@ fw audit                — run all audit sections
 fw audit --section X    — run specific section
 fw audit --help         — show help
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_audit.yaml`*

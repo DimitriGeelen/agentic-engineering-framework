@@ -11,6 +11,13 @@ in .tasks/active/. Matching completed/ caused recurring "task is closed"
 warnings on every session handover commit because T-012 was completed long
 ago.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/handover/handover.sh` | calls |
+| `agents/handover/handover.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-handover_t012_active_only.yaml`*
 *Last verified: 2026-04-25*

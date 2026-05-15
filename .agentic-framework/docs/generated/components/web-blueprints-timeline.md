@@ -15,7 +15,7 @@ Next item in list is the predecessor (older session)
 | `web/shared.py` | calls |
 | `web/templates/timeline.html` | renders |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -23,6 +23,7 @@ Next item in list is the predecessor (older session)
 | `web/app.py` | registered_by |
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_api_timeline_detail.py` | called_by |
 
 ## Related
 

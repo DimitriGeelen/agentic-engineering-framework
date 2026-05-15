@@ -503,17 +503,33 @@ if [ -f "$ARC_FOCUS_FILE" ]; then
         fi
     fi
 fi
+
+# T-1452 / G-053: surface ripe revisit_at deferrals (populated by daily
+# revisit-due-scan.sh cron). Silent when the file is absent or empty.
+REVISITS_FILE="$PROJECT_ROOT/.context/working/.revisits-due.txt"
+if [ -s "$REVISITS_FILE" ]; then
+    echo "## Revisits Ripe Today"
+    echo ""
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        echo "- $line"
+    done < "$REVISITS_FILE"
+    echo ""
+fi
 )
 ## Work in Progress
 
 EOF
 
 # Add active tasks sorted by horizon (now > next > later)
-python3 << PYEOF >> "$HANDOVER_FILE"
+TASKS_DIR_PY="$TASKS_DIR" WT_URL_PY="$WT_URL" PROJECT_ROOT_PY="$PROJECT_ROOT" python3 << 'PYEOF' >> "$HANDOVER_FILE"
+# T-1825: heredoc delimiter quoted ('PYEOF') so shellcheck doesn't lint Python
+# `==` as bash (SC2284 false-positive). Shell vars now come in via env; no \$
+# escapes needed inside the body.
 import os, re, glob
 
-tasks_dir = "$TASKS_DIR/active"
-WT_URL = "$WT_URL"  # T-1461: empty string → render plain task ID, no link
+tasks_dir = os.environ["TASKS_DIR_PY"] + "/active"
+WT_URL = os.environ.get("WT_URL_PY", "")  # T-1461: empty → plain task ID, no link
 
 def review_link(tid, name):
     """Render a [T-XXX](URL) link to /review/T-XXX, or plain bold ID if no WT_URL."""
@@ -528,9 +544,8 @@ def inception_link(tid, name):
 
 def extract_verdict(content):
     """T-1530: Extract GO/DEFER/NO-GO from ## Recommendation. H2+ terminator (L-293).
-    T-1576: emit NO-REC when section is missing/empty (agent owes a recommendation).
-    NOTE: \$ escapes because this heredoc is unquoted; bash would otherwise eat \$(...)."""
-    m = re.search(r'^## Recommendation\s*\$(.*?)(?=^#{2,} |\Z)',
+    T-1576: emit NO-REC when section is missing/empty (agent owes a recommendation)."""
+    m = re.search(r'^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)',
                   content, re.MULTILINE | re.DOTALL)
     if not m:
         return 'NO-REC'
@@ -601,7 +616,7 @@ for _, tid, tname, tstatus, h, verdict, wf, dec in tasks:
     last_action = 'See git log'
     try:
         gl = subprocess.check_output(
-            ['git', '-C', '$PROJECT_ROOT', 'log', '--oneline', '-1',
+            ['git', '-C', os.environ["PROJECT_ROOT_PY"], 'log', '--oneline', '-1',
              '--grep=' + tid, '--format=%s'],
             text=True, stderr=subprocess.DEVNULL).strip()
         if gl:
@@ -851,7 +866,11 @@ See gaps register above.
 $(python3 -c "
 import glob, re, os
 tasks_dir = '$TASKS_DIR/active'
-# Find first started-work task in horizon:now/next, prefer agent-owned
+# Find first started-work task in horizon:now/next, prefer agent-owned.
+# T-1724: skip inception tasks with a recorded DEFER decision — those are
+# parked under 'Watching for Recurrence', not actionable. Without this
+# guard, the same DEFERed inception (e.g. T-1611) gets recommended every
+# session even though it explicitly chose to wait.
 candidates = []
 for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
     with open(f) as fh:
@@ -860,6 +879,11 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
         continue
     h = re.search(r'^horizon:\s*(.+)', content, re.M)
     if not h or h.group(1).strip() not in ('now', 'next'):
+        continue
+    # T-1724: an inception with a recorded DEFER is parked, not active work.
+    # Look for a literal '**Decision**: DEFER' line (the inception-decide
+    # canonical marker).
+    if re.search(r'^\*\*Decision\*\*:\s*DEFER', content, re.M):
         continue
     tid = re.search(r'^id:\s*(.+)', content, re.M)
     tname = re.search(r'^name:\s*(.+)', content, re.M)

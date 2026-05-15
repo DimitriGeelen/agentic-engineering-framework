@@ -11,11 +11,13 @@
 Unit tests for agents/audit/audit.sh
 Origin: T-924
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/audit/audit.sh` | calls |
+| `C-004` | calls |
+| `C-004` | tests |
 
 ## Related
 

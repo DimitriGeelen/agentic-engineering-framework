@@ -17,7 +17,7 @@ _load_latest_audit moved to web.shared.load_latest_audit (T-431/A7)
 | `web/subprocess_utils.py` | calls |
 | `web/context_loader.py` | calls |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -25,6 +25,7 @@ _load_latest_audit moved to web.shared.load_latest_audit (T-431/A7)
 | `web/app.py` | registered_by |
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_api_quality.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-quality.yaml`*

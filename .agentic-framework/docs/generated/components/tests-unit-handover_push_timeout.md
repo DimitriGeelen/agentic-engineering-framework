@@ -12,12 +12,15 @@ T-1277 — handover.sh wraps `git push` with `timeout` so an unreachable
 remote (e.g. onedev VPN down) cannot stall the auto-handover hook for
 hours. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT.
 
-## Dependencies (2)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/handover/handover.sh` | calls |
 | `agents/context/checkpoint.sh` | calls |
+| `C-008` | calls |
+| `agents/handover/handover.sh` | tests |
+| `C-008` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-handover_push_timeout.yaml`*

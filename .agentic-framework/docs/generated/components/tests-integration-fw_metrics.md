@@ -14,11 +14,12 @@ fw metrics            — show metrics dashboard
 fw metrics dashboard  — same as above
 fw metrics predict    — effort prediction
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_metrics.yaml`*

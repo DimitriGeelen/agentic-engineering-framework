@@ -8,7 +8,14 @@ import yaml
 from flask import Blueprint, abort, redirect, request, url_for
 from markupsafe import Markup
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata
+from web.shared import (
+    PROJECT_ROOT,
+    _auto_link_files,
+    get_all_task_metadata,
+    parse_frontmatter,
+    render_page,
+    task_id_sort_key,
+)
 
 logger = logging.getLogger(__name__)
 from web.subprocess_utils import run_fw_command
@@ -22,6 +29,8 @@ def _md(text):
     text = re_mod.sub(r"([^\n])\n(- )", r"\1\n\n\2", text)
     text = re_mod.sub(r"([^\n])\n(\d+\. )", r"\1\n\n\2", text)
     html = markdown2.markdown(text, extras=["fenced-code-blocks", "tables"])
+    # T-1723: artefact paths → /file/ anchors (existence-gated, idempotent).
+    html = _auto_link_files(html)
     return Markup(html)
 
 
@@ -546,7 +555,17 @@ def record_decision(task_id):
 def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
     """T-1470: Detect if `fw inception decide` recorded the decision in the
     task body, regardless of exit code. Used to separate "primary landed"
-    (return 200 + warning) from "primary failed" (return 500/error)."""
+    (return 200 + warning) from "primary failed" (return 500/error).
+
+    T-1746: previous version captured the `## Decision` section without
+    stripping HTML comments. The template placeholder
+    `<!-- ... fw inception decide T-XXX go|no-go ... -->` contains the
+    literal token "go|no-go", which after `.upper()` matched the keyword
+    check and produced false-positive `primary_landed=True`. Combined with
+    RC1 (validator regex too strict) and RC3 (template silent on
+    `?warning=`), this routed the user into a silent no-op on T-1744.
+    Origin: T-1745 RCA. Fix: strip comments AND require a non-commented
+    canonical `**Decision**:` line before honouring the keyword check."""
     import os
     import re as _re
     # Task may be in active/ (defer) or completed/ (go/no-go)
@@ -567,7 +586,31 @@ def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
             # Updates entries appended below the Decision section don't get
             # captured into the keyword check (sister bug to T-1519/T-1526).
             m = _re.search(r"^## Decision\b.*?(?=^#{2,} |\Z)", body, _re.MULTILINE | _re.DOTALL)
-            if m and decision.upper() in m.group(0).upper():
+            if not m:
+                continue
+            section = m.group(0)
+            # T-1746: strip HTML comments so template placeholder text doesn't
+            # leak into the verdict check.
+            stripped = _re.sub(r"<!--.*?-->", "", section, flags=_re.DOTALL)
+            # Require a non-commented Decision marker line and use the regex's
+            # verdict capture directly. Substring check `"GO" in "NO-GO"` is
+            # True (sub-bug from the original keyword approach) — match the
+            # verdict token explicitly instead.
+            #
+            # `fw inception decide` writes BOTH formats in different places:
+            #   lib/inception.sh:556 — `**Decision**: GO` (colon outside bold,
+            #     in the canonical ## Decision body)
+            #   lib/inception.sh:598 — `- **Decision:** GO` (colon inside bold,
+            #     in the Updates entry)
+            # Accept either by making the inner-`:`-`**` pair optional.
+            verdict_match = _re.search(
+                r"\*\*Decision(?::\*\*|\*\*:)\s*\**(GO|NO-GO|DEFER)\**",
+                stripped,
+                _re.IGNORECASE,
+            )
+            if not verdict_match:
+                continue
+            if verdict_match.group(1).upper() == decision.upper():
                 return True
     return False
 

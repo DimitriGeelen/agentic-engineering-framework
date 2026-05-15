@@ -29,7 +29,7 @@ Creates handover documents for session continuity
 | `agents/context/session-metrics.sh` | calls |
 | `lib/notify.sh` | calls |
 
-## Used By (11)
+## Used By (19)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -44,6 +44,14 @@ Creates handover documents for session continuity
 | `tests/unit/handover_push_timeout.bats` | called_by |
 | `agents/context/session-end.sh` | called_by |
 | `agents/context/session-silent-scanner.sh` | called_by |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| `tests/unit/handover.bats` | tests_by |
+| `tests/unit/handover_push_no_origin.bats` | called_by |
+| `tests/unit/handover_push_no_origin.bats` | tests_by |
+| `tests/unit/handover_push_timeout.bats` | tests_by |
+| `tests/unit/handover_t012_active_only.bats` | called_by |
+| `tests/unit/handover_t012_active_only.bats` | tests_by |
+| `tests/unit/test_arc_system.py` | called_by |
 
 ## Documentation
 

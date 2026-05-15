@@ -37,7 +37,7 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `agents/fabric/lib/summary.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -46,6 +46,7 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `agents/context/check-fabric-new-file.sh` | called_by |
 | `tests/unit/fabric.bats` | tested_by |
 | `tests/unit/fabric.bats` | called_by |
+| `tests/unit/fabric.bats` | tests_by |
 
 ## Documentation
 

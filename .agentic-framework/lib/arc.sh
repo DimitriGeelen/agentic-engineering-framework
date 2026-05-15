@@ -215,14 +215,20 @@ arc_create() {
     local now
     now="$(_arc_now)"
 
-    # Use python to YAML-quote headline_mechanic safely (handles colons, arrows, quotes).
-    local hm_yaml
+    # T-1816: yaml-safe-quote all free-text string fields. Origin: dispatch-safety
+    # arc shipped with `name: Dispatch safety: Worker uncertainty handling` —
+    # unquoted colon parsed as a nested mapping, broke Watchtower /arcs/dispatch-safety.
+    # Quote name, description, headline_mechanic via yaml.safe_dump (handles colons,
+    # arrows, quotes, hash marks). Anchor stays bare (validated as a task ID).
+    local name_yaml desc_yaml hm_yaml
+    name_yaml=$(printf '%s' "$name" | python3 -c 'import yaml,sys; print(yaml.safe_dump(sys.stdin.read().rstrip("\n"), default_style=chr(34)).rstrip())')
+    desc_yaml=$(printf '%s' "$description" | python3 -c 'import yaml,sys; print(yaml.safe_dump(sys.stdin.read().rstrip("\n"), default_style=chr(34)).rstrip())')
     hm_yaml=$(printf '%s' "$headline_mechanic" | python3 -c 'import yaml,sys; print(yaml.safe_dump(sys.stdin.read().rstrip("\n"), default_style=chr(34)).rstrip())')
 
     cat > "$(_arc_path "$id")" <<YAML
 id: ${id}
-name: ${name}
-description: ${description}
+name: ${name_yaml}
+description: ${desc_yaml}
 status: in-progress
 anchor_task: ${anchor}
 constituent_tasks: []

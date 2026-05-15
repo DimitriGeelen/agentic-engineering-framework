@@ -10,11 +10,12 @@
 
 May return 404 or 500 depending on task existence
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/tasks.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_task_complete.yaml`*

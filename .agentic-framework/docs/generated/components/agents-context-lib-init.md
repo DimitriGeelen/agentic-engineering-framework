@@ -9,7 +9,7 @@
 Context Agent - init command
 Initializes working memory for a new session
 
-## Used By (4)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -17,6 +17,9 @@ Initializes working memory for a new session
 | `agents/context/session-metrics.sh` | used-by |
 | `agents/context/context.sh` | called-by |
 | `agents/context/session-metrics.sh` | read_by |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| `tests/unit/context_init.bats` | called_by |
+| `tests/unit/context_init.bats` | tests_by |
 
 ## Documentation
 

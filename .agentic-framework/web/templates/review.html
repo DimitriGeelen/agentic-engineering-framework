@@ -191,6 +191,23 @@
             background: #dbeafe;
         }
 
+        /* T-1765: Pico CSS sets `code, kbd { display: inline-block }`. Inline-
+           block elements are atomic — when they don't fit on a line, the
+           browser drops the WHOLE element to the next line instead of breaking
+           inside it. For long paths like `lib/task_pair_acd.sh` in prose,
+           this looks like the path got "cutoff" / dropped from its sentence.
+           Restore inline display so paths flow with text and break naturally
+           where needed. `overflow-wrap: anywhere` lets long unbroken tokens
+           break at any character if a line really can't hold them. Apply to
+           every prose context that renders backticked paths or commands. */
+        .ac-detail code,
+        .rec-rationale code,
+        .rec-evidence code {
+            display: inline;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+
         /* Action button (check/uncheck) */
         .ac-action-btn {
             width: 100%;
@@ -494,6 +511,60 @@
         <div class="reviewer-meta">
             {% if reviewer.findings == 0 %}No findings.{% else %}{{ reviewer.findings }} finding{{ 's' if reviewer.findings != 1 else '' }} — see <a href="/tasks/{{ task_id }}#reviewer-verdict">full Reviewer block</a>.{% endif %}
         </div>
+    </section>
+    {% endif %}
+
+    {# T-1810: flash banners — success/error from POST /review/<id>/pause/<id>/resolve #}
+    {% if resolved_flash %}
+    <div class="wt-toast info" style="position:relative;margin:0.75rem 0;padding:0.75rem 1rem;background:#1f3a2a;border:1px solid #10b981;border-radius:4px;color:#d1fae5;">
+        Paused dispatch resolved — new dispatch <code>{{ resolved_flash }}</code> fired.
+    </div>
+    {% endif %}
+    {% if resolve_error %}
+    <div class="wt-toast error" style="position:relative;margin:0.75rem 0;padding:0.75rem 1rem;background:#3a1f1f;border:1px solid #ef4444;border-radius:4px;color:#fecaca;">
+        Resolve failed — {{ resolve_error }}
+    </div>
+    {% endif %}
+
+    {# T-1810: paused-dispatch panel — web parity for `fw pause resolve`.
+       Only renders when this task has paused dispatches awaiting resolution.
+       Slice-5 forward-compat: rows with a matching `retry_of_dispatch_id`
+       are filtered out automatically by `list_paused_dispatches_for_task`. #}
+    {% if paused_dispatches %}
+    <section class="paused-dispatches" style="margin:1.25rem 0;padding:1rem;border:2px solid #f59e0b;border-radius:6px;background:#1f1a0e;">
+        <h3 style="margin:0 0 0.75rem 0;color:#fbbf24;">Paused Dispatches — Worker awaits your answer</h3>
+        {% for pd in paused_dispatches %}
+        <div class="paused-row" style="padding:0.75rem;margin-bottom:0.75rem;background:#0f0f12;border:1px solid #444;border-radius:4px;">
+            <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;">
+                {% if pd.severity == 'high' %}
+                <span style="background:#ef4444;color:#fff;padding:0.1rem 0.5rem;border-radius:3px;font-size:0.75rem;font-weight:bold;">HIGH</span>
+                {% elif pd.severity == 'medium' %}
+                <span style="background:#f59e0b;color:#000;padding:0.1rem 0.5rem;border-radius:3px;font-size:0.75rem;font-weight:bold;">MED</span>
+                {% elif pd.severity == 'low' %}
+                <span style="background:#6b7280;color:#fff;padding:0.1rem 0.5rem;border-radius:3px;font-size:0.75rem;">LOW</span>
+                {% else %}
+                <span style="background:#374151;color:#fff;padding:0.1rem 0.5rem;border-radius:3px;font-size:0.75rem;">?</span>
+                {% endif %}
+                <code style="font-size:0.85rem;color:#9ca3af;">{{ pd.dispatch_id_short }}</code>
+                <span style="font-size:0.85rem;color:#9ca3af;">{{ pd.age_label }} ago</span>
+                {% if pd.worker_kind %}<span style="font-size:0.85rem;color:#9ca3af;">· {{ pd.worker_kind }}</span>{% endif %}
+            </div>
+            <div style="margin-bottom:0.75rem;font-size:0.95rem;line-height:1.4;">
+                <strong style="color:#fbbf24;">Q:</strong> {{ pd.question_display }}
+            </div>
+            <form method="POST" action="/review/{{ task_id }}/pause/{{ pd.dispatch_id }}/resolve" style="display:flex;flex-direction:column;gap:0.5rem;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <textarea name="answer" required minlength="1" rows="3"
+                          placeholder="Your answer to this question — will be passed verbatim to the new Worker"
+                          style="width:100%;padding:0.5rem;background:#1a1a1f;color:#e5e7eb;border:1px solid #555;border-radius:3px;font-family:inherit;font-size:0.9rem;"></textarea>
+                <div style="display:flex;justify-content:flex-end;">
+                    <button type="submit" style="padding:0.4rem 1rem;background:#10b981;color:#000;border:none;border-radius:3px;font-weight:bold;cursor:pointer;">
+                        Resolve &amp; re-dispatch
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endfor %}
     </section>
     {% endif %}
 

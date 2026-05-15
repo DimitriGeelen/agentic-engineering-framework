@@ -250,6 +250,232 @@
 </details>
 {% endif %}
 
+<!-- Dispatch substrate panel (T-1792 — CLI parity for `fw orchestrator status`) -->
+<h2 style="margin-top:2rem;">Dispatch substrate</h2>
+<p class="muted">Per-model dispatch counts from <code>.context/dispatches.jsonl</code>
+    (CLI parity with <code>fw orchestrator status</code>, T-1788). Each row counts how
+    many times the framework dispatch path actually routed work to that model — the
+    "what got picked" view, complementing the learned-routing "what should win" view below.
+    Synthetic rows (<code>T-stress-*</code>) are excluded from the headline counts.</p>
+{% if not substrate.available %}
+<p><span class="badge badge-warn">substrate absent</span> No <code>dispatches.jsonl</code> at
+    <code>{{ substrate.path }}</code> yet. Run a dispatch (<code>fw resolver dispatch</code>
+    or <code>fw termlink dispatch</code>) to seed it.</p>
+{% elif substrate.total == 0 and substrate.synthetic_total == 0 %}
+<p><span class="badge badge-info">no dispatches</span> Substrate file exists but no real
+    dispatches recorded yet.</p>
+{% else %}
+<p><strong>{{ substrate.total }}</strong> real dispatch(es){% if substrate.synthetic_total %},
+    plus <strong>{{ substrate.synthetic_total }}</strong> synthetic (<code>T-stress-*</code>,
+    excluded from the breakdown){% endif %}.</p>
+{% if substrate.by_model %}
+<h3 style="margin-top:1rem;">By model</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Model</th>
+            <th>Dispatches</th>
+            <th>Share</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in substrate.by_model %}
+        <tr>
+            <td><code>{{ row.model }}</code></td>
+            <td>{{ row.count }}</td>
+            <td>{{ "%.0f%%"|format(100 * row.count / substrate.total) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="muted"><small>No <code>model</code> field on any dispatch row yet — substrate
+    rows predate the model-capture path or model wasn't resolved.</small></p>
+{% endif %}
+{% if substrate.by_task_type %}
+<h3 style="margin-top:1rem;">By task-type</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Task-type</th>
+            <th>Dispatches</th>
+            <th>Share</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in substrate.by_task_type %}
+        <tr>
+            <td><span class="pill"><code>{{ row.task_type }}</code></span></td>
+            <td>{{ row.count }}</td>
+            <td>{{ "%.0f%%"|format(100 * row.count / substrate.total) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% if substrate.by_worker_kind %}
+<h3 style="margin-top:1rem;">By worker-kind</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Worker-kind</th>
+            <th>Dispatches</th>
+            <th>Share</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in substrate.by_worker_kind %}
+        <tr>
+            <td><span class="pill"><code>{{ row.worker_kind }}</code></span></td>
+            <td>{{ row.count }}</td>
+            <td>{{ "%.0f%%"|format(100 * row.count / substrate.total) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endif %}
+
+<!-- Outcome quality panel (T-1796 — CLI parity for --outcomes verification-style view) -->
+<h2 style="margin-top:2rem;">Outcome quality</h2>
+<p class="muted">Verification pass/fail per <code>task_type</code> from
+    <code>.context/dispatch-outcomes.jsonl</code> (CLI parity with
+    <code>fw orchestrator status --outcomes</code>, T-1749). Latest outcome per
+    dispatch wins (T-1757 dedup rule). Verdict-style events (e.g.
+    escalation-scan-v0.5) are counted in <em>Outcomes</em> but only contribute to
+    passed/failed when they carry <code>verification_passed</code>.</p>
+{% if not outcome_quality.available or outcome_quality.total_outcomes == 0 %}
+<p><span class="badge badge-info">no outcomes</span> No outcome events recorded
+    yet (or <code>dispatch-outcomes.jsonl</code> is absent). Outcomes are
+    written back when dispatch workers exit.</p>
+{% else %}
+<p><strong>{{ outcome_quality.total_outcomes }}</strong> outcome event(s)
+    across <strong>{{ outcome_quality.by_task_type|length }}</strong> task-type(s).</p>
+{% if outcome_quality.by_task_type %}
+<table>
+    <thead>
+        <tr>
+            <th>Task-type</th>
+            <th>Passed</th>
+            <th>Failed</th>
+            <th>Total</th>
+            <th>Pass rate</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in outcome_quality.by_task_type %}
+        <tr>
+            <td><span class="pill"><code>{{ row.task_type }}</code></span></td>
+            <td>{% if row.passed %}<span class="badge badge-ok">{{ row.passed }}</span>{% else %}<span class="muted">0</span>{% endif %}</td>
+            <td>{% if row.failed %}<span class="badge badge-warn">{{ row.failed }}</span>{% else %}<span class="muted">0</span>{% endif %}</td>
+            <td>{{ row.total }}</td>
+            <td>{% if row.passed + row.failed %}{{ "%.0f%%"|format(row.pass_rate * 100) }}{% else %}<span class="muted">—</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endif %}
+
+<!-- Workflow coverage panel (T-1799 — web parity for T-1798 audit check) -->
+<h2 style="margin-top:2rem;">Workflow coverage</h2>
+<p class="muted">Workflow → dispatcher coverage matrix. Each workflow under
+    <code>.context/project/workflows/</code> declares an optional
+    <code>worker_kind</code> field; the spawn driver
+    (<code>lib/spawn._DISPATCHERS</code>) routes a subset of declarable values.
+    Any workflow that declares a worker_kind without a registered handler is
+    a runtime trap (T-1776 — surfaced as <code>NotImplementedError</code>).
+    <a href="/tasks/T-1798"><code>T-1798</code></a> ratchets this from a runtime
+    trap to an audit-time visibility check; this panel renders the same data
+    on the web.</p>
+{% if not workflow_coverage.available %}
+    <p class="muted"><span class="badge badge-info">unavailable</span> Helper not importable.</p>
+{% else %}
+    {% if not workflow_coverage.ok %}
+        <p><span class="badge badge-warn">FAIL</span>
+            {% if workflow_coverage.unroutable_workflows %}
+                {{ workflow_coverage.unroutable_workflows | length }} of
+                {{ workflow_coverage.workflows | length }} workflows declare an unroutable worker_kind.
+            {% endif %}
+            {% if workflow_coverage.pi_workflows_missing_provider %}
+                {{ workflow_coverage.pi_workflows_missing_provider | length }} pi workflow(s) missing provider.
+            {% endif %}
+        </p>
+    {% elif workflow_coverage.warn %}
+        <p><span class="badge badge-warn">WARN</span>
+            All {{ workflow_coverage.workflows | length }} workflows route, but
+            {{ workflow_coverage.stale_workflows | length }} workflow(s) stale
+            (no dispatch in 90d) — consider deprecating.</p>
+    {% else %}
+        <p><span class="badge badge-ok">OK</span>
+            All {{ workflow_coverage.workflows | length }} workflows route to a registered dispatcher
+            and pi workflows declare a provider.</p>
+    {% endif %}
+    <table>
+        <thead>
+            <tr><th>Workflow</th><th>worker_kind</th><th>provider</th><th>Routable</th><th>Last dispatched</th></tr>
+        </thead>
+        <tbody>
+        {% for w in workflow_coverage.workflows %}
+            <tr>
+                <td><code>{{ w.name }}</code></td>
+                <td>{% if w.worker_kind %}<code>{{ w.worker_kind }}</code>{% else %}<span class="muted">— (interactive)</span>{% endif %}</td>
+                <td>
+                {% if w.provider %}
+                    <code>{{ w.provider }}</code>
+                {% elif w.worker_kind == "pi" %}
+                    <span class="badge badge-warn">missing</span>
+                {% else %}
+                    <span class="muted">—</span>
+                {% endif %}
+                </td>
+                <td>
+                {% if not w.worker_kind %}
+                    <span class="muted">n/a</span>
+                {% elif w.worker_kind in workflow_coverage.routable %}
+                    <span class="badge badge-ok">yes</span>
+                {% else %}
+                    <span class="badge badge-warn">no</span>
+                {% endif %}
+                </td>
+                {% set is_stale = workflow_coverage.stale_workflows and (w.name in (workflow_coverage.stale_workflows | map(attribute='name') | list)) %}
+                <td>
+                {% if w.last_dispatched %}
+                    <code>{{ w.last_dispatched[:10] }}</code>
+                    {% if w.last_dispatch_task_id %}
+                        (<a href="/tasks/{{ w.last_dispatch_task_id }}"><code>{{ w.last_dispatch_task_id }}</code></a>)
+                    {% endif %}
+                    {% if is_stale %}<span class="badge badge-warn">stale</span>{% endif %}
+                {% else %}
+                    <span class="muted">never</span>
+                    {% if is_stale %}<span class="badge badge-warn">stale</span>{% endif %}
+                {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p class="muted">
+        Routable dispatchers: <code>{{ workflow_coverage.routable | join(', ') }}</code>.
+        Declarable but unroutable:
+        {% if workflow_coverage.declarable_but_unroutable %}
+            <code>{{ workflow_coverage.declarable_but_unroutable | join(', ') }}</code>
+            (declared in <code>lib/resolver.VALID_WORKER_KINDS</code> but missing from
+            <code>lib/spawn._DISPATCHERS</code> — declaring any of these in a workflow is a runtime trap).
+        {% else %}
+            none.
+        {% endif %}
+    </p>
+    {% if workflow_coverage.pi_workflows_missing_provider %}
+    <p class="muted">
+        Missing provider:
+        <code>{{ workflow_coverage.pi_workflows_missing_provider | map(attribute='name') | join(', ') }}</code>
+        (pi workflows without a <code>provider</code> field — <code>lib/spawn._spawn_pi</code> raises
+        <code>SpawnError</code> at runtime; T-1800 surfaces it at audit time).
+    </p>
+    {% endif %}
+{% endif %}
+
 <!-- Learned routing panel (T-1669 Step 3) -->
 <h2 style="margin-top:2rem;">Learned routing</h2>
 <p class="muted">Per-task-type model preferences derived from <code>route-cache.json</code>

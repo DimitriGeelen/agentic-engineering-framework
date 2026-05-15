@@ -17,6 +17,12 @@ Block-only coverage. Allow paths trigger irreversible side effects (move task to
 completed/, episodic generation, fabric updates) that we don't want to mutate
 in the framework repo. The block paths are what governance regression detection
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-governance-test_task_lifecycle_gates.yaml`*
 *Last verified: 2026-04-29*

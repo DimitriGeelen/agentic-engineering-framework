@@ -9,6 +9,13 @@
 T-1494: fw pickup send --remote requires --session
 Origin: 003-NTB-ATC-Plugin pickup envelope P-006
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/pickup.sh` | calls |
+| `lib/pickup.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-pickup_send_remote_session.yaml`*
 *Last verified: 2026-04-26*

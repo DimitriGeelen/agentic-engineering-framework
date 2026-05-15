@@ -8,11 +8,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `tests/playwright/conftest.py` | calls |
+| `bin/fw` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_file_viewer.yaml`*

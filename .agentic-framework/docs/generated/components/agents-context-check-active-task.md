@@ -25,7 +25,7 @@ Exempt paths (framework operations that don't need task context):
 | `lib/paths.sh` | calls |
 | `lib/config.sh` | calls |
 
-## Used By (7)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -36,6 +36,9 @@ Exempt paths (framework operations that don't need task context):
 | `agents/context/check-project-boundary.sh` | related_by |
 | `C-009` | triggers_by |
 | `.claude/settings.json` | used-by |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| `tests/unit/focus_drift_gate.bats` | called_by |
+| `tests/unit/focus_drift_gate.bats` | tests_by |
 
 ## Documentation
 

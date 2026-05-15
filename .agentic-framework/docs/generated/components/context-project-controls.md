@@ -19,11 +19,12 @@ blocking:     true = prevents action, false = warns/logs
 mitigates:    [R-XXX] references to concerns.yaml or archived risks (T-397)
 status:       active|partial|planned|disabled
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/audit/audit.sh` | read_by |
+| `web/blueprints/risks.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-controls.yaml`*

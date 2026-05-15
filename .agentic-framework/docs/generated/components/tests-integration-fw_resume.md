@@ -14,11 +14,12 @@ fw resume status  — full state synthesis
 fw resume sync    — fix stale working memory
 fw resume quick   — one-line summary
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_resume.yaml`*

@@ -11,11 +11,12 @@
 Unit tests for lib/upstream.sh — upstream issue reporting
 Origin: T-915
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/upstream.sh` | calls |
+| `lib/upstream.sh` | tests |
 
 ## Related
 

@@ -13,11 +13,12 @@ Tests the CLI interface for Tier 0 enforcement:
 fw tier0          — show help
 fw tier0 status   — show enforcement status
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_tier0.yaml`*

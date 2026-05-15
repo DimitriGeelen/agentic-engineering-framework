@@ -12,11 +12,12 @@ Integration tests for fw upstream subcommand
 Tests help, config, status, report guards, list, and error handling.
 Network-dependent operations (gh issue create) are tested only in dry-run mode.
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ## Related
 

@@ -34,6 +34,9 @@
     {% if prompt.get('created') %}
       <dt>Created</dt><dd><small>{{ prompt['created'] }}</small></dd>
     {% endif %}
+    {% if prompt.get('updated') and prompt.get('updated') != prompt.get('created') %}
+      <dt>Updated</dt><dd><small>{{ prompt['updated'] }}</small></dd>
+    {% endif %}
   </dl>
 
   <div style="margin-top:1rem;display:flex;gap:0.5rem;align-items:center;">

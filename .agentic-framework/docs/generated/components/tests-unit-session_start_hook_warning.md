@@ -14,6 +14,14 @@ a warning section to the additionalContext JSON if any hooks fail to
 resolve. This makes the T-1626 witness scenario surface in the agent's
 session-start context — not just on a manual `fw doctor`.
 
+## Dependencies (3)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/context/post-compact-resume.sh` | calls |
+| `agents/context/post-compact-resume.sh` | tests |
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-session_start_hook_warning.yaml`*
 *Last verified: 2026-05-01*

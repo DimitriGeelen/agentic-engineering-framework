@@ -10,11 +10,12 @@
 
 Should return 400 for missing query or SSE with error event
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/api.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_ask_stream.yaml`*

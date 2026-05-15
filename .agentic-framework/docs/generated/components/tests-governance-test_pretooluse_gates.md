@@ -17,6 +17,12 @@ Renames + extends tests/governance/test_gates_prototype.bats (3 gates) to cover:
 4. check-tier0            (Bash with destructive command, no approval)
 5. check-agent-dispatch   (Agent tool exceeding FW_DISPATCH_LIMIT)
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-governance-test_pretooluse_gates.yaml`*
 *Last verified: 2026-04-29*

@@ -12,6 +12,12 @@ more flock-wrapped jobs than the deployed crontab carries (T-1556 prevention
 while the existing file-diff check stayed green — flock parity was never
 verified structurally.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-cron_flock_parity.yaml`*
 *Last verified: 2026-04-27*

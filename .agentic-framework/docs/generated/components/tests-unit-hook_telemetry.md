@@ -17,6 +17,14 @@ Pins the contract that:
 Origin: T-1626 inception (ring20-dashboard 2026-04-30) — dozens of hook
 failures flowed past while framework reported clean. Telemetry is the
 
+## Dependencies (3)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/hook-telemetry.sh` | calls |
+| `lib/hook-telemetry.sh` | tests |
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_telemetry.yaml`*
 *Last verified: 2026-05-01*

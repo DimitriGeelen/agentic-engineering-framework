@@ -11,11 +11,12 @@
 Unit tests for lib/runtime.sh
 Tests fw_run_ts() — TypeScript/Python runtime fallback
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/runtime.sh` | calls |
+| `lib/runtime.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_runtime.yaml`*

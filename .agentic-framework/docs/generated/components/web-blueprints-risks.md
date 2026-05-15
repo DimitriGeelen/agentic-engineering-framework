@@ -8,13 +8,14 @@
 
 Split by type
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/templates/risks.html` | renders |
 | `web/context_loader.py` | calls |
+| `.context/project/controls.yaml` | calls |
 
 ## Used By (5)
 

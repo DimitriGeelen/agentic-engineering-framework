@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Used By (6)
+## Used By (9)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -16,6 +16,9 @@
 | `web/templates/reviewer_audit.html` | extended_by |
 | `web/templates/reviewer_overrides.html` | extended_by |
 | `web/templates/escalation_drift.html` | extended_by |
+| `web/templates/arc_detail.html` | extended_by |
+| `web/templates/arcs_index.html` | extended_by |
+| `web/templates/orchestrator.html` | extended_by |
 
 ## Related
 

@@ -10,11 +10,12 @@
 
 200 if LLM available, 500/503 if not configured — all return valid JSON
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/api.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_ask.yaml`*

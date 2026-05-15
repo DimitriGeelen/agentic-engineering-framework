@@ -16,6 +16,13 @@ Fix: normalize whitespace before hashing — collapse runs of [:space:] to a
 single space, trim leading/trailing. Same human-readable command yields
 same hash regardless of incidental whitespace.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/context/check-tier0.sh` | calls |
+| `agents/context/check-tier0.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-tier0_hash_normalization.yaml`*
 *Last verified: 2026-04-26*

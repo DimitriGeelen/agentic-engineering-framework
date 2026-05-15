@@ -27,7 +27,7 @@ Before acting on a pickup message:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (5)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -35,6 +35,11 @@ Before acting on a pickup message:
 | `bin/fw` | called_by |
 | `tests/unit/lib_pickup.bats` | called_by |
 | `lib/pickup-channel-bridge.sh` | called_by_by |
+| `tests/unit/lib_pickup.bats` | tests_by |
+| `tests/unit/pickup_send_remote_session.bats` | called_by |
+| `tests/unit/pickup_send_remote_session.bats` | tests_by |
+| `tests/unit/pickup_type_routing.bats` | called_by |
+| `tests/unit/pickup_type_routing.bats` | tests_by |
 
 ## Related
 

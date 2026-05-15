@@ -8,6 +8,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_audit_arc_completion.yaml`*
 *Last verified: 2026-05-01*

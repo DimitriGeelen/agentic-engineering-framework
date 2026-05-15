@@ -24,7 +24,7 @@ Exit codes:
 |--------|-------------|
 | `?` | uses |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -32,6 +32,7 @@ Exit codes:
 | `lib/init.sh` | called_by |
 | `tests/unit/lib_preflight.bats` | called-by |
 | `tests/unit/lib_preflight.bats` | called_by |
+| `tests/unit/lib_preflight.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-preflight.yaml`*

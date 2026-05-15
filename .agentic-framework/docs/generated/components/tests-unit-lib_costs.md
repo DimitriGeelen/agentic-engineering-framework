@@ -11,11 +11,12 @@
 Unit tests for lib/costs.sh — token usage tracking from JSONL transcripts
 Tests: _costs_jsonl_dir, costs_main routing, Python JSONL parsing, edge cases
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/costs.sh` | calls |
+| `lib/costs.sh` | tests |
 
 ## Related
 

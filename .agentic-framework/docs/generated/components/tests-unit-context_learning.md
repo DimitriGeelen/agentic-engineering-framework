@@ -16,11 +16,15 @@ Tests the do_add_learning() function:
 - File creation and appending
 - Output formatting
 
-## Dependencies (1)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/context.sh` | calls |
+| `lib/compat.sh` | calls |
+| `C-002` | calls |
+| `C-002` | tests |
+| `lib/compat.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_learning.yaml`*

@@ -24,7 +24,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (5)
+## Used By (22)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -33,6 +33,23 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `lib/paths.sh` | called_by |
 | `tests/unit/lib_tasks.bats` | called-by |
 | `tests/unit/lib_tasks.bats` | called_by |
+| `tests/unit/context_episodic.bats` | called_by |
+| `tests/unit/context_episodic.bats` | tests_by |
+| `tests/unit/context_focus.bats` | called_by |
+| `tests/unit/context_focus.bats` | tests_by |
+| `tests/unit/git_common.bats` | called_by |
+| `tests/unit/git_common.bats` | tests_by |
+| `tests/unit/inception_decide_ac_tick.bats` | called_by |
+| `tests/unit/inception_decide_ac_tick.bats` | tests_by |
+| `tests/unit/inception_decide_atomicity.bats` | called_by |
+| `tests/unit/inception_decide_atomicity.bats` | tests_by |
+| `tests/unit/inception_tick_decision_recorded.bats` | called_by |
+| `tests/unit/inception_tick_decision_recorded.bats` | tests_by |
+| `tests/unit/inception_tick_marker.bats` | called_by |
+| `tests/unit/inception_tick_marker.bats` | tests_by |
+| `tests/unit/lib_inception.bats` | called_by |
+| `tests/unit/lib_inception.bats` | tests_by |
+| `tests/unit/lib_tasks.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-tasks.yaml`*

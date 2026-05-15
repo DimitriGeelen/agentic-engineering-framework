@@ -25,6 +25,7 @@ do_install_hooks() {
 
     local hooks_dir="$PROJECT_ROOT/.git/hooks"
     local commit_msg_hook="$hooks_dir/commit-msg"
+    local pre_commit_hook="$hooks_dir/pre-commit"
     local post_commit_hook="$hooks_dir/post-commit"
     local pre_push_hook="$hooks_dir/pre-push"
 
@@ -54,7 +55,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.8
+# VERSION=1.9
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -231,6 +232,112 @@ HOOK_EOF
 
     chmod +x "$commit_msg_hook"
 
+    # T-1844: Create pre-commit hook for secret-scan
+    # Origin: T-1828/T-1834 — Azure DevOps PAT committed at 79e3361d (T-1736
+    # Spike B). GitHub mirror blocked by GH013 push protection. Framework had
+    # no structural gate against secrets reaching commits. This hook delegates
+    # scanning to agents/git/lib/secret-scan.sh and fails the commit on hit.
+    cat > "$pre_commit_hook" << 'HOOK_EOF'
+#!/bin/bash
+# pre-commit hook - Secret Scan (T-1844)
+# Installed by: ./agents/git/git.sh install-hooks
+# Part of: Agentic Engineering Framework
+# VERSION=1.0
+
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+
+# Resolve FRAMEWORK_ROOT — framework / consumer / vendored layouts.
+FRAMEWORK_ROOT="$PROJECT_ROOT"
+if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+    _fw_path=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    [ -n "$_fw_path" ] && [ -d "$_fw_path" ] && FRAMEWORK_ROOT="$_fw_path"
+fi
+[ ! -f "$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh" ] \
+    && [ -f "$PROJECT_ROOT/.agentic-framework/agents/git/lib/secret-scan.sh" ] \
+    && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
+
+SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
+if [ ! -x "$SCANNER" ]; then
+    # Scanner missing — fail open with a clear message, don't block legitimate work.
+    echo "secret-scan: scanner not found at $SCANNER (skipping)" >&2
+    exit 0
+fi
+
+# Run the scanner against the staged diff.
+_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$SCANNER" scan-staged 2>&1)
+_rc=$?
+
+if [ "$_rc" -ne 0 ]; then
+    echo ""
+    echo "ERROR: Commit blocked — secret-scan detected matches:" >&2
+    echo "" >&2
+    echo "$_hits" >&2
+    echo "" >&2
+    echo "If this is a real secret: remove it from the staged content and re-commit." >&2
+    echo "If this is a false positive: add a regex to .secret-scan-allowlist." >&2
+    echo "" >&2
+    echo "Bypass: git commit --no-verify" >&2
+    echo "  (Tier 0 will prompt for approval on --no-verify. Bypasses are logged.)" >&2
+    echo "" >&2
+    echo "Origin: T-1844 — root-cause prevention for the T-1828/T-1834 leak class." >&2
+    exit 1
+fi
+
+# T-1863: Duplicate-task-ID gate — G-052 prevention at the commit boundary.
+# Catches active/T-NNNN + completed/T-NNNN orphans before they land in git
+# (was previously only caught at audit time, often days after the leak).
+DUP_TASK_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/dup-task-scan.sh"
+if [ -x "$DUP_TASK_SCANNER" ]; then
+    _dt_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$DUP_TASK_SCANNER" scan-staged 2>&1)
+    _dt_rc=$?
+    if [ "$_dt_rc" -ne 0 ]; then
+        echo "" >&2
+        echo "ERROR: Commit blocked — duplicate task IDs in staged tree:" >&2
+        echo "" >&2
+        echo "$_dt_hits" >&2
+        echo "" >&2
+        echo "Resolve: keep the canonical version (usually .tasks/completed/),"  >&2
+        echo "         git rm the orphan, and re-commit. Cross-check status:"   >&2
+        echo "           grep '^status:' .tasks/{active,completed}/T-NNNN-*.md" >&2
+        echo "" >&2
+        echo "Bypass: git commit --no-verify   (Tier 0, logged)"                >&2
+        echo "" >&2
+        echo "Origin: T-1863 — T-1859 active+completed orphan caught 3 days late." >&2
+        exit 1
+    fi
+fi
+
+# T-1845: Large-file gate — sibling prevention to secret-scan. Blocks staged
+# files >10MiB by default; allowlist exempts deliberate vendored cases.
+LARGE_FILE_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/large-file-scan.sh"
+if [ -x "$LARGE_FILE_SCANNER" ]; then
+    _lf_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$LARGE_FILE_SCANNER" scan-staged 2>&1)
+    _lf_rc=$?
+    if [ "$_lf_rc" -ne 0 ]; then
+        echo ""
+        echo "ERROR: Commit blocked — large-file gate flagged staged content:" >&2
+        echo "" >&2
+        echo "$_lf_hits" >&2
+        echo "" >&2
+        echo "If this file should not be in git: unstage it (git restore --staged <path>)" >&2
+        echo "                                   and add it to .gitignore." >&2
+        echo "If it's a deliberate vendored artefact: add the path-prefix regex to" >&2
+        echo "                                       .large-file-allowlist." >&2
+        echo "If you need a one-off larger threshold:" >&2
+        echo "  FW_LARGE_FILE_BLOCK_BYTES=104857600 git commit ..." >&2
+        echo "" >&2
+        echo "Bypass: git commit --no-verify   (Tier 0, logged)" >&2
+        echo "" >&2
+        echo "Origin: T-1845 — sibling prevention to T-1844 (T-1834 force-push surfaced 36MB+78MB tracked binaries)." >&2
+        exit 1
+    fi
+fi
+
+exit 0
+HOOK_EOF
+
+    chmod +x "$pre_commit_hook"
+
     # Create post-commit hook for bypass detection + context checkpoint
     cat > "$post_commit_hook" << 'HOOK_EOF'
 #!/bin/bash
@@ -360,17 +467,21 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity (T-1593, T-1603)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity (T-1593, T-1603, T-1829)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.3
+# VERSION=1.4
 
 # T-1603: VERSION monotonicity check.
 # Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
 # ~440 patch versions dropped) as a side-effect of `git checkout` against a stale
 # ref. 12 consumers paid the cost (pins ahead of HEAD for 4 days). Block any push
-# that decreases VERSION on a branch (compare local-being-pushed vs remote
-# currently-at). Read git's stdin format: "<local-ref> <local-sha> <remote-ref> <remote-sha>"
+# whose local commit is NOT forward-in-time of the remote commit (compare via
+# git merge-base --is-ancestor). T-1829 added the ancestor refinement: a pure
+# sort -V comparison conflated "new commit lowers VERSION via tag-counter reset"
+# (forward in time, allowed) with "HEAD reset to older commit" (the cc38e98f5
+# class — local is ancestor of remote, blocked). Read git's stdin format:
+# "<local-ref> <local-sha> <remote-ref> <remote-sha>"
 _zero="0000000000000000000000000000000000000000"
 _block_lines=""
 # Need to capture stdin once; tee to FD 9 so the lightweight-tag loop below
@@ -396,11 +507,25 @@ while IFS=' ' read -r _local_ref _local_sha _remote_ref _remote_sha; do
     # Equal is OK — no change. Higher is OK — bump.
     [ "$_local_ver" = "$_remote_ver" ] && continue
     # Lower fails: sort -V says first is lower-or-equal; if remote sorts BEFORE
-    # local, local is higher → ok. If local sorts before remote, local is lower → block.
+    # local, local is higher → ok. If local sorts before remote, local is lower
+    # → check forward-in-time via ancestor relation (T-1829).
     _first=$(printf '%s\n%s\n' "$_local_ver" "$_remote_ver" | sort -V | head -1)
-    if [ "$_first" = "$_local_ver" ]; then
-        _block_lines="${_block_lines}${_block_lines:+
+    if [ "$_first" = "$_local_ver" ] && [ "$_local_ver" != "$_remote_ver" ]; then
+        # T-1829: tag-counter reset (e.g. v1.6.2 created after v1.5.X stamping)
+        # drops <commits-since-tag> back to 0, making local-VERSION numerically
+        # less than remote-VERSION despite local being forward in commit time.
+        # If the remote sha is locally known AND is an ancestor of local sha,
+        # the push is genuinely forward — allow. Otherwise fall back to the
+        # strict-block behaviour that T-1602 motivated (HEAD-reset rollback,
+        # local-is-ancestor-of-remote shape).
+        if [ "$_remote_sha" != "$_zero" ] \
+           && git cat-file -e "$_remote_sha" 2>/dev/null \
+           && git merge-base --is-ancestor "$_remote_sha" "$_local_sha" 2>/dev/null; then
+            :   # forward in commit time despite VERSION decrease — allow
+        else
+            _block_lines="${_block_lines}${_block_lines:+
 }  ${_local_ref#refs/heads/}: VERSION ${_local_ver} < remote ${_remote_ver}"
+        fi
     fi
 done <<EOF
 ${_stdin_buf}
@@ -585,11 +710,13 @@ HOOK_EOF
     echo ""
     echo "Installed:"
     echo "  - $commit_msg_hook (task reference validation)"
+    echo "  - $pre_commit_hook (secret-scan — T-1844)"
     echo "  - $post_commit_hook (bypass detection)"
     echo "  - $pre_push_hook (audit before push)"
     echo ""
     echo "Hook behavior:"
     echo "  - Blocks commits without task references (T-XXX)"
+    echo "  - Blocks commits introducing secrets (T-1844 — Azure PAT, AWS keys, SSH keys, etc.)"
     echo "  - Allows merge commits and rebases"
     echo "  - Runs audit before push (blocks on FAIL, warns on WARN)"
     echo "  - Bypass: $(_emit_user_command "tier0 approve") (Tier 0 protected)"

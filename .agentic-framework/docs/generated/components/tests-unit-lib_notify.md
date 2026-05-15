@@ -11,11 +11,12 @@
 Unit tests for lib/notify.sh
 Tests fw_notify() — push notification helper
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/notify.sh` | calls |
+| `lib/notify.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_notify.yaml`*

@@ -85,7 +85,13 @@ def _list_arcs() -> list[dict[str, Any]]:
             continue
         if not isinstance(data, dict):
             continue
-        constituents = data.get("constituent_tasks") or []
+        # T-1817: task_count must reflect merged source-of-truth (legacy + tag-scan),
+        # not just the YAML's denormalised cache.
+        legacy = data.get("constituent_tasks") or []
+        legacy_ids = [str(t).strip() for t in legacy if str(t).strip()] if isinstance(legacy, list) else []
+        arc_id_for_scan = str(data.get("id") or af.stem).strip()
+        tagged_ids = _scan_tasks_by_tag(f"arc:{arc_id_for_scan}") if arc_id_for_scan else []
+        merged_count = len(set(legacy_ids) | set(tagged_ids))
         # YAML may parse ISO-8601 to datetime; coerce to str for stable rendering + sort.
         created_raw = data.get("created", "")
         created_str = created_raw.isoformat() if hasattr(created_raw, "isoformat") else str(created_raw or "")
@@ -97,7 +103,7 @@ def _list_arcs() -> list[dict[str, Any]]:
             "status": data.get("status", "?"),
             "decision": data.get("decision"),
             "anchor_task": data.get("anchor_task"),
-            "task_count": len(constituents) if isinstance(constituents, list) else 0,
+            "task_count": merged_count,
             "created": created_str,
             "closed_at": closed_str,
             "focused": (focus is not None and focus == data.get("id")),
@@ -138,16 +144,71 @@ def _read_task_meta(task_id: str) -> dict[str, Any] | None:
     return None
 
 
-def _resolve_constituents(arc: dict[str, Any]) -> list[dict[str, Any]]:
-    constituents = arc.get("constituent_tasks") or []
-    if not isinstance(constituents, list):
+def _scan_tasks_by_tag(tag: str) -> list[str]:
+    """Return T-IDs of tasks tagged with `tag` (e.g. 'arc:dispatch-safety').
+
+    Mirrors `lib/arc.sh:_arc_tasks_with_tag` — the canonical source of truth for
+    arc constituency (T-1813 audit precedent, T-1817 web sibling). The YAML's
+    `constituent_tasks` field is a denormalised cache that misses tag-only
+    additions.
+    """
+    if not tag:
         return []
+    tasks_dir = PROJECT_ROOT / ".tasks"
+    found: list[str] = []
+    for sub in ("active", "completed"):
+        sub_dir = tasks_dir / sub
+        if not sub_dir.is_dir():
+            continue
+        for md in sub_dir.glob("T-*.md"):
+            try:
+                text = md.read_text()
+            except OSError:
+                continue
+            m = _FRONTMATTER_RE.search(text)
+            if not m:
+                continue
+            try:
+                fm = yaml.safe_load(m.group(1)) or {}
+            except yaml.YAMLError:
+                continue
+            tags = fm.get("tags") or []
+            if not isinstance(tags, list):
+                continue
+            if tag in tags:
+                tid = str(fm.get("id") or "").strip()
+                if tid:
+                    found.append(tid)
+    return sorted(set(found))
+
+
+def _resolve_constituents(arc: dict[str, Any]) -> list[dict[str, Any]]:
+    """Merge legacy `constituent_tasks` with arc-tag scan (T-1817).
+
+    Legacy entries first (preserves order author wrote them in); tag-scan
+    entries appended in sorted order; dedup by task id.
+    """
+    legacy = arc.get("constituent_tasks") or []
+    if not isinstance(legacy, list):
+        legacy = []
+    arc_id = str(arc.get("id") or "").strip()
+    tagged = _scan_tasks_by_tag(f"arc:{arc_id}") if arc_id else []
+
+    merged_ids: list[str] = []
+    seen: set[str] = set()
+    for tid in list(legacy) + tagged:
+        s = str(tid).strip()
+        if not s or s in seen:
+            continue
+        merged_ids.append(s)
+        seen.add(s)
+
     out: list[dict[str, Any]] = []
-    for tid in constituents:
-        meta = _read_task_meta(str(tid))
+    for tid in merged_ids:
+        meta = _read_task_meta(tid)
         if meta is None:
             out.append({
-                "id": str(tid),
+                "id": tid,
                 "name": "(task file not found)",
                 "status": "?",
                 "horizon": "?",

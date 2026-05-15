@@ -60,13 +60,30 @@ mirror_sync_one() {
             [ "$quiet" -eq 0 ] && echo "  $remote: would push ${mirror_head:0:9} → ${origin_head:0:9} (dry-run)"
             return 0
         fi
-        if git -C "${PROJECT_ROOT:-.}" push "$remote" "$branch" >/dev/null 2>&1; then
+        # T-1829: capture push stderr so a recurring stall is diagnosable from
+        # the log alone, not by re-running the failing push interactively.
+        # Origin: T-1828 RCA — the OneDev→GitHub mirror failed every 15min for
+        # 7+ hours with only "push-failed" in the log; took a consumer pickup
+        # to surface the actual blocking error (T-1603 hook).
+        local _push_err
+        _push_err=$(mktemp 2>/dev/null || echo "/tmp/mirror-push-err.$$")
+        if git -C "${PROJECT_ROOT:-.}" push "$remote" "$branch" >/dev/null 2>"$_push_err"; then
             mirror_log_event "$log_file" "$remote" "synced" "$mirror_head" "$origin_head"
             [ "$quiet" -eq 0 ] && echo "  $remote: synced ${mirror_head:0:9} → ${origin_head:0:9}"
+            rm -f "$_push_err"
             return 0
         fi
         mirror_log_event "$log_file" "$remote" "push-failed" "$mirror_head" "$origin_head"
-        [ "$quiet" -eq 0 ] && echo "  $remote: push failed" >&2
+        if [ -s "$_push_err" ]; then
+            {
+                printf '##PUSH-FAILED-STDERR remote=%s ts=%s\n' \
+                    "$remote" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                head -20 "$_push_err"
+                printf '##END\n'
+            } >> "$log_file"
+        fi
+        rm -f "$_push_err"
+        [ "$quiet" -eq 0 ] && echo "  $remote: push failed (stderr in $log_file)" >&2
         return 1
     fi
 

@@ -11,11 +11,16 @@
 Unit tests for lib/review.sh
 Tests emit_review() — human review output helper
 
-## Dependencies (1)
+## Dependencies (6)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/review.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/paths.sh` | calls |
+| `lib/review.sh` | tests |
+| `lib/colors.sh` | tests |
+| `lib/paths.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_review.yaml`*

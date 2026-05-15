@@ -18,7 +18,7 @@ fw_run_ts "fw-util" yaml-get "$file" "$key"
 |--------|-------------|
 | `lib/runtime.sh` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -26,6 +26,7 @@ fw_run_ts "fw-util" yaml-get "$file" "$key"
 | `tests/unit/lib_runtime.bats` | called-by |
 | `lib/runtime.sh` | called_by |
 | `tests/unit/lib_runtime.bats` | called_by |
+| `tests/unit/lib_runtime.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-runtime.yaml`*

@@ -9,13 +9,14 @@
 fw assumption - Assumption tracking
 Manages project assumptions: register, validate, invalidate, list
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/lib_assumption.bats` | called-by |
 | `tests/unit/lib_assumption.bats` | called_by |
+| `tests/unit/lib_assumption.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-assumption.yaml`*

@@ -11,11 +11,12 @@
 Unit tests for lib/firewall.sh — firewall port management utilities
 Origin: T-910
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/firewall.sh` | calls |
+| `lib/firewall.sh` | tests |
 
 ## Related
 

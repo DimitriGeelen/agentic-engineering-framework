@@ -236,13 +236,77 @@ for fn in sorted(os.listdir(active_dir)):
     for ac in unchecked:
         ac_clean = ac.strip()
         is_rubber_stamp = '[RUBBER-STAMP]' in ac_clean
-        is_review = '[REVIEW]' in ac_clean
+        is_reviewer = '[REVIEWER]' in ac_clean  # T-1811: new prefix
+        # Substring guard — `[REVIEW]` is contained in `[REVIEWER]` so order matters.
+        is_review = '[REVIEW]' in ac_clean and not is_reviewer
+
+        # T-1811: [REVIEWER] ACs are reviewer-agent verifiable. Read Reviewer Verdict
+        # block from task body; if Overall=PASS + needs_human=no, PASS the AC.
+        if is_reviewer:
+            rev_match = re.search(r'^## Reviewer Verdict.*?(?=\n## |\Z)', text, re.MULTILINE | re.DOTALL)
+            if rev_match:
+                rev_block = rev_match.group(0)
+                overall_m = re.search(r'\*\*Overall:\*\*\s*(\w+)', rev_block)
+                needs_m = re.search(r'\*\*Needs Human:\*\*\s*(\w+)', rev_block)
+                overall = overall_m.group(1) if overall_m else "?"
+                needs = needs_m.group(1) if needs_m else "?"
+                if overall == "PASS" and needs.lower() == "no":
+                    results["pass"] += 1
+                    task_results.append((task_id, "PASS", ac_clean[:70], f"Reviewer: {overall}/needs-human={needs}"))
+                    print(f"  {GREEN}PASS{NC}   {task_id}: {ac_clean[:70]}")
+                    if verbose:
+                        print(f"         Evidence: Reviewer verdict {overall}, no human review needed")
+                else:
+                    results["review"] += 1
+                    task_results.append((task_id, "REVIEW", ac_clean[:70], f"Reviewer: {overall}/needs-human={needs} — investigate"))
+                    print(f"  {YELLOW}REVIEW{NC}  {task_id}: {ac_clean[:70]}")
+                    if verbose:
+                        print(f"         Reviewer: {overall}, needs_human={needs} — read findings before ticking")
+            else:
+                results["skip"] += 1
+                task_results.append((task_id, "SKIP", ac_clean[:70], "No Reviewer Verdict block — run `bin/fw reviewer " + task_id + "`"))
+                if verbose:
+                    print(f"  {CYAN}SKIP{NC}   {task_id}: [REVIEWER] AC but no verdict — run `bin/fw reviewer {task_id}` first")
+            continue
 
         if is_review:
             results["review"] += 1
             if verbose:
                 print(f"  {YELLOW}REVIEW{NC}  {task_id}: {ac_clean[:70]}")
             task_results.append((task_id, "REVIEW", ac_clean[:70], "Human judgment required"))
+            # T-1811: surface Reviewer agent verdict alongside [REVIEW] ACs.
+            # If the task body has a `## Reviewer Verdict` block and the verdict is
+            # PASS + needs_human=no, the AC may be mis-classified — nudge re-class
+            # to [REVIEWER] + Agent AC. Read-only; does not modify task files.
+            rev_match = re.search(r'^## Reviewer Verdict.*?(?=\n## |\Z)', text, re.MULTILINE | re.DOTALL)
+            if rev_match:
+                rev_block = rev_match.group(0)
+                overall_m = re.search(r'\*\*Overall:\*\*\s*(\w+)', rev_block)
+                needs_m = re.search(r'\*\*Needs Human:\*\*\s*(\w+)', rev_block)
+                findings_m = re.search(r'\*\*Findings:\*\*\s*(\w+)', rev_block)
+                overall = overall_m.group(1) if overall_m else "?"
+                needs = needs_m.group(1) if needs_m else "?"
+                findings = findings_m.group(1) if findings_m else "?"
+                tag = f"{overall}/needs-human={needs}/findings={findings}"
+                if task_id not in [t[0] for t in task_results if "Reviewer:" in (t[3] or "")]:
+                    task_results.append((task_id, "REVIEWER", "(verdict)", f"Reviewer: {tag}"))
+                    if verbose:
+                        print(f"  {CYAN}Reviewer{NC} {task_id}: {tag}")
+                    if overall == "PASS" and needs.lower() == "no":
+                        # T-1814: suppress NUDGE for genuinely-subjective ACs.
+                        # Reviewer's PASS+no-human means "no anti-patterns in AC text",
+                        # NOT "reviewer can replace human for this AC". Tone/visual
+                        # judgments stay human-only regardless of reviewer scan.
+                        subjective_kw = (
+                            "tone", "preachy", "voice", "render", "cleanly",
+                            "rhythm", "intuitive", "looks", "layout", "badge",
+                            "aesthetic", "taste", "feel", "sounds", "reads",
+                            "visual", "style"
+                        )
+                        ac_lower = ac_clean.lower()
+                        is_subjective = any(kw in ac_lower for kw in subjective_kw)
+                        if not is_subjective:
+                            print(f"  {YELLOW}NUDGE{NC}  {task_id}: reviewer PASS+no-human — consider re-classifying [REVIEW] ACs as [REVIEWER] (T-1811)")
             continue
 
         # Try automated verification

@@ -16,11 +16,14 @@ Tests is_bash_safe_command() and has_bash_write_pattern():
 - Write operations blocked
 - Write pattern detection
 
-## Dependencies (1)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/context.sh` | calls |
+| `agents/context/lib/safe-commands.sh` | calls |
+| `agents/context/lib/safe-commands.sh` | tests |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_safe_commands.yaml`*

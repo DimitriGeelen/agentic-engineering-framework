@@ -16,6 +16,13 @@ This test pins the fix by:
 3. Running `update-task.sh --status work-completed` (triggers the auto-pop)
 4. Asserting the resulting YAML parses cleanly AND has no orphan `  - ` lines
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/task-create/update-task.sh` | calls |
+| `agents/task-create/update-task.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-update_task_yaml_components_emit.yaml`*
 *Last verified: 2026-04-25*

@@ -11,11 +11,12 @@
 Integration tests for fw self-test
 Origin: T-947
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ## Related
 

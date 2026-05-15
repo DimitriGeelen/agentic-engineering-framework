@@ -24,19 +24,46 @@ FRAMEWORK_ROOT = APP_DIR.parent
 def _discover_project_root(start: Path) -> Path | None:
     """Walk up from `start` looking for `.framework.yaml` (consumer marker).
 
-    Returns the first ancestor containing `.framework.yaml`, or None if
-    filesystem root is reached. Matches bash `paths.sh` behaviour (T-1310).
+    Returns the first ancestor containing `.framework.yaml`, or None if no
+    valid marker is found.
+
+    Bound (T-1747, G-069): when `start` is inside FRAMEWORK_ROOT, the walk
+    stops at FRAMEWORK_ROOT itself. The framework repo IS the framework — it
+    has no `.framework.yaml` marker and shouldn't pretend to be a consumer of
+    itself, and it MUST NOT climb past FRAMEWORK_ROOT into ancestors. A stray
+    `/.framework.yaml` (filesystem-root pollution) once caused PROJECT_ROOT
+    to silently resolve to `/`, breaking every Watchtower route that read
+    project-relative content.
+
+    For consumer-style starts (cwd outside FRAMEWORK_ROOT), the walk continues
+    to filesystem root as before.
     """
     try:
         cur = Path(start).resolve()
     except OSError:
         return None
+    try:
+        framework_root = FRAMEWORK_ROOT.resolve()
+    except OSError:
+        framework_root = FRAMEWORK_ROOT
+    in_framework = _is_within(cur, framework_root)
     while True:
         if (cur / ".framework.yaml").is_file():
             return cur
+        if in_framework and cur == framework_root:
+            return None
         if cur.parent == cur:
             return None
         cur = cur.parent
+
+
+def _is_within(child: Path, parent: Path) -> bool:
+    """Return True if `child` is `parent` or a descendant of it."""
+    try:
+        child.relative_to(parent)
+        return True
+    except ValueError:
+        return False
 
 
 def _resolve_project_root() -> tuple[Path, str]:
@@ -260,6 +287,116 @@ _TASK_REF_RE_SHARED = re_mod.compile(r"(?<![\w/-])(T-\d{3,5})(?![\w/-])")
 _BARE_URL_RE_SHARED = re_mod.compile(r"(?<![\(\[\"'`])(https?://[^\s<>'\"`)\]]+)")
 _CODE_URL_HTML_RE_SHARED = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
 
+# T-1764: single source of truth for "viewable artefact paths".
+# Both the auto-linker (T-1722) and the /file/ route (T-632) consult these.
+# Diverging them — as happened pre-T-1764 — means the linker emits anchors
+# the route can't serve (HTTP 404), silently breaking T-1722's contract.
+
+VIEWABLE_DIR_PREFIXES = (
+    "docs/reports/",
+    ".tasks/active/",
+    ".tasks/completed/",
+    ".context/handovers/",
+    ".context/episodic/",
+    ".context/audits/",
+    ".context/project/",
+    ".context/working/",
+    ".context/arcs/",
+    ".fabric/components/",
+    "web/",
+    "lib/",
+    "bin/",
+    "agents/",
+    "tests/",
+    "tools/",
+    "prompts/",
+    "policy/",
+    "deploy/",
+)
+
+VIEWABLE_EXTENSIONS = ("md", "yaml", "yml", "py", "sh", "bats", "json", "toml")
+
+
+def is_viewable_path(filepath: str) -> bool:
+    """Return True iff `filepath` (relative to PROJECT_ROOT) is servable by /file/.
+
+    Single source of truth used by both `_auto_link_files` (T-1722) and the
+    `/file/<path>` route (T-632). Drift between linker and route was the
+    T-1764 root cause.
+
+    Path-traversal guards live HERE, not in the route — so any caller (linker,
+    route, future surfaces) gets the same enforcement.
+    """
+    if not filepath:
+        return False
+    if ".." in filepath:
+        return False
+    if not any(filepath.startswith(d) for d in VIEWABLE_DIR_PREFIXES):
+        return False
+    ext = filepath.rsplit(".", 1)[-1] if "." in filepath else ""
+    if ext not in VIEWABLE_EXTENSIONS:
+        return False
+    return True
+
+
+# T-1722: artefact path linkifier — promoted from web/blueprints/docs.py (T-633)
+# and extended. Matches paths under known artefact prefixes ending in a known
+# extension. The (PROJECT_ROOT/path).exists() guard in _auto_link_files refuses
+# to link non-existent paths — eliminates false positives from natural prose
+# that happens to share a prefix. The dir/extension lists are derived from
+# VIEWABLE_DIR_PREFIXES and VIEWABLE_EXTENSIONS (T-1764) so route and linker
+# stay in lockstep.
+def _build_artefact_path_re():
+    # Strip trailing slashes from dirs to embed cleanly in alternation, then
+    # escape regex metachars (the leading `.` in `.tasks/`, `.context/`, etc.)
+    dirs = "|".join(re_mod.escape(d) for d in VIEWABLE_DIR_PREFIXES)
+    exts = "|".join(re_mod.escape(e) for e in VIEWABLE_EXTENSIONS)
+    pattern = (
+        # Three guards to keep idempotent and avoid wrapping an already-linked path:
+        #   (?<!href=")  — path is not the href target of an existing <a>
+        #   (?<!/file/)  — path is not the suffix of an already-built /file/<...> URL
+        #   (?<!">)      — path is not the link text immediately following an anchor's closing `">`
+        r'(?<!href=")'
+        r'(?<!/file/)'
+        r'(?<!">)'
+        r'(`?)'
+        r'((?:' + dirs + r')'
+        r'[A-Za-z0-9_/.-]+\.(?:' + exts + r'))'
+        r'(`?)'
+    )
+    return re_mod.compile(pattern)
+
+
+_ARTEFACT_PATH_RE = _build_artefact_path_re()
+
+
+def _auto_link_files(html: str) -> str:
+    """Convert artefact-path references in rendered HTML to clickable /file/ links.
+
+    Existence-gated: only paths that resolve under PROJECT_ROOT become anchors;
+    non-matching prose stays untouched. Backticks (``code spans``) are preserved
+    around the link, mirroring the T-1575 contract for backticked URLs.
+
+    Origin: T-633 (introduced in web/blueprints/docs.py for component-doc pages).
+    Promoted here in T-1722 so /review, /tasks, /approvals, /inception — every
+    Markdown surface — gets one-click artefact navigation.
+    """
+    if not html:
+        return html
+
+    def _replace(m):
+        tick1, path, tick2 = m.group(1), m.group(2), m.group(3)
+        if (PROJECT_ROOT / path).exists():
+            inner = f"{tick1}{path}{tick2}" if (tick1 or tick2) else path
+            # Wrap inside <code>…</code> when backticked, mirroring the
+            # T-1575 codified shape for backticked URLs.
+            if tick1 and tick2:
+                return f'<a href="/file/{path}"><code>{path}</code></a>'
+            return f'<a href="/file/{path}">{inner}</a>'
+        return m.group(0)
+
+    return _ARTEFACT_PATH_RE.sub(_replace, html)
+
 
 def render_markdown_safe(text: str) -> str:
     """Render Markdown to HTML with safe_mode='escape', auto-link T-XXX refs
@@ -290,6 +427,10 @@ def render_markdown_safe(text: str) -> str:
         lambda m: f'<a href="{m.group(1)}"><code>{m.group(1)}</code></a>',
         html,
     )
+    # T-1722: artefact paths (docs/reports/*, .tasks/*, .fabric/components/*, etc.)
+    # become clickable /file/ links. Existence-gated; same rendering-layer
+    # contract as the T-1575 URL/T-NNNN shape — agent need not pre-format.
+    html = _auto_link_files(html)
     return html
 
 

@@ -14,12 +14,13 @@
 | `web/shared.py` | calls |
 | `web/templates/settings.html` | renders |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_settings_models.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-settings.yaml`*

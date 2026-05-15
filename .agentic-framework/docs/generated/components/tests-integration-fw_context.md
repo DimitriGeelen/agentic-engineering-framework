@@ -14,11 +14,12 @@ fw context status — show context state
 fw context init   — initialize session
 fw context focus  — set/show current focus
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_context.yaml`*

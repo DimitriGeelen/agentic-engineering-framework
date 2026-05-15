@@ -121,12 +121,25 @@ do_upgrade() {
     local dry_run=false
     local force=false
     local dedupe_user_hooks=false
+    # T-1634: explicit upstream URL for bare-from-consumer auto-clone path.
+    # Empty by default — bare-from-consumer detection falls back to
+    # $target_dir/.framework.yaml's upstream_repo field.
+    local from_upstream=""
+    # T-1839: opt-in escape hatch for legitimate downgrade scenarios (e.g.
+    # operator rolling consumer back to an older framework version on purpose).
+    # Default refuses ahead→behind direction with diagnostic + T-1828 context.
+    local force_downgrade=false
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run) dry_run=true; shift ;;
             --force) force=true; shift ;;
+            --force-downgrade) force_downgrade=true; shift ;;
             --dedupe-user-hooks) dedupe_user_hooks=true; shift ;;
+            --from-upstream)
+                from_upstream="$2"; shift 2 ;;
+            --from-upstream=*)
+                from_upstream="${1#--from-upstream=}"; shift ;;
             -h|--help)
                 echo -e "${BOLD}fw upgrade${NC} - Sync framework improvements to consumer project"
                 echo ""
@@ -138,9 +151,16 @@ do_upgrade() {
                 echo "Options:"
                 echo "  --dry-run               Show what would change without modifying files"
                 echo "  --force                 Overwrite even if project files are newer"
+                echo "  --force-downgrade       Allow upgrade to rewrite the consumer's pinned version"
+                echo "                          to a LOWER framework version (T-1839 guard bypass)."
+                echo "                          Default: refuse with diagnostic referencing T-1828."
                 echo "  --dedupe-user-hooks     Remove framework hooks from \$HOME/.claude/settings.json"
                 echo "                          that duplicate project-level (T-1481, addresses OBS-023)."
                 echo "                          A timestamped backup is created before modification."
+                echo "  --from-upstream URL     Clone the given upstream framework repo to a tempdir and"
+                echo "                          use it as the upgrade source (T-1634). Bypasses the"
+                echo "                          upstream_repo field in .framework.yaml. Tempdir is"
+                echo "                          cleaned up on exit."
                 echo "  -h, --help              Show this help"
                 echo ""
                 echo "What gets upgraded:"
@@ -200,34 +220,97 @@ do_upgrade() {
     local _fw_root_canon
     _fw_root_canon=$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P) || _fw_root_canon="$FRAMEWORK_ROOT"
     if [ -n "$_consumer_vendor_canon" ] && [ "$_fw_root_canon" = "$_consumer_vendor_canon" ]; then
-        echo -e "${RED}ERROR: fw upgrade invoked from inside the consumer's vendored framework${NC}" >&2
-        echo "" >&2
-        echo "  FRAMEWORK_ROOT: $_fw_root_canon" >&2
-        echo "  target_dir:     $target_dir" >&2
-        echo "  Vendored copy:  $_consumer_vendor_canon" >&2
-        echo "" >&2
-        echo "  Source and target collapse — do_vendor would self-copy and corrupt state." >&2
-        echo "  No changes made." >&2
-        echo "" >&2
-        echo -e "${BOLD}Run from an upstream framework repo with explicit target:${NC}" >&2
-        echo "" >&2
-        # Best-effort upstream discovery: ~/.local/bin/fw symlink (legacy global install)
-        local _upstream=""
-        local _shim="$HOME/.local/bin/fw"
-        if [ -L "$_shim" ]; then
-            local _link_target
-            _link_target=$(readlink -f "$_shim" 2>/dev/null || echo "")
-            if [ -n "$_link_target" ] && [ -f "$(dirname "$_link_target")/../FRAMEWORK.md" ]; then
-                _upstream=$(cd "$(dirname "$_link_target")/.." 2>/dev/null && pwd -P) || _upstream=""
+        # T-1634: bare-from-consumer auto-clone path. Source and target
+        # collapse — instead of erroring (T-1542 behaviour), try to clone
+        # upstream to a tempdir and re-run with that as source.
+
+        # Resolve upstream URL: --from-upstream flag > .framework.yaml upstream_repo
+        local _upstream_url="$from_upstream"
+        if [ -z "$_upstream_url" ] && [ -f "$target_dir/.framework.yaml" ]; then
+            _upstream_url=$(grep "^upstream_repo:" "$target_dir/.framework.yaml" 2>/dev/null \
+                | head -1 \
+                | sed -E 's/^upstream_repo:[[:space:]]*//' \
+                | sed -E 's/[[:space:]]+$//')
+            # Normalise GitHub shorthand (owner/repo) to full URL.
+            # Recognised URL prefixes: http(s)://, ssh://, git://, file://,
+            # git@host:path (SSH shorthand). Everything else is treated as
+            # owner/repo and expanded to a GitHub HTTPS URL.
+            if [ -n "$_upstream_url" ] \
+               && ! echo "$_upstream_url" | grep -qE '^(https?|ssh|git|file)://|^git@'; then
+                _upstream_url="https://github.com/${_upstream_url}.git"
             fi
         fi
-        if [ -n "$_upstream" ] && [ "$_upstream" != "$_fw_root_canon" ]; then
-            echo "  cd $_upstream && bin/fw upgrade $target_dir" >&2
-        else
-            echo "  cd /path/to/agentic-engineering-framework && bin/fw upgrade $target_dir" >&2
+
+        if [ -z "$_upstream_url" ]; then
+            echo -e "${RED}ERROR: fw upgrade invoked from inside the consumer's vendored framework, and no upstream URL is known${NC}" >&2
+            echo "" >&2
+            echo "  FRAMEWORK_ROOT: $_fw_root_canon" >&2
+            echo "  target_dir:     $target_dir" >&2
+            echo "  Vendored copy:  $_consumer_vendor_canon" >&2
+            echo "" >&2
+            echo "  Source and target collapse — would self-copy and corrupt state." >&2
+            echo "  No changes made." >&2
+            echo "" >&2
+            echo -e "${BOLD}Remediation (pick one):${NC}" >&2
+            echo "" >&2
+            echo "  1. Add the upstream URL to .framework.yaml (one-time, persists):" >&2
+            echo "       echo 'upstream_repo: https://github.com/OWNER/REPO.git' >> $target_dir/.framework.yaml" >&2
+            echo "       fw upgrade" >&2
+            echo "" >&2
+            echo "  2. Specify upstream URL inline:" >&2
+            echo "       fw upgrade --from-upstream https://github.com/OWNER/REPO.git" >&2
+            echo "" >&2
+            echo "  3. Run from an upstream framework checkout with explicit target:" >&2
+            echo "       cd /path/to/agentic-engineering-framework && bin/fw upgrade $target_dir" >&2
+            echo "" >&2
+            return 1
         fi
-        echo "" >&2
-        return 1
+
+        echo -e "${BOLD}Bare-from-consumer detected — auto-cloning upstream${NC}"
+        echo "  Upstream URL:  $_upstream_url"
+        echo "  Target:        $target_dir"
+        echo ""
+
+        # Tempdir with trap-based cleanup. Use a sentinel filename component
+        # so a stuck/corrupted dir is easy to identify and clean up manually.
+        local _tmpd
+        _tmpd=$(mktemp -d -t fw-upstream-XXXXXX) || {
+            echo -e "${RED}ERROR: mktemp failed${NC}" >&2
+            return 1
+        }
+        # shellcheck disable=SC2064  # expand _tmpd now, not at trap time
+        trap "rm -rf '$_tmpd'" EXIT INT TERM HUP
+
+        if [ "$dry_run" = true ]; then
+            echo "  [dry-run] would clone $_upstream_url into $_tmpd/fw"
+            echo "  [dry-run] would re-invoke: $_tmpd/fw/bin/fw upgrade $target_dir --dry-run"
+            rm -rf "$_tmpd"
+            trap - EXIT INT TERM HUP
+            return 0
+        fi
+
+        echo -n "  Cloning... "
+        if ! git clone --depth=1 --quiet "$_upstream_url" "$_tmpd/fw" 2>"$_tmpd/clone.err"; then
+            echo "FAILED"
+            echo -e "${RED}ERROR: git clone failed${NC}" >&2
+            sed 's/^/    /' "$_tmpd/clone.err" >&2 2>/dev/null || true
+            return 1
+        fi
+        echo "ok"
+
+        # Replay arg flags to the upstream's bin/fw
+        local _replay_args=("upgrade" "$target_dir")
+        [ "$force" = true ] && _replay_args+=("--force")
+        [ "$dedupe_user_hooks" = true ] && _replay_args+=("--dedupe-user-hooks")
+        # NOTE: do not replay --from-upstream — the upstream IS the source
+        # now, the target is local-path-based from the upstream's PoV.
+
+        echo -e "  ${GREEN}Handing off to upstream's bin/fw:${NC} ${_replay_args[*]}"
+        echo ""
+        "$_tmpd/fw/bin/fw" "${_replay_args[@]}"
+        local _rc=$?
+        # trap fires on return — tempdir cleaned up
+        return $_rc
     fi
 
     # T-1217: Self-vendor — refresh framework's own .agentic-framework/ before pushing to consumers.
@@ -358,6 +441,29 @@ plus Claude Code-specific integration notes.
                 project_header="${project_header//__PROJECT_NAME__/$project_name}"
                 printf '%s\n%s\n' "$project_header" "$governance" > "$project_claude"
                 echo -e "  ${GREEN}UPDATED${NC}  Governance sections refreshed from framework template. Backup: CLAUDE.md.bak"
+
+                # T-1629/G-055: Detect inline-customization regressions in
+                # governance sections. The wholesale-replace above cannot
+                # preserve project-specific INLINE additions inside governance
+                # (extra rows in tables, modified bullet text). Surface lost
+                # lines so the operator decides whether to re-apply them.
+                # Without this audit the regression goes silent — observed
+                # 2026-05-03 (PL-124 hit twice within 7d → G-055).
+                local lost_lines lost_count
+                lost_lines=$(grep -Fxv -f "$project_claude" "${project_claude}.bak" 2>/dev/null \
+                    | grep -vE '^[[:space:]]*$' || true)
+                if [ -n "$lost_lines" ]; then
+                    lost_count=$(printf '%s\n' "$lost_lines" | wc -l)
+                    echo -e "  ${YELLOW}!${NC}  $lost_count line(s) in CLAUDE.md.bak are absent from the new CLAUDE.md."
+                    echo -e "      These may be project-specific inline customizations the template"
+                    echo -e "      merge cannot preserve. First lines:"
+                    printf '%s\n' "$lost_lines" | head -8 | sed 's/^/        /'
+                    if [ "$lost_count" -gt 8 ]; then
+                        echo "        ... ($((lost_count - 8)) more — full diff: diff CLAUDE.md.bak CLAUDE.md)"
+                    fi
+                    echo -e "      ${YELLOW}Review and re-apply if needed, then remove CLAUDE.md.bak to clear.${NC}"
+                    echo -e "      Background: G-055 / PL-124 (.context/project/{concerns,learnings}.yaml)"
+                fi
             fi
         fi
     elif [ ! -f "$project_claude" ]; then
@@ -984,6 +1090,26 @@ MCPJSON
         if [ "$current_pinned" = "$fw_version" ]; then
             echo -e "  ${GREEN}OK${NC}  Version $fw_version already recorded"
         else
+            # T-1839: silent-downgrade guard. If consumer's pinned version is
+            # AHEAD of the framework's version, refuse to rewrite — that would
+            # be a silent downgrade. T-1828 family: framework VERSION rollback
+            # leaves consumers in this state, and pre-T-1838 doctor advice
+            # could send operators here unwittingly.
+            if [ -n "$current_pinned" ] && [ "$current_pinned" != "$fw_version" ]; then
+                local _direction
+                if [ "$(printf '%s\n%s\n' "$current_pinned" "$fw_version" | sort -V | tail -1)" = "$current_pinned" ]; then
+                    _direction="ahead"
+                else
+                    _direction="behind"
+                fi
+                if [ "$_direction" = "ahead" ] && [ "$force_downgrade" != true ]; then
+                    echo -e "  ${RED}REFUSED${NC}  Consumer v$current_pinned is AHEAD of framework v$fw_version."
+                    echo -e "          Running fw upgrade here would downgrade the pinned version."
+                    echo -e "          Framework VERSION likely rolled back (see T-1828)."
+                    echo -e "          To proceed anyway: re-run with ${BOLD}--force-downgrade${NC}."
+                    return 1
+                fi
+            fi
             changes=$((changes + 1))
             if [ "$dry_run" = true ]; then
                 echo -e "  ${CYAN}WOULD UPDATE${NC}  version: ${current_pinned:-<none>} → $fw_version"
@@ -1064,9 +1190,14 @@ EOF
     # do_vendor now ships a .gitignore that prevents future leaks; this advisory
     # tells the consumer how to clean up files already added to their git index.
     if [ -d "$target_dir/.agentic-framework" ] && command -v git &>/dev/null; then
+        # T-1824: use `wc -l` rather than `grep -c ... || echo 0`. grep -c exits 1
+        # on zero matches DESPITE outputting `0`; the || echo 0 then appends a
+        # second line so pyc_count becomes "0\n0" and breaks the integer test
+        # below. wc -l always exits 0 — and prints 0 on empty input — so a
+        # single newline-free integer is captured.
         local pyc_count
         pyc_count=$(cd "$target_dir" && git ls-files .agentic-framework/ 2>/dev/null \
-            | grep -c -E '__pycache__|\.pyc$' 2>/dev/null || echo 0)
+            | grep -E '__pycache__|\.pyc$' | wc -l)
         if [ "$pyc_count" -gt 0 ]; then
             echo ""
             echo -e "${YELLOW}WARN${NC}  Vendored framework has $pyc_count tracked __pycache__/.pyc file(s)"

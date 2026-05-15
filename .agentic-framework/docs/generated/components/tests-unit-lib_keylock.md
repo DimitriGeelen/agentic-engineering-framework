@@ -11,11 +11,12 @@
 Unit tests for lib/keylock.sh
 Tests keylock_acquire, keylock_release, _keylock_path, _keylock_clean_stale
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/keylock.sh` | calls |
+| `lib/keylock.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_keylock.yaml`*

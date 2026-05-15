@@ -14,11 +14,12 @@ fw healing diagnose T-XXX — analyze task issues
 fw healing patterns       — show known failure patterns
 fw healing suggest        — suggestions for tasks with issues
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_healing.yaml`*

@@ -25,7 +25,7 @@ When agent ACs are complete and human ACs remain:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (5)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -34,6 +34,8 @@ When agent ACs are complete and human ACs remain:
 | `lib/inception.sh` | called_by |
 | `tests/unit/lib_review.bats` | called-by |
 | `tests/unit/lib_review.bats` | called_by |
+| `tests/unit/lib_review.bats` | tests_by |
+| `tests/unit/test_arc_parent_review_gate.py` | called_by |
 
 ## Related
 

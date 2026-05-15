@@ -17,6 +17,19 @@ stdout=...ERROR: Cannot complete — 5/5 agent AC unchecked...
 POST /inception/T-131/decide HTTP/1.1 500
 Fix (preflight pattern): tick first, count remaining unchecked Agent ACs,
 
+## Dependencies (8)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/colors.sh` | calls |
+| `lib/errors.sh` | calls |
+| `lib/tasks.sh` | calls |
+| `lib/inception.sh` | calls |
+| `lib/colors.sh` | tests |
+| `lib/errors.sh` | tests |
+| `lib/tasks.sh` | tests |
+| `lib/inception.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-inception_decide_atomicity.yaml`*
 *Last verified: 2026-04-26*

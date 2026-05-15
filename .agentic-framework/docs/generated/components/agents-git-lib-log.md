@@ -9,11 +9,13 @@
 Git Agent - Log subcommand
 Task-filtered git log
 
-## Used By (1)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/git/git.sh` | called_by |
+| `tests/unit/git_log.bats` | called_by |
+| `tests/unit/git_log.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-log.yaml`*

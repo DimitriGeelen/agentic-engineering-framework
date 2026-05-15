@@ -53,7 +53,10 @@ TASKS_COMPLETED = PROJECT_ROOT / ".tasks" / "completed"
 DISPATCH_SCHEMA_VERSION = 1
 VAR_PAT = re.compile(r"\$([A-Z][A-Z0-9_]*)")
 
-VALID_WORKER_KINDS = {"Task", "TermLink", "pi"}
+# NOTE: keep in sync with bin/fw:1804 (T-1734). Two tables drifted before: bin/fw
+# accepted "ollama-loop" while this one didn't, so workflows listed cleanly but
+# failed at dispatch. If you add a worker_kind here, add it there too (and vice versa).
+VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop"}
 VALID_PROMPT_STRATEGIES = {"static", "assembled", "meta-prompted"}
 
 
@@ -97,7 +100,115 @@ def load_workflow(task_type: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Prompt assembly (Tier 2 default; Tier 1 + Tier 3 substrate)
 # ---------------------------------------------------------------------------
-def assemble_prompt(workflow: Dict[str, Any], task_context: Dict[str, str]) -> str:
+# T-1806 / ADR-0004 — dispatch-safety slice 2: risk-policy preamble.
+# Workers spawn --bare (no CLAUDE.md, no hooks); the dispatch envelope is the
+# only governance channel they see. When a workflow opts in via
+# `allow_pause: true`, the Resolver prepends a baseline risk-policy preamble
+# telling the Worker how and when to emit a `pause_requested` terminal event.
+# Per-workflow override via `pause_preamble: <path>` swaps the baseline for
+# custom text. Without opt-in, no preamble is injected — cheap workflows stay
+# unmodified.
+_BASELINE_RISK_PREAMBLE = """\
+[RISK POLICY — read before any irreversible action]
+
+You MAY emit a pause_requested terminal event INSTEAD of completing the task
+when you encounter an ambiguity that meets BOTH of these conditions:
+
+  1. SEVERITY — a wrong choice here would produce output that is hard to
+     detect as wrong (verification might pass) AND expensive to undo
+     (existing code, downstream dependencies, or external state would
+     need to be reverted).
+  2. LIKELIHOOD — given the evidence currently available to you, your
+     confidence in the right choice is meaningfully below the workflow's
+     pause_threshold.
+
+This workflow's pause_threshold is: $PAUSE_THRESHOLD
+
+To pause, emit a terminal event with this exact JSON shape:
+
+  {"type": "pause_requested",
+   "question": "<the specific question you want answered>",
+   "assessment": {"severity": "<low|medium|high>",
+                  "likelihood": "<low|medium|high>"},
+   "state_ref": "<optional: file/path/identifier of any partial work>"}
+
+Then exit cleanly. The orchestrator will surface your question to the
+operator, capture the resolution, and re-dispatch you with the answer in
+context. DO NOT timeout-assume-default — silence is not consent. If you
+asked "is this safe?" and got no answer, the safe action is to wait.
+
+DO NOT pause for:
+  - Stylistic preferences (pick the existing pattern)
+  - Low-stakes ambiguities you can recover from with a single revert
+  - Anything you can answer by reading the codebase or running a test
+  - Anything that does not meet BOTH severity AND likelihood thresholds
+
+Pause is structured deferral, not "I'm not sure." Use it sparingly.
+"""
+
+
+def _risk_policy_preamble(workflow: Dict[str, Any]) -> str:
+    """Return the risk-policy preamble for this workflow.
+
+    Resolution order:
+      1. If workflow.pause_preamble is set: read that file (PROJECT_ROOT-relative).
+         Missing/unreadable → warn on stderr, fall back to baseline.
+      2. Else: use _BASELINE_RISK_PREAMBLE.
+
+    In all cases, substitute $PAUSE_THRESHOLD from the workflow (default "high")
+    so the rendered preamble is self-contained.
+    """
+    threshold = str(workflow.get("pause_threshold", "high"))
+
+    custom_path = workflow.get("pause_preamble")
+    text = _BASELINE_RISK_PREAMBLE
+    if custom_path:
+        custom_full = PROJECT_ROOT / custom_path
+        try:
+            text = custom_full.read_text()
+        except OSError as e:
+            sys.stderr.write(
+                f"resolver: pause_preamble {custom_path!r} unreadable ({e}); "
+                f"falling back to baseline\n"
+            )
+
+    # $PAUSE_THRESHOLD substitution is the only variable supported in preambles
+    # in v1 — other resolver-injected vars (RECENT_DISPATCHES etc.) are for the
+    # body, not the preamble. Keep the surface small.
+    return text.replace("$PAUSE_THRESHOLD", threshold)
+
+
+def _redispatch_preamble(pause_resolution: Dict[str, str]) -> str:
+    """T-1809 — build the RE-DISPATCH block prepended to a retry prompt.
+
+    Workers come back fresh on a retry (claude --bare). The only signal they
+    have that they previously paused on this exact dispatch is what we write
+    at the top of their prompt. Be explicit, terse, and put the answer in a
+    distinct visual block.
+    """
+    question = (pause_resolution.get("question") or "").strip() or "(question text was not captured)"
+    answer = (pause_resolution.get("answer") or "").strip() or "(operator provided no answer text)"
+    return (
+        "[RE-DISPATCH — operator answered your pause]\n"
+        "\n"
+        "On a previous attempt at this task you paused with this question:\n"
+        f"  Q: {question}\n"
+        "\n"
+        "The operator's answer is:\n"
+        f"  A: {answer}\n"
+        "\n"
+        "Treat this answer as authoritative. Proceed with the task using it as\n"
+        "guidance. Do NOT re-pause on the same question. If a different ambiguity\n"
+        "arises that meets the severity × likelihood threshold, you may pause\n"
+        "again — but on the new question, not this one.\n"
+    )
+
+
+def assemble_prompt(
+    workflow: Dict[str, Any],
+    task_context: Dict[str, str],
+    pause_resolution: Optional[Dict[str, str]] = None,
+) -> str:
     """Render the prompt per workflow.prompt_strategy.
 
     static       — load template, return verbatim (no $VAR expansion)
@@ -105,6 +216,15 @@ def assemble_prompt(workflow: Dict[str, Any], task_context: Dict[str, str]) -> s
     meta-prompted — substrate stub: builds the meta-prompt envelope but does
                     NOT call the meta-model unless workflow.meta_model_enabled
                     is True (deferred to v2 per A-4 caveat in T-1689).
+
+    T-1806: If workflow.allow_pause is True, prepend the risk-policy preamble
+    to the rendered output regardless of strategy. The preamble lives at the
+    front so Workers read it before any task-specific instructions.
+
+    T-1809: If pause_resolution is provided ({question, answer}), prepend a
+    RE-DISPATCH block ABOVE the risk-policy preamble. The retry block must
+    come first because it answers a question the Worker explicitly asked —
+    it's higher-priority context than the generic risk policy.
     """
     template_path = workflow.get("prompt_template")
     if not template_path:
@@ -124,13 +244,20 @@ def assemble_prompt(workflow: Dict[str, Any], task_context: Dict[str, str]) -> s
         )
 
     if strategy == "static":
-        return template
+        body = template
+    elif strategy == "meta-prompted":
+        body = _meta_prompted_assemble(workflow, task_context, template)
+    else:
+        # default: assembled
+        body = _assembled_substitute(workflow, task_context, template)
 
-    if strategy == "meta-prompted":
-        return _meta_prompted_assemble(workflow, task_context, template)
-
-    # default: assembled
-    return _assembled_substitute(workflow, task_context, template)
+    # T-1806: prepend the risk-policy preamble when the workflow opts in.
+    if workflow.get("allow_pause") is True:
+        body = _risk_policy_preamble(workflow) + "\n" + body
+    # T-1809: prepend the re-dispatch block ABOVE the risk-policy preamble.
+    if pause_resolution:
+        body = _redispatch_preamble(pause_resolution) + "\n" + body
+    return body
 
 
 def _assembled_substitute(
@@ -432,8 +559,17 @@ def resolve(
     task_context: Dict[str, str],
     *,
     dry_run: bool = False,
+    retry_of_dispatch_id: Optional[str] = None,
+    pause_resolution: Optional[Dict[str, str]] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Main entry: workflow → assemble → capture → return (envelope, row)."""
+    """Main entry: workflow → assemble → capture → return (envelope, row).
+
+    T-1809: pause re-dispatch chain. When `retry_of_dispatch_id` is set, the
+    new dispatch row carries the link back to the paused dispatch so slice 4's
+    `list_paused_dispatches` deflates the awaiting list automatically. When
+    `pause_resolution` is set, `assemble_prompt` prepends the RE-DISPATCH block
+    with the operator's answer.
+    """
     workflow = load_workflow(task_type)
     if workflow.get("inline") is True:
         raise ResolverError(
@@ -448,14 +584,18 @@ def resolve(
             f"Workflow {task_type} has invalid worker_kind '{wk}' "
             f"(valid: {sorted(VALID_WORKER_KINDS)})"
         )
-    rendered = assemble_prompt(workflow, task_context)
+    rendered = assemble_prompt(workflow, task_context, pause_resolution=pause_resolution)
     variant_id = select_variant(workflow)
+    extra: Optional[Dict[str, Any]] = None
+    if retry_of_dispatch_id:
+        extra = {"retry_of_dispatch_id": retry_of_dispatch_id}
     return capture_dispatch(
         task_id=task_id,
         workflow=workflow,
         rendered_prompt=rendered,
         variant_id=variant_id,
         write=not dry_run,
+        extra=extra,
     )
 
 
@@ -516,6 +656,23 @@ def cmd_dispatch(args: argparse.Namespace) -> int:
     task_context.setdefault("TASK_DESCRIPTION", "")
     task_context.setdefault("ACCEPTANCE_CRITERIA", "(none)")
 
+    # T-1737: caller-supplied --var KEY=VALUE entries extend task_context
+    # so workflows like prompt-triage can reference custom $VARs in their
+    # prompt template (e.g. $PROMPT_UNDER_TRIAGE).
+    for kv in getattr(args, "var", []) or []:
+        if "=" not in kv:
+            print(f"resolver: --var must be KEY=VALUE, got {kv!r}", file=sys.stderr)
+            return 1
+        key, _, value = kv.partition("=")
+        if not key or not VAR_PAT.fullmatch("$" + key):
+            print(
+                f"resolver: --var KEY must be UPPERCASE [A-Z][A-Z0-9_]*, "
+                f"got {key!r}",
+                file=sys.stderr,
+            )
+            return 1
+        task_context[key] = value
+
     try:
         envelope, row = resolve(
             args.task_id, args.task_type, task_context, dry_run=args.dry_run
@@ -545,6 +702,84 @@ def cmd_dispatch(args: argparse.Namespace) -> int:
         if args.dry_run:
             print("dry-run:        no JSONL append, no blob written")
     return 0
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    """fw resolver run <task_id> <task_type> — build envelope + spawn worker.
+
+    Convenience CLI on top of `dispatch` + `lib/spawn.spawn_dispatch`. T-1774.
+
+    Returns 0 on success, 1 on resolver/spawn errors, 2 on a worker terminal
+    error (e.g. agent.done with type=error). The third exit code lets shell
+    callers distinguish "infrastructure broke" from "worker reported error".
+    """
+    task_context = load_task_frontmatter(args.task_id)
+    task_context.setdefault("TASK_ID", args.task_id)
+    task_context.setdefault("TASK_TYPE", args.task_type)
+    task_context.setdefault("TASK_NAME", "")
+    task_context.setdefault("TASK_DESCRIPTION", "")
+    task_context.setdefault("ACCEPTANCE_CRITERIA", "(none)")
+    for kv in getattr(args, "var", []) or []:
+        if "=" not in kv:
+            print(f"resolver run: --var must be KEY=VALUE, got {kv!r}", file=sys.stderr)
+            return 1
+        key, _, value = kv.partition("=")
+        task_context[key] = value
+
+    try:
+        envelope, _row = resolve(args.task_id, args.task_type, task_context, dry_run=False)
+    except ResolverError as e:
+        print(f"resolver run: error: {e}", file=sys.stderr)
+        return 1
+
+    # Lazy-import spawn so `fw resolver dispatch|workflows|explain` don't pay
+    # for it (and so spawn's PiWorker import path stays cold for non-pi flows).
+    try:
+        import spawn  # noqa: PLC0415
+    except ImportError as e:
+        print(f"resolver run: cannot import lib/spawn.py: {e}", file=sys.stderr)
+        return 1
+
+    try:
+        outcome = spawn.spawn_dispatch(envelope)
+    except NotImplementedError as e:
+        print(f"resolver run: {e}", file=sys.stderr)
+        return 1
+    except spawn.SpawnError as e:
+        print(f"resolver run: spawn error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(json.dumps(outcome, indent=2))
+    else:
+        print(f"dispatch_id:    {envelope['dispatch_id']}")
+        print(f"task_type:      {envelope['task_type']}")
+        print(f"worker_kind:    {envelope['worker_kind']}")
+        print(f"status:         {outcome['status']}")
+        print(f"events_count:   {outcome['events_count']}")
+        print(f"events_path:    {outcome['events_path']}")
+        if outcome.get("terminal_event"):
+            te = outcome["terminal_event"]
+            print(f"terminal:       {te.get('type')}")
+            # T-1778: surface sub-fields that drive retry/error semantics
+            if te.get("type") == "error" and "retryable" in te:
+                print(f"retryable:      {te['retryable']}")
+            elif te.get("type") == "result" and "is_error" in te:
+                print(f"is_error:       {te['is_error']}")
+            elif te.get("type") == "pause_requested":
+                # T-1805 / ADR-0004: pause-specific fields
+                if te.get("question"):
+                    print(f"question:       {te['question']}")
+                a = te.get("assessment")
+                if isinstance(a, dict):
+                    if "severity" in a:
+                        print(f"severity:       {a['severity']}")
+                    if "likelihood" in a:
+                        print(f"likelihood:     {a['likelihood']}")
+                if te.get("state_ref"):
+                    print(f"state_ref:      {te['state_ref']}")
+
+    return 2 if outcome["status"] == "error" else 0
 
 
 def cmd_explain(args: argparse.Namespace) -> int:
@@ -582,6 +817,14 @@ def cmd_explain(args: argparse.Namespace) -> int:
     print(f"model:          {found.get('model')}")
     print(f"variant_id:     {found.get('variant_id')}")
     print(f"outcome:        {found.get('outcome')}")
+    # T-1778: surface terminal_event detail when persisted (T-1777+)
+    te = found.get("terminal_event")
+    if te:
+        print(f"terminal:       {te.get('type')}")
+        if te.get("type") == "error" and "retryable" in te:
+            print(f"retryable:      {te['retryable']}")
+        elif te.get("type") == "result" and "is_error" in te:
+            print(f"is_error:       {te['is_error']}")
     print(f"blob_dir:       {found.get('blob_dir')}")
     blob_dir = PROJECT_ROOT / found.get("blob_dir", "")
     if blob_dir.is_dir():
@@ -624,7 +867,33 @@ def main(argv: Optional[List[str]] = None) -> int:
     sp_d.add_argument("task_type", help="Workflow task_type (or 'default')")
     sp_d.add_argument("--dry-run", action="store_true", help="Skip JSONL append and blob write")
     sp_d.add_argument("--json", action="store_true", help="Emit envelope as JSON")
+    sp_d.add_argument(
+        "--var",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help=(
+            "Inject a custom $VAR into the prompt template. KEY must be "
+            "UPPERCASE (e.g. --var PROMPT_UNDER_TRIAGE='hello'). May be "
+            "repeated. Required for workflows that reference template-"
+            "specific vars beyond TASK_ID/TASK_NAME/TASK_DESCRIPTION/"
+            "TASK_TYPE/ACCEPTANCE_CRITERIA. (T-1737)"
+        ),
+    )
     sp_d.set_defaults(func=cmd_dispatch)
+
+    sp_r = sub.add_parser("run", help="Build envelope + spawn worker (T-1774)")
+    sp_r.add_argument("task_id", help="Task ID (e.g. T-1773)")
+    sp_r.add_argument("task_type", help="Workflow task_type (or 'default')")
+    sp_r.add_argument("--json", action="store_true", help="Emit outcome dict as JSON")
+    sp_r.add_argument(
+        "--var",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="Inject custom $VAR into the prompt template (same as `dispatch`).",
+    )
+    sp_r.set_defaults(func=cmd_run)
 
     sp_e = sub.add_parser("explain", help="Print a dispatch row by ID prefix")
     sp_e.add_argument("dispatch_id", help="Dispatch UUID (or prefix)")

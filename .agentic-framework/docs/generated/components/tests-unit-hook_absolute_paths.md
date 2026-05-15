@@ -14,13 +14,15 @@ Claude Code resolves hook commands against the session CWD. When CWD drifts
 cascade into tool-blocks. Fix: emit absolute paths at init/upgrade time.
 $target_dir is canonicalized via `cd && pwd` in both entry points.
 
-## Dependencies (3)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/init.sh` | calls |
 | `lib/upgrade.sh` | calls |
 | `.claude/settings.json` | reads |
+| `lib/init.sh` | tests |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_absolute_paths.yaml`*

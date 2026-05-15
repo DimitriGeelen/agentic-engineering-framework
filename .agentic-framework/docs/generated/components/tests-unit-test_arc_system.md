@@ -12,6 +12,14 @@ T-1671: clear CLAUDECODE so arc-close tests run as human invocation
 (CLAUDECODE-aware tests live in test_arc_close_agent_gate.py with
 explicit env_extra={"CLAUDECODE": "1"} where needed).
 
+## Dependencies (3)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | calls |
+| `lib/arc.sh` | calls |
+| `agents/handover/handover.sh` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_arc_system.yaml`*
 *Last verified: 2026-05-01*

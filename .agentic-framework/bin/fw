@@ -57,10 +57,20 @@ NC='\033[0m'
 FW_REAL_PATH="$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")"
 FW_BIN_DIR="$(cd "$(dirname "$FW_REAL_PATH")" && pwd)"
 
-# Find PROJECT_ROOT by walking up from cwd looking for .framework.yaml or .tasks/
+# Find PROJECT_ROOT by walking up from cwd looking for .framework.yaml or .tasks/.
+# T-1841: skip dirs containing .fw-not-a-project sentinel — these are vendored
+# framework copies (.agentic-framework/) or rollback dirs (.agentic-framework.rollback/)
+# that happen to carry .tasks/templates/ from the vendored framework's own structure.
+# Without this skip, an agent CWD inside such a dir would mis-resolve PROJECT_ROOT
+# to the vendored copy, triggering boundary-hook blocks on every `cd` to the real
+# consumer root.
 find_project_root() {
     local dir="$PWD"
     while [ "$dir" != "/" ]; do
+        if [ -f "$dir/.fw-not-a-project" ]; then
+            dir="$(dirname "$dir")"
+            continue
+        fi
         if [ -f "$dir/.framework.yaml" ] || [ -d "$dir/.tasks" ]; then
             echo "$dir"
             return 0
@@ -329,6 +339,18 @@ do_vendor() {
     echo "$FW_VERSION" > "$dest/VERSION"
     echo -e "  ${GREEN}✓${NC} VERSION ($FW_VERSION)"
 
+    # T-1841: write .fw-not-a-project sentinel so find_project_root walks past
+    # this vendored copy when the agent CWD ends up inside it. .tasks/templates/
+    # (shipped in vendored framework) would otherwise satisfy the .tasks/
+    # detection branch and mis-resolve the vendored dir as PROJECT_ROOT.
+    cat > "$dest/.fw-not-a-project" <<'SENTINEL'
+This file marks a vendored copy of the Agentic Engineering Framework — NOT a
+project root. fw's find_project_root skips any directory containing this file
+so an agent CWD inside .agentic-framework/ resolves to the real consumer
+project (the parent), not this vendored copy. T-1841.
+SENTINEL
+    echo -e "  ${GREEN}✓${NC} .fw-not-a-project (T-1841 sentinel)"
+
     # T-1323: Write .gitignore so runtime-generated __pycache__/ files inside
     # the vendored framework do not leak into the consumer's git index.
     # (do_vendor already excludes these from the COPY step; this prevents
@@ -542,6 +564,7 @@ show_help() {
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}notify${NC} <cmd>          Push notifications (setup, test, enable, disable, status)"
     echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
+    echo -e "  ${GREEN}peer${NC} <cmd>            v2 peer-consult (subscribe to TermLink inbox.queued + spawn responders)"
     echo -e "  ${GREEN}config${NC} <cmd>           Project config (set, get, list) — persistent settings in .framework.yaml"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
@@ -644,6 +667,20 @@ do_doctor() {
 
     local issues=0
     local warnings=0
+    local host_warnings=0
+
+    # T-1707: host-scope findings can't be fixed from this project session —
+    # they live at the machine level (system installs, ~/.gitconfig,
+    # ~/.local/bin shims, ~/.claude/settings.json). Tagging them makes the
+    # boundary unambiguous so an agent doesn't bundle them into project
+    # housekeeping. Project-scope is the default; only host findings carry
+    # the [host] prefix and explanatory suffix.
+    _doctor_warn_host() {
+        echo -e "  ${YELLOW}WARN${NC}  [host] $1"
+        echo -e "         (host-level — handle from a session at that root)"
+        warnings=$((warnings + 1))
+        host_warnings=$((host_warnings + 1))
+    }
 
     # Check 1: Framework directory
     if [ -d "$FRAMEWORK_ROOT/agents" ] && [ -f "$FRAMEWORK_ROOT/FRAMEWORK.md" ]; then
@@ -662,15 +699,13 @@ do_doctor() {
             ;;
         global)
             if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
-                echo -e "  ${YELLOW}WARN${NC}  Active mode: global ($FRAMEWORK_ROOT) — vendored copy exists at $PROJECT_ROOT/.agentic-framework but was not selected"
-                warnings=$((warnings + 1))
+                _doctor_warn_host "Active mode: global ($FRAMEWORK_ROOT) — vendored copy exists at $PROJECT_ROOT/.agentic-framework but was not selected"
             else
                 echo -e "  ${CYAN}INFO${NC}  Active mode: global ($FRAMEWORK_ROOT)"
             fi
             ;;
         *)
-            echo -e "  ${YELLOW}WARN${NC}  Active mode: $_mode ($FRAMEWORK_ROOT)"
-            warnings=$((warnings + 1))
+            _doctor_warn_host "Active mode: $_mode ($FRAMEWORK_ROOT)"
             ;;
     esac
 
@@ -704,6 +739,15 @@ do_doctor() {
         fi
     else
         echo -e "  ${CYAN}SKIP${NC}  .framework.yaml (running from framework repo)"
+    fi
+
+    # Check 2c (T-1747, G-069): Stray /.framework.yaml at filesystem root.
+    # A stray marker at / causes web._discover_project_root to silently resolve
+    # PROJECT_ROOT=/ when no env var is set, breaking every Watchtower route
+    # that reads project-relative content. Host-scope — handled at machine level.
+    if [ -f "/.framework.yaml" ]; then
+        _doctor_warn_host "Stray /.framework.yaml at filesystem root — remove it (causes silent PROJECT_ROOT=/ resolution)"
+        echo -e "         Run: sudo rm /.framework.yaml"
     fi
 
     # Check 2b (T-1434): Vendored-source drift — framework repo only.
@@ -773,14 +817,35 @@ do_doctor() {
         warnings=$((warnings + 1))
     fi
 
+    # T-1845: Large-file gate — surface tracked-file bloat. The pre-commit
+    # gate blocks new instances; this audit catches anything that slipped past
+    # (legacy state, --no-verify bypasses, or files committed before the gate
+    # existed). Block-level findings count as warnings here; the agent should
+    # cleanup + gitignore, not let scan-tree FAIL gate the doctor.
+    local lf_scanner="$FRAMEWORK_ROOT/agents/git/lib/large-file-scan.sh"
+    if [ -x "$lf_scanner" ]; then
+        local lf_out lf_blocks lf_warns
+        lf_out=$(PROJECT_ROOT="$PROJECT_ROOT" "$lf_scanner" scan-tree 2>&1 || true)
+        lf_blocks=$(echo "$lf_out" | grep -c "\[BLOCK\]" || true)
+        lf_warns=$(echo "$lf_out" | grep -c "\[WARN\]"  || true)
+        if [ "$lf_blocks" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Large-file gate: $lf_blocks tracked file(s) above block threshold"
+            echo -e "         Run: bin/fw doctor large-files   (or untrack + .gitignore)"
+            warnings=$((warnings + 1))
+        elif [ "$lf_warns" -gt 0 ]; then
+            echo -e "  ${CYAN}INFO${NC}  Large-file gate: $lf_warns tracked file(s) above warn threshold (under block)"
+        else
+            echo -e "  ${GREEN}OK${NC}  Large-file gate: no tracked files above warn threshold"
+        fi
+    fi
+
     # Check 5b: Git user identity (T-685)
     local git_email git_name
     git_email=$(git -C "$PROJECT_ROOT" config user.email 2>/dev/null || true)
     git_name=$(git -C "$PROJECT_ROOT" config user.name 2>/dev/null || true)
     if [ -z "$git_email" ] || [ -z "$git_name" ]; then
-        echo -e "  ${YELLOW}WARN${NC}  Git user identity not configured (commits will fail)"
-        echo -e "         Run: git config user.email 'you@example.com' && git config user.name 'Your Name'"
-        warnings=$((warnings + 1))
+        _doctor_warn_host "Git user identity not configured (commits will fail)"
+        echo -e "         Run: git config --global user.email 'you@example.com' && git config --global user.name 'Your Name'"
     fi
 
     # Check 6: Claude Code hooks — validate paths resolve (G-021 path isolation)
@@ -884,10 +949,9 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
             if [ -n "$dup_pairs" ]; then
                 local dup_count
                 dup_count=$(echo "$dup_pairs" | tr '|' '\n' | wc -l)
-                echo -e "  ${YELLOW}WARN${NC}  Duplicate framework hook(s) in $user_settings_file: $dup_count overlap"
-                echo -e "        Pairs: $(echo "$dup_pairs" | tr '|' ' ')"
-                echo -e "        Both fire on every Claude Code event (cause of OBS-023). Recommend removing duplicates from $user_settings_file."
-                warnings=$((warnings + 1))
+                _doctor_warn_host "Duplicate framework hook(s) in $user_settings_file: $dup_count overlap"
+                echo -e "         Pairs: $(echo "$dup_pairs" | tr '|' ' ')"
+                echo -e "         Both fire on every Claude Code event (cause of OBS-023). Recommend removing duplicates from $user_settings_file."
             fi
         fi
     else
@@ -963,15 +1027,13 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
                 warnings=$((warnings + 1))
             fi
         else
-            echo -e "  ${YELLOW}WARN${NC}  bats not installed (run: git clone https://github.com/bats-core/bats-core && ./install.sh /usr/local)"
-            warnings=$((warnings + 1))
+            _doctor_warn_host "bats not installed (run: git clone https://github.com/bats-core/bats-core && ./install.sh /usr/local)"
         fi
 
         if command -v shellcheck >/dev/null 2>&1; then
             echo -e "  ${GREEN}OK${NC}  ShellCheck linter"
         else
-            echo -e "  ${YELLOW}WARN${NC}  shellcheck not installed"
-            warnings=$((warnings + 1))
+            _doctor_warn_host "shellcheck not installed (run: apt install shellcheck  # or brew install shellcheck)"
         fi
     else
         echo -e "  ${CYAN}SKIP${NC}  Test infrastructure (consumer project — tests live in framework repo)"
@@ -985,8 +1047,7 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
                    grep -cE "(npm exec.*(mcp|context7|playwright))|(node .*(mcp|context7))" || echo 0)
     orphan_count=$(echo "$orphan_count" | tr -d '[:space:]')
     if [ "$orphan_count" -gt 0 ]; then
-        echo -e "  ${YELLOW}WARN${NC}  $orphan_count orphaned MCP process(es) detected — run 'fw mcp reap'"
-        warnings=$((warnings + 1))
+        _doctor_warn_host "$orphan_count orphaned MCP process(es) detected — run 'fw mcp reap'"
     else
         echo -e "  ${GREEN}OK${NC}  No orphaned MCP processes"
     fi
@@ -1027,6 +1088,25 @@ print(f'{total}|{\",\".join(missing)}')
         warnings=$((warnings + 1))
     fi
 
+    # Check: Playwright (T-1725) — two surfaces, both essential for UI work
+    #   1. pip package (pytest-playwright) — drives fw test playwright / regression suite
+    #   2. MCP server (@playwright/mcp) — drives agent UI verification via Claude Code
+    # MCP is auto-managed by fw upgrade; pip needs manual install.
+    if python3 -c "import playwright" 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  Playwright pip package (test runner)"
+    else
+        echo -e "  ${YELLOW}WARN${NC}  Playwright pip package missing — UI regression tests can't run"
+        echo -e "         Install: pip install playwright pytest-playwright && playwright install chromium"
+        warnings=$((warnings + 1))
+    fi
+    if [ -f "$mcp_json" ] && grep -q '"playwright"' "$mcp_json" 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  Playwright MCP server (agent UI verification)"
+    else
+        echo -e "  ${YELLOW}WARN${NC}  Playwright MCP server not in .mcp.json"
+        echo -e "         Run: fw upgrade  # auto-adds the MCP block"
+        warnings=$((warnings + 1))
+    fi
+
     # Check: Global install deprecation (T-666/T-662)
     local global_dir="$HOME/.agentic-framework"
     local local_fw="$HOME/.local/bin/fw"
@@ -1035,9 +1115,8 @@ print(f'{total}|{\",\".join(missing)}')
             local link_target
             link_target=$(readlink -f "$local_fw" 2>/dev/null || echo "")
             if [[ "$link_target" == *".agentic-framework/bin/fw"* ]]; then
-                echo -e "  ${YELLOW}WARN${NC}  Global install: ~/.local/bin/fw symlinks to stale $global_dir"
-                echo -e "        Migrate: run install.sh or fw upgrade (installs project-detecting shim)"
-                warnings=$((warnings + 1))
+                _doctor_warn_host "Global install: ~/.local/bin/fw symlinks to stale $global_dir"
+                echo -e "         Migrate: run install.sh or fw upgrade (installs project-detecting shim)"
             else
                 echo -e "  ${GREEN}OK${NC}  fw shim installed (global install at $global_dir is unused)"
             fi
@@ -1274,8 +1353,7 @@ for e in d.get('errors',[])[:3]:
         tl_version=$(termlink --version 2>/dev/null | head -1)
         echo -e "  ${GREEN}OK${NC}  TermLink ($tl_version)"
     else
-        echo -e "  ${YELLOW}WARN${NC}  TermLink not installed (cargo install termlink)"
-        warnings=$((warnings + 1))
+        _doctor_warn_host "TermLink not installed (cargo install termlink)"
     fi
 
     # Check: pi (Pi mono coding-agent — optional, ADR-0003 worker_kind=pi)
@@ -1289,11 +1367,39 @@ for e in d.get('errors',[])[:3]:
         # Only warn if some workflow uses worker_kind: pi
         if [ -d "$PROJECT_ROOT/.context/project/workflows" ] && \
            grep -lE "^worker_kind:\s*pi\b" "$PROJECT_ROOT/.context/project/workflows/"*.yaml >/dev/null 2>&1; then
-            echo -e "  ${YELLOW}WARN${NC}  pi not installed; workflows declaring worker_kind: pi will fail"
+            _doctor_warn_host "pi not installed; workflows declaring worker_kind: pi will fail"
             echo -e "         Install: npm install -g @badlogic/pi-mono  (or see github.com/badlogic/pi-mono)"
-            warnings=$((warnings + 1))
         else
             echo -e "  ${CYAN}INFO${NC}  pi not installed (no workflows require it)"
+        fi
+    fi
+
+    # Check: litellm proxy reachable (T-1700 v1 ollama dispatch substrate).
+    # Skip-if-no-consumer: only fires when a workflow declares
+    # ANTHROPIC_BASE_URL: http://localhost:4000 (the litellm proxy port).
+    # Mirrors T-1694 pi pattern.
+    local _wf_dir="$PROJECT_ROOT/.context/project/workflows"
+    if [ -d "$_wf_dir" ] && \
+       grep -lE "ANTHROPIC_BASE_URL:\s*http://localhost:4000" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
+        if curl -sf --max-time 2 http://localhost:4000/health >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  litellm-proxy reachable (http://localhost:4000)"
+        else
+            _doctor_warn_host "litellm-proxy not reachable on http://localhost:4000; workflow(s) declaring ANTHROPIC_BASE_URL will fail"
+            echo -e "         Start: pipx run litellm --config .context/litellm-config.yaml --port 4000  (or systemd unit)"
+        fi
+    fi
+
+    # Check: ollama reachable (T-1700 v1 ollama dispatch substrate).
+    # Skip-if-no-consumer: only fires when a workflow declares
+    # worker_kind: ollama-loop. Hard-codes the upstream URL the workflows
+    # currently target (192.168.10.107:11434). If a workflow points
+    # elsewhere, this check needs widening.
+    if [ -d "$_wf_dir" ] && \
+       grep -lE "^worker_kind:\s*ollama-loop\b" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
+        if curl -sf --max-time 2 http://192.168.10.107:11434/api/tags >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  ollama reachable (http://192.168.10.107:11434)"
+        else
+            _doctor_warn_host "ollama not reachable on http://192.168.10.107:11434; ollama-loop workflows will fail"
         fi
     fi
 
@@ -1321,8 +1427,7 @@ for e in d.get('errors',[])[:3]:
                 echo -e "  ${GREEN}OK${NC}  TypeScript build (${#_ts_files[@]} source(s))"
             fi
         else
-            echo -e "  ${YELLOW}WARN${NC}  Node.js not found (TS hooks will use Python fallback)"
-            warnings=$((warnings + 1))
+            _doctor_warn_host "Node.js not found (TS hooks will use Python fallback)"
         fi
     fi
 
@@ -1432,10 +1537,19 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
             local cname cversion
             cname=$(basename "$consumer_dir")
             cversion=$(grep "^version:" "$fw_yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
-            # Check version match
+            # Check version match — distinguish behind vs ahead (T-1838).
+            # T-1828 scenario: framework VERSION can be rolled back (tag-counter reset),
+            # producing consumer > framework. Suggesting `fw upgrade` in that direction
+            # would silently downgrade the consumer's pinned version.
             local version_ok=true
+            local version_relation="match"
             if [ -n "$cversion" ] && [ "$cversion" != "$FW_VERSION" ]; then
                 version_ok=false
+                if [ "$(printf '%s\n%s\n' "$cversion" "$FW_VERSION" | sort -V | tail -1)" = "$cversion" ]; then
+                    version_relation="ahead"
+                else
+                    version_relation="behind"
+                fi
             fi
             # Check hooks by type (reuse T-615 logic)
             local consumer_settings="$consumer_dir/.claude/settings.json"
@@ -1470,21 +1584,28 @@ else:
     print(f'ok {len(consumer_hooks)}/{len(fw_hooks)}')
 " 2>/dev/null || echo "parse-error")
             fi
-            # Report
+            # Report (T-1838: asymmetric remediation for consumer-ahead case)
             if [ "$version_ok" = true ] && [[ "$hook_info" == ok* ]]; then
                 local hook_counts="${hook_info#ok }"
                 echo -e "  ${GREEN}OK${NC}  $cname (v$cversion, $hook_counts hooks)"
             else
                 local reasons=""
-                if [ "$version_ok" = false ]; then
+                if [ "$version_relation" = "behind" ]; then
                     reasons="v$cversion → v$FW_VERSION"
+                elif [ "$version_relation" = "ahead" ]; then
+                    reasons="v$cversion is AHEAD of framework v$FW_VERSION"
                 fi
                 if [[ "$hook_info" == missing* ]]; then
                     [ -n "$reasons" ] && reasons="$reasons, "
                     reasons="$reasons$hook_info"
                 fi
                 echo -e "  ${YELLOW}WARN${NC}  $cname ($reasons)"
-                echo -e "         Run: fw upgrade $consumer_dir"
+                if [ "$version_relation" = "ahead" ]; then
+                    echo -e "         DO NOT run \`fw upgrade $consumer_dir\` — would downgrade v$cversion → v$FW_VERSION."
+                    echo -e "         Framework VERSION likely rolled back (see T-1828). Wait for framework to catch up."
+                else
+                    echo -e "         Run: fw upgrade $consumer_dir"
+                fi
                 warnings=$((warnings + 1))
                 consumer_issues=$((consumer_issues + 1))
             fi
@@ -1515,9 +1636,8 @@ else:
         local _global_mb
         _global_mb=$(du -sm "$_global_dir" 2>/dev/null | cut -f1 || echo "0")
         if [ "${_global_mb:-0}" -gt 100 ]; then
-            echo -e "  ${YELLOW}WARN${NC}  Global install at $_global_dir is ${_global_mb}MB (expected <60MB)"
+            _doctor_warn_host "Global install at $_global_dir is ${_global_mb}MB (expected <60MB)"
             echo -e "         Consider: rm -rf $_global_dir (shim-based dispatch obsoletes it)"
-            warnings=$((warnings + 1))
         fi
     fi
 
@@ -1737,74 +1857,9 @@ else:
     #   - default.yaml missing → soft warning
     if [ -d "$PROJECT_ROOT/.context/project/workflows" ]; then
         local _wf_lint_out _wf_errors _wf_warnings _wf_count
-        _wf_lint_out=$(python3 - "$PROJECT_ROOT" <<'PYEOF' 2>&1
-import sys, os, glob
-try:
-    import yaml
-except ImportError:
-    print("FAIL|python3 yaml module missing")
-    sys.exit(0)
-
-project_root = sys.argv[1]
-wf_dir = os.path.join(project_root, ".context/project/workflows")
-files = sorted(glob.glob(os.path.join(wf_dir, "*.yaml")))
-
-INLINE_FORBIDDEN = {"worker_kind","model","effort","prompt_template","prompt_strategy","meta_model","meta_template","allowed_tools","cost_cap_usd","cwd","provider","variants","outcome_evaluator","env"}
-DISPATCH_REQUIRED = {"task_type","worker_kind","model","effort","prompt_template","allowed_tools","cost_cap_usd","cwd"}
-VALID_WORKER_KINDS = {"Task","TermLink","pi"}
-VALID_STRATEGIES = {"static","assembled","meta-prompted"}
-
-errors = []
-count = 0
-has_default = False
-
-for f in files:
-    rel = os.path.relpath(f, project_root)
-    count += 1
-    if os.path.basename(f) == "default.yaml":
-        has_default = True
-    try:
-        with open(f) as fh:
-            data = yaml.safe_load(fh) or {}
-    except yaml.YAMLError as e:
-        errors.append(f"{rel}: YAML parse error: {e}")
-        continue
-    if not isinstance(data, dict):
-        errors.append(f"{rel}: root must be a mapping")
-        continue
-    if "task_type" not in data:
-        errors.append(f"{rel}: missing required key 'task_type'")
-    if data.get("inline") is True:
-        offenders = INLINE_FORBIDDEN & set(data.keys())
-        if offenders:
-            errors.append(f"{rel}: inline:true cannot co-exist with dispatch fields: {sorted(offenders)}")
-        continue
-    missing = DISPATCH_REQUIRED - set(data.keys())
-    if missing:
-        errors.append(f"{rel}: missing required key(s): {sorted(missing)}")
-        continue
-    wk = data.get("worker_kind")
-    if wk not in VALID_WORKER_KINDS:
-        errors.append(f"{rel}: worker_kind={wk!r} not in {sorted(VALID_WORKER_KINDS)}")
-    pt = data.get("prompt_template")
-    if pt and not os.path.isfile(os.path.join(project_root, pt)):
-        errors.append(f"{rel}: prompt_template={pt!r} does not resolve to an existing file")
-    ps = data.get("prompt_strategy", "assembled")
-    if ps not in VALID_STRATEGIES:
-        errors.append(f"{rel}: prompt_strategy={ps!r} not in {sorted(VALID_STRATEGIES)}")
-    if ps == "meta-prompted" and "meta_model" not in data:
-        errors.append(f"{rel}: prompt_strategy=meta-prompted requires meta_model")
-    if ps != "meta-prompted" and "meta_model" in data:
-        errors.append(f"{rel}: meta_model set but prompt_strategy={ps!r} (must be meta-prompted)")
-
-if errors:
-    for e in errors:
-        print(f"ERROR|{e}")
-if not has_default and count > 0:
-    print("WARN|default.yaml missing — Q12 fallback will hard-error if any task_type lacks a workflow")
-print(f"COUNT|{count}")
-PYEOF
-)
+        # T-1807: lint logic lives in lib/workflow_lint.py so the pause-field
+        # rules can be unit-tested without invoking `fw doctor`.
+        _wf_lint_out=$(python3 -c "import sys; sys.path.insert(0, '$FW_LIB_DIR'); from workflow_lint import main; main('$PROJECT_ROOT')" 2>&1)
         _wf_errors=$(echo "$_wf_lint_out" | grep -c '^ERROR|' || true)
         _wf_warnings=$(echo "$_wf_lint_out" | grep -c '^WARN|' || true)
         _wf_count=$(echo "$_wf_lint_out" | grep '^COUNT|' | head -1 | sed 's/^COUNT|//' || echo 0)
@@ -1823,14 +1878,71 @@ PYEOF
         echo -e "  ${CYAN}INFO${NC}  No .context/project/workflows/ — orchestrator v1 not yet provisioned"
     fi
 
-    # Summary
+    # Check (T-1735): VALID_WORKER_KINDS parity between lib/workflow_lint.py and lib/resolver.py.
+    # T-1734 closed a 5-month silent drift between these two tables; this check is
+    # the runtime witness that prevents recurrence. After T-1807 the lint logic
+    # moved from bin/fw heredoc into lib/workflow_lint.py — the parity comparison
+    # now lives between the two python modules directly.
+    local _wkp_out
+    _wkp_out=$(python3 - <<PYEOF 2>/dev/null
+import sys
+sys.path.insert(0, "$FW_LIB_DIR")
+try:
+    from resolver import VALID_WORKER_KINDS as resolver_set
+except Exception as e:
+    print(f"FAIL|cannot import lib/resolver.py: {e}")
+    sys.exit(0)
+try:
+    from workflow_lint import VALID_WORKER_KINDS as lint_set
+except Exception as e:
+    print(f"FAIL|cannot import lib/workflow_lint.py: {e}")
+    sys.exit(0)
+only_lint = lint_set - resolver_set
+only_resolver = resolver_set - lint_set
+if not only_lint and not only_resolver:
+    print(f"OK|{sorted(lint_set)}")
+else:
+    diff_parts = []
+    if only_lint:
+        diff_parts.append(f"only in lib/workflow_lint.py: {sorted(only_lint)}")
+    if only_resolver:
+        diff_parts.append(f"only in lib/resolver.py: {sorted(only_resolver)}")
+    print(f"WARN|drift detected — {'; '.join(diff_parts)}")
+PYEOF
+)
+    case "$_wkp_out" in
+        OK\|*)
+            local _wkp_set="${_wkp_out#OK|}"
+            echo -e "  ${GREEN}OK${NC}  Worker-kinds parity (lib/workflow_lint.py ↔ lib/resolver.py): $_wkp_set"
+            ;;
+        WARN\|*)
+            local _wkp_msg="${_wkp_out#WARN|}"
+            echo -e "  ${YELLOW}WARN${NC}  Worker-kinds parity: $_wkp_msg"
+            warnings=$((warnings + 1))
+            ;;
+        FAIL\|*)
+            local _wkp_err="${_wkp_out#FAIL|}"
+            echo -e "  ${RED}FAIL${NC}  Worker-kinds parity check broken: $_wkp_err"
+            issues=$((issues + 1))
+            ;;
+        *)
+            echo -e "  ${YELLOW}WARN${NC}  Worker-kinds parity check produced no output (python error?)"
+            warnings=$((warnings + 1))
+            ;;
+    esac
+
+    # Summary (T-1707: break out host_warnings count when > 0)
+    local _scope_breakdown=""
+    if [ "$host_warnings" -gt 0 ]; then
+        _scope_breakdown=" ($host_warnings host-level)"
+    fi
     echo ""
     if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then
         echo -e "${GREEN}All checks passed${NC}"
     elif [ $issues -eq 0 ]; then
-        echo -e "${YELLOW}$warnings warning(s), no failures${NC}"
+        echo -e "${YELLOW}$warnings warning(s)$_scope_breakdown, no failures${NC}"
     else
-        echo -e "${RED}$issues failure(s), $warnings warning(s)${NC}"
+        echo -e "${RED}$issues failure(s), $warnings warning(s)$_scope_breakdown${NC}"
         exit 2
     fi
 }
@@ -2132,7 +2244,25 @@ PYTASK_SHOW
             # Two modes:
             # - No args (T-193): List tasks with unchecked human ACs
             # - With task ID (T-070): Run verification commands from task
-            local task_id="${1:-}"
+            #
+            # T-1628: T-193 mode supports triage flags for the 100+ task
+            # awaiting-review backlog (G-008). Flags are parsed here and
+            # exported as FW_VERIFY_* for the embedded python block.
+            local task_id=""
+            local flag_compact=false
+            local flag_by_age=false
+            local flag_rubber=false
+            local flag_review=false
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    --compact) flag_compact=true; shift ;;
+                    --by-age) flag_by_age=true; shift ;;
+                    --rubber-stamp-only) flag_rubber=true; shift ;;
+                    --review-only) flag_review=true; shift ;;
+                    T-*) task_id="$1"; shift ;;
+                    *) shift ;;
+                esac
+            done
 
             if [ -n "$task_id" ]; then
                 # T-070: Run verification commands for specific task
@@ -2198,11 +2328,23 @@ PYTASK_SHOW
                 fi
             else
                 # T-193: List tasks with unchecked human ACs (awaiting human verification)
+                # T-1628: triage flags (--compact, --by-age, --rubber-stamp-only, --review-only)
+                FW_VERIFY_COMPACT="$flag_compact" \
+                FW_VERIFY_BY_AGE="$flag_by_age" \
+                FW_VERIFY_RUBBER="$flag_rubber" \
+                FW_VERIFY_REVIEW="$flag_review" \
                 python3 << 'PYTASK_VERIFY'
 import os, re
+from datetime import datetime, timezone
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
 active_dir = os.path.join(project_root, '.tasks', 'active')
+
+# T-1628 flags
+FLAG_COMPACT = os.environ.get('FW_VERIFY_COMPACT', 'false') == 'true'
+FLAG_BY_AGE = os.environ.get('FW_VERIFY_BY_AGE', 'false') == 'true'
+FLAG_RUBBER = os.environ.get('FW_VERIFY_RUBBER', 'false') == 'true'
+FLAG_REVIEW = os.environ.get('FW_VERIFY_REVIEW', 'false') == 'true'
 
 BOLD = '\033[1m'
 GREEN = '\033[0;32m'
@@ -2210,6 +2352,20 @@ YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
 
+def parse_iso(s):
+    if not s: return None
+    try:
+        s = str(s).replace('Z', '+00:00')
+        return datetime.fromisoformat(s)
+    except Exception:
+        return None
+
+def label_of(item: str) -> str:
+    """Return RUBBER-STAMP / REVIEW / NONE based on the leading [TAG] of an item."""
+    m = re.match(r'\s*\[(RUBBER-STAMP|REVIEW)\]', item)
+    return m.group(1) if m else 'NONE'
+
+now = datetime.now(timezone.utc)
 results = []
 
 if os.path.isdir(active_dir):
@@ -2257,6 +2413,19 @@ if os.path.isdir(active_dir):
 
         if human_unchecked > 0:
             unchecked_items = re.findall(r'^\s*-\s*\[ \]\s*(.*)', human_block_uncommented, re.MULTILINE)
+            labels = {label_of(i) for i in unchecked_items}
+            if {'RUBBER-STAMP', 'REVIEW'}.issubset(labels):
+                kind = 'MIXED'
+            elif 'RUBBER-STAMP' in labels:
+                kind = 'RUBBER-STAMP'
+            elif 'REVIEW' in labels:
+                kind = 'REVIEW'
+            else:
+                kind = 'UNTAGGED'
+
+            last_update = parse_iso(fm.get('last_update'))
+            age_days = (now - last_update).days if last_update else 0
+
             results.append({
                 'id': fm.get('id', fn),
                 'name': fm.get('name', ''),
@@ -2265,18 +2434,44 @@ if os.path.isdir(active_dir):
                 'checked': human_checked,
                 'unchecked': human_unchecked,
                 'items': unchecked_items,
+                'kind': kind,
+                'age_days': age_days,
             })
+
+# T-1628: filter (additive — both flags = OR)
+if FLAG_RUBBER or FLAG_REVIEW:
+    keep = []
+    for r in results:
+        kinds = {label_of(i) for i in r['items']}
+        if FLAG_RUBBER and 'RUBBER-STAMP' in kinds:
+            keep.append(r); continue
+        if FLAG_REVIEW and 'REVIEW' in kinds:
+            keep.append(r); continue
+    results = keep
+
+# T-1628: sort by age desc (oldest first) when --by-age, else preserve alphabetical
+if FLAG_BY_AGE:
+    results.sort(key=lambda r: -r['age_days'])
 
 if results:
     print(f'{BOLD}Awaiting Human Verification{NC} ({len(results)} task(s))')
     print()
-    for r in results:
-        print(f'  {YELLOW}{r["id"]}{NC}: {r["name"]}')
-        print(f'    Status: {r["status"]}  Human ACs: {r["checked"]}/{r["total"]} checked')
-        for item in r['items']:
-            print(f'    {YELLOW}[ ]{NC} {item}')
-        print(f'    Finalize: fw task update {r["id"]} --status work-completed')
-        print()
+    if FLAG_COMPACT:
+        # T-1628: compact one-line-per-task format
+        for r in results:
+            kind = r['kind']
+            kind_color = YELLOW if kind in ('MIXED', 'REVIEW') else GREEN if kind == 'RUBBER-STAMP' else NC
+            name = (r['name'] or '')
+            if len(name) > 70: name = name[:67] + '...'
+            print(f'  {YELLOW}{r["id"]}{NC} {r["age_days"]:3d}d {r["unchecked"]}/{r["total"]} {kind_color}[{kind}]{NC} {name}')
+    else:
+        for r in results:
+            print(f'  {YELLOW}{r["id"]}{NC}: {r["name"]}')
+            print(f'    Status: {r["status"]}  Human ACs: {r["checked"]}/{r["total"]} checked')
+            for item in r['items']:
+                print(f'    {YELLOW}[ ]{NC} {item}')
+            print(f'    Finalize: fw task update {r["id"]} --status work-completed')
+            print()
 else:
     print(f'{GREEN}No tasks awaiting human verification{NC}')
 PYTASK_VERIFY
@@ -2363,6 +2558,8 @@ PYTASK_VERIFY
             echo "  show      Show task detail with episodic summary"
             echo "  stale     Show tasks with no updates in 7+ days (--days N)"
             echo "  verify [T-XXX]    Run verification commands (T-070) or list awaiting tasks (T-193)"
+            echo "                    Triage flags (T-1628): --compact, --by-age,"
+            echo "                    --rubber-stamp-only, --review-only"
             echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
             echo ""
             echo "Usage:"
@@ -2379,6 +2576,8 @@ PYTASK_VERIFY
             echo '  fw task stale            # Show tasks older than 7 days'
             echo '  fw task stale --days 14  # Show tasks older than 14 days'
             echo '  fw task verify  # List tasks awaiting human verification'
+            echo '  fw task verify --compact --by-age              # one-line, oldest first'
+            echo '  fw task verify --compact --rubber-stamp-only   # mechanical drains first'
             ;;
         stale)
             # T-812: Show tasks that haven't had updates or commits in N days
@@ -2740,15 +2939,22 @@ for job in jobs:
     status = job.get('status', 'active')
 
     # T-1249: Resolve ALL occurrences of bare 'fw' (not just leading)
+    # T-1720: cd into PROJECT_ROOT for fw commands too — fw subcommands that
+    # invoke `python3 -m lib.X` need cwd=PROJECT_ROOT (cron's default cwd is
+    # HOME). Without this the module import fails and the line silently no-ops.
     if 'fw ' in command:
         resolved = re.sub(r'\bfw\b', f'\"{fw_path}\"', command)
-        resolved = f'PROJECT_ROOT=\"{project_root}\" {resolved}'
+        resolved = f'cd \"{project_root}\" && PROJECT_ROOT=\"{project_root}\" {resolved}'
     else:
         # All non-fw commands run from project root (relative paths need it)
         resolved = f'cd \"{project_root}\" && {command}'
 
-    if '2>/dev/null' not in resolved:
-        resolved += ' 2>/dev/null'
+    # T-1720: pipe stderr+stdout to syslog instead of /dev/null so cron-time
+    # failures are discoverable. /opt/termlink cron lines already use this.
+    if '2>&1 | logger' not in resolved and '2>/dev/null' not in resolved:
+        resolved += ' 2>&1 | logger -t agentic-cron'
+    elif '2>/dev/null' in resolved:
+        resolved = resolved.replace('2>/dev/null', '2>&1 | logger -t agentic-cron')
 
     lines.append(f'# {name}')
     if status == 'paused':
@@ -3136,21 +3342,236 @@ Track via: T-1687 (orchestrator-rethink arc), ADR-0003.
 EOF
                 exit 0
                 ;;
-            status)
-                # T-1699: substrate observability — dispatch + outcome summary.
+            routes)
+                # T-1789: CLI mirror of web /orchestrator's route-cache view.
+                # Reads route-cache.json (TermLink hub-written) and surfaces
+                # learned per-task-type model preferences. Pairs with
+                # `fw orchestrator status` — status shows what got dispatched,
+                # routes shows what the orchestrator has learned wins.
+                # T-1790: --task-type X filter narrows to one task_type.
                 shift
                 _emit_json=0
+                _filter_task_type=""
+                _prev=""
                 for _arg in "$@"; do
                     [ "$_arg" = "--json" ] && _emit_json=1
+                    [ "$_prev" = "--task-type" ] && _filter_task_type="$_arg"
+                    _prev="$_arg"
                 done
-                python3 - "$_emit_json" <<'PYEOF'
+                python3 - "$_emit_json" "$_filter_task_type" <<'PYEOF'
 import json
 import os
 import sys
-from collections import Counter
+from collections import defaultdict
 from pathlib import Path
 
 emit_json = sys.argv[1] == "1"
+filter_task_type = sys.argv[2] if len(sys.argv) > 2 else ""
+
+
+def _route_cache_path() -> Path:
+    """Match web/blueprints/orchestrator.py _route_cache_path() exactly."""
+    xdg = os.environ.get("XDG_RUNTIME_DIR")
+    if xdg:
+        return Path(xdg) / "termlink" / "route-cache.json"
+    return Path("/var/lib/termlink/route-cache.json")
+
+
+def _route_cache_summary() -> dict:
+    """Aggregate route-cache model_stats by task_type. Mirrors web side
+    (_route_cache_learned). Shape:
+      {available, path, by_task_type: [{task_type, best, candidates}], total_stats}
+    """
+    path = _route_cache_path()
+    if not path.is_file():
+        return {"available": False, "path": str(path), "by_task_type": [], "total_stats": 0}
+    try:
+        cache = json.loads(path.read_text())
+    except (json.JSONDecodeError, OSError):
+        # Treat malformed/unreadable as unavailable — never crash the CLI.
+        return {"available": False, "path": str(path), "by_task_type": [], "total_stats": 0}
+    stats = cache.get("model_stats") or {}
+    if not isinstance(stats, dict):
+        stats = {}
+    by_tt: dict = defaultdict(list)
+    for stat in stats.values():
+        if not isinstance(stat, dict):
+            continue
+        tt = stat.get("task_type")
+        model = stat.get("model")
+        if not tt or not model:
+            continue
+        succ = int(stat.get("successes", 0) or 0)
+        fail = int(stat.get("failures", 0) or 0)
+        total = succ + fail
+        if total <= 0:
+            continue
+        by_tt[tt].append({
+            "model": model,
+            "successes": succ,
+            "failures": fail,
+            "total": total,
+            "rate": succ / total,
+            "last_used": stat.get("last_used"),
+        })
+    rows = []
+    for tt, candidates in sorted(by_tt.items()):
+        # Sort: rate desc, total desc, model alpha.
+        candidates.sort(key=lambda c: (-c["rate"], -c["total"], c["model"]))
+        rows.append({
+            "task_type": tt,
+            "best": candidates[0],
+            "candidates": candidates,
+        })
+    return {
+        "available": True,
+        "path": str(path),
+        "by_task_type": rows,
+        "total_stats": sum(len(r["candidates"]) for r in rows),
+    }
+
+
+summary = _route_cache_summary()
+
+# T-1790: --task-type filter narrows the by_task_type list before render.
+# Applied after summary build so total_stats reflects the filter scope.
+if filter_task_type and summary["available"]:
+    summary["by_task_type"] = [
+        r for r in summary["by_task_type"]
+        if r["task_type"] == filter_task_type
+    ]
+    summary["total_stats"] = sum(len(r["candidates"]) for r in summary["by_task_type"])
+
+if emit_json:
+    print(json.dumps(summary, indent=2))
+    sys.exit(0)
+
+if not summary["available"]:
+    print("no route cache yet")
+    print(f"(read path: {summary['path']})")
+    sys.exit(0)
+
+if filter_task_type and not summary["by_task_type"]:
+    # T-1790: empty filter result — distinct from "no model_stats yet".
+    print(f"no route cache entries for task_type {filter_task_type}")
+    print(f"(read path: {summary['path']})")
+    sys.exit(0)
+
+if not summary["by_task_type"]:
+    # File exists, JSON valid, but no usable model_stats. Distinguishes
+    # "never wrote anything" from "wrote, but no completed dispatches yet".
+    print("route cache has no model_stats yet")
+    print(f"(read path: {summary['path']})")
+    sys.exit(0)
+
+print(f"Route cache (learned preferences) — {summary['total_stats']} candidates")
+print(f"  source: {summary['path']}")
+print()
+for row in summary["by_task_type"]:
+    tt = row["task_type"]
+    best = row["best"]
+    total = sum(c["total"] for c in row["candidates"])
+    print(f"task_type={tt} (best={best['model']}, total {total})")
+    for c in row["candidates"]:
+        last = c.get("last_used") or "-"
+        rate_pct = c["rate"] * 100
+        print(
+            f"  {c['model']:30s} {c['successes']}/{c['failures']} "
+            f"({rate_pct:.0f}%) last_used={last}"
+        )
+    print()
+PYEOF
+                exit 0
+                ;;
+            status)
+                # T-1699: substrate observability — dispatch + outcome summary.
+                # T-1749: --outcomes flag adds per-task-type outcome quality view.
+                shift
+                _emit_json=0
+                _emit_outcomes=0
+                _filter_task=""
+                _filter_since=""
+                _filter_worker_kind=""
+                _filter_task_type=""
+                _filter_model=""
+                _filter_resolved_via=""
+                _recent_n=""
+                # T-1784: --task. T-1785: --since. T-1786: --worker-kind.
+                # T-1787: --recent. T-1790: --task-type. T-1791: --model.
+                # T-1793: --workflow-resolved-via.
+                _prev=""
+                for _arg in "$@"; do
+                    [ "$_arg" = "--json" ] && _emit_json=1
+                    [ "$_arg" = "--outcomes" ] && _emit_outcomes=1
+                    [ "$_prev" = "--task" ] && _filter_task="$_arg"
+                    [ "$_prev" = "--since" ] && _filter_since="$_arg"
+                    [ "$_prev" = "--worker-kind" ] && _filter_worker_kind="$_arg"
+                    [ "$_prev" = "--task-type" ] && _filter_task_type="$_arg"
+                    [ "$_prev" = "--model" ] && _filter_model="$_arg"
+                    [ "$_prev" = "--workflow-resolved-via" ] && _filter_resolved_via="$_arg"
+                    [ "$_prev" = "--recent" ] && _recent_n="$_arg"
+                    _prev="$_arg"
+                done
+                python3 - "$_emit_json" "$_emit_outcomes" "$_filter_task" "$_filter_since" "$_filter_worker_kind" "$_recent_n" "$_filter_task_type" "$_filter_model" "$_filter_resolved_via" <<'PYEOF'
+import json
+import os
+import sys
+from collections import Counter, defaultdict
+from pathlib import Path
+
+emit_json = sys.argv[1] == "1"
+emit_outcomes = sys.argv[2] == "1"
+filter_task = sys.argv[3] if len(sys.argv) > 3 else ""
+filter_since_arg = sys.argv[4] if len(sys.argv) > 4 else ""
+filter_worker_kind = sys.argv[5] if len(sys.argv) > 5 else ""
+recent_n_arg = sys.argv[6] if len(sys.argv) > 6 else ""
+filter_task_type = sys.argv[7] if len(sys.argv) > 7 else ""
+filter_model = sys.argv[8] if len(sys.argv) > 8 else ""
+filter_resolved_via = sys.argv[9] if len(sys.argv) > 9 else ""
+
+# T-1787: --recent N parsing + validation. Default 5 preserves the
+# pre-flag behavior; explicit N>=1 integer required.
+recent_n = 5
+if recent_n_arg:
+    try:
+        recent_n = int(recent_n_arg)
+    except ValueError:
+        print(
+            f"orchestrator status: invalid --recent '{recent_n_arg}' "
+            "(expected positive integer)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if recent_n < 1:
+        print(
+            f"orchestrator status: --recent must be >= 1 (got {recent_n})",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def _parse_duration(s):
+    """T-1785: parse <int><unit> where unit ∈ {m,h,d}. Returns seconds or None."""
+    import re as _re
+    m = _re.fullmatch(r"([1-9]\d*)([mhd])", s or "")
+    if not m:
+        return None
+    n = int(m.group(1))
+    unit = m.group(2)
+    mult = {"m": 60, "h": 3600, "d": 86400}[unit]
+    return n * mult
+
+
+filter_since_seconds = None
+if filter_since_arg:
+    filter_since_seconds = _parse_duration(filter_since_arg)
+    if filter_since_seconds is None:
+        print(
+            f"orchestrator status: invalid --since '{filter_since_arg}' "
+            "(expected <int><m|h|d>, e.g. 1h, 24h, 7d)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 DISPATCHES = PROJECT_ROOT / ".context" / "dispatches.jsonl"
 OUTCOMES = PROJECT_ROOT / ".context" / "dispatch-outcomes.jsonl"
@@ -3172,24 +3593,166 @@ def _read_jsonl(p: Path):
     return rows
 
 
-dispatches = _read_jsonl(DISPATCHES)
+dispatches_all = _read_jsonl(DISPATCHES)
 outcomes = _read_jsonl(OUTCOMES)
 dispatch_ids_with_outcomes = {o.get("dispatch_id") for o in outcomes if o.get("dispatch_id")}
 
+
+# T-1712: split synthetic stress rows from real dispatches. Synthetic rows
+# (task_id ^T-stress-) inflate the enrichment denominator and pollute the
+# task_type / worker_kind breakdowns with "?" values. They have no outcome
+# telemetry possible (task_type/worker_kind null), so excluding them keeps
+# the headline metric tied to real arc-substrate signal.
+def _is_synthetic(row):
+    tid = row.get("task_id") or ""
+    return tid.startswith("T-stress-")
+
+
+dispatches = [d for d in dispatches_all if not _is_synthetic(d)]
+synthetic = [d for d in dispatches_all if _is_synthetic(d)]
+
+# T-1784: --task filter. T-1785: --since filter. T-1786: --worker-kind.
+# T-1790: --task-type. T-1791: --model. All apply BEFORE aggregation so
+# every downstream breakdown sees only matching rows. AND-composition when
+# multiple set.
+if filter_task:
+    dispatches = [d for d in dispatches if d.get("task_id") == filter_task]
+if filter_worker_kind:
+    dispatches = [d for d in dispatches if d.get("worker_kind") == filter_worker_kind]
+if filter_task_type:
+    dispatches = [d for d in dispatches if d.get("task_type") == filter_task_type]
+if filter_model:
+    dispatches = [d for d in dispatches if d.get("model") == filter_model]
+if filter_resolved_via:
+    dispatches = [d for d in dispatches if d.get("workflow_resolved_via") == filter_resolved_via]
+if filter_since_seconds is not None:
+    from datetime import datetime as _dt, timezone as _tz, timedelta as _td
+    cutoff = _dt.now(_tz.utc) - _td(seconds=filter_since_seconds)
+    cutoff_iso = cutoff.isoformat()
+
+    def _ts_after_cutoff(row):
+        ts = row.get("ts", "")
+        # Lexicographic ISO 8601 comparison works for sortable timestamps.
+        return ts >= cutoff_iso
+
+    dispatches = [d for d in dispatches if _ts_after_cutoff(d)]
+else:
+    cutoff_iso = None
+
+if filter_task or filter_since_seconds is not None or filter_worker_kind or filter_task_type or filter_model or filter_resolved_via:
+    # Outcomes are filtered to match the (now-narrowed) dispatch_ids.
+    matching_dids = {d.get("dispatch_id") for d in dispatches if d.get("dispatch_id")}
+    outcomes = [o for o in outcomes if o.get("dispatch_id") in matching_dids]
+    dispatch_ids_with_outcomes = {o.get("dispatch_id") for o in outcomes if o.get("dispatch_id")}
+
 stats = {
     "dispatch_total": len(dispatches),
+    "synthetic_total": len(synthetic),
     "outcome_total": len(outcomes),
     "enriched_dispatches": sum(1 for d in dispatches if d.get("dispatch_id") in dispatch_ids_with_outcomes),
     "enrichment_ratio": 0.0,
     "by_task_type": dict(Counter(d.get("task_type") or "?" for d in dispatches).most_common(5)),
     "by_worker_kind": dict(Counter(d.get("worker_kind") or "?" for d in dispatches)),
+    # T-1788: model is the orchestrator's routing decision. Counter excludes
+    # rows where model is missing (legacy or unenriched) so the breakdown
+    # reflects only dispatches with a recorded routing choice.
+    "by_model": dict(Counter(d.get("model") for d in dispatches if d.get("model"))),
     "recent": [],
 }
 if stats["dispatch_total"]:
     stats["enrichment_ratio"] = round(stats["enriched_dispatches"] / stats["dispatch_total"], 3)
 
-# Last 5 dispatches with outcome status
-for d in dispatches[-5:]:
+
+# T-1779: terminal_event breakdown surfaces the data T-1777 persists into
+# dispatch rows. Three counters:
+#   by_terminal_type — distribution of terminal_event["type"]
+#   terminal_retryable — for "error" events, retryable True/False split
+#   terminal_is_error — for "result" events, is_error True/False split
+# All omitted from text output when empty (legacy data, graceful).
+_by_terminal_type: Counter = Counter()
+_terminal_retryable: Counter = Counter()
+_terminal_is_error: Counter = Counter()
+for d in dispatches:
+    te = d.get("terminal_event")
+    if not isinstance(te, dict):
+        continue
+    ttype = te.get("type")
+    if not ttype:
+        continue
+    _by_terminal_type[ttype] += 1
+    if ttype == "error" and "retryable" in te:
+        _terminal_retryable[bool(te["retryable"])] += 1
+    elif ttype == "result" and "is_error" in te:
+        _terminal_is_error[bool(te["is_error"])] += 1
+stats["by_terminal_type"] = dict(_by_terminal_type)
+stats["terminal_retryable"] = {str(k): v for k, v in _terminal_retryable.items()}
+stats["terminal_is_error"] = {str(k): v for k, v in _terminal_is_error.items()}
+
+
+# T-1749: per-task-type outcome quality aggregation. Routes by outcome
+# shape, not hardcoded evaluator name — verdict-style (escalation-scan-v0.5)
+# and verification-style (default evaluator) are both surfaced.
+# T-1757: dedupe by dispatch_id (latest ts wins) so replay-evaluator rows
+# supersede their originals in the rollup. Substrate is append-only; the
+# rollup honors supersession.
+def _aggregate_outcomes_by_task_type():
+    # Map dispatch_id → task_type for non-synthetic dispatches.
+    did_to_type = {
+        d.get("dispatch_id"): (d.get("task_type") or "?")
+        for d in dispatches if d.get("dispatch_id")
+    }
+    # Dedup pass: keep only the latest outcome per dispatch_id.
+    latest_per_did: dict = {}
+    for o in outcomes:
+        did = o.get("dispatch_id")
+        if not did or did not in did_to_type:
+            continue  # Outcome for synthetic or unknown dispatch — skip.
+        ts = o.get("ts") or ""
+        prev = latest_per_did.get(did)
+        if prev is None or (o.get("ts") or "") > (prev.get("ts") or ""):
+            latest_per_did[did] = o
+    by_type: dict = defaultdict(lambda: {
+        "evaluators": Counter(),
+        "verdicts": Counter(),
+        "verification_passed": Counter(),
+        "ac_satisfied": Counter(),
+        "outcome_total": 0,
+    })
+    for did, o in latest_per_did.items():
+        ttype = did_to_type[did]
+        outcome_body = o.get("outcome", {}) or {}
+        bucket = by_type[ttype]
+        bucket["outcome_total"] += 1
+        ev = outcome_body.get("evaluator")
+        if ev:
+            bucket["evaluators"][ev] += 1
+        # Shape detection — verdict-style or verification-style.
+        verdict = outcome_body.get("verdict")
+        if verdict:
+            bucket["verdicts"][verdict] += 1
+        if "verification_passed" in outcome_body:
+            bucket["verification_passed"][bool(outcome_body["verification_passed"])] += 1
+        if "ac_satisfied" in outcome_body:
+            bucket["ac_satisfied"][bool(outcome_body["ac_satisfied"])] += 1
+    # Convert Counters to dicts for JSON serializability.
+    return {
+        ttype: {
+            "evaluators": dict(b["evaluators"]),
+            "verdicts": dict(b["verdicts"]),
+            "verification_passed": {str(k): v for k, v in b["verification_passed"].items()},
+            "ac_satisfied": {str(k): v for k, v in b["ac_satisfied"].items()},
+            "outcome_total": b["outcome_total"],
+        }
+        for ttype, b in by_type.items()
+    }
+
+
+if emit_outcomes:
+    stats["by_task_type_outcomes"] = _aggregate_outcomes_by_task_type()
+
+# Last 5 dispatches with outcome status (real only — synthetic rows have
+# no telemetry so they're dropped from "recent" too).
+for d in dispatches[-recent_n:]:
     did = d.get("dispatch_id", "?")
     matched = [o for o in outcomes if o.get("dispatch_id") == did]
     out = matched[-1].get("outcome", {}) if matched else None
@@ -3199,24 +3762,79 @@ for d in dispatches[-5:]:
         "task_id": d.get("task_id"),
         "task_type": d.get("task_type"),
         "worker_kind": d.get("worker_kind"),
+        # T-1788: model is the orchestrator's routing decision per dispatch.
+        # None when row predates T-1664 / model unset.
+        "model": d.get("model"),
         "verification_passed": out.get("verification_passed") if out else None,
         "ac_satisfied": out.get("ac_satisfied") if out else None,
+        # T-1781: include terminal_event inline so the default surface
+        # answers "did this complete cleanly?" without a separate lookup.
+        "terminal_event": d.get("terminal_event"),
     })
 
 if emit_json:
     print(json.dumps(stats, indent=2))
     sys.exit(0)
 
-if stats["dispatch_total"] == 0 and stats["outcome_total"] == 0:
+if (filter_task or filter_since_seconds is not None or filter_worker_kind or filter_task_type or filter_model or filter_resolved_via) and stats["dispatch_total"] == 0:
+    # T-1784 / T-1785 / T-1786 / T-1790 / T-1791: empty filter result — separate
+    # notice (real dispatches may exist, just none matching the filter).
+    # Synthetic gating skipped.
+    if emit_json:
+        # JSON callers get the empty stats dict (valid, machine-parseable).
+        print(json.dumps(stats, indent=2))
+    else:
+        parts = []
+        if filter_task:
+            parts.append(f"task {filter_task}")
+        if filter_task_type:
+            parts.append(f"task_type {filter_task_type}")
+        if filter_worker_kind:
+            parts.append(f"worker_kind {filter_worker_kind}")
+        if filter_model:
+            parts.append(f"model {filter_model}")
+        if filter_resolved_via:
+            parts.append(f"workflow_resolved_via {filter_resolved_via}")
+        if filter_since_seconds is not None:
+            parts.append(f"the last {filter_since_arg}")
+        scope = " in ".join(parts)
+        print(f"no dispatches captured for {scope}")
+    sys.exit(0)
+
+if stats["dispatch_total"] == 0 and stats["outcome_total"] == 0 and stats["synthetic_total"] == 0:
     print("no dispatches captured yet")
     print(f"(write path: {DISPATCHES.relative_to(PROJECT_ROOT)})")
     sys.exit(0)
 
 print(f"Dispatch substrate (T-1687 arc, v1)")
+if filter_task:
+    # T-1784: make the narrowing visible — operator should not wonder
+    # whether they're looking at the full substrate or one task's slice.
+    print(f"  Filter:            task={filter_task}")
+if filter_task_type:
+    # T-1790: surface task_type narrowing.
+    print(f"  Filter:            task_type={filter_task_type}")
+if filter_worker_kind:
+    # T-1786: same visibility for worker_kind narrowing.
+    print(f"  Filter:            worker_kind={filter_worker_kind}")
+if filter_model:
+    # T-1791: surface model narrowing (routing-decision filter).
+    print(f"  Filter:            model={filter_model}")
+if filter_resolved_via:
+    # T-1793: surface workflow_resolved_via narrowing (fallback-detection filter).
+    print(f"  Filter:            workflow_resolved_via={filter_resolved_via}")
+if filter_since_seconds is not None:
+    # T-1785: surface the cutoff so operators see what window they're in.
+    print(f"  Filter:            since={filter_since_arg} (>= {cutoff_iso})")
 print(f"  Dispatches:        {stats['dispatch_total']}")
 print(f"  Outcome events:    {stats['outcome_total']}")
-print(f"  Enriched:          {stats['enriched_dispatches']}/{stats['dispatch_total']} "
-      f"({stats['enrichment_ratio']*100:.0f}%)")
+if stats["dispatch_total"]:
+    print(f"  Enriched:          {stats['enriched_dispatches']}/{stats['dispatch_total']} "
+          f"({stats['enrichment_ratio']*100:.0f}%)")
+else:
+    print(f"  Enriched:          0/0 (no real dispatches yet)")
+if stats["synthetic_total"]:
+    print(f"  Synthetic:         {stats['synthetic_total']} (T-stress-* — excluded from headline)")
 print()
 print("By task_type:")
 for k, v in stats["by_task_type"].items():
@@ -3226,6 +3844,29 @@ print("By worker_kind:")
 for k, v in stats["by_worker_kind"].items():
     print(f"  {k:30s} {v}")
 print()
+# T-1788: by_model — the routing decision per dispatch. Omitted when
+# no row carries a model (legacy data; mirror of terminal_event gating).
+if stats["by_model"]:
+    print("By model:")
+    for k, v in sorted(stats["by_model"].items(), key=lambda x: -x[1]):
+        print(f"  {k:30s} {v}")
+    print()
+# T-1779: terminal_event breakdown — only render when at least one row
+# carries the persisted field (T-1777). Legacy-data rows get no noise.
+if stats["by_terminal_type"]:
+    print("By terminal event:")
+    for k, v in sorted(stats["by_terminal_type"].items(), key=lambda x: -x[1]):
+        line = f"  {k:30s} {v}"
+        if k == "error" and stats["terminal_retryable"]:
+            t = stats["terminal_retryable"].get("True", 0)
+            f_ = stats["terminal_retryable"].get("False", 0)
+            line += f"   (retryable={t} / non-retryable={f_})"
+        print(line)
+        if k == "result" and stats["terminal_is_error"]:
+            t = stats["terminal_is_error"].get("True", 0)
+            f_ = stats["terminal_is_error"].get("False", 0)
+            print(f"      is_error: True={t} False={f_}")
+    print()
 print("Recent dispatches:")
 for r in stats["recent"]:
     flag = "·"
@@ -3233,8 +3874,52 @@ for r in stats["recent"]:
         flag = "✓"
     elif r["verification_passed"] is False or r["ac_satisfied"] is False:
         flag = "✗"
+    # T-1781: append terminal=<type> with conditional suffix. error gets
+    # full retryable state (both branches matter); result gets `(is_error)`
+    # only on failure (success is the common case — no suffix noise).
+    term_suffix = ""
+    te = r.get("terminal_event")
+    if isinstance(te, dict) and te.get("type"):
+        ttype = te["type"]
+        suffix = ""
+        if ttype == "error" and "retryable" in te:
+            suffix = "(retryable)" if te["retryable"] else "(non-retryable)"
+        elif ttype == "result" and te.get("is_error") is True:
+            suffix = "(is_error)"
+        term_suffix = f" terminal={ttype}{suffix}"
+    # T-1788: surface the routing decision (model) inline. "?" when
+    # missing keeps the column-shape stable across legacy/new rows.
+    model_str = r.get("model") or "?"
     print(f"  {flag} {r['ts']} [{r['dispatch_id']}] "
-          f"task={r['task_id']} type={r['task_type']} worker={r['worker_kind']}")
+          f"task={r['task_id']} type={r['task_type']} worker={r['worker_kind']} "
+          f"model={model_str}"
+          f"{term_suffix}")
+
+# T-1749: --outcomes view — per-task-type outcome quality.
+if emit_outcomes:
+    by_type_outcomes = stats.get("by_task_type_outcomes", {})
+    print()
+    print("Outcome quality (by task_type):")
+    if not by_type_outcomes:
+        print("  (no outcomes captured yet)")
+    else:
+        for ttype in sorted(by_type_outcomes.keys()):
+            b = by_type_outcomes[ttype]
+            evals = ", ".join(f"{k}({v})" for k, v in b["evaluators"].items()) or "—"
+            print(f"  {ttype} — {b['outcome_total']} outcomes, evaluators: {evals}")
+            if b["verdicts"]:
+                # Sort by count desc for readability.
+                for v, n in sorted(b["verdicts"].items(), key=lambda x: -x[1]):
+                    pct = 100.0 * n / b["outcome_total"] if b["outcome_total"] else 0.0
+                    print(f"      verdict {v:<25s} {n:>4d} ({pct:5.1f}%)")
+            if b["verification_passed"]:
+                t = b["verification_passed"].get("True", 0)
+                f = b["verification_passed"].get("False", 0)
+                print(f"      verification_passed: True={t} False={f}")
+            if b["ac_satisfied"]:
+                t = b["ac_satisfied"].get("True", 0)
+                f = b["ac_satisfied"].get("False", 0)
+                print(f"      ac_satisfied:        True={t} False={f}")
 PYEOF
                 exit $?
                 ;;
@@ -3273,6 +3958,18 @@ EOF
         # Reads dispatches.jsonl (append-only), writes dispatch-outcomes.jsonl
         # (also append-only). v2 read-path joins by dispatch_id.
         exec "$FW_LIB_DIR/outcome.sh" "$@"
+        ;;
+    pause)
+        # T-1809 / dispatch-safety slice 5: capture operator's answer to a
+        # paused dispatch (pause_requested terminal event) and fire a retry
+        # via Resolver with retry_of_dispatch_id + pause_resolution context.
+        exec "$FW_LIB_DIR/pause.sh" "$@"
+        ;;
+    peer)
+        # T-1818 / v2 peer-consult slice 1 framework-half: long-poll TermLink
+        # `inbox.queued` events and spawn responder via `fw termlink dispatch`.
+        # Pairs with TermLink T-1636 (inbox.queued emitter, hub-side).
+        exec python3 "$FW_LIB_DIR/peer.py" "$@"
         ;;
     promote)
         source "$FW_LIB_DIR/promote.sh"
@@ -3852,7 +4549,16 @@ for f in sorted(ACTIVE.glob("*.md")):
     verdict = extract_recommendation_state(text)
     rows.append((verdict, age_days, tid_v, name, unchecked))
 
-if not rows and not decision_rows:
+# T-1808: PAUSED section — workers awaiting operator resolution (dispatch-safety slice 4).
+paused_rows = []
+try:
+    sys.path.insert(0, str(ROOT / "lib"))
+    from dispatch_pause import list_paused_dispatches, format_age, truncate as _trunc
+    paused_rows = list_paused_dispatches(ROOT)
+except Exception:
+    paused_rows = []
+
+if not rows and not decision_rows and not paused_rows:
     print("No tasks awaiting human review.")
     sys.exit(0)
 
@@ -3881,6 +4587,21 @@ if decision_rows:
         print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
     print()
 
+# T-1808: PAUSED dispatches — Workers exited with pause_requested, awaiting answer.
+# Sits between DECISIONS and VERDICT (same urgency tier — blocks further work on that task).
+if paused_rows:
+    print(f"\033[1mPAUSED — Workers awaiting resolution ({len(paused_rows)})\033[0m")
+    print(f"\033[1m{'AGE':>5}  {'DISPATCH':<10}  {'TASK':<8}  QUESTION\033[0m")
+    for pr in paused_rows:
+        age_label = format_age(pr["age_seconds"])
+        did_short = (pr["dispatch_id"][:8] + "..") if len(pr["dispatch_id"]) > 8 else pr["dispatch_id"]
+        q = _trunc(pr["question"] or "(no question)", 60)
+        sev = pr["severity"] or "?"
+        # severity color: high=red, medium=yellow, low=grey
+        sev_col = {"high": "\033[31m", "medium": "\033[33m", "low": "\033[90m"}.get(sev, "\033[90m")
+        print(f"\033[36m{age_label:>5}\033[0m  {did_short:<10}  {pr['task_id']:<8}  {sev_col}[{sev}]\033[0m {q}")
+    print()
+
 if rows:
     print(f"\033[1mVERDICT — Human ACs awaiting verification ({len(rows)})\033[0m")
     print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
@@ -3899,10 +4620,11 @@ if defer: parts.append(f"\033[33m{defer} DEFER\033[0m")
 if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
 if unk: parts.append(f"\033[90m{unk} ?\033[0m")
 if no_rec: parts.append(f"\033[36m{no_rec} NO-REC\033[0m")
-total = len(rows) + len(decision_rows)
+total = len(rows) + len(decision_rows) + len(paused_rows)
 verif_only = f"{len(rows)} task(s) awaiting human review" if rows else ""
 dec_only = f"{len(decision_rows)} pending decision(s)" if decision_rows else ""
-summary = " · ".join(s for s in (dec_only, verif_only) if s)
+paused_only = f"{len(paused_rows)} paused dispatch(es)" if paused_rows else ""
+summary = " · ".join(s for s in (dec_only, paused_only, verif_only) if s)
 if parts:
     print(f"\n\033[2m{summary}\033[0m  ({' / '.join(parts)})")
 elif summary:
@@ -3937,10 +4659,45 @@ PYREVQ
             # Build default args, then let explicit args override
             wo_has_desc=false
             wo_has_owner=false
-            for wo_arg in "$@"; do
-                [ "$wo_arg" = "--description" ] && wo_has_desc=true
-                [ "$wo_arg" = "--owner" ] && wo_has_owner=true
+            wo_is_inception=false
+            for wo_arg_idx in "$@"; do
+                [ "$wo_arg_idx" = "--description" ] && wo_has_desc=true
+                [ "$wo_arg_idx" = "--owner" ] && wo_has_owner=true
             done
+            # Detect --type inception and route through inception_start (T-1716):
+            # the filing-time --recommendation/--rationale gate fires there.
+            wo_prev=""
+            for wo_arg_idx in "$@"; do
+                if [ "$wo_prev" = "--type" ] && [ "$wo_arg_idx" = "inception" ]; then
+                    wo_is_inception=true
+                fi
+                wo_prev="$wo_arg_idx"
+            done
+            if [ "$wo_is_inception" = true ]; then
+                # Strip --type inception (and --description default) from args, then
+                # forward remaining flags (--owner, --recommendation, --rationale,
+                # --i-am-human) to inception start which enforces T-1716 gate.
+                wo_inc_args=()
+                wo_skip_next=false
+                for wo_arg_idx in "$@"; do
+                    if [ "$wo_skip_next" = true ]; then
+                        wo_skip_next=false
+                        continue
+                    fi
+                    if [ "$wo_arg_idx" = "--type" ]; then
+                        wo_skip_next=true
+                        continue
+                    fi
+                    if [ "$wo_arg_idx" = "--description" ]; then
+                        wo_skip_next=true
+                        continue
+                    fi
+                    wo_inc_args+=("$wo_arg_idx")
+                done
+                source "$FW_LIB_DIR/inception.sh"
+                do_inception_start "$wo_target" "${wo_inc_args[@]}"
+                exit $?
+            fi
             wo_defaults=()
             [ "$wo_has_desc" = false ] && wo_defaults+=(--description "$wo_target")
             [ "$wo_has_owner" = false ] && wo_defaults+=(--owner agent)
@@ -4086,7 +4843,12 @@ with open('$BYPASS_LOG', 'w') as f:
             exit 0
         fi
         python3 << PYEOF
-import yaml
+import yaml, json, os, subprocess
+
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+RED = '\033[0;31m'
+NC = '\033[0m'
 
 with open("$GAPS_FILE") as f:
     data = yaml.safe_load(f)
@@ -4099,13 +4861,59 @@ closed = [g for g in gaps if g.get('status') in ('closed', 'decided-build', 'dec
 print(f"\033[1mGaps Register\033[0m — {len(watching)} watching, {len(closed)} resolved")
 print()
 
+
+def _render_closure_check(cmd: str) -> str:
+    """T-1752: run a gap's closure_check_command and return a one-line verdict.
+
+    Contract: the command emits JSON with at least 'verdict' (READY/NOT_READY).
+    Optional keys 'cron_firings', 'cron_firing_dates', 'closure_threshold_dates'
+    are surfaced as compact counters. Failures render as ERROR but never raise.
+    """
+    project_root = os.environ.get('PROJECT_ROOT', '.')
+    try:
+        proc = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True,
+            timeout=10, cwd=project_root,
+        )
+    except subprocess.TimeoutExpired:
+        return f"    Closure: {RED}ERROR (timeout >10s){NC}"
+    except Exception as e:
+        return f"    Closure: {RED}ERROR ({type(e).__name__}){NC}"
+    if proc.returncode != 0:
+        # Many gauges use --strict to flag NOT_READY via exit 1; still try to
+        # parse stdout as JSON before reporting ERROR.
+        pass
+    out = (proc.stdout or "").strip()
+    if not out:
+        return f"    Closure: {RED}ERROR (empty output){NC}"
+    try:
+        d = json.loads(out)
+    except json.JSONDecodeError:
+        return f"    Closure: {RED}ERROR (non-JSON output){NC}"
+    verdict = d.get('verdict', '?')
+    color = GREEN if verdict == 'READY' else (YELLOW if verdict == 'NOT_READY' else RED)
+    counters = []
+    if 'cron_firing_dates' in d and 'closure_threshold_dates' in d:
+        have = len(d['cron_firing_dates']) if isinstance(d['cron_firing_dates'], list) else d.get('cron_firings', 0)
+        need = d['closure_threshold_dates']
+        counters.append(f"{have}/{need}")
+    counter_str = f" ({', '.join(counters)})" if counters else ""
+    return f"    Closure: {color}{verdict}{counter_str}{NC}"
+
+
 for gap in watching:
     sev_colors = {'high': '\033[0;31m', 'medium': '\033[1;33m', 'low': '\033[0;36m'}
     sev = gap.get('severity', 'unknown')
     color = sev_colors.get(sev, '\033[0m')
-    print(f"  {color}{gap['id']}\033[0m [{sev}]  {gap['title']}")
+    # T-1840: defensive .get() — legacy consumer concerns.yaml entries
+    # predating the title-field requirement crashed fw gaps with KeyError.
+    print(f"  {color}{gap.get('id', '?')}\033[0m [{sev}]  {gap.get('title', '<untitled>')}")
     trigger = gap.get('decision_trigger', '').strip().split('\n')[0]
     print(f"    Trigger: {trigger}")
+    # T-1752: render closure-readiness verdict if a check is configured.
+    cmd = gap.get('closure_check_command')
+    if cmd:
+        print(_render_closure_check(cmd))
     print()
 
 if not watching:
@@ -5197,13 +6005,26 @@ PYPREDICT
                     echo -e "${YELLOW}SKIP: pytest not installed${NC}"
                 fi
 
-                # 4. Playwright UI tests (T-969)
-                if python3 -c "import playwright" 2>/dev/null && [ -d "$FRAMEWORK_ROOT/tests/playwright" ]; then
-                    echo -e "${BOLD}--- Playwright UI Tests ---${NC}"
-                    cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
-                    echo ""
+                # 4. Playwright UI tests (T-969, T-1725)
+                # T-1725: split the SKIP into actionable cases — pip-missing vs tests-missing
+                # are different problems with different fixes. Also look in PROJECT_ROOT first
+                # so consumer projects' own UI tests run.
+                _pw_dir=""
+                if [ -d "$PROJECT_ROOT/tests/playwright" ]; then
+                    _pw_dir="$PROJECT_ROOT/tests/playwright"
+                elif [ -d "$FRAMEWORK_ROOT/tests/playwright" ]; then
+                    _pw_dir="$FRAMEWORK_ROOT/tests/playwright"
+                fi
+                if ! python3 -c "import playwright" 2>/dev/null; then
+                    echo -e "${YELLOW}SKIP: pytest-playwright not installed (essential for UI regression tests)${NC}"
+                    echo -e "       Install: ${BOLD}pip install playwright pytest-playwright && playwright install chromium${NC}"
+                    echo -e "       Note: this is the pip package — separate from the @playwright/mcp npm server"
+                elif [ -z "$_pw_dir" ]; then
+                    echo -e "${YELLOW}SKIP: no tests/playwright/ found in project or framework${NC}"
                 else
-                    echo -e "${YELLOW}SKIP: playwright not installed or tests/playwright/ missing${NC}"
+                    echo -e "${BOLD}--- Playwright UI Tests (${_pw_dir#$PROJECT_ROOT/}) ---${NC}"
+                    cd "$PROJECT_ROOT" && python3 -m pytest "$_pw_dir" -v || _test_exit=1
+                    echo ""
                 fi
                 ;;
             *)

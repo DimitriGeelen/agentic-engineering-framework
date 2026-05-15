@@ -12,6 +12,14 @@ user-level (~/.claude/settings.json) and project-level
 state). This addresses the structural cause of OBS-023 (T-1478 mitigates
 the symptom in pre-compact.sh).
 
+## Dependencies (3)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/upgrade.sh` | calls |
+| `lib/upgrade.sh` | tests |
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-upgrade_duplicate_hook_detection.yaml`*
 *Last verified: 2026-04-25*

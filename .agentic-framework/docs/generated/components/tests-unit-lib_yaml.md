@@ -11,11 +11,12 @@
 Unit tests for lib/yaml.sh
 Tests get_yaml_field() — YAML frontmatter field extraction
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/yaml.sh` | calls |
+| `lib/yaml.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_yaml.yaml`*

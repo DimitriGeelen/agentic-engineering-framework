@@ -17,6 +17,15 @@ Fix mirrors lib/init.sh:584 (T-1364, G-053-A): canonicalize the project
 root from --file path, detect framework-mode (FRAMEWORK.md + bin/fw) vs
 consumer-mode (.agentic-framework/bin/fw), emit absolute path either way.
 
+## Dependencies (4)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/hook-enable.sh` | calls |
+| `bin/hook-enable.sh` | tests |
+| `lib/init.sh` | tests |
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_enable_absolute_path.yaml`*
 *Last verified: 2026-04-26*

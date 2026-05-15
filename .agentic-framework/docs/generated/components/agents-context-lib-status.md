@@ -9,12 +9,14 @@
 Context Agent - status command
 Shows current context state across all memory types
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-001` | called_by |
 | `agents/context/context.sh` | called-by |
+| `tests/unit/context_status.bats` | called_by |
+| `tests/unit/context_status.bats` | tests_by |
 
 ## Documentation
 

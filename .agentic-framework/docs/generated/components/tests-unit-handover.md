@@ -18,11 +18,12 @@ Origin: T-923, T-944 (isolation fix)
 - When generating handover: fill in ALL [TODO] sections immediately in the same operation
 - For mid-session checkpoints: `fw handover --checkpoint`
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/handover/handover.sh` | calls |
+| `agents/handover/handover.sh` | tests |
 
 ## Related
 

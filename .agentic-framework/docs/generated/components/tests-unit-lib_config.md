@@ -9,11 +9,12 @@
 Unit tests for lib/config.sh — 3-tier configuration resolution
 Origin: T-819
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/config.sh` | calls |
+| `lib/config.sh` | tests |
 
 ## Related
 

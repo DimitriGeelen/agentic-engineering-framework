@@ -8,11 +8,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/settings.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_settings_models.yaml`*

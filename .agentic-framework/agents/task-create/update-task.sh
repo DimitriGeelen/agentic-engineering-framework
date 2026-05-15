@@ -34,11 +34,20 @@ log_gate_bypass() {
     local log_file="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
     local timestamp
     timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    echo "- timestamp: '$timestamp'" >> "$log_file"
-    echo "  task: '$TASK_ID'" >> "$log_file"
-    echo "  flag: '$flag'" >> "$log_file"
-    echo "  caller: '$caller'" >> "$log_file"
-    echo "  reason: '${REASON:-}'" >> "$log_file"
+    # T-1861: escape embedded single quotes per YAML single-quoted-scalar rule
+    # (' → ''). Reason is user-controlled text; without escaping, any apostrophe
+    # or single-quoted snippet inside reason breaks yaml.safe_load (audit-data
+    # corruption surfaced 2026-05-15 on log line 390).
+    local _esc_ts="${timestamp//\'/\'\'}"
+    local _esc_task="${TASK_ID//\'/\'\'}"
+    local _esc_flag="${flag//\'/\'\'}"
+    local _esc_caller="${caller//\'/\'\'}"
+    local _esc_reason="${REASON//\'/\'\'}"
+    echo "- timestamp: '$_esc_ts'" >> "$log_file"
+    echo "  task: '$_esc_task'" >> "$log_file"
+    echo "  flag: '$_esc_flag'" >> "$log_file"
+    echo "  caller: '$_esc_caller'" >> "$log_file"
+    echo "  reason: '${_esc_reason:-}'" >> "$log_file"
 }
 
 # Human Sovereignty Gate (R-033/T-198)
@@ -114,6 +123,28 @@ check_acceptance_criteria() {
                 echo "$ac_section" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
             fi
             echo "" >&2
+            # T-1836 (T-1831 C-3): surface body-vs-checkbox drift hint.
+            # Detect whether the task has a filled (non-template) ## Recommendation
+            # block — strong signal that substantive content was written. When
+            # present, prompt agent to tick boxes that correspond to completed work
+            # rather than re-doing the work. CLAUDE.md §Progressive AC ticking is
+            # the procedural rule; this message surfaces it at the point of refusal.
+            local _rec_block _rec_filled=false
+            _rec_block=$(sed -n '/^## Recommendation/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
+            if [ -n "$_rec_block" ] && echo "$_rec_block" | grep -qE '^\*\*(Recommendation|Rationale|Evidence)(:\*\*|\*\*:)'; then
+                _rec_filled=true
+            fi
+            if [ "$_rec_filled" = true ]; then
+                echo -e "${YELLOW}Hint:${NC} task body has a filled \`## Recommendation\` block — AC content likely present." >&2
+                echo "  Tick the [x] boxes for each AC whose work is in place." >&2
+                echo "  Re-doing the work is not the answer; this is the body-vs-checkbox drift class." >&2
+                echo "  See CLAUDE.md §Verification Before Completion → Progressive AC ticking (T-1831 C-4)." >&2
+                echo "" >&2
+            else
+                echo -e "${YELLOW}Hint:${NC} if you wrote AC content in the body but didn't tick boxes, see" >&2
+                echo "  CLAUDE.md §Verification Before Completion → Progressive AC ticking (T-1831 C-4)." >&2
+                echo "" >&2
+            fi
             echo "Options:" >&2
             echo "  1. Check the criteria in the task file, then retry" >&2
             echo "  2. Use --skip-acceptance-criteria to bypass (logged)" >&2
@@ -346,6 +377,233 @@ PYRCA
     esac
 }
 
+# Inception-decision Gate (T-1626, structural remediation for G-052)
+# Fires on --status work-completed for inception tasks. Requires a
+# `**Decision**: GO|NO-GO|DEFER` line in the task body — i.e. the operator
+# has run `fw inception decide T-XXX <go|no-go|defer>`.
+#
+# Origin: G-052 (2026-04-30). T-1448 inception got silently moved active->completed
+# during an unrelated heartbeat-script commit. The commit-msg inception gate is
+# only a BLOCK-on-commit; it does not catch the lifecycle path that finalizes
+# tasks via update-task.sh. Without this gate, an inception decision queue can
+# silently empty - operator visibility into pending decisions is lost.
+check_inception_decision() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    local task_type
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    [ "$task_type" = "inception" ] || return 0
+
+    if grep -qE '^\*\*Decision\*\*:[[:space:]]*(GO|NO-GO|DEFER)\b' "$TASK_FILE"; then
+        echo -e "${GREEN}Inception decision: recorded \xE2\x9C\x93${NC}"
+        return 0
+    fi
+
+    if [ "$SKIP_INCEPTION_DECISION" = true ]; then
+        echo -e "${YELLOW}WARNING: inception decision missing (--skip-inception-decision bypass)${NC}"
+        log_gate_bypass "--skip-inception-decision" "check_inception_decision"
+        return 0
+    fi
+
+    echo -e "${RED}ERROR: Cannot complete inception task - no decision recorded.${NC}" >&2
+    echo "" >&2
+    echo "G-052 (CLAUDE.md Inception Discipline): inception tasks must produce a" >&2
+    echo "go/no-go/defer decision. Silent completion empties the operator's" >&2
+    echo "decision queue and loses visibility into pending exploration outcomes." >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  1. Record the decision: fw inception decide $(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') go|no-go|defer --rationale '...'" >&2
+    echo "  2. Use --skip-inception-decision to bypass (logged, T-1626)" >&2
+    exit 1
+}
+
+# Evolution-log Gate (T-1718, structural counter to §ACD/G-062 family)
+# Fires on --status work-completed for arc-tagged build tasks IF the task
+# body already contains a `## Evolution` section (template opt-in: tasks
+# created before T-1718 don't have the section, aren't gated). Requires
+# at least one substantive (≥30 chars, comment-stripped, non-heading) line
+# in the section body.
+#
+# Origin: T-1717 grill Q4 — "the understanding of what we need and want
+# evolves with the process of materialisation." Same shape as T-1550 RCA
+# gate: advisory CLAUDE.md text → structural enforcement.
+check_evolution_log() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    local task_type task_tags
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//')
+
+    # Only build tasks
+    [ "$task_type" = "build" ] || return 0
+
+    # Only arc-tagged
+    echo "$task_tags" | grep -q 'arc:' || return 0
+
+    # Source detection helper
+    local lib_path="$FRAMEWORK_ROOT/lib/evolution_log.sh"
+    [ -f "$lib_path" ] || return 0
+    # shellcheck source=/dev/null
+    source "$lib_path"
+
+    # Backward-compat: if section absent, no-op
+    has_evolution_section "$TASK_FILE" || return 0
+
+    # Section exists — must be substantive
+    if has_real_evolution_log "$TASK_FILE"; then
+        echo -e "${GREEN}Evolution log: substantive ✓${NC}"
+        return 0
+    fi
+
+    if [ "$SKIP_EVOLUTION" = true ]; then
+        echo -e "${YELLOW}WARNING: Evolution log empty/template-only (--skip-evolution bypass)${NC}"
+        log_gate_bypass "--skip-evolution" "check_evolution_log"
+        return 0
+    fi
+
+    echo -e "${RED}ERROR: Cannot complete arc-tagged build task — ## Evolution section is empty/template-only.${NC}" >&2
+    echo "" >&2
+    echo "T-1718 (CLAUDE.md / T-1717 grill Q4): arc-tagged build tasks must capture how" >&2
+    echo "understanding evolved during build. Spec-vs-build drift must be visible, not silent." >&2
+    echo "" >&2
+    echo "Add an entry to the ## Evolution section in $TASK_FILE:" >&2
+    echo "" >&2
+    echo "  ### YYYY-MM-DD — [topic]" >&2
+    echo "  - **What changed:** [what we learned that we didn't know at filing]" >&2
+    echo "  - **Plan impact:** [what in the plan no longer fits]" >&2
+    echo "  - **Triggered:** [new sub-task / pivot / scope cut, with task ID]" >&2
+    echo "" >&2
+    echo "At least one substantive entry (≥30 chars on at least one line) is required." >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  1. Add the Evolution entry, then retry" >&2
+    echo "  2. Use --skip-evolution to bypass (logged Tier-2, T-1718)" >&2
+    exit 1
+}
+
+# Task-pair §ACD Gate (P-012, T-1762, structural remediation for G-066)
+# Fires on --status work-completed for build tasks whose `related_tasks`
+# chain references an inception with `**Recommendation:** GO` AND that
+# inception has an explicit `**Decomposition (follow-up build tasks
+# after GO):**` heading enumerating promised follow-ups.
+#
+# For each promised deliverable, checks via lib/task_pair_acd.py whether
+# any task in the related_tasks chain has a title matching the
+# deliverable. Refuses on missing != [].
+#
+# Conservative on purpose: silent on inceptions without the explicit
+# Decomposition heading (single-deliverable inceptions, T-1713 itself,
+# T-1715 etc.). Forward-only — historic completed builds are never
+# re-checked.
+#
+# Origin: T-1442/T-1443 closed work-completed clean while 2/3 GO scope
+# items silently dropped. T-1711 registered G-066. T-1713 inception GO'd
+# the per-task gate but build was never filed (the very pattern G-066
+# documents, recurring on its own deliverable). T-1762 closes the loop.
+check_task_pair_acd() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    # Load library if not already sourced
+    if ! type extract_deliverables >/dev/null 2>&1; then
+        # shellcheck source=/dev/null
+        source "$FRAMEWORK_ROOT/lib/task_pair_acd.sh" 2>/dev/null || return 0
+    fi
+
+    local task_type
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 \
+        | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+
+    # Only build tasks gate on this. Inceptions/specs/designs are the
+    # things being checked AGAINST, not checked themselves.
+    [ "$task_type" = "build" ] || return 0
+
+    local task_id
+    task_id=$(basename "$TASK_FILE" | grep -oE '^T-[0-9]+')
+    [ -z "$task_id" ] && return 0
+
+    # Read related_tasks (YAML list, possibly multi-line)
+    local related_ids
+    related_ids=$(python3 - "$TASK_FILE" <<'PYRELATED' 2>/dev/null || true
+import re, sys
+with open(sys.argv[1]) as f:
+    head = f.read(4000)
+m = re.search(r'^related_tasks:\s*(\[[^\]]*\]|\n(?:\s+-\s+\S+\n?)+)',
+              head, re.MULTILINE)
+if m:
+    for tid in re.findall(r'T-\d+', m.group(1)):
+        print(tid)
+PYRELATED
+)
+    [ -z "$related_ids" ] && return 0
+
+    # Find an inception in related_tasks with GO + Decomposition heading.
+    # Skip on first match — there should be at most one parent inception.
+    local inception_id="" inception_file
+    while IFS= read -r tid; do
+        [ -z "$tid" ] && continue
+        inception_file=$(find "$PROJECT_ROOT/.tasks" -maxdepth 2 \
+            -name "${tid}-*.md" -type f 2>/dev/null | head -1)
+        [ -z "$inception_file" ] && continue
+        # Only inceptions with GO + Decomposition produce non-empty deliverables
+        local deliverables
+        deliverables=$(python3 "$FRAMEWORK_ROOT/lib/task_pair_acd.py" \
+            extract "$inception_file" 2>/dev/null || true)
+        if [ -n "$deliverables" ]; then
+            inception_id="$tid"
+            break
+        fi
+    done <<< "$related_ids"
+
+    [ -z "$inception_id" ] && return 0
+
+    # Run the verify pass.
+    #
+    # NOTE: `set -e` is in effect for this script. A plain command-substitution
+    # assignment (`var=$(cmd)`) to a variable that was declared `local` on
+    # a previous line is a REGULAR assignment, so set -e triggers exit on a
+    # non-zero exit of `cmd` — silently bypassing the error-reporting block
+    # below. Origin bug: gate fired exit-4 in production but no stderr ever
+    # reached the user; observed on T-1762 itself when the gate refused its
+    # own transition. Fix: capture exit code via `|| rc=$?` idiom so set -e
+    # does not see a failing command.
+    local verify_json="" verify_rc=0
+    verify_json=$(python3 "$FRAMEWORK_ROOT/lib/task_pair_acd.py" verify \
+        "$inception_id" "$task_id" "$PROJECT_ROOT" 2>/dev/null) || verify_rc=$?
+
+    if [ "$verify_rc" -eq 0 ]; then
+        echo -e "${GREEN}Task-pair §ACD: all promised deliverables shipped ✓ (P-012, vs $inception_id)${NC}"
+        return 0
+    fi
+
+    if [ "$verify_rc" -ne 4 ]; then
+        # 2/3/etc — gate no-op (no Recommendation, not GO)
+        return 0
+    fi
+
+    # Missing detected
+    if [ -n "$SCOPE_REDUCTION_ACK" ]; then
+        echo -e "${YELLOW}WARNING: Task-pair §ACD: missing deliverables (--scope-reduction-acknowledged bypass)${NC}"
+        log_gate_bypass "--scope-reduction-acknowledged" "check_task_pair_acd: $SCOPE_REDUCTION_ACK"
+        return 0
+    fi
+
+    echo -e "${RED}ERROR: Task-pair §ACD gate (P-012): inception $inception_id promised deliverables that did not ship.${NC}" >&2
+    echo "" >&2
+    echo "G-066 (CLAUDE.md): substrate-vs-deliverable conflation at task-pair level." >&2
+    echo "Inception's '## Recommendation' enumerates follow-up build tasks under" >&2
+    echo "'**Decomposition (follow-up build tasks after GO):**' but at least one" >&2
+    echo "promised item has no shipped counterpart in related_tasks chain." >&2
+    echo "" >&2
+    echo "Verify report:" >&2
+    echo "$verify_json" | sed 's/^/  /' >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  1. File the missing build task(s) and link via related_tasks, then retry" >&2
+    echo "  2. Update inception Decomposition list to reflect a real scope reduction, then retry" >&2
+    echo "  3. Use --scope-reduction-acknowledged \"<rationale>\" to acknowledge and bypass (logged, T-1762)" >&2
+    exit 1
+}
+
 # Verification Gate (P-011)
 # Runs shell commands from ## Verification section before allowing work-completed.
 run_verification_commands() {
@@ -449,6 +707,9 @@ SKIP_VERIFICATION=false
 SKIP_HUMAN_OWNERSHIP=false
 SKIP_RECOMMENDATION=false
 SKIP_RCA=false
+SKIP_EVOLUTION=false
+SKIP_INCEPTION_DECISION=false
+SCOPE_REDUCTION_ACK=""  # T-1762/P-012: --scope-reduction-acknowledged "rationale"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -465,6 +726,15 @@ while [[ $# -gt 0 ]]; do
         --skip-human-ownership) SKIP_HUMAN_OWNERSHIP=true; shift ;;
         --skip-recommendation) SKIP_RECOMMENDATION=true; shift ;;
         --skip-rca) SKIP_RCA=true; shift ;;
+        --skip-evolution) SKIP_EVOLUTION=true; shift ;;
+        --skip-inception-decision) SKIP_INCEPTION_DECISION=true; shift ;;
+        --scope-reduction-acknowledged)
+            SCOPE_REDUCTION_ACK="$2"
+            if [ -z "$SCOPE_REDUCTION_ACK" ]; then
+                echo "ERROR: --scope-reduction-acknowledged requires a rationale string" >&2
+                exit 1
+            fi
+            shift 2 ;;
         --force|-f)
             echo -e "${YELLOW}DEPRECATED: --force will be removed. Use narrow flags instead:${NC}" >&2
             echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)" >&2
@@ -472,8 +742,11 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-verification          Bypass verification gate (P-011)" >&2
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)" >&2
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
+            echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
+            echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)" >&2
+            echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_INCEPTION_DECISION=true; SCOPE_REDUCTION_ACK="--force bypass"
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -491,6 +764,9 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-verification          Bypass verification gate (P-011)"
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)"
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)"
+            echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)"
+            echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)"
+            echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)"
             echo "  --skip-human-ownership       Bypass human ownership reassignment"
             echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
             echo "  -h, --help    Show this help"
@@ -577,6 +853,7 @@ if [ -n "$NEW_STATUS" ]; then
                 # in the index together — avoids leaving the active/* deletion
                 # as an unstaged working-tree change that pollutes subsequent
                 # commits and requires a cleanup follow-up.
+                _t1863_orig="$TASK_FILE"
                 if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
                     git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
                         || mv "$TASK_FILE" "$DEST"
@@ -584,6 +861,17 @@ if [ -n "$NEW_STATUS" ]; then
                     mv "$TASK_FILE" "$DEST"
                 fi
                 TASK_FILE="$DEST"
+                # T-1863: post-move sanity — if source still exists, the move
+                # is incomplete and we'd land in a G-052 orphan state. Refuse
+                # so the agent fixes it before --status work-completed commits.
+                if [ -e "$_t1863_orig" ] && [ "$_t1863_orig" != "$DEST" ]; then
+                    echo -e "${RED}ERROR: post-move orphan detected (T-1863)${NC}" >&2
+                    echo "  Source still exists: $_t1863_orig" >&2
+                    echo "  Destination:         $DEST" >&2
+                    echo "  Both versions would create a G-052 duplicate-task-ID violation." >&2
+                    echo "  Fix: git rm '$_t1863_orig' (the destination is canonical)" >&2
+                    exit 1
+                fi
                 echo -e "${GREEN}Moved to completed/${NC}"
 
                 # Generate episodic if not already present
@@ -700,6 +988,29 @@ if [ -n "$NEW_STATUS" ]; then
             check_rca_for_bugfix
         fi
 
+        # === Inception-decision Gate (T-1626, G-052 structural remediation) ===
+        # Inception tasks must record a go/no-go/defer decision before completion.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_inception_decision
+        fi
+
+        # === Evolution-log Gate (T-1718, T-1717 grill Q4 remediation) ===
+        # Arc-tagged build tasks with a ## Evolution section must capture
+        # spec-vs-build drift before completion. Backward-compat: tasks
+        # without the section aren't gated.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_evolution_log
+        fi
+
+        # === Task-pair §ACD Gate (P-012, T-1762, G-066 prong 2) ===
+        # Build tasks completing under an inception that explicitly
+        # enumerated follow-up build tasks must show the full set shipped.
+        # Conservative: silent on inceptions without `**Decomposition
+        # (follow-up build tasks after GO):**` heading.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_task_pair_acd
+        fi
+
         # === Reviewer Static-Scan (T-1443 v1.0) ===
         # Non-blocking measurement pass: catalogues anti-patterns and writes
         # verdict to task body. Skipped if FW_REVIEWER_DISABLED=1 or python3
@@ -800,7 +1111,12 @@ horizon: $NEW_HORIZON" "$TASK_FILE"
             # breaking the equality check. Use a single command, ignore exit.
             _has_rec=$(grep -c "^\*\*Recommendation:\*\*" "$TASK_FILE" 2>/dev/null) || _has_rec=0
             _agent_unchecked=$(awk '/^### Agent/,/^### Human|^## /' "$TASK_FILE" 2>/dev/null | grep -c '^- \[ \]') || _agent_unchecked=0
-            if [ "$_has_rec" -ge 1 ] && [ "$_agent_unchecked" = "0" ]; then
+            # T-1865: a DEFER Recommendation is NOT shipping evidence — it's an
+            # explicit "park this" verdict. Demoting started-work → captured
+            # is the right behaviour. Only GO/NO-GO Recommendations indicate
+            # awaiting-review state that the T-1589 exception protects.
+            _rec_is_defer=$(grep -c "^\*\*Recommendation:\*\*.*DEFER" "$TASK_FILE" 2>/dev/null) || _rec_is_defer=0
+            if [ "$_has_rec" -ge 1 ] && [ "$_agent_unchecked" = "0" ] && [ "$_rec_is_defer" -eq 0 ]; then
                 echo -e "${CYAN}Status:  preserved at started-work (T-1589: shipping evidence — Recommendation + all Agent ACs checked)${NC}"
                 CHANGES+=("status: preserved at started-work (T-1589 shipping evidence)")
             else
@@ -950,6 +1266,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
         if [ "$(dirname "$TASK_FILE")" != "$TASKS_DIR/completed" ]; then
             # T-1523: git mv when tracked so both rename sides stage atomically
+            _t1863_orig="$TASK_FILE"
             if git -C "$PROJECT_ROOT" ls-files --error-unmatch "$TASK_FILE" >/dev/null 2>&1; then
                 git -C "$PROJECT_ROOT" mv "$TASK_FILE" "$DEST" 2>/dev/null \
                     || mv "$TASK_FILE" "$DEST"
@@ -957,6 +1274,16 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 mv "$TASK_FILE" "$DEST"
             fi
             TASK_FILE="$DEST"
+            # T-1863: post-move orphan check — same rationale as the T-193
+            # re-run path above. Refuse rather than land in G-052 silently.
+            if [ -e "$_t1863_orig" ] && [ "$_t1863_orig" != "$DEST" ]; then
+                echo -e "${RED}ERROR: post-move orphan detected (T-1863)${NC}" >&2
+                echo "  Source still exists: $_t1863_orig" >&2
+                echo "  Destination:         $DEST" >&2
+                echo "  Both versions would create a G-052 duplicate-task-ID violation." >&2
+                echo "  Fix: git rm '$_t1863_orig' (the destination is canonical)" >&2
+                exit 1
+            fi
             echo -e "${GREEN}Moved to completed/${NC}"
 
             # T-709: Push notification — task completed
@@ -1125,7 +1452,14 @@ with open(path, 'w') as f:
             # T-1371 (G-054): Capture stdout/stderr/exit-code to diagnose silent failures.
             # Log every invocation (not only on failure) so the forensic context (PROJECT_ROOT,
             # CONTEXT_DIR, env) is captured when the next silent failure occurs.
-            EPISODIC_LOG="$CONTEXT_DIR/working/.last-episodic-gen.log"
+            #
+            # T-1860: per-task log file + append. Previous single rolling log was
+            # truncated on every invocation — the moment a silent failure occurred,
+            # the failing run's context was already overwritten by the next task's
+            # successful run. Per-task files isolate forensics; append preserves
+            # re-run history within a task. Discovered when T-1859 backfilled
+            # T-1829/T-1830/T-1831 episodics and the diagnostic log was unrecoverable.
+            EPISODIC_LOG="$CONTEXT_DIR/working/episodic-gen/$TASK_ID.log"
             mkdir -p "$(dirname "$EPISODIC_LOG")" 2>/dev/null || true
             {
                 echo "=== episodic-gen invocation: $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
@@ -1136,7 +1470,7 @@ with open(path, 'w') as f:
                 echo "CONTEXT_AGENT: $CONTEXT_AGENT"
                 echo "cwd: $(pwd)"
                 echo "--- context.sh output ---"
-            } > "$EPISODIC_LOG" 2>&1
+            } >> "$EPISODIC_LOG" 2>&1
             set +e
             PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" >> "$EPISODIC_LOG" 2>&1
             EPISODIC_EXIT=$?

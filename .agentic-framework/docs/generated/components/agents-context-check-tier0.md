@@ -26,7 +26,7 @@ Flow:
 | `lib/notify.sh` | calls |
 | `lib/watchtower.sh` | calls |
 
-## Used By (7)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -36,6 +36,9 @@ Flow:
 | `C-009` | triggers_by |
 | `.claude/settings.json` | used-by |
 | `agents/audit/audit.sh` | called-by |
+| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| `tests/unit/tier0_hash_normalization.bats` | called_by |
+| `tests/unit/tier0_hash_normalization.bats` | tests_by |
 
 ## Documentation
 

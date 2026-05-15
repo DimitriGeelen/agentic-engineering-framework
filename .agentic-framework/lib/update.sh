@@ -173,6 +173,15 @@ _do_update_vendored() {
     echo -e "${YELLOW}Saving rollback backup...${NC}"
     rm -rf "$rollback_dir"
     cp -r "$vendored_dir" "$rollback_dir"
+    # T-1841: write .fw-not-a-project sentinel — find_project_root must skip
+    # the rollback dir so an agent CWD inside it doesn't trap on
+    # .tasks/templates/ inherited from the vendored framework.
+    cat > "$rollback_dir/.fw-not-a-project" <<'SENTINEL'
+This is a rollback copy of a previously vendored Agentic Engineering Framework.
+fw's find_project_root skips it so an agent CWD here resolves to the real
+consumer project (the parent), not this rollback copy. Restore with
+'fw update --rollback'. T-1841.
+SENTINEL
     echo -e "  ${GREEN}✓${NC} Backup saved to .agentic-framework.rollback/"
 
     # Re-vendor from upstream using do_vendor (T-1184/G-037: single includes list)

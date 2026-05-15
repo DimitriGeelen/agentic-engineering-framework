@@ -11,11 +11,12 @@
 Unit tests for lib/compat.sh
 Tests _sed_i() — portable in-place sed edit
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/compat.sh` | calls |
+| `lib/compat.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_compat.yaml`*

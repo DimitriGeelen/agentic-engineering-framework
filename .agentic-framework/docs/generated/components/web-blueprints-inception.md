@@ -20,7 +20,7 @@ When the active task has `workflow_type: inception`:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (5)
+## Dependencies (7)
 
 | Target | Relationship |
 |--------|-------------|
@@ -29,8 +29,10 @@ When the active task has `workflow_type: inception`:
 | `web/templates/inception_detail.html` | renders |
 | `web/templates/assumptions.html` | renders |
 | `web/subprocess_utils.py` | calls |
+| `.context/project/assumptions.yaml` | calls |
+| `lib/inception.sh` | calls |
 
-## Used By (9)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -42,6 +44,7 @@ When the active task has `workflow_type: inception`:
 | `web/blueprints/approvals.py` | registered_by |
 | `web/blueprints/review.py` | called_by |
 | `web/blueprints/review.py` | registered_by |
+| `tests/playwright/test_api_inception.py` | called_by |
 
 ## Related
 

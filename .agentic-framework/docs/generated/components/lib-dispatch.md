@@ -29,7 +29,7 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -38,6 +38,7 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 | `agents/context/check-agent-dispatch.sh` | called_by |
 | `tests/unit/lib_dispatch.bats` | called-by |
 | `tests/unit/lib_dispatch.bats` | called_by |
+| `tests/unit/lib_dispatch.bats` | tests_by |
 
 ## Related
 

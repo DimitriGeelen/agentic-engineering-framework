@@ -17,6 +17,14 @@ Files (in $PROJECT_ROOT/.context/working/):
 .hook-counter            — per-hook fire count, one `<hookname>=<count>` line
 .hook-failure-counter    — per-hook non-zero-exit count, same format
 
+## Used By (3)
+
+| Component | Relationship |
+|-----------|-------------|
+| `tests/unit/hook_telemetry.bats` | called_by |
+| `tests/unit/hook_telemetry.bats` | tests_by |
+| `lib/hook-threshold.py` | called_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-hook-telemetry.yaml`*
 *Last verified: 2026-05-01*

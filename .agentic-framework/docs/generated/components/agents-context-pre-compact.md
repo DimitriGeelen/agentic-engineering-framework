@@ -22,13 +22,17 @@ Updated: T-177 (manual-only cleanup, D-027 documentation)
 | `lib/paths.sh` | calls |
 | `lib/config.sh` | calls |
 
-## Used By (3)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/audit/self-audit.sh` | read_by |
 | `C-009` | triggers_by |
 | `.claude/settings.json` | used-by |
+| `tests/unit/pre_compact_flock.bats` | called_by |
+| `tests/unit/pre_compact_flock.bats` | tests_by |
+| `tests/unit/pre_compact_timewindow_dedup.bats` | called_by |
+| `tests/unit/pre_compact_timewindow_dedup.bats` | tests_by |
 
 ## Related
 

@@ -6,6 +6,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/reviewer/overrides.py` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-override_cli.yaml`*
 *Last verified: 2026-04-25*

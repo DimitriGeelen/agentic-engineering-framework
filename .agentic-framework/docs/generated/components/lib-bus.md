@@ -27,7 +27,7 @@ The result ledger formalizes the "write to disk, return path + summary" conventi
 |--------|-------------|
 | `lib/dispatch.sh` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -35,6 +35,7 @@ The result ledger formalizes the "write to disk, return path + summary" conventi
 | `agents/context/bus-handler.sh` | read_by |
 | `tests/unit/lib_bus.bats` | called-by |
 | `tests/unit/lib_bus.bats` | called_by |
+| `tests/unit/lib_bus.bats` | tests_by |
 
 ## Related
 

@@ -9,11 +9,16 @@
 Unit tests for lib/init.sh
 Tests do_init argument parsing, help, guards, and generator functions
 
-## Dependencies (1)
+## Dependencies (6)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/init.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/errors.sh` | calls |
+| `lib/init.sh` | tests |
+| `lib/colors.sh` | tests |
+| `lib/errors.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_init.yaml`*

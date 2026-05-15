@@ -11,11 +11,12 @@
 Unit tests for lib/ask.sh (fw ask)
 Origin: T-945
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/ask.sh` | calls |
+| `lib/ask.sh` | tests |
 
 ## Related
 

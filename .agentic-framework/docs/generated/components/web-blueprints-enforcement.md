@@ -17,12 +17,13 @@
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/templates/enforcement.html` | renders |
+| `C-009` | calls |
 
 ## Used By (5)
 

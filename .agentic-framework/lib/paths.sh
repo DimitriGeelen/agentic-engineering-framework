@@ -30,8 +30,19 @@ fi
 
 # Resolve PROJECT_ROOT from git toplevel — framework/ is typically a subdirectory,
 # not the project root. Fall back to FRAMEWORK_ROOT for standalone installs.
+#
+# T-1822: vendored .agentic-framework/ has its own .git after `fw vendor` clones
+# from upstream, so `git -C $FRAMEWORK_ROOT rev-parse --show-toplevel` returns
+# the vendored copy itself, not the consumer root. Detect the vendored case
+# (basename .agentic-framework AND parent has .framework.yaml) and prefer the
+# outer consumer root.
 if [[ -z "${PROJECT_ROOT:-}" ]]; then
-    PROJECT_ROOT="$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$FRAMEWORK_ROOT")"
+    if [[ "$(basename "$FRAMEWORK_ROOT")" = ".agentic-framework" ]] \
+       && [[ -f "$(dirname "$FRAMEWORK_ROOT")/.framework.yaml" ]]; then
+        PROJECT_ROOT="$(dirname "$FRAMEWORK_ROOT")"
+    else
+        PROJECT_ROOT="$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$FRAMEWORK_ROOT")"
+    fi
 fi
 
 # Common directories

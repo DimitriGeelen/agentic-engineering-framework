@@ -14,20 +14,23 @@ Triggers:
 - After claude -c (session continuation, including auto-restart via T-179)
 Part of: T-111 (compact-resume), T-179/T-188 (auto-restart)
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/fabric/fabric.sh` | calls |
 | `lib/paths.sh` | calls |
+| `lib/doctor-hook-exercise.py` | calls |
 
-## Used By (3)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/audit/self-audit.sh` | read_by |
 | `C-009` | triggers_by |
 | `.claude/settings.json` | used-by |
+| `tests/unit/session_start_hook_warning.bats` | called_by |
+| `tests/unit/session_start_hook_warning.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-post-compact-resume.yaml`*

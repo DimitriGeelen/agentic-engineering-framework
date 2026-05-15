@@ -12,11 +12,12 @@ Integration tests for fw gaps subcommand
 Tests the CLI interface for the gaps register:
 fw gaps — display gaps from concerns.yaml
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `bin/fw` | calls |
+| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_gaps.yaml`*

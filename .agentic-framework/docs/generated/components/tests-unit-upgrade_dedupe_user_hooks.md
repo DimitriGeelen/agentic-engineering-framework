@@ -11,6 +11,14 @@ framework hooks from $HOME/.claude/settings.json that duplicate the
 project-level config; always backs up first. T-1479/T-1480 surface the
 overlap; this gives the user a one-command fix.
 
+## Dependencies (3)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/upgrade.sh` | calls |
+| `lib/upgrade.sh` | tests |
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-upgrade_dedupe_user_hooks.yaml`*
 *Last verified: 2026-04-25*

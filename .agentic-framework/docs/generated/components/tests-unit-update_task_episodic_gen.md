@@ -18,12 +18,15 @@ auto-gen (code-side) surfaces immediately.
 Does NOT reproduce the real-world silent failure (environmental, unknown
 trigger) — tracked separately in concerns.yaml.
 
-## Dependencies (2)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/task-create/update-task.sh` | calls |
 | `agents/context/context.sh` | calls |
+| `C-001` | calls |
+| `agents/task-create/update-task.sh` | tests |
+| `C-001` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-update_task_episodic_gen.yaml`*

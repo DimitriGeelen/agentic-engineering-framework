@@ -16,10 +16,12 @@ task list. Use fw work-on to create real framework tasks instead.
 |--------|-------------|
 | `lib/paths.sh` | calls |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
+| `tests/unit/block_task_tools.bats` | called_by |
+| `tests/unit/block_task_tools.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-block-task-tools.yaml`*
