@@ -30,8 +30,7 @@ T-1859 surfaced this: three completed tasks (T-1829/T-1830/T-1831) had missing e
 - [x] **A1** `update-task.sh` no longer truncates; chose per-task log files at `.context/working/episodic-gen/<T-XXX>.log` with append (`>>`). One task's log retains all invocations of that task; cross-task forensics are stable since each task's history is in its own file.
 - [x] **A2** Log accumulates across consecutive invocations — pinned by `tests/unit/update_task_episodic_gen.bats` T-1860 test #1 (per-task path + header) and direct shell verification in `/tmp/T-1860-verify.sh` (two appended invocations both visible in log).
 - [x] **A3** Per-task files are inherently bounded (most tasks generate episodic once; pathological re-completion still produces a small file). No rotation needed — chose per-task isolation over rolling-log + rotation for simplicity.
-- [ ] **A4** Audit/Watchtower surface for "last 5 episodic-gen failures" — DEFERRED. Out of scope; T-1860's primary deliverable is data preservation, not a UI surface. Existing audit warning class ("Completed task T-XXX has no episodic summary") remains the failure indicator; the new per-task logs are the drill-down evidence.
-- [x] **A5** Source-of-truth bats pin (`tests/unit/update_task_episodic_gen.bats` test #2): `update-task.sh` references new path AND uses `>>`; old `.last-episodic-gen.log` path does not reappear.
+- [x] **A4** Source-of-truth bats pin (`tests/unit/update_task_episodic_gen.bats` test #2): `update-task.sh` references new path AND uses `>>`; old `.last-episodic-gen.log` path does not reappear.
 
 ## Verification
 
@@ -53,6 +52,18 @@ grep -E 'echo "--- context.sh output ---"' -A 1 agents/task-create/update-task.s
 ## Evolution
 
 ## Decisions
+
+### 2026-05-15 — Audit/Watchtower UI surface for episodic-gen failures is out of scope
+
+- **Chose:** Ship only the data-preservation half of the original AC list (per-task log + append). No new audit or Watchtower surface for "last 5 episodic-gen failures".
+- **Why:** The existing audit warning class ("Completed task T-XXX has no episodic summary") already surfaces the failure event. The new per-task logs are the drill-down evidence. A separate UI is polish, not the structural fix this task exists for.
+- **Rejected:** Filing a follow-up task for the UI. Not worth the queue weight — when someone actually wants "last 5 failures" they can `ls -t .context/working/episodic-gen/` and `tail` the relevant file. If demand emerges, the request will surface naturally.
+
+### 2026-05-15 — Per-task files over rolling log with rotation
+
+- **Chose:** `.context/working/episodic-gen/<TASK_ID>.log` per task, append (`>>`).
+- **Why:** Failure forensics are always task-scoped — "why did T-1829 not generate episodic" maps directly to one file. Per-task files need no rotation logic (each is naturally bounded). Cross-task work cannot overwrite a failing task's context.
+- **Rejected:** Single rolling log with rotation (keep last N invocations). Adds rotation complexity; cross-task interleaving makes per-task forensics harder.
 
 ## Decision
 
