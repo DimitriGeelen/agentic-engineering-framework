@@ -59,3 +59,12 @@ load ../test_helper
     grep -q 'L-391\b' "$FRAMEWORK_ROOT/agents/audit/audit.sh"
     grep -q "(\\\\bbin/)?fw +audit\\\\b" "$FRAMEWORK_ROOT/agents/audit/audit.sh"
 }
+
+@test "OBS-022: audit.sh CTL-013 contains bats-isolation-retry block" {
+    # Source-of-truth pin: the OBS-022 retry path (re-run failing bats
+    # commands under `env -i`) MUST be present. If this drifts, the
+    # T-1858/T-1861 false-positive class resurfaces.
+    grep -q "OBS-022" "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+    grep -q "cmd_isolated_pass" "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+    grep -q "env -i" "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+}

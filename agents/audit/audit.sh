@@ -2099,6 +2099,7 @@ for task_file in $recent_completed; do
         cmd_pass=0
         cmd_fail=0
         cmd_skipped=0
+        cmd_isolated_pass=0
         for cmd in "${verify_cmds[@]}"; do
             # T-1870/L-391: a verification line that invokes `bin/fw audit`
             # (or `fw audit`) cannot run during CTL-013 — we're already inside
@@ -2147,17 +2148,40 @@ for task_file in $recent_completed; do
                     echo "DEBUG ($task_id) ---" >&2
                     rm -f "$_aud_out"
                 fi
-            elif eval "$cmd" >/dev/null 2>&1; then
-                cmd_pass=$((cmd_pass + 1))
             else
-                cmd_fail=$((cmd_fail + 1))
-                # T-1395: surface which CTL-013 verification step is failing.
-                # FW_AUDIT_VERIFY_DEBUG=1 also dumps captured output (T-1475).
+                # T-1475 / T-1870: brace-group (not subshell) to sidestep
+                # the bats parent-shell coupling Heisenbug. Match the DEBUG
+                # path's structure (which already uses brace-group). The
+                # earlier implicit subshell variant (`eval ... >/dev/null`)
+                # was a known reproducer.
+                _eval_rc=0
+                { eval "$cmd"; } >/dev/null 2>&1 || _eval_rc=$?
+                # T-1870 / OBS-022 retry: a failing bats command often
+                # fails inside the audit's polluted env but passes in
+                # isolation. Re-run once under `env -i` (clean env). If
+                # that passes, treat as OBS-022 isolation noise — PASS with
+                # a note recorded in cmd_isolated_pass.
+                if [ "$_eval_rc" -ne 0 ] && [[ "$cmd" == bats\ * ]]; then
+                    if env -i PATH=/usr/bin:/usr/local/bin:/root/.cargo/bin HOME="$HOME" \
+                            bash -c "cd '$PROJECT_ROOT' && $cmd" >/dev/null 2>&1; then
+                        _eval_rc=0
+                        cmd_isolated_pass=$((cmd_isolated_pass + 1))
+                    fi
+                fi
+                if [ "$_eval_rc" -eq 0 ]; then
+                    cmd_pass=$((cmd_pass + 1))
+                else
+                    cmd_fail=$((cmd_fail + 1))
+                    # T-1395: FW_AUDIT_VERIFY_DEBUG=1 dumps captured output (T-1475).
+                fi
             fi
         done
         if [ "$cmd_fail" -eq 0 ]; then
-            if [ "$cmd_skipped" -gt 0 ]; then
-                pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass ($cmd_skipped skipped — nested-audit invocation)"
+            _notes=""
+            [ "$cmd_skipped" -gt 0 ] && _notes="${_notes}${_notes:+, }$cmd_skipped skipped — nested-audit invocation"
+            [ "$cmd_isolated_pass" -gt 0 ] && _notes="${_notes}${_notes:+, }$cmd_isolated_pass passed only in isolation — OBS-022 bats env-contam"
+            if [ -n "$_notes" ]; then
+                pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass ($_notes)"
             else
                 pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass"
             fi
