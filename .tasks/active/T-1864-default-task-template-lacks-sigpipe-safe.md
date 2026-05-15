@@ -1,49 +1,48 @@
 ---
-id: T-XXX
-name:
+id: T-1864
+name: "default task template lacks SIGPIPE-safe Verification hint — L-387 keeps recurring"
 description: >
+  default task template lacks SIGPIPE-safe Verification hint — L-387 keeps recurring
 
-status: captured
-workflow_type:
-owner:
+status: started-work
+workflow_type: build
+owner: agent
 horizon: now
-tags: []
-components: []
-related_tasks: []
-created:
-last_update:
+tags: [template, hardening]
+components: [.tasks/templates/default.md]
+related_tasks: [T-1862, T-1863, T-1838]
+created: 2026-05-15T19:44:49Z
+last_update: 2026-05-15T19:44:49Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
 
-# T-XXX: [Task Name]
+# T-1864: default task template lacks SIGPIPE-safe Verification hint — L-387 keeps recurring
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The `cmd | grep -q` pattern in `## Verification` blocks fails with exit 141
+(SIGPIPE) under `set -o pipefail` — which P-011 runs. Captured 4 times in
+learnings.yaml (L-302, L-321 cluster, L-387 here from T-1862, and again on
+T-1863 today). Each time the agent wrote a fresh `... | grep -q ...` because
+the template doesn't show the safe pattern.
+
+The default template's `## Verification` block has a `Toolchain hint (L-291)`
+sub-comment but no pipefail/SIGPIPE hint. Adding one redirects future agents
+to the safe form before they write a broken verification.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] `.tasks/templates/default.md`'s `## Verification` block carries an
+      "L-387: pipefail/SIGPIPE" hint with the safe pattern shown inline:
+      `out=$(cmd 2>&1); echo "$out" | grep -q PATTERN` (not `cmd | grep -q`).
+      *(Done — template edited with a 9-line `Pipefail/SIGPIPE hint (L-387)`
+      block right after the existing Toolchain hint.)*
+- [x] The hint cites the learning ID (`L-387`) so the agent can look up why.
+      *(Done — `L-387` appears twice in the template: in the section header
+      and in the "captured 4×" attribution line.)*
 
 ## Verification
 
@@ -51,19 +50,8 @@ date_finished: null
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 #
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
+out=$(grep -c "L-387" .tasks/templates/default.md); [ "$out" -ge 1 ]
+out=$(grep -Fc 'out=$(' .tasks/templates/default.md); [ "$out" -ge 1 ]
 
 ## RCA
 
@@ -128,5 +116,7 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-05-15T19:44:49Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1864-default-task-template-lacks-sigpipe-safe.md
+- **Context:** Initial task creation
