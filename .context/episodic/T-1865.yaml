@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1865: DEFER inception decisions don't park the task — sweep skips them, audit flags them as limbo
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:00:00Z
+# ============================================================================
+
+task_id: T-1865
+task_name: "DEFER inception decisions don't park the task — sweep skips them, audit flags them as limbo"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T19:51:18Z
+completed: 2026-05-15T19:59:54Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-15T21:59:02+02:00
+last_commit: 2026-05-15T21:59:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  DEFER inception decisions park the task (horizon=later + status=captured). add RCA section + register test fabric card
+
+# Key outcomes
+outcomes:
+  - "`do_inception_decide` (lib/inception.sh) sets `horizon: later` on a"
+  - "`do_inception_sweep` recovers existing DEFER limbo tasks: scans for"
+  - "Regression test (bats) pinning both surfaces: decide-defer"
+  - "After running sweep on this repo, D13 audit count drops from 6 to 0"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - ".context/episodic/T-1863.yaml"
+  - ".context/episodic/T-1864.yaml"
+  - ".fabric/components/tests-unit-inception_defer_park.yaml"
+  - ".fabric/components/tests-unit-update_task_orphan_guard.yaml"
+  - "lib/inception.sh"
+  - ".tasks/active/T-1265-export-docs-section-as-pdfdocxother-form.md"
+  - ".tasks/active/T-1309-ship-watchtowerservice-systemd-template-.md"
+  - ".tasks/active/T-1611-replace-local-flask-dev-watchtower-with-.md"
+  - ".tasks/active/T-1685-fw-audit-refactor--first-real-consumer-o.md"
+  - ".tasks/active/T-1865-defer-inception-decisions-dont-park-the-.md"
+  - ".tasks/active/T-682-termlink-product-feedback----working-dir.md"
+  - ".tasks/active/T-704-dag-federation-for-cross-machine-knowled.md"
+  - ".tasks/completed/T-1863-update-tasksh-move-on-complete-leaks-dup.md"
+  - ".tasks/completed/T-1864-default-task-template-lacks-sigpipe-safe.md"
+  - "tests/unit/inception_defer_park.bats"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T21:59:02"
+    action: "T-1865: DEFER inception decisions park the task (horizon=later + status=captured)"
+  - time: "2026-05-15T21:59:49"
+    action: "T-1865: add RCA section + register test fabric card"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, inception, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 2
+  files_changed: 17
+  lines_added: 632
+  lines_removed: 46
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1865-defer-inception-decisions-dont-park-the-.md
+generated_by: context-agent-hybrid

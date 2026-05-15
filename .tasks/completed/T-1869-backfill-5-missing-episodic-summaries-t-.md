@@ -4,7 +4,7 @@ name: "backfill 5 missing episodic summaries (T-1634/1798/1800/1804/1812)"
 description: >
   backfill 5 missing episodic summaries (T-1634/1798/1800/1804/1812)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-15T21:20:52Z
-last_update: 2026-05-15T21:20:52Z
-date_finished: null
+last_update: 2026-05-15T21:26:27Z
+date_finished: 2026-05-15T21:26:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -28,25 +28,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] All 5 episodic YAML files exist under `.context/episodic/` (T-1634, T-1798, T-1800, T-1804, T-1812)
-- [ ] Each file parses as valid YAML
-- [ ] Each file is enriched (`enrichment_status: complete`, real summary + outcomes)
-- [ ] `bin/fw audit` no longer flags these 5 task IDs as missing episodics
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] All 5 episodic YAML files exist under `.context/episodic/` (T-1634, T-1798, T-1800, T-1804, T-1812)
+- [x] Each file parses as valid YAML
+- [x] Each file is enriched (`enrichment_status: complete`, real summary + outcomes)
+- [x] `bin/fw audit` no longer flags these 5 task IDs as missing episodics
 
 ## Verification
 
@@ -135,3 +120,15 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1869-backfill-5-missing-episodic-summaries-t-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1f06e588
+- **Timestamp:** 2026-05-15T21:26:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-15T21:26:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

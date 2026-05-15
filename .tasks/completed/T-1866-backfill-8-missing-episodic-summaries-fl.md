@@ -4,7 +4,7 @@ name: "backfill 8 missing episodic summaries flagged by handover gap check (T-18
 description: >
   backfill 8 missing episodic summaries flagged by handover gap check (T-1845/1846/1847/1858/1859/1860/1861/1862)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-15T20:11:01Z
-last_update: 2026-05-15T20:11:01Z
-date_finished: null
+last_update: 2026-05-15T20:14:29Z
+date_finished: 2026-05-15T20:14:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -142,3 +142,25 @@ for tid in T-1845 T-1846 T-1847 T-1858 T-1859 T-1860 T-1861 T-1862; do out=$(pyt
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1866-backfill-8-missing-episodic-summaries-fl.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-b3a4080b
+- **Timestamp:** 2026-05-15T20:14:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — All 8 episodic YAML files exist under `.context/episodic/` (generated via `agents/context/context.sh generate-episodic`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/context/context.sh in: All 8 episodic YAML files exist under `.context/episodic/` (generated via `agents/context/context.sh generate-episodic`)`
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 19
+     - evidence: `ls .context/episodic/T-1845.yaml .context/episodic/T-1846.yaml .context/episodic/T-1847.yaml .context/episodic/T-1858.yaml .context/episodic/T-1859.yaml .context/episodic/T-1860.yaml .context/episodic`
+
+### 2026-05-15T20:14:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
