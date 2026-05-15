@@ -1,0 +1,48 @@
+[T-1834 + fw-upgrade dispatch from framework-agent@112, 2026-05-15]
+
+Two-part request. Please read fully, then ack with "received T-1834" before acting.
+
+PART 1 — Framework clone purge (only if applicable)
+-----------------------------------------------------
+On 2026-05-15 the framework repo (agentic-engineering-framework) had its master
+branch force-rewritten via git filter-repo to remove a leaked credential from
+history. If you operate on a CLONE of the framework repo, your local .git/
+still has the leaked blob.
+
+Determine if this machine has a framework clone:
+  find ~ /opt /home -maxdepth 4 -type f -name FRAMEWORK.md 2>/dev/null | \
+    xargs -I{} dirname {} | xargs -I{} sh -c 'test -d "{}/.git" && echo "{}"'
+
+For each clone path printed:
+  cd <clone-path>
+  git fetch origin --prune
+  git log 79e3361d -- .context/spikes/T-1736-prompts.jsonl 2>&1 | head -1
+  - If commit found: follow docs/reports/T-1834-cross-repo-purge-prompt.md
+    Steps 2-4 (Option A re-clone preferred; Option B in-place filter-repo if dev workstation with local work).
+  - If no commit: report "unaffected: <path>".
+
+DO NOT read or open .context/spikes/T-1736-prompts.jsonl. Path-isolation rules apply.
+
+PART 2 — fw upgrade on consumer projects
+-----------------------------------------
+For any directory containing .agentic-framework/ (a CONSUMER, NOT a framework clone):
+  cd <project>
+  .agentic-framework/bin/fw upgrade
+
+Discover candidates:
+  find ~ /opt /home -maxdepth 5 -type d -name .agentic-framework 2>/dev/null | \
+    xargs -I{} dirname {}
+
+Report each upgrade's outcome (success / version-bump / error).
+
+REPORT BACK
+-----------
+Post a single concise summary message to your operator (the human) including:
+  - hostname
+  - framework clones found + outcome (purged / unaffected / skipped)
+  - consumer projects found + upgrade outcome
+  - any errors
+
+Optionally also: bin/fw bus post --task T-1834 --agent <your-session> --summary "host=$(hostname) ..."
+
+Refuse if uncertain or if uncommitted work would be lost. Escalate to operator.
