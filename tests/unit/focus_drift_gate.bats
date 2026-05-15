@@ -219,6 +219,33 @@ for h in data['hooks']['PreToolUse']:
 "
 }
 
+@test "T-1858: null current_task + non-empty focus_session — emits 'No active task' (not session ID as task)" {
+    # The bug: when focus.yaml has current_task: null + focus_session: <S-id>,
+    # the python helper used to emit one space-separated line, which IFS-collapsed
+    # in `read -r CURRENT_TASK FOCUS_SESSION`, shifting the session ID into the
+    # task slot and producing the misleading "Task <S-id> is not active" message.
+    cat > "$TEST_ROOT/.context/working/focus.yaml" <<YAML
+current_task: null
+focus_session: S-FAKE-SESSION-XYZ
+priorities: []
+YAML
+    run_hook_with_bash_cmd "termlink inbox status"
+    [ "$status" -eq 2 ]
+    # Correct branch: "No active task"
+    echo "$output" | grep -q "No active task"
+    # Session ID MUST NOT appear as a task in the error
+    ! echo "$output" | grep -q "Task S-FAKE-SESSION-XYZ is not active"
+    ! echo "$output" | grep -q "S-FAKE-SESSION-XYZ is not active"
+}
+
+@test "T-1858: normal case — current_task=T-X + focus_session=S-test reads both correctly (no regression)" {
+    set_focus T-1730
+    create_task T-1730
+    # No drift target in command — should allow (focus is set, task exists, status started-work)
+    run_hook_with_bash_cmd "termlink inbox status"
+    [ "$status" -eq 0 ]
+}
+
 @test "lib/init.sh: settings generator emits Bash in check-active-task matcher (source-of-truth)" {
     # Source-of-truth check: any future fw upgrade must propagate the fix
     python3 -c "

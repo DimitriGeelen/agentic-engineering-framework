@@ -148,21 +148,28 @@ if [ ! -f "$FOCUS_FILE" ]; then
     exit 0
 fi
 
-# Read current task AND session stamp from focus.yaml
-read -r CURRENT_TASK FOCUS_SESSION < <(python3 -c "
+# Read current task AND session stamp from focus.yaml.
+# T-1858: emit one value per line and read with two separate reads.
+# Earlier `print(f'{task} {session}')` + `read -r CURRENT_TASK FOCUS_SESSION`
+# collapsed empty task + non-empty session into CURRENT_TASK under default IFS,
+# producing misleading "Task <SESSION-ID> is not active" errors.
+{ read -r CURRENT_TASK; read -r FOCUS_SESSION; } < <(python3 -c "
 import yaml, sys
 try:
     with open('$FOCUS_FILE') as f:
         data = yaml.safe_load(f)
     if not data:
-        print(' ')
+        print('')
+        print('')
     else:
         task = data.get('current_task', '') or ''
         if task == 'null': task = ''
         session = data.get('focus_session', '') or ''
-        print(f'{task} {session}')
+        print(task)
+        print(session)
 except:
-    print(' ')
+    print('')
+    print('')
 " 2>/dev/null)
 
 # Read current session ID for comparison
