@@ -25,6 +25,7 @@ do_install_hooks() {
 
     local hooks_dir="$PROJECT_ROOT/.git/hooks"
     local commit_msg_hook="$hooks_dir/commit-msg"
+    local pre_commit_hook="$hooks_dir/pre-commit"
     local post_commit_hook="$hooks_dir/post-commit"
     local pre_push_hook="$hooks_dir/pre-push"
 
@@ -54,7 +55,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.8
+# VERSION=1.9
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -230,6 +231,62 @@ exit 0
 HOOK_EOF
 
     chmod +x "$commit_msg_hook"
+
+    # T-1844: Create pre-commit hook for secret-scan
+    # Origin: T-1828/T-1834 — Azure DevOps PAT committed at 79e3361d (T-1736
+    # Spike B). GitHub mirror blocked by GH013 push protection. Framework had
+    # no structural gate against secrets reaching commits. This hook delegates
+    # scanning to agents/git/lib/secret-scan.sh and fails the commit on hit.
+    cat > "$pre_commit_hook" << 'HOOK_EOF'
+#!/bin/bash
+# pre-commit hook - Secret Scan (T-1844)
+# Installed by: ./agents/git/git.sh install-hooks
+# Part of: Agentic Engineering Framework
+# VERSION=1.0
+
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+
+# Resolve FRAMEWORK_ROOT — framework / consumer / vendored layouts.
+FRAMEWORK_ROOT="$PROJECT_ROOT"
+if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+    _fw_path=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    [ -n "$_fw_path" ] && [ -d "$_fw_path" ] && FRAMEWORK_ROOT="$_fw_path"
+fi
+[ ! -f "$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh" ] \
+    && [ -f "$PROJECT_ROOT/.agentic-framework/agents/git/lib/secret-scan.sh" ] \
+    && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
+
+SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
+if [ ! -x "$SCANNER" ]; then
+    # Scanner missing — fail open with a clear message, don't block legitimate work.
+    echo "secret-scan: scanner not found at $SCANNER (skipping)" >&2
+    exit 0
+fi
+
+# Run the scanner against the staged diff.
+_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$SCANNER" scan-staged 2>&1)
+_rc=$?
+
+if [ "$_rc" -ne 0 ]; then
+    echo ""
+    echo "ERROR: Commit blocked — secret-scan detected matches:" >&2
+    echo "" >&2
+    echo "$_hits" >&2
+    echo "" >&2
+    echo "If this is a real secret: remove it from the staged content and re-commit." >&2
+    echo "If this is a false positive: add a regex to .secret-scan-allowlist." >&2
+    echo "" >&2
+    echo "Bypass: git commit --no-verify" >&2
+    echo "  (Tier 0 will prompt for approval on --no-verify. Bypasses are logged.)" >&2
+    echo "" >&2
+    echo "Origin: T-1844 — root-cause prevention for the T-1828/T-1834 leak class." >&2
+    exit 1
+fi
+
+exit 0
+HOOK_EOF
+
+    chmod +x "$pre_commit_hook"
 
     # Create post-commit hook for bypass detection + context checkpoint
     cat > "$post_commit_hook" << 'HOOK_EOF'
@@ -603,11 +660,13 @@ HOOK_EOF
     echo ""
     echo "Installed:"
     echo "  - $commit_msg_hook (task reference validation)"
+    echo "  - $pre_commit_hook (secret-scan — T-1844)"
     echo "  - $post_commit_hook (bypass detection)"
     echo "  - $pre_push_hook (audit before push)"
     echo ""
     echo "Hook behavior:"
     echo "  - Blocks commits without task references (T-XXX)"
+    echo "  - Blocks commits introducing secrets (T-1844 — Azure PAT, AWS keys, SSH keys, etc.)"
     echo "  - Allows merge commits and rebases"
     echo "  - Runs audit before push (blocks on FAIL, warns on WARN)"
     echo "  - Bypass: $(_emit_user_command "tier0 approve") (Tier 0 protected)"

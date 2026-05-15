@@ -2942,3 +2942,10 @@ X'` returning empty group."
   date: 2026-05-14
   context: Added via context agent
   application: TBD
+- id: L-383
+  learning: "Pure-bash hook with editable pattern catalogue + allowlist is the right shape for framework-shipped security gates. External tool deps (gitleaks/detect-secrets) break the zero-dep property that lets consumers benefit from 'fw upgrade' without per-host installs. T-1844 ships pure-bash baseline + optional gitleaks escalation if installed."
+  source: L-382
+  task: T-1844
+  date: 2026-05-15
+  context: Added via context agent
+  application: TBD
