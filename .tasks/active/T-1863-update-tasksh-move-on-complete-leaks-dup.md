@@ -64,8 +64,9 @@ by an unrelated commit.
 
 ## Verification
 
-bats tests/unit/update_task_orphan_guard.bats 2>&1 | grep -qE "ok [0-9]+ T-1863"
-bin/fw audit --section structure 2>&1 | grep -q "No duplicate task IDs"
+# L-387: capture-then-grep (pipefail + grep -q produces SIGPIPE exit 141).
+out=$(bats tests/unit/update_task_orphan_guard.bats 2>&1); echo "$out" | grep -qE "ok [0-9]+ T-1863"
+out=$(bin/fw audit --section structure 2>&1); echo "$out" | grep -q "No duplicate task IDs"
 
 ## RCA
 
