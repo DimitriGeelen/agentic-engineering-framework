@@ -67,7 +67,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: T-227
-last_enriched: '2026-05-09'
+last_enriched: '2026-05-15'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -84,4 +84,6 @@ depended_by:
 - target: tests/web/test_inception_decide_hardening.py
   type: called_by
 - target: tests/unit/test_file_route_extensions.py
+  type: called_by
+- target: tests/unit/test_review_paused_resolve.py
   type: called_by

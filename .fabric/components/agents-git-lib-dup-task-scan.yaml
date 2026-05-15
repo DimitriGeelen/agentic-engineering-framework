@@ -4,17 +4,15 @@ type: script
 subsystem: git-traceability
 location: agents/git/lib/dup-task-scan.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/git/lib/hooks.sh
+  type: called_by
+- target: tests/unit/update_task_orphan_guard.bats
+  type: called_by
+- target: tests/unit/update_task_orphan_guard.bats
+  type: tests_by
 last_verified: 2026-05-15
 created_by: unknown
+last_enriched: '2026-05-15'

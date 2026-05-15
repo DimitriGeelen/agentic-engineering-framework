@@ -17,6 +17,8 @@ depended_by:
   type: called_by
 - target: lib/reviewer/drift_cli.py
   type: called_by
+- target: tools/audit-swallowed-errors.py
+  type: called_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-15'

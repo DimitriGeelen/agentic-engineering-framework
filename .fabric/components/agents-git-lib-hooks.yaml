@@ -14,9 +14,15 @@ depends_on:
   type: calls
 - target: lib/paths.sh
   type: calls
+- target: agents/git/lib/secret-scan.sh
+  type: calls
+- target: agents/git/lib/dup-task-scan.sh
+  type: calls
+- target: agents/git/lib/large-file-scan.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-15'
 depended_by:
 - target: agents/git/git.sh
   type: called_by

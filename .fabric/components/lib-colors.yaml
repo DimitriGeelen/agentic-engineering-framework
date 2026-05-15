@@ -96,6 +96,10 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_version.bats
   type: tests_by
+- target: tests/unit/test_upgrade_downgrade_guard.bats
+  type: called_by
+- target: tests/unit/test_upgrade_downgrade_guard.bats
+  type: tests_by
 last_verified: 2026-03-11
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-15'

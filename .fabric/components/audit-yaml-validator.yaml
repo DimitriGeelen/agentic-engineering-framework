@@ -42,6 +42,10 @@ depends_on:
   type: calls
 - target: lib/hook-threshold.py
   type: calls
+- target: agents/git/lib/secret-scan.sh
+  type: calls
+- target: agents/git/lib/large-file-scan.sh
+  type: calls
 depended_by:
 - target: cron-audit
   type: triggers
@@ -74,6 +78,10 @@ depended_by:
   type: tests_by
 - target: tests/unit/test_enrich_bats_parser.py
   type: called_by
+- target: tests/unit/test_arcs_routes.py
+  type: called_by
+- target: tests/unit/test_pre_push_monotonic_ancestor.bats
+  type: tests_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-15'

@@ -19,6 +19,10 @@ depended_by:
   type: called_by
 - target: lib/spawn.py
   type: called_by
+- target: lib/pause_resolve.py
+  type: uses_by
+- target: lib/workflow_lint.py
+  type: called_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-05-09'
+last_enriched: '2026-05-15'
