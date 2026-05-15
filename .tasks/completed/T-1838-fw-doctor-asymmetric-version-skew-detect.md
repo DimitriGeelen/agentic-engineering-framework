@@ -4,16 +4,16 @@ name: "fw doctor asymmetric version-skew detection — distinguish consumer-behi
 description: >
   fw doctor warns 'v$cversion → v$FW_VERSION, Run: fw upgrade $consumer_dir' whenever consumer pinned version != framework version. When the framework's VERSION counter has been rolled back (T-1828 scenario), consumers are AHEAD of framework (e.g. termlink at 1.6.260, framework at 1.6.170). The doctor's remediation suggests running fw upgrade — which would overwrite consumer's higher pinned version with the framework's lower one (silent downgrade). Fix: bin/fw:1498 should distinguish consumer-behind from consumer-ahead via semver-style comparison. For consumer-ahead, emit a different warning class explaining the framework is behind and pointing at T-1828 for context; DO NOT advise fw upgrade. Surfaces as consumer-fw-upgrade-flow issue (the user's standing directive).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:project-shape-resilience, consumer-fleet, fw-doctor]
-components: []
+components: [bin/fw, tests/unit/test_doctor_consumer_version_ahead.bats]
 related_tasks: [T-1828, T-1542, T-1834]
 created: 2026-05-14T21:33:14Z
-last_update: 2026-05-14T21:33:14Z
-date_finished: null
+last_update: 2026-05-14T21:51:02Z
+date_finished: 2026-05-14T21:51:02Z
 ---
 
 # T-1838: fw doctor asymmetric version-skew detection — distinguish consumer-behind from consumer-ahead-of-framework (T-1828 surfaces)
@@ -117,6 +117,18 @@ grep -q "AHEAD of framework\|is AHEAD" bin/fw
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-14 — scope of the surface widened from 4 → 12 consumers
+
+- **What changed:** Filing referenced the 3 consumers visible in the prior session's doctor snippet (995_2021-kosten, openclaw-evaluation, termlink) plus 3021-Bilderkarte-tool-llm. Running `fw doctor` against this anchor today shows the ahead-of-framework state hits 12 consumers (001-sprechloop, 002-Claude-Partner-Network, 025-WokrshopDesigner, 050-email-archive, 051-Vinix24, 052-KCP, 053-ntfy, 150-skills-manager, 3021-Bilderkarte-tool-llm, 995_2021-kosten, openclaw-evaluation, termlink). The T-1828 VERSION rollback is fleet-wide, not localized.
+- **Plan impact:** Fix scope unchanged (still local to `bin/fw:1497-1565`), but the blast radius of the pre-fix bug was 3× what the filing description implied. Reinforces the "ahead branch must be loud" call — silently downgrading 12 consumers across a fleet is a worse outcome than this task originally framed.
+- **Triggered:** No new sub-task; the fleet-scope observation is captured here and in the Update entry for future debugging if a similar VERSION rollback recurs.
+
+### 2026-05-14 — bats | grep -q under pipefail = SIGPIPE-141
+
+- **What changed:** Initial `## Verification` command `bats … | grep -qE "^ok 3|^ok 4"` failed with exit 141 (SIGPIPE) even when the pattern matched — because `grep -q` exits on first match and closes stdin while `bats` is still writing, and the framework gate runs verification under `set -eo pipefail` which propagates the SIGPIPE as a failure.
+- **Plan impact:** None for the source fix; only the verification step was affected. But this is a generally-applicable pattern: anywhere a long-output producer is piped to `grep -q`, the verification gate will SIGPIPE-141 if the producer hasn't finished by the time grep matches.
+- **Triggered:** Verification command rewritten to capture bats output to `/tmp/t1838-bats.out` first, then `grep -q` on the file. A future learning entry (L-XXX) could codify "never pipe to `grep -q` in `## Verification` under pipefail" — flagging here for the next time this surfaces.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -162,3 +174,15 @@ grep -q "AHEAD of framework\|is AHEAD" bin/fw
 - `tests/unit/test_doctor_consumer_version_ahead.bats`: 9/9 pass (source pins + behavioural sort -V check on real-world inputs 1.6.260 vs 1.6.170)
 - Live verification: `bin/fw doctor` against this anchor now prints the asymmetric warning for all 12 ahead-of-framework consumers (transcript captured in Update entry above)
 - No source files outside `bin/fw` touched; no behavioural change for consumer-behind or version-match cases
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-4ed00ffd
+- **Timestamp:** 2026-05-14T21:51:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-14T21:51:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
