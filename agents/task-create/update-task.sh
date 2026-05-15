@@ -34,11 +34,20 @@ log_gate_bypass() {
     local log_file="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
     local timestamp
     timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    echo "- timestamp: '$timestamp'" >> "$log_file"
-    echo "  task: '$TASK_ID'" >> "$log_file"
-    echo "  flag: '$flag'" >> "$log_file"
-    echo "  caller: '$caller'" >> "$log_file"
-    echo "  reason: '${REASON:-}'" >> "$log_file"
+    # T-1861: escape embedded single quotes per YAML single-quoted-scalar rule
+    # (' → ''). Reason is user-controlled text; without escaping, any apostrophe
+    # or single-quoted snippet inside reason breaks yaml.safe_load (audit-data
+    # corruption surfaced 2026-05-15 on log line 390).
+    local _esc_ts="${timestamp//\'/\'\'}"
+    local _esc_task="${TASK_ID//\'/\'\'}"
+    local _esc_flag="${flag//\'/\'\'}"
+    local _esc_caller="${caller//\'/\'\'}"
+    local _esc_reason="${REASON//\'/\'\'}"
+    echo "- timestamp: '$_esc_ts'" >> "$log_file"
+    echo "  task: '$_esc_task'" >> "$log_file"
+    echo "  flag: '$_esc_flag'" >> "$log_file"
+    echo "  caller: '$_esc_caller'" >> "$log_file"
+    echo "  reason: '${_esc_reason:-}'" >> "$log_file"
 }
 
 # Human Sovereignty Gate (R-033/T-198)

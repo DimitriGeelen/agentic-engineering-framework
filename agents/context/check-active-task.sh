@@ -273,12 +273,19 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
         if [[ "$BASH_CMD" =~ (^|[[:space:]])--switch-focus([[:space:]]|=|$) ]]; then
             BYPASS_LOG="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
             mkdir -p "$(dirname "$BYPASS_LOG")"
+            # T-1861: escape embedded single quotes per YAML single-quoted-scalar rule.
+            # CURRENT_TASK/TARGET_TASK won't have quotes in practice but uniform
+            # escaping is the correct shape. `command` retains tr -d "'" because
+            # truncating a command's quotes is the safer audit-trail behaviour
+            # (don't preserve foreign apostrophes in arbitrary user commands).
+            _t1861_esc_task="${CURRENT_TASK//\'/\'\'}"
+            _t1861_esc_target="${TARGET_TASK//\'/\'\'}"
             {
                 echo "- timestamp: '$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
-                echo "  task: '$CURRENT_TASK'"
+                echo "  task: '$_t1861_esc_task'"
                 echo "  flag: '--switch-focus'"
                 echo "  caller: 'check-active-task focus-drift'"
-                echo "  target: '$TARGET_TASK'"
+                echo "  target: '$_t1861_esc_target'"
                 echo "  command: '$(echo "$BASH_CMD" | head -c 200 | tr -d "'")'"
             } >> "$BYPASS_LOG" 2>/dev/null || true
             # Allow with informational note on stderr

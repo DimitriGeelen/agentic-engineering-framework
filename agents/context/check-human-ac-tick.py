@@ -81,13 +81,16 @@ def log_bypass(project_root: Path, task_id: str, file_path: str, toggles: list) 
     log_file = log_dir / ".gate-bypass-log.yaml"
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     toggle_summary = ", ".join(f"{i}:{a}->{b}" for i, a, b in toggles)
+    # T-1861: double embedded single quotes for YAML single-quoted-scalar safety.
+    def _q(v: str) -> str:
+        return str(v).replace("'", "''")
     entry = (
-        f"- timestamp: '{ts}'\n"
-        f"  task: '{task_id}'\n"
+        f"- timestamp: '{_q(ts)}'\n"
+        f"  task: '{_q(task_id)}'\n"
         f"  flag: 'FW_ALLOW_HUMAN_AC_TICK'\n"
         f"  caller: 'check-human-ac-tick'\n"
-        f"  file: '{file_path}'\n"
-        f"  toggles: '{toggle_summary}'\n"
+        f"  file: '{_q(file_path)}'\n"
+        f"  toggles: '{_q(toggle_summary)}'\n"
     )
     try:
         with log_file.open("a") as f:

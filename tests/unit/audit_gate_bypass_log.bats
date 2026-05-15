@@ -70,6 +70,29 @@ EOF
     [[ "$output" == *"WARN"* ]]
 }
 
+@test "T-1861: log_gate_bypass escapes embedded single quotes in REASON (YAML parses)" {
+    # Source the function. update-task.sh has top-level side effects when sourced
+    # directly, so extract just log_gate_bypass via a subshell.
+    HOOK_SRC="$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
+    [ -f "$HOOK_SRC" ] || skip "update-task.sh not found"
+
+    log="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+    # Drive log_gate_bypass with a REASON containing single quotes — the exact
+    # corruption pattern surfaced on 2026-05-15 (.gate-bypass-log.yaml:390).
+    TASK_ID="T-9999" REASON="bin/fw doctor reports 'OK Hook exercise from /tmp: 14 hook(s) resolve from foreign CWD'." PROJECT_ROOT="$PROJECT_ROOT" \
+        bash -c "source '$HOOK_SRC' --source-only 2>/dev/null; log_gate_bypass --canary 'canary-caller'" 2>/dev/null || true
+
+    # Fallback if the script doesn't support --source-only: extract function via awk + eval
+    if [ ! -s "$log" ]; then
+        FN=$(awk '/^log_gate_bypass\(\)/,/^}/' "$HOOK_SRC")
+        TASK_ID="T-9999" REASON="bin/fw doctor reports 'OK Hook exercise from /tmp: 14 hook(s) resolve from foreign CWD'." PROJECT_ROOT="$PROJECT_ROOT" \
+            bash -c "$FN; log_gate_bypass --canary 'canary-caller'"
+    fi
+
+    # Log must parse as valid YAML
+    python3 -c "import yaml,sys; data = yaml.safe_load(open('$log')); assert isinstance(data, list) and len(data) >= 1; assert any(e.get('task')=='T-9999' for e in data), data"
+}
+
 @test "gate-bypass log with old entries only: not in 7d count" {
     log="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
     : > "$log"
