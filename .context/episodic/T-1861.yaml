@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1861: fix gate-bypass log writer — unescaped single quotes in REASON corrupt YAML (audit can't parse log)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:12:22Z
+# ============================================================================
+
+task_id: T-1861
+task_name: "fix gate-bypass log writer — unescaped single quotes in REASON corrupt YAML (audit can't parse log)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T18:32:24Z
+completed: 2026-05-15T18:32:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-15T20:36:19+02:00
+last_commit: 2026-05-15T20:36:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  escape single quotes in 3 gate-bypass-log writers (YAML data integrity)
+
+# Key outcomes
+outcomes:
+  - "**A1** `agents/task-create/update-task.sh:log_gate_bypass()` escapes embedded single quotes by doubling (`'` → `''`) in all five fields (timestamp, task, flag, caller, reason). reason is the highest-risk field; others may not need it in practice but uniform escaping is the right structural fix."
+  - "**A2** `agents/context/check-active-task.sh:274-283` applies the same escaping to all written fields (the `tr -d \"'\"` on `command` should be replaced with proper escaping for consistency; or kept and documented as a separate sanitization layer)."
+  - "**A3** `agents/context/check-human-ac-tick.py:log_bypass()` uses proper YAML serialization — either `yaml.safe_dump([entry])[2:]` (strips the leading `- ` since we append items not a list) or manual escaping that matches A1's approach."
+  - "**A4** Existing corrupted entries in `.context/working/.gate-bypass-log.yaml` are repaired in-place (single-quote-doubling applied to the malformed `reason:` values). After repair, `python3 -c \"import yaml; yaml.safe_load(open('.context/working/.gate-bypass-log.yaml'))\"` parses without error."
+  - "**A5** Bats unit test pins the writer: passing a reason with embedded single quotes through `log_gate_bypass` produces a log entry that round-trips through `yaml.safe_load` cleanly."
+  - "**A6** RCA section filled (symptom / root cause / why structurally allowed / prevention)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (source task Decisions section was empty)
+decisions: []
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-active-task.sh"
+  - "agents/context/check-human-ac-tick.py"
+  - "agents/task-create/update-task.sh"
+  - ".context/working/.gate-bypass-log.yaml"
+  - ".tasks/active/T-1861-fix-gate-bypass-log-writer--unescaped-si.md"
+  - "tests/unit/audit_gate_bypass_log.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T20:36:19"
+    action: "T-1861: escape single quotes in 3 gate-bypass-log writers (YAML data integrity)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, fix, yaml-quoting, audit-data-integrity, hook]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 6
+  lines_added: 202
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1861-fix-gate-bypass-log-writer--unescaped-si.md
+generated_by: context-agent-hybrid

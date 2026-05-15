@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1860: episodic-gen forensic log overwrites previous invocation — defeats T-1371/G-054 intent
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:12:22Z
+# ============================================================================
+
+task_id: T-1860
+task_name: "episodic-gen forensic log overwrites previous invocation — defeats T-1371/G-054 intent"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T18:25:00Z
+completed: 2026-05-15T18:24:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-15T20:28:10+02:00
+last_commit: 2026-05-15T20:28:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  per-task episodic-gen forensic log + append — preserve failure history. capture scope-cut decisions (UI surface out, per-task files chosen)
+
+# Key outcomes
+outcomes:
+  - "**A1** `update-task.sh` no longer truncates; chose per-task log files at `.context/working/episodic-gen/<T-XXX>.log` with append (`>>`). One task's log retains all invocations of that task; cross-task forensics are stable since each task's history is in its own file."
+  - "**A2** Log accumulates across consecutive invocations — pinned by `tests/unit/update_task_episodic_gen.bats` T-1860 test #1 (per-task path + header) and direct shell verification in `/tmp/T-1860-verify.sh` (two appended invocations both visible in log)."
+  - "**A3** Per-task files are inherently bounded (most tasks generate episodic once; pathological re-completion still produces a small file). No rotation needed — chose per-task isolation over rolling-log + rotation for simplicity."
+  - "**A4** Source-of-truth bats pin (`tests/unit/update_task_episodic_gen.bats` test #2): `update-task.sh` references new path AND uses `>>`; old `.last-episodic-gen.log` path does not reappear."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-15 — Audit/Watchtower UI surface for episodic-gen failures is out of scope"
+    chose: "Ship only the data-preservation half of the original AC list (per-task log + append). No new audit or Watchtower surface for \"last 5 episodic-gen failures\"."
+    rationale: "The existing audit warning class (\"Completed task T-XXX has no episodic summary\") already surfaces the failure event. The new per-task logs are the drill-down evidence. A separate UI is polish, not the structural fix this task exists for."
+    alternatives_rejected: ["Filing a follow-up task for the UI. Not worth the queue weight — when someone actually wants \"last 5 failures\" they can `ls -t .context/working/episodic-gen/` and `tail` the relevant file. If demand emerges, the request will surface naturally."]
+  - decision: "2026-05-15 — Per-task files over rolling log with rotation"
+    chose: "`.context/working/episodic-gen/<TASK_ID>.log` per task, append (`>>`)."
+    rationale: "Failure forensics are always task-scoped — \"why did T-1829 not generate episodic\" maps directly to one file. Per-task files need no rotation logic (each is naturally bounded). Cross-task work cannot overwrite a failing task's context."
+    alternatives_rejected: ["Single rolling log with rotation (keep last N invocations). Adds rotation complexity; cross-task interleaving makes per-task forensics harder."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - ".tasks/active/T-1860-episodic-gen-forensic-log-overwrites-prev.md"
+  - ".tasks/completed/T-1859-backfill-3-missing-episodic-summaries-fl.md"
+  - "tests/unit/update_task_episodic_gen.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T20:28:10"
+    action: "T-1860: per-task episodic-gen forensic log + append — preserve failure history"
+  - time: "2026-05-15T20:28:40"
+    action: "T-1860: capture scope-cut decisions (UI surface out, per-task files chosen)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, fix, forensic-logging, silent-failure, follow-up]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 2
+  files_changed: 4
+  lines_added: 218
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1860-episodic-gen-forensic-log-overwrites-prev.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1859: backfill 3 missing episodic summaries flagged by audit (T-1829/T-1830/T-1831) and investigate root cause
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:12:21Z
+# ============================================================================
+
+task_id: T-1859
+task_name: "backfill 3 missing episodic summaries flagged by audit (T-1829/T-1830/T-1831) and investigate root cause"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T18:17:12Z
+completed: 2026-05-15T18:24:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-15T20:24:12+02:00
+last_commit: 2026-05-15T20:24:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  backfill missing episodics T-1829/T-1830/T-1831 + file T-1860 follow-up
+
+# Key outcomes
+outcomes:
+  - "**A1** Episodic YAMLs exist at `.context/episodic/T-1829.yaml`, `T-1830.yaml`, `T-1831.yaml` and are valid YAML"
+  - "**A2** Each episodic has non-empty `task_id` matching the file name and basic structure (status, summary, duration)"
+  - "**A3** Root-cause analysis: determine why the auto-trigger missed these 3 specifically. Document finding in RCA section. (Possibilities: inception-decide bypassed the trigger; trigger ran but silently failed; or `--skip-sovereignty --reason` arg path skipped it.)"
+  - "**A4** If RCA reveals a reproducible structural defect, file a follow-up build task referencing T-1859 — filed T-1860 (forensic log overwrites itself) (one bug = one task — do NOT fix the trigger in this task)"
+  - "**A5** `fw audit` no longer warns on T-1829/T-1830/T-1831 episodic-missing"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (source task Decisions section was empty)
+decisions: []
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1829.yaml"
+  - ".context/episodic/T-1830.yaml"
+  - ".context/episodic/T-1831.yaml"
+  - ".tasks/active/T-1859-backfill-3-missing-episodic-summaries-fl.md"
+  - ".tasks/active/T-1860-episodic-gen-forensic-log-overwrites-prev.md"
+  - ".tasks/completed/T-1858-check-active-task-null-currenttask-colla.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T20:24:12"
+    action: "T-1859: backfill missing episodics T-1829/T-1830/T-1831 + file T-1860 follow-up"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [housekeeping, episodic, memory-completeness, audit-followup]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 6
+  lines_added: 414
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1859-backfill-3-missing-episodic-summaries-fl.md
+generated_by: context-agent-hybrid

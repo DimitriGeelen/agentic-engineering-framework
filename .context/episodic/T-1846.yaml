@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1846: Arc grooming — resolve Q1/Q2/Q3 + plan T-NEW-2..9 build slices
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:12:19Z
+# ============================================================================
+
+task_id: T-1846
+task_name: "Arc grooming — resolve Q1/Q2/Q3 + plan T-NEW-2..9 build slices"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T12:43:57Z
+completed: 2026-05-15T12:46:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-15T14:48:53+02:00
+last_commit: 2026-05-15T16:42:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file Arc grooming inception — handoff stored + Q1/Q2/Q3 surfaced. Q1/Q2/Q3 resolved + D-Immutability captured + T-NEW-1.5 added
+
+# Key outcomes
+outcomes:
+  - "Research artefact exists at `docs/reports/T-1846-arc-grooming-inception.md`"
+  - "Handoff stored verbatim at `.context/handoffs/HANDOFF-arc-grooming-2026-05-15.md`"
+  - "Q1, Q2, Q3 answers recorded in research artefact `## Dialogue Log` with timestamps"
+  - "Build-slice manifest produced in research artefact `## 4 Build-slice manifest`"
+  - "**D-Immutability** structural principle captured (§3a) — arc records are"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-15 — D-Immutability (arc records never deleted)"
+    chose: "Arc YAML records in `.context/arcs/` are immutable. Abandonment is a"
+    rationale: "Matches existing task semantics (tasks in completed/ are never deleted)."
+    alternatives_rejected: ["Allow deletion via `fw arc delete` or rm — would break references"]
+  - decision: "2026-05-15 — Q1 flip: Tier-1 block (not audit warning)"
+    chose: "`arc_id:` referencing a non-existent arc → Tier-1 block at task save."
+    rationale: "Predicated on D-Immutability. With immutability, valid references stay"
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/handoffs/HANDOFF-arc-grooming-2026-05-15.md"
+  - "docs/reports/T-1846-arc-grooming-inception.md"
+  - ".tasks/active/T-1846-arc-grooming--resolve-q1q2q3--plan-t-new.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T14:48:53"
+    action: "T-1846: file Arc grooming inception — handoff stored + Q1/Q2/Q3 surfaced"
+  - time: "2026-05-15T16:42:04"
+    action: "T-1846: Q1/Q2/Q3 resolved + D-Immutability captured + T-NEW-1.5 added"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, arc:arc-grooming, governance, schema-migration]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 3
+  lines_added: 1181
+  lines_removed: 83
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1846-arc-grooming--resolve-q1q2q3--plan-t-new.md
+generated_by: context-agent-hybrid

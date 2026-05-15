@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1847: Scaffold arc-grooming workspace + file 10 build slices (T-1846 decide-go propagation)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:12:20Z
+# ============================================================================
+
+task_id: T-1847
+task_name: "Scaffold arc-grooming workspace + file 10 build slices (T-1846 decide-go propagation)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T14:47:20Z
+completed: 2026-05-15T14:47:20Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-15T17:00:27+02:00
+last_commit: 2026-05-15T17:00:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scaffold arc-grooming workspace + 10 build slices (T-1846 propagation)
+
+# Key outcomes
+outcomes:
+  - "`.context/arcs/arc-grooming.yaml` exists with status:in-progress, headline_mechanic"
+  - "10 build-slice tasks filed in `.tasks/active/` (status: captured, owner: agent):"
+  - "Each filed task has: real ACs traceable to handoff §7 (no placeholders), tags"
+  - "`bin/fw audit` passes — Pass: 370, Warn: 36, **Fail: 0**"
+  - "Dependency chain commented in `.context/arcs/arc-grooming.yaml` for reader clarity"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (source task Decisions section was empty)
+decisions: []
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/arcs/arc-grooming.yaml"
+  - ".tasks/active/T-1847-scaffold-arc-grooming-workspace--file-10.md"
+  - ".tasks/active/T-1848-sequential-arc-nnn-immutable-ids-t-new-1.md"
+  - ".tasks/active/T-1849-task-arcid-field--tier-1-validation-bloc.md"
+  - ".tasks/active/T-1850-tagsarc--arcid-one-shot-migration-t-new-.md"
+  - ".tasks/active/T-1851-deprecate-constituenttasks-field-t-new-4.md"
+  - ".tasks/active/T-1852-lifecycle-state-machine-add-draft--aband.md"
+  - ".tasks/active/T-1853-watchtower-arcs-lifecycle-filter-tabs-t-.md"
+  - ".tasks/active/T-1854-fw-arc-abandon-cli-verb-t-new-6.md"
+  - ".tasks/active/T-1855-stale-arc-audit-warning-30d-t-new-7.md"
+  - ".tasks/active/T-1856-anchor-task-existence-audit-check-t-new-.md"
+  - ".tasks/active/T-1857-012-arcsystemmd--frameworkmd-updates-t-n.md"
+  - ".tasks/completed/T-1846-arc-grooming--resolve-q1q2q3--plan-t-new.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T17:00:27"
+    action: "T-1847: scaffold arc-grooming workspace + 10 build slices (T-1846 propagation)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, arc:arc-grooming, scaffold, post-decide-go]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 13
+  lines_added: 1458
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1847-scaffold-arc-grooming-workspace--file-10.md
+generated_by: context-agent-hybrid

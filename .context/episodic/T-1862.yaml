@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1862: audit gate-bypass WARN conflates --switch-focus drift overrides with safety bypasses — split classes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:12:23Z
+# ============================================================================
+
+task_id: T-1862
+task_name: "audit gate-bypass WARN conflates --switch-focus drift overrides with safety bypasses — split classes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T18:38:17Z
+completed: 2026-05-15T18:38:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-15T20:41:58+02:00
+last_commit: 2026-05-15T20:43:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  split gate-bypass audit into safety vs drift classes (signal/noise). rework verification command to avoid SIGPIPE under pipefail
+
+# Key outcomes
+outcomes:
+  - "**A1** Identify the bypass-flag taxonomy in `agents/audit/audit.sh`. Two classes: SAFETY bypasses (`--skip-*`, `--scope-reduction-acknowledged`) vs OPERATIONAL overrides (`--switch-focus`). Coded as a flag list."
+  - "**A2** `agents/audit/audit.sh` gate-bypass section counts each class separately and emits:"
+  - "**A3** Output message names both counts explicitly: e.g., `Gate-bypass log: 3 safety bypasses + 51 drift overrides in last 7 days` so reviewers can see both at a glance."
+  - "**A4** Bats test pins: log with 5 `--switch-focus` + 1 `--skip-rca` → PASS-with-info (not WARN, because safety count is below threshold)."
+  - "**A5** Bats test pins: log with 4 `--skip-rca` → WARN (safety threshold crossed even though total is low)."
+  - "**A6** Existing `audit_gate_bypass_log.bats` tests still pass (no regression on PASS-clean and old-entries-only paths)."
+  - "**A7** RCA section filled."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (source task Decisions section was empty)
+decisions: []
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-1862-audit-gate-bypass-warn-conflates---switc.md"
+  - "tests/unit/audit_gate_bypass_log.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T20:41:58"
+    action: "T-1862: split gate-bypass audit into safety vs drift classes (signal/noise)"
+  - time: "2026-05-15T20:43:59"
+    action: "T-1862: rework verification command to avoid SIGPIPE under pipefail"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, fix, audit, signal-noise-ratio, follow-up]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 2
+  files_changed: 3
+  lines_added: 224
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1862-audit-gate-bypass-warn-conflates---switc.md
+generated_by: context-agent-hybrid

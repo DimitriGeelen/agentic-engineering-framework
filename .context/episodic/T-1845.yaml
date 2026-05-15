@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1845: pre-commit large-file gate + untrack accidentally-tracked binaries (os 36MB, fw-vec-index.db 78MB) — sibling prevention to T-1844 secret-scan
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:12:19Z
+# ============================================================================
+
+task_id: T-1845
+task_name: "pre-commit large-file gate + untrack accidentally-tracked binaries (os 36MB, fw-vec-index.db 78MB) — sibling prevention to T-1844 secret-scan"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T11:20:04Z
+completed: 2026-05-15T11:20:04Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-15T13:30:35+02:00
+last_commit: 2026-05-15T13:30:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-commit large-file gate + cleanup tracked binaries (os 36MB, fw-vec-index.db 78MB)
+
+# Key outcomes
+outcomes:
+  - "`agents/git/lib/large-file-scan.sh` exists with `scan-staged`, `scan-tree`, `scan-file` subcommands and `--help`"
+  - "`agents/git/lib/large-file-scan.sh scan-tree` reports zero `[BLOCK]` hits in the working tree after cleanup"
+  - "`.large-file-allowlist` exists at project root with the `.agentic-framework/lib/ts/node_modules/` exemption"
+  - "Pre-commit hook at `.git/hooks/pre-commit` invokes the large-file scanner after the secret-scanner; staging a >10MiB file blocks the commit"
+  - "`os` is no longer tracked (`git ls-files os` returns empty) and `/os` is in `.gitignore`"
+  - "`.context/working/fw-vec-index.db` is no longer tracked and `.context/working/fw-vec-index.db` (or `*.db` pattern) is in `.gitignore`"
+  - "Unit-test harness at `tests/unit/test_large_file_scan.bats` covers: scan-staged blocks an oversized stage, scan-staged passes a normal stage, allowlist suppresses a match, threshold env var honoured"
+  - "`fw doctor` adds a `[WARN]` line when `scan-tree` finds tracked files in the WARN range (between 1MiB and 10MiB) that aren't in the allowlist — or `[PASS]` line when clean"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (source task Decisions section was empty)
+decisions: []
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/git/lib/hooks.sh"
+  - "agents/git/lib/large-file-scan.sh"
+  - "bin/fw"
+  - ".context/working/fw-vec-index.db"
+  - ".fabric/components/agents-git-lib-large-file-scan.yaml"
+  - ".gitignore"
+  - ".large-file-allowlist"
+  - "os"
+  - ".tasks/active/T-1845-pre-commit-large-file-gate--untrack-acci.md"
+  - "tests/unit/test_large_file_scan.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T13:30:35"
+    action: "T-1845: pre-commit large-file gate + cleanup tracked binaries (os 36MB, fw-vec-index.db 78MB)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, arc:project-shape-resilience]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 10
+  lines_added: 577
+  lines_removed: 462875
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1845-pre-commit-large-file-gate--untrack-acci.md
+generated_by: context-agent-hybrid

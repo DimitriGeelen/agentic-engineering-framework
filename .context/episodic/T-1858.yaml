@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1858: check-active-task null current_task collapses focus_session into task slot — misleading block message
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-15T20:12:20Z
+# ============================================================================
+
+task_id: T-1858
+task_name: "check-active-task null current_task collapses focus_session into task slot — misleading block message"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T18:07:58Z
+completed: 2026-05-15T18:07:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-15T20:12:35+02:00
+last_commit: 2026-05-15T20:12:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix check-active-task null current_task + session collapse into task slot
+
+# Key outcomes
+outcomes:
+  - "**A1** Python helper output format hardened: replace `print(f'{task} {session}')` with a delimiter that survives empty `task` — either explicit tab `\t`, or two `print` lines and `read -r` from process substitution line-by-line, or `mapfile`. Empty `task` MUST produce empty `CURRENT_TASK` regardless of `session` value."
+  - "**A2** When `current_task` is empty/null/missing, hook MUST emit the \"BLOCKED: No active task\" message (line 177) regardless of `focus_session` value."
+  - "**A3** Bats unit test pins the exact failure mode: focus.yaml fixture with `current_task: null` + `focus_session: S-foo` → hook stderr contains \"No active task\" AND does NOT contain \"S-foo\"."
+  - "**A4** Bats unit test pins the inverse: focus.yaml fixture with `current_task: T-XXX` + `focus_session: S-foo` → hook reads `CURRENT_TASK=T-XXX` (existing pass-through behaviour preserved)."
+  - "**A5** Verification commands in `## Verification` exercise both new tests; existing `tests/unit/focus_drift_gate.bats` (T-1730) still passes."
+  - "**A6** RCA section filled (symptom / root cause / why structurally allowed / prevention)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix check-active-task null current_task + session collapse into task slot"
+    source: git-mined
+
+# Decisions (source task Decisions section was empty)
+decisions: []
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-active-task.sh"
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-1858-check-active-task-null-currenttask-colla.md"
+  - "tests/unit/focus_drift_gate.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-15T20:12:35"
+    action: "T-1858: fix check-active-task null current_task + session collapse into task slot"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, fix, hook, governance-gate, focus-state, structural-fix]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 4
+  lines_added: 170
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1858-check-active-task-null-currenttask-colla.md
+generated_by: context-agent-hybrid
