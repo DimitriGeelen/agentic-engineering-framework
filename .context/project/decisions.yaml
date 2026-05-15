@@ -877,3 +877,10 @@ decisions:
     date: 2026-05-14
     task: T-1635
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-128
+    decision: "`git push --no-verify github master` as one-shot bypass; file Level-C follow-up for algorithmic fix."
+    scope: project
+    date: 2026-05-15
+    task: T-1828
+    rationale: "Auto-captured from task file on completion"

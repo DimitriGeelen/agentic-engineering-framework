@@ -2984,3 +2984,10 @@ X'` returning empty group."
   date: 2026-05-15
   context: Added via context agent
   application: TBD
+- id: L-389
+  learning: "Scripts that resolve PROJECT_ROOT via fixed-depth dot-dot walk-up encode a project-shape assumption (vendored vs framework-repo). Use marker walk-up (.framework.yaml for consumers / FRAMEWORK.md for framework repo) — the same pattern bin/fw uses — so the script works in both shapes. Origin: revisit-due-scan.sh shipped vendored-only, silently exited 0 in framework repo for 14 days. G-063 class."
+  source: P-001
+  task: T-1868
+  date: 2026-05-15
+  context: Added via context agent
+  application: TBD

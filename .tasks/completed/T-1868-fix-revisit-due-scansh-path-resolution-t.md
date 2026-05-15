@@ -4,16 +4,16 @@ name: "fix revisit-due-scan.sh path-resolution to work in framework repo (script
 description: >
   fix revisit-due-scan.sh path-resolution to work in framework repo (script assumes vendored-only; framework-repo case resolves to /opt/.tasks/active)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/context/revisit-due-scan.sh]
 related_tasks: []
 created: 2026-05-15T20:44:05Z
-last_update: 2026-05-15T20:44:05Z
-date_finished: null
+last_update: 2026-05-15T20:47:29Z
+date_finished: 2026-05-15T20:47:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -162,3 +162,15 @@ silence.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1868-fix-revisit-due-scansh-path-resolution-t.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-20bdcd99
+- **Timestamp:** 2026-05-15T20:47:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-15T20:47:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
