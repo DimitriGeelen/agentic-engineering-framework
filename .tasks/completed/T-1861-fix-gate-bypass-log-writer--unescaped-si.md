@@ -4,7 +4,7 @@ name: "fix gate-bypass log writer — unescaped single quotes in REASON corrupt 
 description: >
   fix gate-bypass log writer — unescaped single quotes in REASON corrupt YAML (audit can't parse log)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,7 +13,7 @@ components: [agents/task-create/update-task.sh, agents/context/check-active-task
 related_tasks: [T-1142, T-165]
 created: 2026-05-15T18:32:24Z
 last_update: 2026-05-15T18:32:24Z
-date_finished: null
+date_finished: 2026-05-15T20:37:05+02:00
 ---
 
 # T-1861: fix gate-bypass log writer — unescaped single quotes in REASON corrupt YAML (audit can't parse log)

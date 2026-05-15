@@ -14,7 +14,7 @@ Deliverables:
 
 Origin: T-1844 allowlist comment 'investigate why this is tracked — appears to be accidentally-committed print output, 36MB' — captured at the time but no follow-up task. Today's GitHub force-push warnings re-exposed it.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -23,7 +23,7 @@ components: ["agents/git/lib/secret-scan.sh", "agents/git/lib/hooks.sh"]
 related_tasks: ["T-1844", "T-1828", "T-1834", "T-1716"]
 created: 2026-05-15T11:20:04Z
 last_update: 2026-05-15T11:20:04Z
-date_finished: null
+date_finished: 2026-05-15T13:44:00+02:00
 ---
 
 # T-1845: pre-commit large-file gate + untrack accidentally-tracked binaries (os 36MB, fw-vec-index.db 78MB) — sibling prevention to T-1844 secret-scan

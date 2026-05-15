@@ -4,7 +4,7 @@ name: "episodic-gen forensic log overwrites previous invocation — defeats T-13
 description: >
   agents/task-create/update-task.sh:1429 truncates .context/working/.last-episodic-gen.log on every invocation (single `>`). T-1371/G-054 added this log to capture forensic context for silent episodic-gen failures, but the truncation guarantees you only ever see the last (usually successful) run — meaning when the next failure occurs, the previous failure's diagnostic context is already gone. Origin: T-1859 backfilled T-1829/T-1830/T-1831 episodics; the log only contained T-1858's successful run, so the actual silent-failure context is unrecoverable.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,7 +13,7 @@ components: [agents/task-create/update-task.sh]
 related_tasks: [T-1859, T-1371]
 created: 2026-05-15T18:25:00Z
 last_update: 2026-05-15T18:24:34Z
-date_finished: null
+date_finished: 2026-05-15T20:31:14+02:00
 ---
 
 # T-1860: episodic-gen forensic log overwrites previous invocation — defeats T-1371/G-054 intent

@@ -4,7 +4,7 @@ name: "check-active-task null current_task collapses focus_session into task slo
 description: >
   check-active-task null current_task collapses focus_session into task slot — misleading block message
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,7 +13,7 @@ components: [agents/context/check-active-task.sh]
 related_tasks: [T-1730, T-560, T-1729]
 created: 2026-05-15T18:07:58Z
 last_update: 2026-05-15T18:07:58Z
-date_finished: null
+date_finished: 2026-05-15T20:24:12+02:00
 ---
 
 # T-1858: check-active-task null current_task collapses focus_session into task slot — misleading block message

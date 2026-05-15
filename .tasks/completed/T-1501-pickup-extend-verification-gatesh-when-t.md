@@ -4,7 +4,7 @@ name: "Pickup: Extend verification-gate.sh: when task touches .vbproj/.xaml, req
 description: >
   Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-108. Type: feature-proposal.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -13,7 +13,7 @@ components: []
 related_tasks: []
 created: 2026-04-26T11:13:21Z
 last_update: 2026-04-26T13:41:12Z
-date_finished: null
+date_finished: 2026-04-27T12:09:29+02:00
 source_task_id_in_origin: T-108
 source_project_in_origin: "003-NTB-ATC-Plugin"
 ---

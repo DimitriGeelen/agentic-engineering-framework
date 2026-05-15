@@ -4,7 +4,7 @@ name: "Scaffold arc-grooming workspace + file 10 build slices (T-1846 decide-go 
 description: >
   Scaffold arc-grooming workspace + file 10 build slices (T-1846 decide-go propagation)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,7 +13,7 @@ components: [".context/arcs/"]
 related_tasks: ["T-1846"]
 created: 2026-05-15T14:47:20Z
 last_update: 2026-05-15T14:47:20Z
-date_finished: null
+date_finished: 2026-05-15T19:55:03+02:00
 ---
 
 # T-1847: Scaffold arc-grooming workspace + file 10 build slices (T-1846 decide-go propagation)

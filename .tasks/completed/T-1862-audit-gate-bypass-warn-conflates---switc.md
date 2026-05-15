@@ -4,7 +4,7 @@ name: "audit gate-bypass WARN conflates --switch-focus drift overrides with safe
 description: >
   audit gate-bypass WARN conflates --switch-focus drift overrides with safety bypasses — split classes
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,7 +13,7 @@ components: [agents/audit/audit.sh]
 related_tasks: [T-1573, T-1730, T-1861]
 created: 2026-05-15T18:38:17Z
 last_update: 2026-05-15T18:38:17Z
-date_finished: null
+date_finished: 2026-05-15T20:45:18+02:00
 ---
 
 # T-1862: audit gate-bypass WARN conflates --switch-focus drift overrides with safety bypasses — split classes
