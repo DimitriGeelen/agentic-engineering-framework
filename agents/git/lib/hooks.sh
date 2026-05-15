@@ -283,6 +283,32 @@ if [ "$_rc" -ne 0 ]; then
     exit 1
 fi
 
+# T-1845: Large-file gate — sibling prevention to secret-scan. Blocks staged
+# files >10MiB by default; allowlist exempts deliberate vendored cases.
+LARGE_FILE_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/large-file-scan.sh"
+if [ -x "$LARGE_FILE_SCANNER" ]; then
+    _lf_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$LARGE_FILE_SCANNER" scan-staged 2>&1)
+    _lf_rc=$?
+    if [ "$_lf_rc" -ne 0 ]; then
+        echo ""
+        echo "ERROR: Commit blocked — large-file gate flagged staged content:" >&2
+        echo "" >&2
+        echo "$_lf_hits" >&2
+        echo "" >&2
+        echo "If this file should not be in git: unstage it (git restore --staged <path>)" >&2
+        echo "                                   and add it to .gitignore." >&2
+        echo "If it's a deliberate vendored artefact: add the path-prefix regex to" >&2
+        echo "                                       .large-file-allowlist." >&2
+        echo "If you need a one-off larger threshold:" >&2
+        echo "  FW_LARGE_FILE_BLOCK_BYTES=104857600 git commit ..." >&2
+        echo "" >&2
+        echo "Bypass: git commit --no-verify   (Tier 0, logged)" >&2
+        echo "" >&2
+        echo "Origin: T-1845 — sibling prevention to T-1844 (T-1834 force-push surfaced 36MB+78MB tracked binaries)." >&2
+        exit 1
+    fi
+fi
+
 exit 0
 HOOK_EOF
 

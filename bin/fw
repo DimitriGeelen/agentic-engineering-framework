@@ -817,6 +817,28 @@ do_doctor() {
         warnings=$((warnings + 1))
     fi
 
+    # T-1845: Large-file gate — surface tracked-file bloat. The pre-commit
+    # gate blocks new instances; this audit catches anything that slipped past
+    # (legacy state, --no-verify bypasses, or files committed before the gate
+    # existed). Block-level findings count as warnings here; the agent should
+    # cleanup + gitignore, not let scan-tree FAIL gate the doctor.
+    local lf_scanner="$FRAMEWORK_ROOT/agents/git/lib/large-file-scan.sh"
+    if [ -x "$lf_scanner" ]; then
+        local lf_out lf_blocks lf_warns
+        lf_out=$(PROJECT_ROOT="$PROJECT_ROOT" "$lf_scanner" scan-tree 2>&1 || true)
+        lf_blocks=$(echo "$lf_out" | grep -c "\[BLOCK\]" || true)
+        lf_warns=$(echo "$lf_out" | grep -c "\[WARN\]"  || true)
+        if [ "$lf_blocks" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Large-file gate: $lf_blocks tracked file(s) above block threshold"
+            echo -e "         Run: bin/fw doctor large-files   (or untrack + .gitignore)"
+            warnings=$((warnings + 1))
+        elif [ "$lf_warns" -gt 0 ]; then
+            echo -e "  ${CYAN}INFO${NC}  Large-file gate: $lf_warns tracked file(s) above warn threshold (under block)"
+        else
+            echo -e "  ${GREEN}OK${NC}  Large-file gate: no tracked files above warn threshold"
+        fi
+    fi
+
     # Check 5b: Git user identity (T-685)
     local git_email git_name
     git_email=$(git -C "$PROJECT_ROOT" config user.email 2>/dev/null || true)

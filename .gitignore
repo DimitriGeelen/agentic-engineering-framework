@@ -53,3 +53,13 @@ datetime
 # T-1700/T-1705 working dirs — proxy logs, model pull logs (runtime state)
 .context/working/litellm/
 .context/working/ollama-pulls/
+
+# T-1845 — accidentally-tracked bloat from T-1834 incident investigation.
+# `os` was a 36MB ImageMagick PostScript export with literal filename "os"
+# committed by T-1716; *.db are runtime sqlite indexes (fw-vec-index.db = 78MB).
+# The pre-commit large-file gate (agents/git/lib/large-file-scan.sh) prevents
+# new instances; these entries cover the cleanup of existing tracked files.
+/os
+.context/working/*.db
+.context/working/*.db-shm
+.context/working/*.db-wal
