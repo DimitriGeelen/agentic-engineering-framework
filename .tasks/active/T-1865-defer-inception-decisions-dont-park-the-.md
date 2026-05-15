@@ -103,19 +103,44 @@ out=$(bats tests/unit/inception_defer_park.bats 2>&1); echo "$out" | grep -qE "o
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** 6 inception tasks (T-1265, T-1309, T-1611, T-1685, T-682, T-704)
+audited as `D13: Inception limbo — A=0/B=6` for months. Each has Decision=DEFER
+recorded but status=started-work + horizon=now, so they double-count: visible
+in "Work In Progress" (started-work + horizon=now) AND in "Deferred Inceptions
+— Watching for Recurrence" (Decision=DEFER detection). Audit pointed at
+`bin/fw inception sweep` as recovery, but sweep found 0 eligible.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Two contradictory assumptions across two pieces of code.
+1. `do_inception_decide` for the DEFER branch was a no-op on state: "Complete
+   task if go or no-go (not defer)" — the comment is correct intent but the
+   implementation forgot to *park* the task on DEFER.
+2. `do_inception_sweep` explicitly skipped DEFER on started-work because of
+   a misclassification: "DEFER on started-work is the legitimate keep-
+   exploring state". That was true *before* a Decision was recorded. After
+   `**Decision**: DEFER` is in the body, the task is no longer exploring —
+   it's parked.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:**
+- The audit's D13 message included class B = started-work + recorded decision
+  WITH "use sweep to recover both classes". But sweep's started-work branch
+  only recovered GO/NO-GO, not DEFER. The audit text and sweep behaviour
+  diverged silently — no test verified the round-trip "audit-flagged
+  tasks become sweep-recoverable".
+- The T-1589 shipping-evidence exception in update-task.sh's T-1068 invariant
+  protects any Recommendation+all-ACs task from auto-demote. It was designed
+  for GO/NO-GO recommendations awaiting human review. DEFER recommendations
+  trip the same heuristic but should NOT be protected. T-1865 refines.
+- Real edge case: T-1685 had Recommendation=NO-GO but Decision=DEFER (the
+  Recommendation reflected the agent's view; the human's final Decision
+  diverged). Recommendation-based exclusion alone wasn't enough; the sweep
+  needed to pass --status + --horizon explicitly.
+
+**Prevention:**
+- `tests/unit/inception_defer_park.bats` pins decide-defer parks the task,
+  sweep recovers limbo, and sweep is idempotent on pre-parked tasks.
+- Future audit-vs-sweep divergence: any new audit class that names sweep as
+  mitigation should add a matching sweep branch + bats test for the recovery
+  round-trip. Tracked here as a pattern, not yet a structural gate.
 
 ## Evolution
 
