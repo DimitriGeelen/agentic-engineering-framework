@@ -2956,3 +2956,10 @@ X'` returning empty group."
   date: 2026-05-15
   context: Added directly to learnings.yaml (fw context add-learning was gated; learning captured manually under T-1860 closure)
   application: TBD
+- id: L-385
+  learning: "Any framework writer that emits YAML single-quoted scalars (e.g. `field: '$value'`) must double embedded single quotes (' -> '') per the YAML spec. Three gate-bypass-log writers (update-task.sh log_gate_bypass, check-active-task.sh focus-drift override, check-human-ac-tick.py log_bypass) shipped without this escape; corruption surfaced when reason/caller fields contained apostrophes or code snippets. T-165 is the precedent (Watchtower task-link YAML quoting bug, same defect class). Fix shape: per-field `${var//\\'/\\'\\'\\'}` in bash, `str.replace(\"'\", \"''\")` helper in python. Always verify the writer's output round-trips through yaml.safe_load. When in doubt, prefer routing through a real YAML serializer (yaml.safe_dump in python, gomplate or yq in shell)."
+  source: P-011
+  task: T-1861
+  date: 2026-05-15
+  context: Added during T-1861 closure. Other framework YAML writers (concerns.yaml, decisions.yaml, episodic YAMLs, frontmatter writers) likely share this defect class — review opportunity.
+  application: TBD
