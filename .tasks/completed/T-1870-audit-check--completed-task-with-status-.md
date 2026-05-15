@@ -56,7 +56,7 @@ date_finished: 2026-05-15T22:12:38Z
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 
 bats tests/unit/audit_ctl028_completed_status_consistency.bats
-out=$(python3 agents/audit/completed-task-scan.py .tasks .context/episodic docs/reports 2>&1); echo "$out" | python3 -c "import sys,json; d=json.load(sys.stdin); assert any(i['id']=='T-1846' for i in d.get('status_desync',[])), 'baseline desync T-1846 missing'; print('baseline ok')"
+python3 agents/audit/completed-task-scan.py .tasks .context/episodic docs/reports > /tmp/.t1870-scan.json 2>&1 && python3 -c "import json; d=json.load(open('/tmp/.t1870-scan.json')); assert any(i['id']=='T-1846' for i in d.get('status_desync',[])), 'baseline desync T-1846 missing'; print('baseline ok')"
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
