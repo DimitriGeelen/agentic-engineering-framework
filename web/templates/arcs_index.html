@@ -4,6 +4,8 @@
 <style>
     .arc-row { padding: 1rem; margin-bottom: 0.75rem; border-left: 3px solid var(--pico-primary); border-radius: 4px; background: var(--pico-card-background-color); }
     .arc-row.closed { border-left-color: var(--pico-muted-color); opacity: 0.7; }
+    .arc-row.abandoned { border-left-color: var(--pico-muted-color); opacity: 0.55; }
+    .arc-row.draft { border-left-color: var(--pico-secondary, #888); }
     .arc-row.focused { border-left-color: var(--pico-primary); border-left-width: 6px; }
     .arc-row a.arc-name { font-size: 1.1rem; font-weight: bold; }
     .arc-meta { font-size: 0.85rem; color: var(--pico-muted-color); margin-top: 0.25rem; }
@@ -14,6 +16,16 @@
     .badge-info { background: var(--pico-primary-background); color: var(--pico-primary); }
     .badge-ok { background: var(--pico-form-element-valid-active-border-color, #2e7d32); color: white; }
     .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+    .badge-draft { background: var(--pico-card-sectioning-background-color, #444); color: var(--pico-muted-color); border: 1px solid var(--pico-muted-border-color); }
+    .badge-warn  { background: #c97a00; color: white; }
+    /* T-1853 filter tabs */
+    .arc-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0 1.25rem; padding: 0; list-style: none; border-bottom: 1px solid var(--pico-muted-border-color); }
+    .arc-tabs li { margin: 0; }
+    .arc-tabs a { display: inline-block; padding: 0.5rem 0.9rem; text-decoration: none; color: var(--pico-muted-color); border-bottom: 3px solid transparent; }
+    .arc-tabs a:hover { color: var(--pico-primary); }
+    .arc-tabs a.active { color: var(--pico-primary); border-bottom-color: var(--pico-primary); font-weight: 600; }
+    .arc-tabs .tab-count { display: inline-block; margin-left: 0.35em; padding: 0 0.4em; font-size: 0.75em; background: var(--pico-muted-border-color); color: var(--pico-muted-color); border-radius: 3px; vertical-align: middle; }
+    .arc-tabs a.active .tab-count { background: var(--pico-primary); color: white; }
 </style>
 
 <header>
@@ -22,19 +34,41 @@
     Run <code>fw arc create</code> to register one. See <a href="/docs/CLAUDE">CLAUDE.md</a> §Arc Completion Discipline for the closure check.</p>
 </header>
 
+{# T-1853: lifecycle filter tabs. Default landing view = in-progress. #}
+<ul class="arc-tabs" role="tablist" aria-label="Filter arcs by lifecycle state">
+    {% for label in filter_labels %}
+    <li role="presentation">
+        <a href="/arcs?status={{ label }}"
+           class="{% if current_filter == label %}active{% endif %}"
+           role="tab"
+           aria-selected="{% if current_filter == label %}true{% else %}false{% endif %}"
+           data-filter="{{ label }}">
+            {{ label }}
+            <span class="tab-count">{{ state_counts[label] }}</span>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
 {% if arcs %}
-<p class="muted">{{ arcs|length }} arc(s) registered. <strong>Bold dot</strong> = currently focused.</p>
+<p class="muted">
+    Showing {{ arcs|length }} of {{ all_arcs_count }} arc(s) — filter: <strong>{{ current_filter }}</strong>.
+    <strong>Bold dot</strong> = currently focused.
+</p>
 {% for a in arcs %}
-<article class="arc-row {% if a.status == 'closed' %}closed{% endif %} {% if a.focused %}focused{% endif %}">
+<article class="arc-row {{ a.status }} {% if a.focused %}focused{% endif %}">
     <div>
         <span class="focus-dot {% if a.focused %}on{% else %}off{% endif %}" title="{% if a.focused %}Focused (fw arc focus){% else %}Not focused{% endif %}"></span>
         <a class="arc-name" href="/arcs/{{ a.id }}">{{ a.id }}</a>
         — {{ a.name }}
+        {% if a.stale %}<span class="badge badge-warn" title="No task commits in the last {{ stale_days }} days (T-1855)">stale</span>{% endif %}
     </div>
     <div class="arc-meta">
         status:
         {% if a.status == 'in-progress' %}<span class="badge badge-info">{{ a.status }}</span>
         {% elif a.status == 'closed' %}<span class="badge badge-ok">{{ a.status }}{% if a.decision %} / {{ a.decision }}{% endif %}</span>
+        {% elif a.status == 'draft' %}<span class="badge badge-draft">{{ a.status }}</span>
+        {% elif a.status == 'abandoned' %}<span class="badge badge-muted">{{ a.status }}</span>
         {% else %}<span class="badge badge-muted">{{ a.status }}</span>{% endif %}
         · {{ a.task_count }} constituent task(s)
         {% if a.anchor_task %} · anchor: <a href="/tasks/{{ a.anchor_task }}">{{ a.anchor_task }}</a>{% endif %}
@@ -44,8 +78,12 @@
 {% endfor %}
 {% else %}
 <article>
+    {% if all_arcs_count == 0 %}
     <p>No arcs registered. Create one with:</p>
     <pre><code>cd {{ project_root }} && bin/fw arc create &lt;id&gt; --name "Description" --anchor T-XXXX</code></pre>
+    {% else %}
+    <p>No arcs match filter <strong>{{ current_filter }}</strong>. <a href="/arcs?status=all">Show all {{ all_arcs_count }}</a>.</p>
+    {% endif %}
 </article>
 {% endif %}
 

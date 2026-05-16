@@ -982,3 +982,31 @@ decisions:
     date: 2026-05-16
     task: T-1854
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-143
+    decision: "Server-side filter. Each tab is a plain `<a href=\"/arcs?status=X\">` — the request returns only the matching arcs."
+    scope: project
+    date: 2026-05-16
+    task: T-1853
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-144
+    decision: "Add an `all` tab at the right end of the strip — pass through `_filter_arcs` unchanged."
+    scope: project
+    date: 2026-05-16
+    task: T-1853
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-145
+    decision: "`head = fh.read(1024)` + line-regex extraction of `id:`, `arc_id:`, `tags:` from task frontmatter. No yaml-parse for the batched scan."
+    scope: project
+    date: 2026-05-16
+    task: T-1853
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-146
+    decision: "`status_rank = {\"in-progress\": 0, \"draft\": 1, \"closed\": 2, \"abandoned\": 3}`"
+    scope: project
+    date: 2026-05-16
+    task: T-1853
+    rationale: "Auto-captured from task file on completion"

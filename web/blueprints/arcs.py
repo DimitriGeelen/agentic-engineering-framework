@@ -19,12 +19,15 @@ Data sources:
 
 from __future__ import annotations
 
+import os
 import re
+import subprocess
+import time
 from pathlib import Path
 from typing import Any
 
 import yaml
-from flask import Blueprint, abort
+from flask import Blueprint, abort, request
 
 from web.shared import PROJECT_ROOT, render_page
 
@@ -32,6 +35,19 @@ bp = Blueprint("arcs", __name__)
 
 
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
+
+# T-1852: canonical four-state lifecycle. Order is presentation order on
+# the filter tab strip (left → right). "all" is a synthetic filter; not a
+# stored status. Keep this list in sync with lib/arc.sh ARC_STATES.
+_LIFECYCLE_STATES = ("draft", "in-progress", "closed", "abandoned")
+_DEFAULT_FILTER = "in-progress"
+_FILTER_LABELS = _LIFECYCLE_STATES + ("all",)
+
+# T-1855: stale-arc threshold (days). Matches FW_STALE_ARC_DAYS audit
+# default. Watchtower may stay rendered for hours, so we cache the
+# stale-check result for 60s to avoid running git log per request.
+_STALE_DAYS = int(os.environ.get("FW_STALE_ARC_DAYS", "30"))
+_STALE_CACHE_TTL_SEC = 60.0
 
 
 def _arcs_dir() -> Path:
@@ -100,6 +116,178 @@ def _read_arc(arc_id: str) -> dict[str, Any] | None:
     return data
 
 
+_RECENT_PATHS_CACHE: tuple[float, set[str]] | None = None
+
+
+def _recent_task_paths() -> set[str]:
+    """T-1855 helper: single git log over the last FW_STALE_ARC_DAYS days
+    returning all `.tasks/{active,completed}/T-*.md` file paths touched.
+
+    One subprocess per request (or per TTL window) instead of one per arc —
+    Watchtower /arcs hit 15s cold-cache timeouts on T-1853 Playwright when
+    we shelled out per-arc. Cached for _STALE_CACHE_TTL_SEC seconds.
+    """
+    global _RECENT_PATHS_CACHE
+    now = time.time()
+    if _RECENT_PATHS_CACHE is not None and (now - _RECENT_PATHS_CACHE[0]) < _STALE_CACHE_TTL_SEC:
+        return _RECENT_PATHS_CACHE[1]
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(PROJECT_ROOT), "log",
+             f"--since={_STALE_DAYS}.days.ago", "--name-only", "--format=", "--",
+             ".tasks/active/", ".tasks/completed/"],
+            capture_output=True, text=True, timeout=10,
+        )
+        paths = {ln.strip() for ln in result.stdout.splitlines() if ln.strip()}
+    except (subprocess.SubprocessError, OSError):
+        paths = set()  # Defensive: empty set means "claim nothing recent",
+                       # which makes every arc *look* stale — but we cache it
+                       # for 60s and the next request retries.
+    _RECENT_PATHS_CACHE = (now, paths)
+    return paths
+
+
+_ARC_ID_LINE_RE = re.compile(r"^arc_id:\s*(.+?)\s*$", re.MULTILINE)
+
+
+def _scan_tasks_by_arc_id() -> dict[str, list[str]]:
+    """T-1855 helper: ONE pass over all `.tasks/{active,completed}/T-*.md`
+    building `arc_id_value → [repo-relative path, ...]`. Both slug and
+    arc-NNN keys point to the same path list when used together (callers
+    do two lookups + merge).
+
+    Lightweight regex extract of `arc_id:` only — avoids yaml.safe_load of
+    every task (1841 files × yaml parse is what blew 15s timeouts on /arcs).
+
+    Cached per-request via _RECENT_PATHS_CACHE-style TTL so the second hit
+    in the same Watchtower window is O(1).
+    """
+    by_arc: dict[str, list[str]] = {}
+    tasks_dir = PROJECT_ROOT / ".tasks"
+    for sub in ("active", "completed"):
+        sub_dir = tasks_dir / sub
+        if not sub_dir.is_dir():
+            continue
+        for md in sub_dir.glob("T-*.md"):
+            try:
+                # Read only first 1KB — frontmatter lives at the top, and
+                # large body text isn't searched here.
+                with md.open("r", encoding="utf-8", errors="replace") as fh:
+                    head = fh.read(1024)
+            except OSError:
+                continue
+            m = _ARC_ID_LINE_RE.search(head)
+            if not m:
+                continue
+            aid = m.group(1).strip().strip('"').strip("'")
+            if not aid or aid in ("null", "~"):
+                continue
+            try:
+                rel = str(md.relative_to(PROJECT_ROOT))
+            except ValueError:
+                rel = str(md)
+            by_arc.setdefault(aid, []).append(rel)
+    return by_arc
+
+
+_ARC_ID_AND_TAG_LINE_RE = re.compile(r"^(arc_id|tags):\s*(.+?)\s*$", re.MULTILINE)
+
+
+def _scan_tasks_by_arc_membership() -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    """One pass over all task files producing two indices:
+      - by_arc_id:   arc_id value -> [task ids]   (canonical, T-1849)
+      - by_tag:      arc:<slug>    -> [task ids]   (legacy, pre-T-1850)
+
+    Frontmatter-only — reads first 1KB of each task file to avoid full
+    body parse. Avoids the 5×1841 yaml.safe_load pattern that made /arcs
+    a 10s page render.
+    """
+    by_arc_id: dict[str, list[str]] = {}
+    by_tag: dict[str, list[str]] = {}
+    tasks_dir = PROJECT_ROOT / ".tasks"
+    tag_arc_re = re.compile(r"arc:([A-Za-z0-9\-_]+)")
+    # T-1849 frontmatter: arc_id appears as either bare value or quoted.
+    arc_id_re = re.compile(r"^arc_id:\s*(.+?)\s*$", re.MULTILINE)
+    tags_re = re.compile(r"^tags:\s*(.+?)\s*$", re.MULTILINE)
+    id_re = re.compile(r"^id:\s*(T-\d+)\s*$", re.MULTILINE)
+    for sub in ("active", "completed"):
+        sub_dir = tasks_dir / sub
+        if not sub_dir.is_dir():
+            continue
+        for md in sub_dir.glob("T-*.md"):
+            try:
+                with md.open("r", encoding="utf-8", errors="replace") as fh:
+                    head = fh.read(1024)
+            except OSError:
+                continue
+            # Extract task id (frontmatter `id: T-XXXX`)
+            id_m = id_re.search(head)
+            if id_m is None:
+                continue
+            tid = id_m.group(1).strip()
+            # arc_id:
+            aid_m = arc_id_re.search(head)
+            if aid_m is not None:
+                aid = aid_m.group(1).strip().strip('"').strip("'")
+                if aid and aid not in ("null", "~"):
+                    by_arc_id.setdefault(aid, []).append(tid)
+            # tags: — extract arc:<slug> entries (legacy)
+            tags_m = tags_re.search(head)
+            if tags_m is not None:
+                for arc_slug in tag_arc_re.findall(tags_m.group(1)):
+                    by_tag.setdefault(f"arc:{arc_slug}", []).append(tid)
+    return by_arc_id, by_tag
+
+
+_ARC_TASKS_CACHE: tuple[float, dict[str, list[str]]] | None = None
+_ARC_MEMBERSHIP_CACHE: tuple[float, tuple[dict[str, list[str]], dict[str, list[str]]]] | None = None
+
+
+def _arc_membership() -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    """Cached wrapper for _scan_tasks_by_arc_membership."""
+    global _ARC_MEMBERSHIP_CACHE
+    now = time.time()
+    if _ARC_MEMBERSHIP_CACHE is not None and (now - _ARC_MEMBERSHIP_CACHE[0]) < _STALE_CACHE_TTL_SEC:
+        return _ARC_MEMBERSHIP_CACHE[1]
+    pair = _scan_tasks_by_arc_membership()
+    _ARC_MEMBERSHIP_CACHE = (now, pair)
+    return pair
+
+
+def _arc_tasks_by_id() -> dict[str, list[str]]:
+    """Cached wrapper for _scan_tasks_by_arc_id() with _STALE_CACHE_TTL_SEC TTL."""
+    global _ARC_TASKS_CACHE
+    now = time.time()
+    if _ARC_TASKS_CACHE is not None and (now - _ARC_TASKS_CACHE[0]) < _STALE_CACHE_TTL_SEC:
+        return _ARC_TASKS_CACHE[1]
+    by_arc = _scan_tasks_by_arc_id()
+    _ARC_TASKS_CACHE = (now, by_arc)
+    return by_arc
+
+
+def _arc_is_stale(arc_slug: str, arc_numeric: str, arc_status: str,
+                  recent_paths: set[str], tasks_by_arc: dict[str, list[str]]) -> bool:
+    """T-1855: True iff arc is in-progress AND no task with matching arc_id:
+    has been touched in the last FW_STALE_ARC_DAYS days.
+
+    Pre-computed inputs:
+      - recent_paths: set of repo-relative paths from `_recent_task_paths()`
+      - tasks_by_arc: dict from `_arc_tasks_by_id()` keyed on arc slug/arc-NNN
+
+    Returns False on non-in-progress arcs, zero-population arcs, fresh arcs.
+    Defensive: never claims staleness on uncertainty.
+    """
+    if arc_status != "in-progress":
+        return False
+    paths: list[str] = []
+    paths.extend(tasks_by_arc.get(arc_slug, []))
+    if arc_numeric and arc_numeric != arc_slug:
+        paths.extend(tasks_by_arc.get(arc_numeric, []))
+    if not paths:
+        return False  # zero-population: never stale
+    return not any(p in recent_paths for p in paths)
+
+
 def _list_arcs() -> list[dict[str, Any]]:
     """Return all arcs sorted by status (in-progress first), then created desc."""
     arcs_dir = _arcs_dir()
@@ -107,6 +295,13 @@ def _list_arcs() -> list[dict[str, Any]]:
         return []
     out: list[dict[str, Any]] = []
     focus = _read_focus()
+    # T-1855: precompute "tasks touched in last N days" + "tasks by arc_id"
+    # once per request — both are cached for _STALE_CACHE_TTL_SEC.
+    recent_paths = _recent_task_paths()
+    tasks_by_arc = _arc_tasks_by_id()
+    # T-1853 perf: batch membership scan so we don't call _scan_tasks_by_tag
+    # 5 times (each yaml-parses 1841 task files → 10s page renders).
+    by_arc_id_idx, by_tag_idx = _arc_membership()
     for af in sorted(arcs_dir.glob("*.yaml")):
         try:
             data = yaml.safe_load(af.read_text()) or {}
@@ -114,17 +309,19 @@ def _list_arcs() -> list[dict[str, Any]]:
             continue
         if not isinstance(data, dict):
             continue
-        # T-1817: task_count must reflect merged source-of-truth (legacy + tag-scan),
+        # T-1817: task_count must reflect merged source-of-truth (legacy + tag-scan + arc_id),
         # not just the YAML's denormalised cache.
-        # T-1848: tag-scan uses the slug (filename stem), NOT the numeric `id:` —
-        # tasks tagged `arc:dispatch-safety` would not match `arc:arc-001`. The
-        # tags→arc_id task-frontmatter migration is T-NEW-3 (T-1850); until then,
-        # slug remains the tag namespace.
+        # T-1853 perf: use pre-batched membership indices (by_arc_id_idx, by_tag_idx)
+        # — calling _scan_tasks_by_tag 5× per request blew /arcs to 10s page-render.
         legacy = data.get("constituent_tasks") or []
         legacy_ids = [str(t).strip() for t in legacy if str(t).strip()] if isinstance(legacy, list) else []
         slug = str(data.get("slug") or af.stem).strip()
-        tagged_ids = _scan_tasks_by_tag(f"arc:{slug}") if slug else []
-        merged_count = len(set(legacy_ids) | set(tagged_ids))
+        arc_numeric_id_pre = str(data.get("id") or slug).strip()
+        tagged_ids = by_tag_idx.get(f"arc:{slug}", []) if slug else []
+        arc_id_ids = by_arc_id_idx.get(slug, []) if slug else []
+        if arc_numeric_id_pre and arc_numeric_id_pre != slug:
+            arc_id_ids = list(arc_id_ids) + by_arc_id_idx.get(arc_numeric_id_pre, [])
+        merged_count = len(set(legacy_ids) | set(tagged_ids) | set(arc_id_ids))
         # YAML may parse ISO-8601 to datetime; coerce to str for stable rendering + sort.
         created_raw = data.get("created", "")
         created_str = created_raw.isoformat() if hasattr(created_raw, "isoformat") else str(created_raw or "")
@@ -133,25 +330,48 @@ def _list_arcs() -> list[dict[str, Any]]:
         # T-1848: `id` is now arc-NNN (immutable). `slug` is the filename stem
         # (human-readable). Both surface for routing / display.
         arc_numeric_id = str(data.get("id") or slug).strip()
+        arc_status = str(data.get("status", "?"))
         out.append({
             "id": arc_numeric_id,
             "slug": slug,
             "name": data.get("name", "(no name)"),
-            "status": data.get("status", "?"),
+            "status": arc_status,
             "decision": data.get("decision"),
             "anchor_task": data.get("anchor_task"),
             "task_count": merged_count,
             "created": created_str,
             "closed_at": closed_str,
             "focused": (focus is not None and (focus == arc_numeric_id or focus == slug)),
+            # T-1855: stale signal — in-progress arc with no recent task commits.
+            "stale": _arc_is_stale(slug, arc_numeric_id, arc_status, recent_paths, tasks_by_arc),
         })
-    # Sort: in-progress first (rank 0), then closed (rank 1), unknown (rank 9);
-    # within each rank, newest created first. Python sort is stable so we do
-    # two passes — secondary first, primary second.
-    status_rank = {"in-progress": 0, "closed": 1}
+    # T-1852: present-order rank — in-progress first (active work), then draft
+    # (not-yet-started), then closed (shipped), abandoned last (parked).
+    # Within each rank, newest created first.
+    status_rank = {"in-progress": 0, "draft": 1, "closed": 2, "abandoned": 3}
     out.sort(key=lambda a: a["created"], reverse=True)
     out.sort(key=lambda a: status_rank.get(a["status"], 9))
     return out
+
+
+def _filter_arcs(arcs: list[dict[str, Any]], filt: str) -> list[dict[str, Any]]:
+    """T-1853: Restrict arc list to one lifecycle state. 'all' or unknown
+    filter values pass through unchanged."""
+    if filt == "all" or filt not in _LIFECYCLE_STATES:
+        return arcs
+    return [a for a in arcs if a.get("status") == filt]
+
+
+def _state_counts(arcs: list[dict[str, Any]]) -> dict[str, int]:
+    """T-1853: Counts per lifecycle state for filter-tab badges. Includes
+    'all' as the total count."""
+    counts = {s: 0 for s in _LIFECYCLE_STATES}
+    for a in arcs:
+        s = a.get("status")
+        if s in counts:
+            counts[s] += 1
+    counts["all"] = len(arcs)
+    return counts
 
 
 def _read_task_meta(task_id: str) -> dict[str, Any] | None:
@@ -293,12 +513,29 @@ def _arc_reports(arc_id: str) -> list[dict[str, str]]:
 
 @bp.route("/arcs")
 def arcs_index():
-    """List every arc."""
-    arcs = _list_arcs()
+    """T-1853: List arcs with lifecycle filter tabs.
+
+    Query param: ?status=draft|in-progress|closed|abandoned|all
+    Default: in-progress (operator's most common need — active work).
+    Unknown values clamp to the default.
+    """
+    all_arcs = _list_arcs()
+    counts = _state_counts(all_arcs)
+
+    filt = request.args.get("status", _DEFAULT_FILTER)
+    if filt not in _FILTER_LABELS:
+        filt = _DEFAULT_FILTER
+
+    arcs = _filter_arcs(all_arcs, filt)
     return render_page(
         "arcs_index.html",
         page_title="Arcs",
         arcs=arcs,
+        all_arcs_count=len(all_arcs),
+        current_filter=filt,
+        filter_labels=list(_FILTER_LABELS),
+        state_counts=counts,
+        stale_days=_STALE_DAYS,
     )
 
 
