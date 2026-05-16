@@ -280,17 +280,19 @@ summary: |
 outcomes:
 HEREDOC
 
-    # Add outcomes from AC (quote strings to prevent YAML-unsafe chars like backticks)
+    # Add outcomes from AC. T-1873: single-quoted YAML scalars only — double-
+    # quoted scalars process \X escapes and reject `\`` (backtick), which AC
+    # text routinely contains (markdown inline code). Same L-392 class as the
+    # decisions emitter (T-1871 fix).
     if [ -n "$outcomes" ]; then
         echo "$outcomes" | while read -r line; do
             if [ -n "$line" ]; then
-                # Strip leading "- " then wrap in quotes
-                local text=$(echo "$line" | sed 's/^- //' | sed 's/"/\\"/g')
-                echo "  - \"$text\"" >> "$episodic_file"
+                local text=$(echo "$line" | sed 's/^- //' | sed "s/'/''/g")
+                echo "  - '$text'" >> "$episodic_file"
             fi
         done
     else
-        echo "  - \"Task completed\"" >> "$episodic_file"
+        echo "  - 'Task completed'" >> "$episodic_file"
     fi
 
     # Challenges section — auto-filled from git
@@ -298,11 +300,11 @@ HEREDOC
     echo "# Challenges (auto-detected from git: commits with fix/revert/bug/error)" >> "$episodic_file"
     echo "challenges:" >> "$episodic_file"
     if [ -n "$git_challenges" ]; then
+        # T-1873: single-quoted (same L-392 class as outcomes/decisions).
         echo "$git_challenges" | while read -r line; do
             if [ -n "$line" ]; then
-                # Escape quotes in the line
-                local escaped=$(echo "$line" | sed 's/"/\\"/g')
-                echo "  - description: \"$escaped\"" >> "$episodic_file"
+                local escaped=$(echo "$line" | sed "s/'/''/g")
+                echo "  - description: '$escaped'" >> "$episodic_file"
                 echo "    source: git-mined" >> "$episodic_file"
             fi
         done
@@ -344,8 +346,12 @@ HEREDOC
     echo "# Artifacts (auto-mined from git --name-only)" >> "$episodic_file"
     echo "artifacts:" >> "$episodic_file"
     if [ -n "$git_artifacts" ]; then
+        # T-1873: single-quoted (uniform L-392 escape strategy).
         echo "$git_artifacts" | while read -r line; do
-            [ -n "$line" ] && echo "  - \"$line\"" >> "$episodic_file"
+            if [ -n "$line" ]; then
+                local escaped=$(echo "$line" | sed "s/'/''/g")
+                echo "  - '$escaped'" >> "$episodic_file"
+            fi
         done
     else
         echo "  # No artifacts found in git" >> "$episodic_file"

@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-05-05T18:06:28Z
+# Generated: 2026-05-16T07:52:39Z
 # ============================================================================
 
 task_id: T-1747
@@ -25,12 +25,12 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "**A1.** `/.framework.yaml` no longer exists (or, if it does, the discovery walk no longer returns `/` from FRAMEWORK_ROOT cwd). Verifiable: `! test -f /.framework.yaml || python3 -c 'import sys; sys.path.insert(0,\"web\"); from shared import _discover_project_root, FRAMEWORK_ROOT; from pathlib import Path; r=_discover_project_root(FRAMEWORK_ROOT); assert r != Path(\"/\"), f\"discovery returned {r}\"'`"
-  - "**A2.** `_discover_project_root(start)` does NOT return `/` when `start` is inside FRAMEWORK_ROOT and the only marker above FRAMEWORK_ROOT is `/.framework.yaml`. Verifiable via unit test."
-  - "**A3.** `_discover_project_root(start)` still returns the correct consumer root when called from a real consumer dir (i.e. the framework-aware bound MUST NOT break the `fw init`/consumer use case). Verifiable via unit test (mock cwd = `/tmp/<fakeconsumer>` with `.framework.yaml` present)."
-  - "**A4.** `_resolve_project_root()` from cwd=FRAMEWORK_ROOT with `PROJECT_ROOT` env unset returns `(FRAMEWORK_ROOT, \"framework\")` — NOT `(/, \"discovered\")`. Verifiable via unit test."
-  - "**A5.** `fw doctor` emits a WARN line when `/.framework.yaml` exists at filesystem root (host-hygiene check). Verifiable: `bin/fw doctor 2>&1 | grep -i 'framework\.yaml.*root\|stray.*framework'` (gated on file existing) or grep on the `--check` line in the doctor source."
-  - "**A6.** Regression test in `tests/unit/` pins A2+A3+A4 — refactors that reintroduce the unbounded climb fail the test."
+  - '**A1.** `/.framework.yaml` no longer exists (or, if it does, the discovery walk no longer returns `/` from FRAMEWORK_ROOT cwd). Verifiable: `! test -f /.framework.yaml || python3 -c ''import sys; sys.path.insert(0,"web"); from shared import _discover_project_root, FRAMEWORK_ROOT; from pathlib import Path; r=_discover_project_root(FRAMEWORK_ROOT); assert r != Path("/"), f"discovery returned {r}"''`'
+  - '**A2.** `_discover_project_root(start)` does NOT return `/` when `start` is inside FRAMEWORK_ROOT and the only marker above FRAMEWORK_ROOT is `/.framework.yaml`. Verifiable via unit test.'
+  - '**A3.** `_discover_project_root(start)` still returns the correct consumer root when called from a real consumer dir (i.e. the framework-aware bound MUST NOT break the `fw init`/consumer use case). Verifiable via unit test (mock cwd = `/tmp/<fakeconsumer>` with `.framework.yaml` present).'
+  - '**A4.** `_resolve_project_root()` from cwd=FRAMEWORK_ROOT with `PROJECT_ROOT` env unset returns `(FRAMEWORK_ROOT, "framework")` — NOT `(/, "discovered")`. Verifiable via unit test.'
+  - '**A5.** `fw doctor` emits a WARN line when `/.framework.yaml` exists at filesystem root (host-hygiene check). Verifiable: `bin/fw doctor 2>&1 | grep -i ''framework\.yaml.*root\|stray.*framework''` (gated on file existing) or grep on the `--check` line in the doctor source.'
+  - '**A6.** Regression test in `tests/unit/` pins A2+A3+A4 — refactors that reintroduce the unbounded climb fail the test.'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
@@ -38,17 +38,18 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-    chose: "Bound `_discover_project_root` to refuse walking past FRAMEWORK_ROOT when start is inside it."
-    rationale: "The framework process running from FRAMEWORK_ROOT has no semantic reason to climb into ancestors. The bound is simple, has no consumer-shape heuristics, and composes cleanly with the existing `_resolve_project_root` fallback chain (env / discovered / framework). Resolves the bug class, not just this instance."
-    alternatives_rejected: ["Marker-validation (require `bin/fw` or `.tasks/` next to the marker). Adds heuristics that need maintenance per consumer shape, and would still allow climbing if a consumer-shaped ancestor existed. Bound is structurally tighter."]
+  - decision: '2026-05-05 — fix the bound, not the marker semantics'
+    chose: 'Bound `_discover_project_root` to refuse walking past FRAMEWORK_ROOT when start is inside it.'
+    rationale: 'The framework process running from FRAMEWORK_ROOT has no semantic reason to climb into ancestors. The bound is simple, has no consumer-shape heuristics, and composes cleanly with the existing `_resolve_project_root` fallback chain (env / discovered / framework). Resolves the bug class, not just this instance.'
+    alternatives_rejected: ['Marker-validation (require `bin/fw` or `.tasks/` next to the marker). Adds heuristics that need maintenance per consumer shape, and would still allow climbing if a consumer-shaped ancestor existed. Bound is structurally tighter.']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - "bin/fw"
-  - ".fabric/components/tests-unit-test_project_root_discovery.yaml"
-  - ".tasks/active/T-1747-harden-webdiscoverprojectroot--remove-st.md"
-  - "tests/unit/test_project_root_discovery.py"
-  - "web/shared.py"
+  - 'bin/fw'
+  - '.fabric/components/tests-unit-test_project_root_discovery.yaml'
+  - '.tasks/active/T-1747-harden-webdiscoverprojectroot--remove-st.md'
+  - 'tests/unit/test_project_root_discovery.py'
+  - 'web/shared.py'
 
 # Timeline (auto-mined from git log)
 git_timeline:

@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-05-01T08:57:17Z
+# Generated: 2026-05-16T07:52:37Z
 # ============================================================================
 
 task_id: T-1630
@@ -16,18 +16,20 @@ created: 2026-04-30T21:19:34Z
 completed: 2026-05-01T08:57:13Z
 duration_days: 1
 updates_count: 2
+first_commit: 2026-05-09T23:22:07+02:00
+last_commit: 2026-05-09T23:22:07+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  upgrade.sh — post-write audit warns on lost CLAUDE.md customizations (G-055 prevention)
 
 # Key outcomes
 outcomes:
-  - "`agents/context/post-compact-resume.sh` invokes `lib/doctor-hook-exercise.py` once per session resume"
-  - "If the probe reports any broken hooks, the warning is appended to the `additionalContext` JSON — visible to the agent on session start"
-  - "If the probe reports zero broken hooks, no warning section is added (silent on healthy)"
-  - "Probe failure (helper missing, python error) is non-fatal — degrades silently to existing behaviour, never blocks resume injection"
-  - "bats test pins: 4/4 cases green — marker invariant, warning-emitted on broken path (T-1626 witness shape), silent on healthy, silent degrade when helper missing"
+  - '`agents/context/post-compact-resume.sh` invokes `lib/doctor-hook-exercise.py` once per session resume'
+  - 'If the probe reports any broken hooks, the warning is appended to the `additionalContext` JSON — visible to the agent on session start'
+  - 'If the probe reports zero broken hooks, no warning section is added (silent on healthy)'
+  - 'Probe failure (helper missing, python error) is non-fatal — degrades silently to existing behaviour, never blocks resume injection'
+  - 'bats test pins: 4/4 cases green — marker invariant, warning-emitted on broken path (T-1626 witness shape), silent on healthy, silent degrade when helper missing'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
@@ -35,28 +37,31 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-    chose: "Append probe call to existing `agents/context/post-compact-resume.sh` (covers compact/resume matchers)"
-    rationale: "post-compact-resume.sh already (a) runs at SessionStart:compact + SessionStart:resume, (b) emits additionalContext JSON the agent sees, (c) has the right environment plumbing. Adding a parallel SessionStart hook would duplicate setup and create two entry points to keep in sync. Fresh-startup coverage is genuinely separate scope — agents rarely start brand-new sessions for ongoing work."
-    alternatives_rejected: ["New `agents/context/session-hook-self-test.sh` + new SessionStart matcher (more files, more wiring, settings.json edit, two entry points to maintain — all for the rare fresh-startup case)."]
-    chose: "Call `lib/doctor-hook-exercise.py` directly from the resume hook"
-    rationale: "The probe logic (parse settings.json → invoke each hook from /tmp → report failures) is identical between `fw doctor` (Check 6c) and SessionStart warning. One source of truth means a fix to the probe lands everywhere."
-    alternatives_rejected: ["Duplicate the parsing/invocation logic in shell (drift risk, bash-side parse fragility per L-332)."]
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '2026-05-01 — Inject probe into existing resume hook vs. new SessionStart script'
+    chose: 'Append probe call to existing `agents/context/post-compact-resume.sh` (covers compact/resume matchers)'
+    rationale: 'post-compact-resume.sh already (a) runs at SessionStart:compact + SessionStart:resume, (b) emits additionalContext JSON the agent sees, (c) has the right environment plumbing. Adding a parallel SessionStart hook would duplicate setup and create two entry points to keep in sync. Fresh-startup coverage is genuinely separate scope — agents rarely start brand-new sessions for ongoing work.'
+    alternatives_rejected: ['New `agents/context/session-hook-self-test.sh` + new SessionStart matcher (more files, more wiring, settings.json edit, two entry points to maintain — all for the rare fresh-startup case).']
+  - decision: '2026-05-01 — Reuse B-3a''s probe helper'
+    chose: 'Call `lib/doctor-hook-exercise.py` directly from the resume hook'
+    rationale: 'The probe logic (parse settings.json → invoke each hook from /tmp → report failures) is identical between `fw doctor` (Check 6c) and SessionStart warning. One source of truth means a fix to the probe lands everywhere.'
+    alternatives_rejected: ['Duplicate the parsing/invocation logic in shell (drift risk, bash-side parse fragility per L-332).']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - 'lib/upgrade.sh'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-05-09T23:22:07"
+    action: "T-1630: upgrade.sh — post-write audit warns on lost CLAUDE.md customizations (G-055 prevention)"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 697 min
+  # Completed successfully in 1 commit(s), 697 min
 
 # Related tasks
 related_tasks:
@@ -70,9 +75,9 @@ tags: [hooks, self-test, session-start, from-T-1626, B-4]
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 697
-  commits: 0
-  files_changed: 0
-  lines_added: 0
+  commits: 1
+  files_changed: 1
+  lines_added: 23
   lines_removed: 0
 
 # Metadata

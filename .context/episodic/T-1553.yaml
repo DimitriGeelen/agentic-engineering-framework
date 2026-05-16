@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-27T16:18:47Z
+# Generated: 2026-05-16T07:52:34Z
 # ============================================================================
 
 task_id: T-1553
@@ -16,18 +16,20 @@ created: 2026-04-27T16:16:20Z
 completed: 2026-04-27T16:18:44Z
 duration_days: 0
 updates_count: 1
+first_commit: 2026-04-27T18:18:47+02:00
+last_commit: 2026-04-27T18:18:47+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  Auto-link Watchtower URL paths in /review AC steps
 
 # Key outcomes
 outcomes:
-  - "`_auto_link_watchtower_paths(text)` helper in `web/blueprints/tasks.py` rewrites bare `/<blueprint>` and `/<blueprint>/<segment>` paths to Markdown links, where blueprint ∈ known set (approvals, review, tasks, inception, cron, fabric, discoveries, metrics, costs, gaps, reviewer, sessions, docs, audit, audits, fleet, enforcement, pending, prompts, quality, risks, settings, terminal, timeline, config, cockpit)"
-  - "Helper runs before markdown rendering, after `_auto_link_task_refs`"
-  - "Skips inline-code spans and already-linked paths (same skip rules as T-1552)"
-  - "Pytest unit tests cover: bare `/approvals` linkified; `/review/T-1448` linkified (matches both `/review` and the trailing `/T-1448` task ref interaction); already-linked `[/approvals](xyz)` unchanged; inline-code `\`/approvals\`` unchanged; unknown path `/foobar` unchanged"
-  - "All existing tests still pass"
+  - '`_auto_link_watchtower_paths(text)` helper in `web/blueprints/tasks.py` rewrites bare `/<blueprint>` and `/<blueprint>/<segment>` paths to Markdown links, where blueprint ∈ known set (approvals, review, tasks, inception, cron, fabric, discoveries, metrics, costs, gaps, reviewer, sessions, docs, audit, audits, fleet, enforcement, pending, prompts, quality, risks, settings, terminal, timeline, config, cockpit)'
+  - 'Helper runs before markdown rendering, after `_auto_link_task_refs`'
+  - 'Skips inline-code spans and already-linked paths (same skip rules as T-1552)'
+  - 'Pytest unit tests cover: bare `/approvals` linkified; `/review/T-1448` linkified (matches both `/review` and the trailing `/T-1448` task ref interaction); already-linked `[/approvals](xyz)` unchanged; inline-code `\`/approvals\`` unchanged; unknown path `/foobar` unchanged'
+  - 'All existing tests still pass'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
@@ -35,22 +37,40 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.context/audits/2026-04-27.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/episodic/T-1553.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - '.tasks/active/T-1277-fix-unbounded-git-push-in-handover-auto-trigger.md'
+  - '.tasks/completed/T-1553-auto-link-watchtower-url-paths-in-review.md'
+  - 'tests/unit/test_review_markdown_render.py'
+  - 'VERSION'
+  - 'web/blueprints/tasks.py'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-04-27T18:18:47"
+    action: "T-1553: Auto-link Watchtower URL paths in /review AC steps"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 2 min
+  # Completed successfully in 1 commit(s), 2 min
 
 # Related tasks
 related_tasks:
@@ -64,10 +84,10 @@ tags: []
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 2
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 18
+  lines_added: 361
+  lines_removed: 61
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1553-auto-link-watchtower-url-paths-in-review.md

@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-05-05T19:21:06Z
+# Generated: 2026-05-16T07:52:40Z
 # ============================================================================
 
 task_id: T-1750
@@ -25,16 +25,16 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "`tools/g064-readiness.py` exists, is executable, and runs without error against the live `.context/dispatches.jsonl`"
-  - "Default (no flags) emits a human-readable block including: total dispatches, cron-firing count + dates, manual-run count + dates, verdict (READY or NOT_READY), and the threshold rationale"
-  - "`--json` flag emits valid JSON with keys: `workflow`, `total_dispatches`, `cron_firings`, `manual_runs`, `cron_firing_dates`, `manual_run_dates`, `ready`, `verdict`, `closure_threshold_dates`"
-  - "`--strict` flag exits 1 when `ready=false`, exits 0 when `ready=true`"
-  - "Synthetic dispatches (`task_id` starting with `T-stress-`) are excluded from counts (T-1712 contract)"
-  - "Today's run reports NOT_READY (zero cron firings yet) with verdict text naming the next-firing window"
-  - "`tests/unit/test_g064_readiness.py` exists with ≥6 cases covering: empty input, manual-only, single cron firing, threshold-met (≥3), synthetic skip, malformed timestamps, JSON shape pinning"
-  - "`python3 -m pytest tests/unit/test_g064_readiness.py -q` passes 100%"
-  - "`.context/project/concerns.yaml` G-064 entry: status_notes appended with reference to the new gauge script + `dispatches.jsonl` substrate path; recommendation #4 updated to mention the script as the closure-decision input"
-  - "YAML still parses cleanly: `python3 -c \"import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))\"` exits 0"
+  - '`tools/g064-readiness.py` exists, is executable, and runs without error against the live `.context/dispatches.jsonl`'
+  - 'Default (no flags) emits a human-readable block including: total dispatches, cron-firing count + dates, manual-run count + dates, verdict (READY or NOT_READY), and the threshold rationale'
+  - '`--json` flag emits valid JSON with keys: `workflow`, `total_dispatches`, `cron_firings`, `manual_runs`, `cron_firing_dates`, `manual_run_dates`, `ready`, `verdict`, `closure_threshold_dates`'
+  - '`--strict` flag exits 1 when `ready=false`, exits 0 when `ready=true`'
+  - 'Synthetic dispatches (`task_id` starting with `T-stress-`) are excluded from counts (T-1712 contract)'
+  - 'Today''s run reports NOT_READY (zero cron firings yet) with verdict text naming the next-firing window'
+  - '`tests/unit/test_g064_readiness.py` exists with ≥6 cases covering: empty input, manual-only, single cron firing, threshold-met (≥3), synthetic skip, malformed timestamps, JSON shape pinning'
+  - '`python3 -m pytest tests/unit/test_g064_readiness.py -q` passes 100%'
+  - '`.context/project/concerns.yaml` G-064 entry: status_notes appended with reference to the new gauge script + `dispatches.jsonl` substrate path; recommendation #4 updated to mention the script as the closure-decision input'
+  - 'YAML still parses cleanly: `python3 -c "import yaml; yaml.safe_load(open(''.context/project/concerns.yaml''))"` exits 0'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
@@ -42,23 +42,25 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-    chose: "Standalone `tools/g064-readiness.py` (run via `python3 tools/g064-readiness.py`), not a new `fw orchestrator g064-status` subcommand."
-    rationale: "Single-purpose closure helper — only relevant for the 2026-05-08 review and one re-evaluation each ~3 months until G-064 closes. Wiring it into bin/fw means another permanent verb in the CLI catalogue with negligible reuse. Keeping it in `tools/` follows the pattern of `tools/escalation-scan-v0.5.py` (T-1727) and `tools/ollama-tool-loop.py` (T-1691)."
-    alternatives_rejected: ["`fw orchestrator g064-status` — too narrow for a global verb, would clutter `fw orchestrator --help`. `fw orchestrator status --g064` — overloads an already-flag-heavy command (T-1749 added `--outcomes`)."]
-    chose: "Mechanical threshold = ≥3 distinct dates with at least one cron-window firing each."
-    rationale: "Matches G-064 status_notes wording \"≥3 consecutive days\" while being more lenient on the \"consecutive\" part — if cron skips one day (host down, network glitch) but recovers, the gap should still be closeable when 3 distinct dates accumulate. Closure decision still rests with the human; the gauge is advisory, not auto-closing."
-    alternatives_rejected: ["\"3 consecutive calendar days\" — too brittle to cron skips. \"Day count >= 3\" without the cron-window filter — wouldn't distinguish manual --force runs from natural firings, defeating the gap's whole point."]
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '2026-05-05 — gauge as standalone script, not fw subcommand'
+    chose: 'Standalone `tools/g064-readiness.py` (run via `python3 tools/g064-readiness.py`), not a new `fw orchestrator g064-status` subcommand.'
+    rationale: 'Single-purpose closure helper — only relevant for the 2026-05-08 review and one re-evaluation each ~3 months until G-064 closes. Wiring it into bin/fw means another permanent verb in the CLI catalogue with negligible reuse. Keeping it in `tools/` follows the pattern of `tools/escalation-scan-v0.5.py` (T-1727) and `tools/ollama-tool-loop.py` (T-1691).'
+    alternatives_rejected: ['`fw orchestrator g064-status` — too narrow for a global verb, would clutter `fw orchestrator --help`. `fw orchestrator status --g064` — overloads an already-flag-heavy command (T-1749 added `--outcomes`).']
+  - decision: '2026-05-05 — closure threshold `>= 3 distinct cron-firing dates`'
+    chose: 'Mechanical threshold = ≥3 distinct dates with at least one cron-window firing each.'
+    rationale: 'Matches G-064 status_notes wording "≥3 consecutive days" while being more lenient on the "consecutive" part — if cron skips one day (host down, network glitch) but recovers, the gap should still be closeable when 3 distinct dates accumulate. Closure decision still rests with the human; the gauge is advisory, not auto-closing.'
+    alternatives_rejected: ['"3 consecutive calendar days" — too brittle to cron skips. "Day count >= 3" without the cron-window filter — wouldn''t distinguish manual --force runs from natural firings, defeating the gap''s whole point.']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - ".context/project/concerns.yaml"
-  - ".tasks/active/T-1750-g-064-closure-readiness-mechanical-gauge.md"
-  - "tests/unit/test_g064_readiness.py"
-  - "tools/g064-readiness.py"
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-1750-g-064-closure-readiness-mechanical-gauge.md'
+  - 'tests/unit/test_g064_readiness.py'
+  - 'tools/g064-readiness.py'
 
 # Timeline (auto-mined from git log)
 git_timeline:
@@ -67,7 +69,7 @@ git_timeline:
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 5 min
+  # Completed successfully in 2 commit(s), 5 min
 
 # Related tasks
 related_tasks:
@@ -81,10 +83,10 @@ tags: [arc:orchestrator-rethink, governance, observability]
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 5
-  commits: 1
-  files_changed: 4
-  lines_added: 629
-  lines_removed: 4
+  commits: 2
+  files_changed: 21
+  lines_added: 888
+  lines_removed: 88
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1750-g-064-closure-readiness-mechanical-gauge.md

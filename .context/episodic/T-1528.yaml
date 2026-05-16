@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-26T22:34:53Z
+# Generated: 2026-05-16T07:52:30Z
 # ============================================================================
 
 task_id: T-1528
@@ -17,17 +17,17 @@ completed: 2026-04-26T22:34:50Z
 duration_days: 0
 updates_count: 1
 first_commit: 2026-04-27T00:34:44+02:00
-last_commit: 2026-04-27T00:34:44+02:00
+last_commit: 2026-04-27T00:35:05+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  Defensive H2+ terminator on Recommendation section readers
+  Defensive H2+ terminator on Recommendation section readers. Close — verification gate passed (Recommendation H2+ defensive)
 
 # Key outcomes
 outcomes:
-  - "`lib/task-audit.sh` audit_inception_recommendation reader uses `/^#{2,} /` terminator."
-  - "`agents/audit/audit.sh` D14 has_substantive_recommendation regex uses `(?=^#{2,} |\Z)`."
-  - "`bin/fw audit` still passes (no regression on existing inception tasks)."
+  - '`lib/task-audit.sh` audit_inception_recommendation reader uses `/^#{2,} /` terminator.'
+  - '`agents/audit/audit.sh` D14 has_substantive_recommendation regex uses `(?=^#{2,} |\Z)`.'
+  - '`bin/fw audit` still passes (no regression on existing inception tasks).'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
@@ -35,26 +35,31 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - "agents/audit/audit.sh"
-  - "lib/task-audit.sh"
-  - ".tasks/active/T-1528-t-1528-defensive-h2-terminator-on-recomm.md"
-  - ".tasks/completed/T-1527-l-293-audit--scan-section-rewriter-regex.md"
+  - 'agents/audit/audit.sh'
+  - '.context/episodic/T-1527.yaml'
+  - 'lib/task-audit.sh'
+  - '.tasks/active/T-1277-fix-unbounded-git-push-in-handover-auto-trigger.md'
+  - '.tasks/active/T-1528-t-1528-defensive-h2-terminator-on-recomm.md'
+  - '.tasks/completed/T-1527-l-293-audit--scan-section-rewriter-regex.md'
+  - '.tasks/completed/T-1528-t-1528-defensive-h2-terminator-on-recomm.md'
 
 # Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-04-27T00:34:44"
     action: "T-1528: Defensive H2+ terminator on Recommendation section readers"
+  - time: "2026-04-27T00:35:05"
+    action: "T-1528: Close — verification gate passed (Recommendation H2+ defensive)"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 7 min
+  # Completed successfully in 2 commit(s), 7 min
 
 # Related tasks
 related_tasks:
@@ -68,10 +73,10 @@ tags: []
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 7
-  commits: 1
-  files_changed: 4
-  lines_added: 65
-  lines_removed: 2
+  commits: 2
+  files_changed: 7
+  lines_added: 177
+  lines_removed: 11
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1528-t-1528-defensive-h2-terminator-on-recomm.md

@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-25T13:10:22Z
+# Generated: 2026-05-16T07:52:29Z
 # ============================================================================
 
 task_id: T-1454
@@ -13,7 +13,7 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-04-25T12:13:13Z
-completed: 2026-04-25T12:16:30Z
+completed: 2026-04-25T13:10:22Z
 duration_days: 0
 updates_count: 1
 first_commit: 2026-04-25T14:17:39+02:00
@@ -25,34 +25,35 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "On non-htmx decide failure, `record_decision` redirects with `?error=...` query param so user sees what happened (web/blueprints/inception.py:520-523)"
-  - "`inception_detail.html` renders a visible red error banner above the decide form when `request.args.get('error')` is set, with the error text + common-cause hint"
-  - "Successful path is unchanged — clean redirect, no banner (verified in existing `test_inception_decide_e2e_records_decision[go|no-go|defer]` passing)"
-  - "Pytest: 2 new tests cover failure path (`test_inception_decide_failure_redirects_with_error_param` + `test_inception_decide_failure_htmx_returns_500`) — monkeypatch `run_fw_command` to fail, assert redirect Location includes `error=` for plain form; assert htmx path returns 500 unchanged"
-  - "No regression — `tests/web/test_inception_decide_e2e.py` 8/8 pass; `tests/playwright/test_inception*.py + test_api_inception.py` 30/30 pass"
-  - "[REVIEW] On `/inception/T-XXX`, attempt a decision that will fail (e.g. on a task with auto-tick mismatch like T-1452 had) and confirm an error banner appears"
+  - 'On non-htmx decide failure, `record_decision` redirects with `?error=...` query param so user sees what happened (web/blueprints/inception.py:520-523)'
+  - '`inception_detail.html` renders a visible red error banner above the decide form when `request.args.get(''error'')` is set, with the error text + common-cause hint'
+  - 'Successful path is unchanged — clean redirect, no banner (verified in existing `test_inception_decide_e2e_records_decision[go|no-go|defer]` passing)'
+  - 'Pytest: 2 new tests cover failure path (`test_inception_decide_failure_redirects_with_error_param` + `test_inception_decide_failure_htmx_returns_500`) — monkeypatch `run_fw_command` to fail, assert redirect Location includes `error=` for plain form; assert htmx path returns 500 unchanged'
+  - 'No regression — `tests/web/test_inception_decide_e2e.py` 8/8 pass; `tests/playwright/test_inception*.py + test_api_inception.py` 30/30 pass'
+  - '[REVIEW] On `/inception/T-XXX`, attempt a decision that will fail (e.g. on a task with auto-tick mismatch like T-1452 had) and confirm an error banner appears'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  - description: "surface /inception/T-XXX decide errors via ?error= banner (OBS-017)"
+  - description: 'surface /inception/T-XXX decide errors via ?error= banner (OBS-017)'
     source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
-    chose: "Pass error to redirect target via `?error=...` query string"
-    rationale: "Flask `flash()` requires `secret_key` config + session integration that isn't currently used elsewhere in the app. Query param is stateless, idempotent, and inspectable by the human (URL-bar reveals what failed)."
-    alternatives_rejected: ["flash() — too much new infrastructure for one banner. Convert form to htmx — changes UX (no full page reload) and may break expectations for users on flaky connections who rely on hard reload."]
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '2026-04-25 — Query param over Flask flash()'
+    chose: 'Pass error to redirect target via `?error=...` query string'
+    rationale: 'Flask `flash()` requires `secret_key` config + session integration that isn''t currently used elsewhere in the app. Query param is stateless, idempotent, and inspectable by the human (URL-bar reveals what failed).'
+    alternatives_rejected: ['flash() — too much new infrastructure for one banner. Convert form to htmx — changes UX (no full page reload) and may break expectations for users on flaky connections who rely on hard reload.']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - ".tasks/active/T-1454-fix-inceptiont-xxx-form-silently-swallow.md"
-  - "tests/web/test_inception_decide_e2e.py"
-  - "web/blueprints/inception.py"
-  - "web/templates/inception_detail.html"
+  - '.tasks/active/T-1454-fix-inceptiont-xxx-form-silently-swallow.md'
+  - 'tests/web/test_inception_decide_e2e.py'
+  - 'web/blueprints/inception.py'
+  - 'web/templates/inception_detail.html'
 
 # Timeline (auto-mined from git log)
 git_timeline:
@@ -61,7 +62,7 @@ git_timeline:
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 3 min
+  # Completed successfully in 1 commit(s), 57 min
 
 # Related tasks
 related_tasks:
@@ -74,7 +75,7 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 3
+  wall_clock_minutes: 57
   commits: 1
   files_changed: 4
   lines_added: 171

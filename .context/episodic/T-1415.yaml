@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-24T08:02:25Z
+# Generated: 2026-05-16T07:52:28Z
 # ============================================================================
 
 task_id: T-1415
@@ -16,18 +16,20 @@ created: 2026-04-24T07:45:52Z
 completed: 2026-04-24T08:02:16Z
 duration_days: 0
 updates_count: 2
+first_commit: 2026-04-24T10:02:58+02:00
+last_commit: 2026-04-24T10:02:58+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  T-1388 B5/F2 — /approvals counts body-inline assumptions when ledger empty
 
 # Key outcomes
 outcomes:
-  - "`web/blueprints/approvals.py` exposes body-assumption fallback in `assumption_counts` dict (adds `source: \"ledger\"|\"body\"` key)"
-  - "Regex `^- A\d+:` recognises the conventional inline-assumption format"
-  - "`_approvals_content.html` renders the source hint when source=body"
-  - "New Playwright test in `tests/playwright/test_inception.py` asserts body-sourced count renders for a decided inception with inline-only assumptions"
-  - "Existing TestRedecideAffordance + TestRecommendationDecisionDedupe still pass (5/5)"
+  - '`web/blueprints/approvals.py` exposes body-assumption fallback in `assumption_counts` dict (adds `source: "ledger"|"body"` key)'
+  - 'Regex `^- A\d+:` recognises the conventional inline-assumption format'
+  - '`_approvals_content.html` renders the source hint when source=body'
+  - 'New Playwright test in `tests/playwright/test_inception.py` asserts body-sourced count renders for a decided inception with inline-only assumptions'
+  - 'Existing TestRedecideAffordance + TestRecommendationDecisionDedupe still pass (5/5)'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
@@ -35,22 +37,27 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.context/episodic/T-1415.yaml'
+  - '.tasks/completed/T-1415-t-1388-b5-assumptions-counter-falls-back.md'
+  - 'tests/playwright/test_inception.py'
+  - 'web/blueprints/approvals.py'
+  - 'web/templates/_approvals_content.html'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-04-24T10:02:58"
+    action: "T-1415: T-1388 B5/F2 — /approvals counts body-inline assumptions when ledger empty"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 16 min
+  # Completed successfully in 1 commit(s), 16 min
 
 # Related tasks
 related_tasks:
@@ -64,10 +71,10 @@ tags: []
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 16
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 5
+  lines_added: 231
+  lines_removed: 5
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1415-t-1388-b5-assumptions-counter-falls-back.md

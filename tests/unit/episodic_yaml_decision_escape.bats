@@ -33,6 +33,23 @@ load ../test_helper
     [ "$status" -eq 0 ]
 }
 
+# ---- T-1873: outcomes/challenges/artifacts also single-quoted ----
+
+@test "T-1873: outcomes emission uses single-quoted scalars" {
+    grep -q "T-1873" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
+    grep -qE "echo \"  - '\\\$text'\"" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
+    # No double-quoted outcomes scalar anywhere in the outcomes block
+    ! grep -qE 'echo "  - \\"\$text\\""' "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
+}
+
+@test "T-1873: challenges emission uses single-quoted scalars" {
+    grep -qE "description: '\\\$escaped'" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
+}
+
+@test "T-1873: artifacts emission uses single-quoted scalars" {
+    grep -qE "echo \"  - '\\\$escaped'\"" "$FRAMEWORK_ROOT/agents/context/lib/episodic.sh"
+}
+
 # ---- Behavioural — emit a decisions block and yaml-parse it ----
 
 # Helper: emit a single decision via the same sed chain the script uses,

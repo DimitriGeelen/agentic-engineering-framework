@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-20T22:06:30Z
+# Generated: 2026-05-16T07:52:28Z
 # ============================================================================
 
 task_id: T-1369
@@ -17,51 +17,55 @@ completed: 2026-04-20T22:06:27Z
 duration_days: 0
 updates_count: 2
 first_commit: 2026-04-21T00:06:21+02:00
-last_commit: 2026-04-21T00:06:21+02:00
+last_commit: 2026-04-21T00:06:35+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  Fix add-learning ID allocator — grep pattern missed legacy format
+  Fix add-learning ID allocator — grep pattern missed legacy format. Close — episodic auto-generated cleanly
 
 # Key outcomes
 outcomes:
-  - "`do_add_learning` greps both formats via `-E \"^[- ]+id: PREFIX-\"` — line 50 of agents/context/lib/learning.sh"
-  - "Bats test tests/unit/add_learning_id_allocator.bats (3 cases: legacy-only, dash-only, mixed) — all pass; sanity-inverse-verified (reverting fix fails 2 of 3)"
-  - "G-055 registered in concerns.yaml with status: mitigated"
-  - "Live verification: `fw context add-learning` in framework repo now issues L-235 (next true max+1), confirming the fix in production"
+  - '`do_add_learning` greps both formats via `-E "^[- ]+id: PREFIX-"` — line 50 of agents/context/lib/learning.sh'
+  - 'Bats test tests/unit/add_learning_id_allocator.bats (3 cases: legacy-only, dash-only, mixed) — all pass; sanity-inverse-verified (reverting fix fails 2 of 3)'
+  - 'G-055 registered in concerns.yaml with status: mitigated'
+  - 'Live verification: `fw context add-learning` in framework repo now issues L-235 (next true max+1), confirming the fix in production'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  - description: "Fix add-learning ID allocator — grep pattern missed legacy format"
+  - description: 'Fix add-learning ID allocator — grep pattern missed legacy format'
     source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
-    chose: "leave the 234 historical L-ID duplicates in learnings.yaml as-is; document in G-055; ensure future IDs start from max+1"
-    rationale: "cross-references to collided L-IDs (L-001..L-027 range) exist in 20+ artifacts (tasks, handovers, reports, episodic files, controls.yaml). Renumbering would require touching all of them, dramatically expanding blast radius for no semantic benefit — the collisions are \"harmless namespace pollution,\" not silently-wrong data"
-    alternatives_rejected: ["full renumbering via script — cost >> benefit; G-055 mitigation is sufficient for the go-forward state"]
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '2026-04-20 — Accept historical L-ID duplicates'
+    chose: 'leave the 234 historical L-ID duplicates in learnings.yaml as-is; document in G-055; ensure future IDs start from max+1'
+    rationale: 'cross-references to collided L-IDs (L-001..L-027 range) exist in 20+ artifacts (tasks, handovers, reports, episodic files, controls.yaml). Renumbering would require touching all of them, dramatically expanding blast radius for no semantic benefit — the collisions are "harmless namespace pollution," not silently-wrong data'
+    alternatives_rejected: ['full renumbering via script — cost >> benefit; G-055 mitigation is sufficient for the go-forward state']
+  - decision: 'Human'
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - "agents/context/lib/learning.sh"
-  - ".context/project/concerns.yaml"
-  - ".context/project/learnings.yaml"
-  - ".fabric/components/tests-unit-add_learning_id_allocator.yaml"
-  - ".tasks/active/T-1369-fix-add-learning-id-allocator--grep-miss.md"
-  - "tests/unit/add_learning_id_allocator.bats"
+  - 'agents/context/lib/learning.sh'
+  - '.context/episodic/T-1369.yaml'
+  - '.context/project/concerns.yaml'
+  - '.context/project/learnings.yaml'
+  - '.fabric/components/tests-unit-add_learning_id_allocator.yaml'
+  - '.tasks/active/T-1369-fix-add-learning-id-allocator--grep-miss.md'
+  - '.tasks/completed/T-1369-fix-add-learning-id-allocator--grep-miss.md'
+  - 'tests/unit/add_learning_id_allocator.bats'
 
 # Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-04-21T00:06:21"
     action: "T-1369: Fix add-learning ID allocator — grep pattern missed legacy format"
+  - time: "2026-04-21T00:06:35"
+    action: "T-1369: Close — episodic auto-generated cleanly"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 74 min
+  # Completed successfully in 2 commit(s), 74 min
 
 # Related tasks
 related_tasks:
@@ -75,9 +79,9 @@ tags: []
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 74
-  commits: 1
-  files_changed: 6
-  lines_added: 244
+  commits: 2
+  files_changed: 8
+  lines_added: 415
   lines_removed: 1
 
 # Metadata

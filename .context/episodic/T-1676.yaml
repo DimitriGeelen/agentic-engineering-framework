@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-05-02T10:54:56Z
+# Generated: 2026-05-16T07:52:38Z
 # ============================================================================
 
 task_id: T-1676
@@ -16,19 +16,21 @@ created: 2026-05-02T10:51:35Z
 completed: 2026-05-02T10:54:52Z
 duration_days: 0
 updates_count: 1
+first_commit: 2026-05-02T12:55:21+02:00
+last_commit: 2026-05-02T12:55:21+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  shape-aware consumer-upgrade prompts — GitHub upstream + branching mitigation + structured failure envelope
 
 # Key outcomes
 outcomes:
-  - "Both prompts pin upstream to `https://github.com/DimitriGeelen/agentic-engineering-framework.git` and explicitly note OneDev migration. `grep -l \"github.com/DimitriGeelen/agentic-engineering-framework\" prompts/consumer-upgrade-and-test.md prompts/consumer-upgrade-test-fix-report.md` returns both files."
-  - "Both prompts contain a Step-1 shape-detection block that branches into 4 cases (`consumer-initialized`, `consumer-vendored-skewed`, `consumer-uninitialized`, `framework-repo`) with mitigation per case — no abort-on-mismatch. `grep -c \"consumer-vendored-skewed\|consumer-uninitialized\|framework-repo\" prompts/consumer-upgrade-and-test.md` ≥ 3."
-  - "Both prompts include a structured failure envelope schema with `project_shape`, `fw_version_before`, `configured_upstream`, `step_that_failed`, `stderr_excerpt`, `reproduction`. `grep -q \"step_that_failed\" prompts/consumer-upgrade-and-test.md && grep -q \"step_that_failed\" prompts/consumer-upgrade-test-fix-report.md`."
-  - "Both prompts include pre/post `fw version` capture and a verify-bump check."
-  - "YAML frontmatter parses on both files. `python3 -c \"import yaml,sys; [yaml.safe_load(open(p).read().split('---',2)[1]) for p in ['prompts/consumer-upgrade-and-test.md','prompts/consumer-upgrade-test-fix-report.md']]\"`."
-  - "[REVIEW] Dashboard renders correctly"
+  - 'Both prompts pin upstream to `https://github.com/DimitriGeelen/agentic-engineering-framework.git` and explicitly note OneDev migration. `grep -l "github.com/DimitriGeelen/agentic-engineering-framework" prompts/consumer-upgrade-and-test.md prompts/consumer-upgrade-test-fix-report.md` returns both files.'
+  - 'Both prompts contain a Step-1 shape-detection block that branches into 4 cases (`consumer-initialized`, `consumer-vendored-skewed`, `consumer-uninitialized`, `framework-repo`) with mitigation per case — no abort-on-mismatch. `grep -c "consumer-vendored-skewed\|consumer-uninitialized\|framework-repo" prompts/consumer-upgrade-and-test.md` ≥ 3.'
+  - 'Both prompts include a structured failure envelope schema with `project_shape`, `fw_version_before`, `configured_upstream`, `step_that_failed`, `stderr_excerpt`, `reproduction`. `grep -q "step_that_failed" prompts/consumer-upgrade-and-test.md && grep -q "step_that_failed" prompts/consumer-upgrade-test-fix-report.md`.'
+  - 'Both prompts include pre/post `fw version` capture and a verify-bump check.'
+  - 'YAML frontmatter parses on both files. `python3 -c "import yaml,sys; [yaml.safe_load(open(p).read().split(''---'',2)[1]) for p in [''prompts/consumer-upgrade-and-test.md'',''prompts/consumer-upgrade-test-fix-report.md'']]"`.'
+  - '[REVIEW] Dashboard renders correctly'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
@@ -36,22 +38,26 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.context/episodic/T-1676.yaml'
+  - 'prompts/consumer-upgrade-and-test.md'
+  - 'prompts/consumer-upgrade-test-fix-report.md'
+  - '.tasks/completed/T-1676-revise-consumer-upgrade-prompts-github-u.md'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-05-02T12:55:21"
+    action: "T-1676: shape-aware consumer-upgrade prompts — GitHub upstream + branching mitigation + structured failure envelope"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 3 min
+  # Completed successfully in 1 commit(s), 3 min
 
 # Related tasks
 related_tasks:
@@ -65,10 +71,10 @@ tags: []
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 3
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 4
+  lines_added: 353
+  lines_removed: 25
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1676-revise-consumer-upgrade-prompts-github-u.md

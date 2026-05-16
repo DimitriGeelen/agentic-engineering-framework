@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-28T11:31:06Z
+# Generated: 2026-05-16T07:52:35Z
 # ============================================================================
 
 task_id: T-1579
@@ -25,31 +25,31 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "`lib/reviewer/static_scan.py` adds `_path_python_import_covered(path, verif_text)` that returns True when verification text contains `from x.y.z import` or `import x.y.z` and `path == \"x/y/z.py\"` (or `\"x/y/z/__init__.py\"`)"
-  - "`detect_ac_verify_mismatch` consults the new helper before emitting a finding (after the existing transitive-runner check)"
-  - "Unit test in `tests/unit/test_reviewer_static_scan.py` covers: (a) `from a.b.c import X` exempts `a/b/c.py`, (b) `import a.b.c` exempts `a/b/c.py`, (c) `from a.b.c import X` exempts `a/b/c/__init__.py`, (d) AC mentioning `a/b/c.py` with NO matching import still fires (no over-broadening) — 4 tests added"
-  - "Re-run `bin/fw reviewer T-1577` → AC#1/AC#2 mentioning `web/blueprints/cockpit.py` no longer flagged (was 3 findings, now 1 — only `web/templates/cockpit.html` remains, a different class — Jinja templates not exercised by Python imports)"
-  - "All existing reviewer tests still pass: `python3 -m pytest tests/unit/test_reviewer_static_scan.py -q` → 72 pass (4 new + 68 prev — 2 pre-existing v13 failures fixed as a coherent side-effect of the subhead-detection fix below)"
-  - "Net findings cannot increase — the change is purely additive (a new exemption branch; only previously-flagged tasks can be exempted, never new findings added)"
-  - "Side bug: subhead detection was literal `startswith(\"##{2,}\")` (regex syntax used as literal string), so `current_subhead` was always \"ACs\" — Human ACs were never skipped by `detect_ac_verify_mismatch`'s \"humans verify their own\" branch. Fixed both occurrences (line 235, 543) to `re.match(r\"^#{2,}\s+\S\", ...)`"
+  - '`lib/reviewer/static_scan.py` adds `_path_python_import_covered(path, verif_text)` that returns True when verification text contains `from x.y.z import` or `import x.y.z` and `path == "x/y/z.py"` (or `"x/y/z/__init__.py"`)'
+  - '`detect_ac_verify_mismatch` consults the new helper before emitting a finding (after the existing transitive-runner check)'
+  - 'Unit test in `tests/unit/test_reviewer_static_scan.py` covers: (a) `from a.b.c import X` exempts `a/b/c.py`, (b) `import a.b.c` exempts `a/b/c.py`, (c) `from a.b.c import X` exempts `a/b/c/__init__.py`, (d) AC mentioning `a/b/c.py` with NO matching import still fires (no over-broadening) — 4 tests added'
+  - 'Re-run `bin/fw reviewer T-1577` → AC#1/AC#2 mentioning `web/blueprints/cockpit.py` no longer flagged (was 3 findings, now 1 — only `web/templates/cockpit.html` remains, a different class — Jinja templates not exercised by Python imports)'
+  - 'All existing reviewer tests still pass: `python3 -m pytest tests/unit/test_reviewer_static_scan.py -q` → 72 pass (4 new + 68 prev — 2 pre-existing v13 failures fixed as a coherent side-effect of the subhead-detection fix below)'
+  - 'Net findings cannot increase — the change is purely additive (a new exemption branch; only previously-flagged tasks can be exempted, never new findings added)'
+  - 'Side bug: subhead detection was literal `startswith("##{2,}")` (regex syntax used as literal string), so `current_subhead` was always "ACs" — Human ACs were never skipped by `detect_ac_verify_mismatch`''s "humans verify their own" branch. Fixed both occurrences (line 235, 543) to `re.match(r"^#{2,}\s+\S", ...)`'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  - description: "Fix subhead-detection regex bug (was literal startswith)"
+  - description: 'Fix subhead-detection regex bug (was literal startswith)'
     source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - "lib/reviewer/static_scan.py"
-  - ".tasks/active/T-1579-f12--reviewer-ac-verify-mismatch-recogni.md"
-  - "tests/unit/test_reviewer_static_scan.py"
+  - 'lib/reviewer/static_scan.py'
+  - '.tasks/active/T-1579-f12--reviewer-ac-verify-mismatch-recogni.md'
+  - 'tests/unit/test_reviewer_static_scan.py'
 
 # Timeline (auto-mined from git log)
 git_timeline:

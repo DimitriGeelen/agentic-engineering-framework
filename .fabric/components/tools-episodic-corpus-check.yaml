@@ -1,0 +1,20 @@
+id: tools/episodic-corpus-check.py
+name: episodic-corpus-check
+type: script
+subsystem: unknown
+location: tools/episodic-corpus-check.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-16
+created_by: unknown

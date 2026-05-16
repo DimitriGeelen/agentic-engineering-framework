@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-27T21:01:54Z
+# Generated: 2026-05-16T07:52:34Z
 # ============================================================================
 
 task_id: T-1567
@@ -16,39 +16,47 @@ created: 2026-04-27T20:59:53Z
 completed: 2026-04-27T21:01:50Z
 duration_days: 0
 updates_count: 1
+first_commit: 2026-04-27T23:02:08+02:00
+last_commit: 2026-04-27T23:02:08+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  F1 — Fix dead-code regex in approvals.py inception-decide auto-exec
 
 # Key outcomes
 outcomes:
-  - "`web/blueprints/approvals.py` regexes at lines 454, 463, 467 corrected: `\\d` → `\d`, `\\s` → `\s`, `\\b` → `\b` (raw strings + escaped meta = literal backslash-letter, never matched). Surfaced by T-1565 audit (F1)."
-  - "Verification command pins the regex shape: `python3 -c \"import re; assert re.search(...)\"` for two preview shapes (bare + leading slash). Runs on every completion via the P-011 gate."
-  - "No other regex in approvals.py shows the same `r\"\\d\"` anti-pattern (verified via grep -nE 'r\"[^\"]*\\\\\\\\[dsbw]')."
+  - '`web/blueprints/approvals.py` regexes at lines 454, 463, 467 corrected: `\\d` → `\d`, `\\s` → `\s`, `\\b` → `\b` (raw strings + escaped meta = literal backslash-letter, never matched). Surfaced by T-1565 audit (F1).'
+  - 'Verification command pins the regex shape: `python3 -c "import re; assert re.search(...)"` for two preview shapes (bare + leading slash). Runs on every completion via the P-011 gate.'
+  - 'No other regex in approvals.py shows the same `r"\\d"` anti-pattern (verified via grep -nE ''r"[^"]*\\\\\\\\[dsbw]'').'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  - description: 'F1 — Fix dead-code regex in approvals.py inception-decide auto-exec'
+    source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.context/episodic/T-1567.yaml'
+  - '.context/project/learnings.yaml'
+  - 'docs/reports/T-1565-approval-arc-gaps-audit.md'
+  - '.tasks/completed/T-1567-f1-fix-dead-code-regex-in-isinceptiondec.md'
+  - 'web/blueprints/approvals.py'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-04-27T23:02:08"
+    action: "T-1567: F1 — Fix dead-code regex in approvals.py inception-decide auto-exec"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 1 min
+  # Completed successfully in 1 commit(s), 1 min
 
 # Related tasks
 related_tasks:
@@ -62,10 +70,10 @@ tags: []
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 1
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 5
+  lines_added: 319
+  lines_removed: 3
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1567-f1-fix-dead-code-regex-in-isinceptiondec.md
