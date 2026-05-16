@@ -32,25 +32,24 @@ Anchor: T-1846 decide-go GO.
 - [x] Each arc YAML grows an `id:` field with the `arc-NNN` value; slug remains as filename AND as explicit `slug:` field.
 - [x] Watchtower `/arcs/<slug>` AND `/arcs/<id>` both resolve. Verified: `/arcs/dispatch-safety`, `/arcs/arc-001`, `/arcs/arc-005` all return 200.
 - [x] `lib/arc.sh` comment block encodes D-Immutability invariants (rules 1-4 with rationale; rule 2 = no reuse pinned in `_arc_next_numeric_id` impl).
-- [ ] `bin/fw audit` structure section passes after migration — deferred verification (audit was running in background when budget gate fired at 285K). All 5 arc YAMLs parse via `python3 -c 'yaml.safe_load(...)'`. Tag scans switched to slug-based across consumers (`web/blueprints/arcs.py`, `web/blueprints/core.py`, `agents/audit/audit.sh`). Verify next session.
+- [x] `bin/fw audit` structure section passes after migration — verified 2026-05-16T08:46Z: Pass=13, Warn=1 (fabric-enrich, pre-existing), Fail=0. All 5 arc YAMLs parse; tag scans slug-based across `web/blueprints/arcs.py`, `web/blueprints/core.py`, `agents/audit/audit.sh`.
 - [x] Migration is atomic single commit — all 5 existing arc YAMLs gain their `id:` field together (this commit).
-
-**Partial-ship — verb-side normalisation deferred:** The arc verb call-sites in `lib/arc.sh` (`arc_focus`, `arc_show`, `arc_tag`, `arc_close`) still pass raw user input to `_arc_validate_id`/`_arc_exists`/`_arc_path`, which only resolve the slug form. The new helper `_arc_normalize_input` exists but is not wired into the verbs. A user running `fw arc focus arc-001` gets "arc not found" because there's no `arc-001.yaml` — they must use `fw arc focus dispatch-safety`. Bats test for full T-1848 coverage also deferred (covered by smoke tests + dual-route curl). Follow-up: a 20-minute sequel task threading `_arc_normalize_input` through the four verbs + a bats fixture.
+- [x] Verb-side normalisation complete — `_arc_normalize_input` threaded through `arc_focus`/`arc_show`/`arc_tag`/`arc_close` in `lib/arc.sh`. CLI accepts both slug and `arc-NNN` forms uniformly. Covered by `tests/unit/arc_dual_identity_verbs.bats` (11/11 pass). Live-verified via `bin/fw arc focus arc-005` setting current_arc=arc-grooming.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+
+- [ ] [REVIEW] Watchtower `/arcs/<slug>` AND `/arcs/<arc-NNN>` both render the same arc detail page cleanly — task lists, completion stats, ACD three-question panel, and focus indicator are all present on both URL forms (T-1766 render-surface gate AC).
+  **Steps:**
+  1. Open both forms side-by-side in browser:
+     - http://192.168.10.107:3000/arcs/dispatch-safety
+     - http://192.168.10.107:3000/arcs/arc-001
+  2. Confirm the arc title, constituent task table, completion percentage, and ACD three-question panel all render identically.
+  3. Repeat for the arc-grooming arc:
+     - http://192.168.10.107:3000/arcs/arc-grooming
+     - http://192.168.10.107:3000/arcs/arc-005
+  4. Browse `/arcs` index — confirm the ID column shows `arc-NNN` form (immutable) and task counts are nonzero where expected.
+  **Expected:** Both URL forms route to the same arc; rendering is identical (modulo the URL itself); no broken sections; ID column shows `arc-NNN` form on /arcs index.
+  **If not:** Screenshot the broken render and note which form (`slug` or `arc-NNN`) misroutes; check `bin/fw watchtower restart` if templates appear cached.
 
 ## Verification
 
@@ -99,6 +98,12 @@ curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
 - **Plan impact:** T-1848 is **partial-ship**. The "every user-facing entry point accepts either slug or arc-NNN" promise holds for web routes; for CLI verbs it holds only for `arc list` (display-only). Other verbs accept slug only.
 - **Triggered:** Follow-up sequel (T-NEW-1.5b, ~20 min) to wire `_arc_normalize_input` through `arc_focus`/`arc_show`/`arc_tag`/`arc_close` + add bats coverage. Filed via Updates on completion. T-NEW-2 (T-1849, arc_id task-frontmatter field) can still start in parallel — it depends on the substrate landing, which this commit ships.
 
+### 2026-05-16 — verb-side normalisation sequel landed in-task (no new task filed)
+
+- **What changed:** Threaded `_arc_normalize_input` through `arc_focus`/`arc_show`/`arc_tag`/`arc_close` in `lib/arc.sh`. CLI verbs now uniformly accept both slug (`dispatch-safety`) and arc-NNN (`arc-001`) forms. New bats `tests/unit/arc_dual_identity_verbs.bats` covers all four verbs with both forms (11/11 pass). `fw arc focus arc-005` live-verified.
+- **Plan impact:** The "every user-facing entry point accepts either slug or arc-NNN" promise now holds end-to-end (web + CLI). T-1848 is complete. AC 6 (audit-clean) verified: Pass=13, Warn=1, Fail=0.
+- **Triggered:** No new sub-task. Sequel completed in same task — folding the 20-min follow-up into T-1848 rather than spinning off T-NEW-1.5b kept the unit-of-work atomic. Task transitions to partial-complete pending Human [REVIEW] AC on the dual-render check (render-surface gate, T-1766).
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -120,6 +125,24 @@ curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** T-1848 substrate fully landed across both web routes (slug + arc-NNN dual-resolution in `web/blueprints/arcs.py`) and CLI verbs (`_arc_normalize_input` threaded through `arc_focus`/`arc_show`/`arc_tag`/`arc_close` in `lib/arc.sh`). D-Immutability axiom codified in `lib/arc.sh` header. 5 existing arcs migrated atomically to `arc-001..arc-005` with explicit `slug:` field. Tag-scan consumers (`web/blueprints/arcs.py`, `web/blueprints/core.py`, `agents/audit/audit.sh`) all switched to slug-namespace correctly — `arc list` task counts now nonzero (12/11/3/123/15). Audit clean (Pass=13, Warn=1 pre-existing fabric-enrich, Fail=0). New bats `tests/unit/arc_dual_identity_verbs.bats` covers all four verbs × both forms (11/11 pass). One render-surface Human [REVIEW] AC remaining for visual confirmation of the dual /arcs route. T-NEW-2 (T-1849, arc_id task-frontmatter field) now unblocked.
+
+**Evidence:**
+- `lib/arc.sh`: `_arc_next_numeric_id` (MAX-based, no reuse, D-Immutability rule 2), `_arc_resolve_slug`, `_arc_numeric_id_for`, `_arc_normalize_input` all in place
+- `lib/arc.sh` verbs: `arc_focus`/`arc_show`/`arc_tag`/`arc_close` all call `_arc_normalize_input` before validation
+- `.context/arcs/*.yaml`: 5 arcs with `id: arc-NNN` + explicit `slug:` field
+- `web/blueprints/arcs.py`: `_resolve_arc_slug()` dual-resolver; `_read_arc`/`_list_arcs`/`_resolve_constituents` use slug for tag-scan
+- `web/blueprints/core.py`: landing-page arc enum uses slug for tag-scan
+- `agents/audit/audit.sh`: tag-scan reads slug from YAML or filename stem
+- `tests/unit/arc_dual_identity_verbs.bats`: 11/11 pass — 3 helper-sanity + 3 arc_focus + 2 arc_show + 1 arc_tag + 1 arc_close + 1 bash -n
+- `bin/fw audit --section structure`: Pass=13, Warn=1, Fail=0 (2026-05-16T08:46Z)
+- `bin/fw arc focus arc-005` live-verified routing to `current_arc: arc-grooming`
+- Commits: cee2a90d (substrate) + this turn's sequel commit
 
 ## Decisions
 

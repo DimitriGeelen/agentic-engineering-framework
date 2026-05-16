@@ -375,6 +375,9 @@ YAML
         return 0
     fi
 
+    # T-1848: accept slug or arc-NNN; normalize to canonical slug for storage.
+    id="$(_arc_normalize_input "$id")"
+
     _arc_validate_id "$id" || return 2
 
     if ! _arc_exists "$id"; then
@@ -422,6 +425,8 @@ arc_list() {
 arc_show() {
     local id="${1:-}"
     [ -n "$id" ] || { echo "Usage: fw arc show <arc-id>" >&2; return 2; }
+    # T-1848: accept slug or arc-NNN.
+    id="$(_arc_normalize_input "$id")"
     _arc_validate_id "$id" || return 2
     _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
 
@@ -458,6 +463,8 @@ arc_show() {
 arc_tag() {
     local id="${1:-}" tid="${2:-}"
     [ -n "$id" ] && [ -n "$tid" ] || { echo "Usage: fw arc tag <arc-id> T-XXXX" >&2; return 2; }
+    # T-1848: accept slug or arc-NNN; tag uses slug namespace (T-NEW-3 will switch).
+    id="$(_arc_normalize_input "$id")"
     _arc_validate_id "$id" || return 2
     _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
 
@@ -542,6 +549,8 @@ arc_close() {
         esac
     done
     [ -n "$id" ] || { echo "Usage: fw arc close <arc-id> --demo <path|url|none> [--justification \"...\"] [--decision \"...\"]" >&2; return 2; }
+    # T-1848: accept slug or arc-NNN; downstream paths use canonical slug.
+    id="$(_arc_normalize_input "$id")"
     _arc_validate_id "$id" || return 2
     _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
 
