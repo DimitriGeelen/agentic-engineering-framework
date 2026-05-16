@@ -58,6 +58,14 @@ PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 ARCS_DIR="${PROJECT_ROOT}/.context/arcs"
 ARC_FOCUS_FILE="${PROJECT_ROOT}/.context/working/arc-focus.yaml"
 
+# T-1852 (T-NEW-5a): Lifecycle state machine.
+# Four allowed states. arc_create defaults to `draft` going forward;
+# arc_start transitions draft → in-progress; arc_close transitions
+# in-progress → closed; arc_abandon (T-1854) transitions draft|in-progress
+# → abandoned. Pre-T-1852 arcs remain `in-progress` (no force-migration).
+# D-Immutability: status flips, file stays.
+ARC_STATES=("draft" "in-progress" "closed" "abandoned")
+
 # ─── helpers ────────────────────────────────────────────────────────────────
 
 _arc_validate_id() {
@@ -66,6 +74,34 @@ _arc_validate_id() {
         echo "Error: arc id must be lowercase slug ([a-z0-9-], 2-64 chars). Got: '$id'" >&2
         return 1
     fi
+}
+
+# T-1852: state-machine helpers.
+_arc_get_status() {
+    local id="$1" f
+    f="$(_arc_path "$id")"
+    [ -f "$f" ] || return 1
+    awk -F': ' '/^status:/ {sub(/^status:[[:space:]]*/, ""); print; exit}' "$f" \
+        | tr -d ' "' | head -c 32
+}
+
+_arc_require_status() {
+    # Refuse unless the arc is currently in one of the expected states.
+    # Usage: _arc_require_status <id> <verb> <expected1> [expected2 ...]
+    local id="$1" verb="$2"; shift 2
+    local cur expected
+    cur="$(_arc_get_status "$id")"
+    for expected in "$@"; do
+        [ "$cur" = "$expected" ] && return 0
+    done
+    echo "Error: 'fw arc ${verb}' refused — arc '$id' is currently '${cur:-unknown}'." >&2
+    echo "       Expected one of: $*" >&2
+    echo "       Allowed transitions (T-1852):" >&2
+    echo "         draft       → in-progress (fw arc start)" >&2
+    echo "         draft       → abandoned   (fw arc abandon, T-1854)" >&2
+    echo "         in-progress → closed      (fw arc close)" >&2
+    echo "         in-progress → abandoned   (fw arc abandon, T-1854)" >&2
+    return 1
 }
 
 _arc_path() {
@@ -343,12 +379,14 @@ arc_create() {
     # 2026-05-16 retain their entries untouched (D-Immutability). Readers
     # (web/blueprints/arcs.py, agents/audit/audit.sh) already merge
     # arc_id/tag scan with legacy constituent_tasks via .get(..., []).
+    # T-1852: new arcs are born `draft`. Use `fw arc start <slug>` to
+    # transition to `in-progress` once the arc is ready to actively work.
     cat > "$(_arc_path "$id")" <<YAML
 id: ${arc_numeric_id}
 slug: ${id}
 name: ${name_yaml}
 description: ${desc_yaml}
-status: in-progress
+status: draft
 anchor_task: ${anchor}
 headline_mechanic: ${hm_yaml}
 demo_evidence: null
@@ -360,6 +398,33 @@ YAML
     echo "Created arc '${id}' (${arc_numeric_id}) → $(_arc_path "$id")"
     [ -n "$anchor" ] && echo "  anchor: ${anchor}"
     echo "  headline_mechanic: ${headline_mechanic}"
+    echo "  status: draft (use 'fw arc start ${id}' to begin)"
+    return 0
+}
+
+# T-1852: state transition — draft → in-progress.
+arc_start() {
+    local id="${1:-}"
+    [ -n "$id" ] || { echo "Usage: fw arc start <arc-id>" >&2; return 2; }
+    id="$(_arc_normalize_input "$id")"
+    _arc_validate_id "$id" || return 2
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+    _arc_require_status "$id" "start" "draft" || return 1
+
+    local f
+    f="$(_arc_path "$id")"
+    # In-place status flip. D-Immutability: file stays, only status: line edits.
+    python3 - "$f" <<'PY'
+import re, sys
+fn = sys.argv[1]
+text = open(fn).read()
+new = re.sub(r'^status:\s*draft\s*$', 'status: in-progress', text, count=1, flags=re.MULTILINE)
+if new == text:
+    print("Error: status: draft line not found", file=sys.stderr)
+    sys.exit(1)
+open(fn, "w").write(new)
+PY
+    echo "Arc '$id' started: draft → in-progress"
     return 0
 }
 
@@ -562,6 +627,11 @@ arc_close() {
     _arc_validate_id "$id" || return 2
     _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
 
+    # T-1852 state-machine guard: only `in-progress` arcs can be closed.
+    # draft → closed is REFUSED — start the arc first (or abandon it via
+    # fw arc abandon, T-1854). closed/abandoned arcs cannot be re-closed.
+    _arc_require_status "$id" "close" "in-progress" || return 1
+
     # T-1671 §ACD/G-062 Default-to-OPEN agent gate. Mirrors lib/inception.sh
     # do_inception_decide (T-1259/T-1260): closure decisions belong to the
     # human, recorded via Watchtower. Origin: 4th-instance auto-close incident
@@ -720,6 +790,10 @@ Verbs:
                             Register a new arc. --headline-mechanic is REQUIRED
                             (§ACD/G-062): describes the user-observable deliverable;
                             substrate-only phrasing is refused.
+                            T-1852: new arcs are born status: draft. Use 'fw arc start'
+                            to transition to in-progress when ready.
+  start <id>                T-1852: transition draft → in-progress. Refused on any
+                            other source state.
   focus <id> | --clear      Set/clear the focused arc (one at a time)
   list                      Show all arcs (* marks focused)
   show <id>                 Detail: metadata + constituent tasks
@@ -762,6 +836,7 @@ arc_dispatch() {
     shift || true
     case "$verb" in
         create)  arc_create  "$@";;
+        start)   arc_start   "$@";;
         focus)   arc_focus   "$@";;
         list|ls) arc_list    "$@";;
         show)    arc_show    "$@";;
