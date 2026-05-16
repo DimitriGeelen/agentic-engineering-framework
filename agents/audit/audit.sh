@@ -615,6 +615,67 @@ if [ "$anchor_checked" -gt 0 ] && [ "$anchor_missing" -eq 0 ]; then
     pass "All $anchor_checked arc anchor_task references resolve to existing tasks"
 fi
 
+# T-1855 (T-NEW-7): Stale-arc warning.
+# For each arc with status: in-progress, check whether ANY task with matching
+# arc_id: (slug or arc-NNN form) has been touched by a commit in the last
+# FW_STALE_ARC_DAYS days (default 30). If no recent activity, emit WARN —
+# the arc may have stalled. WARN-only, never blocks (T-1846 §4 D4).
+# Silent on draft/closed/abandoned arcs and on arcs with zero matching tasks
+# (population unknown — separate signal, not staleness).
+stale_arc_threshold="${FW_STALE_ARC_DAYS:-30}"
+stale_arc_count=0
+arcs_checked_for_staleness=0
+if [ -d "$PROJECT_ROOT/.context/arcs" ] && command -v git >/dev/null 2>&1 \
+    && git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    for af in "$PROJECT_ROOT/.context/arcs"/*.yaml; do
+        [ -f "$af" ] || continue
+
+        status_val=$(awk -F': ' '/^status:/ {sub(/^status:[[:space:]]*/, ""); print; exit}' "$af" \
+                     | tr -d ' "' | head -c 32)
+        [ "$status_val" = "in-progress" ] || continue
+
+        arc_numeric=$(awk -F': ' '/^id:/ {sub(/^id:[[:space:]]*/, ""); print; exit}' "$af" \
+                      | tr -d ' "' | head -c 32)
+        arc_slug=$(awk -F': ' '/^slug:/ {sub(/^slug:[[:space:]]*/, ""); print; exit}' "$af" \
+                   | tr -d ' "' | head -c 64)
+        [ -z "$arc_slug" ] && arc_slug=$(basename "$af" .yaml)
+
+        # Collect task files whose arc_id: matches slug OR arc-NNN form.
+        matching_tasks=()
+        for d in active completed; do
+            tdir="$PROJECT_ROOT/.tasks/$d"
+            [ -d "$tdir" ] || continue
+            for tf in "$tdir"/T-*.md; do
+                [ -f "$tf" ] || continue
+                ttag=$(awk '/^arc_id:/ {sub(/^arc_id:[[:space:]]*/, ""); gsub(/["\x27]/, ""); print; exit}' "$tf" \
+                       | tr -d ' ' | head -c 64)
+                if [ -n "$ttag" ] && { [ "$ttag" = "$arc_slug" ] || [ "$ttag" = "$arc_numeric" ]; }; then
+                    matching_tasks+=("$tf")
+                fi
+            done
+        done
+
+        # Zero-population arcs can't be assessed for staleness — skip.
+        [ "${#matching_tasks[@]}" -eq 0 ] && continue
+
+        arcs_checked_for_staleness=$((arcs_checked_for_staleness + 1))
+
+        # Any commit since the threshold touching any matching task → fresh.
+        recent=$(git -C "$PROJECT_ROOT" log --since="${stale_arc_threshold}.days.ago" \
+                     --format=%H -- "${matching_tasks[@]}" 2>/dev/null | head -1)
+
+        if [ -z "$recent" ]; then
+            warn "Arc '$arc_slug' has no task commits in the last ${stale_arc_threshold} days (${#matching_tasks[@]} task(s) in arc)" \
+                 "Arc is in-progress but its constituent tasks show no recent git activity — may have stalled" \
+                 "Either close/abandon the arc via 'fw arc close' or run 'fw task update T-XXX --last-update \$(date -u +%FT%TZ)' on a relevant task. Configurable via FW_STALE_ARC_DAYS (default 30)."
+            stale_arc_count=$((stale_arc_count + 1))
+        fi
+    done
+fi
+if [ "$arcs_checked_for_staleness" -gt 0 ] && [ "$stale_arc_count" -eq 0 ]; then
+    pass "All $arcs_checked_for_staleness in-progress arc(s) had task commits within ${stale_arc_threshold} days"
+fi
+
 # Fabric drift detection (T-212 — component topology integrity)
 if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
     fabric_cards=$(find "$PROJECT_ROOT/.fabric/components/" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)

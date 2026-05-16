@@ -343,6 +343,8 @@ Agent-relevant settings:
 - `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
 - `FW_SAFE_MODE` (0) — bypass task gate (escape hatch)
 - `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
+- `FW_STALE_ARC_DAYS` (30) — T-1855: stale-arc audit WARN threshold. In-progress arcs whose constituent tasks (matched by `arc_id:`) have no commit in the last N days surface a WARN. Silent on draft/closed/abandoned arcs and on zero-population arcs.
+- `FW_ALLOW_ARC_ID_DRIFT` (0) — T-1849: single-use bypass for the `arc_id:` validation hook when the field doesn't resolve to an existing arc YAML. Logged Tier-2 to `.context/working/.gate-bypass-log.yaml`.
 
 Full reference (handover timeouts, bash timeout, stale-task days, call-level fallbacks, inception commit limit, etc.): `fw config list`, `env | grep FW_`, or Watchtower `/config`. `fw doctor` warns on out-of-range values.
 
