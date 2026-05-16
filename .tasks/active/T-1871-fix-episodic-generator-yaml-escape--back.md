@@ -29,11 +29,11 @@ Fix: switch decision-field writes from YAML double-quoted scalars to YAML single
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/context/lib/episodic.sh` decision-field emit (lines ~320-333) writes single-quoted YAML scalars: `chose: '$chose'`, `rationale: '$rationale'`, `alternatives_rejected: ['$rejected']`. Input single-quotes escaped via `sed "s/'/''/g"`.
-- [ ] Decision topic header (line ~322-323) also switches to single-quoted: `- decision: '$topic'`.
-- [ ] `tests/unit/test_episodic_yaml_decision_escape.bats` (new) covers: (a) decision with backticked code in Chose renders parseable YAML, (b) decision with embedded single-quote (`'`) escapes correctly, (c) decision with embedded double-quote renders without `\"` escape, (d) decision with literal `\n` (backslash-n) survives without becoming newline. All cases use `python3 -c "import yaml; yaml.safe_load(open(...))"` as the contract pin.
-- [ ] Regenerate `.context/episodic/T-1764.yaml` via `bin/fw context generate-episodic T-1764` and confirm it parses (`python3 -c "import yaml; yaml.safe_load(open('.context/episodic/T-1764.yaml'))"`).
-- [ ] `bash -n agents/context/lib/episodic.sh` clean.
+- [x] `agents/context/lib/episodic.sh` decision-field emit (lines ~320-333) writes single-quoted YAML scalars: `chose: '$chose'`, `rationale: '$rationale'`, `alternatives_rejected: ['$rejected']`. Input single-quotes escaped via `sed "s/'/''/g"`.
+- [x] Decision topic header (line ~322-323) also switches to single-quoted: `- decision: '$topic'`.
+- [x] `tests/unit/episodic_yaml_decision_escape.bats` (new) covers: (a) decision with backticked code in Chose renders parseable YAML, (b) decision with embedded single-quote (`'`) escapes correctly, (c) decision with embedded double-quote renders without `\"` escape, (d) decision with literal backslash survives. All cases use `python3 -c "import yaml; yaml.safe_load(open(...))"` as the contract pin. 6/6 pass.
+- [x] Regenerated `.context/episodic/T-1764.yaml` via `bin/fw context generate-episodic T-1764` and confirmed it parses (`python3 -c "import yaml; yaml.safe_load(open('.context/episodic/T-1764.yaml'))"` → 2 decisions loaded).
+- [x] `bash -n agents/context/lib/episodic.sh` clean.
 
 **Captured state (2026-05-16T07:30Z, S-2026-0501-1642):** Task scoped with real ACs after L-392 was filed. Source-file edit was attempted but hit the §SESSION WRAPPING UP budget gate at 292K tokens (~97% of 300K window). Implementation deferred to next session — the fix is a one-block edit at `agents/context/lib/episodic.sh:316-337` (switch `"$value"` quoting to `'$value'`, change escape sed from `"/\\"` to `'/''`) plus a new bats covering the 4 cases listed above. Estimated 30 minutes including regression test + T-1764.yaml regeneration. No external dependencies.
 
@@ -53,6 +53,10 @@ Fix: switch decision-field writes from YAML double-quoted scalars to YAML single
 -->
 
 ## Verification
+
+bash -n agents/context/lib/episodic.sh
+bats tests/unit/episodic_yaml_decision_escape.bats
+python3 -c "import yaml; yaml.safe_load(open('.context/episodic/T-1764.yaml'))"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -74,19 +78,13 @@ Fix: switch decision-field writes from YAML double-quoted scalars to YAML single
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** Closing T-1764 on 2026-05-16 emitted `.context/episodic/T-1764.yaml` with `chose: "...`markdown2.markdown(f\"\`\`\`{lang}\n{content}\n\`\`\`\")"`. `yaml.safe_load` raised `yaml.scanner.ScannerError: found unknown escape character `\``` at line 47, col 12. The task-close state machine still completed (move + status update), but the episodic artefact was unreadable — invisible to `fw recall`, `fw timeline`, and any future episodic-driven retrieval.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `agents/context/lib/episodic.sh:316-337` emitted each Decisions field as a YAML **double-quoted scalar** and escaped only embedded double-quotes (`sed 's/"/\\"/g'`). YAML double-quoted scalars interpret backslash-escape sequences (`\n`, `\t`, `\X`, etc.) and reject *unknown* `\X` forms — including `\`` (which the markdown author had written to represent a literal backtick inside an inline-code wrapper). The byte sequence reached the YAML scalar unchanged, and the parser correctly refused it.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** No test ever fed YAML-hostile content (backticks, backslashes, embedded quotes) through `generate-episodic` and re-parsed the output. The 47 prior `.context/episodic/*.yaml` artefacts all happened to use Decisions content with prose-only Chose/Why fields — the bug was latent until T-1764, the first Decisions block to contain a markdown code-span with escaped backticks. The escape strategy choice (double-quoted + per-char escape vs single-quoted + `'→''`) was never questioned because the smoke case worked.
+
+**Prevention:** `tests/unit/episodic_yaml_decision_escape.bats` (this commit) pins the contract with 4 hostile-input cases: backticked code, embedded `'`, embedded `"`, and literal backslash. Each emits a decision block via the same sed chain the script uses and asserts `yaml.safe_load` succeeds. Future regressions to the escape strategy fail this test before reaching the field. The single-quoted choice (only `'→''` escape) means the next class of special character can only break in a known, narrow way — there is no longer an open set of "unknown escape" rejections to discover one task at a time. L-392 captures the class for future agents.
 
 ## Evolution
 

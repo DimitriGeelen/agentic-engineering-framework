@@ -317,19 +317,22 @@ HEREDOC
     if [ "$has_decisions" = true ]; then
         # Parse decision entries from markdown format
         # Expected format: ### date — topic / - **Chose:** / - **Why:** / - **Rejected:**
+        # T-1871: Single-quoted YAML scalars — only escape is '→''. Avoids
+        # the L-392 class where backticks/backslashes inside double-quoted
+        # scalars trigger yaml.scanner.ScannerError ("unknown escape character").
         echo "$decisions_raw" | while read -r line; do
             if echo "$line" | grep -q '^### '; then
-                local topic=$(echo "$line" | sed 's/^### //' | sed 's/"/\\"/g')
-                echo "  - decision: \"$topic\"" >> "$episodic_file"
+                local topic=$(echo "$line" | sed 's/^### //' | sed "s/'/''/g")
+                echo "  - decision: '$topic'" >> "$episodic_file"
             elif echo "$line" | grep -q '^\*\*Chose:\*\*\|^- \*\*Chose:\*\*'; then
-                local chose=$(echo "$line" | sed 's/.*\*\*Chose:\*\* *//' | sed 's/"/\\"/g')
-                echo "    chose: \"$chose\"" >> "$episodic_file"
+                local chose=$(echo "$line" | sed 's/.*\*\*Chose:\*\* *//' | sed "s/'/''/g")
+                echo "    chose: '$chose'" >> "$episodic_file"
             elif echo "$line" | grep -q '^\*\*Why:\*\*\|^- \*\*Why:\*\*'; then
-                local why=$(echo "$line" | sed 's/.*\*\*Why:\*\* *//' | sed 's/"/\\"/g')
-                echo "    rationale: \"$why\"" >> "$episodic_file"
+                local why=$(echo "$line" | sed 's/.*\*\*Why:\*\* *//' | sed "s/'/''/g")
+                echo "    rationale: '$why'" >> "$episodic_file"
             elif echo "$line" | grep -q '^\*\*Rejected:\*\*\|^- \*\*Rejected:\*\*'; then
-                local rej=$(echo "$line" | sed 's/.*\*\*Rejected:\*\* *//' | sed 's/"/\\"/g')
-                echo "    alternatives_rejected: [\"$rej\"]" >> "$episodic_file"
+                local rej=$(echo "$line" | sed 's/.*\*\*Rejected:\*\* *//' | sed "s/'/''/g")
+                echo "    alternatives_rejected: ['$rej']" >> "$episodic_file"
             fi
         done
     else

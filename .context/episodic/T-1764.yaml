@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-05-16T07:06:09Z
+# Generated: 2026-05-16T07:47:50Z
 # ============================================================================
 
 task_id: T-1764
@@ -39,14 +39,14 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "2026-05-06 — Single source-of-truth predicate, not duplicated whitelists"
-    chose: "New `is_viewable_path(filepath)` helper in `web/shared.py` consulted by both `_auto_link_files` and the `/file/` route. Linker regex is now built from `VIEWABLE_DIR_PREFIXES` and `VIEWABLE_EXTENSIONS` — same lists the route reads."
-    rationale: "Two whitelists can drift; one cannot. The drift is what caused T-1764 in the first place. A future-developer who adds a new extension only has one place to change."
-    alternatives_rejected: ["Hardcoding the same list in both places \"for clarity\" — invites recurrence. Auto-deriving the route's whitelist from the linker's regex via re-introspection — too clever, fragile."]
-  - decision: "2026-05-06 — Render source files as fenced code blocks, not raw <pre>"
-    chose: "`markdown2.markdown(f\"\`\`\`{lang}\n{content}\n\`\`\`\", extras=[\"fenced-code-blocks\"])` with extension-mapped language hint."
-    rationale: "Reuses existing `markdown2` dependency, gets Pygments syntax highlighting if installed, otherwise graceful `<pre><code>` fallback. Free reuse of `docs_detail.html` template — same shell as the .md path."
-    alternatives_rejected: ["Raw `<pre><code>` — no syntax highlighting. Rolling Pygments directly — extra dependency for a one-liner of value. A separate `source_view.html` template — duplicate styling."]
+  - decision: '2026-05-06 — Single source-of-truth predicate, not duplicated whitelists'
+    chose: 'New `is_viewable_path(filepath)` helper in `web/shared.py` consulted by both `_auto_link_files` and the `/file/` route. Linker regex is now built from `VIEWABLE_DIR_PREFIXES` and `VIEWABLE_EXTENSIONS` — same lists the route reads.'
+    rationale: 'Two whitelists can drift; one cannot. The drift is what caused T-1764 in the first place. A future-developer who adds a new extension only has one place to change.'
+    alternatives_rejected: ['Hardcoding the same list in both places "for clarity" — invites recurrence. Auto-deriving the route''s whitelist from the linker''s regex via re-introspection — too clever, fragile.']
+  - decision: '2026-05-06 — Render source files as fenced code blocks, not raw <pre>'
+    chose: '`markdown2.markdown(f"\`\`\`{lang}\n{content}\n\`\`\`", extras=["fenced-code-blocks"])` with extension-mapped language hint.'
+    rationale: 'Reuses existing `markdown2` dependency, gets Pygments syntax highlighting if installed, otherwise graceful `<pre><code>` fallback. Free reuse of `docs_detail.html` template — same shell as the .md path.'
+    alternatives_rejected: ['Raw `<pre><code>` — no syntax highlighting. Rolling Pygments directly — extra dependency for a one-liner of value. A separate `source_view.html` template — duplicate styling.']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
