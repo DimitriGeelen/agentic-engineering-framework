@@ -4,16 +4,16 @@ name: "fix /file/ route — 404s for non-md paths despite linker auto-linking .p
 description: >
   fix /file/ route — 404s for non-md paths despite linker auto-linking .py/.sh/.yaml (T-1722 contract break)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: ["bug", "render", "governance-render", "human-review-surface", "T-1722-followup"]
-components: ["web/blueprints/docs.py", "web/shared.py"]
+components: [lib/render_surface.sh, tests/unit/test_file_route_extensions.py, web/blueprints/docs.py, web/shared.py]
 related_tasks: ["T-632", "T-633", "T-1575", "T-1722", "T-1762", "T-1763"]
 created: 2026-05-06T11:03:08Z
-last_update: 2026-05-06T11:03:08Z
-date_finished: null
+last_update: 2026-05-16T07:06:02Z
+date_finished: 2026-05-16T07:06:02Z
 ---
 
 # T-1764: fix /file/ route — 404s for non-md paths despite linker auto-linking .py/.sh/.yaml (T-1722 contract break)
@@ -63,12 +63,15 @@ Same pattern class as T-1763 (parser/render contract mismatch). Symptom: dead li
 
 python3 -c "import ast; ast.parse(open('web/shared.py').read()); ast.parse(open('web/blueprints/docs.py').read())"
 python3 -m pytest tests/unit/test_file_route_extensions.py -q
-# Live route checks — must all return 200 for existing files
-test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3002/file/lib/task_pair_acd.sh)" = "200"
-test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3002/file/lib/task_pair_acd.py)" = "200"
-test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3002/file/tests/unit/test_task_pair_acd_gate.bats)" = "200"
+# Live route checks — must all return 200 for existing files.
+# T-1376 anti-pattern: never hard-code :3000/:3002. Use bin/fw watchtower url
+# (triple-file resolution). T-1764: fixed port hard-code (was :3002).
+# Each verification line runs in its own subshell — inline the URL each time.
+test "$(curl -s -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/file/lib/task_pair_acd.sh")" = "200"
+test "$(curl -s -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/file/lib/task_pair_acd.py")" = "200"
+test "$(curl -s -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/file/tests/unit/test_task_pair_acd_gate.bats")" = "200"
 # Path traversal still blocked
-test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3002/file/../../etc/passwd)" = "404"
+test "$(curl -s -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/file/../../etc/passwd")" = "404"
 
 ## RCA
 
@@ -163,3 +166,20 @@ Same root-cause class as T-1763 (parser/render contract drift) — both surfaced
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1764-fix-file-route--404s-for-non-md-paths-de.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d15bdc5c
+- **Timestamp:** 2026-05-16T07:06:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — **T-1762 review-page evidence link works** — `curl -sf http://localhost:3002/file/lib/task_pair_acd.sh` returns HTTP 200 (was 404). Same for `tests/unit/test_task_pair_acd_gate.bats` if linked.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=3002/file/lib/task_pair_acd.sh in: **T-1762 review-page evidence link works** — `curl -sf http://localhost:3002/file/lib/task_pair_acd.sh` returns HTTP 200 (was 404). Same for `tests/un`
+
+### 2026-05-16T07:06:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

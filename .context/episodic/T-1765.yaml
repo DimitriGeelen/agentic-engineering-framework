@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1765: fix code element inline-block dropping long paths to next line — visual cutoff in prose contexts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-16T07:08:10Z
+# ============================================================================
+
+task_id: T-1765
+task_name: "fix code element inline-block dropping long paths to next line — visual cutoff in prose contexts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T11:20:05Z
+completed: 2026-05-16T07:07:48Z
+duration_days: 10
+updates_count: 1
+first_commit: 2026-05-06T13:26:35+02:00
+last_commit: 2026-05-06T13:26:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix <code> inline-block drop in prose — long paths flow inline. register fabric card
+
+# Key outcomes
+outcomes:
+  - "**Pico inline-block override applied to prose contexts** — `code` inside `.rec-rationale`, `.rec-evidence`, `.ac-detail`, and other prose contexts on `/review/<task>` is `display: inline` (not inline-block). Long paths break with surrounding text instead of dropping atomically."
+  - "**Override propagated to base.html surfaces** — same fix applied to `web/templates/base.html` so `/tasks/<id>`, `/inception/<id>`, `/approvals`, `/cockpit` and any other base-extending surface inherit the fix."
+  - "**Long path graceful break** — for paths longer than the line, `overflow-wrap: anywhere` (or `word-break: break-word`) lets the path break gracefully at any character. No horizontal scroll, no off-screen text."
+  - "**Playwright regression test pinned** — `tests/playwright/test_review_code_inline.py` opens `/review/T-1762` at 360px viewport, finds the `lib/task_pair_acd.sh` link, asserts (a) `getComputedStyle(...).display !== 'inline-block'`, (b) the `<a>` and the preceding text \"shellcheck clean on \" are on the same line OR the `<code>` is breakable inline. Documents the visual contract."
+  - "**No regression on file viewer source rendering** — `/file/lib/task_pair_acd.sh` page still renders with its `<pre><code>` syntax-highlighted block intact (the Pygments output uses `<pre>` not bare `<code>`, so the override should not affect it). Verified via Playwright: page loads, source content visible."
+  - "**No regression on T-1575 backticked-URL contract** — `<a><code>http://...</code></a>` (link wrapping code) continues to render with link colour/underline visible across the code box. Existing `a > code` override unchanged."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix <code> inline-block drop in prose — long paths flow inline"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-06 — Override Pico per-prose-context, not globally"
+    chose: "Targeted CSS overrides on `.rec-rationale code, .rec-evidence code, .ac-detail code, article code, td code, li code` etc., plus `pre > code` re-assertion of inline-block. Apply in `base.html` (covers most surfaces) and `review.html` (standalone)."
+    rationale: "A bare `code { display: inline }` global override would risk breaking any consumer that legitimately wants inline-block (badges, kbd-key indicators, fixed-width labels). Targeting prose contexts limits blast radius. The `pre > code` re-assertion ensures Pygments output is unaffected."
+    alternatives_rejected: ["Replacing Pico CSS — too disruptive. Stripping `<code>` tags at the linker layer — would lose semantic and visual styling. Setting `word-break: break-all` everywhere — too aggressive (mid-character breaks in non-path text are ugly)."]
+  - decision: "2026-05-06 — `overflow-wrap: anywhere` over `word-break: break-all`"
+    chose: "`overflow-wrap: anywhere; word-break: normal` on prose `<code>`."
+    rationale: "`overflow-wrap: anywhere` is the modern standard, only triggers when the line CAN'T fit the token (preserves natural breaks). `word-break: break-all` triggers preemptively, producing ugly mid-character breaks in regular text."
+    alternatives_rejected: ["`word-break: break-word` — non-standard alias, behaves differently across engines."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".fabric/components/tests-playwright-test_review_code_inline.yaml"
+  - ".tasks/active/T-1765-fix-code-element-inline-block-dropping-l.md"
+  - "tests/playwright/test_review_code_inline.py"
+  - "web/templates/base.html"
+  - "web/templates/review.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T13:26:35"
+    action: "T-1765: fix <code> inline-block drop in prose — long paths flow inline"
+  - time: "2026-05-06T13:26:44"
+    action: "T-1765: register fabric card"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 14147 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["bug", "render", "css", "human-review-surface", "ui-visual"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14147
+  commits: 2
+  files_changed: 6
+  lines_added: 420
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1765-fix-code-element-inline-block-dropping-l.md
+generated_by: context-agent-hybrid

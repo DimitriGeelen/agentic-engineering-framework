@@ -4,16 +4,16 @@ name: "fix code element inline-block dropping long paths to next line — visual
 description: >
   fix code element inline-block dropping long paths to next line — visual cutoff in prose contexts
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: ["bug", "render", "css", "human-review-surface", "ui-visual"]
-components: ["web/templates/review.html", "web/templates/base.html", "web/static/"]
+components: [lib/render_surface.sh, tests/playwright/test_review_code_inline.py, web/templates/base.html, web/templates/review.html]
 related_tasks: ["T-1575", "T-1722", "T-1762", "T-1763", "T-1764"]
 created: 2026-05-06T11:20:05Z
-last_update: 2026-05-06T11:20:05Z
-date_finished: null
+last_update: 2026-05-16T07:07:48Z
+date_finished: 2026-05-16T07:07:48Z
 ---
 
 # T-1765: fix code element inline-block dropping long paths to next line — visual cutoff in prose contexts
@@ -170,3 +170,24 @@ Same root-cause class as T-1763/T-1764 (parser/route/style contract drift betwee
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1765-fix-code-element-inline-block-dropping-l.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-d080b157
+- **Timestamp:** 2026-05-16T07:08:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — **Override propagated to base.html surfaces** — same fix applied to `web/templates/base.html` so `/tasks/<id>`, `/inception/<id>`, `/approvals`, `/cockpit` and any other base-extending surface inherit
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/base.html in: **Override propagated to base.html surfaces** — same fix applied to `web/templates/base.html` so `/tasks/<id>`, `/inception/<id>`, `/approvals`, `/coc`
+- **AC#4 (Agent)** — **Playwright regression test pinned** — `tests/playwright/test_review_code_inline.py` opens `/review/T-1762` at 360px viewport, finds the `lib/task_pair_acd.sh` link, asserts (a) `getComputedStyle(...
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/task_pair_acd.sh in: **Playwright regression test pinned** — `tests/playwright/test_review_code_inline.py` opens `/review/T-1762` at 360px viewport, finds the `lib/task_pa`
+- **AC#5 (Agent)** — **No regression on file viewer source rendering** — `/file/lib/task_pair_acd.sh` page still renders with its `<pre><code>` syntax-highlighted block intact (the Pygments output uses `<pre>` not bare `<
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=file/lib/task_pair_acd.sh in: **No regression on file viewer source rendering** — `/file/lib/task_pair_acd.sh` page still renders with its `<pre><code>` syntax-highlighted block in`
+
+### 2026-05-16T07:07:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

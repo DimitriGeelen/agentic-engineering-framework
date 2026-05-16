@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1763: fix AC body parser — HTML comment example leaks into render and overrides Steps/Expected/If-not
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-16T07:04:08Z
+# ============================================================================
+
+task_id: T-1763
+task_name: "fix AC body parser — HTML comment example leaks into render and overrides Steps/Expected/If-not"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T10:47:12Z
+completed: 2026-05-16T07:04:01Z
+duration_days: 10
+updates_count: 1
+first_commit: 2026-05-06T12:53:18+02:00
+last_commit: 2026-05-06T12:53:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix AC body parser — HTML comment example leaks into render
+
+# Key outcomes
+outcomes:
+  - "**Body collector honors `in_comment`** — `_parse_acceptance_criteria` body collection sub-loop tracks HTML comments the same way the outer loop does. Lines inside `<!-- ... -->` blocks are excluded from the AC body passed to `_parse_ac_body`."
+  - "**Regression test pinned** — `tests/unit/test_ac_body_html_comment.py` (or `.bats`) covers: (a) AC body containing template-example HTML comment renders the *real* Steps/Expected/If-not, not the example's; (b) AC followed only by an HTML comment renders empty body (no leakage); (c) AC with no comment renders unchanged (no regression)."
+  - "**T-1762 review-page renders correctly** — `curl -sf http://localhost:3002/review/T-1762` no longer contains `example.com/dashboard`, `panels load within 2 seconds`, or `browser console`. Real AC #2 Steps about `cd /tmp/scratch && /opt/999-Agentic-Engineering-Framework/bin/fw task update T-FAKE --status work-completed` are visible."
+  - "**Existing tests pass** — `bin/fw test playwright` Review-related tests (or whichever pin AC rendering today) pass without changes."
+  - "**No render of trailing `-->`** — render output for any AC body must not contain a literal `-->` (the comment-close that previously leaked into \"If not\")."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix AC body parser — HTML comment example leaks into render"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-06 — Fix at body-collector layer, not at `_parse_ac_body`"
+    chose: "Make the body collector strip HTML-commented regions before passing the body to `_parse_ac_body`. Single fix point at the source of bad data."
+    rationale: "`_parse_ac_body`'s last-write-wins semantics on `**Steps:**` is a separate concern (and arguably the right behavior for legitimate multi-step content where Steps appear once). Filtering at body-collection time keeps `_parse_ac_body` simple and aligns with how the outer loop already handles comments."
+    alternatives_rejected: ["Adding a \"first-Steps-wins\" guard inside `_parse_ac_body` — wrong layer, would mask future cases of unintended content reaching the parser. Comment-stripping in a Markdown preprocessor — too invasive for a one-line bug."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1763-fix-ac-body-parser--html-comment-example.md"
+  - "tests/unit/test_ac_body_html_comment.py"
+  - "web/blueprints/tasks.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T12:53:18"
+    action: "T-1763: fix AC body parser — HTML comment example leaks into render"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 14176 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["bug", "render", "governance-render", "human-review-surface"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14176
+  commits: 1
+  files_changed: 4
+  lines_added: 376
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1763-fix-ac-body-parser--html-comment-example.md
+generated_by: context-agent-hybrid

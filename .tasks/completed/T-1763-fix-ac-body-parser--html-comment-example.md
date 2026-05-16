@@ -4,16 +4,16 @@ name: "fix AC body parser — HTML comment example leaks into render and overrid
 description: >
   fix AC body parser — HTML comment example leaks into render and overrides Steps/Expected/If-not
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: ["bug", "render", "governance-render", "human-review-surface"]
-components: ["web/blueprints/tasks.py"]
+components: [lib/render_surface.sh, tests/unit/test_ac_body_html_comment.py, tests/unit/test_file_route_extensions.py, web/blueprints/docs.py, web/blueprints/tasks.py, web/shared.py]
 related_tasks: ["T-204", "T-1551", "T-1762"]
 created: 2026-05-06T10:47:12Z
-last_update: 2026-05-06T10:47:12Z
-date_finished: null
+last_update: 2026-05-16T07:04:01Z
+date_finished: 2026-05-16T07:04:01Z
 ---
 
 # T-1763: fix AC body parser — HTML comment example leaks into render and overrides Steps/Expected/If-not
@@ -61,12 +61,15 @@ Symmetric pattern to T-204 / L-097 (CTL-013 audit parser had same blind spot —
 
 # Toolchain: Python only — no compileable artefacts.
 python3 -c "import ast; ast.parse(open('web/blueprints/tasks.py').read())"
-bin/fw test bats tests/unit/test_ac_body_html_comment.bats 2>/dev/null || bin/fw test pytest tests/unit/test_ac_body_html_comment.py
-# Live render no longer leaks the template example
-curl -sf http://localhost:3002/review/T-1762 | grep -qv "example.com/dashboard"
-curl -sf http://localhost:3002/review/T-1762 | grep -qv "panels load within 2 seconds"
+python3 -m pytest tests/unit/test_ac_body_html_comment.py -q
+# Live render no longer leaks the template example. Use dynamic Watchtower URL
+# resolution (triple-file) — never hard-code :3000/:3002 (T-1376 anti-pattern).
+# T-1763: fixed port hard-code (was :3002) → use bin/fw watchtower url.
+WT_URL=$(bin/fw watchtower url) && curl -sf "$WT_URL/review/T-1762" > /tmp/.t1763-render.html
+grep -qv "example.com/dashboard" /tmp/.t1763-render.html
+grep -qv "panels load within 2 seconds" /tmp/.t1763-render.html
 # Real AC #2 Steps surface
-curl -sf http://localhost:3002/review/T-1762 | grep -q "T-FAKE"
+grep -q "T-FAKE" /tmp/.t1763-render.html
 
 ## RCA
 
@@ -153,3 +156,15 @@ L-097 propagation gap is the deeper insight (filed in `## RCA`): same in-comment
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1763-fix-ac-body-parser--html-comment-example.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-5734c72c
+- **Timestamp:** 2026-05-16T07:04:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-16T07:04:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

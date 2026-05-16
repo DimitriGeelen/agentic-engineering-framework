@@ -884,3 +884,38 @@ decisions:
     date: 2026-05-15
     task: T-1828
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-129
+    decision: "Make the body collector strip HTML-commented regions before passing the body to `_parse_ac_body`. Single fix point at the source of bad data."
+    scope: project
+    date: 2026-05-16
+    task: T-1763
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-130
+    decision: "New `is_viewable_path(filepath)` helper in `web/shared.py` consulted by both `_auto_link_files` and the `/file/` route. Linker regex is now built from `VIEWABLE_DIR_PREFIXES` and `VIEWABLE_EXTENSIONS` — same lists the route reads."
+    scope: project
+    date: 2026-05-16
+    task: T-1764
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-131
+    decision: "`markdown2.markdown(f\"\\`\\`\\`{lang}\\n{content}\\n\\`\\`\\`\", extras=[\"fenced-code-blocks\"])` with extension-mapped language hint."
+    scope: project
+    date: 2026-05-16
+    task: T-1764
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-132
+    decision: "Targeted CSS overrides on `.rec-rationale code, .rec-evidence code, .ac-detail code, article code, td code, li code` etc., plus `pre > code` re-assertion of inline-block. Apply in `base.html` (covers most surfaces) and `review.html` (standalone)."
+    scope: project
+    date: 2026-05-16
+    task: T-1765
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-133
+    decision: "`overflow-wrap: anywhere; word-break: normal` on prose `<code>`."
+    scope: project
+    date: 2026-05-16
+    task: T-1765
+    rationale: "Auto-captured from task file on completion"

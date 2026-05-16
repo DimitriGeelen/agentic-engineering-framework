@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1764: fix /file/ route — 404s for non-md paths despite linker auto-linking .py/.sh/.yaml (T-1722 contract break)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-16T07:06:09Z
+# ============================================================================
+
+task_id: T-1764
+task_name: "fix /file/ route — 404s for non-md paths despite linker auto-linking .py/.sh/.yaml (T-1722 contract break)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T11:03:08Z
+completed: 2026-05-16T07:06:02Z
+duration_days: 10
+updates_count: 1
+first_commit: 2026-05-06T13:09:03+02:00
+last_commit: 2026-05-06T13:09:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix /file/ route — 404s for non-md paths (T-1722 contract break). register fabric card for test_file_route_extensions
+
+# Key outcomes
+outcomes:
+  - "**Single source of truth for viewability** — `web/shared.py` exports a `is_viewable_path(filepath)` helper that both `_auto_link_files` (currently uses regex prefix list) and the `/file/` route consult. No more drift between linker dirs/extensions and route dirs/extensions."
+  - "**Route serves all linker-supported extensions** — `/file/lib/task_pair_acd.sh` returns HTTP 200 with the file rendered as a syntax-highlighted code block. Same for `.py`, `.yaml`, `.yml`, `.json`, `.toml` paths under any whitelisted dir. `.md` continues to render as Markdown (no regression)."
+  - "**Path traversal still blocked** — `/file/../../etc/passwd`, `/file/lib/../../../etc/passwd`, and `/file/lib/symlink-to-etc-passwd` all return 404. Symlink resolution + PROJECT_ROOT containment check preserved."
+  - "**Regression test pinned** — `tests/unit/test_file_route_extensions.py` covers: (a) `.md` 200, (b) `.sh` 200, (c) `.py` 200, (d) `.yaml` 200, (e) `..` 404, (f) outside-whitelist dir 404, (g) non-existent file 404, (h) directory path 404."
+  - "**T-1762 review-page evidence link works** — `curl -sf http://localhost:3002/file/lib/task_pair_acd.sh` returns HTTP 200 (was 404). Same for `tests/unit/test_task_pair_acd_gate.bats` if linked."
+  - "**No regression on existing surfaces** — `curl -sf http://localhost:3002/file/.tasks/completed/T-1442-...md` still serves the markdown task file."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "fix /file/ route — 404s for non-md paths (T-1722 contract break)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "2026-05-06 — Single source-of-truth predicate, not duplicated whitelists"
+    chose: "New `is_viewable_path(filepath)` helper in `web/shared.py` consulted by both `_auto_link_files` and the `/file/` route. Linker regex is now built from `VIEWABLE_DIR_PREFIXES` and `VIEWABLE_EXTENSIONS` — same lists the route reads."
+    rationale: "Two whitelists can drift; one cannot. The drift is what caused T-1764 in the first place. A future-developer who adds a new extension only has one place to change."
+    alternatives_rejected: ["Hardcoding the same list in both places \"for clarity\" — invites recurrence. Auto-deriving the route's whitelist from the linker's regex via re-introspection — too clever, fragile."]
+  - decision: "2026-05-06 — Render source files as fenced code blocks, not raw <pre>"
+    chose: "`markdown2.markdown(f\"\`\`\`{lang}\n{content}\n\`\`\`\", extras=[\"fenced-code-blocks\"])` with extension-mapped language hint."
+    rationale: "Reuses existing `markdown2` dependency, gets Pygments syntax highlighting if installed, otherwise graceful `<pre><code>` fallback. Free reuse of `docs_detail.html` template — same shell as the .md path."
+    alternatives_rejected: ["Raw `<pre><code>` — no syntax highlighting. Rolling Pygments directly — extra dependency for a one-liner of value. A separate `source_view.html` template — duplicate styling."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".fabric/components/tests-unit-test_file_route_extensions.yaml"
+  - ".tasks/active/T-1764-fix-file-route--404s-for-non-md-paths-de.md"
+  - "tests/unit/test_file_route_extensions.py"
+  - "web/blueprints/docs.py"
+  - "web/shared.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T13:09:03"
+    action: "T-1764: fix /file/ route — 404s for non-md paths (T-1722 contract break)"
+  - time: "2026-05-06T13:09:11"
+    action: "T-1764: register fabric card for test_file_route_extensions"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 14162 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["bug", "render", "governance-render", "human-review-surface", "T-1722-followup"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14162
+  commits: 2
+  files_changed: 6
+  lines_added: 483
+  lines_removed: 49
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1764-fix-file-route--404s-for-non-md-paths-de.md
+generated_by: context-agent-hybrid
