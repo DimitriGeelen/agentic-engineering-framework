@@ -8,9 +8,10 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: later
-tags: [build, arc:arc-grooming, documentation, canonical, T-NEW-9]
+tags: [build, documentation, canonical, T-NEW-9]
 components: []
 related_tasks: [T-1846, T-1847, T-1653]
+arc_id: arc-grooming
 created: 2026-05-15T14:53:22Z
 last_update: 2026-05-15T14:53:22Z
 date_finished: null

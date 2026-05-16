@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: ["bug", "arc:orchestrator-rethink", "cron-deploy", "G-064-blocker", "registry-vs-deployment"]
+tags: ["bug", "cron-deploy", "G-064-blocker", "registry-vs-deployment"]
 components: [".context/cron-registry.yaml", ".context/cron/agentic-audit.crontab", "/etc/cron.d/agentic-audit-999-agentic-engineering-framework"]
 related_tasks: ["T-1727", "T-1750", "T-1720", "T-1684"]
+arc_id: orchestrator-rethink
 created: 2026-05-06T12:07:55Z
 last_update: 2026-05-06T12:11:36Z
 date_finished: 2026-05-06T12:11:36Z

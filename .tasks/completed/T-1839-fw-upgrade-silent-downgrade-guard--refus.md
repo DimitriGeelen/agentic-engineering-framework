@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:project-shape-resilience, consumer-fleet, fw-upgrade]
+tags: [consumer-fleet, fw-upgrade]
 components: [lib/upgrade.sh]
 related_tasks: [T-1838, T-1828, T-1542]
+arc_id: project-shape-resilience
 created: 2026-05-14T21:53:34Z
 last_update: 2026-05-14T21:57:35Z
 date_finished: 2026-05-14T21:57:35Z

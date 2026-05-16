@@ -13,9 +13,10 @@ status: started-work
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:project-shape-resilience]
+tags: []
 components: []
 related_tasks: []
+arc_id: project-shape-resilience
 created: 2026-04-27T13:19:34Z
 last_update: 2026-05-02T10:07:11Z
 date_finished: null

@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:dispatch-safety, slice-1]
+tags: [slice-1]
 components: [lib/outcome.py, lib/resolver.py, lib/spawn.py, tests/unit/test_outcome.py, tests/unit/test_spawn.py]
 related_tasks: []
+arc_id: dispatch-safety
 created: 2026-05-13T15:01:56Z
 last_update: 2026-05-13T15:09:23Z
 date_finished: 2026-05-13T15:09:23Z

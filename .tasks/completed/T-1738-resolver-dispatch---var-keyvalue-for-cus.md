@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, prompt-triage, resolver]
+tags: [prompt-triage, resolver]
 components: [lib/resolver.py]
 related_tasks: [T-1737, T-1733, T-1689]
+arc_id: orchestrator-rethink
 created: 2026-05-05T07:42:18Z
 last_update: 2026-05-05T07:44:30Z
 date_finished: 2026-05-05T07:44:30Z

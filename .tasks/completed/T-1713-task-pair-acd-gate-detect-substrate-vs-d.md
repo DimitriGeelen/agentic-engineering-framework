@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, ACD, G-062-family, governance-gate]
+tags: [ACD, G-062-family, governance-gate]
 components: []
 related_tasks: [T-1442, T-1443, T-1668, T-1671, T-1709, T-1711]
+arc_id: orchestrator-rethink
 created: 2026-05-04T06:43:45Z
 last_update: 2026-05-04T12:04:23Z
 date_finished: 2026-05-04T12:04:23Z

@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [governance, arc:arc-grooming, scaffold, post-decide-go]
+tags: [governance, scaffold, post-decide-go]
 components: [".context/arcs/"]
 related_tasks: ["T-1846"]
+arc_id: arc-grooming
 created: 2026-05-15T14:47:20Z
 last_update: 2026-05-15T14:47:20Z
 date_finished: 2026-05-15T19:55:03+02:00

@@ -4,16 +4,17 @@ name: "Task arc_id field + Tier-1 validation block (T-NEW-2)"
 description: >
   Add arc_id: optional frontmatter field to task schema (template + CLAUDE.md doc); PreToolUse hook refuses task save when arc_id is set + non-empty + does not resolve to .context/arcs/*.yaml (Tier-1 block, Q1 answer). Empty arc_id passes through. Predicated on D-Immutability: valid refs stay valid forever; no hostage state possible. Deps: T-1848 (T-NEW-1.5). Anchor: T-1846.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [build, arc:arc-grooming, schema-migration, task-system, validation, T-NEW-2]
-components: []
+tags: [build, schema-migration, task-system, validation, T-NEW-2]
+components: [C-004, agents/context/check-arc-id.sh, C-009, lib/arc.sh, tests/unit/arc_id_validation_guard.bats, web/blueprints/arcs.py, web/blueprints/core.py]
 related_tasks: [T-1846, T-1847, T-1848]
+arc_id: arc-grooming
 created: 2026-05-15T14:52:45Z
-last_update: 2026-05-16T09:10:30Z
-date_finished: null
+last_update: 2026-05-16T09:19:36Z
+date_finished: 2026-05-16T09:19:36Z
 ---
 
 # T-1849: Task arc_id field + Tier-1 validation block (T-NEW-2)
@@ -173,3 +174,21 @@ test "$(bin/fw audit --section structure 2>&1 | grep -c 'Fail: 0')" -ge 1
 ### 2026-05-16T09:10:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c98bb166
+- **Timestamp:** 2026-05-16T09:20:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 24
+     - evidence: `bats tests/unit/arc_id_validation_guard.bats >/dev/null 2>&1`
+
+### 2026-05-16T09:19:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** All 5 ACs met, 8/8 verification commands PASS, 15/15 bats tests PASS, no Human ACs (no render surface touched)

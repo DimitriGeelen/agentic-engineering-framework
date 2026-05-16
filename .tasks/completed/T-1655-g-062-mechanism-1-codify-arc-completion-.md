@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [orchestrator, arc-c, governance, claude-md, framework-blindness, arc:orchestrator-rethink]
+tags: [orchestrator, arc-c, governance, claude-md, framework-blindness]
 components: [CLAUDE.md]
 related_tasks: [T-1641, T-1644, T-1626, T-1633, T-1654]
+arc_id: orchestrator-rethink
 created: 2026-05-01T16:35:45Z
 last_update: 2026-05-01T16:38:08Z
 date_finished: 2026-05-01T16:38:08Z

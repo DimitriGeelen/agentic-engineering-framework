@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, ux, watchtower]
+tags: [ux, watchtower]
 components: [web/shared.py, web/blueprints/tasks.py]
 related_tasks: [T-1575, T-1257, T-885, T-1287, T-1376]
+arc_id: orchestrator-rethink
 created: 2026-05-04T17:15:16Z
 last_update: 2026-05-04T17:18:22Z
 date_finished: 2026-05-04T17:18:22Z

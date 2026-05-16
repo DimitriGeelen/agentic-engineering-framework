@@ -8,9 +8,10 @@ status: started-work
 workflow_type: inception
 owner: agent
 horizon: later
-tags: ["arc:orchestrator-rethink", "drift-defense", "deferred"]
+tags: ["drift-defense", "deferred"]
 components: ["agents/audit/orchestrator-mcp-scan.sh"]
 related_tasks: ["T-1755", "T-1760", "T-1646"]
+arc_id: orchestrator-rethink
 created: 2026-05-06T06:08:25Z
 last_update: 2026-05-06T06:08:25Z
 date_finished: null

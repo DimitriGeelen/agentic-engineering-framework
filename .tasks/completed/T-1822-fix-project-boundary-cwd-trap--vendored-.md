@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:project-shape-resilience, project-boundary, fw-upgrade-incident-2026-05-14, T-559, T-1542, bug]
+tags: [project-boundary, fw-upgrade-incident-2026-05-14, T-559, T-1542, bug]
 components: [lib/paths.sh, tests/unit/lib_paths.bats]
 related_tasks: [T-559, T-1542, T-1634]
+arc_id: project-shape-resilience
 created: 2026-05-14T07:30:21Z
 last_update: 2026-05-14T14:00:15Z
 date_finished: 2026-05-14T14:00:15Z

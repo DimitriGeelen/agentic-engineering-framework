@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: ["arc:dispatch-safety", "bug", "yaml", "watchtower"]
+tags: ["bug", "yaml", "watchtower"]
 components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py]
 related_tasks: ["T-1812", "T-1813", "T-1815"]
+arc_id: dispatch-safety
 created: 2026-05-13T20:15:46Z
 last_update: 2026-05-13T20:28:54Z
 date_finished: 2026-05-13T20:28:54Z

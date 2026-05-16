@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink]
+tags: []
 components: [bin/fw, tests/unit/test_orchestrator_outcome_dedup.py]
 related_tasks: []
+arc_id: orchestrator-rethink
 created: 2026-05-05T22:38:24Z
 last_update: 2026-05-05T22:41:49Z
 date_finished: 2026-05-05T22:41:49Z

@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: agent
 horizon: later
-tags: [arc:orchestrator-rethink]
+tags: []
 components: []
 related_tasks: []
+arc_id: orchestrator-rethink
 created: 2026-05-04T05:35:45Z
 last_update: 2026-05-06T13:32:47Z
 date_finished: 2026-05-06T13:32:47Z

@@ -8,9 +8,10 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, termlink, peer-consult, cross-repo, joint-smoke]
+tags: [termlink, peer-consult, cross-repo, joint-smoke]
 components: []
 related_tasks: [T-1818, T-1819, T-1804, T-1797, T-1821]
+arc_id: orchestrator-rethink
 created: 2026-05-13T23:05:51Z
 last_update: 2026-05-13T23:12:01Z
 date_finished: null

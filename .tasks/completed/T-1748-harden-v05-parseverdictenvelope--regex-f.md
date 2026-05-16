@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, escalation-scan, v0.5, parser]
+tags: [escalation-scan, v0.5, parser]
 components: [tests/unit/test_escalation_v05_parser.py, tools/escalation-scan-v0.5.py]
 related_tasks: [T-1727]
+arc_id: orchestrator-rethink
 created: 2026-05-05T18:24:26Z
 last_update: 2026-05-05T18:28:45Z
 date_finished: 2026-05-05T18:28:45Z

@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: ["arc:orchestrator-rethink", "fabric", "drift-defense"]
+tags: ["fabric", "drift-defense"]
 components: ["agents/fabric/lib/enrich.py"]
 related_tasks: ["T-1753", "T-1754"]
+arc_id: orchestrator-rethink
 created: 2026-05-06T05:31:04Z
 last_update: 2026-05-06T05:42:33Z
 date_finished: 2026-05-06T05:42:33Z

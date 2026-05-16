@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, spawn, dispatch-driver]
+tags: [spawn, dispatch-driver]
 components: [lib/resolver.py, lib/spawn.py, tests/unit/test_resolver_run.py, tests/unit/test_spawn.py]
 related_tasks: [T-1700, T-1701]
+arc_id: orchestrator-rethink
 created: 2026-05-06T18:52:51Z
 last_update: 2026-05-13T21:19:49Z
 date_finished: 2026-05-13T21:19:49Z

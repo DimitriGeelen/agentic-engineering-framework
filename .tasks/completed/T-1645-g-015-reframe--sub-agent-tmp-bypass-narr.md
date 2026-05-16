@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
-tags: [from-T-1641, from-T-1061, G-015, sub-agent-bypass, arc:orchestrator-rethink]
+tags: [from-T-1641, from-T-1061, G-015, sub-agent-bypass]
 components: [web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1061, T-329]
+arc_id: orchestrator-rethink
 created: 2026-05-01T11:55:08Z
 last_update: 2026-05-01T18:58:37Z
 date_finished: 2026-05-01T17:09:08Z

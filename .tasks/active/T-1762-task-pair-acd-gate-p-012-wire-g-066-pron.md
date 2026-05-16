@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: ["arc:orchestrator-rethink", "ACD", "G-062-family", "G-066", "governance-gate", "P-012"]
+tags: ["ACD", "G-062-family", "G-066", "governance-gate", "P-012"]
 components: [agents/task-create/update-task.sh, lib/task_pair_acd.py, lib/task_pair_acd.sh, tests/playwright/test_review_code_inline.py, tests/unit/test_ac_body_html_comment.py, tests/unit/test_file_route_extensions.py, tests/unit/test_task_pair_acd_gate.bats, tests/unit/test_task_pair_acd_parser.bats, web/blueprints/docs.py, web/blueprints/tasks.py, web/shared.py, web/templates/base.html, web/templates/review.html]
 related_tasks: ["T-1442", "T-1443", "T-1668", "T-1671", "T-1711", "T-1713", "T-1715", "T-1716", "T-1709"]
+arc_id: orchestrator-rethink
 created: 2026-05-06T07:57:36Z
 last_update: 2026-05-13T22:33:56Z
 date_finished: 2026-05-13T22:33:56Z

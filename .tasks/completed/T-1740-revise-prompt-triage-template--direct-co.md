@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [spike, arc:orchestrator-rethink, follow-up]
+tags: [spike, follow-up]
 components: []
 related_tasks: [T-1736, T-1733, T-1737]
+arc_id: orchestrator-rethink
 created: 2026-05-05T08:12:52Z
 last_update: 2026-05-05T08:21:37Z
 date_finished: 2026-05-05T08:21:37Z

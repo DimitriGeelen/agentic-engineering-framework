@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [orchestrator, arc-c, drift, termlink, framework-self-fix, arc:orchestrator-rethink]
+tags: [orchestrator, arc-c, drift, termlink, framework-self-fix]
 components: [agents/termlink/termlink.sh]
 related_tasks: [T-1644, T-1649, T-1641]
+arc_id: orchestrator-rethink
 created: 2026-05-01T16:27:50Z
 last_update: 2026-05-01T16:38:14Z
 date_finished: 2026-05-01T16:38:14Z

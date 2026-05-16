@@ -8,9 +8,10 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: next
-tags: [arc:orchestrator-rethink, spawn, contract-gap]
+tags: [spawn, contract-gap]
 components: []
 related_tasks: [T-1773, T-1775]
+arc_id: orchestrator-rethink
 created: 2026-05-09T21:18:59Z
 last_update: 2026-05-09T21:18:59Z
 date_finished: null

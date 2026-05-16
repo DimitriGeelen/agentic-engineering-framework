@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
-tags: [arc:embeddings-strategy, arc:orchestrator-rethink, T-1715-family, G-064-closure-pilot, T-679-family, structural-fix]
+tags: [T-1715-family, G-064-closure-pilot, T-679-family, structural-fix]
 components: [agents/task-create/update-task.sh, bin/fw, lib/evolution_log.sh, lib/inception.sh, tests/unit/evolution_log_gate.bats]
 related_tasks: [T-1715, T-1716, T-263, T-269, T-1696, T-1697, T-1698, T-1700, T-1443, T-704, T-679, T-1718]
+arc_id: embeddings-strategy
 created: 2026-05-04T12:25:28Z
 last_update: 2026-05-04T16:49:07Z
 date_finished: 2026-05-04T16:49:07Z

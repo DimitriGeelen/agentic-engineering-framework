@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, governance, observability]
+tags: [governance, observability]
 components: [bin/fw, tests/unit/test_fw_gaps_closure_check.bats]
 related_tasks: [T-1750, T-1687]
+arc_id: orchestrator-rethink
 created: 2026-05-05T21:35:53Z
 last_update: 2026-05-05T21:40:05Z
 date_finished: 2026-05-05T21:40:05Z

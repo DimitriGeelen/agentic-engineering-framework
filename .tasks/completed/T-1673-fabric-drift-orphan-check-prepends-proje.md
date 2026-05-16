@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:project-shape-resilience]
+tags: []
 components: [agents/fabric/lib/drift.sh, tests/unit/test_fabric_drift_absolute_paths.py]
 related_tasks: []
+arc_id: project-shape-resilience
 created: 2026-05-02T08:59:51Z
 last_update: 2026-05-02T10:07:11Z
 date_finished: 2026-05-02T09:08:44Z

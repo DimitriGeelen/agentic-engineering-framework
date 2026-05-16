@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink]
+tags: []
 components: [tools/reparse-historical-parsefails.py]
 related_tasks: []
+arc_id: orchestrator-rethink
 created: 2026-05-05T22:32:50Z
 last_update: 2026-05-05T22:37:38Z
 date_finished: 2026-05-05T22:37:38Z

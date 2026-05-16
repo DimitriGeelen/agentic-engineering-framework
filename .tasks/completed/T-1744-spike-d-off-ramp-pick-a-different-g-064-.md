@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
-tags: [inception, arc:orchestrator-rethink, follow-up]
+tags: [inception, follow-up]
 components: [lib/inception_recommendation.sh, lib/task-audit.sh, web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-1741, T-1737, T-1688, T-1727]
+arc_id: orchestrator-rethink
 created: 2026-05-05T09:25:37Z
 last_update: 2026-05-05T13:50:15Z
 date_finished: 2026-05-05T13:50:15Z

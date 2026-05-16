@@ -8,9 +8,10 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, arc:project-shape-resilience, security]
+tags: [bug, security]
 components: []
 related_tasks: []
+arc_id: project-shape-resilience
 created: 2026-05-15T07:04:44Z
 last_update: 2026-05-15T07:07:18Z
 date_finished: null

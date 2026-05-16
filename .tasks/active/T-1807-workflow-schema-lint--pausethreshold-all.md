@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:dispatch-safety, slice-3]
+tags: [slice-3]
 components: [bin/fw, lib/workflow_lint.py, tests/unit/test_workflow_schema_pause_lint.py]
 related_tasks: [T-1805, T-1806]
+arc_id: dispatch-safety
 created: 2026-05-13T15:49:53Z
 last_update: 2026-05-13T16:00:21Z
 date_finished: 2026-05-13T16:00:21Z

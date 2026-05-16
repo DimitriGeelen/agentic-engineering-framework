@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, ollama, dispatch, v4, spike]
+tags: [ollama, dispatch, v4, spike]
 components: [agents/termlink/termlink.sh, tools/ollama-tool-loop.py, tools/t1706-tool-loop-probe.sh]
 related_tasks: [T-1705, T-1700, T-1704]
+arc_id: orchestrator-rethink
 created: 2026-05-03T21:47:42Z
 last_update: 2026-05-03T21:57:02Z
 date_finished: 2026-05-03T21:57:02Z

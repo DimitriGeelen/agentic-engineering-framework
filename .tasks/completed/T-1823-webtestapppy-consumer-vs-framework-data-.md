@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:project-shape-resilience, test-infra, fw-upgrade-incident-2026-05-14, bug]
+tags: [test-infra, fw-upgrade-incident-2026-05-14, bug]
 components: []
 related_tasks: [T-1822, T-1634]
+arc_id: project-shape-resilience
 created: 2026-05-14T07:30:49Z
 last_update: 2026-05-14T14:22:11Z
 date_finished: 2026-05-14T14:22:11Z

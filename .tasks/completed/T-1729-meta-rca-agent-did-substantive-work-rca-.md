@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, meta-rca-anchor]
+tags: [meta-rca-anchor]
 components: []
 related_tasks: [T-1730, T-1731, T-1732, T-1716, T-1726, T-1727]
+arc_id: orchestrator-rethink
 created: 2026-05-04T22:03:56Z
 last_update: 2026-05-05T06:47:06Z
 date_finished: 2026-05-05T06:47:06Z

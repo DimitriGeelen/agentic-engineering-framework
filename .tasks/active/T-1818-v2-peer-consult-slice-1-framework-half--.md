@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: ["arc:orchestrator-rethink", "cross-repo", "termlink", "peer-consult"]
+tags: ["cross-repo", "termlink", "peer-consult"]
 components: [bin/fw, lib/peer.py, tests/unit/test_peer_subscribe.py]
 related_tasks: ["T-1804", "T-1797"]
+arc_id: orchestrator-rethink
 created: 2026-05-13T21:30:35Z
 last_update: 2026-05-13T22:25:05Z
 date_finished: 2026-05-13T22:25:05Z

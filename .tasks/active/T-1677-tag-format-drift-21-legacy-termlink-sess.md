@@ -8,9 +8,10 @@ status: captured
 workflow_type: refactor
 owner: agent
 horizon: later
-tags: [arc:orchestrator-rethink, cross-repo, termlink]
+tags: [cross-repo, termlink]
 components: []
 related_tasks: []
+arc_id: orchestrator-rethink
 created: 2026-05-02T11:05:49Z
 last_update: 2026-05-02T11:05:49Z
 date_finished: null

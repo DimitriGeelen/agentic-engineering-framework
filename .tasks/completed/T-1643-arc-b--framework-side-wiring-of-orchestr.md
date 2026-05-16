@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, framework-integration, arc:orchestrator-rethink]
+tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, framework-integration]
 components: [agents/dispatch/preamble.md, agents/termlink/termlink.sh, lib/config.sh, tests/unit/test_arcs_routes.py, tests/unit/test_termlink_dispatch_task_type.py, web/blueprints/arcs.py, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/arc_detail.html, web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1642, T-1063, T-1064, T-1065, T-1066]
+arc_id: orchestrator-rethink
 created: 2026-05-01T11:54:52Z
 last_update: 2026-05-02T05:51:46Z
 date_finished: 2026-05-02T05:51:46Z

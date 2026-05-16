@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, T-1730-followup, hook-env, robustness]
+tags: [T-1730-followup, hook-env, robustness]
 components: [agents/context/check-active-task.sh, tests/unit/focus_drift_gate.bats]
 related_tasks: [T-1730, T-1729]
+arc_id: orchestrator-rethink
 created: 2026-05-05T07:46:47Z
 last_update: 2026-05-05T07:53:20Z
 date_finished: 2026-05-05T07:53:20Z

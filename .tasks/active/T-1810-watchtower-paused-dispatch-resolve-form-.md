@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:dispatch-safety, watchtower, ui]
+tags: [watchtower, ui]
 components: [lib/dispatch_pause.py, tests/unit/test_review_paused_resolve.py, web/blueprints/review.py, web/templates/review.html]
 related_tasks: [T-1808, T-1809]
+arc_id: dispatch-safety
 created: 2026-05-13T17:41:04Z
 last_update: 2026-05-13T17:47:22Z
 date_finished: 2026-05-13T17:47:22Z

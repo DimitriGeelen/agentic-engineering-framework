@@ -8,9 +8,10 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [build, arc:arc-grooming, audit, freshness, T-NEW-7]
+tags: [build, audit, freshness, T-NEW-7]
 components: []
 related_tasks: [T-1846, T-1847]
+arc_id: arc-grooming
 created: 2026-05-15T14:53:13Z
 last_update: 2026-05-15T14:53:13Z
 date_finished: null

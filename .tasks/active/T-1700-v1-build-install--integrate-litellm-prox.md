@@ -8,9 +8,10 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, proxy, litellm, ollama]
+tags: [proxy, litellm, ollama]
 components: []
 related_tasks: [T-1691, T-1696, T-1693]
+arc_id: orchestrator-rethink
 created: 2026-05-03T15:46:59Z
 last_update: 2026-05-05T07:53:42Z
 date_finished: null

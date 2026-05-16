@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:project-shape-resilience, consumer-fleet, fw-doctor]
+tags: [consumer-fleet, fw-doctor]
 components: [bin/fw, tests/unit/test_doctor_consumer_version_ahead.bats]
 related_tasks: [T-1828, T-1542, T-1834]
+arc_id: project-shape-resilience
 created: 2026-05-14T21:33:14Z
 last_update: 2026-05-14T21:51:02Z
 date_finished: 2026-05-14T21:51:02Z

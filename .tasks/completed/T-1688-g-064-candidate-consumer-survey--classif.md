@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
-tags: [gap-consumer, arc:orchestrator-rethink]
+tags: [gap-consumer]
 components: []
 related_tasks: []
+arc_id: orchestrator-rethink
 created: 2026-05-02T21:05:48Z
 last_update: 2026-05-03T07:10:15Z
 date_finished: 2026-05-03T07:10:15Z

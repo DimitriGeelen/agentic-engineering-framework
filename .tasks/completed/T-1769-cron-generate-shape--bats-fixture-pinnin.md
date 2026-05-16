@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: ["arc:orchestrator-rethink", "cron", "T-1720-followup", "regression-test", "structural-fix"]
+tags: ["cron", "T-1720-followup", "regression-test", "structural-fix"]
 components: [tests/unit/test_cron_generate_shape.bats]
 related_tasks: ["T-1720", "T-1767", "T-1687"]
+arc_id: orchestrator-rethink
 created: 2026-05-06T16:19:39Z
 last_update: 2026-05-06T16:23:47Z
 date_finished: 2026-05-06T16:23:47Z

@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, pi, multi-provider]
+tags: [pi, multi-provider]
 components: []
 related_tasks: [T-1687]
+arc_id: orchestrator-rethink
 created: 2026-05-02T22:56:06Z
 last_update: 2026-05-03T08:30:12Z
 date_finished: 2026-05-03T08:30:12Z

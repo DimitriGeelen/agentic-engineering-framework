@@ -8,9 +8,10 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [consumer-pickup, fabric, bug, arc:project-shape-resilience]
+tags: [consumer-pickup, fabric, bug]
 components: []
 related_tasks: []
+arc_id: project-shape-resilience
 created: 2026-05-14T22:30:42Z
 last_update: 2026-05-14T22:38:34Z
 date_finished: null

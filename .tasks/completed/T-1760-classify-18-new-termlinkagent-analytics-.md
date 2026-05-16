@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: ["arc:orchestrator-rethink", "drift-defense", "termlink-mcp"]
+tags: ["drift-defense", "termlink-mcp"]
 components: [".context/audits/orchestrator-mcp-baseline.yaml"]
 related_tasks: ["T-1755", "T-1646"]
+arc_id: orchestrator-rethink
 created: 2026-05-06T06:03:41Z
 last_update: 2026-05-06T06:07:06Z
 date_finished: 2026-05-06T06:07:06Z

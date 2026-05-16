@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, observability, cli]
+tags: [observability, cli]
 components: [bin/fw, lib/outcome.py, tests/unit/test_orchestrator_status_terminal_events.py, tests/unit/test_outcome.py]
 related_tasks: [T-1699, T-1777, T-1778]
+arc_id: orchestrator-rethink
 created: 2026-05-11T08:39:53Z
 last_update: 2026-05-13T21:10:19Z
 date_finished: 2026-05-13T21:10:19Z

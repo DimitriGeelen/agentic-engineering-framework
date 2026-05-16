@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:dispatch-safety, slice-4]
+tags: [slice-4]
 components: [bin/fw, lib/dispatch_pause.py, tests/unit/test_dispatch_pause.py, web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: [T-1805, T-1806, T-1807]
+arc_id: dispatch-safety
 created: 2026-05-13T16:04:06Z
 last_update: 2026-05-13T17:13:22Z
 date_finished: 2026-05-13T17:13:22Z

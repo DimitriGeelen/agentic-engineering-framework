@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
-tags: ["arc:orchestrator-rethink", "structural-fix", "cron", "drift-detection", "T-1767-followup", "G-064-prevention"]
+tags: ["structural-fix", "cron", "drift-detection", "T-1767-followup", "G-064-prevention"]
 components: []
 related_tasks: ["T-1767", "T-1727", "T-1750"]
+arc_id: orchestrator-rethink
 created: 2026-05-06T12:14:38Z
 last_update: 2026-05-06T16:37:41Z
 date_finished: 2026-05-06T16:37:41Z

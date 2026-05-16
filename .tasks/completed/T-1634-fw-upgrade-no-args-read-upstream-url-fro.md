@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [from-T-1633, upgrade, upstream, arc:project-shape-resilience]
+tags: [from-T-1633, upgrade, upstream]
 components: [lib/paths.sh, lib/upgrade.sh, tests/unit/lib_paths.bats]
 related_tasks: [T-1633, T-1542]
+arc_id: project-shape-resilience
 created: 2026-05-01T10:30:30Z
 last_update: 2026-05-14T14:10:11Z
 date_finished: 2026-05-14T14:10:11Z

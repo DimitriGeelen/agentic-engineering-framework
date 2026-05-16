@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
-tags: [arc:project-shape-resilience]
+tags: []
 components: []
 related_tasks: []
+arc_id: project-shape-resilience
 created: 2026-05-02T10:04:39Z
 last_update: 2026-05-02T10:21:20Z
 date_finished: 2026-05-02T10:21:20Z

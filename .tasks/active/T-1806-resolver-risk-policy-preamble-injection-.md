@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:dispatch-safety, slice-2]
+tags: [slice-2]
 components: [lib/resolver.py, tests/unit/test_resolver.py]
 related_tasks: []
+arc_id: dispatch-safety
 created: 2026-05-13T15:09:44Z
 last_update: 2026-05-13T15:15:11Z
 date_finished: 2026-05-13T15:15:11Z

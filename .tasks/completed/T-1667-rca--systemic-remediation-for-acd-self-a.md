@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink]
+tags: []
 components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py, tests/unit/test_audit_arc_completion.py]
 related_tasks: []
+arc_id: orchestrator-rethink
 created: 2026-05-02T06:03:11Z
 last_update: 2026-05-02T07:37:51Z
 date_finished: 2026-05-02T07:37:51Z

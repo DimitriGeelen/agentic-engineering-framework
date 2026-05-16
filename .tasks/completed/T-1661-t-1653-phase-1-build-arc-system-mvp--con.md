@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [orchestrator, arc:orchestrator-rethink]
+tags: [orchestrator]
 components: [agents/context/post-compact-resume.sh, agents/handover/handover.sh, bin/fw, lib/arc.sh, tests/unit/test_arc_system.py, web/blueprints/core.py, web/blueprints/tasks.py, web/templates/cockpit.html, web/templates/index.html, web/templates/tasks.html]
 related_tasks: []
+arc_id: orchestrator-rethink
 created: 2026-05-01T17:19:00Z
 last_update: 2026-05-02T05:52:34Z
 date_finished: 2026-05-02T05:52:15Z

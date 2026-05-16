@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [from-T-1633, simulation, release-gate, outward-guard, arc:project-shape-resilience]
+tags: [from-T-1633, simulation, release-gate, outward-guard]
 components: []
 related_tasks: [T-1633, T-1634]
+arc_id: project-shape-resilience
 created: 2026-05-01T10:30:42Z
 last_update: 2026-05-14T15:32:52Z
 date_finished: 2026-05-14T15:32:52Z

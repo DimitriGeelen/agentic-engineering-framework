@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, observability]
+tags: [observability]
 components: [bin/fw]
 related_tasks: [T-1689, T-1696]
+arc_id: orchestrator-rethink
 created: 2026-05-04T06:39:54Z
 last_update: 2026-05-04T06:43:24Z
 date_finished: 2026-05-04T06:43:24Z

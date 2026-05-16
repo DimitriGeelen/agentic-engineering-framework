@@ -1,0 +1,21 @@
+# T-1850 (T-NEW-3) — tags:[arc:*] → arc_id migration report
+# Generated: 2026-05-16T09:24:14Z
+# Mode: apply
+
+summary:
+  scanned: 1841
+  migrated: 0
+  stale_arc_cleared: 0
+  multi_arc_resolved: 2
+  multi_arc_unresolved: 0
+  no_arc_tag: 1841
+
+migrated:
+
+stale_arc_cleared:
+
+resolutions_applied:
+  - task: T-1719
+    resolved_to: embeddings-strategy
+  - task: T-1717
+    resolved_to: embeddings-strategy

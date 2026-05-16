@@ -4,16 +4,16 @@ name: "fix episodic generator YAML escape — backticks in double-quoted scalars
 description: >
   Episodic generator emits invalid YAML when ## Decisions scalar contains backticks or other YAML-unsafe characters inside double-quoted strings. Reproduce: close T-1764-class task with backticked code in Decisions block; observe yaml.scanner.ScannerError on episodic load. Fix shape: switch to literal-block (|-) when content contains backtick/backslash/embedded-double-quote, or migrate to ruamel.yaml with explicit string handling.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/context/lib/episodic.sh, tests/unit/episodic_yaml_decision_escape.bats]
 related_tasks: []
 created: 2026-05-16T07:11:48Z
-last_update: 2026-05-16T07:35:39Z
-date_finished: null
+last_update: 2026-05-16T07:49:15Z
+date_finished: 2026-05-16T07:49:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -140,3 +140,15 @@ python3 -c "import yaml; yaml.safe_load(open('.context/episodic/T-1764.yaml'))"
 
 ### 2026-05-16T07:35:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-17d57f8f
+- **Timestamp:** 2026-05-16T07:49:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-16T07:49:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -8,9 +8,10 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:embeddings-strategy, structural-gate, T-1716-family, dogfood-prerequisite, §ACD-prevention]
+tags: [structural-gate, T-1716-family, dogfood-prerequisite, §ACD-prevention]
 components: []
 related_tasks: [T-1717, T-1550, T-1716, T-1671, T-1259, T-1260, G-062, G-066]
+arc_id: embeddings-strategy
 created: 2026-05-04T14:50:48Z
 last_update: 2026-05-04T15:19:43Z
 date_finished: null

@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, ux, watchtower]
+tags: [ux, watchtower]
 components: [web/blueprints/docs.py, web/blueprints/tasks.py, web/shared.py]
 related_tasks: [T-1721, T-1575, T-633]
+arc_id: orchestrator-rethink
 created: 2026-05-04T17:18:51Z
 last_update: 2026-05-04T19:06:16Z
 date_finished: 2026-05-04T19:06:16Z

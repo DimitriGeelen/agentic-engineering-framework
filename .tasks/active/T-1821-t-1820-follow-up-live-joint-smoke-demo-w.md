@@ -8,9 +8,10 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [arc:orchestrator-rethink, termlink, peer-consult, cross-repo, joint-smoke]
+tags: [termlink, peer-consult, cross-repo, joint-smoke]
 components: []
 related_tasks: [T-1820, T-1636, T-1818, T-1819, T-1804]
+arc_id: orchestrator-rethink
 created: 2026-05-14T05:48:29Z
 last_update: 2026-05-14T05:48:29Z
 date_finished: null

@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, meta-rca:T-1729, structural-gate, governance-bypass-prevention]
+tags: [meta-rca:T-1729, structural-gate, governance-bypass-prevention]
 components: [agents/context/check-human-ac-tick.sh, C-009, lib/init.sh]
 related_tasks: [T-1729, T-1716, T-1671]
+arc_id: orchestrator-rethink
 created: 2026-05-05T05:41:58Z
 last_update: 2026-05-05T07:16:25Z
 date_finished: 2026-05-05T07:16:25Z

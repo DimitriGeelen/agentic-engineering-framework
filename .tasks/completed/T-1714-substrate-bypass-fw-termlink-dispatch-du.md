@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, G-064, substrate-bypass, RCA]
+tags: [G-064, substrate-bypass, RCA]
 components: []
 related_tasks: [T-1684, T-1685, T-1688, T-1689, T-1696, T-1697, T-1700]
+arc_id: orchestrator-rethink
 created: 2026-05-04T08:05:46Z
 last_update: 2026-05-04T09:56:32Z
 date_finished: 2026-05-04T09:56:32Z

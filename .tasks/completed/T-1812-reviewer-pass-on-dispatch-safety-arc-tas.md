@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:dispatch-safety, reviewer-pass, governance]
+tags: [reviewer-pass, governance]
 components: [agents/reviewer]
 related_tasks: [T-1805, T-1806, T-1807, T-1808, T-1809, T-1810, T-1811, T-1443]
+arc_id: dispatch-safety
 created: 2026-05-13T18:34:10Z
 last_update: 2026-05-13T18:38:44Z
 date_finished: 2026-05-13T18:38:44Z

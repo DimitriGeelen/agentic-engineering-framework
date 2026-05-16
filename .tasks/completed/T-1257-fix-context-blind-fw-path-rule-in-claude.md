@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:project-shape-resilience]
+tags: []
 components: []
 related_tasks: []
+arc_id: project-shape-resilience
 created: 2026-04-14T22:00:28Z
 last_update: 2026-05-02T10:07:10Z
 date_finished: 2026-04-16T04:41:10Z

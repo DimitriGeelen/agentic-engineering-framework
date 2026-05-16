@@ -15,9 +15,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [from-T-1641, t-1061-followup, drift-defense, termlink, validation, arc:orchestrator-rethink]
+tags: [from-T-1641, t-1061-followup, drift-defense, termlink, validation]
 components: [C-004, agents/audit/orchestrator-mcp-scan.sh, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1644, T-1064, T-1646, T-1647]
+arc_id: orchestrator-rethink
 created: 2026-05-01T12:20:27Z
 last_update: 2026-05-01T18:58:38Z
 date_finished: 2026-05-01T12:56:47Z

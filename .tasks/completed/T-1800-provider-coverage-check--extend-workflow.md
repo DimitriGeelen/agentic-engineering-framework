@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, audit, prevention, contract-gap]
+tags: [audit, prevention, contract-gap]
 components: [lib/workflow_coverage.py, tests/unit/test_orchestrator_workflow_coverage.py, tests/unit/test_workflow_coverage.py]
 related_tasks: [T-1798, T-1797, T-1776]
+arc_id: orchestrator-rethink
 created: 2026-05-13T00:00:00Z
 last_update: 2026-05-12T22:16:29Z
 date_finished: 2026-05-12T22:16:29Z

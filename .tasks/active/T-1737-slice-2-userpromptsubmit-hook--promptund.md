@@ -8,9 +8,10 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: later
-tags: [spike, arc:orchestrator-rethink, blocked]
+tags: [spike, blocked]
 components: []
 related_tasks: []
+arc_id: orchestrator-rethink
 created: 2026-05-05T07:36:46Z
 last_update: 2026-05-05T09:31:42Z
 date_finished: null

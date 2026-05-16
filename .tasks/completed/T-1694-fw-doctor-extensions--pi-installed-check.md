@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, doctor]
+tags: [doctor]
 components: [bin/fw]
 related_tasks: [T-1687]
+arc_id: orchestrator-rethink
 created: 2026-05-02T22:56:15Z
 last_update: 2026-05-03T08:07:13Z
 date_finished: 2026-05-03T08:07:13Z

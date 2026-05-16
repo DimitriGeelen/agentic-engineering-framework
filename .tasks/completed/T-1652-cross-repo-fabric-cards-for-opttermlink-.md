@@ -13,9 +13,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [from-T-1641, t-1061-followup, fabric, cross-repo, arc:orchestrator-rethink]
+tags: [from-T-1641, t-1061-followup, fabric, cross-repo]
 components: []
 related_tasks: [T-1641, T-1644, T-1064, T-1065, T-1066, T-1648]
+arc_id: orchestrator-rethink
 created: 2026-05-01T12:20:27Z
 last_update: 2026-05-01T18:58:38Z
 date_finished: 2026-05-01T13:02:52Z

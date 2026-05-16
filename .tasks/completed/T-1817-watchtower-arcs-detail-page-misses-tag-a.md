@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: ["arc:dispatch-safety", "bug", "watchtower", "data-source-drift"]
+tags: ["bug", "watchtower", "data-source-drift"]
 components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py]
 related_tasks: ["T-1813", "T-1816"]
+arc_id: dispatch-safety
 created: 2026-05-13T20:46:24Z
 last_update: 2026-05-13T20:52:36Z
 date_finished: 2026-05-13T20:52:36Z

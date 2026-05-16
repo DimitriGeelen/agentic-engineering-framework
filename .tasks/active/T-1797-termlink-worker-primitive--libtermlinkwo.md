@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, spawn, termlink, worker-primitive]
+tags: [spawn, termlink, worker-primitive]
 components: [lib/spawn.py, lib/termlink_worker.py, tests/unit/test_spawn.py, tests/unit/test_termlink_worker.py]
 related_tasks: [T-1776, T-1773, T-1775, T-1700, T-1701]
+arc_id: orchestrator-rethink
 created: 2026-05-12T21:51:51Z
 last_update: 2026-05-12T21:57:27Z
 date_finished: 2026-05-12T21:57:27Z

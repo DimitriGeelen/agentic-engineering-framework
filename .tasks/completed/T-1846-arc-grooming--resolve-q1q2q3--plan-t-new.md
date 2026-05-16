@@ -8,9 +8,10 @@ status: started-work
 workflow_type: inception
 owner: human
 horizon: now
-tags: [inception, arc:arc-grooming, governance, schema-migration]
+tags: [inception, governance, schema-migration]
 components: ["lib/arc.sh", "web/blueprints/arcs.py", "agents/audit/audit.sh", ".tasks/templates/default.md", "FRAMEWORK.md"]
 related_tasks: ["T-1641", "T-1653", "T-1661", "T-1662", "T-1668", "T-1671", "T-1816", "T-1817"]
+arc_id: arc-grooming
 created: 2026-05-15T12:43:57Z
 last_update: 2026-05-15T12:46:53Z
 date_finished: null

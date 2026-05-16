@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, telemetry]
+tags: [telemetry]
 components: []
 related_tasks: [T-1687]
+arc_id: orchestrator-rethink
 created: 2026-05-02T22:55:57Z
 last_update: 2026-05-03T08:29:11Z
 date_finished: 2026-05-03T08:29:11Z

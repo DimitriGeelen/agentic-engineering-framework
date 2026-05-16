@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, web, observability]
+tags: [web, observability]
 components: [tests/unit/test_orchestrator_workflow_coverage.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: [T-1776, T-1797, T-1798]
+arc_id: orchestrator-rethink
 created: 2026-05-12T22:08:26Z
 last_update: 2026-05-12T22:11:39Z
 date_finished: 2026-05-12T22:11:39Z

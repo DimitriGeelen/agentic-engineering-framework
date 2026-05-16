@@ -18,9 +18,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, security, arc:project-shape-resilience]
+tags: [bug, security]
 components: ["agents/git/lib/secret-scan.sh", "agents/git/lib/hooks.sh"]
 related_tasks: ["T-1844", "T-1828", "T-1834", "T-1716"]
+arc_id: project-shape-resilience
 created: 2026-05-15T11:20:04Z
 last_update: 2026-05-15T11:20:04Z
 date_finished: 2026-05-15T13:44:00+02:00

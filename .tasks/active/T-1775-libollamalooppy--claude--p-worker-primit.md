@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, spawn, worker-primitive]
+tags: [spawn, worker-primitive]
 components: [lib/ollama_loop.py, lib/spawn.py, tests/unit/test_ollama_loop.py, tests/unit/test_spawn.py]
 related_tasks: [T-1700, T-1773, T-1774]
+arc_id: orchestrator-rethink
 created: 2026-05-09T21:08:55Z
 last_update: 2026-05-13T21:20:30Z
 date_finished: 2026-05-13T21:20:30Z

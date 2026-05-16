@@ -8,9 +8,10 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink]
+tags: []
 components: []
 related_tasks: [T-559]
+arc_id: orchestrator-rethink
 created: 2026-05-03T18:22:59Z
 last_update: 2026-05-03T21:58:34Z
 date_finished: null

@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:orchestrator-rethink, ACD, G-062-family]
+tags: [ACD, G-062-family]
 components: []
 related_tasks: [T-1442, T-1443, T-1709]
+arc_id: orchestrator-rethink
 created: 2026-05-04T06:29:50Z
 last_update: 2026-05-04T06:35:27Z
 date_finished: 2026-05-04T06:35:27Z

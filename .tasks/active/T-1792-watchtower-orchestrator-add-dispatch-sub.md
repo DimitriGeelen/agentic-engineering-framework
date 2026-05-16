@@ -8,9 +8,10 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc:orchestrator-rethink, web, observability]
+tags: [web, observability]
 components: []
 related_tasks: [T-1788, T-1789, T-1647]
+arc_id: orchestrator-rethink
 created: 2026-05-12T21:11:52Z
 last_update: 2026-05-12T21:16:07Z
 date_finished: 2026-05-12T21:16:07Z
