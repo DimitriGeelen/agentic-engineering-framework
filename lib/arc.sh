@@ -322,6 +322,35 @@ _arc_tasks_with_tag() {
     done | sort -u
 }
 
+# T-1874: find tasks whose frontmatter has `arc_id: <slug>` (the canonical
+# membership field introduced in T-1849; legacy `arc:<slug>` tags were
+# migrated in T-1850). Tolerates leading whitespace + optional quoting.
+# Always exits 0.
+_arc_tasks_with_arc_id() {
+    local slug="$1"
+    {
+        grep -lE "^[[:space:]]*arc_id:[[:space:]]*[\"']?${slug}[\"']?[[:space:]]*$" \
+            "$PROJECT_ROOT"/.tasks/active/*.md 2>/dev/null || true
+        grep -lE "^[[:space:]]*arc_id:[[:space:]]*[\"']?${slug}[\"']?[[:space:]]*$" \
+            "$PROJECT_ROOT"/.tasks/completed/*.md 2>/dev/null || true
+    } | while IFS= read -r f; do
+        awk -F: '/^id:/ {gsub(/[ "]/,"",$2); print $2; exit}' "$f"
+    done | sort -u
+}
+
+# T-1874: union of canonical arc_id frontmatter + legacy arc:<slug> tag scan.
+# This is the single entry point for "tasks belonging to arc <slug>" used by
+# all three call sites (arc_list count, arc_show display, arc_close --demo
+# validation). _arc_tasks_with_tag remains exposed for the unrelated
+# "from-<anchor>" tag namespace caller. Always exits 0.
+_arc_tasks_for() {
+    local slug="$1"
+    {
+        _arc_tasks_with_arc_id "$slug"
+        _arc_tasks_with_tag "arc:${slug}"
+    } | sort -u
+}
+
 # ─── verbs ──────────────────────────────────────────────────────────────────
 
 arc_create() {
@@ -482,7 +511,7 @@ arc_list() {
         [ -z "$slug" ] && slug="$(basename "$f" .yaml)"
         status=$(awk -F': ' '/^status:/ {print $2; exit}' "$f")
         name=$(awk -F': ' '/^name:/ {sub(/^name: /,""); print; exit}' "$f")
-        task_count=$(_arc_tasks_with_tag "arc:${slug}" | wc -l | tr -d ' ')
+        task_count=$(_arc_tasks_for "${slug}" | wc -l | tr -d ' ')
         marker="  "
         if [ "$id" = "$current" ] || [ "$slug" = "$current" ]; then marker=" *"; fi
         printf "%-2s %-30s %-12s %-7s %s\n" "$marker" "$id" "$status" "$task_count" "$name"
@@ -522,8 +551,8 @@ arc_show() {
         else
             printf "  %s (file not found)\n" "$tid"
         fi
-    done < <(_arc_tasks_with_tag "arc:${id}")
-    [ "$found" -eq 0 ] && echo "  (no tasks yet — use 'fw arc tag $id T-XXXX')"
+    done < <(_arc_tasks_for "${id}")
+    [ "$found" -eq 0 ] && echo "  (no tasks yet — set 'arc_id: $id' on a task's frontmatter)"
 
     [ "$id" = "$current" ] && echo "" && echo "[FOCUSED]"
     return 0
