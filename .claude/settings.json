@@ -56,6 +56,10 @@
           {
             "type": "command",
             "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-human-ac-tick"
+          },
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-arc-id"
           }
         ]
       },

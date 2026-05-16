@@ -86,6 +86,14 @@ Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
 **Required frontmatter fields:**
 - `id`, `name`, `description`, `status`, `workflow_type`, `horizon`, `owner`, `created`, `last_update`
 
+**Optional frontmatter fields:**
+- `arc_id` (T-1849) — single arc reference. Accepts either form:
+  - **slug** form: `arc_id: dispatch-safety` (filename stem of `.context/arcs/<slug>.yaml`)
+  - **arc-NNN** form: `arc_id: arc-001` (canonical immutable id from T-1848 D-Immutability axiom)
+  - Empty/missing/null → task is unassigned to any arc (allowed; arcs are optional)
+  - PreToolUse hook `check-arc-id` (Write|Edit on `.tasks/{active,completed}/T-*.md`) refuses saves under agent control when `arc_id` is non-empty and does **not** resolve to an existing arc YAML. Override: `FW_ALLOW_ARC_ID_DRIFT=1` (logged Tier-2 in `.gate-bypass-log.yaml`).
+  - Coexists with the legacy `tags: [arc:<slug>, ...]` form (T-NEW-3 / T-1850 will migrate `arc:*` tags into `arc_id`).
+
 ### Horizon (Priority Scheduling)
 
 The `horizon` field controls when a task should be considered for work:
