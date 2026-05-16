@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1872: stale-workflow audit: exclude inline:true workflows from staleness — inception/grilling/design-dialogue false-positives
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-16T07:30:49Z
+# ============================================================================
+
+task_id: T-1872
+task_name: "stale-workflow audit: exclude inline:true workflows from staleness — inception/grilling/design-dialogue false-positives"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-16T07:21:39Z
+completed: 2026-05-16T07:30:44Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`lib/workflow_coverage.py::flag_stale_workflows` skips rows whose `inline` field is truthy. Inline workflows are not counted toward `stale_workflows` or the `warn` boolean. (Implementation: continue-on-inline guard added at top of the per-workflow loop, T-1872 commented inline.)"
+  - "Workflow YAML enrichment (`enrich_with_dispatch_recency` or upstream loader) carries the `inline` field through to the report row, so `flag_stale_workflows` can read it. (Implementation: `_parse_workflows` reads `inline: bool(data.get(\"inline\"))`; `check_workflow_dispatcher_coverage` carries it into the `workflows[]` rows.)"
+  - "`tests/unit/test_workflow_coverage.py` pins: (a) inline workflow with no dispatch → NOT stale, (b) non-inline workflow with no dispatch → stale, (c) inline workflow with stale dispatch → still NOT stale, (d) non-inline stale workflow when only inlines exist alongside → warn=False since the non-inline is fresh. Four new tests added under \"T-1872: inline workflows excluded from staleness\" section. 30/30 pass (was 26/26 before)."
+  - "`bin/fw audit` after the fix reports 2 stale workflows (cheap-research, ollama-research) instead of 5 — visible in `.context/audits/2026-05-16.yaml` summary line `\"2 stale workflow(s): cheap-research, ollama-research\"` (was `\"5 stale workflow(s): cheap-research, design-dialogue, grilling, inception, ollama-research\"`)."
+  - "`bash -n` / `python3 -c \"import ast; ast.parse(open('lib/workflow_coverage.py').read())\"` clean."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1872-stale-workflow-audit-exclude-inlinetrue-.md
+generated_by: context-agent-hybrid

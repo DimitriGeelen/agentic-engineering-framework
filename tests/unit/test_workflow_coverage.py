@@ -42,17 +42,24 @@ def coverage(monkeypatch, tmp_path):
 
 
 def _write_workflow(wf_dir: Path, name: str, worker_kind: str | None,
-                    provider: str | None = None):
-    """Helper: write a workflow YAML with optional worker_kind/provider.
+                    provider: str | None = None,
+                    inline: bool = False):
+    """Helper: write a workflow YAML with optional worker_kind/provider/inline.
 
     Pi workflows must declare a provider (T-1800) — pass ``provider="anthropic"``
     when writing pi fixtures to avoid the missing-provider FAIL.
+
+    T-1872: pass ``inline=True`` to fixture inline workflows (fw inception,
+    fw grill, fw design-dialogue) — those are non-resolver-driven and must
+    be excluded from staleness detection.
     """
     body = f"name: {name}\n"
     if worker_kind is not None:
         body += f"worker_kind: {worker_kind}\n"
     if provider is not None:
         body += f"provider: {provider}\n"
+    if inline:
+        body += "inline: true\n"
     (wf_dir / f"{name}.yaml").write_text(body)
 
 
@@ -459,3 +466,71 @@ def test_enrich_with_dispatch_recency_does_not_mutate_input(coverage, tmp_path):
     assert "last_dispatched" not in report["workflows"][0]
     # Enriched copy gained the fields
     assert "last_dispatched" in enriched["workflows"][0]
+
+
+# ─── T-1872: inline workflows excluded from staleness ────────────────────────
+
+
+def test_inline_workflow_never_dispatched_NOT_stale(coverage, tmp_path):
+    """`inline: true` workflows are excluded from staleness premise — they
+    are driven by non-resolver flows (fw inception, fw grill, fw design-dialogue)
+    and will never appear in dispatches.jsonl by design.
+
+    Before T-1872 this returned warn=True with the inline workflow in
+    stale_workflows, polluting the audit signal. After T-1872, inline
+    rows are silently skipped.
+    """
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-inline", None, inline=True)
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=tmp_path / "no-such.jsonl")
+    r = wc.flag_stale_workflows(r, now_iso="2026-05-13T00:00:00+00:00")
+    assert r["warn"] is False
+    assert r["stale_workflows"] == []
+    # inline flag is carried into the workflow row
+    inline_row = next(w for w in r["workflows"] if w["name"] == "wf-inline")
+    assert inline_row.get("inline") is True
+
+
+def test_inline_with_stale_dispatch_still_NOT_stale(coverage, tmp_path):
+    """Even if an inline workflow somehow has an old dispatch record (manual
+    test run / legacy data), the inline flag should win — it documents the
+    workflow's lifecycle as non-resolver-driven, full stop."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-inline-old", None, inline=True)
+    d = tmp_path / "d.jsonl"
+    _write_dispatches(d, [
+        # 2026-05-13 minus 100d would be stale by the 90d threshold
+        {"workflow_id": "wf-inline-old", "ts": "2026-02-02T00:00:00+00:00", "task_id": "T-OLD"},
+    ])
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=d)
+    r = wc.flag_stale_workflows(r, now_iso="2026-05-13T00:00:00+00:00")
+    assert r["stale_workflows"] == []
+    assert r["warn"] is False
+
+
+def test_non_inline_stale_still_flagged_when_inline_alongside(coverage, tmp_path):
+    """Mixing inline + non-inline workflows: the non-inline one (real
+    resolver-driven workflow with no dispatch) still surfaces as stale."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-inline", None, inline=True)
+    _write_workflow(wf_dir, "wf-real-cold", "ollama-loop")
+    r = wc.check_workflow_dispatcher_coverage()
+    r = wc.enrich_with_dispatch_recency(r, dispatches_path=tmp_path / "no.jsonl")
+    r = wc.flag_stale_workflows(r, now_iso="2026-05-13T00:00:00+00:00")
+    names = [w["name"] for w in r["stale_workflows"]]
+    assert names == ["wf-real-cold"]
+    assert r["warn"] is True  # real one IS stale
+
+
+def test_loader_carries_inline_through(coverage):
+    """The workflow loader (`check_workflow_dispatcher_coverage`) must carry
+    the inline field into the report row so `flag_stale_workflows` can read it."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-inline", None, inline=True)
+    _write_workflow(wf_dir, "wf-noninline", "ollama-loop")
+    r = wc.check_workflow_dispatcher_coverage()
+    rows = {w["name"]: w for w in r["workflows"]}
+    assert rows["wf-inline"].get("inline") is True
+    assert rows["wf-noninline"].get("inline") is False
