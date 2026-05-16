@@ -1010,3 +1010,24 @@ decisions:
     date: 2026-05-16
     task: T-1853
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-147
+    decision: "Standalone numbered doc at repo root, mirroring `010-TaskSystem.md`'s structure and slot."
+    scope: project
+    date: 2026-05-16
+    task: T-1857
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-148
+    decision: "Plain ASCII diagram with Unicode box-drawing chars in a code fence."
+    scope: project
+    date: 2026-05-16
+    task: T-1857
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-149
+    decision: "`>= 6` in the Verification block, matching spec's `> 5` intent."
+    scope: project
+    date: 2026-05-16
+    task: T-1857
+    rationale: "Auto-captured from task file on completion"
