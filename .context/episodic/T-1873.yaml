@@ -1,0 +1,107 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1873: fix episodic generator YAML escape — extend T-1871 single-quote fix to outcomes/challenges/artifacts (L-392 class recursion)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-16T07:55:25Z
+# ============================================================================
+
+task_id: T-1873
+task_name: "fix episodic generator YAML escape — extend T-1871 single-quote fix to outcomes/challenges/artifacts (L-392 class recursion)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-16T07:49:46Z
+completed: 2026-05-16T07:55:13Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-16T09:55:06+02:00
+last_commit: 2026-05-16T09:55:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  extend single-quoted YAML scalar fix to outcomes/challenges/artifacts (L-392 closure)
+
+# Key outcomes
+outcomes:
+  - '`agents/context/lib/episodic.sh` outcomes emission writes single-quoted YAML scalars matching the T-1871 pattern. Same L-392 class — AC text mined from source tasks contains backticks/backslashes; T-1871''s own AC mentions `` `markdown2.markdown(f"\`\`\`{lang}...\`\`\`")` `` — that''s what made T-1871.yaml unparseable at line 30 col 260.'
+  - '`agents/context/lib/episodic.sh` challenges emission switches to single-quoted (commit messages can contain backticks too).'
+  - '`agents/context/lib/episodic.sh` artifacts emission switches to single-quoted (uniform escape strategy across all emission sites).'
+  - '`tests/unit/episodic_yaml_decision_escape.bats` extended with source-level invariants for outcomes + challenges + artifacts. 9/9 tests pass (was 6/6 before T-1873).'
+  - 'Regenerated `.context/episodic/T-1871.yaml`; `yaml.safe_load` succeeds.'
+  - 'Audited all `.context/episodic/*.yaml` — found 19 pre-existing parse failures (same class, latent since various dates). Mass-regenerated all 19 (T-1369, T-1415, T-1454, T-1527, T-1528, T-1530, T-1541, T-1543, T-1552, T-1553, T-1567, T-1579, T-1628, T-1629, T-1630, T-1676, T-1679, T-1747, T-1750). Final corpus: 1760 OK, 0 FAIL.'
+  - '`bash -n agents/context/lib/episodic.sh` clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'extend single-quoted YAML scalar fix to outcomes/challenges/artifacts (L-392 closure)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/lib/episodic.sh'
+  - '.context/episodic/T-1369.yaml'
+  - '.context/episodic/T-1415.yaml'
+  - '.context/episodic/T-1454.yaml'
+  - '.context/episodic/T-1527.yaml'
+  - '.context/episodic/T-1528.yaml'
+  - '.context/episodic/T-1530.yaml'
+  - '.context/episodic/T-1541.yaml'
+  - '.context/episodic/T-1543.yaml'
+  - '.context/episodic/T-1552.yaml'
+  - '.context/episodic/T-1553.yaml'
+  - '.context/episodic/T-1567.yaml'
+  - '.context/episodic/T-1579.yaml'
+  - '.context/episodic/T-1628.yaml'
+  - '.context/episodic/T-1629.yaml'
+  - '.context/episodic/T-1630.yaml'
+  - '.context/episodic/T-1676.yaml'
+  - '.context/episodic/T-1679.yaml'
+  - '.context/episodic/T-1747.yaml'
+  - '.context/episodic/T-1750.yaml'
+  - '.context/episodic/T-1869.yaml'
+  - '.context/episodic/T-1871.yaml'
+  - '.context/project/learnings.yaml'
+  - '.fabric/components/tools-episodic-corpus-check.yaml'
+  - '.tasks/active/T-1873-fix-episodic-generator-yaml-escape--exte.md'
+  - '.tasks/completed/T-1871-fix-episodic-generator-yaml-escape--back.md'
+  - 'tests/unit/episodic_yaml_decision_escape.bats'
+  - 'tools/episodic-corpus-check.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-16T09:55:06"
+    action: "T-1873: extend single-quoted YAML scalar fix to outcomes/challenges/artifacts (L-392 closure)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 28
+  lines_added: 922
+  lines_removed: 395
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1873-fix-episodic-generator-yaml-escape--exte.md
+generated_by: context-agent-hybrid
