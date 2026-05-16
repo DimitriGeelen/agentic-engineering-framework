@@ -25,6 +25,9 @@ source "$FRAMEWORK_ROOT/lib/enums.sh"
 # Per-key locking for concurrent task updates (T-587)
 source "$FRAMEWORK_ROOT/lib/keylock.sh" 2>/dev/null || true
 
+# Render-surface predicate (T-1766)
+source "$FRAMEWORK_ROOT/lib/render_surface.sh" 2>/dev/null || true
+
 # === Extracted gate functions (T-415) ===
 # Each function accesses outer-scope variables: TASK_FILE, TASK_ID, SKIP_*, colors
 
@@ -377,6 +380,97 @@ PYRCA
     esac
 }
 
+# Render-surface Human-AC Gate (T-1766, P-013)
+# Fires on --status work-completed for build tasks whose components or body
+# references touch a render surface (web/templates, web/static, web/blueprints,
+# web/shared.py, etc.). Requires at least one Human AC prefixed with
+# [REVIEW] — visual/UX correctness is inherently subjective and cannot
+# be settled by curl/grep alone.
+#
+# Origin: T-1763, T-1764, T-1765 — three render-surface bug fixes shipped
+# with zero Human ACs. Each fix verified technically (HTTP code, computed
+# style, regex) but no human looked at the rendered output. The user caught
+# the omission and asked for RCA + structural fix.
+#
+# Predicate lives in lib/render_surface.sh (single source of truth for
+# RENDER_SURFACE_PATTERNS). [RUBBER-STAMP] does NOT satisfy the gate —
+# rubber-stamp is mechanical; render judgment is what makes Human ACs
+# load-bearing here.
+check_render_surface_human_ac() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    # Library may have failed to source (defensive — should not happen in normal flow).
+    if ! declare -F task_touches_render_surface >/dev/null 2>&1; then
+        return 0
+    fi
+
+    local task_type
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    case "$task_type" in
+        inception|specification|design|decommission) return 0 ;;
+    esac
+    [ "$task_type" = "build" ] || [ "$task_type" = "refactor" ] || [ "$task_type" = "test" ] || return 0
+
+    if ! task_touches_render_surface "$TASK_FILE"; then
+        return 0
+    fi
+
+    local review_state
+    review_state=$(python3 - "$TASK_FILE" <<'PYREV' 2>/dev/null || echo "error"
+import sys, re
+try:
+    text = open(sys.argv[1]).read()
+except OSError:
+    print("error"); sys.exit(0)
+m = re.search(r'^### Human\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL)
+if not m:
+    print("no_section"); sys.exit(0)
+human = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
+review_lines = [l for l in human.splitlines() if re.match(r'\s*-\s*\[[ x]\]\s*\[REVIEW\]', l)]
+if review_lines:
+    print("has_review"); sys.exit(0)
+ac_lines = [l for l in human.splitlines() if re.match(r'\s*-\s*\[[ x]\]', l)]
+print("only_other" if ac_lines else "empty")
+PYREV
+)
+
+    case "$review_state" in
+        has_review)
+            echo -e "${GREEN}Render-surface gate: [REVIEW] Human AC present ✓${NC}"
+            return 0 ;;
+        error)
+            return 0 ;;
+        *)
+            if [ "$SKIP_RENDER_REVIEW" = true ]; then
+                echo -e "${YELLOW}WARNING: render-surface task without [REVIEW] Human AC (--skip-render-review bypass)${NC}"
+                log_gate_bypass "--skip-render-review" "check_render_surface_human_ac: $SKIP_RENDER_REVIEW_REASON"
+                return 0
+            fi
+            local matched
+            matched=$(render_surface_files_in "$TASK_FILE" 2>/dev/null | head -3 | sed 's/^/    - /')
+            echo -e "${RED}ERROR: Cannot complete build task — touches render surface but has no [REVIEW] Human AC.${NC}" >&2
+            echo "" >&2
+            echo "T-1766 (P-013): Visual/UX changes need eyes, not only tests." >&2
+            echo "Origin: T-1763/T-1764/T-1765 — three render fixes shipped without any human" >&2
+            echo "looking at the rendered output. Subjective judgment cannot be deferred to curl/grep." >&2
+            echo "" >&2
+            echo "This task touches:" >&2
+            echo "$matched" >&2
+            echo "" >&2
+            echo "Add a [REVIEW] Human AC to $TASK_FILE describing what the human should look at," >&2
+            echo "for example:" >&2
+            echo "  - [ ] [REVIEW] Rendered output on /review/T-XXX looks correct (no layout break, no orphan inline code)" >&2
+            echo "    **Steps:** 1. Open the URL  2. Compare with the screenshot in Evidence" >&2
+            echo "    **Expected:** Element renders as inline block, no wrap, no stray punctuation" >&2
+            echo "    **If not:** Note the diff and reopen for follow-up" >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  1. Add the [REVIEW] Human AC, then retry" >&2
+            echo "  2. Use --skip-render-review \"rationale\" to bypass (logged Tier-2, T-1766)" >&2
+            exit 1 ;;
+    esac
+}
+
 # Inception-decision Gate (T-1626, structural remediation for G-052)
 # Fires on --status work-completed for inception tasks. Requires a
 # `**Decision**: GO|NO-GO|DEFER` line in the task body — i.e. the operator
@@ -709,6 +803,8 @@ SKIP_RECOMMENDATION=false
 SKIP_RCA=false
 SKIP_EVOLUTION=false
 SKIP_INCEPTION_DECISION=false
+SKIP_RENDER_REVIEW=false
+SKIP_RENDER_REVIEW_REASON=""
 SCOPE_REDUCTION_ACK=""  # T-1762/P-012: --scope-reduction-acknowledged "rationale"
 
 while [[ $# -gt 0 ]]; do
@@ -728,6 +824,10 @@ while [[ $# -gt 0 ]]; do
         --skip-rca) SKIP_RCA=true; shift ;;
         --skip-evolution) SKIP_EVOLUTION=true; shift ;;
         --skip-inception-decision) SKIP_INCEPTION_DECISION=true; shift ;;
+        --skip-render-review)
+            SKIP_RENDER_REVIEW=true
+            SKIP_RENDER_REVIEW_REASON="${2:-no rationale}"
+            shift 2 ;;
         --scope-reduction-acknowledged)
             SCOPE_REDUCTION_ACK="$2"
             if [ -z "$SCOPE_REDUCTION_ACK" ]; then
@@ -744,9 +844,10 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)" >&2
+            echo "  --skip-render-review \"...\" Bypass render-surface Human AC gate (T-1766)" >&2
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_INCEPTION_DECISION=true; SCOPE_REDUCTION_ACK="--force bypass"
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_INCEPTION_DECISION=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -986,6 +1087,14 @@ if [ -n "$NEW_STATUS" ]; then
         # Bug-class tasks must capture root cause before completion.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_rca_for_bugfix
+        fi
+
+        # === Render-surface Human-AC Gate (T-1766, P-013) ===
+        # Build/refactor/test tasks touching web render surfaces must
+        # carry at least one [REVIEW] Human AC — visual verification
+        # cannot be automated.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_render_surface_human_ac
         fi
 
         # === Inception-decision Gate (T-1626, G-052 structural remediation) ===

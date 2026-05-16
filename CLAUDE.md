@@ -602,6 +602,7 @@ When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
 2. **Subjective judgment** — quality, tone, UX feel, "is this good enough?"
 3. **Irreversible external action** — publishing, deploying to production, sending communications
 4. **Cross-project blast radius** — changes affecting multiple consumer projects or external users
+5. **Touches a rendering surface** — `web/templates/`, `web/static/` (CSS/JS), `web/blueprints/`, `web/shared.py`, `web/app.py`. Visual layout/typography/spacing cannot be settled by curl/grep; the render-surface gate (T-1766, P-013) refuses `--status work-completed` on a render-touching build task without at least one `[REVIEW]` Human AC. Bypass: `--skip-render-review "rationale"` (logged Tier-2). Origin: T-1763/T-1764/T-1765 — three render fixes shipped with zero Human ACs.
 
 **Make it an Agent AC (with verification command) if ALL apply:**
 1. **Deterministic outcome** — binary pass/fail with clear expected result
