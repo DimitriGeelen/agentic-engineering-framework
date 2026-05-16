@@ -3005,3 +3005,10 @@ X'` returning empty group."
   date: 2026-05-15
   context: Discovered during CTL-013 false-positive triage after T-1870 baseline cleanup
   application: T-1847 verification updated to read saved audit YAML report
+- id: L-392
+  learning: "Episodic generator (agents/context/context.sh -> generate-episodic) emits YAML with unescaped backticks inside double-quoted scalars when a task's ## Decisions section quotes shell or markdown code with backticks. Result: ChainScannerError 'found unknown escape character `' when the framework or watchtower tries to load the generated .yaml. Closure flow continues (task moves to completed/, status updates) but the episodic artefact is left malformed. Detective signal: fw task update --status work-completed emits the YAML scanner traceback at the end of the run. The generator's guidance is 'do not edit the output by hand. Capture the source task and report on framework:pickup with msg_type=pickup-bug-report' — so hand-fixing the file just hides the recurrence. Class: serialization-without-escaping. Reproducer: T-1764 close on 2026-05-16 — chose: \"`markdown2.markdown(f\\\"\\`\\`\\`{lang}...\\`\\`\\`\\\")\" decision body. Fix path (future, T-XXX): switch ChosenScope.alternatives_rejected and chose/rationale fields to YAML literal-block (|-) when the source contains backtick, embedded double-quote, or backslash; or use ruamel.yaml with explicit string serialization for those fields. Until fixed, agents closing render-touching tasks with code-quoting Decisions will hit this class."
+  source: P-011
+  task: T-1687
+  date: 2026-05-16
+  context: Added via context agent
+  application: TBD
