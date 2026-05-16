@@ -585,6 +585,36 @@ if [ "$yaml_fail_count" -eq 0 ] && [ "$yaml_pass_count" -gt 0 ]; then
     pass "All $yaml_pass_count project YAML files parse correctly"
 fi
 
+# T-1856 (T-NEW-8): Anchor-task existence check.
+# Each .context/arcs/*.yaml may declare `anchor_task: T-XXX` — the originating
+# inception or build task. Symmetric to T-1849's arc_id validation (which
+# guards task→arc refs); this guards arc→task refs. WARN-only, never blocks
+# (audit exit unaffected) — matches T-1846 §4 D4 (warn not block).
+anchor_missing=0
+anchor_checked=0
+if [ -d "$PROJECT_ROOT/.context/arcs" ]; then
+    for af in "$PROJECT_ROOT/.context/arcs"/*.yaml; do
+        [ -f "$af" ] || continue
+        # Extract anchor_task value (single-line scalar). Tolerate quotes + null.
+        anchor=$(awk -F': ' '/^anchor_task:/ {sub(/^anchor_task:[[:space:]]*/, ""); print; exit}' "$af" \
+                 | tr -d ' "' \
+                 | head -c 32)
+        [ -z "$anchor" ] && continue
+        [ "$anchor" = "null" ] && continue
+        anchor_checked=$((anchor_checked + 1))
+        if ! ls "$PROJECT_ROOT"/.tasks/active/"$anchor"-*.md "$PROJECT_ROOT"/.tasks/completed/"$anchor"-*.md 2>/dev/null | grep -q .; then
+            arc_name=$(basename "$af" .yaml)
+            warn "Arc '$arc_name' anchor_task '$anchor' not found in .tasks/{active,completed}/" \
+                 "Arc references a task that does not exist (hostage state in the reverse direction — T-1849 guards task→arc; this guards arc→task)" \
+                 "Either restore the task file, or update '$af' to point at the correct anchor (or set anchor_task: null if it's been retired)"
+            anchor_missing=$((anchor_missing + 1))
+        fi
+    done
+fi
+if [ "$anchor_checked" -gt 0 ] && [ "$anchor_missing" -eq 0 ]; then
+    pass "All $anchor_checked arc anchor_task references resolve to existing tasks"
+fi
+
 # Fabric drift detection (T-212 — component topology integrity)
 if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
     fabric_cards=$(find "$PROJECT_ROOT/.fabric/components/" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)

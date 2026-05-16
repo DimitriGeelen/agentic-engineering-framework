@@ -4,16 +4,16 @@ name: "Anchor-task existence audit check (T-NEW-8)"
 description: >
   agents/audit/audit.sh adds check: warn when arc YAML's anchor_task: T-X references a non-existent task. Warning only, never blocks (audit exit code unaffected). Check passes silently for arcs without anchor_task: set. Deps: T-1846 (logical sequencing, not functional). Mirrors D4 from inception (anchor-task missing = warn not block, symmetric to arc_id validation via D-Immutability for the reverse direction).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [build, audit, T-NEW-8]
 components: []
 related_tasks: [T-1846, T-1847]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:17Z
-last_update: 2026-05-15T14:53:17Z
+last_update: 2026-05-16T09:29:16Z
 date_finished: null
 ---
 
@@ -26,10 +26,10 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/audit/audit.sh` adds anchor-task check: WARN when arc YAML's `anchor_task: T-X` references a task not found in `.tasks/active/` or `.tasks/completed/`
-- [ ] Check passes silently for arcs without `anchor_task:` set
-- [ ] Warning only — `fw audit` exit code unaffected (no FAIL escalation)
-- [ ] Test: set `anchor_task: T-NONEXISTENT` on a test arc YAML → `fw audit` emits anchor-missing warning AND returns exit 0 or 1 (not 2)
+- [x] `agents/audit/audit.sh` adds anchor-task check: WARN when arc YAML's `anchor_task: T-X` references a task not found in `.tasks/active/` or `.tasks/completed/`. Placed in STRUCTURE section after YAML-parse loop.
+- [x] Check passes silently for arcs without `anchor_task:` set OR with `anchor_task: null`. Pass line only when ≥1 anchor was checked (no false-positive pass on zero-anchor scans).
+- [x] Warning only — `fw audit` exit code unaffected. Verified: orphan-anchor fixture exits ≤1, never 2.
+- [x] Test: `tests/unit/audit_anchor_task_existence.bats` covers 5 cases. 5/5 pass.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -56,6 +56,15 @@ date_finished: null
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+#
+# L-393: scope `bin/fw audit` to a section; use `grep -c >=1` not `grep -q`.
+
+# Bats coverage passes
+bats tests/unit/audit_anchor_task_existence.bats >/dev/null 2>&1
+# Audit clean (structure section) — anchor check is now part of it
+test "$(bin/fw audit --section structure 2>&1 | grep -c 'Fail: 0')" -ge 1
+# Anchor check pass line emitted on our 5 real arcs (all have anchor_task pointing at existing tasks)
+bin/fw audit --section structure 2>&1 | grep -q "anchor_task references"
 
 ## RCA
 
@@ -97,6 +106,28 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-16 — pass-line only when at least one anchor checked
+
+- **What changed:** Initial plan: always emit a pass line for the anchor check. Building revealed this would emit a false-positive pass when ZERO arcs had `anchor_task:` (the check did nothing yet "succeeded"). Right behavior: only emit the pass line when `anchor_checked > 0` AND `anchor_missing == 0`. Zero-anchor case stays silent — there's nothing to report.
+- **Plan impact:** AC text updated to capture this nuance. Mirrors the existing audit convention where pass lines are emitted per-check-actually-run, not per-check-attempted.
+- **Triggered:** No new sub-task. Captured in AC #2.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** T-1856 closes the symmetric half of T-1849's hostage-state guard: task→arc references are checked by the PreToolUse hook (write-time), arc→task references are checked by audit (background). WARN-only by design per T-1846 §4 D4 — fixing a stale anchor_task is a maintenance task, not a blocker. Implementation is ~25 lines added to audit.sh's STRUCTURE section, between YAML-parse and fabric-drift checks. 5/5 bats fixtures cover all branches. Live audit on the 5 real arcs returns Pass=14, Warn=1, Fail=0 (was Pass=13 — one new anchor pass line added).
+
+**Evidence:**
+- `agents/audit/audit.sh`: anchor-task check inserted after YAML parse loop (line ~588)
+- `tests/unit/audit_anchor_task_existence.bats`: 5/5 pass
+  - valid anchor → pass line
+  - orphan anchor (T-99999) → WARN, exit ≤1
+  - no anchor field → silent
+  - anchor_task: null → silent
+  - mix of valid + orphan → only orphan warns
+- Real-world audit run: 14 PASS (1 new vs T-1848 close baseline), 1 WARN (pre-existing fabric-enrich), 0 FAIL
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -124,3 +155,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1856-anchor-task-existence-audit-check-t-new-.md
 - **Context:** Initial task creation
+
+### 2026-05-16T09:29:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
