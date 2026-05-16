@@ -3012,3 +3012,10 @@ X'` returning empty group."
   date: 2026-05-16
   context: T-1873 expanded L-392 scope after T-1871 close recursed
   application: ship
+- id: L-393
+  learning: "P-011 verification commands must scope bin/fw audit to a specific --section. The bare 'bin/fw audit 2>&1 | grep -q \"Fail: 0\"' pattern runs all sections (~5 min) with stdout captured by grep -q, hiding all progress. Under contention (parallel close-attempts) each retry spawns its own concurrent audit and queues on the task's flock — visible only as a silent halt. Scope-tight form: 'bin/fw audit --section structure 2>&1 | grep -q \"Fail: 0\"' runs ~10s and matches the actual AC scope. Discovered in T-1848 verb-side sequel close."
+  source: P-011
+  task: T-1848
+  date: 2026-05-16
+  context: Added via context agent
+  application: TBD

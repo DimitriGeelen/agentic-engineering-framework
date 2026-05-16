@@ -4,16 +4,16 @@ name: "Sequential arc-NNN immutable IDs (T-NEW-1.5)"
 description: >
   Introduce arc-NNN sequential ID scheme on .context/arcs/*.yaml: id field with arc-NNN value, counter persisted, 4 existing arcs migrated to arc-001..004, arc-grooming gets arc-005, Watchtower URL routing accepts slug + ID. Encodes D-Immutability in lib/arc.sh comments (no renumber, no reuse). Foundation slice — T-NEW-2 (arc_id validation) needs stable target. Anchor: T-1846 inception decide-go GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [build, arc:arc-grooming, schema-migration, arc-system, immutability, T-NEW-1.5]
-components: ["lib/arc.sh", "web/blueprints/arcs.py", ".context/arcs/"]
+components: [C-004, lib/arc.sh, tests/unit/arc_dual_identity_verbs.bats, web/blueprints/arcs.py, web/blueprints/core.py]
 related_tasks: [T-1846, T-1847, T-1653, T-1661]
 created: 2026-05-15T14:51:15Z
-last_update: 2026-05-16T08:24:28Z
-date_finished: null
+last_update: 2026-05-16T09:08:57Z
+date_finished: 2026-05-16T09:08:57Z
 ---
 
 # T-1848: Sequential arc-NNN immutable IDs (T-NEW-1.5)
@@ -64,7 +64,16 @@ Anchor: T-1846 decide-go GO.
 test $(grep -lE '^id: arc-' .context/arcs/*.yaml | wc -l) -ge 5
 grep -q '^id: arc-001' .context/arcs/dispatch-safety.yaml
 grep -q '^id: arc-005' .context/arcs/arc-grooming.yaml
-bin/fw audit 2>&1 | grep -q "Fail: 0"
+# Scope-limited to structure section — the broad `bin/fw audit` form
+# runs all sections (~5 min) and triggers a silent-halt class on the
+# completion gate (it captures stdout for grep -q, hiding the audit's
+# progress). T-1848 verb-side sequel discovered this — see Evolution
+# entry "verification scope creep".
+# Use `grep -c` (not `-q`) — under `set -o pipefail` (which update-task.sh's
+# verification runner uses), grep -q closes its stdin on first match,
+# delivering SIGPIPE to audit, exit 141. `-c` reads to EOF, no SIGPIPE.
+test "$(bin/fw audit --section structure 2>&1 | grep -c 'Fail: 0')" -ge 1
+bats tests/unit/arc_dual_identity_verbs.bats >/dev/null 2>&1
 curl -sf "$(bin/fw watchtower url)/arcs/arc-001" >/dev/null
 curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
 
@@ -103,6 +112,12 @@ curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
 - **What changed:** Threaded `_arc_normalize_input` through `arc_focus`/`arc_show`/`arc_tag`/`arc_close` in `lib/arc.sh`. CLI verbs now uniformly accept both slug (`dispatch-safety`) and arc-NNN (`arc-001`) forms. New bats `tests/unit/arc_dual_identity_verbs.bats` covers all four verbs with both forms (11/11 pass). `fw arc focus arc-005` live-verified.
 - **Plan impact:** The "every user-facing entry point accepts either slug or arc-NNN" promise now holds end-to-end (web + CLI). T-1848 is complete. AC 6 (audit-clean) verified: Pass=13, Warn=1, Fail=0.
 - **Triggered:** No new sub-task. Sequel completed in same task — folding the 20-min follow-up into T-1848 rather than spinning off T-NEW-1.5b kept the unit-of-work atomic. Task transitions to partial-complete pending Human [REVIEW] AC on the dual-render check (render-surface gate, T-1766).
+
+### 2026-05-16 — verification scope creep / silent-halt class on completion gate
+
+- **What changed:** While transitioning T-1848 to work-completed, the P-011 verification gate invoked `bin/fw audit 2>&1 | grep -q "Fail: 0"`. That runs the FULL audit (all sections, ~5+ minutes). The completion gate captures stdout for `grep -q`, hiding all audit progress from the operator. Multiple parallel close-attempts queued up behind a flock'd `.context/locks/T-1848.lock`, each spawning its own concurrent audit. 5 hung update-task.sh + 4 hung audit.sh processes accumulated; tier-0 gate correctly refused `pkill -9`; cleanup via targeted `kill -TERM` + lock removal.
+- **Plan impact:** P-011 verification commands SHOULD be scope-tight to what the AC actually asserts. `bin/fw audit --section structure` is the right command for an "arc YAML files parse" check — 10s instead of 5+ min, and the audit's progress isn't hidden by `grep -q`. Fixed in T-1848's Verification block. **Cross-cutting learning candidate** — any AC that says "audit clean" should specify `--section`, never bare `bin/fw audit`.
+- **Triggered:** Captured as a learning (next commit). Consider a structural follow-up: P-011 enforcer could auto-add `--section structure` when the AC body mentions arc/yaml/schema, OR Verification block linter could flag bare `bin/fw audit` calls. Filing as T-NEW-1.5c if pattern repeats.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -175,3 +190,30 @@ curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
 ### 2026-05-16T08:24:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-0c8a6b83
+- **Timestamp:** 2026-05-16T09:09:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — `bin/fw audit` structure section passes after migration — verified 2026-05-16T08:46Z: Pass=13, Warn=1 (fabric-enrich, pre-existing), Fail=0. All 5 arc YAMLs parse; tag scans slug-based across `web/blu
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/arcs.py in: `bin/fw audit` structure section passes after migration — verified 2026-05-16T08:46Z: Pass=13, Warn=1 (fabric-enrich, pre-existing), Fail=0. All 5 arc`
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 21
+     - evidence: `bats tests/unit/arc_dual_identity_verbs.bats >/dev/null 2>&1`
+  2. **empty-output-success** (partial, heuristic) @ Verification:line 22
+     - evidence: `curl -sf "$(bin/fw watchtower url)/arcs/arc-001" >/dev/null`
+  3. **empty-output-success** (partial, heuristic) @ Verification:line 23
+     - evidence: `curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null`
+
+### 2026-05-16T09:08:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Verb-side normalisation sequel complete; verification commands corrected (SIGPIPE class); Human [REVIEW] AC remains
