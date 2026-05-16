@@ -1,4 +1,5 @@
-id: embeddings-strategy
+id: arc-002
+slug: embeddings-strategy
 name: Embeddings generation strategy — retrieval as arc-coherence support
 description: 
 status: in-progress

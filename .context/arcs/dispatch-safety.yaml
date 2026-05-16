@@ -1,4 +1,5 @@
-id: dispatch-safety
+id: arc-001
+slug: dispatch-safety
 name: "Dispatch safety: Worker uncertainty handling"
 description: v1 pause-to-operator + risk-policy preamble; v2 peer-consult (via T-1804). Workers safely handle mid-dispatch ambiguity by pausing on severity x likelihood threshold, exiting cleanly, and re-dispatching after operator resolution.
 status: in-progress

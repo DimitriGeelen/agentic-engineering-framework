@@ -1,23 +1,54 @@
 #!/usr/bin/env bash
-# lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661)
+# lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848)
 #
-# Arcs are first-class workspaces grouping tasks by theme. An arc has
-# a slug id (`orchestrator-rethink`), a name, an optional anchor task,
-# and a list of constituent tasks. Arcs surface via:
-#   - `.context/arcs/<id>.yaml` registry
-#   - `.context/working/arc-focus.yaml` (single-arc focus, single-task analog)
-#   - `arc:<id>` tag namespace (canonical; legacy `from-T-XXXX` mapped on migrate)
+# Arcs are first-class workspaces grouping tasks by theme. Two identities:
+#
+#   • slug  — human-readable filename stem (e.g., `orchestrator-rethink`).
+#             Used in URLs, tags (arc:<slug>), and discussion. Stable but
+#             not immutable — a slug may be renamed (rare; never auto).
+#   • arc-NNN — immutable sequential numeric ID (e.g., `arc-001`) written
+#             into the YAML's `id:` field at creation time. Never renumbered,
+#             never reused, never deleted (status flips, file stays).
+#
+# D-Immutability axiom (T-1846 inception §11.3, captured here so future
+# changes find it):
+#
+#   1. arc-NNN IDs are NEVER renumbered. Once `id: arc-007` is allocated,
+#      arc-007 forever points at THAT yaml (whatever its slug becomes).
+#   2. arc-NNN IDs are NEVER reused. If arc-007 is abandoned, the next
+#      `fw arc create` allocates arc-008, not arc-007.
+#   3. arc YAMLs are NOT deleted as part of normal flow. Abandonment is
+#      a status transition (status: abandoned), not a file delete.
+#      Manual `rm` is only permitted for fresh-mistake recovery (an arc
+#      created within the current uncommitted session and not yet
+#      referenced by any task or commit). All other state changes route
+#      through `fw arc <verb>`.
+#   4. The slug → arc-NNN mapping is read-only from the filename + `id:`
+#      field. If a slug needs to change, both filename rename AND
+#      task-tag migration must happen atomically (rare; covered by
+#      a follow-up migration helper, not this script).
+#
+# Arcs surface via:
+#   - `.context/arcs/<slug>.yaml` registry (filename stem = slug)
+#   - `.context/working/arc-focus.yaml` (single-arc focus)
+#   - `arc:<slug>` tag namespace (canonical during transition; T-NEW-3
+#                                  introduces `arc_id:` task-frontmatter
+#                                  field as the post-migration target)
 #   - handover.sh `## Current Arc` section
-#   - Watchtower landing-page section + `/tasks?arc=<id>` filter chip
+#   - Watchtower landing-page section + `/tasks?arc=<slug>` filter chip
+#   - Watchtower `/arcs/<slug>` AND `/arcs/<arc-NNN>` both resolve to the
+#                                  same arc detail page
 #
 # Verbs:
-#   create <id> --name "..." [--anchor T-XXXX] [--description "..."]
-#   focus <id>                            # write arc-focus.yaml
+#   create <slug> --name "..." --headline-mechanic "..." [--anchor T-XXXX]
+#                 [--description "..."]
+#       Allocates next arc-NNN, writes id: arc-NNN, file becomes <slug>.yaml.
+#   focus <slug-or-id>                    # write arc-focus.yaml
 #   list                                   # table of all arcs
-#   show <id>                              # detail
-#   tag <id> T-XXXX                        # link task to arc (bidirectional)
-#   close <id> [--decision "..."]          # mark closed
-#   migrate <id> --anchor T-XXXX           # seed from related_tasks + legacy tags
+#   show <slug-or-id>                      # detail
+#   tag <slug-or-id> T-XXXX                # link task to arc (bidirectional)
+#   close <slug-or-id> [--decision "..."]  # mark closed
+#   migrate <slug> --anchor T-XXXX         # seed from related_tasks + legacy tags
 #
 # Source order (PROJECT_ROOT must be set by caller — bin/fw or test harness).
 
@@ -43,6 +74,84 @@ _arc_path() {
 
 _arc_exists() {
     [ -f "$(_arc_path "$1")" ]
+}
+
+# T-1848: allocate next sequential arc-NNN ID.
+# Scans existing .context/arcs/*.yaml for `id: arc-NNN` patterns, returns
+# `arc-<max+1>` zero-padded to 3 digits. D-Immutability axiom (rule 2)
+# means we use MAX not COUNT — abandoned/missing slots are NEVER reused.
+_arc_next_numeric_id() {
+    _arc_ensure_dir
+    local max=0 cur
+    if compgen -G "${ARCS_DIR}/*.yaml" >/dev/null 2>&1; then
+        for f in "${ARCS_DIR}"/*.yaml; do
+            cur=$(awk '/^id:[[:space:]]*arc-[0-9]/ {gsub(/[^0-9]/, "", $2); print $2; exit}' "$f")
+            if [ -n "$cur" ] && [ "$cur" -gt "$max" ] 2>/dev/null; then
+                max="$cur"
+            fi
+        done
+    fi
+    printf 'arc-%03d\n' $((max + 1))
+}
+
+# T-1848: dual identity resolver.
+# Given `slug` (filename stem) OR `arc-NNN` (numeric id), return the
+# canonical slug (filename stem). Used by route handlers and the CLI
+# to accept either form.
+#
+# Returns:
+#   0 + slug-on-stdout when match found
+#   1 + nothing        when no match
+_arc_resolve_slug() {
+    local input="$1"
+    [ -n "$input" ] || return 1
+    _arc_ensure_dir
+
+    # Direct filename match (slug case)
+    if [ -f "${ARCS_DIR}/${input}.yaml" ]; then
+        echo "$input"
+        return 0
+    fi
+
+    # Numeric id scan (arc-NNN case)
+    if [[ "$input" =~ ^arc-[0-9]+$ ]]; then
+        if compgen -G "${ARCS_DIR}/*.yaml" >/dev/null 2>&1; then
+            for f in "${ARCS_DIR}"/*.yaml; do
+                local stored
+                stored=$(awk '/^id:[[:space:]]*/ {print $2; exit}' "$f")
+                if [ "$stored" = "$input" ]; then
+                    basename "$f" .yaml
+                    return 0
+                fi
+            done
+        fi
+    fi
+
+    return 1
+}
+
+# T-1848: normalize CLI input to the canonical slug (filename stem).
+# Pure CLI ergonomics — any verb that takes <arc-id> arg routes through this.
+# Returns the input unchanged when no match found (so error paths fire on
+# the original user input, not a confused empty string).
+_arc_normalize_input() {
+    local input="$1"
+    local slug
+    slug=$(_arc_resolve_slug "$input") && [ -n "$slug" ] && { echo "$slug"; return 0; }
+    echo "$input"
+    return 0
+}
+
+# T-1848: return the canonical arc-NNN id for a slug (or arc-NNN passthrough).
+# Returns:
+#   0 + arc-NNN-on-stdout when arc has an allocated numeric id
+#   0 + slug-on-stdout    when arc predates T-1848 migration (still in `id: <slug>` form)
+#   1                     when arc not found
+_arc_numeric_id_for() {
+    local input="$1"
+    local slug
+    slug=$(_arc_resolve_slug "$input") || return 1
+    awk '/^id:[[:space:]]*/ {print $2; exit}' "${ARCS_DIR}/${slug}.yaml"
 }
 
 _arc_ensure_dir() {
@@ -215,6 +324,10 @@ arc_create() {
     local now
     now="$(_arc_now)"
 
+    # T-1848: allocate next sequential arc-NNN. D-Immutability: never reused.
+    local arc_numeric_id
+    arc_numeric_id="$(_arc_next_numeric_id)"
+
     # T-1816: yaml-safe-quote all free-text string fields. Origin: dispatch-safety
     # arc shipped with `name: Dispatch safety: Worker uncertainty handling` —
     # unquoted colon parsed as a nested mapping, broke Watchtower /arcs/dispatch-safety.
@@ -226,7 +339,8 @@ arc_create() {
     hm_yaml=$(printf '%s' "$headline_mechanic" | python3 -c 'import yaml,sys; print(yaml.safe_dump(sys.stdin.read().rstrip("\n"), default_style=chr(34)).rstrip())')
 
     cat > "$(_arc_path "$id")" <<YAML
-id: ${id}
+id: ${arc_numeric_id}
+slug: ${id}
 name: ${name_yaml}
 description: ${desc_yaml}
 status: in-progress
@@ -239,7 +353,7 @@ closed_at: null
 decision: null
 YAML
 
-    echo "Created arc '${id}' → $(_arc_path "$id")"
+    echo "Created arc '${id}' (${arc_numeric_id}) → $(_arc_path "$id")"
     [ -n "$anchor" ] && echo "  anchor: ${anchor}"
     echo "  headline_mechanic: ${headline_mechanic}"
     return 0
@@ -289,13 +403,16 @@ arc_list() {
     printf "%-2s %-30s %-12s %-7s %s\n" "" "ID" "STATUS" "TASKS" "NAME"
     printf "%-2s %-30s %-12s %-7s %s\n" "" "----" "------" "-----" "----"
     for f in "$ARCS_DIR"/*.yaml; do
-        local id status name task_count marker
+        local id slug status name task_count marker
         id=$(awk -F': ' '/^id:/ {print $2; exit}' "$f")
+        # T-1848: slug is the tag namespace; arc-NNN is the display id.
+        slug=$(awk -F': ' '/^slug:/ {print $2; exit}' "$f")
+        [ -z "$slug" ] && slug="$(basename "$f" .yaml)"
         status=$(awk -F': ' '/^status:/ {print $2; exit}' "$f")
         name=$(awk -F': ' '/^name:/ {sub(/^name: /,""); print; exit}' "$f")
-        task_count=$(_arc_tasks_with_tag "arc:${id}" | wc -l | tr -d ' ')
+        task_count=$(_arc_tasks_with_tag "arc:${slug}" | wc -l | tr -d ' ')
         marker="  "
-        if [ "$id" = "$current" ]; then marker=" *"; fi
+        if [ "$id" = "$current" ] || [ "$slug" = "$current" ]; then marker=" *"; fi
         printf "%-2s %-30s %-12s %-7s %s\n" "$marker" "$id" "$status" "$task_count" "$name"
     done
     [ -n "$current" ] && echo "" && echo "(* = focused arc)"

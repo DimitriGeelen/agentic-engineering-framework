@@ -57,17 +57,46 @@ def _read_focus() -> str | None:
     return str(val)
 
 
+def _resolve_arc_slug(arc_id_or_slug: str) -> str | None:
+    """T-1848: Resolve either a slug (filename stem) or arc-NNN id to the
+    canonical slug. Returns None when no arc matches.
+
+    Slug case: direct filename lookup (cheap path).
+    arc-NNN case: scan files for matching `id:` field (rare; only when the
+    user hits /arcs/arc-001 instead of /arcs/dispatch-safety).
+    """
+    arcs_dir = _arcs_dir()
+    direct = arcs_dir / f"{arc_id_or_slug}.yaml"
+    if direct.is_file():
+        return arc_id_or_slug
+
+    # Scan for arc-NNN id match
+    if arc_id_or_slug.startswith("arc-") and arc_id_or_slug[4:].isdigit():
+        for af in arcs_dir.glob("*.yaml"):
+            try:
+                data = yaml.safe_load(af.read_text()) or {}
+            except (yaml.YAMLError, OSError):
+                continue
+            if isinstance(data, dict) and data.get("id") == arc_id_or_slug:
+                return af.stem
+    return None
+
+
 def _read_arc(arc_id: str) -> dict[str, Any] | None:
-    """Return arc YAML for arc_id, or None if not found / unreadable."""
-    path = _arcs_dir() / f"{arc_id}.yaml"
-    if not path.is_file():
+    """Return arc YAML for arc_id (slug or arc-NNN), or None if not found."""
+    slug = _resolve_arc_slug(arc_id)
+    if slug is None:
         return None
+    path = _arcs_dir() / f"{slug}.yaml"
     try:
         data = yaml.safe_load(path.read_text()) or {}
     except (yaml.YAMLError, OSError):
         return None
     if not isinstance(data, dict):
         return None
+    # T-1848: ensure `slug` field exists in returned dict — older arcs predate
+    # the dual-identity migration and rely on filename for slug semantics.
+    data.setdefault("slug", slug)
     return data
 
 
@@ -87,18 +116,26 @@ def _list_arcs() -> list[dict[str, Any]]:
             continue
         # T-1817: task_count must reflect merged source-of-truth (legacy + tag-scan),
         # not just the YAML's denormalised cache.
+        # T-1848: tag-scan uses the slug (filename stem), NOT the numeric `id:` —
+        # tasks tagged `arc:dispatch-safety` would not match `arc:arc-001`. The
+        # tags→arc_id task-frontmatter migration is T-NEW-3 (T-1850); until then,
+        # slug remains the tag namespace.
         legacy = data.get("constituent_tasks") or []
         legacy_ids = [str(t).strip() for t in legacy if str(t).strip()] if isinstance(legacy, list) else []
-        arc_id_for_scan = str(data.get("id") or af.stem).strip()
-        tagged_ids = _scan_tasks_by_tag(f"arc:{arc_id_for_scan}") if arc_id_for_scan else []
+        slug = str(data.get("slug") or af.stem).strip()
+        tagged_ids = _scan_tasks_by_tag(f"arc:{slug}") if slug else []
         merged_count = len(set(legacy_ids) | set(tagged_ids))
         # YAML may parse ISO-8601 to datetime; coerce to str for stable rendering + sort.
         created_raw = data.get("created", "")
         created_str = created_raw.isoformat() if hasattr(created_raw, "isoformat") else str(created_raw or "")
         closed_raw = data.get("closed_at")
         closed_str = closed_raw.isoformat() if hasattr(closed_raw, "isoformat") else (str(closed_raw) if closed_raw else None)
+        # T-1848: `id` is now arc-NNN (immutable). `slug` is the filename stem
+        # (human-readable). Both surface for routing / display.
+        arc_numeric_id = str(data.get("id") or slug).strip()
         out.append({
-            "id": data.get("id", af.stem),
+            "id": arc_numeric_id,
+            "slug": slug,
             "name": data.get("name", "(no name)"),
             "status": data.get("status", "?"),
             "decision": data.get("decision"),
@@ -106,7 +143,7 @@ def _list_arcs() -> list[dict[str, Any]]:
             "task_count": merged_count,
             "created": created_str,
             "closed_at": closed_str,
-            "focused": (focus is not None and focus == data.get("id")),
+            "focused": (focus is not None and (focus == arc_numeric_id or focus == slug)),
         })
     # Sort: in-progress first (rank 0), then closed (rank 1), unknown (rank 9);
     # within each rank, newest created first. Python sort is stable so we do
@@ -191,8 +228,10 @@ def _resolve_constituents(arc: dict[str, Any]) -> list[dict[str, Any]]:
     legacy = arc.get("constituent_tasks") or []
     if not isinstance(legacy, list):
         legacy = []
-    arc_id = str(arc.get("id") or "").strip()
-    tagged = _scan_tasks_by_tag(f"arc:{arc_id}") if arc_id else []
+    # T-1848: tag scan uses slug (filename stem), not numeric `id:` (arc-NNN).
+    # See _list_arcs above for the same reasoning.
+    slug = str(arc.get("slug") or arc.get("id") or "").strip()
+    tagged = _scan_tasks_by_tag(f"arc:{slug}") if slug else []
 
     merged_ids: list[str] = []
     seen: set[str] = set()
@@ -265,15 +304,24 @@ def arcs_index():
 
 @bp.route("/arcs/<arc_id>")
 def arc_detail(arc_id: str):
-    """Detail page for one arc."""
+    """Detail page for one arc.
+
+    T-1848: arc_id may be the slug (e.g., dispatch-safety) or the numeric
+    id (arc-001). Both resolve to the same arc; _read_arc handles dispatch.
+    """
     arc = _read_arc(arc_id)
     if arc is None:
         abort(404, description=f"Arc '{arc_id}' not registered. Run `fw arc list` to see registered arcs.")
+    # T-1848: use the slug (filename stem) for tag scans, reports lookup,
+    # and focus comparison — even when the user navigated by arc-NNN.
+    arc_slug = str(arc.get("slug") or arc_id).strip()
     constituents = _resolve_constituents(arc)
     stats = _completion_stats(constituents)
-    focused = (_read_focus() == arc_id)
-    has_specialized_view = (arc_id == "orchestrator-rethink")
-    reports = _arc_reports(arc_id)
+    focus_val = _read_focus()
+    arc_numeric = str(arc.get("id") or "").strip()
+    focused = (focus_val == arc_slug or (arc_numeric and focus_val == arc_numeric))
+    has_specialized_view = (arc_slug == "orchestrator-rethink")
+    reports = _arc_reports(arc_slug)
     return render_page(
         "arc_detail.html",
         page_title=f"Arc: {arc.get('name', arc_id)}",

@@ -1,4 +1,5 @@
-id: orchestrator-rethink
+id: arc-003
+slug: orchestrator-rethink
 name: Orchestrator routing rethink
 description: Reconsider orchestrator substrate from T-1061; close G-062 by using what we built.
 status: in-progress

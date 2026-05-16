@@ -222,10 +222,14 @@ def _get_arcs_in_flight():
             continue
         if d.get("status") != "in-progress":
             continue
-        arc_id = d.get("id") or f.stem
-        # Count tasks tagged arc:<id> across active+completed.
+        # T-1848: slug (filename stem) is the tag namespace; `id:` is the
+        # immutable arc-NNN. Tasks tagged `arc:dispatch-safety` would not
+        # match `arc:arc-001`.
+        slug = d.get("slug") or f.stem
+        arc_numeric_id = d.get("id") or slug
+        # Count tasks tagged arc:<slug> across active+completed.
         task_count = 0
-        tag = f"arc:{arc_id}"
+        tag = f"arc:{slug}"
         for tasks_dir in (PROJECT_ROOT / ".tasks" / "active", PROJECT_ROOT / ".tasks" / "completed"):
             if not tasks_dir.exists():
                 continue
@@ -241,11 +245,12 @@ def _get_arcs_in_flight():
                             task_count += 1
                         break
         arcs.append({
-            "id": arc_id,
-            "name": d.get("name", arc_id),
+            "id": arc_numeric_id,
+            "slug": slug,
+            "name": d.get("name", slug),
             "status": d.get("status", "in-progress"),
             "task_count": task_count,
-            "focused": (arc_id == focused),
+            "focused": (arc_numeric_id == focused or slug == focused),
         })
     return arcs
 

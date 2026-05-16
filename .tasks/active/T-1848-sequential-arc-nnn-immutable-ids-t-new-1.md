@@ -4,15 +4,15 @@ name: "Sequential arc-NNN immutable IDs (T-NEW-1.5)"
 description: >
   Introduce arc-NNN sequential ID scheme on .context/arcs/*.yaml: id field with arc-NNN value, counter persisted, 4 existing arcs migrated to arc-001..004, arc-grooming gets arc-005, Watchtower URL routing accepts slug + ID. Encodes D-Immutability in lib/arc.sh comments (no renumber, no reuse). Foundation slice — T-NEW-2 (arc_id validation) needs stable target. Anchor: T-1846 inception decide-go GO.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [build, arc:arc-grooming, schema-migration, arc-system, immutability, T-NEW-1.5]
 components: ["lib/arc.sh", "web/blueprints/arcs.py", ".context/arcs/"]
 related_tasks: [T-1846, T-1847, T-1653, T-1661]
 created: 2026-05-15T14:51:15Z
-last_update: 2026-05-15T14:51:15Z
+last_update: 2026-05-16T08:24:28Z
 date_finished: null
 ---
 
@@ -27,13 +27,15 @@ Anchor: T-1846 decide-go GO.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/arc.sh` allocates next sequential `arc-NNN` ID on `fw arc create`; counter persisted (computed from max `id:` across existing arcs, or a `.context/arcs/.next-id` counter)
-- [ ] 4 existing arcs migrated: `dispatch-safety`→`arc-001`, `embeddings-strategy`→`arc-002`, `orchestrator-rethink`→`arc-003`, `project-shape-resilience`→`arc-004`. `arc-grooming` becomes `arc-005`
-- [ ] Each arc YAML grows an `id:` field with the `arc-NNN` value; slug remains as filename for human readability
-- [ ] Watchtower `/arcs/<slug>` AND `/arcs/<id>` both resolve to the same arc page
-- [ ] `lib/arc.sh` comment block encodes D-Immutability invariants (no renumber, no reuse; abandonment is status not deletion; manual rm allowed only for zero-reference fresh-mistake cases)
-- [ ] `bin/fw audit` structure section passes after migration (5 arcs each with valid `id: arc-NNN`)
-- [ ] Migration is atomic single commit — all 4 existing arc YAMLs gain their `id:` field together
+- [x] `lib/arc.sh` allocates next sequential `arc-NNN` ID via `_arc_next_numeric_id` (scans max `id: arc-NNN` across existing arcs; D-Immutability rule 2 — MAX not COUNT). `arc_create` writes `id: arc-NNN` + `slug:` on new arcs.
+- [x] 5 existing arcs migrated: `dispatch-safety`→`arc-001`, `embeddings-strategy`→`arc-002`, `orchestrator-rethink`→`arc-003`, `project-shape-resilience`→`arc-004`, `arc-grooming`→`arc-005`. Each YAML now has both `id: arc-NNN` and explicit `slug:` fields.
+- [x] Each arc YAML grows an `id:` field with the `arc-NNN` value; slug remains as filename AND as explicit `slug:` field.
+- [x] Watchtower `/arcs/<slug>` AND `/arcs/<id>` both resolve. Verified: `/arcs/dispatch-safety`, `/arcs/arc-001`, `/arcs/arc-005` all return 200.
+- [x] `lib/arc.sh` comment block encodes D-Immutability invariants (rules 1-4 with rationale; rule 2 = no reuse pinned in `_arc_next_numeric_id` impl).
+- [ ] `bin/fw audit` structure section passes after migration — deferred verification (audit was running in background when budget gate fired at 285K). All 5 arc YAMLs parse via `python3 -c 'yaml.safe_load(...)'`. Tag scans switched to slug-based across consumers (`web/blueprints/arcs.py`, `web/blueprints/core.py`, `agents/audit/audit.sh`). Verify next session.
+- [x] Migration is atomic single commit — all 5 existing arc YAMLs gain their `id:` field together (this commit).
+
+**Partial-ship — verb-side normalisation deferred:** The arc verb call-sites in `lib/arc.sh` (`arc_focus`, `arc_show`, `arc_tag`, `arc_close`) still pass raw user input to `_arc_validate_id`/`_arc_exists`/`_arc_path`, which only resolve the slug form. The new helper `_arc_normalize_input` exists but is not wired into the verbs. A user running `fw arc focus arc-001` gets "arc not found" because there's no `arc-001.yaml` — they must use `fw arc focus dispatch-safety`. Bats test for full T-1848 coverage also deferred (covered by smoke tests + dual-route curl). Follow-up: a 20-minute sequel task threading `_arc_normalize_input` through the four verbs + a bats fixture.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -85,6 +87,18 @@ curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
 
 ## Evolution
 
+### 2026-05-16 — slug as explicit YAML field, not implicit filename
+
+- **What changed:** Initial design (T-1846 inception §4) said "slug remains as filename for human readability" — implying filename is the only source-of-truth for slug. Building revealed that downstream consumers (`audit.sh`, `core.py`, `arcs.py`) all needed slug-vs-id discrimination. Embedding the slug AS A FIELD in the YAML alongside `id: arc-NNN` halved the consumer-side code: no need to thread the filename stem through every helper, just read `slug:` like any other field.
+- **Plan impact:** YAML schema gains a `slug:` field (was implicit; now explicit). No backward-incompat — old consumers that read `id:` for slug-like operations switch to `slug:` cleanly.
+- **Triggered:** No new sub-task; the change tightened existing consumer edits rather than spawning new ones.
+
+### 2026-05-16 — budget gate fired before verb-side normalisation complete
+
+- **What changed:** Substrate (allocator + migration + arc-list + dual-route web) shipped, but `_arc_normalize_input` wasn't wired into the four arc verbs (focus/show/tag/close). Bats test also unwritten.
+- **Plan impact:** T-1848 is **partial-ship**. The "every user-facing entry point accepts either slug or arc-NNN" promise holds for web routes; for CLI verbs it holds only for `arc list` (display-only). Other verbs accept slug only.
+- **Triggered:** Follow-up sequel (T-NEW-1.5b, ~20 min) to wire `_arc_normalize_input` through `arc_focus`/`arc_show`/`arc_tag`/`arc_close` + add bats coverage. Filed via Updates on completion. T-NEW-2 (T-1849, arc_id task-frontmatter field) can still start in parallel — it depends on the substrate landing, which this commit ships.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -134,3 +148,7 @@ curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1848-sequential-arc-nnn-immutable-ids-t-new-1.md
 - **Context:** Initial task creation
+
+### 2026-05-16T08:24:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

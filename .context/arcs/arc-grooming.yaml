@@ -1,4 +1,5 @@
-id: arc-grooming
+id: arc-005
+slug: arc-grooming
 name: "Arc grooming \u2014 canonicalisation, lifecycle, audit, doc"
 description: "Implements HANDOFF-arc-grooming-2026-05-15 via 10 build slices (T-NEW-1.5..9). Anchor:\
   \ T-1846 inception decide-go GO. Encodes D-Immutability (arc records never deleted;\

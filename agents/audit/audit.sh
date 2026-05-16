@@ -3515,6 +3515,10 @@ def grab(field, default=""):
     m = re.search(rf'^{field}:\s*(.*?)$', text, re.MULTILINE)
     return m.group(1).strip() if m else default
 arc_id = grab("id")
+# T-1848: dual identity. `id:` is now arc-NNN (immutable); `slug:` (or filename
+# stem) is the tag namespace. Tasks tagged `arc:dispatch-safety` won't match
+# `arc:arc-001`. Audit must scan by slug.
+arc_slug = grab("slug") or os.path.basename(sys.argv[1]).replace(".yaml", "")
 status = grab("status")
 ct_line = grab("constituent_tasks", "[]")
 m = re.match(r'\[(.*?)\]', ct_line)
@@ -3522,10 +3526,10 @@ items = []
 if m and m.group(1).strip():
     items = [s.strip().strip('"').strip("'") for s in m.group(1).split(",") if s.strip()]
 # Tag-based fallback (T-1813): when constituent_tasks is empty, scan .tasks/ for
-# tasks tagged arc:<id>. Mirrors lib/arc.sh:_arc_tasks_with_tag so audit and
+# tasks tagged arc:<slug>. Mirrors lib/arc.sh:_arc_tasks_with_tag so audit and
 # fw arc show use the same task-discovery pathway.
-if not items and arc_id:
-    tag_pattern = f"arc:{arc_id}"
+if not items and arc_slug:
+    tag_pattern = f"arc:{arc_slug}"
     seen = set()
     for d in ("active", "completed"):
         for f in glob.glob(os.path.join(project_root, ".tasks", d, "T-*.md")):

@@ -1,4 +1,5 @@
-id: project-shape-resilience
+id: arc-004
+slug: project-shape-resilience
 name: Project-shape resilience — kill the consumer-shape conflation class
 description: 
 status: in-progress
