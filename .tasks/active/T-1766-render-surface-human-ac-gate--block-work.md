@@ -4,16 +4,16 @@ name: "render-surface Human-AC gate — block work-completed on render-touching 
 description: >
   render-surface Human-AC gate — block work-completed on render-touching tasks without [REVIEW] Human AC
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: ["bug", "governance-gate", "human-review-surface", "T-1575-followup", "T-1763-T-1764-T-1765-meta"]
-components: ["agents/task-create/update-task.sh", "lib/render_surface.sh"]
+components: [agents/task-create/update-task.sh, lib/render_surface.sh, tests/unit/test_render_surface_gate.bats]
 related_tasks: ["T-193", "T-954", "T-1575", "T-1763", "T-1764", "T-1765"]
 created: 2026-05-06T11:30:48Z
-last_update: 2026-05-06T11:30:48Z
-date_finished: null
+last_update: 2026-05-16T08:13:11Z
+date_finished: 2026-05-16T08:13:11Z
 ---
 
 # T-1766: render-surface Human-AC gate — block work-completed on render-touching tasks without [REVIEW] Human AC
@@ -160,3 +160,22 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
   - CLAUDE.md update under "AC Classification Guidance"
   - L-364 learning ("render-surface fixes have a subjective layer that deterministic tests cannot cover")
 - **Status:** `started-work` (NOT work-completed). Do not run `fw task update T-1766 --status work-completed` until all Agent ACs are ticked.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-be4a57eb
+- **Timestamp:** 2026-05-16T08:15:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — **Render-surface predicate** — `lib/render_surface.sh` exposes `task_touches_render_surface <task_file>` returning 0 (yes) or 1 (no). Predicate examines the task's `components` frontmatter list AND th
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: **Render-surface predicate** — `lib/render_surface.sh` exposes `task_touches_render_surface <task_file>` returning 0 (yes) or 1 (no). Predicate examin`
+- **AC#5 (Agent)** — **Self-application: T-1766 closure** — T-1766's body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as render-surface examples). The predicate correctly
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: **Self-application: T-1766 closure** — T-1766's body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as`
+
+### 2026-05-16T08:13:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
