@@ -4,17 +4,17 @@ name: "Deprecate constituent_tasks: field (T-NEW-4)"
 description: >
   lib/arc.sh arc_create stops writing constituent_tasks: [] for new arcs. Existing arc YAMLs retain their entries untouched (legacy data preserved). docs/reports/T-1653-arcs-as-first-class.md gets deprecation note linking to HANDOFF-arc-grooming-2026-05-15. CLAUDE.md/FRAMEWORK.md references updated. Deps: T-NEW-3.
 
-status: captured
+status: work-completed
 workflow_type: build
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: [build, cleanup, deprecation, T-NEW-4]
 components: []
 related_tasks: [T-1846, T-1847, T-1653]
 arc_id: arc-grooming
 created: 2026-05-15T14:52:54Z
-last_update: 2026-05-15T14:52:54Z
-date_finished: null
+last_update: 2026-05-16T21:25:15Z
+date_finished: 2026-05-16T21:25:15Z
 ---
 
 # T-1851: Deprecate constituent_tasks: field (T-NEW-4)
@@ -26,36 +26,45 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/arc.sh` `arc_create` no longer writes `constituent_tasks: []` for new arcs (verified by creating a test arc and grepping its YAML)
-- [ ] Existing arc YAMLs retain their `constituent_tasks:` entries untouched (legacy data preserved per D-Immutability)
-- [ ] `docs/reports/T-1653-arcs-as-first-class.md` has deprecation note in or near Q1 section linking to `HANDOFF-arc-grooming-2026-05-15`
-- [ ] References to `constituent_tasks` in `CLAUDE.md` / `FRAMEWORK.md` / agent docs are updated or removed
+- [x] `lib/arc.sh` `arc_create` no longer writes `constituent_tasks: []` for new arcs (verified by creating a test arc and grepping its YAML)
+- [x] Existing arc YAMLs retain their `constituent_tasks:` entries untouched (legacy data preserved per D-Immutability)
+- [x] `docs/reports/T-1653-arcs-as-first-class.md` has deprecation note in or near Q1 section linking to `HANDOFF-arc-grooming-2026-05-15`
+- [x] References to `constituent_tasks` in `CLAUDE.md` / `FRAMEWORK.md` / agent docs are updated or removed (CLAUDE.md/FRAMEWORK.md grep returned 0; `lib/arc.sh` arc_help text updated with T-1851 deprecation pointer)
+- [x] Bats coverage: `tests/unit/arc_create_no_constituent_tasks.bats` — 5/5 pass (new-arc omission + legacy-arc append preserved + arc_tag non-recreation)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Watchtower `/arcs/<slug>` page still renders correctly for arcs created AFTER T-1851 ships (those without a `constituent_tasks:` field)
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/arcs/arc-grooming` in a browser — legacy in-tree arc, still has `constituent_tasks:` populated
+  2. Open `http://192.168.10.107:3000/arcs/dispatch-safety` — same, legacy
+  3. Create a test arc that omits the field:
+     ```
+     cd /opt/999-Agentic-Engineering-Framework && bin/fw arc create test-render-t1851 --name "render check" --headline-mechanic "user sees the page render correctly on /arcs/test-render-t1851 with no field present"
+     ```
+  4. Open `http://192.168.10.107:3000/arcs/test-render-t1851`
+  5. Compare: the new arc's page should render the same skeleton (header, metadata table, "Constituent tasks" section as empty or showing arc_id-tagged tasks) — no traceback, no broken table, no orphan "constituent_tasks:" label
+  6. Clean up: `rm /opt/999-Agentic-Engineering-Framework/.context/arcs/test-render-t1851.yaml`
+
+  **Expected:** All three pages render cleanly; the new arc shows an empty/zero-task body without errors.
+  **If not:** Note which page broke and what the traceback says. Reopen — likely a missing `.get()` default in `web/blueprints/arcs.py`.
+
+- [ ] [REVIEW] `docs/reports/T-1653-arcs-as-first-class.md` deprecation banner reads clearly when viewed in Watchtower (or rendered as Markdown locally)
+  **Steps:**
+  1. Open the file in a Markdown viewer or VSCode preview
+  2. The top deprecation block (before "## What the user asked for") should:
+     - Reference T-1851 + the migration T-1850 explicitly
+     - Link to `docs/reports/T-1846-arc-grooming-inception.md`
+     - Link to `.context/handoffs/HANDOFF-arc-grooming-2026-05-15.md`
+  **Expected:** Block reads as an obvious "this design has been superseded in part" note; links resolve.
+  **If not:** Edit the banner text or links and reopen.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+# T-1851 verification commands (scoped per L-291/L-393/L-387 — avoid grep -q under pipefail).
+bash -n lib/arc.sh
+bats tests/unit/arc_create_no_constituent_tasks.bats
+test "$(grep -c '^constituent_tasks:' lib/arc.sh)" -eq 0
+test "$(grep -c 'T-1851' docs/reports/T-1653-arcs-as-first-class.md)" -ge 1
 
 ## RCA
 
@@ -75,38 +84,51 @@ date_finished: null
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-16 — read-surface absence-tolerance verified before mutation
+- **What changed:** Before removing the field from `arc_create`, audited every reader to confirm graceful handling. `web/blueprints/arcs.py:123,228` uses `data.get("constituent_tasks") or []`; `agents/audit/audit.sh:3553` uses `grab("constituent_tasks", "[]")` with the T-1813 tag fallback. Both already coded defensively — no read-surface edits required, only the write site.
+- **Plan impact:** AC #4 ("references in CLAUDE.md/FRAMEWORK.md/agent docs updated or removed") simplified — CLAUDE.md/FRAMEWORK.md had 0 references, only `lib/arc.sh` `arc_help` text needed soft-deprecation wording.
+- **Triggered:** No new task. AC #4 closed as "already absent in top-level governance docs; lib/arc.sh help text amended."
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+### 2026-05-16 — audit tag-fallback blindness on migrated tasks (follow-up surface)
+- **What changed:** `agents/audit/audit.sh:3558` T-1813 fallback scans for `tags:` containing `arc:<slug>`. T-1850 stripped `arc:*` tags from 162 migrated tasks (replacing them with `arc_id:` frontmatter). Consequence: audit's arc-completion check sees zero constituent tasks for any arc whose population came from the T-1850 migration, even though `arc_id:` tells the truth. Behaviour today is "silent no-warn" (not a false alarm) — but the completion-threshold check is now blind.
+- **Plan impact:** Out of T-1851 scope (write-side deprecation only). The audit blindness predates this slice's change — the moment T-1850 stripped tags, the fallback went blind regardless of whether `arc_create` writes the field.
+- **Triggered:** Follow-up candidate for arc-grooming arc — third audit-fallback layer that scans `arc_id:` frontmatter (sibling of T-1849 hook + T-1856 anchor check). Not filed yet; will surface to operator in Recommendation.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-05-16 — fixture-test exposed _arc_next_numeric_id octal-parse edge
+- **What changed:** Initial smoke fixture used `arc-099` as a legacy arc id. `_arc_next_numeric_id` in `lib/arc.sh:94` tried to compute `099 + 1` and `bash` treated `099` as octal — "value too great for base." Harmless (the function still returned a valid next id), but it's a real latent bug if any future arc number reaches `008+`.
+- **Plan impact:** Test fixture changed to `arc-100` to dodge octal. Octal-parse fix is out of T-1851 scope.
+- **Triggered:** Latent-bug observation. Could become a 1-line `10#` prefix fix in `_arc_next_numeric_id`. Not filed; logged here for the next arc.sh-touching slice to pick up cheaply.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-16 — leave legacy data in place rather than scrub
+- **Chose:** D-Immutability — `constituent_tasks:` entries already committed to in-tree arcs stay untouched.
+- **Why:** Two readers already merge legacy + tag/arc_id fallback; scrubbing legacy data risks losing forensic trail (which task joined which arc at which point) for zero functional benefit.
+- **Rejected:** "Strip the field from all 5 in-tree arcs" — would destroy historical record, force readers to lose the merge path, and conflict with the T-1848 D-Immutability axiom we've just established for the same registry.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** T-1851 (T-NEW-4) was a bounded write-side deprecation. All 4 Agent ACs satisfied:
+- `lib/arc.sh` `arc_create` heredoc no longer emits `constituent_tasks: []` (line ~348 — removed).
+- `arc_tag` and `arc_help` text updated with T-1851 deprecation pointers; `arc_tag`'s existing `if not m: sys.exit(0)` guard makes the call a silent no-op on new arcs, so the verb stays compatible across legacy and new arcs without code-path branching.
+- Top-level governance docs (`CLAUDE.md`, `FRAMEWORK.md`) had 0 references — nothing to update there.
+- Design-doc deprecation note added in `docs/reports/T-1653-arcs-as-first-class.md` (banner near top + inline notes at MVP scope items 1, 2-tag, and 6-migration).
+- 5/5 bats coverage in `tests/unit/arc_create_no_constituent_tasks.bats`: new arc clean, legacy arc append preserved, arc_tag non-recreation, in-tree D-Immutability sanity, `bash -n`.
+
+The Evolution section captures one observability follow-up (audit's T-1813 tag-fallback is blind to T-1850-migrated tasks because the migration stripped `arc:*` tags) and one latent bug (`_arc_next_numeric_id` parses zero-padded ids as octal — surfaced by my smoke fixture, not a regression).
+
+**Evidence:**
+- `lib/arc.sh:341-358` — heredoc no longer contains `constituent_tasks:`
+- `bats tests/unit/arc_create_no_constituent_tasks.bats` → 1..5, all `ok`
+- `grep -c '^constituent_tasks:' lib/arc.sh` → 0
+- `grep -c 'T-1851' docs/reports/T-1653-arcs-as-first-class.md` → ≥1
+- `grep -rln "constituent_tasks" CLAUDE.md FRAMEWORK.md` → no matches (already absent)
+
+**Follow-up candidates (do NOT block T-1851 closure):**
+1. **Audit arc_id fallback** — extend `agents/audit/audit.sh:3558` to scan task frontmatter for `arc_id: <slug|arc-NNN>` after the existing T-1813 `arc:*` tag fallback. Closes the post-T-1850 blindness.
+2. **`_arc_next_numeric_id` octal-parse fix** — single-line `10#` prefix in `lib/arc.sh:94`. Cheap and unrelated to deprecation.
 
 ## Decision
 
@@ -124,3 +146,19 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1851-deprecate-constituenttasks-field-t-new-4.md
 - **Context:** Initial task creation
+
+### 2026-05-16T09:28:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-aa159261
+- **Timestamp:** 2026-05-16T21:25:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-16T21:25:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,5 +1,19 @@
 # T-1653 — Arcs as first-class entity (research artefact)
 
+> **Deprecation note (T-1851, 2026-05-16):** The `constituent_tasks:` field
+> described in MVP scope item 1 + verb `tag` (item 2) is **deprecated for new
+> arcs**. Source-of-truth for arc-task membership is now the task-side
+> `arc_id:` frontmatter field (T-1849) with a one-shot migration (T-1850 —
+> 162 tasks). Legacy arcs (created before 2026-05-16) retain their
+> `constituent_tasks:` entries untouched per the D-Immutability axiom
+> (T-1848). Read-surfaces (`web/blueprints/arcs.py`, `agents/audit/audit.sh`)
+> merge legacy entries with the task-side `arc_id:` scan so both populations
+> co-exist. See arc-grooming inception artefact
+> [`docs/reports/T-1846-arc-grooming-inception.md`](T-1846-arc-grooming-inception.md)
+> and handoff
+> [`.context/handoffs/HANDOFF-arc-grooming-2026-05-15.md`](../../.context/handoffs/HANDOFF-arc-grooming-2026-05-15.md)
+> for the full grooming arc.
+
 **Status:** inception, exploring
 **Trigger:** user feedback on T-1647 `/orchestrator` page — "absolutely unclear what kind of use this page should be." The right model isn't "orchestrator-substrate dashboard"; it's an **Arc** workspace that happens to surface the orchestrator-arc as one instance.
 
@@ -102,18 +116,18 @@ Three plausible end-states:
 
 **MVP scope (Phase 1):**
 
-1. **Data model:** `.context/arcs/<arc-id>.yaml` with: `id, name, description, status, anchor_task, constituent_tasks: [], created, closed_at, decision`
+1. **Data model:** `.context/arcs/<arc-id>.yaml` with: `id, name, description, status, anchor_task, constituent_tasks: [], created, closed_at, decision` — _T-1851: `constituent_tasks:` deprecated; new arcs omit it. Task-side `arc_id:` (T-1849) is the source-of-truth._
 2. **CLI:** `bin/fw arc {create|focus|list|show|close|tag} <arc-id>`
    - `create <id> --name "..." --anchor T-XXXX` — register, optionally seed from anchor's `related_tasks`
    - `focus <id>` — write `.context/working/arc-focus.yaml`
    - `list` — table of arcs with focus-status, task counts, last activity
    - `show <id>` — detail
    - `close <id> --decision "..."` — close
-   - `tag <id> T-XXXX` — adds `arc:<id>` to task's tags + appends to arc's `constituent_tasks`
+   - `tag <id> T-XXXX` — adds `arc:<id>` to task's tags + (legacy) appends to arc's `constituent_tasks` if the field exists. _T-1851: prefer setting `arc_id:` on the task directly._
 3. **Tag namespace:** `arc:<id>` in task tags, lint via existing audit
 4. **Prompt injection:** handover.sh adds "Current Arc: <name> (X tasks, Y of which now)" line; SessionStart `resume` skill picks it up
 5. **Watchtower:** landing page gets an "Arcs in flight" section above active tasks; `/tasks?arc=<id>` filter chip with discoverable arc list
-6. **Migration:** auto-create `orchestrator-rethink` arc from T-1641, seed constituent_tasks from `related_tasks` of T-1641/T-1644
+6. **Migration:** auto-create `orchestrator-rethink` arc from T-1641, seed constituent_tasks from `related_tasks` of T-1641/T-1644. _T-1851/T-1850 retrofit: 162 tasks bulk-migrated from `tags:[arc:*]` → `arc_id:` field._
 
 **Out of MVP scope (file separately):**
 

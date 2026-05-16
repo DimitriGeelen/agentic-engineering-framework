@@ -338,6 +338,11 @@ arc_create() {
     desc_yaml=$(printf '%s' "$description" | python3 -c 'import yaml,sys; print(yaml.safe_dump(sys.stdin.read().rstrip("\n"), default_style=chr(34)).rstrip())')
     hm_yaml=$(printf '%s' "$headline_mechanic" | python3 -c 'import yaml,sys; print(yaml.safe_dump(sys.stdin.read().rstrip("\n"), default_style=chr(34)).rstrip())')
 
+    # T-1851: constituent_tasks: field deprecated. Source-of-truth for arc
+    # membership is task-side arc_id: (T-1849). Legacy arcs created before
+    # 2026-05-16 retain their entries untouched (D-Immutability). Readers
+    # (web/blueprints/arcs.py, agents/audit/audit.sh) already merge
+    # arc_id/tag scan with legacy constituent_tasks via .get(..., []).
     cat > "$(_arc_path "$id")" <<YAML
 id: ${arc_numeric_id}
 slug: ${id}
@@ -345,7 +350,6 @@ name: ${name_yaml}
 description: ${desc_yaml}
 status: in-progress
 anchor_task: ${anchor}
-constituent_tasks: []
 headline_mechanic: ${hm_yaml}
 demo_evidence: null
 created: ${now}
@@ -512,6 +516,10 @@ PY
     fi
 
     # 2. Append to arc's constituent_tasks (idempotent).
+    # T-1851: field deprecated for new arcs (post-2026-05-16). When the field
+    # is absent, the Python heredoc below returns early via `if not m: sys.exit(0)`
+    # — silent no-op for new arcs, continued maintenance for legacy arcs.
+    # Canonical source-of-truth is task-side arc_id: (T-1849).
     local arc_file
     arc_file="$(_arc_path "$id")"
     python3 - "$arc_file" "$tid" <<'PY'
@@ -715,15 +723,18 @@ Verbs:
   focus <id> | --clear      Set/clear the focused arc (one at a time)
   list                      Show all arcs (* marks focused)
   show <id>                 Detail: metadata + constituent tasks
-  tag <id> T-XXXX           Add arc:<id> tag to a task + append to constituents
+  tag <id> T-XXXX           Add arc:<id> tag to a task. Legacy: also appends to
+                            arc's constituent_tasks: if present (T-1851 deprecation).
+                            Source-of-truth is task-side arc_id: (T-1849).
   close <id> --demo <path|url|none> [--justification "..."] [--decision "..."]
                             Mark arc closed. --demo is REQUIRED (§ACD/G-062):
                             wire-level evidence of the headline_mechanic firing.
                             Use 'none' + --justification (≥30 chars) for arcs
                             with no runtime mechanic — bypass is logged.
   migrate <id> --anchor T-XXXX
-                            Seed constituent_tasks from anchor's related_tasks
-                            and legacy from-T-XXXX tags (idempotent)
+                            Legacy verb: seed constituent_tasks from anchor's
+                            related_tasks and legacy from-T-XXXX tags (idempotent).
+                            T-1851: prefer task-side arc_id: + 'fw arc tag'.
 
 Examples:
   fw arc create orchestrator-rethink --name "Orchestrator routing rethink" --anchor T-1641 \\
