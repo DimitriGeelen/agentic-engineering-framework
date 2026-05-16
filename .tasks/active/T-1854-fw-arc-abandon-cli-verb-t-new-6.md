@@ -4,17 +4,17 @@ name: "fw arc abandon CLI verb (T-NEW-6)"
 description: >
   Implement fw arc abandon <id> --reason '<≥30 chars>'. Refuses without --reason or reason under 30 chars. Refuses under $CLAUDECODE=1 unless --i-am-human or --from-watchtower (T-1671 agent-gate pattern). Appends JSON to .context/audits/arc-abandon.jsonl. Arc YAML reflects status: abandoned, abandoned_at, abandonment_reason. D-Immutability: YAML stays, never moved/deleted. Deps: T-NEW-5a.
 
-status: captured
+status: work-completed
 workflow_type: build
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: [build, lifecycle, cli, governance-gate, T-NEW-6]
-components: []
+components: [lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats]
 related_tasks: [T-1846, T-1847, T-1668, T-1671]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:08Z
-last_update: 2026-05-15T14:53:08Z
-date_finished: null
+last_update: 2026-05-16T22:02:10Z
+date_finished: 2026-05-16T22:02:10Z
 ---
 
 # T-1854: fw arc abandon CLI verb (T-NEW-6)
@@ -26,39 +26,40 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw arc abandon <id> --reason "<text>"` implemented in `lib/arc.sh`; routed via `bin/fw`
-- [ ] Refuses without `--reason` or with `--reason` text under 30 chars (exit 2, actionable error message)
-- [ ] Refuses under `$CLAUDECODE=1` unless `--i-am-human` or `--from-watchtower` (T-1671 agent-gate copy-paste from `arc_close`)
-- [ ] Works from both `draft` and `in-progress` source states (after T-NEW-5a); rejected from `closed` or `abandoned`
-- [ ] Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc_id, status_at_abandon, abandoned_at, abandonment_reason}`
-- [ ] Arc YAML reflects `status: abandoned`, `abandoned_at: <iso>`, `abandonment_reason: <text>` after successful invocation
-- [ ] D-Immutability: arc YAML stays in `.context/arcs/`, NOT moved, NOT deleted
+- [x] `fw arc abandon <id> --reason "<text>"` implemented in `lib/arc.sh`; routed via `bin/fw` (dispatcher case + help text updated)
+- [x] Refuses without `--reason` or with `--reason` text under 30 chars (exit 2, actionable error message — bats #5, #6)
+- [x] Refuses under `$CLAUDECODE=1` unless `--i-am-human` or `--from-watchtower` (T-1671 agent-gate copy-paste from `arc_close`; bats #7 refused, #8 bypassed via `--i-am-human`)
+- [x] Works from both `draft` and `in-progress` source states (after T-NEW-5a); rejected from `closed` or `abandoned` (bats #1, #2 pass; #3, #4 refused)
+- [x] Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc, ts, status_at_abandon, abandonment_reason}` (bats #9 — one row per abandon, JSON-escaped reason)
+- [x] Arc YAML reflects `status: abandoned`, `abandoned_at: <iso>`, `abandonment_reason: <text>` after successful invocation (bats #10)
+- [x] D-Immutability: arc YAML stays in `.context/arcs/`, NOT moved, NOT deleted (bats #11 — file still present at original path after abandon)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Error/refusal messages on `fw arc abandon` are actionable when an operator hits them on a live project
+  **Steps:**
+  1. ```
+     cd /opt/999-Agentic-Engineering-Framework && bin/fw arc abandon
+     ```
+     (expect: usage line citing `--reason "<≥30 chars>"`)
+  2. ```
+     cd /opt/999-Agentic-Engineering-Framework && bin/fw arc abandon arc-grooming --reason 'too short'
+     ```
+     (expect: `--reason "<≥30 chars>" is required` + rationale guidance)
+  3. ```
+     cd /opt/999-Agentic-Engineering-Framework && CLAUDECODE=1 bin/fw arc abandon arc-grooming --reason 'rationale that is at least thirty chars long for the gate'
+     ```
+     (expect: §ACD/G-062 agent gate refusal citing `fw task review` + Watchtower URL + override flags)
+  **Expected:** Each refusal tells a new operator what to do next without re-reading source. The `$CLAUDECODE=1` block mentions `--i-am-human` and `--from-watchtower` overrides and a Watchtower arc-detail URL.
+  **If not:** Note the missing actionability and reopen — refusal-message wording is cheap to iterate on.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+# T-1854 verification (scoped per L-291/L-393/L-387 — toolchain-free shell only).
+bash -n lib/arc.sh
+bats tests/unit/arc_abandon.bats
+test "$(grep -c '^arc_abandon()' lib/arc.sh)" -ge 1
+test "$(grep -c 'abandon) arc_abandon' lib/arc.sh)" -ge 1
+test "$(grep -c 'arc-abandon.jsonl' lib/arc.sh)" -ge 1
 
 ## RCA
 
@@ -78,38 +79,64 @@ date_finished: null
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-17 — `_arc_require_status` accepts multiple allowed states (varargs)
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** T-1852 shipped `_arc_require_status "$id" "<verb>" "<state>"` with a single allowed state. `arc_abandon` needs to accept *both* `draft` AND `in-progress` as source states, so the helper's existing `shift 2; for expected in "$@"` loop (already varargs) was exercised for the first time with `_arc_require_status "$id" "abandon" "draft" "in-progress"`. No helper change — the varargs design from T-1852 already supported this. Confirmed by bats #1 (draft pass), #2 (in-progress pass), #3 (closed refused), #4 (abandoned refused).
+- **Plan impact:** None. T-1852's helper was forward-designed for exactly this slice; T-1854 is the validation that it was sufficient.
+- **Triggered:** No new task. Locks in the varargs contract.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-05-17 — separate audit log file (`arc-abandon.jsonl`) vs reusing `arc-bypass.jsonl`
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** Started by considering reusing `_arc_log_bypass` (writes to `arc-bypass.jsonl`) since the row schema is similar. Rejected: abandonment is a *first-class lifecycle event*, not a "bypass." Conflating the two files makes "show me all bypasses" queries return abandonments, and vice versa. Wrote a separate inline JSONL append targeting `.context/audits/arc-abandon.jsonl`.
+- **Plan impact:** Adds a second well-known JSONL audit file; T-1853 (Watchtower lifecycle tabs) and T-1857 (doc update) should reference it explicitly. Future tab/badge rendering can consume `arc-abandon.jsonl` for "Recently abandoned" surfacing.
+- **Triggered:** No new task. Captured as a reference for T-1853 and T-1857.
+
+### 2026-05-17 — audit-log write order: JSONL before YAML mutation
+
+- **What changed:** Wrote JSONL row *before* the python YAML rewrite, not after. If the python step fails partway, the audit trail still records the operator's intent. If we wrote audit-after-YAML and the YAML write succeeded but a hypothetical extension to audit-write failed, the abandonment would be visible to all readers but invisible to log-based forensics. Audit-first is the safer order.
+- **Plan impact:** None — small implementation detail, documented for future verbs that touch both audit + YAML.
+- **Triggered:** No new task. Pattern to adopt in `arc_close` if it grows multi-step audit (currently bypass log is only-on-bypass).
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-17 — `--reason "..."` (not `--justification`)
+
+- **Chose:** `--reason` as the required flag name for abandonment text.
+- **Why:** `arc_close --justification` is reserved for the `--demo none` *bypass* path — it justifies *why we are skipping the normal demo requirement*. Abandonment is not a bypass; it's a normal final-state transition with its own first-class rationale field. Using `--reason` matches the natural language ("reason for abandoning") and avoids implying that abandonment is closure-with-an-excuse.
+- **Rejected:** `--justification` (overloaded, implies bypass semantics); `--rationale` (matches `fw inception decide` but adds an unrelated cross-vocabulary mapping); bare `<reason>` positional arg (less greppable; harder to extend with future fields).
+
+### 2026-05-17 — write `abandoned_at` and `abandonment_reason` as new fields (not in-place edits)
+
+- **Chose:** Append `abandoned_at: <iso>` and `abandonment_reason: "<text>"` to the YAML body if absent; replace if present (idempotent). The arc-create template does NOT pre-create these fields.
+- **Why:** Two reasons. (1) Most arcs will never be abandoned — pre-creating `abandoned_at: null` on every arc is dead schema for the common case. (2) The presence of these fields is the *signal* "this arc was abandoned" — a downstream reader can `grep -l abandonment_reason: .context/arcs/*.yaml` to enumerate abandoned arcs without parsing status. Parallel to how `closed_at:` is *present-when-closed*, not pre-created.
+- **Rejected:** Pre-create the fields in `arc_create` (adds noise to every arc); store reason in `decision:` field (overloads it; `decision:` is for `arc_close` outcome).
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** T-1854 (T-NEW-6) ships the `fw arc abandon` CLI verb — the second lifecycle terminal transition, alongside `arc_close`. The four-state lifecycle from T-1852 is now fully wired at the CLI: `draft → in-progress` (`arc_start`), `in-progress → closed` (`arc_close`), `draft|in-progress → abandoned` (`arc_abandon`). All seven Agent ACs satisfied. 12/12 bats coverage spans every refusal path (no `--reason`, short `--reason`, closed-source, abandoned-source, `$CLAUDECODE=1` no-override) plus both happy paths and the audit-trail + YAML-fields + D-Immutability proofs.
+
+Design decisions captured in this slice:
+- `--reason` (not `--justification`) — abandonment is a first-class transition, not a bypass.
+- Separate `arc-abandon.jsonl` audit file (not reusing `arc-bypass.jsonl`) — abandonment is lifecycle, not policy-override.
+- Audit-row-write before YAML mutation — partial-write keeps forensic trail intact.
+- Lazy `abandoned_at`/`abandonment_reason` fields — presence is the signal, no pre-creation in `arc_create`.
+
+The slice reuses `_arc_require_status` (T-1852 helper, varargs design) — validating the helper was forward-fit. No new abstraction, no API drift.
+
+**Evidence:**
+- `lib/arc.sh` — new `arc_abandon()` function + dispatcher case `abandon)` + help-text block (`fw arc help | grep -A4 abandon` confirms).
+- `tests/unit/arc_abandon.bats` → 1..12, all `ok` (every AC pinned by a named bats case).
+- `bin/fw arc abandon` (no args) → emits the usage line on stderr — routing confirmed end-to-end.
+- `bin/fw arc help | grep -A1 abandon` → help text shows new verb.
+- `grep -c '^arc_abandon()' lib/arc.sh` → 1 (function defined exactly once).
+- `grep -c 'abandon) arc_abandon' lib/arc.sh` → 1 (dispatcher case wired).
+- `grep -c 'arc-abandon.jsonl' lib/arc.sh` → ≥1 (audit-log path referenced).
+
+**Follow-up (arc-grooming arc — already in queue):**
+- T-1853 (T-NEW-5b) Watchtower `/arcs` lifecycle filter tabs: should consume `.context/audits/arc-abandon.jsonl` for a "Recently abandoned" surface alongside the stale-badge from T-1855. Render-surface change; needs [REVIEW] Human AC.
+- T-1857 (T-NEW-9) `012-ArcSystem.md` + `FRAMEWORK.md` updates: document the abandon verb + audit-log file alongside close/start.
 
 ## Decision
 
@@ -127,3 +154,24 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1854-fw-arc-abandon-cli-verb-t-new-6.md
 - **Context:** Initial task creation
+
+### 2026-05-16T21:57:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a797ed56
+- **Timestamp:** 2026-05-16T22:02:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc, ts, status_at_abandon, abandonment_reason}` (bats #9 — one row per abandon, JSON-escaped reason)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/arc-abandon.jsonl in: Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc, ts, status_at_abandon, abandonment_reason}` (bats #9 — one row per abandon, JSON-esca`
+
+### 2026-05-16T22:02:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

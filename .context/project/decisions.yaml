@@ -919,3 +919,66 @@ decisions:
     date: 2026-05-16
     task: T-1765
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-134
+    decision: "D-Immutability — `constituent_tasks:` entries already committed to in-tree arcs stay untouched."
+    scope: project
+    date: 2026-05-16
+    task: T-1851
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-135
+    decision: "`git log --since=\"${stale_arc_threshold}.days.ago\" -- <task files>` — commit-history based."
+    scope: project
+    date: 2026-05-16
+    task: T-1855
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-136
+    decision: "Move \"Watchtower `/arcs` index renders stale badge\" out of T-1855's Agent ACs and into T-1853 (T-NEW-5b lifecycle filter tabs) which already owns the render surface."
+    scope: project
+    date: 2026-05-16
+    task: T-1855
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-137
+    decision: "When `matching_tasks` is empty, `continue` — no WARN, no PASS contribution."
+    scope: project
+    date: 2026-05-16
+    task: T-1855
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-138
+    decision: "Separate verb `fw arc start <id>` for the draft → in-progress transition."
+    scope: project
+    date: 2026-05-16
+    task: T-1852
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-139
+    decision: "Single reusable helper `_arc_require_status <id> <verb> <expected...>`."
+    scope: project
+    date: 2026-05-16
+    task: T-1852
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-140
+    decision: "`python3 - \"$file\" <<PY ... re.sub ...` heredoc, in-place rewrite."
+    scope: project
+    date: 2026-05-16
+    task: T-1852
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-141
+    decision: "`--reason` as the required flag name for abandonment text."
+    scope: project
+    date: 2026-05-16
+    task: T-1854
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-142
+    decision: "Append `abandoned_at: <iso>` and `abandonment_reason: \"<text>\"` to the YAML body if absent; replace if present (idempotent). The arc-create template does NOT pre-create these fields."
+    scope: project
+    date: 2026-05-16
+    task: T-1854
+    rationale: "Auto-captured from task file on completion"

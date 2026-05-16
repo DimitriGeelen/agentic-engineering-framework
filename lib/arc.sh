@@ -729,6 +729,124 @@ PY
     return 0
 }
 
+# T-1854 (T-NEW-6): abandon an arc that is no longer being pursued.
+# Allowed source states: draft, in-progress (rejected from closed, abandoned).
+# Refuses without --reason (≥30 chars). Refuses under $CLAUDECODE=1 unless
+# --i-am-human or --from-watchtower (T-1671 agent-gate copy-paste from arc_close).
+# Appends to .context/audits/arc-abandon.jsonl (separate from arc-bypass.jsonl).
+# D-Immutability: arc YAML stays in .context/arcs/, never moved or deleted.
+arc_abandon() {
+    local id="" reason=""
+    local i_am_human=false from_watchtower=false
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --reason) reason="$2"; shift 2;;
+            --i-am-human) i_am_human=true; shift;;
+            --from-watchtower) from_watchtower=true; shift;;
+            *) [ -z "$id" ] && id="$1" || { echo "Unexpected arg: $1" >&2; return 2; }; shift;;
+        esac
+    done
+    [ -n "$id" ] || { echo "Usage: fw arc abandon <arc-id> --reason \"<≥30 chars>\"" >&2; return 2; }
+    id="$(_arc_normalize_input "$id")"
+    _arc_validate_id "$id" || return 2
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+
+    # T-1852 state-machine guard: draft and in-progress can be abandoned.
+    # closed and abandoned arcs cannot be re-abandoned.
+    _arc_require_status "$id" "abandon" "draft" "in-progress" || return 1
+
+    # T-1671 §ACD/G-062 Default-to-OPEN agent gate. Abandonment is a closure
+    # decision — same authority weight as arc_close + inception decide. Mirror
+    # the exact gate pattern from arc_close so the override semantics match.
+    if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ] && [ "$from_watchtower" = false ]; then
+        local anchor="" wt_url=""
+        anchor=$(awk -F': ' '/^anchor_task:/ {print $2; exit}' "$(_arc_path "$id")" 2>/dev/null | tr -d ' "' || true)
+        if command -v fw_config >/dev/null 2>&1; then
+            wt_url="$(fw_config WATCHTOWER_URL "" 2>/dev/null || true)"
+        fi
+        if [ -z "$wt_url" ]; then
+            wt_url="$(bin/fw watchtower url 2>/dev/null || true)"
+        fi
+        [ -z "$wt_url" ] && wt_url="http://localhost:3000"
+        echo "Error: agents must not invoke 'fw arc abandon' directly (§ACD/G-062, T-1671)." >&2
+        echo "" >&2
+        echo "  You appear to be running inside Claude Code (\$CLAUDECODE=1)." >&2
+        echo "  Arc abandonment carries the same authority weight as arc closure" >&2
+        echo "  and belongs to the human (Default-to-OPEN: ≥2 prior pushbacks → OPEN" >&2
+        echo "  regardless of new evidence)." >&2
+        echo "" >&2
+        echo "  Correct flow:" >&2
+        if [ -n "$anchor" ]; then
+            echo "    1. Agent: bin/fw task review ${anchor}" >&2
+        else
+            echo "    1. Agent: bin/fw task review <arc-anchor-task>" >&2
+        fi
+        echo "    2. Human: open the Watchtower URL, review the reasoning," >&2
+        echo "       run 'bin/fw arc abandon ${id} --reason \"...\"'" >&2
+        echo "" >&2
+        echo "  Arc detail: ${wt_url}/arcs/${id}" >&2
+        echo "" >&2
+        echo "  Overrides (mirror T-1259 inception-decide): --i-am-human (human typing" >&2
+        echo "  into an agent session, rare); --from-watchtower (Flask backend)." >&2
+        echo "  See CLAUDE.md §Arc Completion Discipline." >&2
+        return 1
+    fi
+
+    # --reason validation. Symmetric to arc_close --justification (≥30 chars).
+    if [ -z "$reason" ] || [ "${#reason}" -lt 30 ]; then
+        echo "Error: --reason \"<≥30 chars>\" is required." >&2
+        echo "  Abandonment is a final-state event — capture WHY in enough detail" >&2
+        echo "  that a reader 6 months from now can understand the call:" >&2
+        echo "    fw arc abandon $id --reason \"<detailed rationale, ≥30 chars>\"" >&2
+        return 2
+    fi
+
+    local f now status_at
+    f="$(_arc_path "$id")"
+    now="$(_arc_now)"
+    status_at="$(_arc_get_status "$id")"
+
+    # Append JSONL audit row BEFORE the YAML mutation so a partial-write leaves
+    # the audit trail intact even if the python rewrite fails.
+    local logf="$PROJECT_ROOT/.context/audits/arc-abandon.jsonl"
+    mkdir -p "$(dirname "$logf")"
+    printf '{"arc":"%s","ts":"%s","status_at_abandon":"%s","abandonment_reason":%s}\n' \
+        "$id" "$now" "$status_at" \
+        "$(printf '%s' "$reason" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')" \
+        >> "$logf"
+
+    python3 - "$f" "$now" "$reason" <<'PY'
+import re, sys
+fn, now, reason = sys.argv[1], sys.argv[2], sys.argv[3]
+text = open(fn).read()
+text = re.sub(r'^status:.*$', 'status: abandoned', text, count=1, flags=re.MULTILINE)
+
+safe_reason = reason.replace('"', '\\"')
+# abandoned_at: add if missing, else replace.
+if re.search(r'^abandoned_at:', text, re.MULTILINE):
+    text = re.sub(r'^abandoned_at:.*$', f'abandoned_at: {now}', text, count=1, flags=re.MULTILINE)
+else:
+    text = text.rstrip("\n") + f'\nabandoned_at: {now}\n'
+# abandonment_reason: same pattern.
+if re.search(r'^abandonment_reason:', text, re.MULTILINE):
+    text = re.sub(r'^abandonment_reason:.*$', f'abandonment_reason: "{safe_reason}"', text, count=1, flags=re.MULTILINE)
+else:
+    text = text.rstrip("\n") + f'\nabandonment_reason: "{safe_reason}"\n'
+open(fn, "w").write(text)
+PY
+
+    echo "Abandoned arc '${id}' at ${now} (was: ${status_at})"
+    echo "  reason: ${reason}"
+    echo "  audit:  .context/audits/arc-abandon.jsonl"
+
+    local current
+    current="$(_arc_current_focus)"
+    if [ "$current" = "$id" ]; then
+        arc_focus --clear
+    fi
+    return 0
+}
+
 arc_migrate() {
     local id="" anchor=""
     while [ $# -gt 0 ]; do
@@ -805,6 +923,12 @@ Verbs:
                             wire-level evidence of the headline_mechanic firing.
                             Use 'none' + --justification (≥30 chars) for arcs
                             with no runtime mechanic — bypass is logged.
+  abandon <id> --reason "<≥30 chars>"
+                            T-1854: mark arc abandoned (no longer pursued).
+                            Allowed source states: draft, in-progress.
+                            Refused under \$CLAUDECODE=1 (T-1671 agent-gate).
+                            JSON row appended to .context/audits/arc-abandon.jsonl.
+                            D-Immutability: YAML stays, never moved/deleted.
   migrate <id> --anchor T-XXXX
                             Legacy verb: seed constituent_tasks from anchor's
                             related_tasks and legacy from-T-XXXX tags (idempotent).
@@ -842,6 +966,7 @@ arc_dispatch() {
         show)    arc_show    "$@";;
         tag)     arc_tag     "$@";;
         close)   arc_close   "$@";;
+        abandon) arc_abandon "$@";;
         migrate) arc_migrate "$@";;
         help|--help|-h) arc_help;;
         *) echo "Unknown verb: $verb" >&2; arc_help; return 2;;
