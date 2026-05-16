@@ -132,6 +132,23 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 - **Plan impact:** Investigation done; conclusion is the same as PARTIAL-SHIP. The trigger isn't reachable from the current CLI surface; T-1636 ships the substrate, not the user-facing trigger. Recommendation re-issued: accept PARTIAL-SHIP and close T-1820 substrate-shipped, picking up the live smoke under T-1821 once TermLink wires the handler.
 - **Triggered:** T-1821 filed (framework-side tracker, captured/next, owner: agent, type: build). Cross-link added to this task's related_tasks if not already present.
 
+### 2026-05-16 — rerun against fix-shipped hub 0.9.2110 ebe05294 — emit still not observable from session-poll
+
+- **What changed:** TermLink-side agent shipped a follow-up at commit `ebe05294`, version `0.9.2110` (framework:pickup offset 18, msg-type=fix.shipped, responding to P-041). Reported fix: `handle_channel_post_with` now injects `inbox.queued` when topic starts with `inbox:` and bus.post succeeds. Reported live-smoke evidence: `channel post inbox:tl-design-smoke-target --msg-type file.init` → "hub-level event.subscribe (topic=inbox.queued) returned count=1 with addressee_session_id=tl-design-smoke-target, message_offset=4". Rerun request: "Please re-run the T-1820 joint smoke against the updated hub and confirm next_seq advances on inbox.queued."
+
+  Rerun executed 2026-05-16T06:47Z against local hub:
+  - `termlink doctor` confirms `version: termlink 0.9.2110 (ebe05294)` and `hub: running (PID 2382342)` — matches the PID + binary termlink-agent reported.
+  - Spawned a fresh session `tl-design-smoke-target` (session was gone since prior smoke).
+  - Three trigger attempts: `channel post inbox:tl-design-smoke-target --msg-type file.init --payload '{transfer_id:t1820-rerun-00X-2026-05-16}'` — all delivered cleanly (offsets 5/6/7 on the topic).
+  - Probes after each trigger:
+    - `termlink event poll tl-design-smoke-target --topic inbox.queued --since 0` → count=0, next_seq=0 (bus empty).
+    - `termlink event poll framework-agent --topic inbox.queued --since 0` → count=0, next_seq=384 (no advance from 384).
+    - `mcp__termlink_event_subscribe target=tl-design-smoke-target topic=inbox.queued since=0 timeout_ms=3000` → count=0.
+    - `termlink event topics` across all 10 sessions → **zero sessions list `inbox.queued`** as an emitted topic.
+    - `termlink channel info inbox.queued` → -32013 unknown topic (it's not a channel topic, which is expected — it's an event class).
+- **Plan impact:** PARTIAL-SHIP recommendation **stands**. The fix's correctness inside the hub crate (integration test green, hub-level event.subscribe sees count=1 per termlink-agent's report) does NOT translate to anything the framework's `fw peer subscribe` can consume. Framework-side substrate (`lib/peer.py::poll_once`) calls `termlink event poll <target> --topic inbox.queued --since <cursor>` — per-session bus. The new emit appears to land somewhere session-poll cannot reach (hub-internal aggregator? a virtual aggregator session?). Headline mechanic (framework subscriber observes the event when a CLI post lands an inbox) is still not demonstrated end-to-end.
+- **Triggered:** Sent structured inject reply to termlink-agent asking which session bus the emit lands on (or how to subscribe from a CLI client). Keeping T-1820 in PARTIAL-SHIP awaiting clarification or a session-targeted wiring change.
+
 ### 2026-05-14 — pickup envelope delivered to TermLink-side inbox
 
 - **What changed:** Operator chose option 2 (hold T-1820 open until TermLink resolves the handler gap) — and asked the right question: have we filed a pickup with TermLink? Answer was no until now. Dispatched `t1820-pickup-deliver` (Haiku, ~30s) to /opt/termlink which ran `bin/fw pickup send --type bug-report --priority high --task-id T-1636 --tags cross-repo,joint-smoke,T-1820,T-1636,T-1821` with the full working-hypothesis detail (handler registered in test only via `router::init_aggregator`, three resolution paths A/B/C). Envelope `P-041-bug-report.yaml` created in /opt/termlink's `.context/pickup/inbox/`; visible on `bin/fw pickup list`. The TermLink-side maintainer (or their next agent session) will see it on routine pickup processing.

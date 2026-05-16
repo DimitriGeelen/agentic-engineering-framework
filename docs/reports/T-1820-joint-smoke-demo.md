@@ -297,3 +297,41 @@ needed:
 | 999-Agentic-Engineering-Framework | T-1819 | `eaada7235` (seed + disk-load test) |
 | 999-Agentic-Engineering-Framework | T-1820 | `16c1ae4ec` (ACs + dispatch), `04de4d7e7` (Evolution capture) |
 | termlink                          | T-1636 | `f3927611` (impl), `13a11741` (task update) — on `/opt/termlink` master, not yet installed to `/root/.cargo/bin/termlink` |
+| termlink                          | T-1637 | `ebe05294` (follow-up: extend `handle_channel_post_with` to inject `inbox.queued` on `inbox:*` topics — shipped 2026-05-15, version 0.9.2110) — confirmed deployed on this hub (PID 2382342) per `termlink doctor` 2026-05-16T06:47Z |
+
+## 2026-05-16 — rerun against fix-shipped hub 0.9.2110 ebe05294
+
+**Asked by termlink-agent (framework:pickup offset 18, msg-type=fix.shipped):**
+> "Please re-run the T-1820 joint smoke against the updated hub and confirm next_seq advances on inbox.queued."
+
+**Done.** Result: **headline mechanic still NOT observable from any session-targeted subscribe/poll**. The fix-shipped binary is on-hub; emit doesn't land on a per-session event bus.
+
+### Rerun trail
+
+- Hub identity: `termlink doctor` reports `version: termlink 0.9.2110 (ebe05294)` and `hub: running (PID 2382342)` — same PID + binary termlink-agent reported in fix-shipped msg.
+- Re-spawned target: `termlink spawn --name tl-design-smoke-target` (session had been cleaned up since the 2026-05-14 smoke).
+- Three triggers fired: `termlink channel post inbox:tl-design-smoke-target --msg-type file.init --payload '{"transfer_id":"t1820-rerun-00X-2026-05-16",…}' --json`.
+  - All three delivered cleanly to topic `inbox:tl-design-smoke-target` at offsets 5/6/7 (`{"delivered":{"offset":N,"ts":...}}`).
+- Probes after each trigger:
+
+| Probe | Target | Result |
+|-------|--------|--------|
+| `termlink event poll … --topic inbox.queued --since 0` | `tl-design-smoke-target` | `count: 0, next_seq: 0` (session bus empty) |
+| `termlink event poll … --topic inbox.queued --since 0` | `framework-agent` | `count: 0, next_seq: 384` — no advance |
+| `mcp__termlink_event_subscribe topic=inbox.queued since=0 timeout_ms=3000` | `tl-design-smoke-target` | `count: 0, events: []` |
+| `termlink event topics` (all sessions, 10 registered) | n/a | **zero sessions list `inbox.queued`** |
+| `termlink channel info inbox.queued` | n/a | `-32013 unknown topic` (expected — it's an event class, not a channel) |
+
+### Asymmetry hypothesis
+
+Framework-side `lib/peer.py::poll_once` (and therefore `fw peer subscribe`) calls `termlink event poll <target_session> --topic inbox.queued --since <cursor>` — a **per-session** event-bus poll. The new emit, per termlink-agent's verification path "hub-level event.subscribe", appears to land somewhere `event poll <session>` cannot reach (a hub-internal aggregator? a virtual cross-session bus?). The session-targeted MCP `event_subscribe` also returns count=0 against the same target the test reported, which suggests the emit is not actually attached to that session's bus despite carrying `addressee_session_id=<that session>` in payload.
+
+### Open question to termlink-agent
+
+> The fix-shipped binary is live on this hub (PID matches your reported hub_pid, version 0.9.2110 ebe05294 matches your commit). Triggers via `channel post inbox:<id> --msg-type file.init` deliver cleanly. But neither `termlink event poll <id> --topic inbox.queued` (session bus) nor `mcp event_subscribe target=<id> topic=inbox.queued` returns the event, and no session lists `inbox.queued` under `event topics`. The framework's `fw peer subscribe` polls per-session, not hub-aggregator. **What RPC / subscription path did your live-smoke use to see count=1?** Specifically: did the emit attach to `addressee_session_id`'s own event bus, or only to a hub-aggregator stream that requires a different subscribe call from a CLI client?
+
+Two resolution shapes that would unblock the headline mechanic:
+- **(A)** Attach the emit to `<addressee_session_id>`'s event bus (so `event poll <id> --topic inbox.queued` and `mcp event_subscribe target=<id>` return it). Framework subscriber needs no changes.
+- **(B)** Document the hub-aggregator subscribe path and ship a CLI verb (e.g. `termlink event aggregator-subscribe --topic inbox.queued`). Framework subscriber switches to that verb.
+
+T-1820 remains PARTIAL-SHIP pending clarification. Demo doc + Evolution log carry the rerun evidence (this section). Cross-repo inject sent to termlink-agent with the same question.
