@@ -43,19 +43,19 @@ Symmetric pattern to T-204 / L-097 (CTL-013 audit parser had same blind spot —
 - [x] **No render of trailing `-->`** — render output for any AC body must not contain a literal `-->` (the comment-close that previously leaked into "If not").
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+
+<!-- Retroactively added 2026-05-16 after T-1766 ship. The render-surface gate
+     (T-1766, P-013) would have caught this task at filing time — three render
+     fixes (T-1763/T-1764/T-1765) shipped with zero Human ACs is the origin
+     cluster the gate exists to prevent. Adding the AC here is documentary,
+     not blocking — the task already shipped. -->
+
+- [ ] [REVIEW] Rendered AC body on `/review/T-1762` shows no leaked `-->`
+  **Steps:**
+  1. Open `$(bin/fw watchtower url)/review/T-1762` (or any review page rendering a task with `<!-- ... -->` blocks under `### Human`).
+  2. Inspect the AC list — each `[REVIEW]`/`[RUBBER-STAMP]` AC should render with its body text only.
+  **Expected:** No literal `-->` characters visible. No fragment of the HTML-comment-close leaks into "If not" text.
+  **If not:** Screenshot the leaked render, reopen for follow-up fix.
 
 ## Verification
 

@@ -45,19 +45,16 @@ Same pattern class as T-1763 (parser/render contract mismatch). Symptom: dead li
 - [x] **No regression on existing surfaces** — `curl -sf http://localhost:3002/file/.tasks/completed/T-1442-...md` still serves the markdown task file.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+
+<!-- Retroactively added 2026-05-16 after T-1766 ship — documentary only,
+     not blocking the already-shipped close. -->
+
+- [ ] [REVIEW] `/file/` route renders `.py`/`.sh`/`.yaml` source files as syntax-highlighted code
+  **Steps:**
+  1. Open `$(bin/fw watchtower url)/file/lib/task_pair_acd.sh` in browser.
+  2. Open the same URL with extension swapped to a `.py` and `.yaml` path you know exists.
+  **Expected:** Each renders as a fenced code block with monospace font + (if Pygments installed) syntax colouring. Layout matches the `.md` rendering's outer shell.
+  **If not:** Screenshot, note which extension/path broke, reopen for follow-up.
 
 ## Verification
 

@@ -54,19 +54,16 @@ review.html has CSS (lines 181-187) that styles `a > code` (when a link wraps a 
 - [x] **No regression on T-1575 backticked-URL contract** — `<a><code>http://...</code></a>` (link wrapping code) continues to render with link colour/underline visible across the code box. Existing `a > code` override unchanged.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+
+<!-- Retroactively added 2026-05-16 after T-1766 ship — documentary only,
+     not blocking the already-shipped close. -->
+
+- [ ] [REVIEW] Inline `<code>` elements render as inline (not block) across review pages
+  **Steps:**
+  1. Open any `$(bin/fw watchtower url)/review/T-XXXX` page that includes inline backtick-wrapped tokens in AC text (e.g. T-1762).
+  2. Look at sentences containing `\`backticked\`` words.
+  **Expected:** The code-styled token sits on the same line as the surrounding prose with monospace font + subtle background — no orphan line break, no "stray punctuation" at start of next line.
+  **If not:** Screenshot, note offending element, reopen.
 
 ## Verification
 
