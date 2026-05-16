@@ -3019,3 +3019,10 @@ X'` returning empty group."
   date: 2026-05-16
   context: Added via context agent
   application: TBD
+- id: L-394
+  learning: "META-LEARNING extension to L-393 (T-1856 evidence). I literally wrote L-393 about the SIGPIPE-141 trap in 'bin/fw audit ... | grep -q ...' two slices ago — then immediately reproduced it in T-1856's verification block (V3 used 'grep -q', not the L-393-recommended 'grep -c >=1'). One slice's META-LEARNING does not automatically propagate to the next slice's AC body. STRUCTURAL prevention candidate: Verification-block linter in update-task.sh that flags 'bin/fw audit.*| grep -q' patterns and suggests 'grep -c'. Alternative: render-time SIGPIPE-safe wrapper. Recurrence within 30 min of capture proves the textual learning alone is insufficient — needs structural guard rail."
+  source: P-011
+  task: T-1856
+  date: 2026-05-16
+  context: Added via context agent
+  application: TBD

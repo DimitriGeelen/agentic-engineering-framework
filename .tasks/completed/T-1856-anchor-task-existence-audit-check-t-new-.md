@@ -4,17 +4,17 @@ name: "Anchor-task existence audit check (T-NEW-8)"
 description: >
   agents/audit/audit.sh adds check: warn when arc YAML's anchor_task: T-X references a non-existent task. Warning only, never blocks (audit exit code unaffected). Check passes silently for arcs without anchor_task: set. Deps: T-1846 (logical sequencing, not functional). Mirrors D4 from inception (anchor-task missing = warn not block, symmetric to arc_id validation via D-Immutability for the reverse direction).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [build, audit, T-NEW-8]
-components: []
+components: [C-004, tests/unit/audit_anchor_task_existence.bats]
 related_tasks: [T-1846, T-1847]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:17Z
-last_update: 2026-05-16T09:29:16Z
-date_finished: null
+last_update: 2026-05-16T09:37:15Z
+date_finished: 2026-05-16T09:37:15Z
 ---
 
 # T-1856: Anchor-task existence audit check (T-NEW-8)
@@ -63,8 +63,9 @@ date_finished: null
 bats tests/unit/audit_anchor_task_existence.bats >/dev/null 2>&1
 # Audit clean (structure section) — anchor check is now part of it
 test "$(bin/fw audit --section structure 2>&1 | grep -c 'Fail: 0')" -ge 1
-# Anchor check pass line emitted on our 5 real arcs (all have anchor_task pointing at existing tasks)
-bin/fw audit --section structure 2>&1 | grep -q "anchor_task references"
+# Anchor check pass line emitted on our 5 real arcs (all have anchor_task pointing at existing tasks).
+# Use `grep -c >=1` not `grep -q` (L-393 SIGPIPE-141 trap, learned T-1848).
+test "$(bin/fw audit --section structure 2>&1 | grep -c 'anchor_task references')" -ge 1
 
 ## RCA
 
@@ -159,3 +160,21 @@ bin/fw audit --section structure 2>&1 | grep -q "anchor_task references"
 ### 2026-05-16T09:29:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-9d7d3752
+- **Timestamp:** 2026-05-16T09:38:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 13
+     - evidence: `bats tests/unit/audit_anchor_task_existence.bats >/dev/null 2>&1`
+
+### 2026-05-16T09:37:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** L-393 fix applied to V3 idiom (grep -c >=1, not grep -q)
