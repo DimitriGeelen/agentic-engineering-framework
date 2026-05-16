@@ -39,7 +39,7 @@ Render fixes inherently invoke "is this good enough" — a path that's technical
 - [x] **Bypass plumbing reuses log_gate_bypass** — same machinery as T-1668/T-1671/T-1762 gates. Bypass log: `.context/working/.gate-bypass-log.yaml`. No new log file.
 - [x] **Bats test pinned** — `tests/unit/test_render_surface_gate.bats` covers 12 cases: source-level invariants (4), predicate behaviour (3), gate firing/passing/bypass/rubber-stamp/non-render (5). 12/12 pass.
 - [x] **Self-application: T-1766 closure** — T-1766's body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as render-surface examples). The predicate correctly flags T-1766 as render-touching — meta-honest result. Adding a [REVIEW] Human AC below to satisfy the gate self-applies the rule the task creates.
-- [ ] **Retroactive hygiene applied to T-1763/T-1764/T-1765** — Each will gain a `[REVIEW]` Human AC asking the human to confirm visual/UX rendering on `/review/T-1762`. Recommendation blocks updated. (Note: these are already in `.tasks/completed/` — retroactive add demonstrates the gate would have caught all three at filing time; the gate cannot retroactively block their close, but the AC text is the documentary record.)
+- [x] **Retroactive hygiene applied to T-1763/T-1764/T-1765** — Each completed task gained a `[REVIEW]` Human AC with copy-pasteable Steps/Expected/If-not. Commit 34e7127d. Documentary only — the tasks already shipped; this records what eyes the human would have applied if the gate had existed.
 - [x] **Documentation updated** — `CLAUDE.md` "AC Classification Guidance" section gains a new bullet (5th) under "Make it a Human AC if ANY apply": render-surface trigger + cite T-1766 / bypass flag / origin tasks.
 
 ### Human
@@ -53,6 +53,9 @@ Render fixes inherently invoke "is this good enough" — a path that's technical
 ## Verification
 
 bash -n lib/render_surface.sh
+bash -n agents/task-create/update-task.sh
+bats tests/unit/test_render_surface_gate.bats
+grep -q "5\. \*\*Touches a rendering surface" CLAUDE.md
 bash -n agents/task-create/update-task.sh
 FRAMEWORK_ROOT=$(pwd) bats tests/unit/test_render_surface_gate.bats
 # Self-application: T-1766 itself does NOT touch render surface, so gate is no-op.
@@ -122,6 +125,19 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+## Recommendation
+
+- **Recommendation:** GO
+- **Rationale:** Gate substrate, bats coverage, CLAUDE.md doc, self-application, and retroactive documentary ACs all shipped. 12/12 bats pass. The render-surface predicate flagged T-1766 itself (because the task body literally names `web/shared.py`/`web/app.py` as patterns) — this is correctly handled by adding a [REVIEW] Human AC on block-message UX, which is the actual subjective check that warrants human eyes. Only remaining Human AC is the block-message readability review; the recommendation is to confirm the message is actionable.
+- **Evidence:**
+  - `agents/task-create/update-task.sh:380-475` — `check_render_surface_human_ac()` gate function
+  - `agents/task-create/update-task.sh:1000-1006` — wired into work-completed sequence
+  - `lib/render_surface.sh` — predicate library (shipped 2026-05-06)
+  - `tests/unit/test_render_surface_gate.bats` — 12/12 pass (source invariants + predicate + gate firing/passing/bypass/rubber-stamp/non-render)
+  - `CLAUDE.md:600-605` — 5th Human-AC trigger added (rendering surface)
+  - Commits: 845b5c9f (substrate), dc5de6f3 (fabric card), 34e7127d (retroactive ACs)
+  - Retroactive ACs on T-1763/T-1764/T-1765 — documentary record that the gate would have caught the origin cluster at filing time
 
 ## Updates
 
