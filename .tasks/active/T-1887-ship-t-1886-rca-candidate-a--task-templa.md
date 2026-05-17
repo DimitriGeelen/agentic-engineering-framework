@@ -1,38 +1,43 @@
 ---
-id: T-XXX
-name:
+id: T-1887
+name: "ship T-1886 RCA Candidate A — task-template hint to remind .claude/settings.json editors to refresh enforcement baseline + L-398 learning"
 description: >
+  ship T-1886 RCA Candidate A — task-template hint to remind .claude/settings.json editors to refresh enforcement baseline + L-398 learning
 
-status: captured
-workflow_type:
-owner:
+status: started-work
+workflow_type: build
+owner: agent
 horizon: now
-tags: []
-components: []
-related_tasks: []
+tags: [arc-grooming, prevention, governance]
+components: [.tasks/templates/default.md, .context/project/learnings.yaml]
+related_tasks: [T-1886, T-1849, T-1730, T-1731, T-1687]
+arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created:
-last_update:
+created: 2026-05-17T20:35:18Z
+last_update: 2026-05-17T20:35:18Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
 
-# T-XXX: [Task Name]
+# T-1887: ship T-1886 RCA Candidate A — task-template hint to remind .claude/settings.json editors to refresh enforcement baseline + L-398 learning
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1886 RCA identified three prevention candidates (A/B/C) for the enforcement-baseline drift class — the omission that allowed three legitimate hook additions (T-1849/T-1730/T-1731) to land without a baseline refresh, leaving `fw doctor` in FAIL for unknown duration. Candidate A is the lightest: add a one-line reminder to the task template's `## Verification` comment block, alongside the existing L-291 (toolchain) and L-387 (pipefail) hints, so any future task editing `.claude/settings.json` is nudged to include `bin/fw enforcement baseline` in its Verification.
+
+Captures the learning as L-398 with explicit "if you edited X, add Y" pattern matching the L-291 style.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] L-398 added to `.context/project/learnings.yaml` (enforcement-baseline-drift class, with prevention pattern)
+- [x] `.tasks/templates/default.md` `## Verification` comment block extended with the new hint, citing L-398 / T-1886 in the L-291 style
+- [x] `learnings.yaml` parses cleanly (`python3 -c "import yaml; yaml.safe_load(open(...))"`)
+- [x] Template file is otherwise unchanged (single-purpose edit)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -51,6 +56,10 @@ date_finished: null
 
 ## Verification
 
+python3 -c "import yaml; data=yaml.safe_load(open('.context/project/learnings.yaml')); ids=[l['id'] for l in data['learnings']]; assert 'L-398' in ids, 'L-398 missing'; print('L-398 present')"
+grep -q "L-398" .tasks/templates/default.md
+grep -q "fw enforcement baseline" .tasks/templates/default.md
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -68,13 +77,6 @@ date_finished: null
 # Or:
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
 
@@ -93,6 +95,23 @@ date_finished: null
 -->
 
 ## Evolution
+
+### 2026-05-17 — closes T-1886 RCA Candidate A loop
+- **What changed:** T-1886 surfaced three prevention candidates (A/B/C) in its RCA. Candidate A is the lightest — task-template hint in the L-291 style. Shipped immediately here rather than parking it, since the edit footprint is tiny (one comment paragraph + one learning entry) and the next hook-authoring task benefits.
+- **Plan impact:** B (PostToolUse nudge on `.claude/settings.json` edits) and C (pre-push block on baseline drift) remain in reserve. If L-398's textual hint proves insufficient (recurrence detected), the next slice can ship B or C with L-398 as evidence that the lightest path failed.
+- **Triggered:** No new sub-task. L-398 is the captured learning; the template hint is the deployment.
+
+## Recommendation
+
+**Recommendation:** GO — task ready for `--status work-completed`.
+
+**Rationale:** Smallest meaningful prevention slice from T-1886's RCA candidate set. Four deterministic ACs all ticked: L-398 added to learnings, template hint added in the L-291 / L-387 style, YAML parses cleanly (431 learnings total), template footprint is single-purpose. Matches the same hint-pattern that already exists for toolchain and pipefail — future hook-authoring tasks will see the reminder in the very file they're filling in.
+
+**Evidence:**
+- `.context/project/learnings.yaml` — L-398 entry, source: P-011, task: T-1887, application: ship — task template extended
+- `.tasks/templates/default.md` — new comment block "Enforcement-baseline hint (L-398, T-1886)" with copy-pasteable command `bin/fw enforcement baseline`
+- `yaml.safe_load` → 431 learnings (was 430)
+- Verification commands all pass (`grep -q "L-398"`, `grep -q "fw enforcement baseline"`)
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -139,5 +158,7 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-05-17T20:35:18Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1887-ship-t-1886-rca-candidate-a--task-templa.md
+- **Context:** Initial task creation

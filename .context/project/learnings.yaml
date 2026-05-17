@@ -3047,3 +3047,10 @@ X'` returning empty group."
   date: 2026-05-17
   context: Added via context agent
   application: TBD
+- id: L-398
+  learning: "Enforcement-baseline-drift class: editing .claude/settings.json (adding/removing/reorganising hooks) changes the canonical hash that bin/fw enforcement baseline pins, but no PostToolUse nudge fires on the edit. The hook-author task ships, the next fw doctor run reports FAIL ('Enforcement baseline CHANGED'), and the FAIL accumulates silently until somebody notices. Origin: three legitimate hook additions T-1849 (check-arc-id), T-1730 (focus-drift-gate), T-1731 (check-human-ac-tick) all shipped without refreshing the baseline — fw doctor sat in FAIL across multiple sessions until T-1886 cleaned up. Prevention pattern (analogous to L-291 toolchain-build rule): if you edit .claude/settings.json in a task, include 'bin/fw enforcement baseline' in your ## Verification block. The completion gate runs it, the baseline refresh becomes part of the task's evidence, and the next fw doctor stays green. Captured as Candidate A from T-1886 RCA; the task template default.md now carries this hint alongside L-291/L-387. Heavier candidates (B: PostToolUse nudge, C: pre-push block on baseline drift) remain in reserve if Candidate A proves insufficient."
+  source: P-011
+  task: T-1887
+  date: 2026-05-17
+  context: T-1886 RCA Candidate A — task-template hint pattern (L-291 style)
+  application: ship — task template extended
