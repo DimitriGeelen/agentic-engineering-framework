@@ -440,22 +440,40 @@ def _scan_tasks_by_tag(tag: str) -> list[str]:
 
 
 def _resolve_constituents(arc: dict[str, Any]) -> list[dict[str, Any]]:
-    """Merge legacy `constituent_tasks` with arc-tag scan (T-1817).
+    """Merge legacy `constituent_tasks` with both arc-membership signals.
 
-    Legacy entries first (preserves order author wrote them in); tag-scan
-    entries appended in sorted order; dedup by task id.
+    Sources unioned (T-1876, sibling of T-1874/T-1875):
+      1. Legacy `constituent_tasks:` (denormalised cache, preserves authored order)
+      2. arc_id: frontmatter — canonical post-T-1850 (T-1849), keyed by slug
+         OR arc-NNN (dual identity, T-1848)
+      3. Legacy `arc:<slug>` tag scan — pre-T-1850 form, still honored
+
+    Legacy entries first (preserves author order); membership-scan entries
+    appended in sorted order; dedup by task id. The membership index comes
+    from `_scan_tasks_by_arc_membership()` which is request-cached (60s) and
+    avoids per-call yaml-parsing the full task corpus.
     """
     legacy = arc.get("constituent_tasks") or []
     if not isinstance(legacy, list):
         legacy = []
-    # T-1848: tag scan uses slug (filename stem), not numeric `id:` (arc-NNN).
-    # See _list_arcs above for the same reasoning.
-    slug = str(arc.get("slug") or arc.get("id") or "").strip()
-    tagged = _scan_tasks_by_tag(f"arc:{slug}") if slug else []
+    # T-1848: tag/arc_id scan uses slug (filename stem). For arc_id we also
+    # accept the arc-NNN form because authors write either.
+    slug = str(arc.get("slug") or "").strip()
+    arc_numeric = str(arc.get("id") or "").strip()
+
+    by_arc_id, by_tag = _scan_tasks_by_arc_membership()
+    membership: list[str] = []
+    if slug:
+        membership.extend(by_arc_id.get(slug, []))
+        membership.extend(by_tag.get(f"arc:{slug}", []))
+    if arc_numeric and arc_numeric != slug:
+        membership.extend(by_arc_id.get(arc_numeric, []))
+    # Sort for determinism on the appended portion (legacy stays in author order).
+    membership = sorted(set(membership))
 
     merged_ids: list[str] = []
     seen: set[str] = set()
-    for tid in list(legacy) + tagged:
+    for tid in list(legacy) + membership:
         s = str(tid).strip()
         if not s or s in seen:
             continue
