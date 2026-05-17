@@ -2223,12 +2223,12 @@ learnings:
   context: Added via context agent
   application: TBD
 - id: L-288
-  learning: "Pickup-created inception tasks reach the human review queue with empty Recommendation sections because the inception template's instructional placeholder is wrapped in a multi-line HTML <!-- ... --> comment, and the inline content-check at lib/inception.sh:358 only filtered single-line <!-- markers. A multi-line-aware audit_inception_recommendation helper (awk tracks comment state) is the right structural gate. Pattern: any task-body audit that strips HTML comments must handle MULTI-LINE comments, not just single-line markers."
+  learning: "Pickup-created inception tasks reach the human review queue with empty Recommendation sections because the inception template's instructional placeholder is wrapped in a multi-line HTML <!-- ... --> comment, and the inline content-check at lib/inception.sh:358 only filtered single-line <!-- markers. A multi-line-aware audit_inception_recommendation helper (awk tracks comment state) is the right structural gate. Pattern: any task-body audit that strips HTML comments must handle MULTI-LINE comments, not just single-line markers. APPLICATIONS: (1) L-288 origin — multi-line-aware Recommendation check (lib/inception.sh); (2) T-1889 — D10 audit Decision-without-Dialogue check (agents/audit/audit.sh) was using naked `.count(\"[ ]\")` on the human-section text, counting checkboxes inside template-stub <!-- ... --> blocks. Fix: `re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)` before counting — same canonical strip pattern as lib/inception.sh:517. Bats suite tests/unit/audit_d10_html_comment_blindness.bats pins the behaviour. Recurrence: 2× now (T-1497 origin, T-1889 D10) — any new audit/check that scans task-file body MUST strip HTML comments first, ideally via shared helper rather than reinventing the strip."
   source: P-001
   task: T-1497
   date: 2026-04-26
-  context: Added via context agent
-  application: TBD
+  context: Added via context agent; T-1889 added D10 audit application 2026-05-17
+  application: ship — multi-line-aware Recommendation check (origin) + D10 audit fix (T-1889)
 - id: L-289
   learning: "Pickup router auto-ingests envelopes pushed FROM this project that land in the local TermLink hub inbox, creating phantom self-loop tasks. T-1512 was auto-created from P-040, the relay-back the framework had just sent to 003-NTB-ATC-Plugin. Mitigation: pickup router should skip envelopes where source_project == $PROJECT_NAME. Recurrence threshold: file structural fix task on second occurrence."
   source: P-040
