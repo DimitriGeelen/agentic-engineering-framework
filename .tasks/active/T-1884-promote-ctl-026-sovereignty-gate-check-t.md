@@ -38,7 +38,7 @@ Promotion is mechanically identical to T-1882/T-1883: extract from `oe-daily`, g
 - [x] Pre-push profile (`--section structure,compliance,quality,discovery`) emits CTL-026
 - [x] `--section structure` alone does NOT emit CTL-026 (gate granularity)
 - [x] New bats test file `tests/unit/audit_ctl026_compliance_section.bats` with 4 cases, all PASS
-- [ ] L-390 amended to note third instance (CTL-026) of the meta-lesson
+- [x] L-390 amended to note third instance (CTL-026) of the meta-lesson
 
 ### Human
 <!-- All ACs above are deterministic shell-runnable; no Human AC needed. -->
