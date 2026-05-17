@@ -299,3 +299,13 @@ surface gate (P-013) applies (web/blueprints/core.py + tasks.py touched) — one
 
 ### 2026-05-17T14:08:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-05-17T18:50:00Z — post-ship evidence banked for Human [REVIEW]
+- **What:** Re-verified the rendered landing arc card + /tasks?arc filter remain
+  populated after T-1880 + T-1882 follow-on consolidation work.
+- **Result:** Landing card for arc-grooming shows "18 tasks" (non-zero,
+  matches expected ≥14 from AC). Playwright `test_arcs_detail_arc_id_membership.py`
+  4/4 PASS — the DOM-content assertion confirms `/arcs/<slug>` lists the arc_id-tagged
+  members (the exact migration this task delivered).
+- **Caveat:** Structural correctness only. The [REVIEW] AC's visual layout
+  confirmation remains for the human.

@@ -218,3 +218,17 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_a
 
 ### 2026-05-17T15:39:41Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-05-17T18:50:00Z — post-ship evidence banked for Human [REVIEW]
+- **What:** Re-ran the arc-detail Playwright suite post-T-1882 ship to confirm
+  no regression in /arcs/<slug> rendering after the shared helper refactor.
+- **Result:** `tests/playwright/test_arcs_detail_arc_id_membership.py` — 4/4 PASS
+  (test_arcs_detail_slug_url_lists_arc_id_members, test_arcs_detail_numeric_url_lists_same_members,
+  test_arcs_detail_stats_total_nonzero, test_arcs_detail_unknown_arc_returns_404).
+  These are DOM-content assertions (T-1575) — confirm structural correctness:
+  the page lists arc-grooming members via arc_id frontmatter (not legacy tag scan).
+- **Caveat:** Structural correctness only. Visual layout/styling identity remains
+  for the [REVIEW] AC — agent cannot judge "looks the same" without eyes.
+- **Live re-check:** /arcs/arc-grooming returns 25 task IDs in body text;
+  landing card shows "18 tasks" for arc-grooming. Counts have moved since
+  T-1880 ship (was 24/18) because T-1882 added itself to the arc — expected.
