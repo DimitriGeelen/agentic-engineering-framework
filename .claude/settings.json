@@ -172,6 +172,15 @@
             "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook audit-task-tools"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-settings-edit"
+          }
+        ]
       }
     ]
   }
