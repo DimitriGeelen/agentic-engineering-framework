@@ -1,0 +1,23 @@
+id: tests/unit/audit_d10_html_comment_blindness.bats
+name: audit_d10_html_comment_blindness
+type: script
+subsystem: testing
+location: tests/unit/audit_d10_html_comment_blindness.bats
+tags: [test, bats, audit, d10, false-positive, T-1889]
+
+purpose: |
+  Bats unit tests pinning D10 audit ("Decision-without-Dialogue") behaviour
+  against HTML-comment-blindness false positives (T-1889). 4 cases verify:
+  template-stub-only Human section is silent, real unchecked AC outside
+  comments fires, checked AC is silent, mixed comments+real AC doesn't
+  double-count. Forward-pins the strip-comments call added to audit.sh
+  D10 block — future refactors that remove it fail test #1.
+
+depends_on:
+  - target: agents/audit/audit.sh
+    type: tests
+
+depended_by: []
+
+last_verified: 2026-05-17
+created_by: unknown
