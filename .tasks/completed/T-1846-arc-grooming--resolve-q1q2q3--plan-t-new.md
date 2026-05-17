@@ -4,7 +4,7 @@ name: "Arc grooming — resolve Q1/Q2/Q3 + plan T-NEW-2..9 build slices"
 description: >
   Inception: Arc grooming — resolve Q1/Q2/Q3 + plan T-NEW-2..9 build slices
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -13,8 +13,8 @@ components: ["lib/arc.sh", "web/blueprints/arcs.py", "agents/audit/audit.sh", ".
 related_tasks: ["T-1641", "T-1653", "T-1661", "T-1662", "T-1668", "T-1671", "T-1816", "T-1817"]
 arc_id: arc-grooming
 created: 2026-05-15T12:43:57Z
-last_update: 2026-05-15T12:46:53Z
-date_finished: null
+last_update: 2026-05-17T18:25:00Z
+date_finished: 2026-05-15T14:49:04Z
 ---
 
 # T-1846: Arc grooming — resolve Q1/Q2/Q3 + plan T-NEW-2..9 build slices
@@ -111,12 +111,12 @@ is the next agent action.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested (A1, A2, A3, A4 verified in §11.5 pre-action checks; recorded
+- [x] Assumptions tested (A1, A2, A3, A4 verified in §11.5 pre-action checks; recorded
       in Problem Statement / Assumptions sections)
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 - [x] Research artefact exists at `docs/reports/T-1846-arc-grooming-inception.md`
       (created at filing time; updated as dialogue produces findings — C-001 discipline)
 - [x] Handoff stored verbatim at `.context/handoffs/HANDOFF-arc-grooming-2026-05-15.md`
