@@ -1,20 +1,41 @@
 id: lib/arc_membership.py
-name: arc_membership
-type: script
+name: arc_membership-py
+type: library
 subsystem: framework-core
 location: lib/arc_membership.py
-tags: []
+tags: [arc-grooming, silent-corpus-prevention]
 
-purpose: "TODO: describe what this component does"
+purpose: |
+  Canonical Python helper for arc-membership scans (T-1880 / T-NEW-15).
+  Consolidates the union-of-`arc_id:`-frontmatter + legacy `arc:<slug>`-tag
+  scan that previously lived inline in three Watchtower blueprints:
+  web/blueprints/arcs.py, core.py, tasks.py. Companion to
+  lib/arc_membership.sh (which serves shell consumers).
+
+  Public API:
+    scan_tasks_by_arc_membership(project_root)
+        → (by_arc_id: dict[str, list[task_id]],
+           by_tag:    dict[str, list[task_id]])
+
+  Origin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured
+  as L-397. Each inline consumer had to be migrated independently after
+  the T-1850 tags-to-arc_id storage migration (162 tasks rewritten); the
+  consolidated helpers prevent the next storage-format migration from
+  leaking through nine sites again.
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
+  - target: .tasks/active/
+    type: reads
+  - target: .tasks/completed/
+    type: reads
 
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: web/blueprints/arcs.py
+    type: calls
+  - target: web/blueprints/core.py
+    type: calls
+  - target: web/blueprints/tasks.py
+    type: calls
 
 last_verified: 2026-05-17
-created_by: unknown
+created_by: T-1880
