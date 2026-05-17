@@ -2170,27 +2170,6 @@ else
          "Run: fw git install-hooks"
 fi
 
-# CTL-012 OE: AC Gate — no completed task has unchecked ACs (T-955: uses single-pass scan)
-ac_fail=0
-if [ -n "$COMPLETED_SCAN" ]; then
-    while IFS='|' read -r task_id ac_line; do
-        [ -z "$task_id" ] && continue
-        warn "CTL-012: Completed task $task_id has unchecked AC" \
-             "$ac_line" \
-             "Review task completion — AC gate may have been bypassed"
-        ac_fail=$((ac_fail + 1))
-    done < <(echo "$COMPLETED_SCAN" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for item in data.get('unchecked_ac', []):
-    print(f\"{item['id']}|{item['line']}\")
-" 2>/dev/null)
-fi
-if [ "$ac_fail" -eq 0 ]; then
-    completed_count=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('total',0))" 2>/dev/null || echo "0")
-    pass "CTL-012: All $completed_count completed tasks have checked ACs"
-fi
-
 # CTL-013 OE: Verification Gate — spot-check recently completed tasks
 # (Full re-run of all verification is expensive; check latest 3)
 verify_fail=0
@@ -2404,6 +2383,36 @@ for item in data.get('status_desync', []):
     fi
     if [ "$status_desync_fail" -eq 0 ]; then
         pass "CTL-028: All completed/ tasks have frontmatter status: work-completed"
+    fi
+fi
+
+# ============================================
+# CTL-012: AC-drift detection (T-955, AC-side twin of CTL-028)
+# Originally lived inside the oe-daily block (T-955); promoted by T-1883 to
+# fire on `compliance || oe-daily` so the pre-push audit catches completed
+# tasks with unchecked Agent ACs BEFORE the drift ships. Same detection-window
+# class as CTL-028 (was: up to 24h via oe-daily cron); same prevention class
+# (L-390 meta-lesson extended to the symmetric twin).
+# ============================================
+if should_run_section "compliance" || should_run_section "oe-daily"; then
+    ac_fail=0
+    if [ -n "$COMPLETED_SCAN" ]; then
+        while IFS='|' read -r task_id ac_line; do
+            [ -z "$task_id" ] && continue
+            warn "CTL-012: Completed task $task_id has unchecked AC" \
+                 "$ac_line" \
+                 "Review task completion — AC gate may have been bypassed"
+            ac_fail=$((ac_fail + 1))
+        done < <(echo "$COMPLETED_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data.get('unchecked_ac', []):
+    print(f\"{item['id']}|{item['line']}\")
+" 2>/dev/null)
+    fi
+    if [ "$ac_fail" -eq 0 ]; then
+        completed_count=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('total',0))" 2>/dev/null || echo "0")
+        pass "CTL-012: All $completed_count completed tasks have checked ACs"
     fi
 fi
 

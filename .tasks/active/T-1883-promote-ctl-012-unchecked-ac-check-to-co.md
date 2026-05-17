@@ -47,13 +47,13 @@ to the symmetric twin."
 ## Acceptance Criteria
 
 ### Agent
-- [ ] CTL-012 fires when audit runs with `--section compliance` (currently only fires with `--section oe-daily`)
-- [ ] CTL-012 still fires when audit runs with `--section oe-daily` (no regression)
-- [ ] `COMPLETED_SCAN` continues to populate when compliance section is requested (T-1882 wiring, no additional change needed)
-- [ ] Regression tests added/updated — exercise both code paths (compliance, oe-daily) with synthetic unchecked-AC fixture; all PASS
-- [ ] Pre-push audit profile (`--section structure,compliance,quality,discovery`) emits CTL-012 line
-- [ ] No new audit warnings/failures on the live tree (regression check)
-- [ ] CTL-012 does NOT fire from `--section structure` alone (negative test — gate granularity, mirrors T-1882 test #8)
+- [x] CTL-012 fires when audit runs with `--section compliance` (was: only fired with `--section oe-daily`)
+- [x] CTL-012 still fires when audit runs with `--section oe-daily` (no regression)
+- [x] `COMPLETED_SCAN` continues to populate when compliance section is requested (T-1882 wiring reused, no additional change needed)
+- [x] New bats file `tests/unit/audit_ctl012_compliance_section.bats` — 5 cases (compliance, oe-daily, pre-push-profile, structure-only negative, clean PASS). All 5 PASS.
+- [x] Pre-push audit profile (`--section structure,compliance,quality,discovery`) emits CTL-012 line
+- [x] No new audit warnings/failures on the live tree — pre-existing CTL-012 WARNs surfaced on T-678 + T-436 (these were already firing daily; promotion just makes them visible at pre-push too)
+- [x] CTL-012 does NOT fire from `--section structure` alone (negative test PASS — gate granularity, mirrors T-1882 test #8)
 
 ## Verification
 cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/audit_ctl012_compliance_section.bats
@@ -98,29 +98,52 @@ cd /opt/999-Agentic-Engineering-Framework && out=$(bin/fw audit --section struct
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-17 — T-1882 wiring meant zero new dependency-init work
+- **What changed:** Filed-task plan included AC #3 about `COMPLETED_SCAN` populating for compliance section. Reading audit.sh line 466 showed T-1882 had already expanded the trigger to include `compliance`. So no audit.sh init change was needed — just the CTL-012 block relocation.
+- **Plan impact:** Code diff smaller than expected. Single change: relocate CTL-012 block out of oe-daily, gate with `compliance || oe-daily`.
+- **Triggered:** ACs amended to reflect "reused T-1882 wiring" rather than "new wiring needed".
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+### 2026-05-17 — Pre-existing CTL-012 WARNs now visible at pre-push
+- **What changed:** Promotion exposed 2 chronic CTL-012 WARNs (T-678, T-436) that were already firing daily but invisible at push-time. After this slice ships, every developer pre-push will see them until cleaned up.
+- **Plan impact:** No regression — these WARNs already exist. But the noise floor for pre-push audit just rose by 2 lines until those tasks are remediated.
+- **Triggered:** Pre-existing-task cleanup is OUT of scope for this slice. Consider filing a separate cleanup task if the WARN noise becomes a nuisance.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-05-17 — Separate test file (not append to CTL-028 file)
+- **What changed:** Considered appending to `audit_ctl028_completed_status_consistency.bats` (which already has T-1882 cases). Decided to create `audit_ctl012_compliance_section.bats` — different check, different fixture (unchecked AC vs. status desync), should grow independently.
+- **Plan impact:** New file (~120 lines). Pattern matches the T-1882 test naming convention (`audit_<checkid>_compliance_section.bats`).
+- **Triggered:** Established a per-check convention if more promotion candidates follow (CTL-026, CTL-027).
 
 ## Decisions
+
+### 2026-05-17 — Same gate as CTL-028 (`compliance || oe-daily`)
+- **Chose:** Mirror T-1882's gate pattern exactly. CTL-012 lives in the same code region just below CTL-028.
+- **Why:** Symmetry — both checks share scan path, both detect post-fact desync, both should fire at same cadences. Easier for future readers to reason about.
+- **Rejected:** Promoting only to compliance (drop oe-daily). Would leave a gap if pre-push audit is bypassed via `--no-verify` (Tier-2); the daily cron remains as a backstop.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:**
+
+CTL-012 is the symmetric twin of CTL-028. Both detect the same drift class (completed/ tasks bypassed the state machine) on different dimensions (status field vs. AC checkboxes). T-1882 closed the pre-push detection-window gap for CTL-028; this slice closes the same gap for CTL-012. The L-390 meta-lesson ("detective checks in slow-cadence sections create proportional detection-window gaps") was the trigger and is now demonstrated twice — pattern strengthening.
+
+Implementation reused T-1882's COMPLETED_SCAN wiring (no audit.sh init change), so the patch is purely the CTL-012 block relocation + gate widening. 5 regression tests pin the new behaviour including the negative gate-granularity test that mirrors T-1882's test #8.
+
+Live tree clean: live audit emits 1 expected pass + 2 pre-existing WARNs (T-678, T-436 — chronic unchecked ACs on legacy completed tasks, unrelated to this slice). No new failure class introduced.
+
+**Evidence:**
+
+- agents/audit/audit.sh — CTL-012 block relocated (was inside oe-daily at line 2173, now sibling of CTL-028 after oe-daily close)
+- Gated by `if should_run_section "compliance" || should_run_section "oe-daily"` — same gate as CTL-028
+- tests/unit/audit_ctl012_compliance_section.bats — 5 cases, all PASS
+- tests/unit/audit_ctl028_completed_status_consistency.bats — 8 cases (unchanged, all PASS — no CTL-028 regression)
+- Live verify: `bin/fw audit --section compliance | grep CTL-012` → WARN T-678 + WARN T-436 + PASS line emitted
+- Live verify: `bin/fw audit --section structure | grep CTL-012` → no output (gate granularity confirmed)
+- Related learnings: L-390 (root pattern), T-1882 (twin slice, shipped this session)
+- Sweep evidence: this slice closes the strongest remaining promotion candidate identified in T-1882's option-2 sweep. CTL-026 + CTL-027 remain as weaker follow-ons (different detection class).
+
+## Decision
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
