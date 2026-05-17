@@ -3617,10 +3617,18 @@ items = []
 if m and m.group(1).strip():
     items = [s.strip().strip('"').strip("'") for s in m.group(1).split(",") if s.strip()]
 # Tag-based fallback (T-1813): when constituent_tasks is empty, scan .tasks/ for
-# tasks tagged arc:<slug>. Mirrors lib/arc.sh:_arc_tasks_with_tag so audit and
-# fw arc show use the same task-discovery pathway.
+# tasks tagged arc:<slug>. Mirrors lib/arc.sh:_arc_tasks_with_tag.
+# T-1875 (T-NEW-11): extended to union with arc_id: frontmatter scan — the
+# canonical source-of-truth field introduced in T-1849 and populated by the
+# T-1850 migration. Without this union, audit was blind to 163 task-arc
+# relationships across 5 arcs after migration. Mirrors lib/arc.sh:_arc_tasks_for.
 if not items and arc_slug:
     tag_pattern = f"arc:{arc_slug}"
+    # arc_id may be either slug form (`arc-grooming`) or arc-NNN form (`arc-005`).
+    arc_id_re = re.compile(
+        rf'^\s*arc_id:\s*["\']?({re.escape(arc_slug)}|{re.escape(arc_id)})["\']?\s*$',
+        re.MULTILINE,
+    )
     seen = set()
     for d in ("active", "completed"):
         for f in glob.glob(os.path.join(project_root, ".tasks", d, "T-*.md")):
@@ -3628,8 +3636,13 @@ if not items and arc_slug:
                 tt = open(f).read()
             except OSError:
                 continue
+            matched = False
             tags_m = re.search(r'^tags:\s*(.*?)$', tt, re.MULTILINE)
             if tags_m and tag_pattern in tags_m.group(1):
+                matched = True
+            if not matched and arc_id_re.search(tt):
+                matched = True
+            if matched:
                 id_m = re.search(r'^id:\s*(T-\d+)', tt, re.MULTILINE)
                 if id_m:
                     seen.add(id_m.group(1))
