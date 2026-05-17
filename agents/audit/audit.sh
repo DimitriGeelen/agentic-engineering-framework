@@ -2340,23 +2340,33 @@ for item in data['ownership']['issues']:
 " 2>/dev/null)
 fi
 
-# CTL-026 OE: Human Sovereignty Gate — update-task.sh has both gate checks
-if grep -qi 'sovereignty gate.*R-033' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
-    if grep -q 'human ownership is protected' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
-        pass "CTL-026: Human sovereignty gate present (completion + owner protection)"
-    else
-        warn "CTL-026: Completion gate present but owner protection missing" \
-             "update-task.sh has sovereignty gate but not owner protection" \
-             "Check update-task.sh for R-033 owner protection logic"
-    fi
-else
-    fail "CTL-026: Human sovereignty gate missing from update-task.sh" \
-         "update-task.sh does not contain sovereignty gate" \
-         "Re-implement R-033 gates in update-task.sh"
-fi
-
 echo ""
 fi # end oe-daily
+
+# ============================================
+# CTL-026: Human Sovereignty Gate present in update-task.sh (T-1884, L-390 third instance)
+# Originally lived inside the oe-daily block; promoted by T-1884 to fire on
+# `compliance || oe-daily` so the pre-push audit catches a missing/regressed
+# sovereignty gate BEFORE the commit ships. Detection class is different from
+# CTL-028/CTL-012 (framework-source presence check rather than corpus scan),
+# but the detection-window gap is identical — arguably more severe, because
+# the gate-source can be regressed by the very commit being pushed.
+# ============================================
+if should_run_section "compliance" || should_run_section "oe-daily"; then
+    if grep -qi 'sovereignty gate.*R-033' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
+        if grep -q 'human ownership is protected' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
+            pass "CTL-026: Human sovereignty gate present (completion + owner protection)"
+        else
+            warn "CTL-026: Completion gate present but owner protection missing" \
+                 "update-task.sh has sovereignty gate but not owner protection" \
+                 "Check update-task.sh for R-033 owner protection logic"
+        fi
+    else
+        fail "CTL-026: Human sovereignty gate missing from update-task.sh" \
+             "update-task.sh does not contain sovereignty gate" \
+             "Re-implement R-033 gates in update-task.sh"
+    fi
+fi
 
 # ============================================
 # CTL-028: Status-drift detection (T-1870, L-390)
