@@ -6,6 +6,7 @@ import time as _time_mod
 import markdown2
 from flask import Blueprint, abort
 
+from lib.arc_membership import scan_tasks_by_arc_membership
 from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
 from web.shared import (
     PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan,
@@ -215,6 +216,9 @@ def _get_arcs_in_flight():
             focused = None
 
     arcs = []
+    # T-1880 (T-NEW-15): single pass over .tasks/, shared across all arc
+    # cards on this page. Replaces N×O(tasks) inline loop with 1×O(tasks).
+    _by_arc_id, _by_tag = scan_tasks_by_arc_membership(PROJECT_ROOT)
     for f in sorted(arcs_dir.glob("*.yaml")):
         try:
             d = _load_yaml(f) or {}
@@ -227,21 +231,15 @@ def _get_arcs_in_flight():
         # match `arc:arc-001`.
         slug = d.get("slug") or f.stem
         arc_numeric_id = d.get("id") or slug
-        # T-1879 (T-NEW-14): Count tasks via union of `arc_id:` frontmatter
-        # (T-1849 canonical, populated by T-1850 migration) AND legacy
-        # `arc:<slug>` tag. T-1850 stripped the legacy tag from 162 tasks —
-        # tag-only scans return zero for every migrated arc.
-        task_count = 0
-        tag = f"arc:{slug}"
-        for fm in get_all_task_metadata():
-            arc_id_val = str(fm.get("arc_id") or "").strip()
-            if arc_id_val and (arc_id_val == slug or arc_id_val == arc_numeric_id):
-                task_count += 1
-                continue
-            for tg in fm.get("tags", []) or []:
-                if str(tg).strip() == tag:
-                    task_count += 1
-                    break
+        # T-1879/T-1880: union of arc_id frontmatter (slug or arc-NNN form)
+        # + legacy arc:<slug> tag, deduplicated. Shared helper guarantees
+        # parity with /arcs and /tasks?arc filter (which call the same
+        # function from lib/arc_membership.py).
+        union: set[str] = set()
+        union.update(_by_arc_id.get(slug, []))
+        union.update(_by_arc_id.get(arc_numeric_id, []))
+        union.update(_by_tag.get(f"arc:{slug}", []))
+        task_count = len(union)
         arcs.append({
             "id": arc_numeric_id,
             "slug": slug,

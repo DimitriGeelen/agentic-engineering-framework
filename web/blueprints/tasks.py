@@ -7,6 +7,7 @@ import markdown2
 import yaml
 from flask import Blueprint, abort, request
 
+from lib.arc_membership import task_dict_in_arc
 from web.shared import (
     FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter,
     get_all_task_metadata, get_episodic_tags, task_id_sort_key,
@@ -525,16 +526,11 @@ def tasks():
         all_tasks = [t for t in all_tasks if tag_filter.lower() in [str(tg).lower() for tg in t.get("_tags", [])]]
     if arc_filter:
         # T-1661: arc:<id> namespace.
-        # T-1879 (T-NEW-14): match union of `arc_id:` frontmatter (T-1849 canonical,
-        # T-1850 migrated) AND legacy `arc:<slug>` tag. T-1850 stripped the legacy
-        # tag from 162 tasks — tag-only filter returns empty for migrated arcs.
-        arc_tag = f"arc:{arc_filter}".lower()
-        arc_filter_lower = arc_filter.lower()
-        all_tasks = [
-            t for t in all_tasks
-            if arc_tag in [str(tg).lower() for tg in t.get("_tags", [])]
-            or str(t.get("arc_id") or "").strip().lower() == arc_filter_lower
-        ]
+        # T-1880 (T-NEW-15): delegated to shared helper (lib/arc_membership.py).
+        # Membership check unions canonical `arc_id:` frontmatter (T-1849) with
+        # legacy `arc:<slug>` tag (pre-T-1850 migration). Future storage-format
+        # changes update one place instead of three blueprints.
+        all_tasks = [t for t in all_tasks if task_dict_in_arc(t, arc_filter)]
     if owner_filter:
         all_tasks = [t for t in all_tasks if t.get("owner") == owner_filter]
     if horizon_filter:

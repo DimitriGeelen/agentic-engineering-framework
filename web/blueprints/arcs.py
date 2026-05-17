@@ -29,6 +29,10 @@ from typing import Any
 import yaml
 from flask import Blueprint, abort, request
 
+from lib.arc_membership import (
+    scan_tasks_by_arc_id as _scan_tasks_by_arc_id_shared,
+    scan_tasks_by_arc_membership as _scan_tasks_by_arc_membership_shared,
+)
 from web.shared import PROJECT_ROOT, render_page
 
 bp = Blueprint("arcs", __name__)
@@ -147,96 +151,27 @@ def _recent_task_paths() -> set[str]:
     return paths
 
 
-_ARC_ID_LINE_RE = re.compile(r"^arc_id:\s*(.+?)\s*$", re.MULTILINE)
+# T-1880 (T-NEW-15): scan helpers extracted to lib/arc_membership.py for
+# shared use across web/blueprints/{arcs,core,tasks}.py. Cached wrappers
+# below remain local to this blueprint (request-scoped TTL is a
+# Watchtower concern, not a shared-library one).
 
 
 def _scan_tasks_by_arc_id() -> dict[str, list[str]]:
-    """T-1855 helper: ONE pass over all `.tasks/{active,completed}/T-*.md`
-    building `arc_id_value → [repo-relative path, ...]`. Both slug and
-    arc-NNN keys point to the same path list when used together (callers
-    do two lookups + merge).
+    """T-1855: arc_id value → [repo-relative path, ...]. Path-valued.
 
-    Lightweight regex extract of `arc_id:` only — avoids yaml.safe_load of
-    every task (1841 files × yaml parse is what blew 15s timeouts on /arcs).
-
-    Cached per-request via _RECENT_PATHS_CACHE-style TTL so the second hit
-    in the same Watchtower window is O(1).
+    Pre-T-1880 this was inline. Now a thin pass-through to the shared
+    helper. Wrapper kept so cached layer (`_arc_tasks_by_id`) and existing
+    test imports stay stable.
     """
-    by_arc: dict[str, list[str]] = {}
-    tasks_dir = PROJECT_ROOT / ".tasks"
-    for sub in ("active", "completed"):
-        sub_dir = tasks_dir / sub
-        if not sub_dir.is_dir():
-            continue
-        for md in sub_dir.glob("T-*.md"):
-            try:
-                # Read only first 1KB — frontmatter lives at the top, and
-                # large body text isn't searched here.
-                with md.open("r", encoding="utf-8", errors="replace") as fh:
-                    head = fh.read(1024)
-            except OSError:
-                continue
-            m = _ARC_ID_LINE_RE.search(head)
-            if not m:
-                continue
-            aid = m.group(1).strip().strip('"').strip("'")
-            if not aid or aid in ("null", "~"):
-                continue
-            try:
-                rel = str(md.relative_to(PROJECT_ROOT))
-            except ValueError:
-                rel = str(md)
-            by_arc.setdefault(aid, []).append(rel)
-    return by_arc
-
-
-_ARC_ID_AND_TAG_LINE_RE = re.compile(r"^(arc_id|tags):\s*(.+?)\s*$", re.MULTILINE)
+    return _scan_tasks_by_arc_id_shared(PROJECT_ROOT)
 
 
 def _scan_tasks_by_arc_membership() -> tuple[dict[str, list[str]], dict[str, list[str]]]:
-    """One pass over all task files producing two indices:
-      - by_arc_id:   arc_id value -> [task ids]   (canonical, T-1849)
-      - by_tag:      arc:<slug>    -> [task ids]   (legacy, pre-T-1850)
-
-    Frontmatter-only — reads first 1KB of each task file to avoid full
-    body parse. Avoids the 5×1841 yaml.safe_load pattern that made /arcs
-    a 10s page render.
+    """Returns (by_arc_id, by_tag). Thin pass-through to the shared
+    helper (lib/arc_membership.py) — extracted in T-1880.
     """
-    by_arc_id: dict[str, list[str]] = {}
-    by_tag: dict[str, list[str]] = {}
-    tasks_dir = PROJECT_ROOT / ".tasks"
-    tag_arc_re = re.compile(r"arc:([A-Za-z0-9\-_]+)")
-    # T-1849 frontmatter: arc_id appears as either bare value or quoted.
-    arc_id_re = re.compile(r"^arc_id:\s*(.+?)\s*$", re.MULTILINE)
-    tags_re = re.compile(r"^tags:\s*(.+?)\s*$", re.MULTILINE)
-    id_re = re.compile(r"^id:\s*(T-\d+)\s*$", re.MULTILINE)
-    for sub in ("active", "completed"):
-        sub_dir = tasks_dir / sub
-        if not sub_dir.is_dir():
-            continue
-        for md in sub_dir.glob("T-*.md"):
-            try:
-                with md.open("r", encoding="utf-8", errors="replace") as fh:
-                    head = fh.read(1024)
-            except OSError:
-                continue
-            # Extract task id (frontmatter `id: T-XXXX`)
-            id_m = id_re.search(head)
-            if id_m is None:
-                continue
-            tid = id_m.group(1).strip()
-            # arc_id:
-            aid_m = arc_id_re.search(head)
-            if aid_m is not None:
-                aid = aid_m.group(1).strip().strip('"').strip("'")
-                if aid and aid not in ("null", "~"):
-                    by_arc_id.setdefault(aid, []).append(tid)
-            # tags: — extract arc:<slug> entries (legacy)
-            tags_m = tags_re.search(head)
-            if tags_m is not None:
-                for arc_slug in tag_arc_re.findall(tags_m.group(1)):
-                    by_tag.setdefault(f"arc:{arc_slug}", []).append(tid)
-    return by_arc_id, by_tag
+    return _scan_tasks_by_arc_membership_shared(PROJECT_ROOT)
 
 
 _ARC_TASKS_CACHE: tuple[float, dict[str, list[str]]] | None = None

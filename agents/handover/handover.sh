@@ -490,22 +490,14 @@ if [ -f "$ARC_FOCUS_FILE" ]; then
         if [ -f "$arc_yaml" ]; then
             arc_name=$(awk -F': ' '/^name:/ {sub(/^name: /,""); print; exit}' "$arc_yaml")
             arc_status=$(awk -F': ' '/^status:/ {print $2; exit}' "$arc_yaml")
-            # T-1879 (T-NEW-14): Count tasks via union of `arc_id:` frontmatter
-            # (T-1849 canonical, populated by T-1850 migration) AND legacy
-            # `arc:<id>` tag. T-1850 stripped the legacy tag from 162 tasks —
-            # tag-only count returns zero for every migrated arc.
-            # Use a temp file to avoid brace-group + pipeline subshell
-            # output-dropping under some shell modes (saw 1/4 output).
-            _arc_count_tmp=$(mktemp 2>/dev/null || echo "/tmp/.fw-arc-count-$$")
-            grep -lE "^tags:.*arc:${cur_arc}" "$PROJECT_ROOT"/.tasks/active/*.md 2>/dev/null >> "$_arc_count_tmp" || true
-            grep -lE "^tags:.*arc:${cur_arc}" "$PROJECT_ROOT"/.tasks/completed/*.md 2>/dev/null >> "$_arc_count_tmp" || true
-            grep -lE "^[[:space:]]*arc_id:[[:space:]]*[\"']?${cur_arc}[\"']?[[:space:]]*$" "$PROJECT_ROOT"/.tasks/active/*.md 2>/dev/null >> "$_arc_count_tmp" || true
-            grep -lE "^[[:space:]]*arc_id:[[:space:]]*[\"']?${cur_arc}[\"']?[[:space:]]*$" "$PROJECT_ROOT"/.tasks/completed/*.md 2>/dev/null >> "$_arc_count_tmp" || true
-            # grep -c . already prints '0' on no-match; don't chain '|| echo 0'
-            # (would double-print '0\n0' since grep exits 1 on no match).
-            task_count=$(sort -u "$_arc_count_tmp" 2>/dev/null | grep -c . 2>/dev/null)
+            # T-1880 (T-NEW-15): delegated to shared helper. Counts tasks via
+            # union of `arc_id:` frontmatter + legacy `arc:<slug>` tag, using
+            # the same library that backs /arcs, /tasks?arc, and audit's
+            # stale-arc check. Replaces the tempfile workaround (L-396).
+            # shellcheck disable=SC1091
+            . "$FRAMEWORK_ROOT/lib/arc_membership.sh"
+            task_count=$(PROJECT_ROOT="$PROJECT_ROOT" arc_tasks_for "$cur_arc" | grep -c . 2>/dev/null)
             [ -z "$task_count" ] && task_count=0
-            rm -f "$_arc_count_tmp"
             echo "## Current Arc"
             echo ""
             echo "**${cur_arc}** — ${arc_name} (${arc_status}, ${task_count} task(s))"

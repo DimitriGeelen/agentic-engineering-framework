@@ -40,26 +40,17 @@ has_evolution_section() {
     grep -q '^## Evolution\b' "$task_file" 2>/dev/null
 }
 
-# T-1879 (T-NEW-14): Returns 0 if the task file's frontmatter declares
-# arc membership via EITHER `arc_id:` (T-1849 canonical, T-1850 migrated)
-# OR a `tags:` line containing `arc:<slug>` (legacy). Returns 1 otherwise.
-# Scopes the check to the frontmatter to avoid false positives from
-# `arc:` mentions in commit refs / narrative body. Pre-T-1879 callers
-# used `grep -q 'arc:' "$task_file"` which both (a) whole-file-matched
-# (noisy) and (b) missed arc_id-only tasks after migration.
-task_has_arc_membership() {
-    local task_file="$1"
-    [ -f "$task_file" ] || return 1
-    # Extract frontmatter block (lines between first two `---` markers).
-    # Then check for arc_id field OR tags line with arc:<anything>.
-    awk '
-        /^---$/ { fm++; next }
-        fm == 1 && /^arc_id:[[:space:]]*["\047]?[A-Za-z0-9_-]+["\047]?[[:space:]]*$/ { found=1; exit }
-        fm == 1 && /^tags:.*arc:[A-Za-z0-9_-]+/ { found=1; exit }
-        fm >= 2 { exit }
-        END { exit (found ? 0 : 1) }
-    ' "$task_file"
-}
+# T-1879 (T-NEW-14) / T-1880 (T-NEW-15): `task_has_arc_membership` is
+# now exported from the shared `lib/arc_membership.sh` module. Source it
+# here so existing callers (find_arc_tasks_without_evolution_log below,
+# and the source-from-update-task.sh entrypoint) continue to work.
+#
+# Helper script may be sourced before paths are wired — guard the path
+# resolution so we don't fail if FRAMEWORK_ROOT isn't yet set.
+__el_lib_dir="${BASH_SOURCE[0]%/*}"
+# shellcheck disable=SC1091
+. "$__el_lib_dir/arc_membership.sh"
+unset __el_lib_dir
 
 has_real_evolution_log() {
     local task_file="$1"
