@@ -676,6 +676,50 @@ if [ "$arcs_checked_for_staleness" -gt 0 ] && [ "$stale_arc_count" -eq 0 ]; then
     pass "All $arcs_checked_for_staleness in-progress arc(s) had task commits within ${stale_arc_threshold} days"
 fi
 
+# T-1881 (T-NEW-16, arc-grooming): ctl-arc-tag-only-pattern.
+# After T-1880 consolidation, inline `grep ... arc:<slug>` legacy-tag scans
+# are forbidden outside the canonical helpers. Any NEW occurrence in
+# consumer code is silent-corpus #3 in waiting — a site reinventing the
+# scan and missing the `arc_id` half of the union (L-397).
+#
+# Whitelist: lib/arc_membership.{sh,py} (canonical), lib/arc.sh (legacy
+# wrappers kept as thin shims), lib/migrations/ (one-shot migration),
+# tests/, docs/, .fabric/, .context/ (out-of-scope surfaces).
+#
+# Scope: lib/, web/, agents/, bin/, tools/ — source code paths.
+# Failure mode: FAIL (not WARN) — silent corpora are the exact class
+# this check exists to prevent.
+arc_tag_only_violations=0
+arc_tag_only_evidence=""
+# Pattern: `grep` invocations targeting `arc:<slug>` (legacy tag form)
+# in either `tags: [...]` or as a raw pattern argument. Excludes
+# `current_arc:` and `arc_id:` which are different namespaces.
+arc_tag_only_pattern='grep[^|]*"\^?tags:.*arc:|grep[^|]*arc:[A-Za-z0-9_-]'
+for scan_dir in lib web agents bin tools; do
+    [ -d "$PROJECT_ROOT/$scan_dir" ] || continue
+    while IFS= read -r hit; do
+        [ -z "$hit" ] && continue
+        # Allowlist by path prefix.
+        case "$hit" in
+            *lib/arc_membership.sh:*|*lib/arc_membership.py:*) continue ;;
+            *lib/arc.sh:*) continue ;;
+            *lib/migrations/*) continue ;;
+            *tests/*|*docs/*|*.fabric/*|*.context/*) continue ;;
+        esac
+        arc_tag_only_violations=$((arc_tag_only_violations + 1))
+        arc_tag_only_evidence="$arc_tag_only_evidence$hit\n"
+    done < <(grep -RnE "$arc_tag_only_pattern" \
+                   --include='*.sh' --include='*.py' --include='*.bash' \
+                   "$PROJECT_ROOT/$scan_dir" 2>/dev/null || true)
+done
+if [ "$arc_tag_only_violations" -eq 0 ]; then
+    pass "No inline arc:<slug> tag-only scans outside canonical lib (T-1881)"
+else
+    fail "Found $arc_tag_only_violations inline arc:<slug> tag-only scan(s) outside canonical lib" \
+         "$(printf '%b' "$arc_tag_only_evidence" | head -5)" \
+         "Migrate to lib/arc_membership.{sh,py} (arc_tasks_for / scan_tasks_by_arc_membership). See T-1880 for pattern. Silent-corpus risk class L-397."
+fi
+
 # Fabric drift detection (T-212 — component topology integrity)
 if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
     fabric_cards=$(find "$PROJECT_ROOT/.fabric/components/" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)
