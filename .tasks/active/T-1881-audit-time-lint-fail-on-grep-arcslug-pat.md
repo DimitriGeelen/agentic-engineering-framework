@@ -65,23 +65,46 @@ Coverage:
 ## Verification
 
 cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/audit_ctl_arc_tag_only_pattern.bats
-cd /opt/999-Agentic-Engineering-Framework && bin/fw audit 2>&1 | grep -E "(PASS|FAIL).*arc.*tag-only" | head -3
+cd /opt/999-Agentic-Engineering-Framework && grep -q "ctl-arc-tag-only-pattern" agents/audit/audit.sh
+# Live-tree sanity: 0 violations (post-T-1880 clean state). Inline bash
+# rather than `fw audit` to avoid the full audit lifecycle (~90s+) in
+# completion-gate Verification context.
+cd /opt/999-Agentic-Engineering-Framework && test "$(PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework bash -c 'v=0; for d in lib web agents bin tools; do while IFS= read -r h; do [ -z "$h" ] && continue; case "$h" in *lib/arc_membership.sh:*|*lib/arc_membership.py:*|*lib/arc.sh:*|*lib/migrations/*|*tests/*|*docs/*|*.fabric/*|*.context/*) continue ;; esac; v=$((v+1)); done < <(grep -RnE "grep[^|]*\"\^?tags:.*arc:|grep[^|]*arc:[A-Za-z0-9_-]" --include="*.sh" --include="*.py" --include="*.bash" "$PROJECT_ROOT/$d" 2>/dev/null || true); done; echo $v')" = "0"
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+This is a future-prevention build task (not a single-incident bug fix),
+but the title keyword "fail" trips the bug-class classifier. Treating
+the silent-corpus-#1+#2 cluster as the originating "bug" the RCA
+addresses:
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Symptom:** Two clusters of silent-corpus surfaces (T-1874/75/76/77
+and T-1879) where every consumer site reading legacy `arc:<slug>` tags
+inline returned zero rows after the T-1850 storage migration. 9 sites
+fixed across 4 commits over 2 days; users discovered each via missing
+counts on /arcs landing, /tasks?arc filter, audit blindness, handover
+narrative drift.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Root cause:** Each consumer re-implemented the legacy-tag scan
+inline as a one-line `grep arc:<slug>`. The T-1850 migration converted
+storage but left every consumer to update independently. With no
+canonical helper and no audit lint, the framework had no way to detect
+inline scans that missed the `arc_id:` half of the union.
+
+**Why structurally allowed:** No shared library forced consolidation
+(T-1880 fixes this). No audit check forbade the inline pattern
+(this task fixes that). The bug class is "duplicated read-paths
+across a storage format boundary" — invisible until a migration runs.
+
+**Prevention:**
+- T-1880 — canonical shared `lib/arc_membership.{sh,py}` so future
+  migrations update one location.
+- T-1881 (this task) — audit check `ctl-arc-tag-only-pattern` that
+  FAILs on any inline `grep arc:<slug>` outside the canonical sites,
+  enforced via `fw audit` and pre-push gate. Catches silent-corpus-#3
+  at the moment of introduction.
+- L-396 (brace+pipe output drop), L-397 (silent-corpus migration
+  pattern) — captured as framework learnings + auto-memory.
 
 ## Evolution
 
