@@ -1,0 +1,35 @@
+id: tests/playwright/test_arcs_renders_without_constituent_field.py
+name: test_arcs_renders_without_constituent_field
+type: script
+subsystem: testing
+location: tests/playwright/test_arcs_renders_without_constituent_field.py
+tags: [test, playwright, dom-content, arc, render-surface, fixture, T-1851, T-1575, T-971]
+
+purpose: |
+  Playwright DOM-content assertion (per T-1575/T-971) pinning the
+  /arcs/<slug> render contract for arcs that omit the legacy
+  `constituent_tasks:` frontmatter field. Fixture writes a synthetic arc
+  YAML to .context/arcs/, yields, removes on teardown — Watchtower
+  reads filesystem live, no restart needed.
+
+  Two tests:
+  - test_arcs_detail_renders_without_constituent_tasks: synthetic
+    field-less arc → 200 + no "Traceback" + no "Internal Server Error"
+    + arc name renders.
+  - test_legacy_arc_with_constituent_tasks_still_renders: regression
+    guard pinning legacy /arcs/arc-grooming still renders.
+
+  Re-classifies T-1851's first Human [REVIEW] AC to Agent. The
+  deprecation-banner reading-quality AC remains Human [REVIEW] —
+  doc tone is genuinely subjective.
+
+depends_on:
+  - target: web/blueprints/arcs.py
+    type: renders
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-05-17
+created_by: claude
