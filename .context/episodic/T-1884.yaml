@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1884: promote CTL-026 sovereignty-gate check to compliance section — third twin of detection-window pattern
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T19:49:30Z
+# ============================================================================
+
+task_id: T-1884
+task_name: "promote CTL-026 sovereignty-gate check to compliance section — third twin of detection-window pattern"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-17T19:38:03Z
+completed: 2026-05-17T19:47:39Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-05-17T21:44:44+02:00
+last_commit: 2026-05-17T21:44:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ship CTL-026 promotion to compliance section + 4 regression tests
+
+# Key outcomes
+outcomes:
+  - 'CTL-026 block extracted from `oe-daily` and gated by `compliance || oe-daily`'
+  - '`bin/fw audit --section compliance` emits a CTL-026 line (PASS in clean repo)'
+  - '`bin/fw audit --section oe-daily` still emits CTL-026 (no regression)'
+  - 'Pre-push profile (`--section structure,compliance,quality,discovery`) emits CTL-026'
+  - '`--section structure` alone does NOT emit CTL-026 (gate granularity)'
+  - 'New bats test file `tests/unit/audit_ctl026_compliance_section.bats` with 4 cases, all PASS'
+  - 'L-390 amended to note third instance (CTL-026) of the meta-lesson'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-17 — Promotion target = compliance (not structure)'
+    chose: 'Gate with `compliance || oe-daily`, matching T-1882/T-1883.'
+    rationale: 'Structure is intentionally lean for fast pre-push (file-presence, ID uniqueness). Compliance is the correct home for "is the framework''s enforcement actually wired" checks. Pre-push profile already includes compliance, so this gets the desired detection-window collapse without bloating structure.'
+    alternatives_rejected: ['Promote to structure (too broad, slows pre-push); keep in oe-daily and rely on cron (24h gap, original problem).']
+  - decision: '2026-05-17 — No Human AC (all deterministic)'
+    chose: 'Agent-only AC set; no [REVIEW] / [REVIEWER] Human AC filed.'
+    rationale: 'Per CLAUDE.md §AC Classification Guidance, Human AC required only when subjective/strategic/irreversible/cross-blast/render-surface. None apply here: audit.sh edit is internal scope, fully reversible, no rendering surface, no external user impact. All four ACs are mechanical shell checks (firing-paths + gate granularity); fifth is a literal file-existence test; sixth/seventh are content edits with shell-verifiable outcomes.'
+    alternatives_rejected: ['Add a Human [REVIEW] "is the L-390 third-instance amendment well-phrased" — would be busywork; L-390 wording is editable later if reading reveals a defect.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-1884-promote-ctl-026-sovereignty-gate-check-t.md'
+  - 'tests/unit/audit_ctl026_compliance_section.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-17T21:44:44"
+    action: "T-1884: ship CTL-026 promotion to compliance section + 4 regression tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-grooming, audit, prevention, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 3
+  lines_added: 155
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1884-promote-ctl-026-sovereignty-gate-check-t.md
+generated_by: context-agent-hybrid

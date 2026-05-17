@@ -184,8 +184,8 @@ The advisory mode (no-CLAUDECODE) preserves interactive human edits via vi/IDE â
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-a3264422
-- **Timestamp:** 2026-05-13T18:17:16Z
+- **Scan ID:** R-89fae21f
+- **Timestamp:** 2026-05-17T07:15:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

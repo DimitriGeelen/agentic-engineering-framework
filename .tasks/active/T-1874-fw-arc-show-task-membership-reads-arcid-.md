@@ -4,17 +4,17 @@ name: "fw arc show task-membership reads arc_id frontmatter (T-NEW-10)"
 description: >
   Closes T-1850 migration blindness: lib/arc.sh _arc_tasks_with_tag scans only legacy ^tags:.*arc:<slug>, so fw arc show, fw arc list constituent count, and --demo task validation all report zero membership after the tags→arc_id migration.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude
+owner: human
 horizon: now
 tags: [arc, arc-grooming, lib-arc, T-NEW-10]
-components: []
+components: [lib/arc.sh, tests/unit/arc_membership_union.bats]
 related_tasks: [T-1687, T-1846, T-1849, T-1850]
 arc_id: arc-grooming
 created: 2026-05-16T22:46:13Z
-last_update: 2026-05-16T22:46:13Z
-date_finished: null
+last_update: 2026-05-16T22:50:37Z
+date_finished: 2026-05-16T22:50:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -192,3 +192,14 @@ grep -q "_arc_tasks_with_arc_id()" lib/arc.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1874-fw-arc-show-task-membership-reads-arcid-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-e8974136
+- **Timestamp:** 2026-05-17T07:15:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+### 2026-05-16T22:50:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

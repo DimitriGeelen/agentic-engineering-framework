@@ -107,8 +107,8 @@ curl -sf "$(bin/fw watchtower url)/orchestrator" | grep -q "provider"
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-a0d2a739
-- **Timestamp:** 2026-05-13T06:29:55Z
+- **Scan ID:** R-273314c2
+- **Timestamp:** 2026-05-17T07:15:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -118,6 +118,5 @@ curl -sf "$(bin/fw watchtower url)/orchestrator" | grep -q "provider"
 
 - **AC#1 (Agent)** — `web/templates/orchestrator.html` workflow coverage table has a 4th column header `provider` between `worker_kind` and `Routable`.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/orchestrator.html in: `web/templates/orchestrator.html` workflow coverage table has a 4th column header `provider` between `worker_kind` and `Routable`.`
-
 ### 2026-05-13T06:29:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -142,8 +142,8 @@ Detected via T-1810 follow-up triage: 7 Group C tasks were initially classified 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-42e2049d
-- **Timestamp:** 2026-05-13T18:23:25Z
+- **Scan ID:** R-160bb8bd
+- **Timestamp:** 2026-05-17T07:15:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -153,6 +153,5 @@ Detected via T-1810 follow-up triage: 7 Group C tasks were initially classified 
 
 - **AC#3 (Agent)** — `lib/verify-acs.sh` (or `lib/verify-acs.py`) extended: when scanning a task with `[REVIEW]` Human ACs, also surface `fw reviewer T-XXX` verdict in the output (Overall + Needs Human + Findings count)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/verify-acs.sh in: `lib/verify-acs.sh` (or `lib/verify-acs.py`) extended: when scanning a task with `[REVIEW]` Human ACs, also surface `fw reviewer T-XXX` verdict in the`
-
 ### 2026-05-13T18:23:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

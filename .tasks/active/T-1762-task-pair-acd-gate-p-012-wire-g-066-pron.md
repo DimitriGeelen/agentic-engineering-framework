@@ -189,8 +189,8 @@ Three convergent signals justify shipping:
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-bf3102b0
-- **Timestamp:** 2026-05-13T22:33:56Z
+- **Scan ID:** R-ad23bc4f
+- **Timestamp:** 2026-05-17T07:15:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -200,6 +200,5 @@ Three convergent signals justify shipping:
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 11
      - evidence: `bash lib/task_pair_acd.sh extract_deliverables .tasks/completed/T-1713-task-pair-acd-gate-detect-substrate-vs-d.md >/dev/null`
-
 ### 2026-05-13T22:33:56Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -122,8 +122,8 @@ Pure helper extension (`enrich_with_dispatch_recency`) keeps the audit-time chec
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-8fa230a2
-- **Timestamp:** 2026-05-13T06:35:54Z
+- **Scan ID:** R-a31cf56f
+- **Timestamp:** 2026-05-17T07:15:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -140,6 +140,5 @@ Pure helper extension (`enrich_with_dispatch_recency`) keeps the audit-time chec
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_workflow_coverage.py tests/unit/test_orchestrator_workflow_coverage.py -v`
-
 ### 2026-05-13T06:35:51Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

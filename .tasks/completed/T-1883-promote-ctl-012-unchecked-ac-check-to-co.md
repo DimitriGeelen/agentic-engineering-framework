@@ -4,17 +4,17 @@ name: "Promote CTL-012 unchecked-AC check to compliance section (twin of CTL-028
 description: >
   Promote CTL-012 unchecked-AC check to compliance section (twin of CTL-028, closes detection-window for AC-drift class)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc-grooming, audit, prevention, governance]
-components: ["agents/audit/audit.sh", "tests/unit"]
+components: [C-004]
 related_tasks: ["T-1882", "T-1846", "T-1687", "T-1870"]
 arc_id: arc-grooming
 created: 2026-05-17T19:03:53Z
-last_update: 2026-05-17T19:03:53Z
-date_finished: null
+last_update: 2026-05-17T19:09:57Z
+date_finished: 2026-05-17T19:09:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -170,3 +170,15 @@ Live tree clean: live audit emits 1 expected pass + 2 pre-existing WARNs (T-678,
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1883-promote-ctl-012-unchecked-ac-check-to-co.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-61dc80d9
+- **Timestamp:** 2026-05-17T19:11:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-17T19:09:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

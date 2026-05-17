@@ -194,8 +194,8 @@ curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-0c8a6b83
-- **Timestamp:** 2026-05-16T09:09:44Z
+- **Scan ID:** R-83f8a47e
+- **Timestamp:** 2026-05-17T07:15:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -214,7 +214,6 @@ curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
      - evidence: `curl -sf "$(bin/fw watchtower url)/arcs/arc-001" >/dev/null`
   3. **empty-output-success** (partial, heuristic) @ Verification:line 23
      - evidence: `curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null`
-
 ### 2026-05-16T09:08:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Verb-side normalisation sequel complete; verification commands corrected (SIGPIPE class); Human [REVIEW] AC remains

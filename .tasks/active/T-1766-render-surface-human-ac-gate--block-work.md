@@ -163,8 +163,8 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-be4a57eb
-- **Timestamp:** 2026-05-16T08:15:56Z
+- **Scan ID:** R-94d49213
+- **Timestamp:** 2026-05-17T07:15:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -176,6 +176,5 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: **Render-surface predicate** — `lib/render_surface.sh` exposes `task_touches_render_surface <task_file>` returning 0 (yes) or 1 (no). Predicate examin`
 - **AC#5 (Agent)** — **Self-application: T-1766 closure** — T-1766's body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as render-surface examples). The predicate correctly
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: **Self-application: T-1766 closure** — T-1766's body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as`
-
 ### 2026-05-16T08:13:11Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

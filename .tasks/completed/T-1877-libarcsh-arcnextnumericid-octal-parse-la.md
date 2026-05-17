@@ -4,17 +4,17 @@ name: "lib/arc.sh _arc_next_numeric_id octal-parse latent bug fix (T-NEW-13)"
 description: >
   _arc_next_numeric_id stores max as a leading-zero string (e.g. '008') after the POSIX test comparison; the trailing $((max+1)) arithmetic expansion then octal-errors on arc-008/009. Caught in T-1851 Evolution as cheap latent-bug fix. Currently at arc-005 — 3 creations from blowing up. Force base-10 with 10# prefix.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude
 horizon: now
 tags: [arc, arc-grooming, lib-arc, bug, T-NEW-13]
-components: []
+components: [lib/arc.sh, tests/unit/arc_next_numeric_id_octal.bats]
 related_tasks: [T-1687, T-1848, T-1851]
 arc_id: arc-grooming
 created: 2026-05-17T07:01:10Z
-last_update: 2026-05-17T07:01:10Z
-date_finished: null
+last_update: 2026-05-17T07:05:28Z
+date_finished: 2026-05-17T07:05:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -62,8 +62,8 @@ Fix: force base-10 with `10#` prefix on the arithmetic expansion. Single charact
 
 bash -n lib/arc.sh
 bats tests/unit/arc_next_numeric_id_octal.bats
-# L-394: capture-then-grep
-out=$(grep -n '10#' lib/arc.sh 2>&1); echo "$out" | grep -q "_arc_next_numeric_id\|arc-%03d\|max\b"
+# L-394: capture-then-grep — pin that 10# normalisation lives in _arc_next_numeric_id's body
+out=$(awk '/^_arc_next_numeric_id\(\)/,/^\}/' lib/arc.sh 2>&1); echo "$out" | grep -q '10#'
 # Sanity: existing arc allocation still works on real corpus (returns valid arc-NNN form)
 out=$(_FW_TEST=1 bash -c "source lib/arc.sh; ARCS_DIR='$PWD/.context/arcs' _arc_next_numeric_id" 2>&1); echo "$out" | grep -qE '^arc-[0-9]{3}$'
 
@@ -181,3 +181,15 @@ out=$(_FW_TEST=1 bash -c "source lib/arc.sh; ARCS_DIR='$PWD/.context/arcs' _arc_
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1877-libarcsh-arcnextnumericid-octal-parse-la.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-59ea03e1
+- **Timestamp:** 2026-05-17T07:05:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-17T07:05:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

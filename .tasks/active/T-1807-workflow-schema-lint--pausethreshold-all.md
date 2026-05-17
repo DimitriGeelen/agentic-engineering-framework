@@ -119,8 +119,8 @@ out=$(bin/fw doctor 2>&1 || true); echo "$out" | grep "Workflow schema:" | grep 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-3100a326
-- **Timestamp:** 2026-05-13T18:35:12Z
+- **Scan ID:** R-5dacfedb
+- **Timestamp:** 2026-05-17T07:15:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

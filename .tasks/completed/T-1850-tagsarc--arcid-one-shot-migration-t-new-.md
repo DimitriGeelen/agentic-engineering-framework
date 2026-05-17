@@ -4,17 +4,17 @@ name: "tags:[arc:*] → arc_id one-shot migration (T-NEW-3)"
 description: >
   Idempotent migration script lib/migrations/arc-id-migration.sh: scans .tasks/{active,completed}/, moves arc:X tag → arc_id: X field. T-1717 and T-1719 → arc_id: embeddings-strategy (Q3 decision). Multi-arc tasks halt unless --resolve flag supplied. Committable report written to .context/audits/arc-id-migration-YYYY-MM-DD.yaml (Q2 answer). Second run is no-op (idempotent). Deps: T-NEW-2.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [build, data-migration, idempotent, T-NEW-3]
-components: []
+components: [agents/context/check-arc-id.sh, C-009, lib/migrations/arc-id-migration.sh, tests/unit/arc_id_validation_guard.bats]
 related_tasks: [T-1846, T-1847, T-1848, T-1717, T-1719]
 arc_id: arc-grooming
 created: 2026-05-15T14:52:50Z
-last_update: 2026-05-16T09:20:37Z
-date_finished: null
+last_update: 2026-05-16T09:27:46Z
+date_finished: 2026-05-16T09:27:46Z
 ---
 
 # T-1850: tags:[arc:*] → arc_id one-shot migration (T-NEW-3)
@@ -177,3 +177,16 @@ test "$(bin/fw audit --section structure 2>&1 | grep -c 'Fail: 0')" -ge 1
 ### 2026-05-16T09:20:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1a2ac80e
+- **Timestamp:** 2026-05-16T09:28:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-16T09:27:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** 162 tasks migrated, 2 stale-arc cleared, 2 multi-arc resolved, idempotency verified, 8/8 verification PASS

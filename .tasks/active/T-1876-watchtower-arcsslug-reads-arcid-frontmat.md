@@ -177,8 +177,8 @@ out_slug=$(curl -sf "$(bin/fw watchtower url)/arcs/arc-grooming" 2>&1); out_num=
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-7e4f8a69
-- **Timestamp:** 2026-05-17T06:59:27Z
+- **Scan ID:** R-a3d63eb4
+- **Timestamp:** 2026-05-17T07:15:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -188,6 +188,5 @@ out_slug=$(curl -sf "$(bin/fw watchtower url)/arcs/arc-grooming" 2>&1); out_num=
 
 - **AC#5 (Agent)** — `tests/playwright/test_arcs_detail_arc_id_membership.py` exercises: (a) `/arcs/arc-grooming` lists ≥10 T-184x/T-185x rows by DOM-content assertion (T-1575 compliance — NOT element-presence grep); (b) 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_arcs_detail_arc_id_membership.py in: `tests/playwright/test_arcs_detail_arc_id_membership.py` exercises: (a) `/arcs/arc-grooming` lists ≥10 T-184x/T-185x rows by DOM-content assertion (T-`
-
 ### 2026-05-17T06:59:10Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

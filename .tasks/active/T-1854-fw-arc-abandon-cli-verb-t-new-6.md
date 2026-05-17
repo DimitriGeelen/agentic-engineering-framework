@@ -161,8 +161,8 @@ The slice reuses `_arc_require_status` (T-1852 helper, varargs design) — valid
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-a797ed56
-- **Timestamp:** 2026-05-16T22:02:15Z
+- **Scan ID:** R-e8d27787
+- **Timestamp:** 2026-05-17T07:15:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -172,6 +172,5 @@ The slice reuses `_arc_require_status` (T-1852 helper, varargs design) — valid
 
 - **AC#5 (Agent)** — Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc, ts, status_at_abandon, abandonment_reason}` (bats #9 — one row per abandon, JSON-escaped reason)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/arc-abandon.jsonl in: Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc, ts, status_at_abandon, abandonment_reason}` (bats #9 — one row per abandon, JSON-esca`
-
 ### 2026-05-16T22:02:10Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

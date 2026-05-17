@@ -4,17 +4,17 @@ name: "Promote CTL-028 status-drift check to compliance section (pre-push catche
 description: >
   Promote CTL-028 status-drift check to compliance section (pre-push catches before ship)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc-grooming, audit, prevention, governance]
-components: ["agents/audit/audit.sh", "tests/unit"]
+components: [C-004, tests/unit/audit_ctl028_completed_status_consistency.bats]
 related_tasks: ["T-1846", "T-1687", "T-1870", "T-1881"]
 arc_id: arc-grooming
 created: 2026-05-17T18:25:53Z
-last_update: 2026-05-17T18:25:53Z
-date_finished: null
+last_update: 2026-05-17T18:33:03Z
+date_finished: 2026-05-17T18:33:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -157,3 +157,15 @@ No new audit warnings/failures introduced on the live tree (verified: `bin/fw au
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1882-promote-ctl-028-status-drift-check-to-co.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-ca3b8572
+- **Timestamp:** 2026-05-17T18:35:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-17T18:33:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -204,8 +204,8 @@ The three deferred routes (ollama-loop, TermLink, Task) raise `NotImplementedErr
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-e3a8f8ab
-- **Timestamp:** 2026-05-13T21:19:50Z
+- **Scan ID:** R-a895cc68
+- **Timestamp:** 2026-05-17T07:15:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -215,6 +215,5 @@ The three deferred routes (ollama-loop, TermLink, Task) raise `NotImplementedErr
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `test -f tests/unit/test_spawn.py`
-
 ### 2026-05-13T21:19:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

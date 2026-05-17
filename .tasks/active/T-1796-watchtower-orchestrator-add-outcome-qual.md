@@ -122,8 +122,8 @@ python3 -m pytest tests/unit/test_orchestrator_outcome_quality.py tests/unit/tes
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-c7661781
-- **Timestamp:** 2026-05-12T21:36:47Z
+- **Scan ID:** R-8a6a87c1
+- **Timestamp:** 2026-05-17T07:15:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -135,6 +135,5 @@ python3 -m pytest tests/unit/test_orchestrator_outcome_quality.py tests/unit/tes
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/orchestrator.py in: `_outcome_quality()` added to `web/blueprints/orchestrator.py`.`
 - **AC#2 (Agent)** — Reads `.context/dispatch-outcomes.jsonl` and joins to dispatch rows
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatch-outcomes.jsonl in: Reads `.context/dispatch-outcomes.jsonl` and joins to dispatch rows`
-
 ### 2026-05-12T21:36:35Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

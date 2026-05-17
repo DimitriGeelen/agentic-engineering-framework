@@ -182,8 +182,8 @@ grep -q "bin/fw resolver run T-1773 cheap-research" .tasks/active/T-1773-spawn-s
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-451c0670
-- **Timestamp:** 2026-05-13T21:20:15Z
+- **Scan ID:** R-81fd5f76
+- **Timestamp:** 2026-05-17T07:15:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -193,6 +193,5 @@ grep -q "bin/fw resolver run T-1773 cheap-research" .tasks/active/T-1773-spawn-s
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `test -f tests/unit/test_resolver_run.py`
-
 ### 2026-05-13T21:20:14Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -4,12 +4,12 @@ name: "Audit-time lint: fail on grep arc:slug patterns without arc_id read"
 description: >
   Future-prevention companion to T-1879 (T-NEW-14): add audit check or pre-commit lint that scans codebase for grep arc:slug or grep arc: patterns NOT paired with an arc_id read on the same code path. Catches silent-corpus #3 before it ships when a new consumer is added. Proposed audit name: ctl-arc-tag-only-pattern. Lives in agents/audit/audit.sh.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc-grooming, future-prevention, audit-check]
-components: []
+components: [C-004, tests/unit/audit_ctl_arc_tag_only_pattern.bats]
 related_tasks: [T-1879, T-1880]
 arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-17T14:07:15Z
-last_update: 2026-05-17T15:42:26Z
-date_finished: null
+last_update: 2026-05-17T15:56:02Z
+date_finished: 2026-05-17T15:56:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -185,3 +185,15 @@ across a storage format boundary" — invisible until a migration runs.
 ### 2026-05-17T15:42:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-324e2f7d
+- **Timestamp:** 2026-05-17T15:56:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-17T15:56:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

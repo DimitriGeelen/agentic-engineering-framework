@@ -130,8 +130,8 @@ python3 -m pytest tests/unit/test_orchestrator_dispatch_substrate.py tests/unit/
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-5a07b8e4
-- **Timestamp:** 2026-05-12T21:16:17Z
+- **Scan ID:** R-3cc15416
+- **Timestamp:** 2026-05-17T07:15:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -143,6 +143,5 @@ python3 -m pytest tests/unit/test_orchestrator_dispatch_substrate.py tests/unit/
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/orchestrator.py in: `_dispatch_substrate()` added to `web/blueprints/orchestrator.py`.`
 - **AC#2 (Agent)** — Reads `.context/dispatches.jsonl` (graceful: returns
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatches.jsonl in: Reads `.context/dispatches.jsonl` (graceful: returns`
-
 ### 2026-05-12T21:16:07Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
