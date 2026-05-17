@@ -4,12 +4,12 @@ name: "Extract shared lib/arc_membership helper — consolidate 4 dual-read patt
 description: >
   After T-1874/75/76/77/1879, four code paths implement union-of-arc_id-and-arc:slug-tag scans: lib/arc.sh _arc_tasks_for, agents/audit/audit.sh inline python, web/blueprints/arcs.py _scan_tasks_by_arc_membership, web/blueprints/core.py inline. Plus lib/evolution_log.sh task_has_arc_membership shell helper. Future-prevention proposal from T-1879 Recommendation: extract canonical lib/arc_membership.{sh,py} module that all 4-5 consumers call. Without this, silent-corpus #3 recurs next time storage format changes. Sibling to arc-grooming T-NEW-14.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-grooming, future-prevention, refactor]
-components: []
+components: [agents/handover/handover.sh, lib/arc_membership.py, lib/evolution_log.sh, tests/unit/arc_membership_shared.bats, tests/unit/test_arc_membership_shared.py, web/blueprints/arcs.py, web/blueprints/core.py, web/blueprints/tasks.py]
 related_tasks: [T-1850, T-1874, T-1875, T-1876, T-1877, T-1879, T-1881]
 arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-17T14:07:04Z
-last_update: 2026-05-17T15:23:05Z
-date_finished: null
+last_update: 2026-05-17T15:39:41Z
+date_finished: 2026-05-17T15:39:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -199,3 +199,22 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_a
 ### 2026-05-17T15:23:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-577601d7
+- **Timestamp:** 2026-05-17T15:39:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `web/blueprints/arcs.py` imports the scan helpers from `lib.arc_membership` (no duplicate scan-logic body)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/arcs.py in: `web/blueprints/arcs.py` imports the scan helpers from `lib.arc_membership` (no duplicate scan-logic body)`
+- **AC#4 (Agent)** — `web/blueprints/core.py` and `web/blueprints/tasks.py` use the shared helper (no inline arc-membership union logic)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/core.py in: `web/blueprints/core.py` and `web/blueprints/tasks.py` use the shared helper (no inline arc-membership union logic)`
+
+### 2026-05-17T15:39:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
