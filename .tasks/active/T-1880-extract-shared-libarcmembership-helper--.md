@@ -57,13 +57,13 @@ imports from `lib.arc_membership`.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/arc_membership.py` exists, exposing `scan_tasks_by_arc_membership() → (by_arc_id, by_tag)` and `task_has_arc_membership(path) → bool`
-- [ ] `lib/arc_membership.sh` exists, exposing shell functions `arc_tasks_with_arc_id`, `arc_tasks_with_tag`, `arc_tasks_for`, `task_has_arc_membership`
-- [ ] `web/blueprints/arcs.py` imports the scan helpers from `lib.arc_membership` (no duplicate scan-logic body)
-- [ ] `web/blueprints/core.py` and `web/blueprints/tasks.py` use the shared helper (no inline arc-membership union logic)
-- [ ] `agents/handover/handover.sh` and `lib/evolution_log.sh` source `lib/arc_membership.sh` (no inline duplicate)
-- [ ] New regression tests pin shared API: `tests/unit/test_arc_membership_shared.py` (python) and `tests/unit/arc_membership_shared.bats` (shell)
-- [ ] Existing sibling tests still green: `arc_membership_agent_surfaces.bats`, `test_arc_membership_web_surfaces.py`
+- [x] `lib/arc_membership.py` exists, exposing `scan_tasks_by_arc_membership() → (by_arc_id, by_tag)` and `task_has_arc_membership(path) → bool` (+ `scan_tasks_by_arc_id` for path-valued, + `task_dict_in_arc` for in-memory filter case)
+- [x] `lib/arc_membership.sh` exists, exposing shell functions `arc_tasks_with_arc_id`, `arc_tasks_with_tag`, `arc_tasks_for`, `task_has_arc_membership`
+- [x] `web/blueprints/arcs.py` imports the scan helpers from `lib.arc_membership` (no duplicate scan-logic body)
+- [x] `web/blueprints/core.py` and `web/blueprints/tasks.py` use the shared helper (no inline arc-membership union logic)
+- [x] `agents/handover/handover.sh` and `lib/evolution_log.sh` source `lib/arc_membership.sh` (no inline duplicate)
+- [x] New regression tests pin shared API: `tests/unit/test_arc_membership_shared.py` (12 tests, all pass) and `tests/unit/arc_membership_shared.bats` (12 tests, all pass)
+- [x] Existing sibling tests still green: `arc_membership_agent_surfaces.bats` (24 pass), `test_arc_membership_web_surfaces.py` (14 pass)
 
 ### Human
 - [ ] [REVIEW] Watchtower arc surfaces remain visually identical after refactor
@@ -101,27 +101,44 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_a
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-17 — Fourth helper surfaced during migration
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** The original plan listed three Python entrypoints
+  (`scan_tasks_by_arc_membership`, `scan_tasks_by_arc_id`,
+  `task_has_arc_membership`). While migrating `web/blueprints/tasks.py`
+  it became clear that its `/tasks?arc=` filter operates on **already-
+  loaded task dicts** (from `get_all_task_metadata()`), not file scans
+  — a different signature. Inlining the membership check there would
+  have re-introduced duplication.
+- **Plan impact:** Added `task_dict_in_arc(task_dict, slug, arc_numeric_id=None)`
+  as a fourth Python entrypoint. Single source of truth now covers
+  both file-scan and in-memory-dict consumer patterns.
+- **Triggered:** Updated ACs to mention the fourth helper inline; no
+  new sub-task needed.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-05-17 — Audit scan intentionally NOT migrated this slice
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** `agents/audit/audit.sh` stale-arc check (lines
+  643-656) uses inline awk per task file, reading `arc_id:` only (no
+  legacy tag union). Considered including it in T-1880 scope.
+- **Plan impact:** Decided NO — audit's signature is different (returns
+  matching paths + needs arc-NNN ↔ slug matching), and adding it to
+  this slice would expand scope past the survey-listed consumers.
+  Leaving it as a known divergent reader documented in Context.
+- **Triggered:** T-1881 (audit-time lint, captured/later) remains the
+  right place to address this — a lint that fails on `grep arc:slug`
+  patterns not paired with arc_id read will surface audit.sh as a
+  consumer to migrate at that time, with the lint as its enforcement.
+
+### 2026-05-17 — `task_dict_in_arc` accepts `_tags` alias
+
+- **What changed:** `get_all_task_metadata()` yields dicts where the
+  parsed tags list lives under `_tags` (frontmatter merging convention),
+  while raw yaml-loaded dicts use `tags`. The original signature only
+  read `tags`, which silently returned empty for /tasks?arc filtering.
+- **Plan impact:** Helper now reads `task.get("_tags") or task.get("tags") or []`
+  to cover both call sites. Verified by 17-IDs-returned live check.
+- **Triggered:** None — internal helper signature only.
 
 ## Decisions
 
@@ -143,6 +160,34 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_a
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Recommendation
+
+- **Recommendation:** GO — ship and route to human for [REVIEW] visual sign-off.
+- **Rationale:** Future-prevention slice for the L-397 silent-corpus-migration
+  class. T-1879 RCA recommended this exact consolidation; T-1880 delivers it.
+  All consumer surfaces (landing, /arcs detail, /tasks filter, handover narrative,
+  evolution-log gate) now read from a single canonical helper. The next
+  storage-format migration only has to update `lib/arc_membership.{sh,py}`,
+  not the prior 5 consumer sites individually. Silent-corpus #3 risk
+  eliminated for this format class.
+- **Evidence:**
+  - Shared API pinned: `tests/unit/arc_membership_shared.bats` (12/12) +
+    `tests/unit/test_arc_membership_shared.py` (12/12)
+  - Sibling consumer-surface tests still green:
+    `arc_membership_agent_surfaces.bats` (24/24),
+    `test_arc_membership_web_surfaces.py` (14/14),
+    `test_arcs_routes.py` (11/11), `evolution_log_gate.bats` (17/17),
+    `handover.bats` (10/10)
+  - Live surfaces consistent post-refactor:
+    - `curl http://localhost:3000/` → arc-grooming card: 18 tasks
+    - `curl http://localhost:3000/arcs/arc-grooming` → 24 task IDs
+    - `curl http://localhost:3000/tasks?arc=arc-grooming` → 17 task IDs
+  - Wider pytest suite: 0 NEW failures (23 pre-existing unrelated, verified by
+    stash bisect)
+  - Render-surface gate (P-013) routes to partial-complete (touches
+    `web/blueprints/{arcs,core,tasks}.py` + handover.sh) — single
+    `[REVIEW]` Human AC for visual sign-off.
 
 ## Updates
 
