@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1879: T-NEW-14 migration-blindness #2 sweep — 5 remaining surfaces read arc_id
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T22:39:40Z
+# ============================================================================
+
+task_id: T-1879
+task_name: "T-NEW-14 migration-blindness #2 sweep — 5 remaining surfaces read arc_id"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-17T13:53:31Z
+completed: 2026-05-17T14:08:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-17T16:06:08+02:00
+last_commit: 2026-05-17T16:08:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ship T-NEW-14 — migration-blindness #2 sweep (5 remaining surfaces read arc_id). file follow-on tasks + register fabric cards (post-grill governance L-349)
+
+# Key outcomes
+outcomes:
+  - '**Site 1 — landing-page arc card count (`web/blueprints/core.py`).** Count'
+  - '**Site 2 — `/tasks?arc=<slug>` filter (`web/blueprints/tasks.py`).** Filter'
+  - '**Site 3 — handover narrative current-arc count (`agents/handover/handover.sh`).**'
+  - '**Site 4 — `find_arc_tasks_without_evolution_log` (`lib/evolution_log.sh`).**'
+  - '**Site 5 — `check_evolution_log` early-return (`agents/task-create/update-task.sh`).**'
+  - '**Regression tests in `tests/unit/`** —'
+  - '**Render-surface DOM-content contract pinned by Playwright** (per CLAUDE.md §T-971 + T-1575): `tests/playwright/test_landing_arc_cards.py` asserts (a) landing-page arc cards show non-zero counts (arc-005 ≥14), no zero-count cards, and (b) `/tasks?arc=arc-grooming` returns ≥4 known arc-grooming task IDs. Re-classified from Human [REVIEW]: the migration-blindness regression is fully mechanical — "is the count ≥14" and "are tasks listed" are deterministic DOM-content checks, not visual judgment.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/handover/handover.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/tests-unit-arc_membership_agent_surfaces.yaml'
+  - '.fabric/components/tests-unit-test_arc_membership_web_surfaces.yaml'
+  - 'lib/evolution_log.sh'
+  - '.tasks/active/T-1879-t-new-14-migration-blindness-2-sweep--5-.md'
+  - '.tasks/active/T-1880-extract-shared-libarcmembership-helper--.md'
+  - '.tasks/active/T-1881-audit-time-lint-fail-on-grep-arcslug-pat.md'
+  - 'tests/unit/arc_membership_agent_surfaces.bats'
+  - 'tests/unit/test_arc_membership_web_surfaces.py'
+  - 'web/blueprints/core.py'
+  - 'web/blueprints/tasks.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-17T16:06:08"
+    action: "T-1879: ship T-NEW-14 — migration-blindness #2 sweep (5 remaining surfaces read arc_id)"
+  - time: "2026-05-17T16:08:36"
+    action: "T-1879: file follow-on tasks + register fabric cards (post-grill governance L-349)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-grooming, T-NEW-14, build, migration-blindness]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15
+  commits: 3
+  files_changed: 12
+  lines_added: 1073
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1879-t-new-14-migration-blindness-2-sweep--5-.md
+generated_by: context-agent-hybrid

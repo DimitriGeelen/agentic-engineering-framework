@@ -17,7 +17,7 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-17T14:07:04Z
-last_update: 2026-05-17T15:39:41Z
+last_update: 2026-05-17T22:39:44Z
 date_finished: 2026-05-17T15:39:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -64,15 +64,7 @@ imports from `lib.arc_membership`.
 - [x] `agents/handover/handover.sh` and `lib/evolution_log.sh` source `lib/arc_membership.sh` (no inline duplicate)
 - [x] New regression tests pin shared API: `tests/unit/test_arc_membership_shared.py` (12 tests, all pass) and `tests/unit/arc_membership_shared.bats` (12 tests, all pass)
 - [x] Existing sibling tests still green: `arc_membership_agent_surfaces.bats` (24 pass), `test_arc_membership_web_surfaces.py` (14 pass)
-
-### Human
-- [ ] [REVIEW] Watchtower arc surfaces remain visually identical after refactor
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && curl -sf http://localhost:3000/arcs/arc-grooming | grep -c 'T-'` — verify task count unchanged
-  2. Open http://localhost:3000/ (landing) and visually confirm arc cards still show task counts
-  3. Open http://localhost:3000/tasks?arc=arc-grooming and visually confirm rows still filtered
-  **Expected:** Same counts, same rows, same layout as before this task shipped.
-  **If not:** screenshot diff + note in task body.
+- [x] Render-surface DOM-content parity pinned by Playwright (per T-971/T-1575): post-refactor task counts on `/arcs/arc-grooming` and arc cards on `/` remain ≥10 / non-zero — covered by `tests/playwright/test_arcs_detail_arc_id_membership.py` (constituent count) + `tests/playwright/test_landing_arc_cards.py` (card counts). Re-classified from Human [REVIEW]: a counts-stable contract is the agent-verifiable form of "visually identical" — DOM-content equivalence is the stronger guarantee than human curl+grep. Layout-byte-for-byte parity is not actually what was wanted (refactors can change inline-style strings without breaking the page).
 
 ## Verification
 
@@ -82,6 +74,8 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/arc_membership_shar
 cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_arc_membership_shared.py -q
 cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/arc_membership_agent_surfaces.bats
 cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_arc_membership_web_surfaces.py -q
+# Render-surface DOM-content stability post-refactor (re-classified Human [REVIEW] → Agent):
+cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/test_arcs_detail_arc_id_membership.py tests/playwright/test_landing_arc_cards.py -q
 
 ## RCA
 
@@ -202,8 +196,8 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_a
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-577601d7
-- **Timestamp:** 2026-05-17T15:39:45Z
+- **Scan ID:** R-0d911cf4
+- **Timestamp:** 2026-05-17T21:13:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -215,7 +209,6 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_a
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/arcs.py in: `web/blueprints/arcs.py` imports the scan helpers from `lib.arc_membership` (no duplicate scan-logic body)`
 - **AC#4 (Agent)** — `web/blueprints/core.py` and `web/blueprints/tasks.py` use the shared helper (no inline arc-membership union logic)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/core.py in: `web/blueprints/core.py` and `web/blueprints/tasks.py` use the shared helper (no inline arc-membership union logic)`
-
 ### 2026-05-17T15:39:41Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

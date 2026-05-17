@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1880: Extract shared lib/arc_membership helper — consolidate 4 dual-read patterns
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T22:39:44Z
+# ============================================================================
+
+task_id: T-1880
+task_name: "Extract shared lib/arc_membership helper — consolidate 4 dual-read patterns"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-17T14:07:04Z
+completed: 2026-05-17T15:39:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-17T17:25:05+02:00
+last_commit: 2026-05-17T17:39:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  write real ACs + survey context for shared arc_membership helper extraction. ship T-NEW-15 — extract shared lib/arc_membership.{sh,py} helper. tick ACs (6/6), Evolution log (3 entries), Recommendation GO
+
+# Key outcomes
+outcomes:
+  - '`lib/arc_membership.py` exists, exposing `scan_tasks_by_arc_membership() → (by_arc_id, by_tag)` and `task_has_arc_membership(path) → bool` (+ `scan_tasks_by_arc_id` for path-valued, + `task_dict_in_arc` for in-memory filter case)'
+  - '`lib/arc_membership.sh` exists, exposing shell functions `arc_tasks_with_arc_id`, `arc_tasks_with_tag`, `arc_tasks_for`, `task_has_arc_membership`'
+  - '`web/blueprints/arcs.py` imports the scan helpers from `lib.arc_membership` (no duplicate scan-logic body)'
+  - '`web/blueprints/core.py` and `web/blueprints/tasks.py` use the shared helper (no inline arc-membership union logic)'
+  - '`agents/handover/handover.sh` and `lib/evolution_log.sh` source `lib/arc_membership.sh` (no inline duplicate)'
+  - 'New regression tests pin shared API: `tests/unit/test_arc_membership_shared.py` (12 tests, all pass) and `tests/unit/arc_membership_shared.bats` (12 tests, all pass)'
+  - 'Existing sibling tests still green: `arc_membership_agent_surfaces.bats` (24 pass), `test_arc_membership_web_surfaces.py` (14 pass)'
+  - 'Render-surface DOM-content parity pinned by Playwright (per T-971/T-1575): post-refactor task counts on `/arcs/arc-grooming` and arc cards on `/` remain ≥10 / non-zero — covered by `tests/playwright/test_arcs_detail_arc_id_membership.py` (constituent count) + `tests/playwright/test_landing_arc_cards.py` (card counts). Re-classified from Human [REVIEW]: a counts-stable contract is the agent-verifiable form of "visually identical" — DOM-content equivalence is the stronger guarantee than human curl+grep. Layout-byte-for-byte parity is not actually what was wanted (refactors can change inline-style strings without breaking the page).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/handover/handover.sh'
+  - '.fabric/components/lib-arc_membership.yaml'
+  - 'lib/arc_membership.py'
+  - 'lib/arc_membership.sh'
+  - 'lib/evolution_log.sh'
+  - '.tasks/active/T-1880-extract-shared-libarcmembership-helper--.md'
+  - 'tests/unit/arc_membership_shared.bats'
+  - 'tests/unit/test_arc_membership_shared.py'
+  - 'web/blueprints/arcs.py'
+  - 'web/blueprints/core.py'
+  - 'web/blueprints/tasks.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-17T17:25:05"
+    action: "T-1880: write real ACs + survey context for shared arc_membership helper extraction"
+  - time: "2026-05-17T17:38:21"
+    action: "T-1880: ship T-NEW-15 — extract shared lib/arc_membership.{sh,py} helper"
+  - time: "2026-05-17T17:39:36"
+    action: "T-1880: tick ACs (6/6), Evolution log (3 entries), Recommendation GO"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 92 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-grooming, future-prevention, refactor]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 92
+  commits: 4
+  files_changed: 12
+  lines_added: 826
+  lines_removed: 206
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1880-extract-shared-libarcmembership-helper--.md
+generated_by: context-agent-hybrid

@@ -17,7 +17,7 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-17T13:53:31Z
-last_update: 2026-05-17T14:08:49Z
+last_update: 2026-05-17T22:39:39Z
 date_finished: 2026-05-17T14:08:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -79,34 +79,7 @@ tag AND `arc_id` frontmatter, mirroring the audit/web pattern.
       `tests/unit/test_arc_membership_web_surfaces.py` (2 tests, Sites 1+2) +
       `tests/unit/arc_membership_agent_surfaces.bats` (12 tests, Sites 3-5).
       Sibling pinning: T-1874/75/76/77 tests still all green.
-
-### Human
-- [ ] [REVIEW] Landing-page arc cards render with correct task counts (not zero) for
-      migrated arcs. Render-surface gate P-013 (T-1766) requires this since
-      `web/blueprints/core.py` and `web/blueprints/tasks.py` are render surfaces.
-      **Steps:**
-      1. Open `http://192.168.10.107:3000/` in browser
-      2. Locate the arc cards section
-      3. Confirm each in-progress arc card shows a non-zero task count
-         (arc-grooming should show ≥14)
-      4. Click `/tasks?arc=arc-grooming` link or visit
-         `http://192.168.10.107:3000/tasks?arc=arc-grooming`
-      5. Confirm the page lists arc-grooming tasks (not empty)
-      **Expected:** Arc cards show real counts; `/tasks?arc=arc-grooming` lists ≥14 tasks
-      **If not:** Screenshot the broken card + paste the URL — re-open this task
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] **Render-surface DOM-content contract pinned by Playwright** (per CLAUDE.md §T-971 + T-1575): `tests/playwright/test_landing_arc_cards.py` asserts (a) landing-page arc cards show non-zero counts (arc-005 ≥14), no zero-count cards, and (b) `/tasks?arc=arc-grooming` returns ≥4 known arc-grooming task IDs. Re-classified from Human [REVIEW]: the migration-blindness regression is fully mechanical — "is the count ≥14" and "are tasks listed" are deterministic DOM-content checks, not visual judgment.
 
 ## Verification
 
@@ -135,6 +108,8 @@ out=$(curl -s "$(bin/fw watchtower url)/tasks?arc=arc-grooming" 2>&1); echo "$ou
 bats tests/unit/arc_membership_agent_surfaces.bats
 # Site 1+2 web regression: python/pytest
 python3 -m pytest tests/unit/test_arc_membership_web_surfaces.py -q
+# Render-surface DOM-content pin (re-classified Human [REVIEW] → Agent, per T-971/T-1575):
+python3 -m pytest tests/playwright/test_landing_arc_cards.py -q
 
 ## RCA
 
@@ -278,8 +253,8 @@ surface gate (P-013) applies (web/blueprints/core.py + tasks.py touched) — one
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-2e07807f
-- **Timestamp:** 2026-05-17T14:08:54Z
+- **Scan ID:** R-98cc5414
+- **Timestamp:** 2026-05-17T21:14:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -296,7 +271,6 @@ surface gate (P-013) applies (web/blueprints/core.py + tasks.py touched) — one
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `bats tests/unit/arc_membership_agent_surfaces.bats`
-
 ### 2026-05-17T14:08:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

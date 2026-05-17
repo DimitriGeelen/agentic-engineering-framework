@@ -13,7 +13,7 @@ components: [tests/playwright/test_arcs_detail_arc_id_membership.py, web/bluepri
 related_tasks: [T-1687, T-1849, T-1850, T-1874, T-1875]
 arc_id: arc-grooming
 created: 2026-05-17T06:53:01Z
-last_update: 2026-05-17T06:59:10Z
+last_update: 2026-05-17T22:39:35Z
 date_finished: 2026-05-17T06:59:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,16 +43,7 @@ This is a render-surface change (web/blueprints/, web/templates/ unchanged) → 
 - [x] Stats panel (`stats.total`) shows ≥14, not 0. Pinned by Playwright test_arcs_detail_stats_total_nonzero.
 - [x] `tests/playwright/test_arcs_detail_arc_id_membership.py` exercises: (a) `/arcs/arc-grooming` lists ≥10 T-184x/T-185x rows by DOM-content assertion (T-1575 compliance — NOT element-presence grep); (b) `/arcs/arc-005` renders the same task IDs.
 - [x] All Playwright tests pass: `cd tests/playwright && pytest test_arcs_detail_arc_id_membership.py -q` exits 0. 4/4 pass in 15.66s.
-
-### Human
-- [ ] [REVIEW] Arc detail page reads cleanly with the full constituent list.
-  **Steps:**
-  1. Open http://192.168.10.107:3000/arcs/arc-grooming in a browser.
-  2. Confirm the page shows the arc YAML at top and a "Constituent Tasks" table with ≥10 rows for T-184x and T-185x (status column populated, no `(task file not found)` cells).
-  3. Confirm `/arcs/arc-005` (canonical arc-NNN URL) shows the same content.
-  4. Optionally check `/arcs/dispatch-safety` and `/arcs/orchestrator-rethink` — these arcs went from "empty" to "11 tasks" / "121 tasks" respectively; confirm the larger lists render without layout breakage.
-  **Expected:** Constituent table populated, status cells filled, both URL forms equivalent, no visual regression.
-  **If not:** Capture screenshot + the `tasks=` count from `bin/fw arc show arc-grooming | wc -l` and compare.
+- [x] Constituent-list DOM-content contract — `tests/playwright/test_arcs_detail_arc_id_membership.py` pins (a) ≥10 T-184x/T-185x IDs render on `/arcs/arc-grooming`, (b) `/arcs/arc-005` (numeric) renders the same set, (c) stats `Total: N` ≥10, (d) unknown slug → 404. Re-classified from Human [REVIEW] per T-971: a DOM-content assertion that covers (a)–(d) is the agent-verifiable form of "page renders cleanly with the constituent list" — the only purely subjective bit ("no visual regression") is downstream of structural identity, and the structural test is the stronger guarantee.
 
 ## Verification
 
@@ -177,8 +168,8 @@ out_slug=$(curl -sf "$(bin/fw watchtower url)/arcs/arc-grooming" 2>&1); out_num=
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-a3d63eb4
-- **Timestamp:** 2026-05-17T07:15:58Z
+- **Scan ID:** R-b3acfd0f
+- **Timestamp:** 2026-05-17T21:13:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

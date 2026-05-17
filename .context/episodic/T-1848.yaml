@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1848: Sequential arc-NNN immutable IDs (T-NEW-1.5)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T22:39:26Z
+# ============================================================================
+
+task_id: T-1848
+task_name: "Sequential arc-NNN immutable IDs (T-NEW-1.5)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T14:51:15Z
+completed: 2026-05-16T09:08:57Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-16T10:33:11+02:00
+last_commit: 2026-05-16T10:49:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-NNN immutable IDs substrate + dual /arcs route + 5-arc migration (T-NEW-1.5). verb-side normalisation sequel — arc verbs accept slug OR arc-NNN
+
+# Key outcomes
+outcomes:
+  - '`lib/arc.sh` allocates next sequential `arc-NNN` ID via `_arc_next_numeric_id` (scans max `id: arc-NNN` across existing arcs; D-Immutability rule 2 — MAX not COUNT). `arc_create` writes `id: arc-NNN` + `slug:` on new arcs.'
+  - '5 existing arcs migrated: `dispatch-safety`→`arc-001`, `embeddings-strategy`→`arc-002`, `orchestrator-rethink`→`arc-003`, `project-shape-resilience`→`arc-004`, `arc-grooming`→`arc-005`. Each YAML now has both `id: arc-NNN` and explicit `slug:` fields.'
+  - 'Each arc YAML grows an `id:` field with the `arc-NNN` value; slug remains as filename AND as explicit `slug:` field.'
+  - 'Watchtower `/arcs/<slug>` AND `/arcs/<id>` both resolve. Verified: `/arcs/dispatch-safety`, `/arcs/arc-001`, `/arcs/arc-005` all return 200.'
+  - '`lib/arc.sh` comment block encodes D-Immutability invariants (rules 1-4 with rationale; rule 2 = no reuse pinned in `_arc_next_numeric_id` impl).'
+  - '`bin/fw audit` structure section passes after migration — verified 2026-05-16T08:46Z: Pass=13, Warn=1 (fabric-enrich, pre-existing), Fail=0. All 5 arc YAMLs parse; tag scans slug-based across `web/blueprints/arcs.py`, `web/blueprints/core.py`, `agents/audit/audit.sh`.'
+  - 'Migration is atomic single commit — all 5 existing arc YAMLs gain their `id:` field together (this commit).'
+  - 'Verb-side normalisation complete — `_arc_normalize_input` threaded through `arc_focus`/`arc_show`/`arc_tag`/`arc_close` in `lib/arc.sh`. CLI accepts both slug and `arc-NNN` forms uniformly. Covered by `tests/unit/arc_dual_identity_verbs.bats` (11/11 pass). Live-verified via `bin/fw arc focus arc-005` setting current_arc=arc-grooming.'
+  - 'Dual-URL parity pinned by Playwright DOM-content assertion (per CLAUDE.md §T-971 + T-1575 — render-surface ACs need Playwright OR DOM-content, not curl+grep): `tests/playwright/test_arcs_detail_arc_id_membership.py::test_arcs_detail_numeric_url_lists_same_members` asserts `/arcs/arc-grooming` and `/arcs/arc-005` render the SAME constituent task set. Re-classified from Human [REVIEW] — the constituent-equality contract is fully mechanical; only "visual layout matches" would be subjective, and the structural identity is a stronger guarantee.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.context/arcs/arc-grooming.yaml'
+  - '.context/arcs/dispatch-safety.yaml'
+  - '.context/arcs/embeddings-strategy.yaml'
+  - '.context/arcs/orchestrator-rethink.yaml'
+  - '.context/arcs/project-shape-resilience.yaml'
+  - '.context/working/arc-focus.yaml'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-1848-sequential-arc-nnn-immutable-ids-t-new-1.md'
+  - 'tests/unit/arc_dual_identity_verbs.bats'
+  - 'web/blueprints/arcs.py'
+  - 'web/blueprints/core.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-16T10:33:11"
+    action: "T-1848: arc-NNN immutable IDs substrate + dual /arcs route + 5-arc migration (T-NEW-1.5)"
+  - time: "2026-05-16T10:49:22"
+    action: "T-1848: verb-side normalisation sequel — arc verbs accept slug OR arc-NNN"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1097 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, schema-migration, arc-system, immutability, T-NEW-1.5]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1097
+  commits: 2
+  files_changed: 12
+  lines_added: 449
+  lines_removed: 74
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1848-sequential-arc-nnn-immutable-ids-t-new-1.md
+generated_by: context-agent-hybrid

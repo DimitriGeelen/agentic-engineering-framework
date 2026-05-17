@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1876: Watchtower /arcs/<slug> reads arc_id frontmatter (T-NEW-12)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T22:39:35Z
+# ============================================================================
+
+task_id: T-1876
+task_name: "Watchtower /arcs/<slug> reads arc_id frontmatter (T-NEW-12)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-17T06:53:01Z
+completed: 2026-05-17T06:59:10Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-17T08:58:57+02:00
+last_commit: 2026-05-17T08:58:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ship T-NEW-12 — Watchtower /arcs/<slug> reads arc_id frontmatter (web-side parity, closes T-1850 migration-blindness cluster)
+
+# Key outcomes
+outcomes:
+  - '`_resolve_constituents(arc)` calls `_scan_tasks_by_arc_membership()` (or a thin wrapper) and unions BOTH the `by_arc_id[slug]` AND `by_arc_id[arc_numeric]` AND `by_tag[f"arc:{slug}"]` sets, deduplicated. Legacy `constituent_tasks:` continues to be honored first (preserves author ordering).'
+  - '`/arcs/arc-grooming` returns 200 and the rendered HTML contains the literal task IDs of all 9 numbered slices plus parent (T-1846, T-1847, T-1848, T-1849, T-1850, T-1851, T-1852, T-1853, T-1854, T-1855, T-1856, T-1857) AND the in-flight slices added today (T-1874, T-1875, T-1876). Live smoke: all 15 IDs grep out of the rendered HTML.'
+  - '`/arcs/arc-005` (arc-NNN form) renders the same set — both URL forms resolve to the same constituent list. Symmetric to T-1848 dual-identity contract. Live smoke: identical 15-ID list.'
+  - 'Stats panel (`stats.total`) shows ≥14, not 0. Pinned by Playwright test_arcs_detail_stats_total_nonzero.'
+  - '`tests/playwright/test_arcs_detail_arc_id_membership.py` exercises: (a) `/arcs/arc-grooming` lists ≥10 T-184x/T-185x rows by DOM-content assertion (T-1575 compliance — NOT element-presence grep); (b) `/arcs/arc-005` renders the same task IDs.'
+  - 'All Playwright tests pass: `cd tests/playwright && pytest test_arcs_detail_arc_id_membership.py -q` exits 0. 4/4 pass in 15.66s.'
+  - 'Constituent-list DOM-content contract — `tests/playwright/test_arcs_detail_arc_id_membership.py` pins (a) ≥10 T-184x/T-185x IDs render on `/arcs/arc-grooming`, (b) `/arcs/arc-005` (numeric) renders the same set, (c) stats `Total: N` ≥10, (d) unknown slug → 404. Re-classified from Human [REVIEW] per T-971: a DOM-content assertion that covers (a)–(d) is the agent-verifiable form of "page renders cleanly with the constituent list" — the only purely subjective bit ("no visual regression") is downstream of structural identity, and the structural test is the stronger guarantee.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1876-watchtower-arcsslug-reads-arcid-frontmat.md'
+  - '.tasks/completed/T-1875-audit-arc-progress-fallback-reads-arcid-.md'
+  - 'tests/playwright/test_arcs_detail_arc_id_membership.py'
+  - 'web/blueprints/arcs.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-17T08:58:57"
+    action: "T-1876: ship T-NEW-12 — Watchtower /arcs/<slug> reads arc_id frontmatter (web-side parity, closes T-1850 migration-blindness cluster)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc, arc-grooming, watchtower, web, T-NEW-12]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 4
+  lines_added: 301
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1876-watchtower-arcsslug-reads-arcid-frontmat.md
+generated_by: context-agent-hybrid

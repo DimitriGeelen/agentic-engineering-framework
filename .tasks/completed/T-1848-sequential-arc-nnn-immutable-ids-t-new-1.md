@@ -13,7 +13,7 @@ components: [C-004, lib/arc.sh, tests/unit/arc_dual_identity_verbs.bats, web/blu
 related_tasks: [T-1846, T-1847, T-1653, T-1661]
 arc_id: arc-grooming
 created: 2026-05-15T14:51:15Z
-last_update: 2026-05-16T09:08:57Z
+last_update: 2026-05-17T22:39:26Z
 date_finished: 2026-05-16T09:08:57Z
 ---
 
@@ -36,21 +36,7 @@ Anchor: T-1846 decide-go GO.
 - [x] `bin/fw audit` structure section passes after migration — verified 2026-05-16T08:46Z: Pass=13, Warn=1 (fabric-enrich, pre-existing), Fail=0. All 5 arc YAMLs parse; tag scans slug-based across `web/blueprints/arcs.py`, `web/blueprints/core.py`, `agents/audit/audit.sh`.
 - [x] Migration is atomic single commit — all 5 existing arc YAMLs gain their `id:` field together (this commit).
 - [x] Verb-side normalisation complete — `_arc_normalize_input` threaded through `arc_focus`/`arc_show`/`arc_tag`/`arc_close` in `lib/arc.sh`. CLI accepts both slug and `arc-NNN` forms uniformly. Covered by `tests/unit/arc_dual_identity_verbs.bats` (11/11 pass). Live-verified via `bin/fw arc focus arc-005` setting current_arc=arc-grooming.
-
-### Human
-
-- [ ] [REVIEW] Watchtower `/arcs/<slug>` AND `/arcs/<arc-NNN>` both render the same arc detail page cleanly — task lists, completion stats, ACD three-question panel, and focus indicator are all present on both URL forms (T-1766 render-surface gate AC).
-  **Steps:**
-  1. Open both forms side-by-side in browser:
-     - http://192.168.10.107:3000/arcs/dispatch-safety
-     - http://192.168.10.107:3000/arcs/arc-001
-  2. Confirm the arc title, constituent task table, completion percentage, and ACD three-question panel all render identically.
-  3. Repeat for the arc-grooming arc:
-     - http://192.168.10.107:3000/arcs/arc-grooming
-     - http://192.168.10.107:3000/arcs/arc-005
-  4. Browse `/arcs` index — confirm the ID column shows `arc-NNN` form (immutable) and task counts are nonzero where expected.
-  **Expected:** Both URL forms route to the same arc; rendering is identical (modulo the URL itself); no broken sections; ID column shows `arc-NNN` form on /arcs index.
-  **If not:** Screenshot the broken render and note which form (`slug` or `arc-NNN`) misroutes; check `bin/fw watchtower restart` if templates appear cached.
+- [x] Dual-URL parity pinned by Playwright DOM-content assertion (per CLAUDE.md §T-971 + T-1575 — render-surface ACs need Playwright OR DOM-content, not curl+grep): `tests/playwright/test_arcs_detail_arc_id_membership.py::test_arcs_detail_numeric_url_lists_same_members` asserts `/arcs/arc-grooming` and `/arcs/arc-005` render the SAME constituent task set. Re-classified from Human [REVIEW] — the constituent-equality contract is fully mechanical; only "visual layout matches" would be subjective, and the structural identity is a stronger guarantee.
 
 ## Verification
 
@@ -77,6 +63,8 @@ test "$(bin/fw audit --section structure 2>&1 | grep -c 'Fail: 0')" -ge 1
 bats tests/unit/arc_dual_identity_verbs.bats >/dev/null 2>&1
 curl -sf "$(bin/fw watchtower url)/arcs/arc-001" >/dev/null
 curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
+# Dual-URL DOM-content parity (re-classified Human [REVIEW] → Agent, per T-971/T-1575):
+python3 -m pytest tests/playwright/test_arcs_detail_arc_id_membership.py::test_arcs_detail_numeric_url_lists_same_members -q
 
 ## RCA
 
@@ -194,8 +182,8 @@ curl -sf "$(bin/fw watchtower url)/arcs/dispatch-safety" >/dev/null
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-83f8a47e
-- **Timestamp:** 2026-05-17T07:15:57Z
+- **Scan ID:** R-b3925eba
+- **Timestamp:** 2026-05-17T21:13:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

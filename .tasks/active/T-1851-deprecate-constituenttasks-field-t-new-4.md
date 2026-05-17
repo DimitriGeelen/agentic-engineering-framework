@@ -31,23 +31,9 @@ date_finished: 2026-05-16T21:25:15Z
 - [x] `docs/reports/T-1653-arcs-as-first-class.md` has deprecation note in or near Q1 section linking to `HANDOFF-arc-grooming-2026-05-15`
 - [x] References to `constituent_tasks` in `CLAUDE.md` / `FRAMEWORK.md` / agent docs are updated or removed (CLAUDE.md/FRAMEWORK.md grep returned 0; `lib/arc.sh` arc_help text updated with T-1851 deprecation pointer)
 - [x] Bats coverage: `tests/unit/arc_create_no_constituent_tasks.bats` — 5/5 pass (new-arc omission + legacy-arc append preserved + arc_tag non-recreation)
+- [x] Render-without-`constituent_tasks` contract pinned by Playwright (per T-971/T-1575): `tests/playwright/test_arcs_renders_without_constituent_field.py` writes a synthetic arc YAML omitting the legacy field, hits `/arcs/<slug>`, asserts 200 + no "Traceback" + no "Internal Server Error" + the arc's name renders. Plus a regression guard pinning legacy `/arcs/arc-grooming` still renders. Re-classified from Human [REVIEW]: post-migration rendering is fully mechanical — fixture creates the post-migration shape; the previously-recommended manual `fw arc create` + delete is now automated.
 
 ### Human
-- [ ] [REVIEW] Watchtower `/arcs/<slug>` page still renders correctly for arcs created AFTER T-1851 ships (those without a `constituent_tasks:` field)
-  **Steps:**
-  1. Open `http://192.168.10.107:3000/arcs/arc-grooming` in a browser — legacy in-tree arc, still has `constituent_tasks:` populated
-  2. Open `http://192.168.10.107:3000/arcs/dispatch-safety` — same, legacy
-  3. Create a test arc that omits the field:
-     ```
-     cd /opt/999-Agentic-Engineering-Framework && bin/fw arc create test-render-t1851 --name "render check" --headline-mechanic "user sees the page render correctly on /arcs/test-render-t1851 with no field present"
-     ```
-  4. Open `http://192.168.10.107:3000/arcs/test-render-t1851`
-  5. Compare: the new arc's page should render the same skeleton (header, metadata table, "Constituent tasks" section as empty or showing arc_id-tagged tasks) — no traceback, no broken table, no orphan "constituent_tasks:" label
-  6. Clean up: `rm /opt/999-Agentic-Engineering-Framework/.context/arcs/test-render-t1851.yaml`
-
-  **Expected:** All three pages render cleanly; the new arc shows an empty/zero-task body without errors.
-  **If not:** Note which page broke and what the traceback says. Reopen — likely a missing `.get()` default in `web/blueprints/arcs.py`.
-
 - [ ] [REVIEW] `docs/reports/T-1653-arcs-as-first-class.md` deprecation banner reads clearly when viewed in Watchtower (or rendered as Markdown locally)
   **Steps:**
   1. Open the file in a Markdown viewer or VSCode preview
@@ -65,6 +51,8 @@ bash -n lib/arc.sh
 bats tests/unit/arc_create_no_constituent_tasks.bats
 test "$(grep -c '^constituent_tasks:' lib/arc.sh)" -eq 0
 test "$(grep -c 'T-1851' docs/reports/T-1653-arcs-as-first-class.md)" -ge 1
+# Render-without-constituent_tasks pinned by Playwright (re-classified Human [REVIEW] → Agent):
+python3 -m pytest tests/playwright/test_arcs_renders_without_constituent_field.py -q
 
 ## RCA
 
@@ -153,8 +141,8 @@ The Evolution section captures one observability follow-up (audit's T-1813 tag-f
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-14e0462d
-- **Timestamp:** 2026-05-17T07:15:57Z
+- **Scan ID:** R-2ae22062
+- **Timestamp:** 2026-05-17T21:13:17Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

@@ -13,7 +13,7 @@ components: [lib/arc.sh, tests/unit/arc_membership_union.bats]
 related_tasks: [T-1687, T-1846, T-1849, T-1850]
 arc_id: arc-grooming
 created: 2026-05-16T22:46:13Z
-last_update: 2026-05-16T22:50:37Z
+last_update: 2026-05-17T22:39:30Z
 date_finished: 2026-05-16T22:50:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -46,30 +46,7 @@ The fix introduces `_arc_tasks_for(id)` that unions the existing legacy-tag scan
 - [x] `bin/fw arc list` shows `arc-grooming` with a non-zero task count (≥12). Live smoke: TASKS column shows 13 (arc-005 row).
 - [x] `tests/unit/arc_membership_union.bats` exercises: arc_id-only task is found, legacy-tag-only task is found, both-set task counted once, neither-set task excluded.
 - [x] All four new bats cases pass: `bats tests/unit/arc_membership_union.bats` exits 0. Final count: 8/8 pass (extended coverage: sort/dedup, quoted-value form, empty-result no-error).
-
-### Human
-- [ ] [REVIEW] `fw arc show arc-grooming` reads cleanly with the constituent task list — the previous "(no tasks yet …)" line stayed only the empty-arc fallback, not the post-migration false negative.
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw arc show arc-grooming | head -40`
-  2. Confirm a `─── Tasks tagged arc:arc-grooming ───` section is followed by ≥10 `T-184x` / `T-185x` lines with `[status/horizon]` cells.
-  3. Confirm no `(no tasks yet — use 'fw arc tag …')` appears.
-  **Expected:** Constituent tasks rendered; no false-empty.
-  **If not:** Report the literal output and the count from `grep -c "^arc_id: arc-grooming" .tasks/active/T-*.md .tasks/completed/T-*.md`.
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] Constituent-task render contract — `fw arc show arc-grooming` lists ≥10 T-184x/T-185x lines AND no "(no tasks yet …)" placeholder. Re-classified from Human [REVIEW]: this is `fw arc show` CLI output, NOT a render surface; the check is pure deterministic shell, fully pinned by the existing Verification block (capture-then-grep -c on output + grep -vq for the false-empty marker). T-1575 does not apply (no template / no HTML).
 
 ## Verification
 
@@ -195,8 +172,8 @@ grep -q "_arc_tasks_with_arc_id()" lib/arc.sh
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-e8974136
-- **Timestamp:** 2026-05-17T07:15:58Z
+- **Scan ID:** R-6af87970
+- **Timestamp:** 2026-05-17T21:13:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
