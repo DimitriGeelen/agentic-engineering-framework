@@ -40,6 +40,27 @@ has_evolution_section() {
     grep -q '^## Evolution\b' "$task_file" 2>/dev/null
 }
 
+# T-1879 (T-NEW-14): Returns 0 if the task file's frontmatter declares
+# arc membership via EITHER `arc_id:` (T-1849 canonical, T-1850 migrated)
+# OR a `tags:` line containing `arc:<slug>` (legacy). Returns 1 otherwise.
+# Scopes the check to the frontmatter to avoid false positives from
+# `arc:` mentions in commit refs / narrative body. Pre-T-1879 callers
+# used `grep -q 'arc:' "$task_file"` which both (a) whole-file-matched
+# (noisy) and (b) missed arc_id-only tasks after migration.
+task_has_arc_membership() {
+    local task_file="$1"
+    [ -f "$task_file" ] || return 1
+    # Extract frontmatter block (lines between first two `---` markers).
+    # Then check for arc_id field OR tags line with arc:<anything>.
+    awk '
+        /^---$/ { fm++; next }
+        fm == 1 && /^arc_id:[[:space:]]*["\047]?[A-Za-z0-9_-]+["\047]?[[:space:]]*$/ { found=1; exit }
+        fm == 1 && /^tags:.*arc:[A-Za-z0-9_-]+/ { found=1; exit }
+        fm >= 2 { exit }
+        END { exit (found ? 0 : 1) }
+    ' "$task_file"
+}
+
 has_real_evolution_log() {
     local task_file="$1"
     [ -f "$task_file" ] || return 1
@@ -79,8 +100,10 @@ find_arc_tasks_without_evolution_log() {
         [ -z "$task_file" ] && continue
         # Only build tasks
         grep -q '^workflow_type:[[:space:]]*build' "$task_file" 2>/dev/null || continue
-        # Only arc-tagged
-        grep -q 'arc:' "$task_file" 2>/dev/null || continue
+        # T-1879 (T-NEW-14): Only arc-member tasks — use frontmatter helper
+        # that recognizes both arc_id (T-1849 canonical, T-1850 migrated)
+        # AND legacy arc:<slug> tag.
+        task_has_arc_membership "$task_file" || continue
         # Skip if no Evolution section (backward-compat)
         has_evolution_section "$task_file" || continue
         # Flag if section exists but empty/template

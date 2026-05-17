@@ -524,10 +524,17 @@ def tasks():
     if tag_filter:
         all_tasks = [t for t in all_tasks if tag_filter.lower() in [str(tg).lower() for tg in t.get("_tags", [])]]
     if arc_filter:
-        # T-1661: arc:<id> namespace. Match canonical OR legacy from-T-XXXX alias
-        # if the arc YAML has an anchor_task. Cheapest path: just look at the canonical tag.
+        # T-1661: arc:<id> namespace.
+        # T-1879 (T-NEW-14): match union of `arc_id:` frontmatter (T-1849 canonical,
+        # T-1850 migrated) AND legacy `arc:<slug>` tag. T-1850 stripped the legacy
+        # tag from 162 tasks — tag-only filter returns empty for migrated arcs.
         arc_tag = f"arc:{arc_filter}".lower()
-        all_tasks = [t for t in all_tasks if arc_tag in [str(tg).lower() for tg in t.get("_tags", [])]]
+        arc_filter_lower = arc_filter.lower()
+        all_tasks = [
+            t for t in all_tasks
+            if arc_tag in [str(tg).lower() for tg in t.get("_tags", [])]
+            or str(t.get("arc_id") or "").strip().lower() == arc_filter_lower
+        ]
     if owner_filter:
         all_tasks = [t for t in all_tasks if t.get("owner") == owner_filter]
     if horizon_filter:

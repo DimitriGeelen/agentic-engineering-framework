@@ -227,23 +227,21 @@ def _get_arcs_in_flight():
         # match `arc:arc-001`.
         slug = d.get("slug") or f.stem
         arc_numeric_id = d.get("id") or slug
-        # Count tasks tagged arc:<slug> across active+completed.
+        # T-1879 (T-NEW-14): Count tasks via union of `arc_id:` frontmatter
+        # (T-1849 canonical, populated by T-1850 migration) AND legacy
+        # `arc:<slug>` tag. T-1850 stripped the legacy tag from 162 tasks —
+        # tag-only scans return zero for every migrated arc.
         task_count = 0
         tag = f"arc:{slug}"
-        for tasks_dir in (PROJECT_ROOT / ".tasks" / "active", PROJECT_ROOT / ".tasks" / "completed"):
-            if not tasks_dir.exists():
+        for fm in get_all_task_metadata():
+            arc_id_val = str(fm.get("arc_id") or "").strip()
+            if arc_id_val and (arc_id_val == slug or arc_id_val == arc_numeric_id):
+                task_count += 1
                 continue
-            for tf in tasks_dir.glob("T-*.md"):
-                try:
-                    text = tf.read_text(errors="replace")
-                except Exception:
-                    continue
-                # cheap tag presence check (frontmatter line `tags: [...]`)
-                for line in text.splitlines():
-                    if line.startswith("tags:"):
-                        if tag in line:
-                            task_count += 1
-                        break
+            for tg in fm.get("tags", []) or []:
+                if str(tg).strip() == tag:
+                    task_count += 1
+                    break
         arcs.append({
             "id": arc_numeric_id,
             "slug": slug,

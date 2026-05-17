@@ -524,21 +524,22 @@ check_inception_decision() {
 check_evolution_log() {
     [ "$NEW_STATUS" = "work-completed" ] || return 0
 
-    local task_type task_tags
+    local task_type
     task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//')
 
     # Only build tasks
     [ "$task_type" = "build" ] || return 0
 
-    # Only arc-tagged
-    echo "$task_tags" | grep -q 'arc:' || return 0
-
-    # Source detection helper
+    # Source detection helper (provides task_has_arc_membership + log helpers)
     local lib_path="$FRAMEWORK_ROOT/lib/evolution_log.sh"
     [ -f "$lib_path" ] || return 0
     # shellcheck source=/dev/null
     source "$lib_path"
+
+    # T-1879 (T-NEW-14): Only arc-member tasks — recognize both arc_id
+    # (T-1849 canonical, T-1850 migrated) AND legacy arc:<slug> tag.
+    # Pre-T-1879 grep on the tags line missed 162 migrated tasks.
+    task_has_arc_membership "$TASK_FILE" || return 0
 
     # Backward-compat: if section absent, no-op
     has_evolution_section "$TASK_FILE" || return 0
