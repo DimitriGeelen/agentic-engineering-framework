@@ -77,6 +77,21 @@ out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -q "Enforcement baseline CHANGED
 
 ## RCA
 
+**Symptom:** `bin/fw doctor` reports `[FAIL] Enforcement baseline CHANGED — settings.json hooks differ from baseline`. Single FAIL on otherwise-green doctor output, persisted across multiple sessions.
+
+**Root cause:** Three legitimate hook additions (T-1849 check-arc-id, T-1730 focus-drift-gate, T-1731 check-human-ac-tick) modified `.claude/settings.json` and were merged via their respective task closures. None of those closures included `bin/fw enforcement baseline` as a Verification step, and there is no post-edit nudge from the framework. The canonical hash diverged silently and the FAIL accumulated.
+
+**Why structurally allowed:** Two layered omissions —
+1. Each task added a hook (correctly) but did not own the "refresh-baseline" step. The hook-addition workflow has no explicit "refresh-baseline" task in its template.
+2. There is no PostToolUse hook on edits to `.claude/settings.json` that nudges "you changed hooks — run `fw enforcement baseline` to acknowledge". The baseline-drift detector is doctor-side (detective), not edit-side (preventive).
+
+**Prevention:** Multi-layered candidate set (none deployed in this slice — captured as candidates):
+- **A (lightest):** Add a one-line reminder to the hook-modification path in CLAUDE.md / task templates: "If you edit .claude/settings.json, add `bin/fw enforcement baseline` to your Verification block."
+- **B (medium):** PostToolUse hook on `Write|Edit` matching `.claude/settings.json` that emits an advisory WARN reminding the agent to refresh the baseline.
+- **C (heaviest):** Make `fw doctor` baseline-drift FAIL block pre-push, so the next push after a hook edit cannot land without acknowledgement. This is the strongest, but couples settings.json edits tightly to operational bookkeeping.
+
+This slice ships only the bookkeeping fix; prevention candidates are noted for arc-grooming follow-up if the drift recurs.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
