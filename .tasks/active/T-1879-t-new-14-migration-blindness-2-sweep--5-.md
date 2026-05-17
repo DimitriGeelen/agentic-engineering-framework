@@ -4,12 +4,12 @@ name: "T-NEW-14 migration-blindness #2 sweep — 5 remaining surfaces read arc_i
 description: >
   T-1850 left 5 more surfaces reading arc:<slug> tags only (silent corpus #2): web/blueprints/core.py (landing card count), web/blueprints/tasks.py (/tasks?arc filter), agents/handover/handover.sh (current-arc count), lib/evolution_log.sh (find_arc_tasks_without_evolution_log), agents/task-create/update-task.sh (check_evolution_log gate). 166 tasks have arc_id but 0 have arc:<slug> tag — all 5 sites return empty/zero for migrated arcs. Sibling to T-NEW-10..13. Future-prevention: codify shared scan helper or audit lint for tag-only patterns.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-grooming, T-NEW-14, build, migration-blindness]
-components: []
+components: [agents/handover/handover.sh, agents/task-create/update-task.sh, lib/evolution_log.sh, tests/unit/arc_membership_agent_surfaces.bats, tests/unit/test_arc_membership_web_surfaces.py, web/blueprints/core.py, web/blueprints/tasks.py]
 related_tasks: [T-1846, T-1850, T-1874, T-1875, T-1876, T-1877]
 arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-17T13:53:31Z
-last_update: 2026-05-17T13:53:31Z
-date_finished: null
+last_update: 2026-05-17T14:08:49Z
+date_finished: 2026-05-17T14:08:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -275,3 +275,27 @@ surface gate (P-013) applies (web/blueprints/core.py + tasks.py touched) — one
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1879-t-new-14-migration-blindness-2-sweep--5-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-2e07807f
+- **Timestamp:** 2026-05-17T14:08:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — **Site 1 — landing-page arc card count (`web/blueprints/core.py`).** Count
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/core.py in: **Site 1 — landing-page arc card count (`web/blueprints/core.py`).** Count`
+- **AC#2 (Agent)** — **Site 2 — `/tasks?arc=<slug>` filter (`web/blueprints/tasks.py`).** Filter
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: **Site 2 — `/tasks?arc=<slug>` filter (`web/blueprints/tasks.py`).** Filter`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/arc_membership_agent_surfaces.bats`
+
+### 2026-05-17T14:08:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
