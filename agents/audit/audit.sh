@@ -459,8 +459,11 @@ if should_run_section "compliance" || should_run_section "quality" || should_run
 fi
 
 # Completed task scan: replaces loops 3/4/7 (episodic, research artifacts, AC gate)
+# T-1882: also populated when "compliance" section is requested — CTL-028 (status-
+# drift detection) moved to compliance gate so pre-push audit catches the drift
+# class before ship rather than only at oe-daily cron run (was: up to 24h window).
 COMPLETED_SCAN=""
-if should_run_section "episodic" || should_run_section "research" || should_run_section "oe-daily"; then
+if should_run_section "episodic" || should_run_section "research" || should_run_section "oe-daily" || should_run_section "compliance"; then
     COMPLETED_SCAN=$(python3 "$FRAMEWORK_ROOT/agents/audit/completed-task-scan.py" \
         "$TASKS_DIR" "$CONTEXT_DIR/episodic" "$PROJECT_ROOT/docs/reports" 2>/dev/null || echo "")
 fi
@@ -2330,31 +2333,6 @@ for task_file in $recent_completed; do
 done
 shopt -u nullglob
 
-# CTL-028 OE: completed/ frontmatter status consistency (T-1870, L-390)
-# Detect tasks moved to .tasks/completed/ via `git mv` (or any path that bypasses
-# `fw task update --status work-completed`) — frontmatter status remains the
-# pre-move value (typically `started-work`). Detective for the file-move-without-
-# state-machine class. CTL-012 catches the AC consequence; this catches the bare
-# metadata desync.
-status_desync_fail=0
-if [ -n "$COMPLETED_SCAN" ]; then
-    while IFS='|' read -r task_id observed_status; do
-        [ -z "$task_id" ] && continue
-        warn "CTL-028: $task_id is in .tasks/completed/ but frontmatter status='$observed_status' (expected: work-completed)" \
-             "Likely cause: git mv bypassed the state machine (L-390)" \
-             "Fix: bin/fw task update $task_id --status work-completed --force, or hand-edit frontmatter to status: work-completed + set date_finished"
-        status_desync_fail=$((status_desync_fail + 1))
-    done < <(echo "$COMPLETED_SCAN" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for item in data.get('status_desync', []):
-    print(f\"{item['id']}|{item['status']}\")
-" 2>/dev/null)
-fi
-if [ "$status_desync_fail" -eq 0 ]; then
-    pass "CTL-028: All completed/ tasks have frontmatter status: work-completed"
-fi
-
 # CTL-019 OE: Auto-Restart — claude-fw wrapper exists
 if [ -x "$FRAMEWORK_ROOT/bin/claude-fw" ]; then
     pass "CTL-019: claude-fw wrapper installed and executable"
@@ -2400,6 +2378,34 @@ fi
 
 echo ""
 fi # end oe-daily
+
+# ============================================
+# CTL-028: Status-drift detection (T-1870, L-390)
+# Originally lived inside the oe-daily block; promoted by T-1882 to fire on
+# `compliance || oe-daily` so the pre-push audit (which includes compliance)
+# catches the `git mv → completed/` bypass class BEFORE the drift ships,
+# rather than waiting up to 24h for the next oe-daily cron run.
+# ============================================
+if should_run_section "compliance" || should_run_section "oe-daily"; then
+    status_desync_fail=0
+    if [ -n "$COMPLETED_SCAN" ]; then
+        while IFS='|' read -r task_id observed_status; do
+            [ -z "$task_id" ] && continue
+            warn "CTL-028: $task_id is in .tasks/completed/ but frontmatter status='$observed_status' (expected: work-completed)" \
+                 "Likely cause: git mv bypassed the state machine (L-390)" \
+                 "Fix: bin/fw task update $task_id --status work-completed --force, or hand-edit frontmatter to status: work-completed + set date_finished"
+            status_desync_fail=$((status_desync_fail + 1))
+        done < <(echo "$COMPLETED_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data.get('status_desync', []):
+    print(f\"{item['id']}|{item['status']}\")
+" 2>/dev/null)
+    fi
+    if [ "$status_desync_fail" -eq 0 ]; then
+        pass "CTL-028: All completed/ tasks have frontmatter status: work-completed"
+    fi
+fi
 
 # ============================================
 # DISCOVERY: Omission detection (T-239)

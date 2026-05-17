@@ -45,18 +45,19 @@ subset trigger).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] CTL-028 fires when audit runs with `--section compliance` (currently only fires with `--section oe-daily`)
-- [ ] CTL-028 still fires when audit runs with `--section oe-daily` (no regression)
-- [ ] `COMPLETED_SCAN` is populated when compliance section is requested (dependency wiring)
-- [ ] New bats test `tests/unit/audit_ctl028_compliance_section.bats` exercises both code paths (compliance, oe-daily) against synthetic drift fixture; both PASS
-- [ ] Pre-push audit (`bin/fw audit --section structure,compliance,quality,discovery`) emits CTL-028 line in output
-- [ ] No new audit warnings/failures introduced on the live tree (regression check)
+- [x] CTL-028 fires when audit runs with `--section compliance` (was: only fired with `--section oe-daily`)
+- [x] CTL-028 still fires when audit runs with `--section oe-daily` (no regression)
+- [x] `COMPLETED_SCAN` is populated when compliance section is requested (dependency wiring)
+- [x] Regression tests added to `tests/unit/audit_ctl028_completed_status_consistency.bats` — 4 new T-1882 cases exercise compliance / oe-daily / pre-push-profile / structure-only paths; all 8 PASS
+- [x] Pre-push audit (`bin/fw audit --section structure,compliance,quality,discovery`) emits CTL-028 line in output
+- [x] No new audit warnings/failures introduced on the live tree (regression check)
 
 ## Verification
-cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/audit_ctl028_compliance_section.bats
-# Regression: live audit still passes
+cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/audit_ctl028_completed_status_consistency.bats
+# Regression: live audit still passes (pipefail-safe per L-387 — capture-then-grep)
 cd /opt/999-Agentic-Engineering-Framework && out=$(bin/fw audit --section compliance 2>&1); echo "$out" | grep -q "CTL-028"
 cd /opt/999-Agentic-Engineering-Framework && out=$(bin/fw audit --section oe-daily 2>&1); echo "$out" | grep -q "CTL-028"
+cd /opt/999-Agentic-Engineering-Framework && out=$(bin/fw audit --section structure,compliance,quality,discovery 2>&1); echo "$out" | grep -q "CTL-028"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -94,38 +95,51 @@ cd /opt/999-Agentic-Engineering-Framework && out=$(bin/fw audit --section oe-dai
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-17 — Existing test file already covers fixture pattern
+- **What changed:** Filed-task ACs proposed a new test file `audit_ctl028_compliance_section.bats`. Reading the existing test suite revealed `audit_ctl028_completed_status_consistency.bats` already has the 4-test scaffold (fixture, scan helper, audit.sh integration). Splitting into two files would duplicate the `_write_task` helper + setup/teardown.
+- **Plan impact:** AC #4 amended — append 4 new cases (compliance, oe-daily-regression, pre-push-profile, structure-only-negative) to the existing file rather than creating a new one. Cleaner co-location of all CTL-028 tests.
+- **Triggered:** Test count went 4 → 8 in one file. Naming convention `CTL-028 T-1882: …` prefixes the new cases so future readers can grep for the slice.
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-05-17 — Negative test added for gate granularity
+- **What changed:** Original plan only verified positive paths (CTL-028 fires from compliance, oe-daily, pre-push). Realised a negative test was needed: confirm `--section structure` alone does NOT fire CTL-028. Without this, a future refactor could silently widen the gate and the regression would slip.
+- **Plan impact:** AC #4 now covers 4 paths not 2.
+- **Triggered:** Test #8 — explicit assertion `[[ "$output" != *"CTL-028"* ]]` under `--section structure`.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-17 — Section assignment: compliance, not structure
+- **Chose:** Gate CTL-028 with `compliance || oe-daily`. Promote to compliance section.
+- **Why:** (a) Pre-push audit already includes compliance — minimal change to scope. (b) Compliance is semantically correct: CTL-028 checks state-machine compliance (started-work in completed/ violates the lifecycle), not directory structure (which is about file layout). (c) Avoids expanding the structure section which is intentionally fast.
+- **Rejected:** Adding CTL-028 to structure section — would force COMPLETED_SCAN to populate even when only structure was requested (e.g. fast cron 30m run), unnecessary work for the common case. Also semantically off (CTL-028 isn't a structure check).
+- **Rejected:** Adding a new "drift" section — yet-another-section grows the section taxonomy with one check. Not worth the overhead vs. reusing compliance.
+
+### 2026-05-17 — Physical relocation of CTL-028 block (not just gate-widening)
+- **Chose:** Move the CTL-028 block out of the oe-daily `if` block (lines 2024-2402) into its own conditional gated on `compliance || oe-daily`.
+- **Why:** The original location was nested inside `if should_run_section "oe-daily"` — wrapping with an inner `compliance || oe-daily` gate would have been dead code (the outer gate only opens when oe-daily is requested). Physical relocation outside the oe-daily block is the only way to make `--section compliance` fire CTL-028.
+- **Rejected:** Duplicating the check in compliance section — adds maintenance burden; the underlying check is the same.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:**
+
+CTL-028 status-drift class shipped on 2026-05-15 (T-1846 git mv → completed/ without state-machine transition) was caught by the daily 07:00 cron audit on 2026-05-16 but only spotted manually 2026-05-17. The detection window for this drift class was up to 24h post-ship. With CTL-028 now gated by compliance, the pre-push audit catches the same class at commit-push time — before propagation.
+
+The change is structurally minimal (~30-line audit.sh diff, 1 trigger expansion, 1 block relocation) and the regression suite confirms both code paths (compliance, oe-daily) still surface drift via the audit.sh integration path. The negative test (structure-only does NOT fire CTL-028) pins gate granularity so future widening is detected.
+
+No new audit warnings/failures introduced on the live tree (verified: `bin/fw audit --section structure,compliance,quality,discovery` runs clean).
+
+**Evidence:**
+
+- audit.sh:466 — COMPLETED_SCAN trigger expanded to include `compliance`
+- audit.sh:2333-2362 — CTL-028 block relocated, gated by `compliance || oe-daily`
+- tests/unit/audit_ctl028_completed_status_consistency.bats — 4 new T-1882 tests appended (8 total, all PASS)
+- Live verify: `bin/fw audit --section compliance | grep CTL-028` → PASS line emitted
+- Live verify: `bin/fw audit --section oe-daily | grep CTL-028` → PASS line emitted (no regression)
+- Live verify: `bin/fw audit --section structure,compliance,quality,discovery | grep CTL-028` → PASS line emitted
+- Related: T-1687 commit 78d00388 (T-1846 status-drift remediation that surfaced this prevention gap)
+- L-390 (the underlying learning: git mv bypasses state machine)
 
 ## Decision
 

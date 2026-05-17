@@ -102,3 +102,63 @@ EOF
     [[ "$output" == *"T-9020"* ]]
     [[ "$output" == *"started-work"* ]]
 }
+
+# T-1882 section-gating regression tests
+# CTL-028 was promoted from oe-daily-only to (compliance || oe-daily) so the
+# pre-push audit (which includes compliance) catches status-drift class BEFORE
+# the drift ships, rather than waiting up to 24h for the next oe-daily cron run.
+
+@test "CTL-028 T-1882: --section compliance fires CTL-028 (pre-push path)" {
+    _write_task "T-9030" "started-work"
+    mkdir -p "$TMPREPO/.git" "$TMPREPO/agents/audit"
+    cp "$FRAMEWORK_ROOT/agents/audit/completed-task-scan.py" "$TMPREPO/agents/audit/"
+    cp "$FRAMEWORK_ROOT/agents/audit/active-task-scan.py" "$TMPREPO/agents/audit/" 2>/dev/null || true
+
+    cd "$TMPREPO"
+    run env PROJECT_ROOT="$TMPREPO" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+        bash "$FRAMEWORK_ROOT/agents/audit/audit.sh" --section compliance 2>&1
+    [[ "$output" == *"CTL-028"* ]]
+    [[ "$output" == *"T-9030"* ]]
+}
+
+@test "CTL-028 T-1882: --section oe-daily still fires CTL-028 (no regression)" {
+    _write_task "T-9031" "started-work"
+    mkdir -p "$TMPREPO/.git" "$TMPREPO/agents/audit"
+    cp "$FRAMEWORK_ROOT/agents/audit/completed-task-scan.py" "$TMPREPO/agents/audit/"
+    cp "$FRAMEWORK_ROOT/agents/audit/active-task-scan.py" "$TMPREPO/agents/audit/" 2>/dev/null || true
+
+    cd "$TMPREPO"
+    run env PROJECT_ROOT="$TMPREPO" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+        bash "$FRAMEWORK_ROOT/agents/audit/audit.sh" --section oe-daily 2>&1
+    [[ "$output" == *"CTL-028"* ]]
+    [[ "$output" == *"T-9031"* ]]
+}
+
+@test "CTL-028 T-1882: pre-push profile (structure,compliance,quality,discovery) fires CTL-028" {
+    _write_task "T-9032" "started-work"
+    mkdir -p "$TMPREPO/.git" "$TMPREPO/agents/audit"
+    cp "$FRAMEWORK_ROOT/agents/audit/completed-task-scan.py" "$TMPREPO/agents/audit/"
+    cp "$FRAMEWORK_ROOT/agents/audit/active-task-scan.py" "$TMPREPO/agents/audit/" 2>/dev/null || true
+
+    cd "$TMPREPO"
+    run env PROJECT_ROOT="$TMPREPO" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+        bash "$FRAMEWORK_ROOT/agents/audit/audit.sh" --section structure,compliance,quality,discovery 2>&1
+    [[ "$output" == *"CTL-028"* ]]
+    [[ "$output" == *"T-9032"* ]]
+}
+
+@test "CTL-028 T-1882: --section structure alone does NOT fire CTL-028 (gate granularity)" {
+    # structure section is intentionally fast for pre-push; CTL-028 lives in
+    # compliance. Verify the gate respects this — running structure alone
+    # must not invoke CTL-028 (avoids loading completed-task-scan when not needed).
+    _write_task "T-9033" "started-work"
+    mkdir -p "$TMPREPO/.git" "$TMPREPO/agents/audit"
+    cp "$FRAMEWORK_ROOT/agents/audit/completed-task-scan.py" "$TMPREPO/agents/audit/"
+    cp "$FRAMEWORK_ROOT/agents/audit/active-task-scan.py" "$TMPREPO/agents/audit/" 2>/dev/null || true
+
+    cd "$TMPREPO"
+    run env PROJECT_ROOT="$TMPREPO" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+        bash "$FRAMEWORK_ROOT/agents/audit/audit.sh" --section structure 2>&1
+    # No CTL-028 line at all — gate filtered it out
+    [[ "$output" != *"CTL-028"* ]]
+}
