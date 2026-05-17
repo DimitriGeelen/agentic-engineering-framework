@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1855: Stale-arc audit warning (30d, T-NEW-7)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T22:27:09Z
+# ============================================================================
+
+task_id: T-1855
+task_name: "Stale-arc audit warning (30d, T-NEW-7)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T14:53:13Z
+completed: 2026-05-16T21:37:39Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` adds stale-arc check: WARN when arc has `status: in-progress` AND no commit in last 30 days touches any task with matching `arc_id:` (inserted after T-1856 anchor check, ~lines 617-680)'
+  - 'Check is silent on `draft`, `closed`, `abandoned` arcs (status filter on line `[ "$status_val" = "in-progress" ] || continue`)'
+  - 'Threshold configurable via single constant `FW_STALE_ARC_DAYS` (default 30); documented in `CLAUDE.md` §Configuration agent-relevant settings list'
+  - 'Test: `tests/unit/audit_stale_arc_warning.bats` — 7/7 pass (stale-WARN + fresh-pass + closed-silent + zero-population-skip + arc-NNN-form-match + threshold-config + bash -n)'
+  - '[REVIEWER] WARN-message conformance — `fw reviewer T-1855` returns Overall:PASS with needs_human=no (re-classified from Human [REVIEW] per CLAUDE.md §AC Classification Guidance: pattern/wording conformance is reviewer-agent verifiable; WARN-block presence of required substrings — `[WARN]`, `Evidence:`, `Mitigation:`, `FW_STALE_ARC_DAYS` — is checkable via bats and static scan).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-16 — git log vs. file mtime for recency'
+    chose: '`git log --since="${stale_arc_threshold}.days.ago" -- <task files>` — commit-history based.'
+    rationale: 'File mtime can be reset by checkout, vendoring, or backup-restore. Commit history is the canonical record of "when did this task actually move." Aligns with the framework''s other freshness checks (e.g. `fw task stale`).'
+    alternatives_rejected: ['`stat -c %Y` mtime — unreliable across vendor/clone operations. Also rejected: `last_update:` field in frontmatter — too easy to forget to update on mechanical edits.']
+  - decision: '2026-05-16 — re-scope AC #4 (badge render) to T-1853'
+    chose: 'Move "Watchtower `/arcs` index renders stale badge" out of T-1855''s Agent ACs and into T-1853 (T-NEW-5b lifecycle filter tabs) which already owns the render surface.'
+    rationale: 'The badge is a `web/blueprints/arcs.py` change — a render-surface mutation that would fire T-1766''s gate on T-1855 even though T-1855''s substantive work is audit-side. Worse, the original spec parenthetical ("visible per status filter post T-NEW-5b") already acknowledged the dep. The AC was misfiled in the inception artefact; T-1853 is its natural home. Audit-side data (the `[WARN]` line + threshold + `arcs_checked_for_staleness` counter) is now available for T-1853 to read.'
+    alternatives_rejected: ['(a) Implement the badge in T-1855 anyway — would inflate the slice and force a render-surface review on what''s fundamentally a structural-check change. (b) `--skip-acceptance-criteria` bypass — would log a Tier-2 entry for something that isn''t actually a bypass, just a misfile. Re-scoping is honest; bypassing is not.']
+  - decision: '2026-05-16 — skip zero-population arcs rather than warn'
+    chose: 'When `matching_tasks` is empty, `continue` — no WARN, no PASS contribution.'
+    rationale: 'Two distinct signals confuse operators. "Arc has zero tasks" is a different observability problem (probably belongs in the arc-completion section or a separate slice). Conflating them produces noisy WARNs on freshly-created arcs that haven''t acquired tasks yet.'
+    alternatives_rejected: ['WARN on empty arcs — would fire on every newly-created arc until at least one task is tagged.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1844 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, audit, freshness, T-NEW-7]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1844
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1855-stale-arc-audit-warning-30d-t-new-7.md
+generated_by: context-agent-hybrid

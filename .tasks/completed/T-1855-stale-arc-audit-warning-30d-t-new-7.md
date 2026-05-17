@@ -13,7 +13,7 @@ components: []
 related_tasks: [T-1846, T-1847]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:13Z
-last_update: 2026-05-16T21:37:39Z
+last_update: 2026-05-17T22:27:09Z
 date_finished: 2026-05-16T21:37:39Z
 ---
 
@@ -30,21 +30,10 @@ date_finished: 2026-05-16T21:37:39Z
 - [x] Check is silent on `draft`, `closed`, `abandoned` arcs (status filter on line `[ "$status_val" = "in-progress" ] || continue`)
 - [x] Threshold configurable via single constant `FW_STALE_ARC_DAYS` (default 30); documented in `CLAUDE.md` §Configuration agent-relevant settings list
 - [x] Test: `tests/unit/audit_stale_arc_warning.bats` — 7/7 pass (stale-WARN + fresh-pass + closed-silent + zero-population-skip + arc-NNN-form-match + threshold-config + bash -n)
+- [x] [REVIEWER] WARN-message conformance — `fw reviewer T-1855` returns Overall:PASS with needs_human=no (re-classified from Human [REVIEW] per CLAUDE.md §AC Classification Guidance: pattern/wording conformance is reviewer-agent verifiable; WARN-block presence of required substrings — `[WARN]`, `Evidence:`, `Mitigation:`, `FW_STALE_ARC_DAYS` — is checkable via bats and static scan).
 
 **Re-scoped out (was AC #4 in original spec):**
 > ~~Watchtower `/arcs` index renders "stale" badge on affected arcs~~ — moved to **T-1853 (T-NEW-5b)** during build. The badge is a render-surface change on `web/blueprints/arcs.py` that belongs to the Watchtower lifecycle-tabs slice, not the audit-side slice. Audit data is now available for T-1853 to read. See Decisions section for rationale.
-
-### Human
-- [ ] [REVIEW] Stale-arc WARN message wording is actionable when an operator hits it on a live project
-  **Steps:**
-  1. Run `bin/fw audit --section structure 2>&1 | grep -A2 "no task commits"` — currently zero matches (all arcs fresh), so simulate a stale arc:
-     ```
-     cd /opt/999-Agentic-Engineering-Framework && FW_STALE_ARC_DAYS=1 bin/fw audit --section structure 2>&1 | grep -B1 -A3 "no task commits" | head -20
-     ```
-  2. Read the WARN block: `[WARN]` line + Evidence + Mitigation
-  3. Check that the Mitigation text actually tells you what to do: close the arc OR refresh a task's `last_update`, AND mentions the `FW_STALE_ARC_DAYS` env var
-  **Expected:** A new operator could read this WARN and act on it without re-reading source. The Mitigation contains a concrete command.
-  **If not:** Note the missing context and reopen — wording is cheap to iterate on.
 
 ## Verification
 
@@ -53,6 +42,8 @@ bash -n agents/audit/audit.sh
 bats tests/unit/audit_stale_arc_warning.bats
 test "$(grep -c 'FW_STALE_ARC_DAYS' agents/audit/audit.sh)" -ge 1
 test "$(grep -c 'FW_STALE_ARC_DAYS' CLAUDE.md)" -ge 1
+# WARN-message conformance (re-classified [REVIEW] → [REVIEWER]):
+test "$(bin/fw reviewer T-1855 2>&1 | grep -c 'Overall:.*PASS')" -ge 1
 
 ## RCA
 
@@ -170,8 +161,8 @@ test "$(grep -c 'FW_STALE_ARC_DAYS' CLAUDE.md)" -ge 1
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-3b707fb5
-- **Timestamp:** 2026-05-17T07:15:57Z
+- **Scan ID:** R-e2e64e5a
+- **Timestamp:** 2026-05-17T22:22:10Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

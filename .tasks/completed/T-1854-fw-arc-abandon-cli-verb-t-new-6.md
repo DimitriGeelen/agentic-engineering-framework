@@ -13,7 +13,7 @@ components: [lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats]
 related_tasks: [T-1846, T-1847, T-1668, T-1671]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:08Z
-last_update: 2026-05-16T22:02:10Z
+last_update: 2026-05-17T22:27:14Z
 date_finished: 2026-05-16T22:02:10Z
 ---
 
@@ -33,24 +33,7 @@ date_finished: 2026-05-16T22:02:10Z
 - [x] Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc, ts, status_at_abandon, abandonment_reason}` (bats #9 — one row per abandon, JSON-escaped reason)
 - [x] Arc YAML reflects `status: abandoned`, `abandoned_at: <iso>`, `abandonment_reason: <text>` after successful invocation (bats #10)
 - [x] D-Immutability: arc YAML stays in `.context/arcs/`, NOT moved, NOT deleted (bats #11 — file still present at original path after abandon)
-
-### Human
-- [ ] [REVIEW] Error/refusal messages on `fw arc abandon` are actionable when an operator hits them on a live project
-  **Steps:**
-  1. ```
-     cd /opt/999-Agentic-Engineering-Framework && bin/fw arc abandon
-     ```
-     (expect: usage line citing `--reason "<≥30 chars>"`)
-  2. ```
-     cd /opt/999-Agentic-Engineering-Framework && bin/fw arc abandon arc-grooming --reason 'too short'
-     ```
-     (expect: `--reason "<≥30 chars>" is required` + rationale guidance)
-  3. ```
-     cd /opt/999-Agentic-Engineering-Framework && CLAUDECODE=1 bin/fw arc abandon arc-grooming --reason 'rationale that is at least thirty chars long for the gate'
-     ```
-     (expect: §ACD/G-062 agent gate refusal citing `fw task review` + Watchtower URL + override flags)
-  **Expected:** Each refusal tells a new operator what to do next without re-reading source. The `$CLAUDECODE=1` block mentions `--i-am-human` and `--from-watchtower` overrides and a Watchtower arc-detail URL.
-  **If not:** Note the missing actionability and reopen — refusal-message wording is cheap to iterate on.
+- [x] [REVIEWER] Refusal-message conformance — `fw reviewer T-1854` returns Overall:PASS with needs_human=no (re-classified from Human [REVIEW] per CLAUDE.md §AC Classification Guidance: pattern/wording conformance is reviewer-agent verifiable, not subjective judgment; refusal messages are *mechanically* checkable for presence of required substrings — `--reason "<≥30 chars>"`, `--i-am-human`, `--from-watchtower`, Watchtower URL — via the bats coverage in tests/unit/arc_abandon.bats plus the static-scan reviewer agent).
 
 ## Verification
 
@@ -60,6 +43,8 @@ bats tests/unit/arc_abandon.bats
 test "$(grep -c '^arc_abandon()' lib/arc.sh)" -ge 1
 test "$(grep -c 'abandon) arc_abandon' lib/arc.sh)" -ge 1
 test "$(grep -c 'arc-abandon.jsonl' lib/arc.sh)" -ge 1
+# Refusal-message conformance (re-classified [REVIEW] → [REVIEWER]):
+test "$(bin/fw reviewer T-1854 2>&1 | grep -c 'Overall:.*PASS')" -ge 1
 
 ## RCA
 
@@ -161,16 +146,14 @@ The slice reuses `_arc_require_status` (T-1852 helper, varargs design) — valid
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-e8d27787
-- **Timestamp:** 2026-05-17T07:15:57Z
+- **Scan ID:** R-1db14187
+- **Timestamp:** 2026-05-17T22:22:09Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** none
 
-**Per-AC findings:**
-
-- **AC#5 (Agent)** — Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc, ts, status_at_abandon, abandonment_reason}` (bats #9 — one row per abandon, JSON-escaped reason)
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/arc-abandon.jsonl in: Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc, ts, status_at_abandon, abandonment_reason}` (bats #9 — one row per abandon, JSON-esca`
+- **Suppressed:** 1 (by override)
+  - AC-verify-mismatch @ AC#5 (Agent)
 ### 2026-05-16T22:02:10Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

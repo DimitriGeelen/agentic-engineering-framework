@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1854: fw arc abandon CLI verb (T-NEW-6)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T22:27:15Z
+# ============================================================================
+
+task_id: T-1854
+task_name: "fw arc abandon CLI verb (T-NEW-6)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T14:53:08Z
+completed: 2026-05-16T22:02:10Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw arc abandon <id> --reason "<text>"` implemented in `lib/arc.sh`; routed via `bin/fw` (dispatcher case + help text updated)'
+  - 'Refuses without `--reason` or with `--reason` text under 30 chars (exit 2, actionable error message — bats #5, #6)'
+  - 'Refuses under `$CLAUDECODE=1` unless `--i-am-human` or `--from-watchtower` (T-1671 agent-gate copy-paste from `arc_close`; bats #7 refused, #8 bypassed via `--i-am-human`)'
+  - 'Works from both `draft` and `in-progress` source states (after T-NEW-5a); rejected from `closed` or `abandoned` (bats #1, #2 pass; #3, #4 refused)'
+  - 'Appends JSON line to `.context/audits/arc-abandon.jsonl`: `{arc, ts, status_at_abandon, abandonment_reason}` (bats #9 — one row per abandon, JSON-escaped reason)'
+  - 'Arc YAML reflects `status: abandoned`, `abandoned_at: <iso>`, `abandonment_reason: <text>` after successful invocation (bats #10)'
+  - 'D-Immutability: arc YAML stays in `.context/arcs/`, NOT moved, NOT deleted (bats #11 — file still present at original path after abandon)'
+  - '[REVIEWER] Refusal-message conformance — `fw reviewer T-1854` returns Overall:PASS with needs_human=no (re-classified from Human [REVIEW] per CLAUDE.md §AC Classification Guidance: pattern/wording conformance is reviewer-agent verifiable, not subjective judgment; refusal messages are *mechanically* checkable for presence of required substrings — `--reason "<≥30 chars>"`, `--i-am-human`, `--from-watchtower`, Watchtower URL — via the bats coverage in tests/unit/arc_abandon.bats plus the static-scan reviewer agent).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-17 — `--reason "..."` (not `--justification`)'
+    chose: '`--reason` as the required flag name for abandonment text.'
+    rationale: '`arc_close --justification` is reserved for the `--demo none` *bypass* path — it justifies *why we are skipping the normal demo requirement*. Abandonment is not a bypass; it''s a normal final-state transition with its own first-class rationale field. Using `--reason` matches the natural language ("reason for abandoning") and avoids implying that abandonment is closure-with-an-excuse.'
+    alternatives_rejected: ['`--justification` (overloaded, implies bypass semantics); `--rationale` (matches `fw inception decide` but adds an unrelated cross-vocabulary mapping); bare `<reason>` positional arg (less greppable; harder to extend with future fields).']
+  - decision: '2026-05-17 — write `abandoned_at` and `abandonment_reason` as new fields (not in-place edits)'
+    chose: 'Append `abandoned_at: <iso>` and `abandonment_reason: "<text>"` to the YAML body if absent; replace if present (idempotent). The arc-create template does NOT pre-create these fields.'
+    rationale: 'Two reasons. (1) Most arcs will never be abandoned — pre-creating `abandoned_at: null` on every arc is dead schema for the common case. (2) The presence of these fields is the *signal* "this arc was abandoned" — a downstream reader can `grep -l abandonment_reason: .context/arcs/*.yaml` to enumerate abandoned arcs without parsing status. Parallel to how `closed_at:` is *present-when-closed*, not pre-created.'
+    alternatives_rejected: ['Pre-create the fields in `arc_create` (adds noise to every arc); store reason in `decision:` field (overloads it; `decision:` is for `arc_close` outcome).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1869 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, lifecycle, cli, governance-gate, T-NEW-6]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1869
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1854-fw-arc-abandon-cli-verb-t-new-6.md
+generated_by: context-agent-hybrid
