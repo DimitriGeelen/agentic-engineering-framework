@@ -3033,3 +3033,17 @@ X'` returning empty group."
   date: 2026-05-17
   context: Added via context agent
   application: TBD
+- id: L-396
+  learning: "Brace-group + pipeline can drop output silently in some shell environments. { cmd1; cmd2; } | sort -u | wc -l consistently returned 1 instead of N when expected, even though direct brace output showed all N lines. Capture-to-tempfile (>> /tmp/file; sort -u file) is the robust workaround. Origin: T-1879 handover.sh union-grep count for arc_id+legacy-tag; ate ~10min debugging before switching pattern. Worth pinning at the lib/evolution_log.sh + handover.sh sites — and watching for elsewhere."
+  source: P-009
+  task: T-1687
+  date: 2026-05-17
+  context: Added via context agent
+  application: TBD
+- id: L-397
+  learning: "Silent-corpus pattern: when storage format migrates (T-1850 stripped arc:slug tags → added arc_id frontmatter), consumer sites that read ONLY the old format become silent zero-emitters. Symptoms: counts that should be N show 0, filters return empty, scans skip what they should hit. Root cause: no shared 'tasks-for-X(key)' helper — each consumer re-implements the scan inline. Each migration becomes a Whac-A-Mole with subsequent silent-corpus #2/#3 surfaces. Prevention: extract a canonical helper at migration time AND register a lint that fails on grep-old-format patterns without new-format read. Origin: T-1874/75/76/77/1879 — 9 sites fixed in 4 sibling-cluster commits across 2 days; T-1880 + T-1881 captured for the prevention layer."
+  source: P-001
+  task: T-1687
+  date: 2026-05-17
+  context: Added via context agent
+  application: TBD
