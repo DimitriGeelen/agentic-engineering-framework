@@ -4,10 +4,10 @@ name: "Audit-time lint: fail on grep arc:slug patterns without arc_id read"
 description: >
   Future-prevention companion to T-1879 (T-NEW-14): add audit check or pre-commit lint that scans codebase for grep arc:slug or grep arc: patterns NOT paired with an arc_id read on the same code path. Catches silent-corpus #3 before it ships when a new consumer is added. Proposed audit name: ctl-arc-tag-only-pattern. Lives in agents/audit/audit.sh.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [arc-grooming, future-prevention, audit-check]
 components: []
 related_tasks: [T-1879, T-1880]
@@ -17,7 +17,7 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-17T14:07:15Z
-last_update: 2026-05-17T14:07:15Z
+last_update: 2026-05-17T15:42:26Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -27,49 +27,45 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Sibling future-prevention slice to T-1880 (shared `lib/arc_membership.{sh,py}`).
+After T-1880 consolidation, the only legitimate occurrences of inline
+`grep ... arc:<slug>` legacy-tag scans live in the canonical helpers
+themselves (`lib/arc_membership.sh`, `lib/arc.sh`) and the one-shot
+migration (`lib/migrations/arc-id-migration.sh`). Any NEW occurrence
+elsewhere is silent-corpus #3 in waiting — a consumer reinventing the
+inline scan and missing the `arc_id` half of the union.
+
+This task adds an audit check (`ctl-arc-tag-only-pattern`) that scans
+the framework code for the forbidden pattern and FAILs when it appears
+outside the whitelisted canonical sites. The check runs as part of
+`fw audit` and on every push (via pre-push audit gate).
+
+Coverage:
+- Scope: `lib/`, `web/`, `agents/`, `bin/`, `tools/` (non-test code paths)
+- Allowlist: `lib/arc_membership.{sh,py}`, `lib/arc.sh`, `lib/migrations/`,
+  `tests/`, `docs/`, `.fabric/` (canonical and ephemeral surfaces)
+- Pattern detection: `grep` invocations targeting `arc:<slug>` /
+  `^tags:.*arc:` legacy-tag-only scans
+- Failure mode: FAIL (not WARN) — silent corpora are the exact class
+  this check exists to prevent; tolerance defeats the purpose
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `agents/audit/audit.sh` has a `ctl-arc-tag-only-pattern` block that scans `lib/`, `web/`, `agents/`, `bin/`, `tools/` for `grep` invocations matching legacy `arc:<slug>` tag patterns
+- [ ] Allowlist excludes `lib/arc_membership.{sh,py}`, `lib/arc.sh`, `lib/migrations/`, `tests/`, `docs/`
+- [ ] When zero violations: emits `[PASS] No inline arc:<slug> tag-only scans outside canonical lib`
+- [ ] When violations found: emits `[FAIL]` per violation with file:line + evidence + mitigation pointing at `lib/arc_membership.{sh,py}`
+- [ ] Regression test pins the check: `tests/unit/audit_ctl_arc_tag_only_pattern.bats` covers both clean-state PASS and synthetic-violation FAIL
+- [ ] Live `fw audit` passes (current tree is clean post-T-1880)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+<!-- No human verification required — pure static-scan lint, no rendering surface. -->
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
+cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/audit_ctl_arc_tag_only_pattern.bats
+cd /opt/999-Agentic-Engineering-Framework && bin/fw audit 2>&1 | grep -E "(PASS|FAIL).*arc.*tag-only" | head -3
 
 ## RCA
 
@@ -138,3 +134,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1881-audit-time-lint-fail-on-grep-arcslug-pat.md
 - **Context:** Initial task creation
+
+### 2026-05-17T15:42:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now
