@@ -122,7 +122,12 @@ _arc_next_numeric_id() {
     if compgen -G "${ARCS_DIR}/*.yaml" >/dev/null 2>&1; then
         for f in "${ARCS_DIR}"/*.yaml; do
             cur=$(awk '/^id:[[:space:]]*arc-[0-9]/ {gsub(/[^0-9]/, "", $2); print $2; exit}' "$f")
-            if [ -n "$cur" ] && [ "$cur" -gt "$max" ] 2>/dev/null; then
+            # T-1877: force decimal base — `008`/`009` are invalid octal and would
+            # break the printf arithmetic expansion at the tail of this function.
+            # Normalize at extract time so `max` is always integer-form.
+            [ -n "$cur" ] || continue
+            cur=$((10#$cur))
+            if [ "$cur" -gt "$max" ]; then
                 max="$cur"
             fi
         done

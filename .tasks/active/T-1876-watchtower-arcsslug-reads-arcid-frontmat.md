@@ -4,17 +4,17 @@ name: "Watchtower /arcs/<slug> reads arc_id frontmatter (T-NEW-12)"
 description: >
   _resolve_constituents in web/blueprints/arcs.py scans legacy arc:<slug> tags only — same T-1850 migration blindness as T-1874 (CLI display) and T-1875 (audit fallback), now on the Watchtower arc-detail page. Union with arc_id frontmatter via the existing _scan_tasks_by_arc_membership index.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude
+owner: human
 horizon: now
 tags: [arc, arc-grooming, watchtower, web, T-NEW-12]
-components: []
+components: [tests/playwright/test_arcs_detail_arc_id_membership.py, web/blueprints/arcs.py]
 related_tasks: [T-1687, T-1849, T-1850, T-1874, T-1875]
 arc_id: arc-grooming
 created: 2026-05-17T06:53:01Z
-last_update: 2026-05-17T06:53:01Z
-date_finished: null
+last_update: 2026-05-17T06:59:10Z
+date_finished: 2026-05-17T06:59:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -174,3 +174,20 @@ out_slug=$(curl -sf "$(bin/fw watchtower url)/arcs/arc-grooming" 2>&1); out_num=
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1876-watchtower-arcsslug-reads-arcid-frontmat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7e4f8a69
+- **Timestamp:** 2026-05-17T06:59:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `tests/playwright/test_arcs_detail_arc_id_membership.py` exercises: (a) `/arcs/arc-grooming` lists ≥10 T-184x/T-185x rows by DOM-content assertion (T-1575 compliance — NOT element-presence grep); (b) 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_arcs_detail_arc_id_membership.py in: `tests/playwright/test_arcs_detail_arc_id_membership.py` exercises: (a) `/arcs/arc-grooming` lists ≥10 T-184x/T-185x rows by DOM-content assertion (T-`
+
+### 2026-05-17T06:59:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
