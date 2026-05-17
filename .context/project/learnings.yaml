@@ -3026,3 +3026,10 @@ X'` returning empty group."
   date: 2026-05-16
   context: Added via context agent
   application: TBD
+- id: L-395
+  learning: "Bash arithmetic expansion picks up leading-zero strings as invalid octal: dollar-double-paren of '008'/'009' errors 'value too great for base'. POSIX bracket-test is leading-zero tolerant; arithmetic context is not. Always normalize via 10# prefix when extracting numeric strings via awk/sed before feeding to arithmetic — origin T-1877, latent in lib/arc.sh _arc_next_numeric_id since T-1848, would fire at arc-008 (3 creations away)."
+  source: P-001
+  task: T-1687
+  date: 2026-05-17
+  context: Added via context agent
+  application: TBD
