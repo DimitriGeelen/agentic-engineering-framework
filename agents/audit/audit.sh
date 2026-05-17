@@ -2607,6 +2607,12 @@ for f in glob.glob(os.path.join(TASKS_DIR, "T-*.md")):
     if not human_section:
         continue  # no human ACs — fine
     human_text = human_section.group(1)
+    # T-1889: strip HTML comment blocks before counting — template stubs include
+    # example `- [ ] [REVIEW] ...` lines inside <!-- ... --> that previously
+    # produced false-positive "Human ACs exist but none checked" flags
+    # (origin: T-1455 false-positive during arc-grooming review). Same canonical
+    # strip pattern as lib/inception.sh:517.
+    human_text = re.sub(r'<!--.*?-->', '', human_text, flags=re.DOTALL)
     checked = human_text.count("[x]")
     unchecked = human_text.count("[ ]")
     if unchecked > 0 and checked == 0:
