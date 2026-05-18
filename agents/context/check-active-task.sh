@@ -269,27 +269,34 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
 
     # If a target was identified and differs from focused task: drift
     if [ -n "$TARGET_TASK" ] && [ "$TARGET_TASK" != "$CURRENT_TASK" ]; then
-        # --switch-focus override allows + logs (mirrors T-1671 closure-gate pattern)
+        # T-1890: two bypass mechanisms.
+        # (a) --switch-focus flag in BASH_CMD — works for fw commands whose
+        #     downstream parsers accept the no-op token (update-task.sh,
+        #     agents/context/lib/{learning,pattern,decision}.sh).
+        # (b) FW_SWITCH_FOCUS=1 env-var prefix — works universally including
+        #     `git commit ... T-X: ...` (git rejects unknown flags so the
+        #     flag mechanism fundamentally can't cover that pattern).
+        _bypass_mechanism=""
         if [[ "$BASH_CMD" =~ (^|[[:space:]])--switch-focus([[:space:]]|=|$) ]]; then
+            _bypass_mechanism="--switch-focus"
+        elif [[ "$BASH_CMD" =~ (^|[[:space:]])FW_SWITCH_FOCUS=1([[:space:]]|$) ]]; then
+            _bypass_mechanism="FW_SWITCH_FOCUS=1"
+        fi
+        if [ -n "$_bypass_mechanism" ]; then
             BYPASS_LOG="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
             mkdir -p "$(dirname "$BYPASS_LOG")"
             # T-1861: escape embedded single quotes per YAML single-quoted-scalar rule.
-            # CURRENT_TASK/TARGET_TASK won't have quotes in practice but uniform
-            # escaping is the correct shape. `command` retains tr -d "'" because
-            # truncating a command's quotes is the safer audit-trail behaviour
-            # (don't preserve foreign apostrophes in arbitrary user commands).
             _t1861_esc_task="${CURRENT_TASK//\'/\'\'}"
             _t1861_esc_target="${TARGET_TASK//\'/\'\'}"
             {
                 echo "- timestamp: '$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
                 echo "  task: '$_t1861_esc_task'"
-                echo "  flag: '--switch-focus'"
+                echo "  flag: '$_bypass_mechanism'"
                 echo "  caller: 'check-active-task focus-drift'"
                 echo "  target: '$_t1861_esc_target'"
                 echo "  command: '$(echo "$BASH_CMD" | head -c 200 | tr -d "'")'"
             } >> "$BYPASS_LOG" 2>/dev/null || true
-            # Allow with informational note on stderr
-            echo "NOTE: focus-drift override (--switch-focus) — target $TARGET_TASK ≠ focus $CURRENT_TASK. Logged." >&2
+            echo "NOTE: focus-drift override ($_bypass_mechanism) — target $TARGET_TASK ≠ focus $CURRENT_TASK. Logged." >&2
         elif _under_agent_control; then
             echo "" >&2
             echo "══════════════════════════════════════════════════════════" >&2
@@ -305,10 +312,16 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
             echo "    1. Switch focus first:" >&2
             echo "       $(_fw_cmd) context focus $TARGET_TASK" >&2
             echo "" >&2
-            echo "    2. Append --switch-focus to the command (logged Tier 2)." >&2
+            echo "    2. Append --switch-focus to a fw command (logged Tier 2)." >&2
+            echo "       Works for: fw task update, fw context add-*." >&2
+            echo "" >&2
+            echo "    3. Prefix FW_SWITCH_FOCUS=1 to any command (logged Tier 2)." >&2
+            echo "       Works universally including git commit (where git rejects" >&2
+            echo "       unknown flags). Use this when option 2 isn't accepted." >&2
             echo "" >&2
             echo "  Attempting to run: $(echo "$BASH_CMD" | head -c 120)" >&2
             echo "  Policy: T-1730 (Focus-Target Drift Gate, closes G3 from T-1729)" >&2
+            echo "  Bypass-mechanism contract: T-1890 (flag + env-var dual path)" >&2
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
             exit 2

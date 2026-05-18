@@ -879,6 +879,7 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         T-*) TASK_ID="$1"; shift ;;
+        --switch-focus) shift ;;  # T-1890: focus-drift hook sentinel; consumed silently
         *) echo -e "${RED}Unknown option: $1${NC}"; exit 1 ;;
     esac
 done

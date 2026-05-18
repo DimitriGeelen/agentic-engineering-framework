@@ -38,6 +38,9 @@ do_add_pattern() {
                 description="$2"
                 shift 2
                 ;;
+            --switch-focus)
+                shift  # T-1890: focus-drift hook sentinel; consumed silently
+                ;;
             -*)
                 echo -e "${RED}Unknown option: $1${NC}"
                 exit 1
