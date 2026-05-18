@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1890: focus-drift bypass flag mismatch — hook recommends --switch-focus but downstream rejects (Unknown option)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T18:37:40Z
+# ============================================================================
+
+task_id: T-1890
+task_name: "focus-drift bypass flag mismatch — hook recommends --switch-focus but downstream rejects (Unknown option)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T06:04:06Z
+completed: 2026-05-18T06:11:46Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-18T08:11:41+02:00
+last_commit: 2026-05-18T08:11:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  focus-drift bypass flag mismatch — flag + env-var dual mechanism
+
+# Key outcomes
+outcomes:
+  - '`agents/task-create/update-task.sh` accepts `--switch-focus` as a silently-consumed no-op (no "Unknown option" exit). Verified by `bin/fw task update T-XXX --switch-focus --help` exits 0.'
+  - '`agents/context/lib/learning.sh`, `pattern.sh`, `decision.sh` each accept `--switch-focus` as a silently-consumed no-op. Verified by `bin/fw context add-learning ''test'' --task T-1890 --switch-focus` succeeding (or at least not failing on the `--switch-focus` token).'
+  - '`agents/context/check-active-task.sh` recognises `FW_SWITCH_FOCUS=1` env-var prefix as an additional bypass mechanism (universal — works for `git commit` where `--switch-focus` flag cannot be added). Log entry distinguishes flag vs env-var via the `flag:` field.'
+  - 'Hook block message (focus-drift) recommends BOTH bypass mechanisms with their use cases: flag for fw commands, env var for git commit / other external tools.'
+  - 'Regression test `tests/unit/check_active_task_switch_focus.bats` covers:'
+  - '[REVIEWER] Block message in `agents/context/check-active-task.sh` names both bypass mechanisms (`--switch-focus` flag for fw commands + `FW_SWITCH_FOCUS=1` env-var prefix for git/external) with one-line guidance for when to pick which. Re-classified from Human [REVIEW] by T-1894 — the original AC''s "Expected" was a pure mechanical check; only "reads naturally cold" remains a Human judgment.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-18 — flag + env-var dual-mechanism rather than env-var-only'
+    chose: 'Keep `--switch-focus` flag support AND add `FW_SWITCH_FOCUS=1` env-var prefix.'
+    rationale: 'Backward compat (the bypass log already has multi-day flag entries from real agent usage on T-1730/T-1740/T-1744/T-1687); env-var-only would have orphaned that pattern. The two-mechanism approach also matches the underlying topology — flag for fw commands (parser participation), env var for everything else (universal, no parser participation needed).'
+    alternatives_rejected: ['env-var-only — would have meant teaching every agent to drop a working pattern. Also rejected: flag-only — fundamentally broken for the git commit pattern the hook itself gates.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/lib/decision.sh'
+  - 'agents/context/lib/learning.sh'
+  - 'agents/context/lib/pattern.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/tests-unit-check_active_task_switch_focus.yaml'
+  - '.tasks/active/T-1890-focus-drift-bypass-flag-mismatch--hook-r.md'
+  - 'tests/unit/check_active_task_switch_focus.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T08:11:41"
+    action: "T-1890: focus-drift bypass flag mismatch — flag + env-var dual mechanism"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, hook-ux, focus-drift, meta-rca:T-1729, structural-gate, governance-bypass-prevention]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 8
+  lines_added: 396
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1890-focus-drift-bypass-flag-mismatch--hook-r.md
+generated_by: context-agent-hybrid

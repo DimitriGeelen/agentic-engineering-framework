@@ -16,7 +16,7 @@ related_tasks: [T-1730, T-1731, T-1729]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T06:04:06Z
-last_update: 2026-05-18T06:11:46Z
+last_update: 2026-05-18T18:37:39Z
 date_finished: 2026-05-18T06:11:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
