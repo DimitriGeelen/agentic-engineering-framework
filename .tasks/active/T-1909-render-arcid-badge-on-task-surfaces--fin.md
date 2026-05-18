@@ -36,11 +36,11 @@ Read `task.arc_id` from frontmatter (already loaded via `get_all_task_metadata`)
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `/tasks` kanban card renders the arc badge when `task.arc_id` is set — linking to `/arcs/<arc_id>`. Confirmed by Playwright DOM-content assertion (T-1575 rule).
-- [ ] `/tasks?view=list` list view renders the arc badge in a visible column or inline near the task name. Confirmed by Playwright DOM-content assertion.
-- [ ] `/arcs/<slug>` constituent-task table has an "Arc" column with the arc badge on each row. Confirmed by Playwright DOM-content assertion.
-- [ ] A Playwright test exists in `tests/playwright/` that loads `/tasks` and asserts at least one arc badge with `arc-005` (or current arc-grooming id) is present and links to `/arcs/arc-005`.
-- [ ] No regression: `/tasks` page returns HTTP 200, `/arcs/arc-grooming` returns HTTP 200, both render with new badge present.
+- [x] `/tasks` kanban card renders the arc badge when `task.arc_id` is set — linking to `/arcs/<arc_id>`. Confirmed by Playwright DOM-content assertion (T-1575 rule).
+- [x] `/tasks?view=list` list view renders the arc badge in a visible column or inline near the task name. Confirmed by Playwright DOM-content assertion.
+- [x] `/arcs/<slug>` constituent-task table has an "Arc" column with the arc badge on each row. Confirmed by Playwright DOM-content assertion.
+- [x] A Playwright test exists in `tests/playwright/` that loads `/tasks` and asserts at least one arc badge with `arc-005` (or current arc-grooming id) is present and links to `/arcs/arc-005`.
+- [x] No regression: `/tasks` page returns HTTP 200, `/arcs/arc-grooming` returns HTTP 200, both render with new badge present.
 
 ### Human
 - [ ] [REVIEW] Arc badge placement and styling read well visually — pill shape sized to match existing meta-row tokens, color distinguishable from status/type/horizon selects, link affordance clear.
@@ -155,6 +155,23 @@ out=$(bin/fw test playwright tests/playwright/test_arc_badge.py 2>&1); echo "$ou
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:**
+The arc_id visibility job (T-1848 + T-1849 + T-1850) shipped the storage layer (arc-NNN ids, frontmatter field, 162-task migration) and the reader sweep (T-1874/1876/1879/1880) but never finished the user-visible render. User pushback 2026-05-18 made the omission explicit: arc membership is invisible on the three task-rendering surfaces. This patch adds the badge wherever a task is shown — kanban card, list table, arc-detail constituent table — using a shared Jinja macro that reads the canonical `arc_id` field with a defensive fallback to the legacy `arc:<slug>` tag. The implementation is small, the design lineage is settled, no axiom changes.
+
+**Evidence:**
+- `web/templates/_partials/arc_badge.html` — new shared macro (24 lines)
+- `web/templates/base.html` — shared `.arc-badge` CSS (pico-themed, 18 lines)
+- `web/templates/tasks.html` — macro inserted in kanban card meta row + list-view "Arc" column
+- `web/templates/arc_detail.html` — macro inserted in constituent-task "Arc" column
+- `web/blueprints/arcs.py` — `_read_task_meta` now passes through `arc_id` and `tags` to the template
+- `tests/playwright/test_arc_badge.py` — 4 DOM-content assertions, all pass (T-1575 rule)
+- Live curl: 18 badges on `/tasks?view=board`, 182 on `/tasks?view=list`, 29 on `/arcs/arc-grooming`
+- Commit: `ff52e79a` — T-1909: render arc_id badge on task surfaces — finish the T-1849 visibility job
 
 ## Decisions
 
