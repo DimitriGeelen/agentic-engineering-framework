@@ -68,3 +68,33 @@ overrides:
   expires_at: '2026-08-11T23:25:10Z'
   added_by: root
   added_at: '2026-05-13T23:25:10Z'
+- id: OV-0c07e65f
+  task_id: T-1854
+  pattern_id: AC-verify-mismatch
+  ac_index: 5
+  reason: 'FP: AC text references audit-log path; Verification has grep -c on lib/arc.sh
+    confirming source-side reference, bats #9 pins the actual row-append. Heuristic
+    missed the indirect check.'
+  expires_at: '2027-05-17T22:20:07Z'
+  added_by: claude
+  added_at: '2026-05-17T22:20:07Z'
+- id: OV-af47ae23
+  task_id: T-1116
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 1
+  reason: "Historical (T-1878 era) \u2014 work-completed, not worth reopening; T-1896\
+    \ detector fired retro on 1783-task Pass-B sweep. Pattern noted for L-400; no\
+    \ action needed."
+  expires_at: '2027-05-18T08:37:45Z'
+  added_by: root
+  added_at: '2026-05-18T08:37:45Z'
+- id: OV-a2e1cb2c
+  task_id: T-1372
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 1
+  reason: "Historical (T-1878 era) \u2014 work-completed, not worth reopening; T-1896\
+    \ detector fired retro on 1783-task Pass-B sweep. Pattern noted for L-400; no\
+    \ action needed."
+  expires_at: '2027-05-18T08:37:47Z'
+  added_by: root
+  added_at: '2026-05-18T08:37:47Z'
