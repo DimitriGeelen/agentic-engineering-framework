@@ -270,6 +270,27 @@
 
         /* Components */
         .btn-sm { width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0; }
+
+        /* T-1909: arc-membership badge — surfaced wherever a task is rendered. */
+        .arc-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            background: var(--pico-secondary-background);
+            color: var(--pico-secondary);
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+            border: 1px solid var(--pico-muted-border-color);
+            white-space: nowrap;
+        }
+        .arc-badge:hover {
+            background: var(--pico-secondary);
+            color: var(--pico-secondary-inverse);
+            text-decoration: none;
+        }
     </style>
 </head>
 <body hx-boost="true" hx-target="#content" hx-swap="innerHTML">

@@ -1,3 +1,4 @@
+{% from '_partials/arc_badge.html' import arc_badge %}
 <style>
     .arc-header { padding: 1rem; border-left: 4px solid var(--pico-primary); margin-bottom: 1rem; }
     .arc-header.closed { border-left-color: var(--pico-muted-color); }
@@ -75,6 +76,7 @@
     <thead>
         <tr>
             <th>ID</th>
+            <th>Arc</th>
             <th>Name</th>
             <th>Type</th>
             <th>Status</th>
@@ -85,6 +87,7 @@
         {% for c in constituents %}
         <tr>
             <td>{% if c.missing %}<span class="missing">{{ c.id }}</span>{% else %}<a href="/tasks/{{ c.id }}">{{ c.id }}</a>{% endif %}</td>
+            <td>{{ arc_badge(c) }}</td>
             <td>{% if c.missing %}<span class="missing">{{ c.name }}</span>{% else %}{{ c.name }}{% endif %}</td>
             <td>{{ c.type }}</td>
             <td>

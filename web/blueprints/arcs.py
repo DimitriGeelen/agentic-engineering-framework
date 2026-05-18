@@ -332,6 +332,10 @@ def _read_task_meta(task_id: str) -> dict[str, Any] | None:
                 "horizon": fm.get("horizon", "?"),
                 "type": fm.get("workflow_type", "?"),
                 "completed": (sub == "completed"),
+                # T-1909: arc_id + tags so the arc_badge macro can render
+                # membership on the arc-detail constituent-task table.
+                "arc_id": fm.get("arc_id") or "",
+                "_tags": [str(t) for t in (fm.get("tags") or [])],
             }
     return None
 

@@ -1,0 +1,24 @@
+{# T-1909: render a clickable arc-membership badge for a task.
+
+   Reads task.arc_id (T-1849 canonical), falls back to scanning task._tags
+   for `arc:<slug>` (legacy pre-T-1850; defensive — migration was 162/162
+   per T-1850 but cheap to include).
+
+   Renders nothing when no arc is found. The badge links to /arcs/<id>
+   which accepts both arc-NNN ids and slugs (lib/arc.sh _resolve_arc_slug).
+#}
+{% macro arc_badge(task) %}
+{%- set _aid = task.arc_id|default("")|string|trim -%}
+{%- if not _aid -%}
+  {%- for tg in task._tags|default([]) -%}
+    {%- if (tg|string).lower().startswith("arc:") and not _aid -%}
+      {%- set _aid = (tg|string)[4:] -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if _aid -%}
+<a class="arc-badge" href="/arcs/{{ _aid }}"
+   hx-get="/arcs/{{ _aid }}" hx-target="#content" hx-push-url="true"
+   title="Arc: {{ _aid }}">{{ _aid }}</a>
+{%- endif -%}
+{% endmacro %}
