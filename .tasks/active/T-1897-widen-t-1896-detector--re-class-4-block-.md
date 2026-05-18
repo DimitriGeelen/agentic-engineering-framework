@@ -1,8 +1,8 @@
 ---
 id: T-1897
-name: "Widen T-1896 detector + re-class 4 block-message [REVIEW] ACs as [REVIEWER] (T-1878 C)"
+name: "Widen T-1896 detector + re-class 5 block-message [REVIEW] ACs as [REVIEWER] (T-1878 C)"
 description: >
-  Widen reviewer pattern human-ac-mechanical-signal regex to include conformance-check dialect (names X / shows Y / points at Z / contains override flag); re-class the 4 [REVIEW] ACs the wider detector should have caught: T-1730, T-1731, T-1762, T-1766. Sibling to T-1895/T-1896 (T-1878 A+B); origin: 2026-05-18 audit of arc-grooming partial-completes found my T-1896 detector regex too narrow.
+  Widen reviewer pattern human-ac-mechanical-signal regex to include conformance-check dialect (names X / shows Y / points at Z / contains override flag / status:closed / row appended); re-class the 5 [REVIEW] ACs the wider detector should have caught: T-1730, T-1731, T-1762, T-1766, T-1893. Sibling to T-1895/T-1896 (T-1878 A+B); origin: 2026-05-18 audits of arc-grooming partial-completes found my T-1896 detector regex too narrow (twice — the 4 first, then T-1893 added after a user-led reviewer-agent sweep showed mech=0 on it despite being pure procedural-conformance).
 
 status: captured
 workflow_type: build
@@ -10,16 +10,16 @@ owner: agent
 horizon: next
 tags: [build, ac-routing, governance, reviewer, T-1878-C]
 components: [lib/reviewer/static_scan.py, policy/anti-patterns.yaml]
-related_tasks: [T-1878, T-1895, T-1896, T-1811, T-1730, T-1731, T-1762, T-1766]
+related_tasks: [T-1878, T-1895, T-1896, T-1811, T-1730, T-1731, T-1762, T-1766, T-1893]
 arc_id: arc-grooming
 created: 2026-05-18T08:51:35Z
-last_update: 2026-05-18T08:52:44Z
+last_update: 2026-05-18T08:53:05Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
 
-# T-1897: Widen T-1896 detector + re-class 4 block-message [REVIEW] ACs as [REVIEWER] (T-1878 C)
+# T-1897: Widen T-1896 detector + re-class 5 block-message [REVIEW] ACs as [REVIEWER] (T-1878 C)
 
 ## Context
 
@@ -41,7 +41,8 @@ Full reasoning: `docs/reports/T-1878-routing-default-bias.md` Phase 2 + the 2026
 - [ ] T-1731 [REVIEW] AC re-classed (same pattern as T-1730 — block-message names current task + toggled checkbox text + override env var).
 - [ ] T-1762 [REVIEW] AC re-classed (same pattern — gate refusal names missing deliverable + inception + bypass syntax).
 - [ ] T-1766 [REVIEW] AC split: conformance portion → `### Agent` `[REVIEWER]` with reviewer Verification; residual taste ("crisp wording") stays as `[REVIEW]`.
-- [ ] Each of the 4 re-classed tasks runs `bin/fw reviewer T-XXX` to PASS post-conversion, validating the widened detector + the re-class as a unit.
+- [ ] T-1893 [REVIEW] AC split: procedural-conformance portion (tick boxes / run `fw arc close` / verify `status: closed` + audit row appended) → `### Agent` `[REVIEWER]` with reviewer Verification + grep on `.context/audits/arc-close.jsonl`; residual *decision-quality* portion ("should this arc actually close?") → new `[REVIEW]` Human AC that asks the strategic question explicitly, not the closure mechanics.
+- [ ] Each of the 5 re-classed tasks runs `bin/fw reviewer T-XXX` to PASS post-conversion, validating the widened detector + the re-class as a unit.
 - [ ] `## Verification` block on this task passes.
 
 ### Human
