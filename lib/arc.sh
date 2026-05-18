@@ -66,6 +66,19 @@ ARC_FOCUS_FILE="${PROJECT_ROOT}/.context/working/arc-focus.yaml"
 # D-Immutability: status flips, file stays.
 ARC_STATES=("draft" "in-progress" "closed" "abandoned")
 
+# T-1914: source the canonical membership-scan helpers. lib/arc_membership.sh
+# defines `arc_tasks_with_tag`, `arc_tasks_with_arc_id`, `arc_tasks_for`,
+# and `task_has_arc_membership`. The private `_arc_tasks_*` wrappers below
+# delegate to these (was: inline duplicates, kept drifting from canonical).
+# Idempotent guard inside the lib prevents double-sourcing.
+_arc_source_membership_lib() {
+    local script_dir
+    script_dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+    # shellcheck source=lib/arc_membership.sh
+    . "${script_dir}/arc_membership.sh"
+}
+_arc_source_membership_lib
+
 # ─── helpers ────────────────────────────────────────────────────────────────
 
 _arc_validate_id() {
@@ -314,79 +327,17 @@ _arc_log_bypass() {
         >> "$logf"
 }
 
-# Find tasks tagged with a given arc tag. Returns T-IDs one per line.
-# Always exits 0 — empty output is a valid result, not a failure.
-_arc_tasks_with_tag() {
-    local tag="$1"
-    {
-        grep -lE "^tags:.*${tag}" "$PROJECT_ROOT"/.tasks/active/*.md 2>/dev/null || true
-        grep -lE "^tags:.*${tag}" "$PROJECT_ROOT"/.tasks/completed/*.md 2>/dev/null || true
-    } | while IFS= read -r f; do
-        # extract id from frontmatter
-        awk -F: '/^id:/ {gsub(/[ "]/,"",$2); print $2; exit}' "$f"
-    done | sort -u
-}
-
-# T-1874: find tasks whose frontmatter has `arc_id: <slug>` (the canonical
-# membership field introduced in T-1849; legacy `arc:<slug>` tags were
-# migrated in T-1850). Tolerates leading whitespace + optional quoting.
-# Always exits 0.
-_arc_tasks_with_arc_id() {
-    local slug="$1"
-    {
-        grep -lE "^[[:space:]]*arc_id:[[:space:]]*[\"']?${slug}[\"']?[[:space:]]*$" \
-            "$PROJECT_ROOT"/.tasks/active/*.md 2>/dev/null || true
-        grep -lE "^[[:space:]]*arc_id:[[:space:]]*[\"']?${slug}[\"']?[[:space:]]*$" \
-            "$PROJECT_ROOT"/.tasks/completed/*.md 2>/dev/null || true
-    } | while IFS= read -r f; do
-        awk -F: '/^id:/ {gsub(/[ "]/,"",$2); print $2; exit}' "$f"
-    done | sort -u
-}
-
-# T-1874: union of canonical arc_id frontmatter + legacy arc:<slug> tag scan.
-# This is the single entry point for "tasks belonging to arc <slug>" used by
-# all three call sites (arc_list count, arc_show display, arc_close --demo
-# validation). _arc_tasks_with_tag remains exposed for the unrelated
-# "from-<anchor>" tag namespace caller. Always exits 0.
-#
-# T-1913: union now also includes the OTHER arc_id form. CLAUDE.md T-1849
-# admits both `arc_id: <slug>` (e.g. arc-grooming) and `arc_id: <arc-NNN>`
-# (e.g. arc-005) as spec-valid; a corpus split across the two forms is
-# normal. Without dual-id resolution, `fw arc show arc-grooming` would
-# silently miss tasks bearing `arc_id: arc-005`. Resolves either input to
-# the (slug, NNN) pair by reading .context/arcs/.
-_arc_tasks_for() {
-    local input="$1"
-    local slug="$input" nnn=""
-    # Resolve input → (slug, NNN). Try input as slug filename first; if
-    # no .yaml matches, scan for matching id: field (input is NNN).
-    local arcs_dir="$PROJECT_ROOT/.context/arcs" yaml=""
-    if [ -d "$arcs_dir" ]; then
-        if [ -f "$arcs_dir/${input}.yaml" ]; then
-            yaml="$arcs_dir/${input}.yaml"
-        else
-            local f
-            for f in "$arcs_dir"/*.yaml; do
-                [ -f "$f" ] || continue
-                local fid
-                fid=$(awk -F: '/^id:[[:space:]]*/{gsub(/[[:space:]"\047]/,"",$2); print $2; exit}' "$f" 2>/dev/null)
-                if [ "$fid" = "$input" ]; then
-                    slug=$(basename "$f" .yaml)
-                    yaml="$f"
-                    break
-                fi
-            done
-        fi
-        if [ -n "$yaml" ]; then
-            nnn=$(awk -F: '/^id:[[:space:]]*/{gsub(/[[:space:]"\047]/,"",$2); print $2; exit}' "$yaml" 2>/dev/null)
-        fi
-    fi
-    {
-        _arc_tasks_with_arc_id "$slug"
-        [ -n "$nnn" ] && [ "$nnn" != "$slug" ] && _arc_tasks_with_arc_id "$nnn"
-        _arc_tasks_with_tag "arc:${slug}"
-    } | sort -u
-}
+# Membership-scan helpers. T-1914 consolidation: these three private wrappers
+# delegate to the canonical helpers in `lib/arc_membership.sh` (sourced at
+# script load via _arc_source_membership_lib). The inline implementations
+# previously here drifted from the canonical helper (T-1913 had to patch
+# both sides for the slug↔NNN union fix) — that's the L-397 silent-corpus
+# pattern one layer deeper (equivalence-logic-inside-canonical-vs-inline).
+# Names preserved (`_arc_*`) so existing call sites at lines 561, 601, 965,
+# 972 keep working unchanged.
+_arc_tasks_with_tag() { arc_tasks_with_tag "$@"; }
+_arc_tasks_with_arc_id() { arc_tasks_with_arc_id "$@"; }
+_arc_tasks_for() { arc_tasks_for "$@"; }
 
 # ─── verbs ──────────────────────────────────────────────────────────────────
 
