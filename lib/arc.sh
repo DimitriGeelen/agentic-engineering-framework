@@ -359,13 +359,14 @@ _arc_tasks_for() {
 # ─── verbs ──────────────────────────────────────────────────────────────────
 
 arc_create() {
-    local id="" name="" anchor="" description="" headline_mechanic=""
+    local id="" name="" anchor="" description="" headline_mechanic="" start_now=0
     while [ $# -gt 0 ]; do
         case "$1" in
             --name) name="$2"; shift 2;;
             --anchor) anchor="$2"; shift 2;;
             --description) description="$2"; shift 2;;
             --headline-mechanic) headline_mechanic="$2"; shift 2;;
+            --start) start_now=1; shift;;
             -*) echo "Unknown flag: $1" >&2; return 2;;
             *) [ -z "$id" ] && id="$1" || { echo "Unexpected arg: $1" >&2; return 2; }; shift;;
         esac
@@ -413,14 +414,19 @@ arc_create() {
     # 2026-05-16 retain their entries untouched (D-Immutability). Readers
     # (web/blueprints/arcs.py, agents/audit/audit.sh) already merge
     # arc_id/tag scan with legacy constituent_tasks via .get(..., []).
-    # T-1852: new arcs are born `draft`. Use `fw arc start <slug>` to
+    # T-1852: new arcs are born `draft` by default. Use `fw arc start <slug>` to
     # transition to `in-progress` once the arc is ready to actively work.
+    # --start flag (T-1852 counter-proposal): one-step convenience for the
+    # "scaffold + immediately work" case — writes status: in-progress directly.
+    local initial_status="draft"
+    [ "$start_now" = "1" ] && initial_status="in-progress"
+
     cat > "$(_arc_path "$id")" <<YAML
 id: ${arc_numeric_id}
 slug: ${id}
 name: ${name_yaml}
 description: ${desc_yaml}
-status: draft
+status: ${initial_status}
 anchor_task: ${anchor}
 headline_mechanic: ${hm_yaml}
 demo_evidence: null
@@ -432,7 +438,11 @@ YAML
     echo "Created arc '${id}' (${arc_numeric_id}) → $(_arc_path "$id")"
     [ -n "$anchor" ] && echo "  anchor: ${anchor}"
     echo "  headline_mechanic: ${headline_mechanic}"
-    echo "  status: draft (use 'fw arc start ${id}' to begin)"
+    if [ "$start_now" = "1" ]; then
+        echo "  status: in-progress (created with --start)"
+    else
+        echo "  status: draft (use 'fw arc start ${id}' to begin)"
+    fi
     return 0
 }
 

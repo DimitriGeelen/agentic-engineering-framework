@@ -91,6 +91,11 @@ test "$(grep -c '^status: draft' lib/arc.sh)" -ge 1
 - **Plan impact:** Mild scope creep into a reusable helper. T-1854 will be cheaper to ship because the validation is already centralised.
 - **Triggered:** No new task; T-1854 (already in the queue) absorbs the helper.
 
+### 2026-05-18 — `--start` counter-proposal landed (additive, non-breaking)
+- **What changed:** Original Decision (2026-05-16) chose `fw arc start` verb over `arc_create --start` flag, reasoning the draft state "forces a pause". On Human [REVIEW] re-examination, the operator pushed back: "can't it be both, e.g. we start drafting, enriching over time, OR we draft, spend enough effort on it, decide to go, and state-change to in-progress?" — and they're right. The verb made `draft` reachable but cost the one-step muscle memory unnecessarily. Both paths are valuable.
+- **Plan impact:** Adds `--start` flag to `arc_create` as additive convenience. Default behaviour unchanged (`status: draft`). `--start` writes `status: in-progress` directly. New bats coverage (`tests/unit/arc_create_start_flag.bats`, 4/4 PASS) pins both paths.
+- **Triggered:** No new task. The original Decision's own "Rejected" branch explicitly named this as a follow-up: *"Could be added later as a convenience flag if friction is real (Human [REVIEW] AC tests this)."* Counter-proposal authorised by AC text, shipped same-session as Human review surfaced the friction.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -145,7 +150,9 @@ test "$(grep -c '^status: draft' lib/arc.sh)" -ge 1
 - D-Immutability honoured: Python `re.sub` on the `status:` line, file path unchanged.
 - 10/10 bats coverage in `tests/unit/arc_lifecycle_state_machine.bats`.
 
-One [REVIEW] Human AC: confirm the create→start two-step is acceptable as a breaking workflow change (alternative: add `arc_create --start` flag as follow-up if friction is real).
+One [REVIEW] Human AC: confirm the create→start two-step is acceptable as a workflow change.
+
+**Update 2026-05-18:** `--start` counter-proposal landed (Evolution entry). The change is now **additive, not breaking**: default `fw arc create` writes `draft` (new behaviour, makes the state reachable via the natural verb), `--start` flag preserves the old one-step muscle memory. Both paths supported, smoke-tested 4/4 PASS in `tests/unit/arc_create_start_flag.bats`. The [REVIEW] AC reduces to "yes, both paths feel right."
 
 **Evidence:**
 - `lib/arc.sh` — ARC_STATES constant (line ~62), `_arc_get_status` + `_arc_require_status` helpers, `arc_start` verb, `status: draft` in arc_create heredoc, `_arc_require_status "$id" "close" "in-progress"` guard in arc_close
@@ -156,6 +163,8 @@ One [REVIEW] Human AC: confirm the create→start two-step is acceptable as a br
 **Follow-up (in arc-grooming queue):**
 - T-1854 (T-NEW-6) `fw arc abandon` — will reuse `_arc_require_status` for the draft|in-progress → abandoned transition.
 - T-1853 (T-NEW-5b) Watchtower /arcs lifecycle tabs — will read the four states to render filter chips.
+
+**Counter-proposal shipped 2026-05-18:** `fw arc create --start` one-step convenience flag. See Evolution entry for context; `tests/unit/arc_create_start_flag.bats` for coverage.
 
 ## Decision
 
