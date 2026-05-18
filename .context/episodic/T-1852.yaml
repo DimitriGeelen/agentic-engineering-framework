@@ -1,0 +1,184 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1852: Lifecycle state machine: add draft + abandoned (T-NEW-5a)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T09:52:31Z
+# ============================================================================
+
+task_id: T-1852
+task_name: "Lifecycle state machine: add draft + abandoned (T-NEW-5a)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T14:52:59Z
+completed: 2026-05-16T21:46:05Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-18T11:49:22+02:00
+last_commit: 2026-05-18T11:49:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ship --start counter-proposal — additive one-step convenience. register fabric card for arc_create_start_flag.bats (L-349 hygiene)
+
+# Key outcomes
+outcomes:
+  - '`lib/arc.sh` defines four allowed states: `draft`, `in-progress`, `closed`, `abandoned` (constant `ARC_STATES=(...)`)'
+  - '`arc_create` writes `status: draft` for newly-created arcs going forward (heredoc + command echoes "use ''fw arc start <id>'' to begin")'
+  - 'Existing 5 arcs (`dispatch-safety`, `embeddings-strategy`, `orchestrator-rethink`, `project-shape-resilience`, `arc-grooming`) remain `status: in-progress` after refactor (no force-migration per D3) — bats test asserts on live in-tree YAMLs'
+  - '`arc_close` continues to work on `in-progress` arcs; `in-progress → closed` transition unchanged'
+  - '`draft → closed` transition is refused (only `draft → in-progress` or `draft → abandoned`) — `_arc_require_status "$id" "close" "in-progress"` guard'
+  - '`agents/audit/audit.sh` YAML-parse accepts all four states without warning — live audit Pass=15/Warn=1/Fail=0; arc-completion check filters on `status == in-progress` (line 3643)'
+  - 'Transition logic encodes D-Immutability: no file deletion, only `status:` field updates (Python `re.sub` on the `status:` line, file path unchanged; arc_abandon T-1854 will follow same pattern)'
+  - 'New CLI verb: `fw arc start <id>` for draft → in-progress (wired into `arc_dispatch`; arc_help text updated)'
+  - 'Bats coverage: `tests/unit/arc_lifecycle_state_machine.bats` — 10/10 pass'
+  - '[REVIEW] Lifecycle change is acceptable as a breaking workflow change for `fw arc create`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-16 — explicit `fw arc start` verb vs. `arc_create --start` flag'
+    chose: 'Separate verb `fw arc start <id>` for the draft → in-progress transition.'
+    rationale: 'The lifecycle becomes explicit and uniform with the other transition verbs (`close`, future `abandon`). A `--start` flag on `create` would short-circuit the draft state into a one-line shortcut — useful, but it hides the new lifecycle from operators and undermines the "draft state forces a pause" benefit (the human/agent now has a beat to confirm the headline_mechanic before declaring the arc active). The verb is also greppable across the codebase and trivially extends with future transition-time policy.'
+    alternatives_rejected: ['`arc_create --start`: hides lifecycle, undermines the draft pause. Could be added later as a convenience flag if friction is real (Human [REVIEW] AC tests this).']
+  - decision: '2026-05-16 — `_arc_require_status` over inline checks'
+    chose: 'Single reusable helper `_arc_require_status <id> <verb> <expected...>`.'
+    rationale: 'Three transition verbs (start, close, future abandon) all need the same "is the arc in the expected state?" check. Single helper means: (a) one place to update the error text when T-1854 adds the abandon transition; (b) one place to add future state-transition policy (e.g. logging, hooks); (c) uniform UX — the operator sees the same "allowed transitions" cheat-sheet no matter which verb refused.'
+    alternatives_rejected: ['Inline `if [ "$status" != "in-progress" ]; then ...; fi` in each verb — duplicates the cheat-sheet, drifts under future edits.']
+  - decision: '2026-05-16 — Python in-place `re.sub` for status flip'
+    chose: '`python3 - "$file" <<PY ... re.sub ...` heredoc, in-place rewrite.'
+    rationale: 'Single-line surgical edit on a known field; preserves all other YAML structure including comments, blank lines, ordering. Mirrors existing patterns in arc_tag (line ~534) and the T-1850 migration script.'
+    alternatives_rejected: ['`yq` / `python3 yaml.safe_load + dump` — would round-trip the entire YAML, potentially reformatting unrelated fields and breaking any operator who has hand-edited the file. Also rejected: `sed -i` — escape complexity on the `status:` line is brittle across platforms.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/generated/components/012-ArcSystem.md'
+  - 'docs/generated/components/agents-audit-active-task-scan.md'
+  - 'docs/generated/components/agents-audit-completed-task-scan.md'
+  - 'docs/generated/components/agents-context-check-arc-id.md'
+  - 'docs/generated/components/agents-context-check-settings-edit.md'
+  - 'docs/generated/components/agents-context-revisit-due-scan.md'
+  - 'docs/generated/components/agents-git-lib-dup-task-scan.md'
+  - 'docs/generated/components/agents-git-lib-hooks.md'
+  - 'docs/generated/components/agents-git-lib-large-file-scan.md'
+  - 'docs/generated/components/agents-git-lib-secret-scan.md'
+  - 'docs/generated/components/agents-task-create-update-task.md'
+  - 'docs/generated/components/agents-termlink-termlink.md'
+  - 'docs/generated/components/audit-yaml-validator.md'
+  - 'docs/generated/components/bin-fw.md'
+  - 'docs/generated/components/lib-arc.md'
+  - 'docs/generated/components/lib-arc_membership.md'
+  - 'docs/generated/components/lib-arc_membership-sh.md'
+  - 'docs/generated/components/lib-ask.md'
+  - 'docs/generated/components/lib-colors.md'
+  - 'docs/generated/components/lib-config.md'
+  - 'docs/generated/components/lib-dispatch_pause.md'
+  - 'docs/generated/components/lib-migrations-arc-id-migration.md'
+  - 'docs/generated/components/lib-mirror.md'
+  - 'docs/generated/components/lib-pause_cli.md'
+  - 'docs/generated/components/lib-pause_resolve.md'
+  - 'docs/generated/components/lib-peer.md'
+  - 'docs/generated/components/lib-resolver.md'
+  - 'docs/generated/components/lib-spawn.md'
+  - 'docs/generated/components/lib-termlink_worker.md'
+  - 'docs/generated/components/lib-upgrade.md'
+  - 'docs/generated/components/lib-workflow_coverage.md'
+  - 'docs/generated/components/lib-workflow_lint.md'
+  - 'docs/generated/components/tests-playwright-test_arcs_detail_arc_id_membership.md'
+  - 'docs/generated/components/tests-playwright-test_arcs_lifecycle_tabs.md'
+  - 'docs/generated/components/tests-playwright-test_arcs_renders_without_constituent_field.md'
+  - 'docs/generated/components/tests-playwright-test_landing_arc_cards.md'
+  - 'docs/generated/components/tests-unit-arc_abandon.md'
+  - 'docs/generated/components/tests-unit-arc_create_no_constituent_tasks.md'
+  - 'docs/generated/components/tests-unit-arc_dual_identity_verbs.md'
+  - 'docs/generated/components/tests-unit-arc_id_validation_guard.md'
+  - 'docs/generated/components/tests-unit-arc_lifecycle_state_machine.md'
+  - 'docs/generated/components/tests-unit-arc_membership_agent_surfaces.md'
+  - 'docs/generated/components/tests-unit-arc_membership_shared.md'
+  - 'docs/generated/components/tests-unit-arc_membership_union.md'
+  - 'docs/generated/components/tests-unit-arc_next_numeric_id_octal.md'
+  - 'docs/generated/components/tests-unit-audit_anchor_task_existence.md'
+  - 'docs/generated/components/tests-unit-audit_arc_progress_arc_id.md'
+  - 'docs/generated/components/tests-unit-audit_ctl013_skip_nested_audit.md'
+  - 'docs/generated/components/tests-unit-audit_ctl028_completed_status_consistency.md'
+  - 'docs/generated/components/tests-unit-audit_ctl_arc_tag_only_pattern.md'
+  - 'docs/generated/components/tests-unit-audit_d10_html_comment_blindness.md'
+  - 'docs/generated/components/tests-unit-audit_stale_arc_warning.md'
+  - 'docs/generated/components/tests-unit-check_active_task_switch_focus.md'
+  - 'docs/generated/components/tests-unit-episodic_yaml_decision_escape.md'
+  - 'docs/generated/components/tests-unit-hook_check_settings_edit.md'
+  - 'docs/generated/components/tests-unit-inception_defer_park.md'
+  - 'docs/generated/components/tests-unit-test_arc_membership_shared.md'
+  - 'docs/generated/components/tests-unit-test_arc_membership_web_surfaces.md'
+  - 'docs/generated/components/tests-unit-test_arcs_routes.md'
+  - 'docs/generated/components/tests-unit-test_dispatch_pause.md'
+  - 'docs/generated/components/tests-unit-test_doctor_consumer_version_ahead.md'
+  - 'docs/generated/components/tests-unit-test_gaps_missing_title_defaults.md'
+  - 'docs/generated/components/tests-unit-test_mirror_stderr_capture.md'
+  - 'docs/generated/components/tests-unit-test_orchestrator_workflow_coverage.md'
+  - 'docs/generated/components/tests-unit-test_pause_resolve.md'
+  - 'docs/generated/components/tests-unit-test_peer_subscribe.md'
+  - 'docs/generated/components/tests-unit-test_pre_push_monotonic_ancestor.md'
+  - 'docs/generated/components/tests-unit-test_render_surface_gate.md'
+  - 'docs/generated/components/tests-unit-test_review_paused_resolve.md'
+  - 'docs/generated/components/tests-unit-test_secret_scan.md'
+  - 'docs/generated/components/tests-unit-test_spawn.md'
+  - 'docs/generated/components/tests-unit-test_termlink_worker.md'
+  - 'docs/generated/components/tests-unit-test_upgrade_downgrade_guard.md'
+  - 'docs/generated/components/tests-unit-test_workflow_coverage.md'
+  - 'docs/generated/components/tests-unit-test_workflow_schema_pause_lint.md'
+  - 'docs/generated/components/tests-unit-update_task_orphan_guard.md'
+  - 'docs/generated/components/tests-unit-upgrade_fresh_machine_simulation.md'
+  - 'docs/generated/components/tools-audit-swallowed-errors.md'
+  - 'docs/generated/components/tools-episodic-corpus-check.md'
+  - 'docs/generated/components/tools-escalation-scan-v0-5.md'
+  - 'docs/generated/components/web-app.md'
+  - 'docs/generated/components/web-blueprints-approvals.md'
+  - 'docs/generated/components/web-blueprints-config.md'
+  - 'docs/generated/components/web-blueprints-docs.md'
+  - 'docs/generated/components/web-blueprints-orchestrator.md'
+  - 'docs/generated/components/web-blueprints-review.md'
+  - 'docs/generated/components/web-blueprints-tasks.md'
+  - 'docs/generated/components/web-shared.md'
+  - 'docs/generated/components/web-templates-config.md'
+  - '.fabric/components/tests-unit-arc_create_start_flag.yaml'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-1852-lifecycle-state-machine-add-draft--aband.md'
+  - 'tests/unit/arc_create_start_flag.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T11:49:22"
+    action: "T-1852: ship --start counter-proposal — additive one-step convenience"
+  - time: "2026-05-18T11:49:36"
+    action: "T-1852: register fabric card for arc_create_start_flag.bats (L-349 hygiene)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1853 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, lifecycle, state-machine, novel-mechanism, T-NEW-5a]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1853
+  commits: 2
+  files_changed: 93
+  lines_added: 1362
+  lines_removed: 43
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1852-lifecycle-state-machine-add-draft--aband.md
+generated_by: context-agent-hybrid

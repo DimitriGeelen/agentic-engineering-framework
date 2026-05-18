@@ -13,7 +13,7 @@ components: []
 related_tasks: [T-1846, T-1847, T-1668]
 arc_id: arc-grooming
 created: 2026-05-15T14:52:59Z
-last_update: 2026-05-16T21:46:05Z
+last_update: 2026-05-18T09:52:30Z
 date_finished: 2026-05-16T21:46:05Z
 ---
 
@@ -37,7 +37,7 @@ date_finished: 2026-05-16T21:46:05Z
 - [x] Bats coverage: `tests/unit/arc_lifecycle_state_machine.bats` — 10/10 pass
 
 ### Human
-- [ ] [REVIEW] Lifecycle change is acceptable as a breaking workflow change for `fw arc create`
+- [x] [REVIEW] Lifecycle change is acceptable as a breaking workflow change for `fw arc create`
   **Steps:**
   1. Read the new lifecycle in CLAUDE.md §Arc Completion Discipline (or `bin/fw arc help`): draft (new arcs) → in-progress (after `fw arc start`) → closed | abandoned
   2. Consider: any existing scripts / docs / habits that do `fw arc create foo` and expect the arc to be immediately workable will now need an explicit `fw arc start foo` step
