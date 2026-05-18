@@ -4,20 +4,20 @@ name: "update-task.sh check_render_surface_human_ac error path crashes with SIGP
 description: >
   update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-387 silent-halt class) when render_surface_files_in piped into head -3 produces output ≥3 lines — script dies at exit 141 with no error printed instead of the actionable gate-failure message
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, tests/unit/check_render_surface_human_ac_sigpipe.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T17:29:32Z
-last_update: 2026-05-18T17:29:32Z
-date_finished: null
+last_update: 2026-05-18T17:35:06Z
+date_finished: 2026-05-18T17:35:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -74,6 +74,12 @@ This is L-387's silent-halt class. Fix: use the safe pattern documented in L-387
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The render-surface gate error message (now actually reachable post-fix) reads as an actionable contract violation report — a fresh agent / developer hitting it understands (a) what failed, (b) what to add, (c) where in their file
+  **Steps:**
+  1. Re-trigger the error path: temporarily run `bin/fw task update T-1900 --status work-completed` BEFORE ticking this AC; observe the error block printed to stderr (was silent pre-fix; visible post-fix)
+  2. Read the message — does it state the rule, name the file to edit, show an example AC?
+  **Expected:** Yes to all three; reads as actionable guidance, not as a stack trace
+  **If not:** Note which piece is weak; agent revises message in a follow-up task
 
 ## Verification
 
@@ -212,3 +218,15 @@ The user-facing experience is "fw task update did nothing". The gate never gets 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1900-update-tasksh-checkrendersurfacehumanac-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-69d63d28
+- **Timestamp:** 2026-05-18T17:35:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-18T17:35:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
