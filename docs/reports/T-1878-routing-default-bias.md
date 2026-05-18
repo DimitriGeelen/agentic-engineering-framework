@@ -282,3 +282,48 @@ Before `fw inception decide T-1878 go|no-go`, the agent pauses here for user fee
 2. Is the A+B intervention scope right — or should we narrow to just A (cheapest) or just B (highest catch)?
 3. Are the GO/NO-GO/DEFER criteria adequately satisfied?
 4. Are there any constraints or considerations the spikes missed?
+
+---
+
+## Phase 2 — Post-shipment validation (2026-05-18)
+
+User recorded **GO** via Watchtower 2026-05-18T08:00Z. Phase 1 commit: `fb790980`.
+
+### Build summary
+
+| Task | Intervention | Status | Commit |
+|------|---|---|---|
+| T-1895 | A — Template + CLAUDE.md author-time nudge | work-completed (partial, 1 [REVIEW] taste) | `1d5d18aa` |
+| T-1896 | B — Reviewer pattern `human-ac-mechanical-signal` | work-completed (partial, 1 [REVIEW] taste) | `ee4c9812` |
+
+### Build evolution highlights
+
+- **T-1895 caught producer/consumer gap in the prefix list itself.** While editing CLAUDE.md, found the "Human AC Format Requirements (T-325)" prefix-bullet list omitted `[REVIEWER]` entirely — only `[RUBBER-STAMP]` and `[REVIEW]` were there. The §AC Classification Guidance section (T-1811) had the three-prefix table, but the format-requirements section (the author's first-skim surface) didn't. Three edits shipped instead of the planned one. (Same L-399 producer/consumer split class.)
+
+- **T-1896 design pivoted from 2-gate to 3-gate.** Original spec was "mechanical signals present + taste signals absent → fire." But T-1893's `[REVIEW]` AC has Expected text `Arc transitions to status: closed, audit log row appended` — pure mechanical. The AC itself is strategic ("Decide whether to close arc"). Added a third suppression gate on strategic markers in the AC body (`decide` / `approve` / `authorize` / `escalate` / `sign-off`). Net detector grew from estimated ~80 LOC to ~140 LOC.
+
+- **Positive test cases pivoted from real to synthetic.** The original spec named T-1851/T-1857/T-1890/T-1893 as positive cases. By the time T-1896 built, T-1894's manual cleanup had already re-classed the mechanical parts. So the *current* [REVIEW]s on those tasks are post-cleanup — none should fire. Positive cases now use synthetic fixtures (T-9897 in bats, inline strings in pytest). Negative cases use the real post-T-1894 [REVIEW]s for "no false positive on legitimate taste" coverage.
+
+### Validation: corpus sweep
+
+Layer 3 Pass-B re-scan of **1783 completed tasks** with the new detector (`bin/fw reviewer audit`, 2026-05-18T08:31Z): **2 historical hits**, both genuine mis-classifications.
+
+| Task | AC | Expected (excerpt) | Why detector fired |
+|------|----|--------------------|---|
+| T-1116 | AC#1 (Human) | "Either the log file contains a line (hooks fire on Task tools..." | `file contains` mechanical signal, no taste signal, no strategic marker |
+| T-1372 | AC#1 (Human) | "Log present, exit 0, episodic generated" | `exit 0` mechanical signal, no taste signal, no strategic marker |
+
+Rate: 2/1783 ≈ 0.1% in completed tasks. Lower than the 13% T-1878 spike measured in partial-completes — the difference is informative: partial-completes are the AC-author surface (newer, less cleaned-up), while completed tasks have benefited from various intermediate clean-up passes over time. The detector's value is at *next* task close, not for retro-fixing the 2 hits (which are work-completed and not worth reopening).
+
+### Validation: false-positive cost
+
+Same Pass-B audit: of the 2 hits, **0 false positives**. The taste-anti-signal gate suppressed all real T-1851/T-1857/T-1893-class [REVIEW] ACs across arc-grooming partial-completes (`bin/fw reviewer T-1851/T-1857/T-1893` → all PASS for `human-ac-mechanical-signal`).
+
+### Closing the loop
+
+- **GO/NO-GO criteria — all 4 satisfied.**
+- **A+B together** close the producer-side (template/CLAUDE.md) and the consumer-side (static-scan catch) of the prefix-adoption gap.
+- **Override path** (`fw reviewer override add ... --pattern human-ac-mechanical-signal`) reuses T-1443 v1.4 infra — no new mechanism to maintain.
+- **Next manual re-class (T-1894-class) should not be needed.** If it is, that's evidence the gates need tightening or the rule needs revision — not evidence A+B failed.
+
+The inception → build → validation loop for T-1878 is closed at the agent level. Watchtower review of T-1895 + T-1896 partial-complete [REVIEW]s is human work; both ACs are `[REVIEW]` (genuine wording/taste), and neither blocks arc-grooming closure (which is human-gated under $CLAUDECODE=1, T-1671).
