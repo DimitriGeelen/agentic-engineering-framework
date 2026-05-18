@@ -161,8 +161,8 @@ The one residual `[REVIEW]` AC is genuine taste — "fresh agent recognises [REV
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-b99f1c91
-- **Timestamp:** 2026-05-18T09:31:01Z
+- **Scan ID:** R-79ff3afe
+- **Timestamp:** 2026-05-18T10:09:41Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

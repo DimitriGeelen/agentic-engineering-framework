@@ -1,0 +1,115 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1730: Bash matcher + focus-drift gate on check-active-task (T-1729 sibling 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T10:22:31Z
+# ============================================================================
+
+task_id: T-1730
+task_name: "Bash matcher + focus-drift gate on check-active-task (T-1729 sibling 1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T05:41:36Z
+completed: 2026-05-05T07:08:19Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-05T09:07:33+02:00
+last_commit: 2026-05-05T09:07:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Bash matcher + focus-drift gate on check-active-task
+
+# Key outcomes
+outcomes:
+  - '**A1** `lib/init.sh` settings-generator emits `Write|Edit|Bash`'
+  - '**A2** `agents/context/check-active-task.sh` Bash branch detects'
+  - '**A3** `--switch-focus` override flag honoured: when present in'
+  - '**A4** Bats unit tests cover: focus-drift block (no override),'
+  - '**A5** Bats integration test pins both the **current settings.json'
+  - '**A6** `fw audit` clean — verified post-implementation.'
+  - '**A7** Hook performance: focus-drift detection (bash built-in'
+  - '**A8** RCA section + Evolution log filled at completion.'
+  - '**A9** [REVIEWER] (T-1897 re-class) Focus-drift block message names current focus, attempted target, and `--switch-focus` override — conformance check that `bin/fw reviewer T-1730` verdict reports PASS for `human-ac-mechanical-signal` pattern (mechanical signals not present in the residual [REVIEW] body, OR no [REVIEW] body remains).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-05 — Use bash built-in regex over `echo | grep`'
+    chose: 'Implement drift-target extraction via `[[ "$BASH_CMD" =~ ... ]]` with `BASH_REMATCH`.'
+    rationale: 'Avoids subprocess fork (5+ greps would cost ~100ms). Built-in regex is ~0ms.'
+    alternatives_rejected: ['`echo | grep -oE` per pattern. Cleaner to read but expensive on hot path.']
+  - decision: '2026-05-05 — Pre-existing log path for `--switch-focus`'
+    chose: 'Write to `.context/working/.gate-bypass-log.yaml` (existing T-1142 path used by `log_gate_bypass`).'
+    rationale: 'Reuses framework''s bypass-audit infrastructure; keeps `fw audit` and Watchtower able to surface bypasses uniformly.'
+    alternatives_rejected: ['New `.context/audits/gate-bypass.jsonl` path (originally proposed in T-1729 RCA). Rejected because the existing YAML log is already plumbed into reporting tools.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-active-task.sh'
+  - '.claude/settings.json'
+  - '.context/audits/2026-05-05.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/episodic/T-1729.yaml'
+  - '.context/episodic/T-1732.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'docs/generated/components/tests-unit-test_doctor_litellm_ollama.md'
+  - 'docs/generated/components/tests-unit-test_orchestrator_status_synthetic_filter.md'
+  - 'docs/generated/components/tests-unit-test_workflow_env_isolation.md'
+  - '.fabric/components/tests-unit-focus_drift_gate.yaml'
+  - 'lib/init.sh'
+  - '.tasks/active/T-1730-bash-matcher--focus-drift-gate-on-check-.md'
+  - '.tasks/completed/T-1729-meta-rca-agent-did-substantive-work-rca-.md'
+  - '.tasks/completed/T-1732-prompt-triage-as-g-064-first-real-consum.md'
+  - 'tests/unit/focus_drift_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T09:07:33"
+    action: "T-1730: Bash matcher + focus-drift gate on check-active-task"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 86 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [meta-rca:T-1729, structural-gate, governance-bypass-prevention]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 86
+  commits: 2
+  files_changed: 31
+  lines_added: 2401
+  lines_removed: 255
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1730-bash-matcher--focus-drift-gate-on-check-.md
+generated_by: context-agent-hybrid

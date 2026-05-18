@@ -198,8 +198,8 @@ test "$(grep -c '^## Prong [1-5]' docs/reports/arc-005-headline-mechanic-demo.md
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-b77a503f
-- **Timestamp:** 2026-05-18T09:31:00Z
+- **Scan ID:** R-47789b28
+- **Timestamp:** 2026-05-18T10:09:41Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

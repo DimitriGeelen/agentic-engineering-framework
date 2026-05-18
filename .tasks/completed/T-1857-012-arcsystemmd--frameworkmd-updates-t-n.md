@@ -168,8 +168,8 @@ All 6 Agent ACs satisfied. The doc is testable (9 grep-based assertions in Verif
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-91f7c6a1
-- **Timestamp:** 2026-05-18T09:31:00Z
+- **Scan ID:** R-a8c092c9
+- **Timestamp:** 2026-05-18T10:09:41Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

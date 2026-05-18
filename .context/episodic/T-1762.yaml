@@ -1,0 +1,111 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1762: task-pair §ACD gate (P-012): wire G-066 prong 2 into update-task.sh per T-1713 GO
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T10:22:33Z
+# ============================================================================
+
+task_id: T-1762
+task_name: "task-pair §ACD gate (P-012): wire G-066 prong 2 into update-task.sh per T-1713 GO"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T07:57:36Z
+completed: 2026-05-13T22:33:56Z
+duration_days: 7
+updates_count: 1
+first_commit: 2026-05-06T10:05:19+02:00
+last_commit: 2026-05-14T00:34:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1761/T-1762: file build for G-066 prong 2 + fix CTL-027 FAIL. wire task-pair §ACD gate (P-012, G-066 prong 2) per T-1713 GO. tick Agent ACs + write Recommendation; G-066 prong 2 mark, L-360. reclassify gate-trip AC from Human to Agent (T-954 contract). fix Verification path — agents/task-create/update-task.sh (lib/update-task.sh moved years ago). fix silent-halt in §ACD gate (own-dogfood RCA + test-env mismatch)
+
+# Key outcomes
+outcomes:
+  - '**Spike 1 (Parser):** `lib/inception_recommendation.sh` (or sibling `lib/task_pair_acd.sh`) exposes `extract_deliverables <task_file>` that returns numbered/bulleted deliverable list from `## Recommendation`. Bats test `tests/unit/test_task_pair_acd_parser.bats` covers ≥4 fixtures: T-1442 (3-deliverable GO), T-1713 (1-deliverable GO), T-1715 (1-deliverable GO), and a NO-GO inception (returns empty). Parser exits 0 on parse, 2 on no-Recommendation, 3 on no-GO.'
+  - '**Spike 2 (Comparison):** `lib/task_pair_acd.sh` exposes `verify_deliverables_shipped <inception_task_id> <build_task_id>` that compares parsed deliverables against repo state (file existence via fabric, function/symbol grep, bats test presence). Returns JSON `{shipped: [...], missing: [...], partial: [...]}`. Bats test covers: (a) T-1442/T-1443 historic — must report ≥1 missing (auto-tick or TermLink-dispatch reviewer); (b) T-1715/T-1716 historic — must report 0 missing (clean-shipped baseline). Forward-only — backfill against history is OUT of scope.'
+  - '**Spike 3 (Gate wiring):** `lib/update-task.sh do_update_task` calls `verify_deliverables_shipped` when transitioning to `work-completed` AND the task is `workflow_type: build` AND `related_tasks` includes an inception-with-GO. On `missing != []`, refuse with exit code 4 and message listing missing deliverables + bypass instructions. `--scope-reduction-acknowledged "rationale"` bypasses with entry logged to `.context/working/.gate-bypass-log.yaml` per Tier-2 contract.'
+  - '**Bypass plumbing:** Reuses existing `log_gate_bypass` machinery (mirror T-1671 `--i-am-human`/`--from-watchtower` pattern). No new bypass log file; entry shape matches existing P-010/P-011 bypasses.'
+  - '**No false positive on single-deliverable inceptions:** Build tasks whose inception parent had a single named deliverable (most tasks) MUST pass through the gate without intervention. Bats test confirms.'
+  - '**No P-010/P-011 contract break:** Existing AC checkbox check + Verification block check still run, in order, before P-012. Bats regression covers ordering.'
+  - '**Self-application:** T-1762''s own work-completed transition either passes the gate (it''s a build with single deliverable: "the gate") or refuses with rationale documenting the meta-recursion.'
+  - '**Documentation:** `## Decisions` section captures Spike 2 false-positive count (target ≤1 per T-1713 GO threshold) + parser agreement on the 4-fixture sample (target ≥80% per T-1713 GO threshold).'
+  - '**Historic regression pinned:** Bats fixture `tests/unit/test_task_pair_acd_gate.bats::"T-1442/T-1485 historic regression"` runs the gate against `T-1485` (real build under T-1442) and asserts exit 1 + "Evidence persistence" or "Layer 2" surfaced. Reclassified from Human → Agent (2026-05-06) — deterministic bats command with binary pass/fail by T-954 ("deterministic / reversible / internal / mechanical"), not subjective judgment.'
+  - '**Gate-refusal conformance:** [REVIEWER] (T-1897 re-class) Gate refusal message names the missing deliverable, points at the inception that promised it, and shows `--scope-reduction-acknowledged` bypass syntax — conformance check via `bin/fw reviewer T-1762` (human-ac-mechanical-signal pattern silent).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix silent-halt in §ACD gate (own-dogfood RCA + test-env mismatch)'
+    source: git-mined
+  - description: 'fix Verification path — agents/task-create/update-task.sh (lib/update-task.sh moved years ago)'
+    source: git-mined
+  - description: 'T-1761/T-1762: file build for G-066 prong 2 + fix CTL-027 FAIL'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/task-create/update-task.sh'
+  - '.context/project/concerns.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - 'docs/generated/components/agents-task-create-update-task.md'
+  - '.fabric/components/lib-task_pair_acd-py.yaml'
+  - '.fabric/components/lib-task_pair_acd.yaml'
+  - '.fabric/components/tests-unit-test_task_pair_acd_gate.yaml'
+  - '.fabric/components/tests-unit-test_task_pair_acd_parser.yaml'
+  - 'lib/task_pair_acd.py'
+  - 'lib/task_pair_acd.sh'
+  - '.tasks/active/T-1761-orchestrator-mcp-scan-auto-classify-by-n.md'
+  - '.tasks/active/T-1762-task-pair-acd-gate-p-012-wire-g-066-pron.md'
+  - 'tests/unit/test_task_pair_acd_gate.bats'
+  - 'tests/unit/test_task_pair_acd_parser.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T10:05:19"
+    action: "T-1761/T-1762: file build for G-066 prong 2 + fix CTL-027 FAIL"
+  - time: "2026-05-06T11:50:20"
+    action: "T-1762: wire task-pair §ACD gate (P-012, G-066 prong 2) per T-1713 GO"
+  - time: "2026-05-06T11:57:48"
+    action: "T-1762: tick Agent ACs + write Recommendation; G-066 prong 2 mark, L-360"
+  - time: "2026-05-06T12:54:00"
+    action: "T-1762: reclassify gate-trip AC from Human to Agent (T-954 contract)"
+  - time: "2026-05-13T23:22:20"
+    action: "T-1762: fix Verification path — agents/task-create/update-task.sh (lib/update-task.sh moved years ago)"
+  - time: "2026-05-14T00:34:32"
+    action: "T-1762: fix silent-halt in §ACD gate (own-dogfood RCA + test-env mismatch)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 10956 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["ACD", "G-062-family", "G-066", "governance-gate", "P-012"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10956
+  commits: 8
+  files_changed: 22
+  lines_added: 2058
+  lines_removed: 86
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1762-task-pair-acd-gate-p-012-wire-g-066-pron.md
+generated_by: context-agent-hybrid

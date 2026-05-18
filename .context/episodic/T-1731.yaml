@@ -1,0 +1,118 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1731: Human-AC tick guard — block agent from checking Human ACs (T-1729 sibling 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T10:22:32Z
+# ============================================================================
+
+task_id: T-1731
+task_name: "Human-AC tick guard — block agent from checking Human ACs (T-1729 sibling 2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-05T05:41:58Z
+completed: 2026-05-05T07:16:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-05T09:16:17+02:00
+last_commit: 2026-05-05T09:17:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Human-AC tick guard — block agent from toggling Human ACs. focus reset + working state for next session
+
+# Key outcomes
+outcomes:
+  - '**A1** New hook `agents/context/check-human-ac-tick.py` +'
+  - '**A2** Diff logic scoped to `### Human` section: extracts that'
+  - '**A3** Override env `FW_ALLOW_HUMAN_AC_TICK=1` allows + logs to'
+  - '**A4** Hook registered in `.claude/settings.json` PreToolUse on'
+  - '**A5** `bin/fw hook check-human-ac-tick` dispatcher entry — uses'
+  - '**A6** Bats unit tests cover all listed scenarios (13/13 passing,'
+  - '**A7** Performance: hook adds ~80ms via `bin/fw hook` dispatcher'
+  - '**A8** RCA section + Evolution log filled at completion.'
+  - '**A9** [REVIEWER] (T-1897 re-class) Block message names current task, toggled checkbox text, and `FW_ALLOW_HUMAN_AC_TICK=1` override env var + recommended path (`fw task review` / Watchtower) — conformance check via `bin/fw reviewer T-1731` (human-ac-mechanical-signal pattern silent on the residual [REVIEW] body, OR no [REVIEW] body remains).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-05 — Python implementation over pure-bash'
+    chose: 'Implement diff logic in Python (`check-human-ac-tick.py`); use bash wrapper to satisfy `fw hook` dispatcher''s `.sh` extension expectation.'
+    rationale: 'Diff parsing across multi-line AC bodies + Steps blocks is brittle in bash. Python''s `re` + clean code is maintainable. Cost: ~56ms Python startup, acceptable on a Write/Edit gate (not Bash hot path).'
+    alternatives_rejected: ['Pure-bash with `awk`/`sed` extraction. Rejected for maintainability — checkbox detection across heading boundaries is fragile.']
+  - decision: '2026-05-05 — `FW_ALLOW_HUMAN_AC_TICK` env var over CLI override flag'
+    chose: 'Override via environment variable.'
+    rationale: 'Edit/Write tools have fixed input schemas (file_path, old_string, new_string, content). No way to thread an additional flag through. Env var is the standard escape-hatch pattern in this framework (mirrors `FW_SAFE_MODE`).'
+    alternatives_rejected: ['Override via flag in tool_input. Rejected because Claude Code tool schemas are fixed.']
+  - decision: '2026-05-05 — Reuse existing `.gate-bypass-log.yaml` path'
+    chose: 'Write override events to `.context/working/.gate-bypass-log.yaml` (T-1142 path used by `log_gate_bypass`).'
+    rationale: 'Consistent with framework''s existing bypass-audit infrastructure. Keeps `fw audit` and Watchtower able to surface bypasses uniformly across all gates.'
+    alternatives_rejected: ['New `.context/audits/human-ac-bypass.jsonl` path. Rejected because fragmenting the bypass log defeats the cross-gate audit story.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-human-ac-tick.py'
+  - 'agents/context/check-human-ac-tick.sh'
+  - '.claude/settings.json'
+  - '.context/audits/2026-05-05.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.handover-cooldown'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.fabric/components/agents-context-check-human-ac-tick.yaml'
+  - 'lib/init.sh'
+  - '.tasks/active/T-1730-bash-matcher--focus-drift-gate-on-check-.md'
+  - '.tasks/active/T-1731-human-ac-tick-guard--block-agent-from-ch.md'
+  - 'tests/unit/human_ac_tick_guard.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-05T09:16:17"
+    action: "T-1731: Human-AC tick guard — block agent from toggling Human ACs"
+  - time: "2026-05-05T09:17:39"
+    action: "T-1731: focus reset + working state for next session"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 94 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [meta-rca:T-1729, structural-gate, governance-bypass-prevention]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 94
+  commits: 3
+  files_changed: 29
+  lines_added: 961
+  lines_removed: 972
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1731-human-ac-tick-guard--block-agent-from-ch.md
+generated_by: context-agent-hybrid

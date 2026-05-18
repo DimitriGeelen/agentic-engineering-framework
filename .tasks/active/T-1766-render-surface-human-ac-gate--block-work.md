@@ -173,8 +173,8 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-34b99b07
-- **Timestamp:** 2026-05-18T10:20:19Z
+- **Scan ID:** R-2d591d62
+- **Timestamp:** 2026-05-18T10:22:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
