@@ -32,19 +32,16 @@ date_finished: 2026-05-16T22:34:46Z
 - [x] `FRAMEWORK.md` has Arc System section paralleling Task System (inline section with lifecycle diagram + membership + D-Immutability summary, links to `012-ArcSystem.md` for full reference)
 - [x] `grep -c -i 'arc' FRAMEWORK.md` returns 30 (well above the >5 threshold — doc density confirms first-class treatment)
 - [x] Content describes the post-refactor state: arc-NNN sequential immutable IDs (T-1848), four-state lifecycle with `fw arc start` + `fw arc abandon` (T-1852/T-1854), stale + anchor-task audit checks (T-1855/T-1856), `arc_id:` task field with PreToolUse validation hook (T-1849), tag-migration history (T-1850), `constituent_tasks` deprecation (T-1851), Watchtower lifecycle filter tabs (T-1853)
+- [x] [REVIEWER] CLI section in `012-ArcSystem.md` mentions every verb that `bin/fw arc help` exposes (no doc-vs-help drift). Verb list: `create, start, focus, list, show, tag, close, abandon, migrate`. Each appears in 012-ArcSystem.md at least once. Re-classified from Human [REVIEW] by T-1894 — mechanical verb-cross-check is deterministic; only the "reads cleanly" / "summary is faithful" judgment remains Human.
 
 ### Human
-- [ ] [REVIEW] Doc reads cleanly as the canonical Arc System reference — a new operator can land on `012-ArcSystem.md`, scan it once, and understand the model without re-reading source code
+- [ ] [REVIEW] `012-ArcSystem.md` reads cleanly as the canonical Arc System reference + `FRAMEWORK.md`'s inline summary is faithful
   **Steps:**
-  1. Open `012-ArcSystem.md` in a Markdown viewer (Watchtower `/docs` route or any IDE preview).
-  2. Read the Overview + the Four-State Lifecycle ASCII diagram + the Dual Identity table.
-  3. Check that the `fw arc CLI` section matches what `bin/fw arc help` prints:
-     ```
-     cd /opt/999-Agentic-Engineering-Framework && bin/fw arc help
-     ```
-  4. Scan `FRAMEWORK.md` Arc System section (between `## Workflow Types` and `## Enforcement Tiers`) — confirm it summarises 012's content and links out cleanly.
-  **Expected:** Reading the Overview + the lifecycle diagram is enough to know what an arc IS and how it transitions. The CLI section matches `fw arc help` (no drift). FRAMEWORK.md's summary is faithful: someone who reads only FRAMEWORK.md walks away with the right mental model and knows where to find more.
-  **If not:** Note specific gaps or drift and reopen — both files are cheap to revise.
+  1. Open `012-ArcSystem.md` in a Markdown viewer.
+  2. Read Overview + Four-State Lifecycle ASCII diagram + Dual Identity table — does it land?
+  3. Scan FRAMEWORK.md's Arc System section — does it give a complete enough orientation that someone reading only FRAMEWORK.md walks away with the right mental model?
+  **Expected:** A new operator could orient using only these two surfaces without falling back to source. (Mechanical CLI ↔ `fw arc help` parity is now verified by Agent AC + `## Verification`, see T-1894.)
+  **If not:** Note which section reads thin or feels wrong and reopen — both files are cheap to revise.
 
 ## Verification
 
@@ -58,6 +55,9 @@ test "$(grep -c '\*\*Arc\*\*' FRAMEWORK.md)" -ge 1
 test "$(grep -c 'arc-NNN' 012-ArcSystem.md)" -ge 3
 test "$(grep -c 'D-Immutability' 012-ArcSystem.md)" -ge 3
 test "$(grep -c 'fw arc abandon' 012-ArcSystem.md)" -ge 2
+# T-1894 re-class: every verb from `fw arc help` is documented in 012-ArcSystem.md
+# (CLI-vs-doc drift check, was Human [REVIEW] → now Agent).
+for v in create start focus list show tag close abandon migrate; do test "$(grep -cE "fw arc $v\\b|\\b$v <" 012-ArcSystem.md)" -ge 1 || { echo "MISSING: $v"; exit 1; }; done
 
 ## RCA
 
@@ -117,6 +117,8 @@ test "$(grep -c 'fw arc abandon' 012-ArcSystem.md)" -ge 2
 
 ## Recommendation
 
+**2026-05-18 T-1894 re-class note:** A mechanical sub-claim of this task's Human  AC has been split into a new Agent AC (with verification command in ). Only the genuine taste/judgment claim remains Human. See T-1894 for the classification audit and CLAUDE.md §AC Classification Guidance for the rule.
+
 **Recommendation:** GO
 
 **Rationale:** T-1857 (T-NEW-9) is the final arc-grooming slice — the canonical documentation slot for the Arc System. `012-ArcSystem.md` ships as a 290-line standalone doc with 13 top-level sections (Overview, Arc Structure, Arc Fields Reference, Statuses, Dual Identity, D-Immutability Axiom, Task ↔ Arc Membership, fw arc CLI, Audit Checks, Watchtower Surface, Relation to Tasks, Relation to Other Concepts, D-Immutability worked example, Why arcs exist). FRAMEWORK.md gains a 60-line inline Arc System section (with the same lifecycle diagram), two Glossary entries (Arc, D-Immutability), and seven `fw arc` Quick Reference rows.
@@ -166,8 +168,8 @@ All 6 Agent ACs satisfied. The doc is testable (9 grep-based assertions in Verif
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-2f358f19
-- **Timestamp:** 2026-05-17T07:15:57Z
+- **Scan ID:** R-1f7105ee
+- **Timestamp:** 2026-05-18T07:28:48Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

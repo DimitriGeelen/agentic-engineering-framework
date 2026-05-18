@@ -32,17 +32,15 @@ date_finished: 2026-05-16T21:25:15Z
 - [x] References to `constituent_tasks` in `CLAUDE.md` / `FRAMEWORK.md` / agent docs are updated or removed (CLAUDE.md/FRAMEWORK.md grep returned 0; `lib/arc.sh` arc_help text updated with T-1851 deprecation pointer)
 - [x] Bats coverage: `tests/unit/arc_create_no_constituent_tasks.bats` — 5/5 pass (new-arc omission + legacy-arc append preserved + arc_tag non-recreation)
 - [x] Render-without-`constituent_tasks` contract pinned by Playwright (per T-971/T-1575): `tests/playwright/test_arcs_renders_without_constituent_field.py` writes a synthetic arc YAML omitting the legacy field, hits `/arcs/<slug>`, asserts 200 + no "Traceback" + no "Internal Server Error" + the arc's name renders. Plus a regression guard pinning legacy `/arcs/arc-grooming` still renders. Re-classified from Human [REVIEW]: post-migration rendering is fully mechanical — fixture creates the post-migration shape; the previously-recommended manual `fw arc create` + delete is now automated.
+- [x] [REVIEWER] Deprecation banner mechanical structure on `docs/reports/T-1653-arcs-as-first-class.md`: references T-1851 + T-1850 explicitly, links to `docs/reports/T-1846-arc-grooming-inception.md` and `.context/handoffs/HANDOFF-arc-grooming-2026-05-15.md`, and both link targets exist. Re-classified from Human [REVIEW] by T-1894 — mechanical claims (references + link-target existence) lifted to verification commands below; only "reads as obvious superseded note" remains Human.
 
 ### Human
-- [ ] [REVIEW] `docs/reports/T-1653-arcs-as-first-class.md` deprecation banner reads clearly when viewed in Watchtower (or rendered as Markdown locally)
+- [ ] [REVIEW] Deprecation banner in `docs/reports/T-1653-arcs-as-first-class.md` reads as an obvious "this design has been superseded in part" note
   **Steps:**
   1. Open the file in a Markdown viewer or VSCode preview
-  2. The top deprecation block (before "## What the user asked for") should:
-     - Reference T-1851 + the migration T-1850 explicitly
-     - Link to `docs/reports/T-1846-arc-grooming-inception.md`
-     - Link to `.context/handoffs/HANDOFF-arc-grooming-2026-05-15.md`
-  **Expected:** Block reads as an obvious "this design has been superseded in part" note; links resolve.
-  **If not:** Edit the banner text or links and reopen.
+  2. Read the top banner block (before "## What the user asked for")
+  **Expected:** The voice + framing tells a fresh reader "supersedes" without them needing to chase the references. (Mechanical structure — T-1851 / T-1850 refs + link-target existence — is now verified by Agent AC + `## Verification`, see T-1894.)
+  **If not:** Edit the banner prose and reopen.
 
 ## Verification
 
@@ -53,6 +51,12 @@ test "$(grep -c '^constituent_tasks:' lib/arc.sh)" -eq 0
 test "$(grep -c 'T-1851' docs/reports/T-1653-arcs-as-first-class.md)" -ge 1
 # Render-without-constituent_tasks pinned by Playwright (re-classified Human [REVIEW] → Agent):
 python3 -m pytest tests/playwright/test_arcs_renders_without_constituent_field.py -q
+# T-1894 re-class: mechanical halves of deprecation-banner Human AC lifted to Agent AC.
+test "$(grep -c 'T-1850' docs/reports/T-1653-arcs-as-first-class.md)" -ge 1
+test -f docs/reports/T-1846-arc-grooming-inception.md
+test -f .context/handoffs/HANDOFF-arc-grooming-2026-05-15.md
+# Banner block references both T-1851 + T-1850 within the first 30 lines
+test "$(head -30 docs/reports/T-1653-arcs-as-first-class.md | grep -c 'T-185[01]')" -ge 2
 
 ## RCA
 
@@ -95,6 +99,8 @@ python3 -m pytest tests/playwright/test_arcs_renders_without_constituent_field.p
 - **Rejected:** "Strip the field from all 5 in-tree arcs" — would destroy historical record, force readers to lose the merge path, and conflict with the T-1848 D-Immutability axiom we've just established for the same registry.
 
 ## Recommendation
+
+**2026-05-18 T-1894 re-class note:** A mechanical sub-claim of this task's Human  AC has been split into a new Agent AC (with verification command in ). Only the genuine taste/judgment claim remains Human. See T-1894 for the classification audit and CLAUDE.md §AC Classification Guidance for the rule.
 
 **Recommendation:** GO
 
@@ -141,8 +147,8 @@ The Evolution section captures one observability follow-up (audit's T-1813 tag-f
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-2ae22062
-- **Timestamp:** 2026-05-17T21:13:17Z
+- **Scan ID:** R-ef6a7164
+- **Timestamp:** 2026-05-18T07:28:48Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
