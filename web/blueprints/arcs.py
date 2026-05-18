@@ -466,29 +466,51 @@ def _arc_reports(arc_id: str) -> list[dict[str, str]]:
 
 @bp.route("/arcs")
 def arcs_index():
-    """T-1853: List arcs with lifecycle filter tabs.
+    """T-1904: List arcs as a 4-column kanban (draft / in-progress / closed /
+    abandoned), matching the visual pattern at /tasks.
 
-    Query param: ?status=draft|in-progress|closed|abandoned|all
-    Default: in-progress (operator's most common need — active work).
-    Unknown values clamp to the default.
+    Supersedes T-1853 lifecycle filter tabs — the kanban shows every state
+    at once. Query-param `?status=…` is still honoured for backward compat
+    (returns the same flat list as before, no kanban), but the default
+    landing view is the kanban.
     """
     all_arcs = _list_arcs()
     counts = _state_counts(all_arcs)
 
-    filt = request.args.get("status", _DEFAULT_FILTER)
-    if filt not in _FILTER_LABELS:
-        filt = _DEFAULT_FILTER
+    # Backward-compat: ?status=… still renders the legacy flat list.
+    legacy_filter = request.args.get("status")
+    if legacy_filter is not None:
+        if legacy_filter not in _FILTER_LABELS:
+            legacy_filter = _DEFAULT_FILTER
+        arcs = _filter_arcs(all_arcs, legacy_filter)
+        return render_page(
+            "arcs_index.html",
+            page_title="Arcs",
+            arcs=arcs,
+            all_arcs_count=len(all_arcs),
+            current_filter=legacy_filter,
+            filter_labels=list(_FILTER_LABELS),
+            state_counts=counts,
+            stale_days=_STALE_DAYS,
+            kanban_mode=False,
+        )
 
-    arcs = _filter_arcs(all_arcs, filt)
+    # Default: kanban mode — group arcs by status.
+    columns = []
+    for state in _LIFECYCLE_STATES:
+        columns.append({
+            "status": state,
+            "arcs": [a for a in all_arcs if a.get("status") == state],
+            "count": counts.get(state, 0),
+        })
     return render_page(
         "arcs_index.html",
         page_title="Arcs",
-        arcs=arcs,
         all_arcs_count=len(all_arcs),
-        current_filter=filt,
-        filter_labels=list(_FILTER_LABELS),
+        columns=columns,
         state_counts=counts,
         stale_days=_STALE_DAYS,
+        kanban_mode=True,
     )
 
 

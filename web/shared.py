@@ -102,6 +102,7 @@ def task_id_sort_key(value):
 NAV_GROUPS = [
     ("Work", [
         ("Tasks",       "tasks.tasks",              None),
+        ("Arcs",        "arcs.arcs_index",          None),
         ("Inception",   "inception.inception_list",  None),
         ("Assumptions", "inception.assumptions_list", None),
         ("Timeline",    "timeline.timeline",         None),
@@ -116,7 +117,6 @@ NAV_GROUPS = [
     ("Architecture", [
         ("Fabric",      "fabric.fabric_overview",   None),
         ("Explorer",    "fabric.fabric_graph",      None),
-        ("Arcs",        "arcs.arcs_index",          None),
         ("Terminal",    "terminal.terminal_page",    None),
         ("Sessions",    "sessions_page.sessions_page", None),
     ]),

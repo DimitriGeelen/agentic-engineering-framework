@@ -1,4 +1,110 @@
 <style>
+    /* T-1904: Arc kanban — mirrors /tasks kanban (web/templates/tasks.html
+       lines 106-198). Class names duplicated rather than shared so each
+       page can evolve independently; visual parity is the contract, not
+       structural reuse. Keep these in sync if /tasks ever changes. */
+    .arc-kanban-board {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.5rem;
+        align-items: start;
+    }
+    @media (max-width: 992px) {
+        .arc-kanban-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 576px) {
+        .arc-kanban-board { grid-template-columns: 1fr; }
+    }
+    .kanban-column {
+        min-height: 4rem;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+        padding: 0.5rem;
+        overflow: hidden;
+    }
+    .kanban-column-header {
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.35rem;
+        border-bottom: 2px solid var(--pico-muted-border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-transform: capitalize;
+    }
+    .kanban-column-header .count {
+        font-weight: 400;
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+    }
+    /* Left-border accent per lifecycle state — preserve the legacy colour map */
+    .kanban-column[data-state="draft"]       { border-left: 4px solid var(--pico-secondary, #888); }
+    .kanban-column[data-state="in-progress"] { border-left: 4px solid var(--pico-primary); }
+    .kanban-column[data-state="closed"]      { border-left: 4px solid var(--pico-form-element-valid-active-border-color, #2e7d32); }
+    .kanban-column[data-state="abandoned"]   { border-left: 4px solid var(--pico-muted-color); }
+
+    .arc-card {
+        margin: 0 0 0.4rem 0;
+        padding: 0.4rem 0.55rem;
+        font-size: 0.8rem;
+        border-radius: var(--pico-border-radius);
+        border: 1px solid var(--pico-muted-border-color);
+        background: var(--pico-background-color);
+    }
+    .arc-card:last-child { margin-bottom: 0; }
+    .arc-card.focused {
+        border-left: 4px solid var(--pico-primary);
+        padding-left: calc(0.55rem - 3px);
+    }
+    .arc-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.2rem;
+    }
+    .arc-card-id {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--pico-primary);
+        text-decoration: none;
+    }
+    .arc-card-id:hover { text-decoration: underline; }
+    .arc-card-name {
+        display: block;
+        line-height: 1.25;
+        color: var(--pico-color);
+        font-size: 0.78rem;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .arc-card-meta {
+        font-size: 0.72rem;
+        color: var(--pico-muted-color);
+    }
+    .focus-dot {
+        display: inline-block;
+        width: 0.55em;
+        height: 0.55em;
+        border-radius: 50%;
+        margin-right: 0.3em;
+        vertical-align: middle;
+    }
+    .focus-dot.on { background: var(--pico-primary); }
+    .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
+    .badge { display: inline-block; padding: 0.05em 0.4em; border-radius: 3px; font-size: 0.7em; }
+    .badge-warn { background: #c97a00; color: white; }
+    .empty-column {
+        font-size: 0.75rem;
+        color: var(--pico-muted-color);
+        font-style: italic;
+        text-align: center;
+        padding: 0.5rem 0;
+    }
+    /* Legacy flat-list mode (kanban_mode=false) retains the old card style */
     .arc-row { padding: 1rem; margin-bottom: 0.75rem; border-left: 3px solid var(--pico-primary); border-radius: 4px; background: var(--pico-card-background-color); }
     .arc-row.closed { border-left-color: var(--pico-muted-color); opacity: 0.7; }
     .arc-row.abandoned { border-left-color: var(--pico-muted-color); opacity: 0.55; }
@@ -6,23 +112,10 @@
     .arc-row.focused { border-left-color: var(--pico-primary); border-left-width: 6px; }
     .arc-row a.arc-name { font-size: 1.1rem; font-weight: bold; }
     .arc-meta { font-size: 0.85rem; color: var(--pico-muted-color); margin-top: 0.25rem; }
-    .focus-dot { display: inline-block; width: 0.6em; height: 0.6em; border-radius: 50%; margin-right: 0.3em; vertical-align: middle; }
-    .focus-dot.on { background: var(--pico-primary); }
-    .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
-    .badge { display: inline-block; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; }
     .badge-info { background: var(--pico-primary-background); color: var(--pico-primary); }
     .badge-ok { background: var(--pico-form-element-valid-active-border-color, #2e7d32); color: white; }
     .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
     .badge-draft { background: var(--pico-card-sectioning-background-color, #444); color: var(--pico-muted-color); border: 1px solid var(--pico-muted-border-color); }
-    .badge-warn  { background: #c97a00; color: white; }
-    /* T-1853 filter tabs */
-    .arc-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0 1.25rem; padding: 0; list-style: none; border-bottom: 1px solid var(--pico-muted-border-color); }
-    .arc-tabs li { margin: 0; }
-    .arc-tabs a { display: inline-block; padding: 0.5rem 0.9rem; text-decoration: none; color: var(--pico-muted-color); border-bottom: 3px solid transparent; }
-    .arc-tabs a:hover { color: var(--pico-primary); }
-    .arc-tabs a.active { color: var(--pico-primary); border-bottom-color: var(--pico-primary); font-weight: 600; }
-    .arc-tabs .tab-count { display: inline-block; margin-left: 0.35em; padding: 0 0.4em; font-size: 0.75em; background: var(--pico-muted-border-color); color: var(--pico-muted-color); border-radius: 3px; vertical-align: middle; }
-    .arc-tabs a.active .tab-count { background: var(--pico-primary); color: white; }
 </style>
 
 <header>
@@ -31,26 +124,46 @@
     Run <code>fw arc create</code> to register one. See <a href="/docs/CLAUDE">CLAUDE.md</a> §Arc Completion Discipline for the closure check.</p>
 </header>
 
-{# T-1853: lifecycle filter tabs. Default landing view = in-progress. #}
-<ul class="arc-tabs" role="tablist" aria-label="Filter arcs by lifecycle state">
-    {% for label in filter_labels %}
-    <li role="presentation">
-        <a href="/arcs?status={{ label }}"
-           class="{% if current_filter == label %}active{% endif %}"
-           role="tab"
-           aria-selected="{% if current_filter == label %}true{% else %}false{% endif %}"
-           data-filter="{{ label }}">
-            {{ label }}
-            <span class="tab-count">{{ state_counts[label] }}</span>
-        </a>
-    </li>
+{% if kanban_mode %}
+{# T-1904: 4-column kanban — one column per lifecycle state. Replaces T-1853 tabs. #}
+<p class="muted">
+    {{ all_arcs_count }} arc(s) total. <strong>Bold left border</strong> = currently focused.
+</p>
+<div class="arc-kanban-board" role="region" aria-label="Arcs grouped by lifecycle state">
+    {% for col in columns %}
+    <section class="kanban-column" data-state="{{ col.status }}" aria-label="{{ col.status }} arcs">
+        <div class="kanban-column-header">
+            <span>{{ col.status }}</span>
+            <span class="count">{{ col.count }}</span>
+        </div>
+        {% if col.arcs %}
+            {% for a in col.arcs %}
+            <article class="arc-card {% if a.focused %}focused{% endif %}">
+                <div class="arc-card-header">
+                    <a class="arc-card-id" href="/arcs/{{ a.id }}">
+                        <span class="focus-dot {% if a.focused %}on{% else %}off{% endif %}" title="{% if a.focused %}Focused{% else %}Not focused{% endif %}"></span>
+                        {{ a.id }}
+                    </a>
+                    {% if a.stale %}<span class="badge badge-warn" title="No task commits in the last {{ stale_days }} days (T-1855)">stale</span>{% endif %}
+                </div>
+                <span class="arc-card-name" title="{{ a.name }}">{{ a.name }}</span>
+                <div class="arc-card-meta">
+                    {{ a.task_count }} task(s){% if a.anchor_task %} · anchor: <a href="/tasks/{{ a.anchor_task }}">{{ a.anchor_task }}</a>{% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        {% else %}
+            <div class="empty-column">none</div>
+        {% endif %}
+    </section>
     {% endfor %}
-</ul>
-
+</div>
+{% else %}
+{# Legacy flat-list — preserved for `?status=…` query-param callers (backward compat). #}
 {% if arcs %}
 <p class="muted">
     Showing {{ arcs|length }} of {{ all_arcs_count }} arc(s) — filter: <strong>{{ current_filter }}</strong>.
-    <strong>Bold dot</strong> = currently focused.
+    <a href="/arcs">← back to kanban</a>.
 </p>
 {% for a in arcs %}
 <article class="arc-row {{ a.status }} {% if a.focused %}focused{% endif %}">
@@ -82,6 +195,7 @@
     <p>No arcs match filter <strong>{{ current_filter }}</strong>. <a href="/arcs?status=all">Show all {{ all_arcs_count }}</a>.</p>
     {% endif %}
 </article>
+{% endif %}
 {% endif %}
 
 <p style="margin-top:1.5rem;"><em>See also:</em> <a href="/orchestrator">/orchestrator</a> for the orchestrator-arc-specific drill-down (MCP audit, live sessions, recent dispatches).</p>
