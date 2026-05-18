@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1908: safe-commands.sh env-var prefix breaks FW_SWITCH_FOCUS bypass — fw work-on T-XXX with FW_SWITCH_FOCUS=1 prefix gets blocked because first-token extraction returns 'FW_SWITCH_FOCUS=1' instead of 'fw'
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T20:14:34Z
+# ============================================================================
+
+task_id: T-1908
+task_name: "safe-commands.sh env-var prefix breaks FW_SWITCH_FOCUS bypass — fw work-on T-XXX with FW_SWITCH_FOCUS=1 prefix gets blocked because first-token extraction returns 'FW_SWITCH_FOCUS=1' instead of 'fw'"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T20:12:21Z
+completed: 2026-05-18T20:14:29Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`is_bash_safe_command` in `agents/context/lib/safe-commands.sh` strips leading env-var prefixes (`KEY=val` syntax) before extracting the base command'
+  - '`FW_SWITCH_FOCUS=1 bin/fw work-on T-1907` returns the same `is_bash_safe_command` verdict as bare `bin/fw work-on T-1907` (allow)'
+  - 'Multiple env-var prefixes are stripped (`FOO=1 BAR=2 fw work-on T-X` → base=fw)'
+  - 'No regression: non-prefix commands continue to be classified correctly'
+  - 'New bats test `tests/unit/safe_commands_env_prefix.bats` pins the behaviour with at least 4 cases (no-prefix, single-prefix, multi-prefix, prefix-with-path-stripped-command)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1908-safe-commandssh-env-var-prefix-breaks-fw.md
+generated_by: context-agent-hybrid

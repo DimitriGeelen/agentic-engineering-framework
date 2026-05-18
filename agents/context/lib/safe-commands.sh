@@ -19,6 +19,17 @@
 is_bash_safe_command() {
     local cmd="$1"
 
+    # T-1908: strip leading env-var prefixes (`KEY=val [KEY2=val2 ...] cmd args`).
+    # Without this, the L-399 / T-1890 bypass-mechanism contract that promises
+    # `FW_SWITCH_FOCUS=1 fw work-on T-XXX` works actually fails — the awk
+    # extraction below returns `FW_SWITCH_FOCUS=1` as the base, no case
+    # matches, the safe-command path is skipped, and the downstream
+    # captured-status check blocks the very command the focus-drift block
+    # message recommended. Strip one prefix at a time until none remain.
+    while [[ "$cmd" =~ ^[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]+[[:space:]]+(.*)$ ]]; do
+        cmd="${BASH_REMATCH[1]}"
+    done
+
     # Extract the base command (first word, strip path).
     # For compound commands, the first word is still the primary command.
     local base
