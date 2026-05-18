@@ -4,20 +4,20 @@ name: "Watchtower /arcs kanban — 4 columns (draft / in-progress / closed / aba
 description: >
   Watchtower /arcs kanban — 4 columns (draft / in-progress / closed / abandoned) replacing T-1853 tabs, matching /tasks visual pattern
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_arcs_kanban.py, tests/playwright/test_arcs_lifecycle_tabs.py, web/blueprints/arcs.py, web/shared.py, web/templates/arcs_index.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T19:12:46Z
-last_update: 2026-05-18T19:12:46Z
-date_finished: null
+last_update: 2026-05-18T19:25:32Z
+date_finished: 2026-05-18T19:25:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -98,6 +98,20 @@ test "$(curl -sf "$(bin/fw watchtower url)/arcs" | grep -c 'class="arc-kanban-bo
 test "$(curl -sf "$(bin/fw watchtower url)/arcs" | grep -c 'arc-card-id')" -ge 5
 # Nav: Arcs appears under "Work" group, not under "Architecture"
 curl -sf "$(bin/fw watchtower url)/arcs" | python3 -c "import sys,re; html=sys.stdin.read(); work=re.search(r'>Work<.*?</details>', html, re.DOTALL); arch=re.search(r'>Architecture<.*?</details>', html, re.DOTALL); sys.exit(0 if (work and 'href=\"/arcs\"' in work.group(0) and not (arch and 'href=\"/arcs\"' in arch.group(0))) else 1)"
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Kanban shipped and verified live. 7 Playwright tests pass (column count, lifecycle order, header+count, in-progress non-empty, card-click navigation, Arcs-under-Work nav assertion, legacy `?status=` flat-list backward compat). 4 curl-based verification commands also pass (P-011 gate). Two genuine [REVIEW] Human ACs remain — they require taste/judgment (visual parity feel vs /tasks; "feels right" nav placement) and cannot be agent-verified per CLAUDE.md §AC Classification Guidance. T-1853 lifecycle tabs are fully replaced by the kanban; the obsolete `test_arcs_lifecycle_tabs.py` Playwright file is removed. Backward compat preserved via `?status=` flat-list mode for any external bookmark.
+
+**Evidence:**
+
+- `c1db42c4` — implementation (web/blueprints/arcs.py, web/templates/arcs_index.html, web/shared.py, tests/playwright/test_arcs_kanban.py)
+- `d3ef6e5b` — fabric card for new Playwright test
+- 7/7 Playwright tests pass (19.33s): `bin/fw test playwright tests/playwright/test_arcs_kanban.py`
+- 4/4 P-011 verification commands pass (kanban-column count, board class, card count, Work-nav placement)
+- Live: `curl -sf http://localhost:3000/arcs` shows 4 kanban columns with arc cards and "Arcs" link under Work group in the rendered nav
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -190,3 +204,28 @@ curl -sf "$(bin/fw watchtower url)/arcs" | python3 -c "import sys,re; html=sys.s
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1904-watchtower-arcs-kanban--4-columns-draft-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-614bd488
+- **Timestamp:** 2026-05-18T19:25:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 5
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/templates/arcs_index.html` renders a 4-column kanban (draft / in-progress / closed / abandoned), each column showing its arc cards (id, name, status badge, anchor task, task-count, focus dot, sta
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arcs_index.html in: `web/templates/arcs_index.html` renders a 4-column kanban (draft / in-progress / closed / abandoned), each column showing its arc cards (id, name, sta`
+- **AC#2 (Agent)** — Kanban CSS classes (.arc-kanban-board / .kanban-column / .arc-card / .arc-card-id / .arc-card-meta) mirror the styles from `web/templates/tasks.html` lines 106-198 — copied with comment pointing at th
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/tasks.html in: Kanban CSS classes (.arc-kanban-board / .kanban-column / .arc-card / .arc-card-id / .arc-card-meta) mirror the styles from `web/templates/tasks.html` `
+- **AC#4 (Agent)** — `web/blueprints/arcs.py:arcs_index()` defaults to kanban mode — passes all arcs grouped by status (draft/in-progress/closed/abandoned) to the template. The `?status=…` legacy query-param still works f
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/arcs.py in: `web/blueprints/arcs.py:arcs_index()` defaults to kanban mode — passes all arcs grouped by status (draft/in-progress/closed/abandoned) to the template`
+- **AC#6 (Agent)** — `/arcs` link in Watchtower nav is moved from the "Architecture" section to the "Work" section in `web/shared.py:NAV_GROUPS` (line 104 now lists Arcs under Work; line 116 Architecture group no longer c
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: `/arcs` link in Watchtower nav is moved from the "Architecture" section to the "Work" section in `web/shared.py:NAV_GROUPS` (line 104 now lists Arcs u`
+- **AC#8 (Agent)** — `tests/playwright/test_arcs_kanban.py` covers: (a) page loads + 4 columns render, (b) columns in lifecycle order, (c) header + count per column, (d) in-progress non-empty + card links work, (e) card c
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_arcs_kanban.py in: `tests/playwright/test_arcs_kanban.py` covers: (a) page loads + 4 columns render, (b) columns in lifecycle order, (c) header + count per column, (d) i`
+
+### 2026-05-18T19:25:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
