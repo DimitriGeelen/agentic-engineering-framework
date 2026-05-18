@@ -47,7 +47,7 @@ The headline mechanic has 5 prongs:
 - [x] Prong 5 (012-ArcSystem.md): `ls -la 012-ArcSystem.md` + `grep -c "012-ArcSystem" FRAMEWORK.md` outputs included
 - [x] All commands in `## Verification` pass
 - [x] [REVIEWER] Demo file structure is wire-evidence-suitable: 5 `## Prong N` sections, each with at least one fenced code block (≥3 lines) showing executable command + captured output; the headline_mechanic text from the arc YAML is quoted verbatim in the demo's opening; substrate-only phrasing (`"all tasks completed"`, `"substrate in place"`) is absent. Re-classified from Human [REVIEW] by T-1894 — these structural claims are deterministic and verifiable; only the closure-decision remains Human.
-- [x] **Closure-mechanics conformance (T-1897 split):** [REVIEWER] Once the human runs `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mechanic-demo.md --decision "..."`, the arc YAML transitions to `status: closed` and an audit row is appended to `.context/audits/arc-close.jsonl`. Mechanics are deterministic — Verification grep below pins it on closure. Pre-closure: this AC is satisfied by the existence of the closure verb wiring (`bin/fw arc close --help` returns valid usage) since the actual closure is human-gated under `$CLAUDECODE=1` (T-1671).
+- [x] **Closure-mechanics conformance (T-1897 split):** [REVIEWER] Once the human runs `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mechanic-demo.md --decision "..."`, the arc YAML transitions to `status: closed` and an audit row is appended to `.context/audits/arc-close.jsonl`. Mechanics are deterministic — Verification grep below pins it on closure. Pre-closure: this AC is satisfied by the existence of the closure verb wiring (`bin/fw arc close --help` returns valid usage) since the actual closure is human-gated under `$CLAUDECODE=1` (T-1671). Verification uses `bin/fw arc` (top-level help) since subcommands don't honour `--help`.
 
 ### Human
 - [ ] [REVIEW] **The actual closure decision:** does the wire-evidence in `docs/reports/arc-005-headline-mechanic-demo.md` + the lifecycle of arc-grooming's 30+ substrate tasks justify closing the arc as `status: closed` (with a positive `--decision "..."`), abandoning it (`fw arc abandon` with reservation), or leaving it open (further work outstanding)?
@@ -118,7 +118,8 @@ for n in 1 2 3 4 5; do test "$(awk -v n="$n" '/^## Prong / { in_p=($0 ~ "Prong "
 grep -q "agent runs" docs/reports/arc-005-headline-mechanic-demo.md
 ! grep -qE "substrate is in place|all tasks completed are sufficient" docs/reports/arc-005-headline-mechanic-demo.md
 # T-1897 split: closure-mechanics verb wired (pre-closure check — actual closure is human-gated under $CLAUDECODE=1 per T-1671).
-bin/fw arc close --help 2>&1 | grep -q "demo"
+# fw arc subcommands don't honour --help; top-level `fw arc` emits the help block which documents `close <id> --demo <path|url|none>`.
+bin/fw arc 2>&1 | grep -q "close.*--demo"
 # T-1897 re-class: reviewer confirms the human-ac-mechanical-signal pattern stays silent (split residue is genuine strategic-decision).
 test "$(bin/fw reviewer T-1893 2>&1 | grep -c 'human-ac-mechanical-signal')" -eq 0
 
@@ -233,8 +234,8 @@ The arc itself remains for the human to close per T-1671 (agent-gate on `fw arc 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-2228cc76
-- **Timestamp:** 2026-05-18T10:22:26Z
+- **Scan ID:** R-54d0d41e
+- **Timestamp:** 2026-05-18T10:54:15Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
