@@ -1,6 +1,3 @@
-{% extends "base.html" %}
-{% block content %}
-
 <style>
     .arc-header { padding: 1rem; border-left: 4px solid var(--pico-primary); margin-bottom: 1rem; }
     .arc-header.closed { border-left-color: var(--pico-muted-color); }
@@ -144,5 +141,3 @@
 <h2>Arc closed</h2>
 <p>Decision: <strong>{{ arc.decision or 'unspecified' }}</strong>{% if arc.closed_at %} · {{ arc.closed_at }}{% endif %}</p>
 {% endif %}
-
-{% endblock %}
