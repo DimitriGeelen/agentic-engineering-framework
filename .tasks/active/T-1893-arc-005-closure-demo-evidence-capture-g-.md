@@ -100,11 +100,14 @@ test -f tests/unit/arc_abandon.bats
 # Confirm at least one arc YAML carries a valid `id: arc-` line (Prong 1 invariant).
 # Use `-h` + wc to aggregate across files (grep -c reports per-file).
 test "$(grep -h '^id: arc-' .context/arcs/*.yaml | wc -l)" -ge 1
-# Re-run the Prong 2 hook replay and confirm exit 2 still fires.
-TMPF=".tasks/active/T-9999-verify.md"; trap 'rm -f "$TMPF"' EXIT
-JSON_PAYLOAD=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Write","tool_input":{"file_path":sys.argv[1],"content":"---\nid: T-9999\narc_id: arc-nonexistent-verify\n---\n"}}))' "$(pwd)/$TMPF")
-hook_out=$(echo "$JSON_PAYLOAD" | CLAUDECODE=1 PROJECT_ROOT="$(pwd)" bash agents/context/check-arc-id.sh 2>&1); hook_exit=$?; [ "$hook_exit" -eq 2 ]
-echo "$hook_out" | grep -q "ARC_ID DOES NOT RESOLVE"
+# Re-run Prong 2 hook replay. Note:
+#  - Hook's path-filter regex `/\.tasks/(active|completed)/T-\d+` requires the
+#    leading `/` before `.tasks/` (an absolute path). Relative paths bypass
+#    the regex and the hook short-circuits exit 0. So we synthesize an
+#    absolute path via $PROJECT_ROOT (gate exports it).
+#  - Hook is expected to exit 2; gate runs each line under `set -eo pipefail`,
+#    so swallow via `|| true` and assert on the block-message text instead.
+out=$(python3 -c "import json,os; print(json.dumps({'tool_name':'Write','tool_input':{'file_path': os.environ['PROJECT_ROOT']+'/.tasks/active/T-9999-verify.md','content':'---\nid: T-9999\narc_id: arc-nonexistent-verify\n---\n'}}))" | CLAUDECODE=1 bash agents/context/check-arc-id.sh 2>&1 || true); echo "$out" | grep -q "ARC_ID DOES NOT RESOLVE"
 
 ## RCA
 
