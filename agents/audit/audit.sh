@@ -2340,6 +2340,53 @@ for item in data['ownership']['issues']:
 " 2>/dev/null)
 fi
 
+# CTL-029 OE: stuck partial-complete after Human-AC re-class (T-1903, L-403)
+# Detects tasks in active/ with status: work-completed AND zero unchecked
+# checkboxes (after HTML-comment strip). These are archive-eligible but
+# didn't auto-archive because the partial-complete recheck only re-fires
+# on `--status work-completed` re-invocation. Triggered by T-1894/T-1897-
+# style re-class operations that drain Human ACs to zero after the first
+# work-completed transition.
+ARCHIVE_ELIGIBLE_OUT=$(PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PYAUDIT_ARCHIVE' 2>/dev/null
+import os, re, sys
+project_root = os.environ.get('PROJECT_ROOT', '.')
+active_dir = os.path.join(project_root, '.tasks', 'active')
+if not os.path.isdir(active_dir):
+    sys.exit(0)
+stuck = []
+for fn in sorted(os.listdir(active_dir)):
+    if not (fn.startswith('T-') and fn.endswith('.md')):
+        continue
+    path = os.path.join(active_dir, fn)
+    try:
+        text = open(path).read()
+    except OSError:
+        continue
+    m = re.search(r'^id:\s*(T-\d+)', text, re.MULTILINE)
+    task_id = m.group(1) if m else fn
+    m = re.search(r'^status:\s*(\S+)', text, re.MULTILINE)
+    if not m or m.group(1) != 'work-completed':
+        continue
+    ac_match = re.search(r'^## Acceptance Criteria\b(.*?)(?=^## )', text, re.MULTILINE | re.DOTALL)
+    if not ac_match:
+        continue
+    ac = re.sub(r'<!--.*?-->', '', ac_match.group(1), flags=re.DOTALL)
+    unchecked = len(re.findall(r'^\s*-\s*\[ \]', ac, re.MULTILINE))
+    total = len(re.findall(r'^\s*-\s*\[[ x]\]', ac, re.MULTILINE))
+    if total > 0 and unchecked == 0:
+        stuck.append(task_id)
+print('|'.join(stuck))
+PYAUDIT_ARCHIVE
+)
+if [ -z "$ARCHIVE_ELIGIBLE_OUT" ]; then
+    pass "CTL-029: No archive-eligible stuck partial-complete tasks (T-1903/L-403)"
+else
+    stuck_count=$(echo "$ARCHIVE_ELIGIBLE_OUT" | tr '|' '\n' | wc -l)
+    warn "CTL-029: $stuck_count stuck partial-complete task(s) — all ACs ticked, in active/ — run: bin/fw task archive-eligible" \
+         "Tasks: $(echo "$ARCHIVE_ELIGIBLE_OUT" | tr '|' ' ')" \
+         "Sweep with: bin/fw task archive-eligible (origin: T-1903, L-403)"
+fi
+
 echo ""
 fi # end oe-daily
 
