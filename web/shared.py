@@ -709,6 +709,67 @@ def linkify_tasks(text):
     )
 
 
+_FRAGMENT_CONVENTION_VIOLATION = (
+    "render_page() template {tmpl!r} starts with `{{% extends \"base.html\" %}}`, "
+    "but render_page() wraps templates inside _wrapper.html which already extends base.html. "
+    "Rendering through this path produces a double-base.html chain (two Watchtower nav stacks). "
+    "Convention: page templates rendered via render_page() are pure HTML fragments — "
+    "no `<html>`, no `{{% extends %}}`. See sibling examples: inception.html, decisions.html, "
+    "fabric_explorer.html, tasks.html. Either remove the extends/block wrapping, or switch "
+    "the route to use `render_template()` directly (see escalation_drift.html, reviewer_audit.html). "
+    "Convention documented in web/shared.py:render_page() docstring. "
+    "Origin: T-1898 fix + T-1899 prevention."
+)
+
+
+def _check_render_page_fragment_convention(template_name):
+    """Raise RuntimeError if `template_name` violates the fragment convention.
+
+    Reads the template source via the active Flask app's jinja_env loader and
+    examines the first non-empty, non-Jinja-comment line. If it starts with
+    `{% extends "base.html"`, the convention is violated — render_page()
+    cannot safely wrap such a template.
+
+    The check is best-effort: if the source cannot be read (e.g. test-time
+    string loader), the guard silently passes. Real violations live on disk.
+    """
+    try:
+        from flask import current_app
+        loader = current_app.jinja_env.loader
+        source, _path, _uptodate = loader.get_source(current_app.jinja_env, template_name)
+    except Exception:
+        return  # best-effort — bail rather than mask real Jinja errors
+
+    # Find first non-empty, non-Jinja-comment line.
+    in_comment = False
+    for raw in source.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if in_comment:
+            if "#}" in line:
+                in_comment = False
+                rest = line.split("#}", 1)[1].strip()
+                if not rest:
+                    continue
+                line = rest
+            else:
+                continue
+        if line.startswith("{#"):
+            if "#}" in line[2:]:
+                rest = line.split("#}", 1)[1].strip()
+                if not rest:
+                    continue
+                line = rest
+            else:
+                in_comment = True
+                continue
+        # First substantive line found
+        if line.startswith('{% extends "base.html"') or line.startswith("{% extends 'base.html'"):
+            raise RuntimeError(_FRAGMENT_CONVENTION_VIOLATION.format(tmpl=template_name))
+        return  # convention satisfied (or unrelated content) — done
+
+
 def render_page(template_name, **context):
     """Render a full page or an htmx content fragment.
 
@@ -716,6 +777,10 @@ def render_page(template_name, **context):
     For full page loads, we render it inside _wrapper.html which extends
     base.html. For htmx requests (HX-Request header present), we return
     just the fragment.
+
+    T-1899 guard: full-page loads check that the template begins as a fragment
+    (no `{% extends "base.html" %}`) and raise RuntimeError otherwise — closes
+    the convention-violation detection window opened by T-1898.
     """
     context.setdefault("nav_groups", NAV_GROUPS)
     context.setdefault("nav_items", NAV_ITEMS)
@@ -727,5 +792,6 @@ def render_page(template_name, **context):
     if request.headers.get("HX-Request"):
         return render_template(template_name, **context)
     else:
+        _check_render_page_fragment_convention(template_name)
         context["_content_template"] = template_name
         return render_template("_wrapper.html", **context)
