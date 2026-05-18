@@ -13,7 +13,7 @@ components: [lib/reviewer/static_scan.py, policy/anti-patterns.yaml]
 related_tasks: [T-1878, T-1895, T-1896, T-1811, T-1730, T-1731, T-1762, T-1766]
 arc_id: arc-grooming
 created: 2026-05-18T08:51:35Z
-last_update: 2026-05-18T08:51:35Z
+last_update: 2026-05-18T08:52:44Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -51,37 +51,6 @@ Full reasoning: `docs/reports/T-1878-routing-default-bias.md` Phase 2 + the 2026
   2. Read the original [REVIEW] text in the git diff vs the new [REVIEWER] AC + Verification command
   **Expected:** No conformance check is lost; the residual [REVIEW] on T-1766 reads as crisp-wording taste, not as smuggled mechanical
   **If not:** Note which AC fell on the wrong side; reopen with revised classification
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 
