@@ -4,20 +4,20 @@ name: "render_page() runtime guard — refuse template that extends base.html wi
 description: >
   render_page() runtime guard — refuse template that extends base.html with actionable error pointing at the convention (future-prevention follow-up to T-1898)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_render_page_guard.py, web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T17:18:57Z
-last_update: 2026-05-18T17:18:57Z
-date_finished: null
+last_update: 2026-05-18T17:25:40Z
+date_finished: 2026-05-18T17:25:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -204,3 +204,20 @@ test "$(grep -c 'pure HTML fragment' web/shared.py)" -ge 1
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1899-renderpage-runtime-guard--refuse-templat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-31738bdf
+- **Timestamp:** 2026-05-18T17:25:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Live confirmation: temporarily re-introducing `{% extends "base.html" %}` at the top of `web/templates/arc_detail.html` causes `/arcs/arc-005` to return HTTP 500 with the actionable message (revert im
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arc_detail.html in: Live confirmation: temporarily re-introducing `{% extends "base.html" %}` at the top of `web/templates/arc_detail.html` causes `/arcs/arc-005` to retu`
+
+### 2026-05-18T17:25:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
