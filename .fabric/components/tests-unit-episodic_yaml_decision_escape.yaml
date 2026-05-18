@@ -4,17 +4,15 @@ type: script
 subsystem: unknown
 location: tests/unit/episodic_yaml_decision_escape.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/context/lib/episodic.sh
+  type: calls
+- target: agents/context/lib/episodic.sh
+  type: tests
+- target: web/shared.py
+  type: tests
+depended_by: []
 last_verified: 2026-05-16
 created_by: unknown
+last_enriched: '2026-05-18'

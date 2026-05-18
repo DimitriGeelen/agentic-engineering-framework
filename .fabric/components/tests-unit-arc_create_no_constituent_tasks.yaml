@@ -1,13 +1,15 @@
-id: tests/unit/arc_abandon.bats
-name: arc_abandon
+id: tests/unit/arc_create_no_constituent_tasks.bats
+name: arc_create_no_constituent_tasks
 type: script
 subsystem: unknown
-location: tests/unit/arc_abandon.bats
+location: tests/unit/arc_create_no_constituent_tasks.bats
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/arc.sh
   type: calls
+- target: C-004
+  type: tests
 - target: lib/arc.sh
   type: tests
 depended_by: []

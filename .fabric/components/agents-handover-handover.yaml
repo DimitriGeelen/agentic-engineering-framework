@@ -22,9 +22,11 @@ depends_on:
   type: calls
 - target: lib/notify.sh
   type: calls
+- target: lib/arc_membership.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-18'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by
@@ -64,6 +66,8 @@ depended_by:
   type: tests_by
 - target: tests/unit/test_arc_system.py
   type: called_by
+- target: tests/unit/arc_membership_agent_surfaces.bats
+  type: tests_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

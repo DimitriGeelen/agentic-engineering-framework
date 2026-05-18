@@ -97,7 +97,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-15'
+last_enriched: '2026-05-18'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -486,4 +486,12 @@ depended_by:
 - target: tests/unit/upgrade_fresh_machine_simulation.bats
   type: tests_by
 - target: tests/unit/test_orchestrator_routes.py
+  type: called_by
+- target: tests/unit/audit_ctl013_skip_nested_audit.bats
+  type: tests_by
+- target: tests/unit/check_active_task_switch_focus.bats
+  type: tests_by
+- target: tests/unit/test_render_surface_gate.bats
+  type: tests_by
+- target: agents/context/check-settings-edit.sh
   type: called_by

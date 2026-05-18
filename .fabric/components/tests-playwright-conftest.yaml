@@ -89,6 +89,10 @@ depended_by:
   type: called_by
 - target: tests/playwright/test_task_detail_enhanced.py
   type: called_by
+- target: tests/playwright/test_arcs_renders_without_constituent_field.py
+  type: called_by
+- target: tests/playwright/test_landing_arc_cards.py
+  type: called_by
 last_verified: 2026-04-06
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-18'

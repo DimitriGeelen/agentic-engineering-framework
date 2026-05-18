@@ -3,22 +3,32 @@ name: hook_check_settings_edit
 type: script
 subsystem: testing
 location: tests/unit/hook_check_settings_edit.bats
-tags: [test, bats, hook, posttooluse, L-398]
+tags:
+- test
+- bats
+- hook
+- posttooluse
+- L-398
+purpose: 'Bats unit tests for agents/context/check-settings-edit.sh (T-1888).
 
-purpose: |
-  Bats unit tests for agents/context/check-settings-edit.sh (T-1888).
   6 cases covering: positive Edit match, positive Write match (absolute path),
+
   negative non-match (unrelated file), defence-in-depth (Bash tool ignored),
+
   malformed JSON tolerance, and wrong-directory look-alike rejection.
 
-  Pinned at T-1888 close; baseline for regression detection if the hook's
+
+  Pinned at T-1888 close; baseline for regression detection if the hook''s
+
   match logic changes.
 
+  '
 depends_on:
-  - target: agents/context/check-settings-edit.sh
-    type: tests
-
+- target: agents/context/check-settings-edit.sh
+  type: tests
+- target: agents/context/check-settings-edit.sh
+  type: calls
 depended_by: []
-
 last_verified: 2026-05-17
 created_by: unknown
+last_enriched: '2026-05-18'

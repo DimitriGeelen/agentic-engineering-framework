@@ -17,11 +17,23 @@ depends_on:
   type: renders
 - target: web/templates/arc_detail.html
   type: renders
+- target: lib/arc_membership.py
+  type: calls
+- target: lib/arc.sh
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- target: lib/arc_membership.py
+  type: called_by
+- target: tests/playwright/test_arcs_lifecycle_tabs.py
+  type: called_by
+- target: tests/playwright/test_arcs_renders_without_constituent_field.py
+  type: called_by
+- target: tests/playwright/test_arcs_renders_without_constituent_field.py
+  type: rendered_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-18'

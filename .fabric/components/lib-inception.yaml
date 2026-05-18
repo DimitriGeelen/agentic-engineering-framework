@@ -54,4 +54,6 @@ depended_by:
   type: tests_by
 - target: web/blueprints/inception.py
   type: called_by
-last_enriched: '2026-05-06'
+- target: tests/unit/audit_d10_html_comment_blindness.bats
+  type: tests_by
+last_enriched: '2026-05-18'

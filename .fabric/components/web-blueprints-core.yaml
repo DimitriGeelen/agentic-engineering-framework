@@ -34,9 +34,11 @@ depends_on:
   type: calls
 - target: web/blueprints/costs.py
   type: registers
+- target: lib/arc_membership.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-05-18'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -51,3 +53,11 @@ depended_by:
 - tests/playwright/test_graduation.py
 - tests/playwright/test_interactions.py
 - tests/playwright/test_search.py
+- target: tests/playwright/test_landing_arc_cards.py
+  type: called_by
+- target: tests/unit/test_arc_membership_web_surfaces.py
+  type: called_by
+- target: tests/unit/test_arc_membership_web_surfaces.py
+  type: registered_by
+- target: tests/playwright/test_landing_arc_cards.py
+  type: rendered_by

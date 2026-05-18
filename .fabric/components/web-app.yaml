@@ -67,7 +67,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: T-227
-last_enriched: '2026-05-15'
+last_enriched: '2026-05-18'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -87,3 +87,7 @@ depended_by:
   type: called_by
 - target: tests/unit/test_review_paused_resolve.py
   type: called_by
+- target: tests/unit/test_arc_membership_web_surfaces.py
+  type: called_by
+- target: tests/unit/test_render_surface_gate.bats
+  type: tests_by

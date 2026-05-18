@@ -86,6 +86,24 @@ depended_by:
   type: called_by
 - target: tests/unit/audit_ctl028_completed_status_consistency.bats
   type: tests_by
+- target: tests/unit/audit_ctl013_skip_nested_audit.bats
+  type: called_by
+- target: tests/unit/audit_ctl013_skip_nested_audit.bats
+  type: tests_by
+- target: tests/unit/arc_create_no_constituent_tasks.bats
+  type: tests_by
+- target: tests/unit/audit_anchor_task_existence.bats
+  type: called_by
+- target: tests/unit/audit_anchor_task_existence.bats
+  type: tests_by
+- target: tests/unit/audit_arc_progress_arc_id.bats
+  type: tests_by
+- target: tests/unit/audit_ctl_arc_tag_only_pattern.bats
+  type: tests_by
+- target: tests/unit/audit_stale_arc_warning.bats
+  type: called_by
+- target: tests/unit/audit_stale_arc_warning.bats
+  type: tests_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-05-16'
+last_enriched: '2026-05-18'

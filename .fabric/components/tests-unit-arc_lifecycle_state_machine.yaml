@@ -1,8 +1,8 @@
-id: tests/unit/arc_abandon.bats
-name: arc_abandon
+id: tests/unit/arc_lifecycle_state_machine.bats
+name: arc_lifecycle_state_machine
 type: script
 subsystem: unknown
-location: tests/unit/arc_abandon.bats
+location: tests/unit/arc_lifecycle_state_machine.bats
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:

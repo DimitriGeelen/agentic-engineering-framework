@@ -1,16 +1,14 @@
-id: tests/unit/arc_abandon.bats
-name: arc_abandon
+id: tests/unit/arc_membership_shared.bats
+name: arc_membership_shared
 type: script
 subsystem: unknown
-location: tests/unit/arc_abandon.bats
+location: tests/unit/arc_membership_shared.bats
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
-- target: lib/arc.sh
-  type: calls
-- target: lib/arc.sh
+- target: lib/arc_membership.sh
   type: tests
 depended_by: []
-last_verified: 2026-05-16
+last_verified: 2026-05-17
 created_by: unknown
 last_enriched: '2026-05-18'

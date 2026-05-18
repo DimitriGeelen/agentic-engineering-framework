@@ -1,13 +1,11 @@
-id: tests/unit/arc_abandon.bats
-name: arc_abandon
+id: tests/unit/arc_membership_union.bats
+name: arc_membership_union
 type: script
 subsystem: unknown
-location: tests/unit/arc_abandon.bats
+location: tests/unit/arc_membership_union.bats
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
-- target: lib/arc.sh
-  type: calls
 - target: lib/arc.sh
   type: tests
 depended_by: []

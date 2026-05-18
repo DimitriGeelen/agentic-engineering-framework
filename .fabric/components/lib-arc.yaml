@@ -11,6 +11,34 @@ depends_on:
 depended_by:
 - target: tests/unit/test_arc_system.py
   type: called_by
+- target: tests/unit/arc_abandon.bats
+  type: called_by
+- target: tests/unit/arc_abandon.bats
+  type: tests_by
+- target: tests/unit/arc_create_no_constituent_tasks.bats
+  type: called_by
+- target: tests/unit/arc_create_no_constituent_tasks.bats
+  type: tests_by
+- target: tests/unit/arc_dual_identity_verbs.bats
+  type: called_by
+- target: tests/unit/arc_dual_identity_verbs.bats
+  type: tests_by
+- target: tests/unit/arc_lifecycle_state_machine.bats
+  type: called_by
+- target: tests/unit/arc_lifecycle_state_machine.bats
+  type: tests_by
+- target: tests/unit/arc_membership_union.bats
+  type: tests_by
+- target: tests/unit/arc_next_numeric_id_octal.bats
+  type: tests_by
+- target: tests/unit/audit_ctl_arc_tag_only_pattern.bats
+  type: called_by
+- target: tests/unit/audit_ctl_arc_tag_only_pattern.bats
+  type: tests_by
+- target: tests/unit/test_arc_membership_web_surfaces.py
+  type: called_by
+- target: web/blueprints/arcs.py
+  type: called_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-18'

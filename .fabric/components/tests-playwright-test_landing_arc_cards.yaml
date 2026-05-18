@@ -3,32 +3,33 @@ name: test_landing_arc_cards
 type: script
 subsystem: testing
 location: tests/playwright/test_landing_arc_cards.py
-tags: [test, playwright, dom-content, arc, render-surface, T-1879, T-1575, T-971]
-
-purpose: |
-  Playwright DOM-content assertion (per T-1575/T-971) pinning the landing-page
-  arc-cards render contract and the /tasks?arc=<id> filter contract after the
-  T-1850 arc_id migration. Two tests:
-  - test_landing_arc_cards_show_nonzero_counts: every in-progress arc card
-    on / renders with a non-zero task count (arc-005 ≥14); no zero-count
-    cards (the migration-blindness regression signal).
-  - test_tasks_filter_by_arc_returns_members: /tasks?arc=arc-grooming lists
-    ≥4 known arc-grooming task IDs.
-
-  Re-classifies T-1879's Human [REVIEW] AC to Agent. Origin: T-1879
-  migration-blindness #2 sweep — 5 sites read arc:<slug> tag only after
-  the migration stripped them, surfacing zero arc memberships on the
-  landing page.
-
+tags:
+- test
+- playwright
+- dom-content
+- arc
+- render-surface
+- T-1879
+- T-1575
+- T-971
+purpose: "Playwright DOM-content assertion (per T-1575/T-971) pinning the landing-page\narc-cards render contract and the\
+  \ /tasks?arc=<id> filter contract after the\nT-1850 arc_id migration. Two tests:\n- test_landing_arc_cards_show_nonzero_counts:\
+  \ every in-progress arc card\n  on / renders with a non-zero task count (arc-005 ≥14); no zero-count\n  cards (the migration-blindness\
+  \ regression signal).\n- test_tasks_filter_by_arc_returns_members: /tasks?arc=arc-grooming lists\n  ≥4 known arc-grooming\
+  \ task IDs.\n\nRe-classifies T-1879's Human [REVIEW] AC to Agent. Origin: T-1879\nmigration-blindness #2 sweep — 5 sites\
+  \ read arc:<slug> tag only after\nthe migration stripped them, surfacing zero arc memberships on the\nlanding page.\n"
 depends_on:
-  - target: web/blueprints/core.py
-    type: renders
-  - target: web/blueprints/tasks.py
-    type: renders
-  - target: tests/playwright/conftest.py
-    type: calls
-
+- target: web/blueprints/core.py
+  type: renders
+- target: web/blueprints/tasks.py
+  type: renders
+- target: tests/playwright/conftest.py
+  type: calls
+- target: web/blueprints/core.py
+  type: calls
+- target: web/blueprints/tasks.py
+  type: calls
 depended_by: []
-
 last_verified: 2026-05-17
 created_by: claude
+last_enriched: '2026-05-18'

@@ -13,6 +13,8 @@ depended_by:
   type: called_by
 - target: tests/unit/evolution_log_gate.bats
   type: tests_by
+- target: tests/unit/arc_membership_agent_surfaces.bats
+  type: tests_by
 last_verified: 2026-05-04
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-18'

@@ -28,9 +28,11 @@ depends_on:
   type: calls
 - target: lib/task_pair_acd.py
   type: calls
+- target: lib/render_surface.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-09'
+last_enriched: '2026-05-18'
 depended_by:
 - target: C-004
   type: called_by
@@ -66,6 +68,16 @@ depended_by:
   type: called_by
 - target: tests/unit/test_task_pair_acd_gate.bats
   type: tests_by
+- target: tests/unit/arc_membership_agent_surfaces.bats
+  type: tests_by
+- target: tests/unit/check_active_task_switch_focus.bats
+  type: tests_by
+- target: tests/unit/test_render_surface_gate.bats
+  type: called_by
+- target: tests/unit/test_render_surface_gate.bats
+  type: tests_by
+- target: tests/unit/check_active_task_switch_focus.bats
+  type: called_by
 docs:
 - path: docs/articles/deep-dives/06-authority-model.md
   title: 'Deep Dive: The Authority Model'

@@ -1,14 +1,14 @@
-id: tests/unit/arc_abandon.bats
-name: arc_abandon
+id: tests/unit/audit_stale_arc_warning.bats
+name: audit_stale_arc_warning
 type: script
 subsystem: unknown
-location: tests/unit/arc_abandon.bats
+location: tests/unit/audit_stale_arc_warning.bats
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
-- target: lib/arc.sh
+- target: C-004
   type: calls
-- target: lib/arc.sh
+- target: C-004
   type: tests
 depended_by: []
 last_verified: 2026-05-16

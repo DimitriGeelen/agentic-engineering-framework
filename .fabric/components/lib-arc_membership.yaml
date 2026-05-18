@@ -3,39 +3,38 @@ name: arc_membership-py
 type: library
 subsystem: framework-core
 location: lib/arc_membership.py
-tags: [arc-grooming, silent-corpus-prevention]
-
-purpose: |
-  Canonical Python helper for arc-membership scans (T-1880 / T-NEW-15).
-  Consolidates the union-of-`arc_id:`-frontmatter + legacy `arc:<slug>`-tag
-  scan that previously lived inline in three Watchtower blueprints:
-  web/blueprints/arcs.py, core.py, tasks.py. Companion to
-  lib/arc_membership.sh (which serves shell consumers).
-
-  Public API:
-    scan_tasks_by_arc_membership(project_root)
-        → (by_arc_id: dict[str, list[task_id]],
-           by_tag:    dict[str, list[task_id]])
-
-  Origin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured
-  as L-397. Each inline consumer had to be migrated independently after
-  the T-1850 tags-to-arc_id storage migration (162 tasks rewritten); the
-  consolidated helpers prevent the next storage-format migration from
-  leaking through nine sites again.
-
+tags:
+- arc-grooming
+- silent-corpus-prevention
+purpose: "Canonical Python helper for arc-membership scans (T-1880 / T-NEW-15).\nConsolidates the union-of-`arc_id:`-frontmatter\
+  \ + legacy `arc:<slug>`-tag\nscan that previously lived inline in three Watchtower blueprints:\nweb/blueprints/arcs.py,\
+  \ core.py, tasks.py. Companion to\nlib/arc_membership.sh (which serves shell consumers).\n\nPublic API:\n  scan_tasks_by_arc_membership(project_root)\n\
+  \      → (by_arc_id: dict[str, list[task_id]],\n         by_tag:    dict[str, list[task_id]])\n\nOrigin: silent-corpus #1\
+  \ (T-1874/75/76/77) and #2 (T-1879) — captured\nas L-397. Each inline consumer had to be migrated independently after\n\
+  the T-1850 tags-to-arc_id storage migration (162 tasks rewritten); the\nconsolidated helpers prevent the next storage-format\
+  \ migration from\nleaking through nine sites again.\n"
 depends_on:
-  - target: .tasks/active/
-    type: reads
-  - target: .tasks/completed/
-    type: reads
-
+- target: .tasks/active/
+  type: reads
+- target: .tasks/completed/
+  type: reads
+- target: web/blueprints/arcs.py
+  type: calls
 depended_by:
-  - target: web/blueprints/arcs.py
-    type: calls
-  - target: web/blueprints/core.py
-    type: calls
-  - target: web/blueprints/tasks.py
-    type: calls
-
+- target: web/blueprints/arcs.py
+  type: calls
+- target: web/blueprints/core.py
+  type: calls
+- target: web/blueprints/tasks.py
+  type: calls
+- target: tests/unit/test_arc_membership_shared.py
+  type: called_by
+- target: web/blueprints/arcs.py
+  type: called_by
+- target: web/blueprints/core.py
+  type: called_by
+- target: web/blueprints/tasks.py
+  type: called_by
 last_verified: 2026-05-17
 created_by: T-1880
+last_enriched: '2026-05-18'

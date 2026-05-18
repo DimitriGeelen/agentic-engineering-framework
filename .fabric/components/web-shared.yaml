@@ -122,4 +122,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_file_route_extensions.py
   type: called_by
-last_enriched: '2026-05-09'
+- target: tests/unit/episodic_yaml_decision_escape.bats
+  type: tests_by
+- target: tests/unit/test_render_surface_gate.bats
+  type: tests_by
+last_enriched: '2026-05-18'

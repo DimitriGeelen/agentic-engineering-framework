@@ -1,14 +1,14 @@
-id: tests/unit/arc_abandon.bats
-name: arc_abandon
+id: tests/unit/arc_id_validation_guard.bats
+name: arc_id_validation_guard
 type: script
 subsystem: unknown
-location: tests/unit/arc_abandon.bats
+location: tests/unit/arc_id_validation_guard.bats
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
-- target: lib/arc.sh
+- target: agents/context/check-arc-id.sh
   type: calls
-- target: lib/arc.sh
+- target: agents/context/check-arc-id.sh
   type: tests
 depended_by: []
 last_verified: 2026-05-16

@@ -1,8 +1,8 @@
-id: tests/unit/arc_abandon.bats
-name: arc_abandon
+id: tests/unit/arc_dual_identity_verbs.bats
+name: arc_dual_identity_verbs
 type: script
 subsystem: unknown
-location: tests/unit/arc_abandon.bats
+location: tests/unit/arc_dual_identity_verbs.bats
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:

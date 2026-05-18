@@ -3,37 +3,36 @@ name: arc_membership-sh
 type: library
 subsystem: framework-core
 location: lib/arc_membership.sh
-tags: [arc-grooming, silent-corpus-prevention]
-
-purpose: |
-  Canonical shell helper for arc-membership scans (T-1880 / T-NEW-15).
-  Consolidates the union-of-`arc_id:`-frontmatter + legacy `arc:<slug>`-tag
-  scan that previously lived inline in three shell consumers:
-  lib/arc.sh, agents/handover/handover.sh, lib/evolution_log.sh.
-  Companion to lib/arc_membership.py (which serves the Python/Flask side).
-
-  Public API (PROJECT_ROOT must be set):
-    arc_tasks_with_arc_id <slug>   → T-IDs whose `arc_id:` matches slug
-    arc_tasks_with_tag <tag>       → T-IDs whose `tags:` includes tag
-
-  Origin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured as
-  L-397. Each inline consumer had to be migrated independently after the
-  T-1850 tags-to-arc_id storage migration; consolidation prevents the next
-  storage-format migration from leaking through nine sites again.
-
+tags:
+- arc-grooming
+- silent-corpus-prevention
+purpose: "Canonical shell helper for arc-membership scans (T-1880 / T-NEW-15).\nConsolidates the union-of-`arc_id:`-frontmatter\
+  \ + legacy `arc:<slug>`-tag\nscan that previously lived inline in three shell consumers:\nlib/arc.sh, agents/handover/handover.sh,\
+  \ lib/evolution_log.sh.\nCompanion to lib/arc_membership.py (which serves the Python/Flask side).\n\nPublic API (PROJECT_ROOT\
+  \ must be set):\n  arc_tasks_with_arc_id <slug>   → T-IDs whose `arc_id:` matches slug\n  arc_tasks_with_tag <tag>     \
+  \  → T-IDs whose `tags:` includes tag\n\nOrigin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured as\nL-397.\
+  \ Each inline consumer had to be migrated independently after the\nT-1850 tags-to-arc_id storage migration; consolidation\
+  \ prevents the next\nstorage-format migration from leaking through nine sites again.\n"
 depends_on:
-  - target: .tasks/active/
-    type: reads
-  - target: .tasks/completed/
-    type: reads
-
+- target: .tasks/active/
+  type: reads
+- target: .tasks/completed/
+  type: reads
 depended_by:
-  - target: lib/arc.sh
-    type: calls
-  - target: agents/handover/handover.sh
-    type: calls
-  - target: lib/evolution_log.sh
-    type: calls
-
+- target: lib/arc.sh
+  type: calls
+- target: agents/handover/handover.sh
+  type: calls
+- target: lib/evolution_log.sh
+  type: calls
+- target: agents/handover/handover.sh
+  type: called_by
+- target: tests/unit/arc_membership_shared.bats
+  type: tests_by
+- target: tests/unit/audit_ctl_arc_tag_only_pattern.bats
+  type: called_by
+- target: tests/unit/audit_ctl_arc_tag_only_pattern.bats
+  type: tests_by
 last_verified: 2026-05-17
 created_by: T-1885
+last_enriched: '2026-05-18'
