@@ -3075,3 +3075,38 @@ X'` returning empty group."
   date: 2026-05-18
   context: Added via context agent
   application: TBD
+- id: L-402
+  learning: "L-387 silent-halt class extends beyond grep -q: $(cmd | head -N | sed ...) patterns where upstream produces >N lines die with SIGPIPE under set -eo pipefail. head closes stdin after N → SIGPIPE upstream → pipefail propagates → set -e kills script with no output. Safe replacement: $(cmd | awk 'NR<=N { print ... }') — awk reads to EOF without ever closing stdin. Origin: T-1900 — render-surface gate error path crashed silently when render_surface_files_in returned ≥3 lines, ate the gate's actionable error message. tail -N has the same shape."
+  source: P-011
+  task: T-1900
+  date: 2026-05-18
+  context: Added via context agent
+  application: TBD
+- id: L-403
+  learning: "After re-class operations that move Human ACs to Agent ACs (e.g. [REVIEW]→[REVIEWER] per T-1894/T-1897 pattern), previously partial-complete tasks (active/ + owner: human) become archive-eligible but do NOT auto-archive — they remain stuck in active/ with all ACs ticked. The partial-complete recheck only fires when 'fw task update T-XXX --status work-completed' is re-invoked on the same task. Detection: scan .tasks/active/ for status: work-completed + zero unchecked checkboxes after HTML-comment strip. Fix class: either (a) audit-warn surface count of archive-eligible tasks, or (b) automatic recheck inside re-class commits. Origin: T-1890 found post-T-1894 re-class — 1 of 4 re-classed tasks (T-1890) ended up stuck because its FIRST work-completed transition had a [REVIEW] AC at the time."
+  source: T-1894
+  task: T-1687
+  date: 2026-05-18
+  context: Added via context agent
+  application: TBD
+- id: L-404
+  learning: "bats tests that create a synthetic project root (mktemp -d with .tasks/, .context/, etc.) and cd into it MUST also 'export PROJECT_ROOT=$TEST_ROOT' in setup(). Otherwise — when the test is invoked under a parent that has PROJECT_ROOT set (e.g. update-task.sh verification gate, fw audit, any fw* command) — bin/fw's PROJECT_ROOT resolution prefers the inherited env over the cwd-walk, and the test silently walks the real project's .tasks/ instead of the sandbox. Symptom: test passes on direct invocation ('bats tests/unit/foo.bats') but fails when run under update-task.sh's Verification block ('grep -q T-9001' fails because fw didn't see T-9001). Origin: T-1903 — first 'fw task update --status work-completed' failed verification because bats test detected zero stuck tasks in the inherited real-project active/ instead of T-9001 in the sandbox. Fix: bats setup() ends with 'export PROJECT_ROOT=\"$TEST_ROOT\"'."
+  source: T-1903
+  task: T-1687
+  date: 2026-05-18
+  context: Added via context agent
+  application: TBD
+- id: L-405
+  learning: "Advisory rules in CLAUDE.md without structural enforcement drift toward non-compliance over time. C-001 ('create artefact before researching') existed for 2 years; 15 inceptions accumulated as audit WARNs because rule was text-only. Detection (commit-msg hook for 2nd commit, audit C-001 WARN) caught most but not single-commit inceptions. T-1906 shipped structural enforcement: create-task.sh writes skeleton at filing time. Pattern: advisory → detective → preventive ladder. If you're writing a rule in CLAUDE.md AND a detective check (audit / hook), also ask 'what would PREVENT this in the tool that produces the artefact?' Origin: T-1717 grill governance closure cluster surfaced same gap (production vs production gap)."
+  source: P-003
+  task: T-1906
+  date: 2026-05-18
+  context: Added via context agent
+  application: TBD
+- id: L-406
+  learning: "Canonical helpers must encode every storage-format-dimensional equivalence the spec admits. Extracting a shared helper (T-1880) only covers the duplication dimension; dual-identity / dual-format consumers can still produce silent corpora inside the canonical helper if equivalence logic isn't included. Origin: T-1913 — lib/arc_membership.sh.arc_tasks_for matched arc_id literally, missing the slug↔arc-NNN equivalence that T-1849 admits as spec-valid. Both lib/arc_membership.sh AND lib/arc.sh (inline duplicate) needed the union. L-397 class at a deeper layer."
+  source: P-001
+  task: T-1913
+  date: 2026-05-18
+  context: Added via context agent
+  application: TBD
