@@ -148,6 +148,35 @@ patterns:
       - "AC: 'integration tested' + Verification: pytest tests/integration/"
       - "AC: 'unit test exists' + Verification: pytest tests/unit/"
 
+  - id: human-ac-mechanical-signal
+    name: "[REVIEW] Human AC has mechanical Expected clause (should be [REVIEWER])"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_human_ac_mechanical_signal"
+    description: >
+      A `[REVIEW]`-prefixed Human acceptance criterion whose `**Expected:**` clause
+      contains mechanical signals (grep/wc/exit-code/file-exists/curl/HTTP status)
+      AND no taste signals (feels/reads/cleanly/tone/voice/intuitive/rhythm)
+      AND no strategic markers in the body (decide/approve/authorize/sign-off).
+
+      Such ACs should be `[REVIEWER]` (Agent AC + `## Verification` with reviewer
+      command) instead — the reviewer agent or shell can verify them deterministically.
+
+      Origin: T-1878 inception found 13% mis-class rate on partial-completes (412:7
+      `[REVIEW]:[REVIEWER]` adoption gap). T-1894 manually re-classed 4 such ACs
+      across arc-grooming partial-completes; this detector is the structural catch
+      that fires at task close so the next round doesn't need a manual sweep.
+
+      Override: `fw reviewer override add T-XXX --pattern human-ac-mechanical-signal
+      --ac N --reason "..." --ttl 90` suppresses the finding (T-1443 v1.4).
+    examples_positive:
+      - "[REVIEW] Confirm endpoint returns 200 — Expected: `curl -sf URL` exits 0"
+      - "[REVIEW] Check log file — Expected: `grep -q ERROR /var/log/app.log` returns 1"
+    examples_negative:
+      - "[REVIEW] Dashboard reads cleanly — Expected: layout feels intuitive"
+      - "[REVIEW] Decide whether to close arc — Expected: arc transitions to closed"
+      - "[REVIEW] Banner reads as obvious supersedes note — Expected: voice + framing tells a fresh reader"
+
   - id: AC-verify-mismatch
     name: "Checked AC names a file path the verification never touches"
     detection_confidence: heuristic

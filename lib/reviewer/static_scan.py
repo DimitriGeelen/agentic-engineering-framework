@@ -536,6 +536,190 @@ def _path_python_import_covered(path: str, verif_text: str) -> bool:
     return False
 
 
+# T-1896 (T-1878 B): mechanical-Expected catch for mis-classed [REVIEW] ACs.
+#
+# Fires when a `[REVIEW]` Human AC's **Expected:** clause reads as a
+# deterministic shell check (grep/wc/exit/curl/HTTP-status/file-exists) AND
+# the AC body contains no strategic markers (decide/approve/authorize/...)
+# AND the Expected clause carries no taste signals (feels/reads/cleanly/...).
+# Such ACs should be `[REVIEWER]` per the T-1811 conversion rule.
+#
+# Conservative by design — three gates must all line up before the finding
+# fires, to avoid noise on genuine taste/judgment ACs. Override mechanism:
+# `bin/fw reviewer override add --pattern human-ac-mechanical-signal`.
+
+_HUMAN_AC_MECHANICAL_RE = re.compile(
+    r"""(?ix)
+    \b(
+        grep\s+-[qcv]?       |
+        wc\s+-l              |
+        \bexit\s+code\b      |
+        returns?\s+\d        |
+        returns?\s+0\b       |
+        exits?\s+0\b         |
+        \btest\s+-[fdeszr]\b |
+        \[\s+-[fdeszr]\s     |
+        \bcurl\s+-           |
+        \bHTTP\s+\d{3}\b     |
+        \b200\b              |
+        \bappended\b         |
+        \bfile\s+(exists|present|missing|contains) |
+        \bstdout\s+contains  |
+        \bset\s+-e\b         |
+        bats\s+tests/        |
+        pytest\s+tests/      |
+        \brow\s+(written|appended) |
+        \bstatus:\s*\w+
+    )
+    """
+)
+
+_HUMAN_AC_TASTE_RE = re.compile(
+    r"""(?ix)
+    \b(
+        feels?\b        |
+        reads?\b        |
+        cleanly\b       |
+        clean\s+enough  |
+        \btone\b        |
+        \bvoice\b       |
+        intuitive       |
+        naturally       |
+        \bnatural\b     |
+        rhythm          |
+        \bjudgment\b    |
+        \blands\b       |
+        obvious\s+supersedes |
+        acceptable\s+feel    |
+        looks?\s+good   |
+        UX              |
+        cohesive
+    )
+    """
+)
+
+_HUMAN_AC_STRATEGIC_RE = re.compile(
+    r"""(?ix)
+    \b(
+        decide\b        |
+        approve\b       |
+        authorize\b     |
+        authorise\b     |
+        sign[- ]off     |
+        sovereignty     |
+        escalate\b      |
+        go\s*/\s*no-?go |
+        confirm\s+intent
+    )
+    """
+)
+
+
+def detect_human_ac_mechanical_signal(ac_section: str) -> list[Finding]:
+    """`[REVIEW]` Human AC whose Expected reads as a shell-grep-able check.
+
+    Three gates, all must hold:
+      1. AC sits under `### Human` subhead and body starts with `[REVIEW]`
+      2. AC body has no strategic markers (decide/approve/authorize/...)
+      3. The **Expected:** clause has at least one mechanical signal AND
+         no taste signal (feels/reads/cleanly/intuitive/...)
+
+    Heuristic, partial lie-severity → CONCERN, needs_human=no.
+    Origin: T-1878 inception (13% mis-class rate); T-1894 manual remediation.
+    """
+    findings: list[Finding] = []
+    if not ac_section:
+        return findings
+
+    current_subhead = "ACs"
+    counter = 0
+    # Accumulate the full multi-line body of the AC currently being parsed
+    cur_ac_body: list[str] = []
+    cur_ac_state: dict | None = None  # {"counter": N, "raw_line": str, "body_text": str, "is_review": bool}
+
+    def _check_and_emit(ac_state: dict, body_lines: list[str]):
+        """Run the three-gate check on a completed [REVIEW] Human AC."""
+        if not ac_state or not ac_state.get("is_review"):
+            return
+        if "human" not in current_subhead.lower():
+            return
+        ac_body_text = ac_state["body_text"]
+        # Gate 2: strategic markers in AC line itself → suppress
+        if _HUMAN_AC_STRATEGIC_RE.search(ac_body_text):
+            return
+        # Find the Expected clause within the multi-line body
+        joined = "\n".join(body_lines)
+        expected_match = re.search(
+            r"\*\*Expected:?\*\*\s*(.*?)(?=\n\s*\*\*(?:If\s+not|Steps|Why|Origin)|\Z)",
+            joined,
+            re.DOTALL | re.IGNORECASE,
+        )
+        if not expected_match:
+            return
+        expected_text = expected_match.group(1).strip()
+        if not expected_text:
+            return
+        # Gate 3a: taste signals → suppress
+        if _HUMAN_AC_TASTE_RE.search(expected_text):
+            return
+        # Gate 3b: mechanical signals must be present
+        mech = _HUMAN_AC_MECHANICAL_RE.search(expected_text)
+        if not mech:
+            return
+        snippet = expected_text[:140].replace("\n", " ")
+        findings.append(
+            Finding(
+                pattern_id="human-ac-mechanical-signal",
+                pattern_name="[REVIEW] Human AC has mechanical Expected clause (should be [REVIEWER])",
+                detection_confidence="heuristic",
+                lie_severity="partial",
+                location=f"AC#{ac_state['counter']} ({current_subhead})",
+                evidence=f"matched={mech.group(0)!r} in Expected: {snippet}",
+                ac_index=ac_state["counter"],
+                ac_subhead=current_subhead,
+                ac_text=ac_body_text[:200],
+            )
+        )
+
+    for raw in ac_section.splitlines():
+        stripped = raw.strip()
+        # Subhead transition
+        if re.match(r"^#{2,}\s+\S", stripped):
+            # close out any in-flight AC before switching subhead
+            if cur_ac_state is not None:
+                _check_and_emit(cur_ac_state, cur_ac_body)
+            current_subhead = stripped.lstrip("# ").strip()
+            counter = 0
+            cur_ac_state = None
+            cur_ac_body = []
+            continue
+        m = _AC_LINE_RE.match(raw)
+        if m:
+            # close prior AC
+            if cur_ac_state is not None:
+                _check_and_emit(cur_ac_state, cur_ac_body)
+            counter += 1
+            body = m.group("body")
+            # `[REVIEW]` must be the literal prefix, NOT `[REVIEWER]` (which has its
+            # own conversion semantics). Use a negative lookahead instead of `\b` —
+            # `]` is non-word and the boundary after it is unreliable.
+            is_review = bool(re.match(r"^\[REVIEW\](?!ER)", body.strip(), re.IGNORECASE))
+            cur_ac_state = {
+                "counter": counter,
+                "body_text": body,
+                "is_review": is_review,
+            }
+            cur_ac_body = []
+            continue
+        # continuation line (Expected/Steps/If-not/...)
+        if cur_ac_state is not None:
+            cur_ac_body.append(raw)
+    # close the trailing AC
+    if cur_ac_state is not None:
+        _check_and_emit(cur_ac_state, cur_ac_body)
+    return findings
+
+
 def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> list[Finding]:
     """AC checked AND mentions a specific file path, but no verification line touches it.
 
@@ -683,6 +867,8 @@ def scan_task(
     findings.extend(detect_skip_as_pass(verif_section))
     findings.extend(detect_mock_only_integration(ac_section, verif_section))
     findings.extend(detect_ac_verify_mismatch(ac_section, verif_section))
+    # v1.3-seed +1: T-1896 — [REVIEW] mechanical-Expected catch (T-1878 B)
+    findings.extend(detect_human_ac_mechanical_signal(ac_section))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 
