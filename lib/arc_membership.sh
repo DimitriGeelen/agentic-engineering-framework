@@ -57,13 +57,71 @@ arc_tasks_with_tag() {
     done | sort -u
 }
 
-# Union of arc_id frontmatter + legacy arc:<slug> tag scan. Single entry
-# point for "tasks belonging to arc <slug>".
+# Resolve any arc identifier (slug like "arc-grooming" OR NNN like
+# "arc-005") to BOTH canonical forms by reading the arc YAML. Emits
+# "<slug>\t<nnn>" on one line (TAB-separated). Empty output if the
+# input doesn't resolve to a real arc.
+#
+# T-1913: closes the slug↔NNN asymmetry where `arc_tasks_for slug` only
+# matched tasks bearing `arc_id: <slug>` and missed those bearing
+# `arc_id: <nnn>` (and vice versa). Both forms are CLAUDE.md-spec-valid
+# (T-1849) so a task corpus split across the two is normal — the
+# membership helper must union them. Python helper (lib/arc_membership.py
+# task_dict_in_arc) already had dual-identity logic via the
+# arc_numeric_id parameter; shell helper now matches.
+_arc_resolve_dual_id() {
+    local input="$1"
+    [ -n "$input" ] || return 0
+    [ -n "${PROJECT_ROOT:-}" ] || return 0
+    local arcs_dir="$PROJECT_ROOT/.context/arcs"
+    [ -d "$arcs_dir" ] || return 0
+    local slug="" nnn="" yaml=""
+    # Try input as slug (matches a YAML filename stem)
+    if [ -f "$arcs_dir/${input}.yaml" ]; then
+        slug="$input"
+        yaml="$arcs_dir/${input}.yaml"
+    else
+        # Try input as NNN — scan for matching id: field
+        local f
+        for f in "$arcs_dir"/*.yaml; do
+            [ -f "$f" ] || continue
+            local fid
+            fid=$(awk -F: '/^id:[[:space:]]*/{gsub(/[[:space:]"\047]/,"",$2); print $2; exit}' "$f" 2>/dev/null)
+            if [ "$fid" = "$input" ]; then
+                slug=$(basename "$f" .yaml)
+                yaml="$f"
+                break
+            fi
+        done
+    fi
+    [ -n "$yaml" ] || return 0
+    nnn=$(awk -F: '/^id:[[:space:]]*/{gsub(/[[:space:]"\047]/,"",$2); print $2; exit}' "$yaml" 2>/dev/null)
+    if [ -n "$slug" ] && [ -n "$nnn" ]; then
+        printf '%s\t%s\n' "$slug" "$nnn"
+    fi
+}
+
+# Union of arc_id frontmatter (both slug AND arc-NNN forms) + legacy
+# arc:<slug> tag scan. Single entry point for "tasks belonging to arc".
+# T-1913: accepts either slug or arc-NNN as input; resolves both forms
+# via the arc YAML and unions matches across forms.
 arc_tasks_for() {
-    local slug="$1"
-    [ -n "$slug" ] || return 0
+    local input="$1"
+    [ -n "$input" ] || return 0
+    local pair slug nnn
+    pair=$(_arc_resolve_dual_id "$input")
+    if [ -n "$pair" ]; then
+        slug=$(printf '%s' "$pair" | cut -f1)
+        nnn=$(printf '%s' "$pair" | cut -f2)
+    else
+        # Arc not resolvable — fall back to literal-only match
+        slug="$input"
+        nnn=""
+    fi
     {
         arc_tasks_with_arc_id "$slug"
+        [ -n "$nnn" ] && [ "$nnn" != "$slug" ] && arc_tasks_with_arc_id "$nnn"
+        # Legacy `arc:<slug>` tag was always slug-based (predates NNN scheme)
         arc_tasks_with_tag "arc:${slug}"
     } | sort -u
 }

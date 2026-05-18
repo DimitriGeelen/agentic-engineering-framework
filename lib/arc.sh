@@ -348,10 +348,42 @@ _arc_tasks_with_arc_id() {
 # all three call sites (arc_list count, arc_show display, arc_close --demo
 # validation). _arc_tasks_with_tag remains exposed for the unrelated
 # "from-<anchor>" tag namespace caller. Always exits 0.
+#
+# T-1913: union now also includes the OTHER arc_id form. CLAUDE.md T-1849
+# admits both `arc_id: <slug>` (e.g. arc-grooming) and `arc_id: <arc-NNN>`
+# (e.g. arc-005) as spec-valid; a corpus split across the two forms is
+# normal. Without dual-id resolution, `fw arc show arc-grooming` would
+# silently miss tasks bearing `arc_id: arc-005`. Resolves either input to
+# the (slug, NNN) pair by reading .context/arcs/.
 _arc_tasks_for() {
-    local slug="$1"
+    local input="$1"
+    local slug="$input" nnn=""
+    # Resolve input → (slug, NNN). Try input as slug filename first; if
+    # no .yaml matches, scan for matching id: field (input is NNN).
+    local arcs_dir="$PROJECT_ROOT/.context/arcs" yaml=""
+    if [ -d "$arcs_dir" ]; then
+        if [ -f "$arcs_dir/${input}.yaml" ]; then
+            yaml="$arcs_dir/${input}.yaml"
+        else
+            local f
+            for f in "$arcs_dir"/*.yaml; do
+                [ -f "$f" ] || continue
+                local fid
+                fid=$(awk -F: '/^id:[[:space:]]*/{gsub(/[[:space:]"\047]/,"",$2); print $2; exit}' "$f" 2>/dev/null)
+                if [ "$fid" = "$input" ]; then
+                    slug=$(basename "$f" .yaml)
+                    yaml="$f"
+                    break
+                fi
+            done
+        fi
+        if [ -n "$yaml" ]; then
+            nnn=$(awk -F: '/^id:[[:space:]]*/{gsub(/[[:space:]"\047]/,"",$2); print $2; exit}' "$yaml" 2>/dev/null)
+        fi
+    fi
     {
         _arc_tasks_with_arc_id "$slug"
+        [ -n "$nnn" ] && [ "$nnn" != "$slug" ] && _arc_tasks_with_arc_id "$nnn"
         _arc_tasks_with_tag "arc:${slug}"
     } | sort -u
 }
