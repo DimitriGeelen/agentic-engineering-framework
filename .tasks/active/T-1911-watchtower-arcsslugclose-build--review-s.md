@@ -37,7 +37,7 @@ The shell contract (`lib/arc.sh:arc_close`) is preserved exactly — the POST ha
 - [x] On `arc close` failure, POST re-renders the form with the error message at the top. Confirmed: `Submit rejected: Error: --demo path '/tmp/does-not-exist…' does not exist.` rendered inline.
 - [x] Backend never invokes `fw arc close` without `--from-watchtower`. Confirmed by source — single `subprocess.run` call always includes the flag.
 - [x] Submit button is disabled when demo_mode='none' AND justification <30 chars. JS gate implemented; server-side gate redundant catch.
-- [ ] Playwright test file `tests/playwright/test_arc_close.py` exists. **File created (12 tests written) but run deferred to next session — budget hook fired before pytest could execute.**
+- [x] Playwright test file `tests/playwright/test_arc_close.py` — **9/9 tests pass** (run S-2026-0518-2339, 20.60s). Covers: page loads, unknown→404, demo_mode radios, required fields, headline_mechanic visible, §ACD prompt visible, invalid-demo inline error, justification gate, back-link.
 - [x] No regression: `/arcs/<slug>` for an open arc still renders normally; `/arcs` index still shows the arc in its column. Confirmed: curl `/arcs/arc-grooming` returns 200.
 
 ### Human
@@ -155,19 +155,17 @@ out=$(bin/fw test playwright tests/playwright/test_arc_close.py 2>&1); echo "$ou
 
 ## Recommendation
 
-**Recommendation:** GO (with one deferred verification)
+**Recommendation:** GO.
 
 **Rationale:**
 This is the build the user has been asking for the whole session — the Watchtower process to close an arc from the browser, AND the structural answer to "why can't agent close-out". The agent-can't-close gate (T-1671 §ACD) stays intact; the agent ships the FORM and the human's Submit click is what triggers `--from-watchtower` exemption. The shell contract (`lib/arc.sh:arc_close`) is preserved exactly — no Python re-implementation of demo/justification validation; the canonical gate stays in shell, and shell errors propagate to the form UI.
 
-curl-verified end-to-end on arc-grooming: page loads (200), 404s on unknown arc, 3 demo-mode radios, headline_mechanic + §ACD prompt visible, POST with invalid demo path renders the shell error inline and preserves arc state (no accidental close).
-
-The one outstanding bit: Playwright test file was created (12 tests) but pytest run was blocked by the budget hook. Tests are written to mirror the curl checks plus interactive form-disable logic. Next session can run them.
+curl-verified + Playwright-verified end-to-end on arc-grooming: page loads (200), 404s on unknown arc, 3 demo-mode radios, headline_mechanic + §ACD prompt visible, POST with invalid demo path renders the shell error inline and preserves arc state (no accidental close). Justification-gate JS prevents demo=none submit without ≥30-char justification.
 
 **Evidence:**
 - `web/blueprints/arcs.py` — `arc_close_surface()` handles both GET (render) and POST (shell + redirect/error), exits 0 → redirect to `/arcs/<slug>`, exits non-0 → re-render with stderr inline
 - `web/templates/arc_close.html` — full form with arc summary, headline_mechanic, §ACD three-question prompt, 3 demo modes, decision + justification fields, JS submit-gate
-- `tests/playwright/test_arc_close.py` — 12 tests written across 3 classes (TestArcCloseSurface, TestArcClosePost, TestArcCloseFromDetailLinkage), pytest run deferred
+- `tests/playwright/test_arc_close.py` — **9/9 tests pass** (S-2026-0518-2339, 20.60s; TestArcCloseSurface 6, TestArcClosePost 2, TestArcCloseFromDetailLinkage 1)
 - Live: `GET /arcs/arc-grooming/close` → 200 with all fields rendered
 - Live: `POST /arcs/arc-grooming/close` with invalid demo path → 200 + inline `Submit rejected: Error: --demo path '…' does not exist.`; arc YAML still `status: in-progress`
 - Live: `GET /arcs/no-such-arc/close` → 404
