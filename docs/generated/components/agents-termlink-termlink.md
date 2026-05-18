@@ -36,7 +36,7 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 | `lib/config.sh` | calls |
 | `tools/ollama-tool-loop.py` | calls |
 
-## Used By (10)
+## Used By (11)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -50,6 +50,7 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 | `tests/unit/test_workflow_env_isolation.bats` | tests_by |
 | `tests/unit/test_termlink_dispatch_task_type.py` | called_by |
 | `web/blueprints/orchestrator.py` | called_by |
+| `lib/ollama_loop.py` | called_by |
 
 ## Related
 

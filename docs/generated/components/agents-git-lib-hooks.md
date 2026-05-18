@@ -8,7 +8,7 @@
 
 Git Agent - Hook installation subcommand
 
-## Dependencies (4)
+## Dependencies (7)
 
 | Target | Relationship |
 |--------|-------------|
@@ -16,6 +16,9 @@ Git Agent - Hook installation subcommand
 | `lib/tasks.sh` | calls |
 | `lib/config.sh` | calls |
 | `lib/paths.sh` | calls |
+| `agents/git/lib/secret-scan.sh` | calls |
+| `agents/git/lib/dup-task-scan.sh` | calls |
+| `agents/git/lib/large-file-scan.sh` | calls |
 
 ## Used By (2)
 

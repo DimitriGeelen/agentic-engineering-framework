@@ -22,7 +22,7 @@ When run from inside the framework repo itself, it auto-detects.
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (43)
+## Dependencies (44)
 
 | Target | Relationship |
 |--------|-------------|
@@ -69,8 +69,9 @@ When run from inside the framework repo itself, it auto-detects.
 | `lib/config.sh` | calls |
 | `lib/task-audit.sh` | calls |
 | `lib/watchtower.sh` | calls |
+| `agents/git/lib/large-file-scan.sh` | calls |
 
-## Used By (180)
+## Used By (192)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -253,6 +254,18 @@ When run from inside the framework repo itself, it auto-detects.
 | `lib/reviewer/classifier.py` | called_by |
 | `lib/reviewer/drift.py` | called_by |
 | `lib/reviewer/static_scan.py` | called_by |
+| `tests/unit/test_cron_generate_shape.bats` | tests_by |
+| `tests/unit/test_orchestrator_status_terminal_events.py` | called_by |
+| `lib/peer.py` | called_by |
+| `lib/workflow_lint.py` | called_by |
+| `tests/unit/inception_defer_park.bats` | tests_by |
+| `tests/unit/test_doctor_consumer_version_ahead.bats` | tests_by |
+| `tests/unit/test_gaps_missing_title_defaults.bats` | tests_by |
+| `tests/unit/test_peer_subscribe.py` | called_by |
+| `tests/unit/test_workflow_schema_pause_lint.py` | called_by |
+| `tests/unit/upgrade_fresh_machine_simulation.bats` | tests_by |
+| `tests/unit/test_orchestrator_routes.py` | called_by |
+| `tests/unit/audit_ctl013_skip_nested_audit.bats` | tests_by |
 
 ## Documentation
 

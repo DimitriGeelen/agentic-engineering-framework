@@ -17,6 +17,12 @@ These tests pin the asymmetric remediation surface in bin/fw:
 - behind branch preserves the "Run: fw upgrade" suggestion
 - ahead branch emits a distinct "is AHEAD of framework" reason and the
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_doctor_consumer_version_ahead.yaml`*
 *Last verified: 2026-05-14*

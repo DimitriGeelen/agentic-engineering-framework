@@ -6,19 +6,23 @@
 
 ## What It Does
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `F-002` | calls |
 | `bin/fw` | calls |
+| `lib/spawn.py` | calls |
 
-## Used By (2)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `lib/resolver.sh` | called_by |
 | `tests/unit/test_resolver.py` | called_by |
+| `lib/spawn.py` | called_by |
+| `lib/pause_resolve.py` | uses_by |
+| `lib/workflow_lint.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-resolver.yaml`*

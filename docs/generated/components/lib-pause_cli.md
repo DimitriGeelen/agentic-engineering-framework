@@ -8,6 +8,13 @@
 
 Put lib/ on path so siblings import cleanly.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/dispatch_pause.py` | uses |
+| `lib/pause_resolve.py` | uses |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-pause_cli.yaml`*
 *Last verified: 2026-05-13*

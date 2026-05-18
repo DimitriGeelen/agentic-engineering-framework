@@ -6,6 +6,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/dispatch_pause.py` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_dispatch_pause.yaml`*
 *Last verified: 2026-05-13*

@@ -17,7 +17,7 @@ Path resolution
 | `web/blueprints/docs.py` | calls |
 | `bin/fw` | calls |
 
-## Used By (51)
+## Used By (52)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -72,6 +72,7 @@ Path resolution
 | `web/blueprints/arcs.py` | called_by |
 | `web/blueprints/hooks.py` | called_by |
 | `web/blueprints/orchestrator.py` | called_by |
+| `tests/unit/test_file_route_extensions.py` | called_by |
 
 ## Related
 

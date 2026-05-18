@@ -6,16 +6,16 @@
 
 ## What It Does
 
-lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661)
-Arcs are first-class workspaces grouping tasks by theme. An arc has
-a slug id (`orchestrator-rethink`), a name, an optional anchor task,
-and a list of constituent tasks. Arcs surface via:
-- `.context/arcs/<id>.yaml` registry
-- `.context/working/arc-focus.yaml` (single-arc focus, single-task analog)
-- `arc:<id>` tag namespace (canonical; legacy `from-T-XXXX` mapped on migrate)
-- handover.sh `## Current Arc` section
-- Watchtower landing-page section + `/tasks?arc=<id>` filter chip
-Verbs:
+lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848)
+Arcs are first-class workspaces grouping tasks by theme. Two identities:
+• slug  — human-readable filename stem (e.g., `orchestrator-rethink`).
+Used in URLs, tags (arc:<slug>), and discussion. Stable but
+not immutable — a slug may be renamed (rare; never auto).
+• arc-NNN — immutable sequential numeric ID (e.g., `arc-001`) written
+into the YAML's `id:` field at creation time. Never renumbered,
+never reused, never deleted (status flips, file stays).
+D-Immutability axiom (T-1846 inception §11.3, captured here so future
+changes find it):
 
 ### Framework Reference
 

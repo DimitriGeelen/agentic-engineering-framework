@@ -17,6 +17,7 @@ Agent-relevant settings:
 - `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
 - `FW_SAFE_MODE` (0) — bypass task gate (escape hatch)
 - `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
+- `FW_STALE_ARC_DAYS` (30) — T-1855: stale-arc audit WARN threshold. In-progress arcs whose constituent tasks
 
 *(truncated — see CLAUDE.md for full section)*
 

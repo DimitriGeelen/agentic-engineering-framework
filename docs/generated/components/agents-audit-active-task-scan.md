@@ -8,13 +8,15 @@
 
 Results
 
-## Used By (3)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-004` | called_by |
 | `tests/unit/audit_scan.bats` | called_by |
 | `tests/unit/audit_scan.bats` | tests_by |
+| `tests/unit/audit_ctl028_completed_status_consistency.bats` | called_by |
+| `tests/unit/audit_ctl028_completed_status_consistency.bats` | tests_by |
 
 ## Related
 

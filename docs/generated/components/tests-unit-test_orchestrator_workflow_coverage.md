@@ -8,6 +8,13 @@
 
 lib symlink so the web helper can import workflow_coverage from PROJECT_ROOT/lib
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/blueprints/orchestrator.py` | calls |
+| `web/blueprints/orchestrator.py` | registers |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_orchestrator_workflow_coverage.yaml`*
 *Last verified: 2026-05-12*

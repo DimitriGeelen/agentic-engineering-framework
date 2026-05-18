@@ -6,6 +6,13 @@
 
 ## What It Does
 
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `lib/pause_cli.py` | uses_by |
+| `tests/unit/test_dispatch_pause.py` | called_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-dispatch_pause.yaml`*
 *Last verified: 2026-05-13*

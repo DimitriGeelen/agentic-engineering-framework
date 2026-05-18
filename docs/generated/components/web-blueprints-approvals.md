@@ -6,7 +6,7 @@
 
 ## What It Does
 
-Approvals older than this are considered expired (seconds)
+T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 
 ## Dependencies (7)
 

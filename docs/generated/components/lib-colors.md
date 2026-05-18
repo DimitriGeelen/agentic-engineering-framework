@@ -20,7 +20,7 @@ Scripts that source lib/paths.sh get colors for free.
 |--------|-------------|
 | `lib/colors.sh` | calls |
 
-## Used By (43)
+## Used By (45)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -67,6 +67,8 @@ Scripts that source lib/paths.sh get colors for free.
 | `tests/unit/lib_upgrade.bats` | tests_by |
 | `tests/unit/lib_version.bats` | called_by |
 | `tests/unit/lib_version.bats` | tests_by |
+| `tests/unit/test_upgrade_downgrade_guard.bats` | called_by |
+| `tests/unit/test_upgrade_downgrade_guard.bats` | tests_by |
 
 ## Related
 

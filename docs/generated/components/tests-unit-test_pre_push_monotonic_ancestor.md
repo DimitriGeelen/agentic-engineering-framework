@@ -16,6 +16,12 @@ ancestor of local sha, the push is genuinely forward in commit time —
 allow. Otherwise (or if remote sha not locally known) fall back to the
 strict-block behaviour T-1602 motivated.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `C-004` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_pre_push_monotonic_ancestor.yaml`*
 *Last verified: 2026-05-14*

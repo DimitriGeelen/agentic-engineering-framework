@@ -6,6 +6,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/termlink_worker.py` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_termlink_worker.yaml`*
 *Last verified: 2026-05-12*

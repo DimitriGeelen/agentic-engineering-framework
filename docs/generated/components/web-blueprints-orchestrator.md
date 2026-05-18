@@ -14,13 +14,15 @@
 | `web/templates/orchestrator.html` | renders |
 | `agents/termlink/termlink.sh` | calls |
 
-## Used By (3)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
 | `tests/unit/test_termlink_list_contract.py` | called_by |
+| `tests/unit/test_orchestrator_workflow_coverage.py` | called_by |
+| `tests/unit/test_orchestrator_workflow_coverage.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-orchestrator.yaml`*

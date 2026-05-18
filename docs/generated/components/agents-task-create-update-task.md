@@ -16,7 +16,7 @@ Usage:
 ./agents/task-create/update-task.sh T-XXX --owner claude-code
 ./agents/task-create/update-task.sh T-XXX --status blocked --reason "Waiting on API key"
 
-## Dependencies (9)
+## Dependencies (11)
 
 | Target | Relationship |
 |--------|-------------|
@@ -29,8 +29,10 @@ Usage:
 | `lib/notify.sh` | calls |
 | `lib/evolution_log.sh` | calls |
 | `lib/reviewer/static_scan.py` | calls |
+| `lib/task_pair_acd.sh` | calls |
+| `lib/task_pair_acd.py` | calls |
 
-## Used By (15)
+## Used By (17)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -49,6 +51,8 @@ Usage:
 | `tests/unit/update_task_episodic_gen.bats` | tests_by |
 | `tests/unit/update_task_yaml_components_emit.bats` | called_by |
 | `tests/unit/update_task_yaml_components_emit.bats` | tests_by |
+| `tests/unit/test_task_pair_acd_gate.bats` | called_by |
+| `tests/unit/test_task_pair_acd_gate.bats` | tests_by |
 
 ## Documentation
 

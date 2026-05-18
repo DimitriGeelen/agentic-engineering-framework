@@ -8,6 +8,12 @@
 
 Force-reload spawn so PROJECT_ROOT-derived constants reflect the tmp dir
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/spawn.py` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_spawn.yaml`*
 *Last verified: 2026-05-06*

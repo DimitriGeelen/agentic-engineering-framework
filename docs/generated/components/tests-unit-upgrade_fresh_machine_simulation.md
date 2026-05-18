@@ -17,6 +17,13 @@ Slim slice (no docker required, runs in any bats environment):
 - scrubbed env (no FRAMEWORK_ROOT / PROJECT_ROOT, minimal PATH)
 - invoke consumer's vendored bin/fw upgrade as a subprocess
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/upgrade.sh` | tests |
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-upgrade_fresh_machine_simulation.yaml`*
 *Last verified: 2026-05-14*

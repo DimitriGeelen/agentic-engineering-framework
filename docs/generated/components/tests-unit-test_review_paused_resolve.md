@@ -8,6 +8,12 @@
 
 Helpers — mirror tests/unit/test_pause_resolve.py
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/app.py` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_review_paused_resolve.yaml`*
 *Last verified: 2026-05-13*

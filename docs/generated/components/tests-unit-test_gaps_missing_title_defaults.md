@@ -17,6 +17,12 @@ These tests pin:
 - missing 'title' field renders as <untitled>, doesn't crash
 - well-formed entries (title + id present) render unchanged
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_gaps_missing_title_defaults.yaml`*
 *Last verified: 2026-05-14*

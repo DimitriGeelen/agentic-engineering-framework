@@ -6,7 +6,11 @@
 
 ## What It Does
 
-Safe directories for file viewer (relative to PROJECT_ROOT)
+T-1764: _VIEWABLE_DIRS and the .md-only restriction were the cause of
+linker/route drift. Replaced by `is_viewable_path` (web/shared.py) which
+both the linker and this route consult. Kept here as a deprecated alias
+for any out-of-tree imports — but contains the FULL list now, not the old
+4-prefix subset.
 
 ## Dependencies (4)
 

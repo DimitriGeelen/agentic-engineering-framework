@@ -6,6 +6,8 @@
 
 ## What It Does
 
+T-1810: paused-dispatch helpers live in lib/ (CLI parity with `fw pause list`).
+
 ### Framework Reference
 
 When agent ACs are complete and human ACs remain:

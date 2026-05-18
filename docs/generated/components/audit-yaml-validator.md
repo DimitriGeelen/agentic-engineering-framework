@@ -19,7 +19,7 @@ audit.sh --cron                       # Shorthand for --output .context/audits/c
 audit.sh schedule install|remove|status  # Manage cron schedule
 Sections: structure, compliance, quality, traceability, enforcement,
 
-## Dependencies (12)
+## Dependencies (14)
 
 | Target | Relationship |
 |--------|-------------|
@@ -35,8 +35,10 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | `lib/watchtower.sh` | calls |
 | `lib/inception_recommendation.sh` | calls |
 | `lib/hook-threshold.py` | calls |
+| `agents/git/lib/secret-scan.sh` | calls |
+| `agents/git/lib/large-file-scan.sh` | calls |
 
-## Used By (15)
+## Used By (21)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -55,6 +57,12 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | `tests/unit/audit_null_timestamp.bats` | tests_by |
 | `tests/unit/lib_pickup.bats` | tests_by |
 | `tests/unit/test_enrich_bats_parser.py` | called_by |
+| `tests/unit/test_arcs_routes.py` | called_by |
+| `tests/unit/test_pre_push_monotonic_ancestor.bats` | tests_by |
+| `tests/unit/audit_ctl028_completed_status_consistency.bats` | called_by |
+| `tests/unit/audit_ctl028_completed_status_consistency.bats` | tests_by |
+| `tests/unit/audit_ctl013_skip_nested_audit.bats` | called_by |
+| `tests/unit/audit_ctl013_skip_nested_audit.bats` | tests_by |
 
 ## Related
 

@@ -33,10 +33,6 @@ Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
 **Required frontmatter fields:**
 - `id`, `name`, `description`, `status`, `workflow_type`, `horizon`, `owner`, `created`, `last_update`
 
-### Horizon (Priority Scheduling)
-
-The `horizon` field controls when a task should be considered for work:
-
 *(truncated — see CLAUDE.md for full section)*
 
 ## Dependencies (3)

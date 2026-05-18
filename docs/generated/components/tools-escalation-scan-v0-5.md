@@ -6,13 +6,14 @@
 
 ## What It Does
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `tests/unit/escalation_scan_v05.bats` | called_by |
 | `tests/unit/escalation_scan_v05.bats` | tests_by |
 | `tools/reparse-historical-parsefails.py` | called_by |
+| `tests/unit/test_cron_generate_shape.bats` | tests_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-escalation-scan-v0-5.yaml`*

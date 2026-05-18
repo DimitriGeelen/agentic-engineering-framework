@@ -10,6 +10,12 @@
 
 Seed minimal PROJECT_ROOT
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `C-004` | calls |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_arcs_routes.yaml`*
 *Last verified: 2026-05-01*

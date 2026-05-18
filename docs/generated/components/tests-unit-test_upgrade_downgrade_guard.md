@@ -17,6 +17,15 @@ differ. Consumer at 1.6.260 + framework at 1.6.170 → silent downgrade,
 only post-facto forensic trail in `upgraded_from` + audit YAML.
 These tests pin:
 
+## Dependencies (4)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/colors.sh` | calls |
+| `lib/upgrade.sh` | calls |
+| `lib/colors.sh` | tests |
+| `lib/upgrade.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_upgrade_downgrade_guard.yaml`*
 *Last verified: 2026-05-14*

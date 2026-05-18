@@ -29,7 +29,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `web/templates/task_detail.html` | renders |
 | `web/subprocess_utils.py` | calls |
 
-## Used By (14)
+## Used By (17)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -46,6 +46,9 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `tests/playwright/test_api_task_complete.py` | called_by |
 | `tests/playwright/test_api_task_inline.py` | called_by |
 | `tests/playwright/test_api_task_mutations.py` | called_by |
+| `tests/unit/test_ac_body_html_comment.py` | called_by |
+| `tests/unit/test_ac_body_html_comment.py` | registered_by |
+| `tests/unit/test_file_route_extensions.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-tasks.yaml`*

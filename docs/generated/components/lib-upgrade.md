@@ -17,7 +17,7 @@ Project-specific content is preserved.
 |--------|-------------|
 | `agents/git/git.sh` | calls |
 
-## Used By (9)
+## Used By (12)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -30,6 +30,9 @@ Project-specific content is preserved.
 | `tests/unit/upgrade_dedupe_user_hooks.bats` | tests_by |
 | `tests/unit/upgrade_duplicate_hook_detection.bats` | called_by |
 | `tests/unit/upgrade_duplicate_hook_detection.bats` | tests_by |
+| `tests/unit/test_upgrade_downgrade_guard.bats` | called_by |
+| `tests/unit/test_upgrade_downgrade_guard.bats` | tests_by |
+| `tests/unit/upgrade_fresh_machine_simulation.bats` | tests_by |
 
 ## Related
 
