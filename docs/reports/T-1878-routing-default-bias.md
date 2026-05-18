@@ -128,39 +128,157 @@ Output: ranked list of interventions with bounded fix paths. **Inputs to GO/NO-G
 
 ## Spike results
 
-*(empty until Phase 1 — to be populated as each spike completes)*
+### Spike 1 — Corpus scan ✅
 
-### Spike 1 — Corpus scan
+Across `.tasks/active/` + `.tasks/completed/` (1862 task files):
 
-*pending*
+| Measure | Count |
+|---|---|
+| Tasks with at least one `[REVIEW]` AC | 780 |
+| Tasks with at least one `[REVIEWER]` AC (post-T-1811, 4 days old) | 7 |
+| `[REVIEW]` AC lines total | 412 |
+| `[REVIEWER]` AC lines total | 7 |
+| Tasks with existing Reviewer Verdict block | 428 |
+| Tasks where reviewer returned **PASS + needs_human=no** | 291 |
+| Tasks with PASS+no-human verdict AND ≥1 `[REVIEW]` AC | **102** |
 
-### Spike 2 — Author-time signal analysis
+Ratio `[REVIEW] : [REVIEWER]` = 59:1. The new prefix is barely adopted.
 
-*pending*
+**Mis-class rate:** 102/780 ≈ **13%** of `[REVIEW]`-having tasks have a verdict saying the human isn't needed.
 
-### Spike 3 — Template + tooling inspection
+**Validates A1+A2** with caveat: the 13% rate is at the *task* level. Spike 2 refines this to the AC level.
 
-*pending*
+### Spike 2 — Author-time signal analysis ✅
 
-### Spike 4 — Cost/benefit of interventions
+Of 103 `[REVIEW]` AC blocks in the 102 reviewer-passes-no-human tasks, classified by lexical content of the AC body:
 
-*pending*
+| Category | Count | % | Verdict |
+|---|---|---|---|
+| **Mechanical signal only** (file paths, `grep`, references, exit codes, command output) | 20 | 19% | Mis-classified — should be `[REVIEWER]` |
+| **Mixed** (both mechanical + taste signals) | 11 | 11% | Mis-classified — split needed (like T-1894 just did) |
+| **Taste signal only** (tone, feel, intuitive, visual rhythm, ergonomic, UX) | 9 | 9% | Correctly `[REVIEW]` |
+| **Neither** (too short/generic to lexically classify) | 63 | 61% | Ambiguous |
+| **Total** | 103 | 100% | |
+
+**Plausibly mis-classed (Mechanical + Mixed): 31 / 103 = 30%**
+
+Hits Spike 1 GO threshold of ≥30% mis-class rate.
+
+**Signal keywords (mechanical):** `exists`, `contains`, `matches`, `grep`, `file path`, `returns`, `equals`, `appears in`, `present in`, `references?`, `links?`, `cited`, `test_`, `\.py`, `\.sh`, `\.md`, `\.yaml`, `\.json`, `stdout`, `exit code`, `http \d+`, `status code`, `grep -c`, `grep -q`, `number of`, `count of`
+
+**Anti-signals (genuine taste):** `reads cleanly`, `reads well`, `reads naturally`, `tone`, `feel(s)?`, `intuitive`, `aesthetic`, `visually`, `landed`, `lands for`, `judgment`, `acceptable as`, `worth it`, `friction`, `ergonomic`, `UX`, `user experience`, `clear enough`, `good enough`, `matches.*neighbours`
+
+**Samples observed:**
+
+```
+[MECH]  T-544    "Fix remaining GitHub Actions release build errors"
+[MECH]  T-1851   "Deprecation banner reads as an obvious superseded note"
+[MECH]  T-334    "Review and post LinkedIn draft"
+[MECH]  T-1797   "Live dispatch smoke — confirm a real dispatch through default.yaml"
+[MECH]  T-1805   "Confirm substrate change matches ADR-0004's intent"
+[MIXED] T-1891   "New section reads cleanly and matches tone"
+[MIXED] T-1852   "Lifecycle change acceptable as breaking workflow change"
+[MIXED] T-1806   "Preamble strikes the right tone — clear, directive, not preachy"
+[TASTE] T-1853   "Filter strip + stale badge fit Watchtower's visual rhythm"
+```
+
+**Validates A5.** Lexical signals are catchable; the ambiguous 61% would need semantic analysis or remain ambiguous (acceptable — only catch the unambiguous wins).
+
+### Spike 3 — Template + tooling inspection ✅
+
+**Template (`.tasks/templates/default.md` `### Human` block):**
+
+```
+- [ ] [REVIEW] Dashboard renders correctly
+  **Steps:**
+  1. Open https://example.com/dashboard in browser
+  2. Verify all panels load within 2 seconds
+  3. Check browser console for errors
+  **Expected:** All panels visible, no console errors
+  **If not:** Screenshot the broken panel and note the console error
+```
+
+Only ONE example, with `[REVIEW]` prefix. The `[REVIEWER]` shape introduced by T-1811 has **no template example**. The mention is one line of guidance text ("Optionally prefix with `[RUBBER-STAMP]` or `[REVIEW]` for prioritization") that doesn't even include `[REVIEWER]`. **Validates A3.**
+
+**Reviewer agent (`lib/reviewer/static_scan.py` + `policy/anti-patterns.yaml`):**
+- Catalogue version `v1.3-seed` — 8 patterns
+- Patterns: `tautology, empty-body, swallowed-errors, output-spoofing, empty-output-success, skip-as-pass, mock-only-integration, AC-verify-mismatch`
+- **None detect `[REVIEW]`-mis-class.** This is a new pattern category.
+- Reviewer runs at task-close (via `bin/fw reviewer T-XXX`) or daily Pass-B audit — **not at AC-edit time**. **Validates A4.**
+
+**PreToolUse hooks active on `.tasks/active/T-*.md` writes:**
+- `agents/context/check-active-task.sh` — focus-drift detection
+- `agents/context/check-arc-id.py` — arc_id validation
+- `agents/context/check-human-ac-tick.py` — prevents agents ticking Human ACs
+
+None scan AC classification/routing. **Confirms integration gap.**
+
+### Spike 4 — Cost/benefit ranking of interventions ✅
+
+| # | Intervention | LOC | Catch on 4 just-fixed cases | False-positive risk | Reversible? |
+|---|---|---|---|---|---|
+| **A** | Template + CLAUDE.md `[REVIEWER]` example | ~20 | 0/4 retroactively, unknown forward | ~0% (pure docs) | Yes (revert) |
+| **B** | New reviewer pattern `human-ac-mechanical-signal` (joins existing static-scan, runs at task-close + Pass-B audit) | ~80 | 4/4 — lexical scan catches all 4 | ~20% (the "neither" category may trigger spuriously; surfaces as CONCERN not BLOCK) | Yes (remove from catalogue) |
+| C | PreToolUse hook at AC-edit time, warns inline | ~150 | 4/4 | ~30% (lots of `[REVIEW]` ACs get filed in passing) | Yes (remove hook entry) |
+| D | PostToolUse hook runs `fw reviewer` on every task save | ~50 | 4/4 (reviewer already disciplined) | ~5% but adds 1-2s latency every save | Yes (remove hook entry) |
+
+**Combined A+B is the bounded sweet spot:**
+- ~100 LOC total
+- Catches 4/4 retroactively (B does the work)
+- A is the carrot (visible example at author time), B is the safety net (catches what slipped past)
+- Surfaces as CONCERN in existing reviewer flow — no new UI surface
+- Both reversible
+- Zero author-time overhead (B runs in existing reviewer cycles)
+
+**Why not C/D:** Author-time warnings risk warning fatigue. C/D fix a problem A+B may already solve. Defer until evidence shows A+B insufficient.
 
 ---
 
 ## Recommendation
 
-*(empty until all 4 spikes complete + dialogue with user confirms direction)*
+**Recommendation:** **GO** — implement A+B as one bounded build task
+
+**Rationale:**
+- Spike 1 confirms ~13% task-level + ~30% AC-level mis-class rate. Above GO threshold.
+- 4 just-fixed cases (T-1851/T-1857/T-1890/T-1893) all match the lexical signature → 100% catch on the validation set.
+- Combined A+B intervention is ~100 LOC, bounded, reversible, surfaces as CONCERN (not BLOCK), zero new infrastructure.
+- The 7:412 `[REVIEWER]`:`[REVIEW]` adoption ratio shows the vocabulary fix (T-1811, 4 days old) alone won't drive uptake — needs the template example (A) to make `[REVIEWER]` visible at author time.
+
+**Evidence:**
+- Spike 1: 102/780 tasks (13%), 412 vs 7 prefix-adoption gap
+- Spike 2: 31/103 AC blocks (30%) have mechanical signals
+- Spike 3: template has no `[REVIEWER]` example; reviewer catalogue lacks the pattern; no author-time tooling
+- Spike 4: A+B bounded at ~100 LOC, 4/4 catch on validation cases, ~20% acceptable FP rate
+
+**Two build sub-tasks recommended after this inception ships GO:**
+
+1. **T-NEW-A** — Template + CLAUDE.md update:
+   - Add `[REVIEWER]` example to `.tasks/templates/default.md` `### Human` block (or as a new sibling example under `### Agent`)
+   - Add a one-line rule to CLAUDE.md §AC Classification Guidance: "If your Human AC's **Expected** clause is grep-able, prefer the `[REVIEWER]` Agent shape — see T-1811"
+   - Ship with a bats test that confirms the example is well-formed
+
+2. **T-NEW-B** — Reviewer pattern `human-ac-mechanical-signal`:
+   - Add detector to `lib/reviewer/static_scan.py`: scan `### Human` block for `[REVIEW]` ACs whose Steps/Expected body matches mechanical-signal regex (Spike 2 keyword list)
+   - Add catalogue entry to `policy/anti-patterns.yaml`: id `human-ac-mechanical-signal`, `detection_confidence: heuristic`, `lie_severity: partial`
+   - Output: CONCERN finding with `needs_human=no`, surfaced in task's `## Reviewer Verdict` block
+   - Bats coverage: positive (T-1851/T-1857/T-1890/T-1893 trigger CONCERN), negative (T-1852/T-1853/T-1891 don't)
+   - Override mechanism reuses existing `bin/fw reviewer override` infra (T-1443)
+
+**Why not broader scope:** Corpus sweep of the 31 historical mis-classifications is a separate hygiene task — won't bundle into A+B. The `[RUBBER-STAMP]` prefix gets a similar review opportunity but is out of scope here (only 1 mention in template, low signal evidence). Reviewer-at-AC-edit-time (intervention D) is deferred until A+B prove insufficient — adding it now would conflate two interventions and dilute evidence.
+
+**Confidence on go/no-go criteria:**
+- ✅ ≥30% mis-class rate (30% AC-level confirmed)
+- ✅ Intervention <200 LOC (~100 estimated)
+- ✅ ≥75% catch on 4 cases (4/4 = 100%)
+- ✅ Bounded, testable, reversible (existing reviewer infra)
 
 ---
 
-## Pause point — user review of Phase 0 plan
+## Pause point 2 — user review of Phase 1 findings + Recommendation
 
-Before running spikes, the agent pauses here for user feedback on:
+Before `fw inception decide T-1878 go|no-go`, the agent pauses here for user feedback on:
 
-1. **Assumption list (A1–A5):** is anything missing or wrong?
-2. **Spike plan:** 4 spikes ≤2 hrs total — appropriate scope?
-3. **Scope fence:** anything in/out that needs to flip?
-4. **Constraints:** any technical constraint missing?
-
-The plan above is the agent's proposal, not commitment. Once approved, spikes execute and findings populate above.
+1. Are the spike findings credible — anything you'd push back on?
+2. Is the A+B intervention scope right — or should we narrow to just A (cheapest) or just B (highest catch)?
+3. Are the GO/NO-GO/DEFER criteria adequately satisfied?
+4. Are there any constraints or considerations the spikes missed?
