@@ -624,6 +624,8 @@ When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
 
 **RUBBER-STAMP conversion rule:** If a Human AC has `[RUBBER-STAMP]` prefix and its Steps section contains only deterministic shell commands with clear expected output, it SHOULD be an Agent AC with verification commands in `## Verification` instead. The machine is more reliable than a human for pass/fail checks.
 
+**Author-time default (T-1878):** When you are *writing* a Human AC and your Expected clause is grep-able / file-exists / structural (deterministic shell check), default to `[REVIEWER]` and move the AC to `### Agent` with the reviewer command in `## Verification`. Only keep `[REVIEW]` if verification genuinely needs human taste (tone, layout rhythm, blast-radius judgment). T-1878 found a 412:7 `[REVIEW]:[REVIEWER]` adoption gap and 13% mis-classification rate on partial-completes — the prefix existed, the author-time nudge didn't. T-1894 manually re-classed 4 such ACs across arc-grooming; T-1896 (the static-scan catch) closes the gap structurally for the next round. Reasoning: `docs/reports/T-1878-routing-default-bias.md`.
+
 **Three Human-AC prefixes (T-1811):** The classification above is binary at the Agent/Human level, but Human ACs themselves have three sub-classes by who *can* verify them:
 
 | Prefix | When to use | Verifier |
@@ -666,8 +668,9 @@ When writing `### Human` acceptance criteria, each criterion MUST include:
 - **If not:** diagnostic steps or fallback action
 
 Optionally prefix the criterion with a confidence marker:
-- `[RUBBER-STAMP]` — mechanical action, no judgment needed (publish, deploy, click)
-- `[REVIEW]` — genuine human judgment required (tone, UX, architecture decisions)
+- `[RUBBER-STAMP]` — mechanical action, no judgment needed (publish, deploy, click) — convert to Agent AC + `## Verification`
+- `[REVIEWER]` — static-scan-verifiable (pattern / wording / convention) — convert to Agent AC + `bin/fw reviewer T-XXX` in `## Verification` (T-1811, T-1878)
+- `[REVIEW]` — genuine human judgment required (tone, UX, architecture decisions, blast-radius)
 
 **Example:** `- [ ] [REVIEW] Voice/tone matches writing style` with **Steps:** (read N paragraphs, compare to reference, check anti-patterns), **Expected:** (reads like peer discussion, not product pitch), **If not:** (note paragraphs for revision).
 
