@@ -4,20 +4,20 @@ name: "audit-warn + fw task archive-eligible sweep — catch stuck-partial-compl
 description: >
   audit-warn + fw task archive-eligible sweep — catch stuck-partial-complete after Human-AC re-class (L-403)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-004, bin/fw, tests/unit/task_archive_eligible.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T18:39:58Z
-last_update: 2026-05-18T18:39:58Z
-date_finished: null
+last_update: 2026-05-18T18:58:02Z
+date_finished: 2026-05-18T18:58:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -173,3 +173,20 @@ bin/fw task archive-eligible --dry-run 2>&1 | grep -qE 'no .*stuck|0 task.* elig
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1903-audit-warn--fw-task-archive-eligible-swe.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a7261ee3
+- **Timestamp:** 2026-05-18T19:01:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **skip-as-pass** (severe, deterministic) @ Verification:line 3
+     - evidence: `bin/fw task archive-eligible --dry-run 2>&1 | grep -qE 'no .*stuck|0 task.* eligible|sweep'`
+
+### 2026-05-18T18:58:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

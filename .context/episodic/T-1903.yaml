@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1903: audit-warn + fw task archive-eligible sweep — catch stuck-partial-complete after Human-AC re-class (L-403)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T19:01:59Z
+# ============================================================================
+
+task_id: T-1903
+task_name: "audit-warn + fw task archive-eligible sweep — catch stuck-partial-complete after Human-AC re-class (L-403)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T18:39:58Z
+completed: 2026-05-18T18:58:02Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-18T20:48:10+02:00
+last_commit: 2026-05-18T20:57:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit CTL-029 + fw task archive-eligible sweep (L-403). pin PROJECT_ROOT to test sandbox in archive-eligible bats setup
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` (or wherever structure-checks live) gains a check that scans `.tasks/active/T-*.md` for `status: work-completed` files whose Acceptance Criteria section, after HTML-comment strip, contains zero `- [ ]` checkboxes. WARN when count > 0, lists task files, mitigation: `bin/fw task archive-eligible`.'
+  - '`bin/fw task archive-eligible` new sub-verb in `lib/task.sh`. For each archive-eligible task (same detection as audit check), re-invokes the partial-complete recheck branch of `update-task.sh` (the existing line ~941 logic). Idempotent — running on an empty set is a no-op exit 0.'
+  - '`bats tests/unit/task_archive_eligible.bats` covers: (a) detects a synthetic stuck task (active/, status work-completed, all ACs ticked, owner: human), (b) moves it to completed/ after sweep, (c) no-op when no stuck tasks, (d) leaves real partial-completes (with unchecked Human ACs) alone.'
+  - '`fw audit` includes the new check; running `bin/fw audit 2>&1 | grep -q "archive-eligible\|stuck partial-complete"` returns 0 when the check is present (PASS or WARN — either is fine; absence is the failure mode).'
+  - '[REVIEWER] Audit check WARN message names the mitigation (`bin/fw task archive-eligible`) on the same line as the count, not in a separate block. Verified by inspection of `agents/audit/audit.sh` CTL-029 warn() call — the WARN line itself contains "run: bin/fw task archive-eligible".'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - '.tasks/active/T-1903-audit-warn--fw-task-archive-eligible-swe.md'
+  - 'tests/unit/task_archive_eligible.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T20:48:10"
+    action: "T-1903: audit CTL-029 + fw task archive-eligible sweep (L-403)"
+  - time: "2026-05-18T20:57:57"
+    action: "T-1903: pin PROJECT_ROOT to test sandbox in archive-eligible bats setup"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 2
+  files_changed: 4
+  lines_added: 475
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1903-audit-warn--fw-task-archive-eligible-swe.md
+generated_by: context-agent-hybrid
