@@ -15,13 +15,42 @@
     .completion-check ol { margin: 0.3em 0 0 1em; }
     .focus-pill { background: var(--pico-primary); color: white; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; vertical-align: middle; }
     .missing { color: var(--pico-muted-color); font-style: italic; }
+    /* T-1910: inline-editable h1 name */
+    .editable-arc-h1 { cursor: text; }
+    .editable-arc-h1:hover { text-decoration: underline dotted; text-decoration-thickness: 1px; }
+    .arc-h1-input { width: 100%; font-size: inherit; font-weight: inherit; padding: 0.1rem 0.3rem; margin: 0; }
+    /* T-1910: focus toggle button mirrors arcs_index */
+    .focus-dot-btn {
+        background: none; border: none; padding: 0; margin: 0 0.4rem 0 0;
+        cursor: pointer; display: inline-flex; align-items: center;
+        vertical-align: middle;
+    }
+    .focus-dot {
+        display: inline-block; width: 0.75em; height: 0.75em;
+        border-radius: 50%; vertical-align: middle;
+    }
+    .focus-dot.on { background: var(--pico-primary); }
+    .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
+    .focus-dot-btn:hover .focus-dot { box-shadow: 0 0 0 2px var(--pico-primary-focus, rgba(0,127,255,0.3)); }
 </style>
 
 <p><a href="/arcs">← All arcs</a></p>
 
-<article class="arc-header {% if arc.status == 'closed' %}closed{% endif %}">
+<article class="arc-header {% if arc.status == 'closed' %}closed{% endif %}" data-arc-slug="{{ arc_slug }}">
     <h1>
-        {{ arc.get('name', arc_id) }}
+        {# T-1910 Slice 2: focus toggle + inline-editable name #}
+        <form hx-post="/api/arc/{{ arc_slug }}/focus" hx-target="this" hx-swap="outerHTML"
+              style="display: inline; margin: 0; vertical-align: middle;">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="focus-dot-btn"
+                    aria-label="{% if focused %}Clear focus{% else %}Focus this arc{% endif %}">
+                <span class="focus-dot {% if focused %}on{% else %}off{% endif %}"
+                      title="{% if focused %}Focused (click to clear){% else %}Click to focus{% endif %}"
+                      data-focused="{{ 'true' if focused else 'false' }}"></span>
+            </button>
+        </form>
+        <span class="editable-arc-h1" title="{{ arc.get('name', arc_id) }}"
+              onclick="startArcH1Edit(this, '{{ arc_slug }}')">{{ arc.get('name', arc_id) }}</span>
         {% if focused %}<span class="focus-pill">FOCUSED</span>{% endif %}
     </h1>
     <p class="muted">id: <code>{{ arc_id }}</code></p>
@@ -144,3 +173,54 @@
 <h2>Arc closed</h2>
 <p>Decision: <strong>{{ arc.decision or 'unspecified' }}</strong>{% if arc.closed_at %} · {{ arc.closed_at }}{% endif %}</p>
 {% endif %}
+
+<script>
+/* T-1910 Slice 2: inline-edit the arc h1 name (mirrors arcs_index.html). */
+function startArcH1Edit(span, arcSlug) {
+    var current = span.textContent.trim();
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = current;
+    input.className = 'arc-h1-input';
+    var done = false;
+
+    function finish(newText) {
+        if (done) return;
+        done = true;
+        span.textContent = newText;
+        span.title = newText;
+        if (input.parentNode) input.replaceWith(span);
+    }
+    function save() {
+        if (done) return;
+        var newName = input.value.trim();
+        if (!newName || newName === current) { finish(current); return; }
+        var fd = new FormData();
+        fd.append('name', newName);
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) fd.append('_csrf_token', meta.content);
+        fetch('/api/arc/' + arcSlug + '/name', { method: 'POST', body: fd })
+            .then(function(r) {
+                if (r.ok) {
+                    finish(newName);
+                    if (typeof showToast === 'function') showToast('Arc name saved', 'success');
+                } else {
+                    if (typeof showToast === 'function') showToast('Save failed', 'error');
+                    finish(current);
+                }
+            })
+            .catch(function() {
+                if (typeof showToast === 'function') showToast('Network error', 'error');
+                finish(current);
+            });
+    }
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); save(); }
+        if (e.key === 'Escape') { finish(current); }
+    });
+    span.replaceWith(input);
+    input.focus();
+    input.select();
+}
+</script>

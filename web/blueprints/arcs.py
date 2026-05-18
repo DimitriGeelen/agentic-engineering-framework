@@ -481,31 +481,45 @@ def arcs_index():
     all_arcs = _list_arcs()
     counts = _state_counts(all_arcs)
 
+    # T-1910 Slice 4: filters orthogonal to view mode. Apply BEFORE choosing view.
+    focused_only = request.args.get("focused", "").lower() in ("1", "true", "yes")
+    stale_only = request.args.get("stale", "").lower() in ("1", "true", "yes")
+    arcs_filtered = all_arcs
+    if focused_only:
+        arcs_filtered = [a for a in arcs_filtered if a.get("focused")]
+    if stale_only:
+        arcs_filtered = [a for a in arcs_filtered if a.get("stale")]
+
     # Backward-compat: ?status=… still renders the legacy flat list.
+    # T-1910: also expose `?view=list` as the explicit see-all switch (same renderer).
     legacy_filter = request.args.get("status")
-    if legacy_filter is not None:
-        if legacy_filter not in _FILTER_LABELS:
+    view = request.args.get("view", "").lower()
+    if legacy_filter is not None or view == "list":
+        if legacy_filter is not None and legacy_filter not in _FILTER_LABELS:
             legacy_filter = _DEFAULT_FILTER
-        arcs = _filter_arcs(all_arcs, legacy_filter)
+        arcs = _filter_arcs(arcs_filtered, legacy_filter) if legacy_filter else arcs_filtered
         return render_page(
             "arcs_index.html",
             page_title="Arcs",
             arcs=arcs,
             all_arcs_count=len(all_arcs),
-            current_filter=legacy_filter,
+            current_filter=legacy_filter or "all",
             filter_labels=list(_FILTER_LABELS),
             state_counts=counts,
             stale_days=_STALE_DAYS,
             kanban_mode=False,
+            focused_only=focused_only,
+            stale_only=stale_only,
+            view="list",
         )
 
-    # Default: kanban mode — group arcs by status.
+    # Default: kanban mode — group filtered arcs by status.
     columns = []
     for state in _LIFECYCLE_STATES:
         columns.append({
             "status": state,
-            "arcs": [a for a in all_arcs if a.get("status") == state],
-            "count": counts.get(state, 0),
+            "arcs": [a for a in arcs_filtered if a.get("status") == state],
+            "count": sum(1 for a in arcs_filtered if a.get("status") == state),
         })
     return render_page(
         "arcs_index.html",
@@ -515,6 +529,9 @@ def arcs_index():
         state_counts=counts,
         stale_days=_STALE_DAYS,
         kanban_mode=True,
+        focused_only=focused_only,
+        stale_only=stale_only,
+        view="board",
     )
 
 
@@ -543,9 +560,113 @@ def arc_detail(arc_id: str):
         page_title=f"Arc: {arc.get('name', arc_id)}",
         arc=arc,
         arc_id=arc_id,
+        arc_slug=arc_slug,
         constituents=constituents,
         stats=stats,
         focused=focused,
         has_specialized_view=has_specialized_view,
         reports=reports,
+    )
+
+
+# ── T-1910: Slice 2 — inline edit endpoints ──────────────────────────────
+# Updates a single top-level YAML field in .context/arcs/<slug>.yaml.
+# Pure-regex (not yaml.dump) to preserve formatting, comments, and field order.
+
+_ARC_ID_RE = re.compile(r"^(?:arc-\d+|[a-z][a-z0-9-]*)$")
+
+
+def _update_arc_yaml_field(slug: str, field: str, value: str) -> tuple[bool, str]:
+    """Regex-update a single top-level scalar field in the arc YAML file.
+
+    Mirrors the pattern used in web/blueprints/tasks.py:_update_frontmatter_field
+    so the surface behaves the same for arcs and tasks.
+    """
+    path = _arcs_dir() / f"{slug}.yaml"
+    if not path.is_file():
+        return False, f"Arc '{slug}' not found"
+    try:
+        text = path.read_text()
+    except OSError as e:
+        return False, f"Read error: {e}"
+    # Quote the value so YAML-special characters don't break parsing.
+    safe = value.replace("\\", "\\\\").replace('"', '\\"')
+    quoted = f'"{safe}"'
+    pattern = re.compile(rf'^({re.escape(field)}:\s*)(?:"[^"]*"|\S[^\n]*)?$', re.MULTILINE)
+    if not pattern.search(text):
+        return False, f"Field '{field}' not found in arc YAML"
+    new_text = pattern.sub(rf"\g<1>{quoted}", text, count=1)
+    try:
+        path.write_text(new_text)
+    except OSError as e:
+        return False, f"Write error: {e}"
+    return True, ""
+
+
+@bp.route("/api/arc/<arc_id>/name", methods=["POST"])
+def update_arc_name(arc_id):
+    """T-1910: update arc YAML name field; return updated card-name HTML."""
+    if not _ARC_ID_RE.match(arc_id):
+        abort(404)
+    slug = _resolve_arc_slug(arc_id)
+    if slug is None:
+        abort(404)
+    name = (request.form.get("name", "") or "").strip()
+    if not name:
+        return '<p style="color: var(--pico-del-color);">Name cannot be empty</p>', 400
+    if len(name) > 200:
+        return '<p style="color: var(--pico-del-color);">Name too long (max 200)</p>', 400
+    ok, err = _update_arc_yaml_field(slug, "name", name)
+    if not ok:
+        return f'<p style="color: var(--pico-del-color);">Error: {err}</p>', 500
+    # Escape for HTML attribute + body
+    import html as _html
+    safe = _html.escape(name, quote=True)
+    return f'<span class="arc-card-name editable-arc-name" title="{safe}">{safe}</span>'
+
+
+@bp.route("/api/arc/<arc_id>/focus", methods=["POST"])
+def toggle_arc_focus(arc_id):
+    """T-1910: toggle focus for this arc (set if unfocused, clear if focused).
+
+    Returns the updated focus-dot span HTML so htmx can swap it in place.
+    """
+    if not _ARC_ID_RE.match(arc_id):
+        abort(404)
+    slug = _resolve_arc_slug(arc_id)
+    if slug is None:
+        abort(404)
+
+    focus_path = _focus_file()
+    current = _read_focus()
+    # The focus file stores either the slug or the arc-NNN id (whichever was
+    # written by `fw arc focus`). Resolve current to a slug for comparison.
+    current_slug = None
+    if current:
+        # current might be slug or arc-NNN — _resolve_arc_slug handles both
+        current_slug = _resolve_arc_slug(current) or current
+
+    now_focused = (current_slug != slug)  # toggle
+
+    focus_path.parent.mkdir(parents=True, exist_ok=True)
+    if now_focused:
+        body = (
+            "# Arc focus (T-1661). Set via 'fw arc focus <arc-id>'.\n"
+            f"current_arc: {slug}\n"
+            "focused_at: now\n"
+        )
+    else:
+        body = (
+            "# Arc focus (T-1661). Set via 'fw arc focus <arc-id>'.\n"
+            "current_arc: null\n"
+            "focused_at: null\n"
+        )
+    focus_path.write_text(body)
+
+    cls = "on" if now_focused else "off"
+    title = "Focused" if now_focused else "Not focused"
+    return (
+        f'<span class="focus-dot {cls}" '
+        f'title="{title}" '
+        f'data-focused="{ "true" if now_focused else "false" }"></span>'
     )
