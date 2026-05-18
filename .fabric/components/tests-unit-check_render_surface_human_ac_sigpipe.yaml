@@ -1,0 +1,20 @@
+id: tests/unit/check_render_surface_human_ac_sigpipe.bats
+name: check_render_surface_human_ac_sigpipe
+type: script
+subsystem: unknown
+location: tests/unit/check_render_surface_human_ac_sigpipe.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-18
+created_by: unknown
