@@ -696,6 +696,23 @@ Any change to `fw upgrade`, `fw vendor`, or `fw init` (the three consumer-facing
 
 **Why this rule exists:** T-1633 origin — `fw upgrade` worked on the framework developer's `/opt/999-Agentic-Engineering-Framework` but crashed on every consumer in the wild because path knowledge was implicitly hard-coded. Every consumer-facing flow must run from a clean environment with no developer artifacts; the bats simulation is the cheapest enforcement (no docker dependency, runs in any CI/dev environment). A docker-container variant remains a release-gate follow-up for higher-confidence "true fresh machine" coverage.
 
+### Hook Bypass Contract Parity (T-1890, L-399)
+
+When a PreToolUse hook introduces a bypass contract — e.g. "append `--switch-focus`" or "prefix `FW_X=1`" — the downstream consumers of **every command pattern the hook gates** must honour that contract. A hook that recommends a flag whose downstream parser rejects it as "Unknown option" is a silent governance failure: the agent's workaround (direct-invoke, env-strip, or a different command shape) escapes the regex and bypasses the gate with no audit trail.
+
+**Authoring rule** — when adding a bypass mechanism to a hook:
+
+1. **Identify every command pattern the hook gates.** Each pattern routes to a different downstream consumer (a fw sub-script, an external tool like `git`, etc.).
+2. **For each consumer under our control** (fw sub-scripts), add a silent no-op branch that consumes the flag without rejection.
+3. **For consumers NOT under our control** (`git commit`, third-party CLIs) — flags fundamentally cannot work, because the external parser rejects unknown options. Use an **env-var prefix** mechanism (`FW_X=1 <command>`) which is invisible to downstream parsers.
+4. **Ship both mechanisms when the hook gates a mix of internal + external patterns** (the focus-drift gate is the canonical case: fw commands work with the flag, `git commit` only with the env var).
+5. **Pin the contract with an end-to-end bats test** that exercises hook-allow → consumer-accepts → log-entry-written, **per mechanism, per gated pattern**. Unit-testing the hook in isolation is not sufficient; the bug lives at the join, not in either side alone.
+6. **Block message must name every mechanism** with one-line guidance on when to pick which, so the agent doesn't fall back to a workaround.
+
+**Why this rule exists:** T-1890 origin — T-1730 shipped the `--switch-focus` bypass contract for the focus-drift gate, but `update-task.sh`, `lib/{learning,pattern,decision}.sh`, and `git commit` all rejected the flag. The agent worked around via direct-invoke `bash agents/task-create/update-task.sh` — a path the hook's regex didn't match. Result: the gate was silently circumvented for ~3 weeks across multiple sessions, with the bypass log showing entries for command lines that never actually completed (the flag-rejection happened *after* the hook logged). Producer/consumer split: the contract shipped on one side only. See L-399 for the broader class.
+
+**The test:** when adding a bypass mechanism, ask: "Can I reach the post-mechanism path *end-to-end* in a real session?" If the answer is "only after I patch four other files and add the env-var fallback", do all of that in the same task. If you can't ship end-to-end in one commit, the contract is incomplete.
+
 ### Presenting Work for Human Review (T-679)
 When agent ACs are complete and human ACs remain:
 

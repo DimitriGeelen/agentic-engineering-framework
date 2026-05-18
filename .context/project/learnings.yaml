@@ -3054,3 +3054,10 @@ X'` returning empty group."
   date: 2026-05-17
   context: T-1886 RCA Candidates A+B — template hint (T-1887) + PostToolUse nudge (T-1888)
   application: ship — template extended + PostToolUse hook deployed
+- id: L-399
+  learning: "When a PreToolUse hook introduces a bypass contract (e.g. 'append --flag' to override a block), the downstream consumers of every command pattern the hook gates must accept the flag as a silent no-op. Otherwise the hook recommendation produces 'Unknown option' from the consumer's parser, and agents work around via direct-invoke (a path the hook's regex doesn't match) — silently circumventing the gate with no audit trail. Worse: --flag mechanism fundamentally cannot cover patterns that route to external tools (e.g. 'git commit', which rejects unknown flags). For universal coverage, pair --flag with a FW_X=1 env-var prefix: flag covers fw commands whose parsers are under our control, env var covers everything else. End-to-end bats test must exercise the full path (hook allow → consumer accepts → log written) for each mechanism, on each gated pattern. Origin: T-1890 — focus-drift gate (T-1730) shipped flag contract on hook side only; update-task.sh + lib/{learning,pattern,decision}.sh + git all rejected --switch-focus until T-1890 fixed all four consumers and added env-var path."
+  source: P-001
+  task: T-1890
+  date: 2026-05-18
+  context: Added via context agent
+  application: TBD
