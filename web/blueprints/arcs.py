@@ -670,3 +670,90 @@ def toggle_arc_focus(arc_id):
         f'title="{title}" '
         f'data-focused="{ "true" if now_focused else "false" }"></span>'
     )
+
+
+# T-1911 / T-1902: arc close-review Watchtower surface.
+# GET renders the close form; POST shells to `fw arc close --from-watchtower`,
+# which is the §ACD-exempt path designed for exactly this use case (T-1671).
+# That answers the user's recurring question "why can't agent close" — agent
+# CAN, on the human's behalf when the human clicks Submit here.
+
+@bp.route("/arcs/<arc_id>/close", methods=["GET", "POST"])
+def arc_close_surface(arc_id):
+    from flask import redirect
+
+    arc = _read_arc(arc_id)
+    if arc is None:
+        abort(404, description=f"Arc '{arc_id}' not registered.")
+    arc_slug = str(arc.get("slug") or arc_id).strip()
+
+    status = str(arc.get("status") or "").strip()
+    if status in ("closed", "abandoned"):
+        return redirect(f"/arcs/{arc_slug}")
+
+    error_msg = None
+
+    if request.method == "POST":
+        demo_mode = (request.form.get("demo_mode") or "").strip()
+        demo_value = (request.form.get("demo_value") or "").strip()
+        decision = (request.form.get("decision") or "").strip()
+        justification = (request.form.get("justification") or "").strip()
+
+        if demo_mode not in ("path", "url", "none"):
+            error_msg = "Pick a demo mode: file path, URL, or 'none'."
+        elif demo_mode == "none" and len(justification) < 30:
+            error_msg = "demo=none requires a justification of at least 30 characters (§ACD)."
+        elif demo_mode in ("path", "url") and not demo_value:
+            error_msg = f"Provide the {demo_mode} demo value."
+        else:
+            demo_arg = "none" if demo_mode == "none" else demo_value
+            cmd = [
+                "bin/fw", "arc", "close", arc_slug,
+                "--from-watchtower",
+                "--demo", demo_arg,
+            ]
+            if decision:
+                cmd += ["--decision", decision]
+            if demo_mode == "none":
+                cmd += ["--justification", justification]
+
+            try:
+                result = subprocess.run(
+                    cmd, cwd=str(PROJECT_ROOT),
+                    capture_output=True, text=True, timeout=30,
+                )
+            except (subprocess.SubprocessError, OSError) as e:
+                result = None
+                error_msg = f"Failed to invoke fw arc close: {e}"
+
+            if result is not None:
+                if result.returncode == 0:
+                    return redirect(f"/arcs/{arc_slug}")
+                err_lines = (result.stderr or "").strip().splitlines()
+                error_msg = err_lines[0] if err_lines else f"fw arc close exited {result.returncode}"
+                if len(err_lines) > 1:
+                    error_msg += " — " + err_lines[1]
+
+    constituents = _resolve_constituents(arc)
+    stats = _completion_stats(constituents)
+    focus_val = _read_focus()
+    arc_numeric = str(arc.get("id") or "").strip()
+    focused = (focus_val == arc_slug or (arc_numeric and focus_val == arc_numeric))
+    reports = _arc_reports(arc_slug)
+
+    return render_page(
+        "arc_close.html",
+        page_title=f"Close arc: {arc.get('name', arc_id)}",
+        arc=arc,
+        arc_id=arc_id,
+        arc_slug=arc_slug,
+        constituents=constituents,
+        stats=stats,
+        focused=focused,
+        reports=reports,
+        error_msg=error_msg,
+        prev_demo_mode=request.form.get("demo_mode", "") if request.method == "POST" else "",
+        prev_demo_value=request.form.get("demo_value", "") if request.method == "POST" else "",
+        prev_decision=request.form.get("decision", "") if request.method == "POST" else "",
+        prev_justification=request.form.get("justification", "") if request.method == "POST" else "",
+    )
