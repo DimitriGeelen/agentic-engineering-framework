@@ -551,6 +551,7 @@ def _path_python_import_covered(path: str, verif_text: str) -> bool:
 _HUMAN_AC_MECHANICAL_RE = re.compile(
     r"""(?ix)
     \b(
+        # === I/O-checking dialect (T-1896 original) ===
         grep\s+-[qcv]?       |
         wc\s+-l              |
         \bexit\s+code\b      |
@@ -569,7 +570,25 @@ _HUMAN_AC_MECHANICAL_RE = re.compile(
         bats\s+tests/        |
         pytest\s+tests/      |
         \brow\s+(written|appended) |
-        \bstatus:\s*\w+
+        \bstatus:\s*\w+      |
+        # === Conformance-checking dialect (T-1897 widening) ===
+        # "block message names X / names the X / names current focus"
+        \bnames?\s+(the\s+|current\s+|missing\s+)?\S |
+        # "shows X / shows the Y / shows current Z"  (NB: taste gate suppresses
+        # "shows good", "shows rhythm" via _HUMAN_AC_TASTE_RE)
+        \bshows?\s+(the\s+|current\s+|missing\s+)?\S |
+        # "points at X / points to X"
+        \bpoints?\s+(at|to)\b |
+        # "contains the override flag / contains the focus name"
+        \bcontains?\s+the\s+\S+ |
+        # "override flag / bypass mechanism / override env var" — meta-vocabulary
+        \b(override|bypass)\s+(flag|env\s+var|mechanism|syntax)\b |
+        # "audit log row appended" / "audit row appended to .context/audits/..."
+        \baudit\s+(log\s+)?row\s+(appended|written)\b |
+        # "block-message names" / "gate refusal names" — composite conformance
+        \b(block[- ]message|gate\s+(refusal|message))\s+(names?|shows?|contains?) |
+        # "names missing X" (gate refusal pattern from T-1762)
+        \bnames?\s+missing\s+\S
     )
     """
 )
@@ -644,8 +663,14 @@ def detect_human_ac_mechanical_signal(ac_section: str) -> list[Finding]:
         if "human" not in current_subhead.lower():
             return
         ac_body_text = ac_state["body_text"]
-        # Gate 2: strategic markers in AC line itself → suppress
+        # Gate 2a: strategic markers in AC line itself → suppress
         if _HUMAN_AC_STRATEGIC_RE.search(ac_body_text):
+            return
+        # Gate 2b (T-1897): taste markers in AC line itself → suppress.
+        # An AC line like "[REVIEW] Block message reads usefully" is genuinely
+        # taste-driven even if the Expected text incidentally uses mechanical
+        # vocabulary ("names X / shows Y"). The AC header's voice wins.
+        if _HUMAN_AC_TASTE_RE.search(ac_body_text):
             return
         # Find the Expected clause within the multi-line body
         joined = "\n".join(body_lines)

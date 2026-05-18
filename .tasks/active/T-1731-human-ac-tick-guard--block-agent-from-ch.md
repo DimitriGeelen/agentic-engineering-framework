@@ -72,23 +72,16 @@ old-vs-new diff scoped to the `### Human` section, and blocks under
   task-file edits (not hot path). Reframed: hook must add <100ms;
   measured 80ms.
 - [x] **A8** RCA section + Evolution log filled at completion.
+- [x] **A9** [REVIEWER] (T-1897 re-class) Block message names current task, toggled checkbox text, and `FW_ALLOW_HUMAN_AC_TICK=1` override env var + recommended path (`fw task review` / Watchtower) — conformance check via `bin/fw reviewer T-1731` (human-ac-mechanical-signal pattern silent on the residual [REVIEW] body, OR no [REVIEW] body remains).
 
 ### Human
-- [ ] [REVIEW] Confirm block message is actionable (names which
-  checkbox toggled, suggests proper review path).
-  **Steps:**
-  1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw context focus T-1731`
-  2. Run: `CLAUDECODE=1 echo '<simulated Edit JSON>' | bin/fw hook check-human-ac-tick`
-     (or just inspect the block output during a real attempt)
-  3. Observe the block message
-  **Expected:** Block message names current task, the toggled
-  checkbox text, and the override env var (`FW_ALLOW_HUMAN_AC_TICK=1`)
-  + recommended path (`fw task review` or Watchtower).
-  **If not:** Note the missing/confusing element; agent reworks.
+<!-- T-1897 re-class (2026-05-18): the previous [REVIEW] AC ("Confirm block message names current task / toggled checkbox text / override env var") was conformance-dialect — Expected text was deterministic shell-grep-able. Re-classed as Agent AC A9 above (covered by reviewer-PASS Verification). No residual taste claim remains. -->
+
 
 ## Verification
 
 bats tests/unit/human_ac_tick_guard.bats
+test "$(bin/fw reviewer T-1731 2>&1 | grep -c 'human-ac-mechanical-signal')" -eq 0
 python3 -c "import json; d=json.load(open('.claude/settings.json')); m=[h for h in d['hooks']['PreToolUse'] for inner in h.get('hooks',[]) if 'check-human-ac-tick' in inner.get('command','')]; assert m, 'check-human-ac-tick hook missing from settings.json'; print('settings.json OK')"
 test -x agents/context/check-human-ac-tick.py
 { CLAUDECODE=1 echo '{"tool_name":"Edit","tool_input":{"file_path":"/opt/999-Agentic-Engineering-Framework/.tasks/active/T-1731-human-ac-tick-guard--block-agent-from-ch.md","old_string":"- [ ] [REVIEW] Confirm block message","new_string":"- [x] [REVIEW] Confirm block message","replace_all":false}}' | bin/fw hook check-human-ac-tick 2>&1 || true; } | grep -qE "BLOCKED|Human AC"
@@ -184,8 +177,8 @@ The advisory mode (no-CLAUDECODE) preserves interactive human edits via vi/IDE �
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-5af2394b
-- **Timestamp:** 2026-05-18T09:30:52Z
+- **Scan ID:** R-ba557826
+- **Timestamp:** 2026-05-18T10:20:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

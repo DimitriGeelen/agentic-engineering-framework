@@ -80,6 +80,81 @@ def test_fires_on_status_field_expected():
     assert len(findings) == 1
 
 
+# ─── Conformance-dialect positive cases (T-1897 widening) ──────────
+
+def test_fires_on_names_x_conformance():
+    """Block-message conformance: 'names the X' is grep-able."""
+    ac = """
+### Human
+- [ ] [REVIEW] Confirm block message points at the right deliverable
+  **Steps:**
+  1. Trigger the gate
+  **Expected:** Block message names the missing deliverable and points at the inception override flag
+  **If not:** Iterate wording
+"""
+    findings = ss.detect_human_ac_mechanical_signal(ac)
+    assert len(findings) == 1, f"expected fire on 'names the' + 'points at', got: {findings}"
+
+
+def test_fires_on_shows_conformance():
+    """Block-message conformance: 'shows current X' is grep-able."""
+    ac = """
+### Human
+- [ ] [REVIEW] Confirm the focus-drift block message is correct
+  **Steps:**
+  1. Run a focus-drift trigger
+  **Expected:** Block message shows current focus task ID and contains the --switch-focus override flag
+  **If not:** Re-word
+"""
+    findings = ss.detect_human_ac_mechanical_signal(ac)
+    assert len(findings) == 1, f"expected fire on 'shows current' + 'override flag', got: {findings}"
+
+
+def test_fires_on_override_flag_conformance():
+    """Meta-vocabulary: 'override flag' / 'bypass mechanism' is conformance."""
+    ac = """
+### Human
+- [ ] [REVIEW] Confirm gate refusal message is complete
+  **Steps:**
+  1. Trigger the gate
+  **Expected:** Refusal text contains the bypass mechanism syntax and the override env var name
+  **If not:** Tighten
+"""
+    findings = ss.detect_human_ac_mechanical_signal(ac)
+    assert len(findings) == 1, f"expected fire on 'contains the' + 'bypass mechanism', got: {findings}"
+
+
+def test_fires_on_audit_row_appended():
+    """Audit-log conformance: 'audit log row appended to <path>' is grep-able."""
+    ac = """
+### Human
+- [ ] [REVIEW] Confirm closure side-effect is recorded
+  **Steps:**
+  1. Run the closure command
+  **Expected:** Arc transitions to status: closed and audit log row appended to .context/audits/foo.jsonl
+  **If not:** Investigate
+"""
+    findings = ss.detect_human_ac_mechanical_signal(ac)
+    assert len(findings) == 1, f"expected fire on 'audit log row appended', got: {findings}"
+
+
+# ─── Gate 2b negative case (T-1897): taste in AC LINE suppresses ───
+
+def test_silent_on_taste_in_ac_header_line():
+    """T-1896-style FP: AC LINE has 'reads usefully' (taste) even though
+    Expected uses 'names the X' (mechanical). AC header voice wins."""
+    ac = """
+### Human
+- [ ] [REVIEW] Reviewer finding wording reads usefully on a real task
+  **Steps:**
+  1. Run reviewer
+  **Expected:** Finding text names the AC by index and quotes a short excerpt; not cryptic.
+  **If not:** Iterate
+"""
+    findings = ss.detect_human_ac_mechanical_signal(ac)
+    assert len(findings) == 0, f"taste 'reads' in AC line should suppress, got: {findings}"
+
+
 # ───────────────────────── Negative cases ─────────────────────────
 
 def test_silent_on_taste_expected():

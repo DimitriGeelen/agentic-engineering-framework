@@ -98,3 +98,148 @@ overrides:
   expires_at: '2027-05-18T08:37:47Z'
   added_by: root
   added_at: '2026-05-18T08:37:47Z'
+- id: OV-39d99abf
+  task_id: T-1214
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
+    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
+    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
+    \ earlier."
+  expires_at: '2027-05-18T10:13:52Z'
+  added_by: root
+  added_at: '2026-05-18T10:13:52Z'
+- id: OV-d876ea54
+  task_id: T-1295
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
+    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
+    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
+    \ earlier."
+  expires_at: '2027-05-18T10:13:52Z'
+  added_by: root
+  added_at: '2026-05-18T10:13:52Z'
+- id: OV-046ccf7b
+  task_id: T-1453
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
+    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
+    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
+    \ earlier."
+  expires_at: '2027-05-18T10:13:52Z'
+  added_by: root
+  added_at: '2026-05-18T10:13:52Z'
+- id: OV-77c69b60
+  task_id: T-1485
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
+    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
+    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
+    \ earlier."
+  expires_at: '2027-05-18T10:13:52Z'
+  added_by: root
+  added_at: '2026-05-18T10:13:52Z'
+- id: OV-a9fe9d20
+  task_id: T-405
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
+    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
+    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
+    \ earlier."
+  expires_at: '2027-05-18T10:13:52Z'
+  added_by: root
+  added_at: '2026-05-18T10:13:52Z'
+- id: OV-616eac37
+  task_id: T-407
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
+    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
+    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
+    \ earlier."
+  expires_at: '2027-05-18T10:13:53Z'
+  added_by: root
+  added_at: '2026-05-18T10:13:53Z'
+- id: OV-db03ee43
+  task_id: T-418
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
+    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
+    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
+    \ earlier."
+  expires_at: '2027-05-18T10:13:53Z'
+  added_by: root
+  added_at: '2026-05-18T10:13:53Z'
+- id: OV-a14120b5
+  task_id: T-430
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
+    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
+    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
+    \ earlier."
+  expires_at: '2027-05-18T10:13:53Z'
+  added_by: root
+  added_at: '2026-05-18T10:13:53Z'
+- id: OV-f6d9bb93
+  task_id: T-849
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
+    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
+    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
+    \ earlier."
+  expires_at: '2027-05-18T10:13:53Z'
+  added_by: root
+  added_at: '2026-05-18T10:13:53Z'
+- id: OV-3928d9bf
+  task_id: T-1773
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "Integration smoke \u2014 Expected describes running-system observation\
+    \ (stdout, jsonl, outcome). Reviewer static-scan PASS is a weaker substitute than\
+    \ actually running the dispatch; needs live infra (pi/litellm/TermLink). Filed\
+    \ for future follow-up as a separate integration-test Verification path. Origin:\
+    \ T-1897."
+  expires_at: '2026-08-16T10:14:30Z'
+  added_by: root
+  added_at: '2026-05-18T10:14:30Z'
+- id: OV-1b08b1f0
+  task_id: T-1774
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "Integration smoke \u2014 Expected describes running-system observation\
+    \ (stdout, jsonl, outcome). Reviewer static-scan PASS is a weaker substitute than\
+    \ actually running the dispatch; needs live infra (pi/litellm/TermLink). Filed\
+    \ for future follow-up as a separate integration-test Verification path. Origin:\
+    \ T-1897."
+  expires_at: '2026-08-16T10:14:30Z'
+  added_by: root
+  added_at: '2026-05-18T10:14:30Z'
+- id: OV-e571f28a
+  task_id: T-1775
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "Integration smoke \u2014 Expected describes running-system observation\
+    \ (stdout, jsonl, outcome). Reviewer static-scan PASS is a weaker substitute than\
+    \ actually running the dispatch; needs live infra (pi/litellm/TermLink). Filed\
+    \ for future follow-up as a separate integration-test Verification path. Origin:\
+    \ T-1897."
+  expires_at: '2026-08-16T10:14:30Z'
+  added_by: root
+  added_at: '2026-05-18T10:14:30Z'
+- id: OV-7f13526b
+  task_id: T-1805
+  pattern_id: human-ac-mechanical-signal
+  ac_index: null
+  reason: "ADR-vs-implementation conformance \u2014 'Names match ADR-0004 intent'\
+    \ needs doc-vs-code judgment to assess 'no surprising additions'. Static reviewer-PASS\
+    \ doesn't read intent. Filed for future follow-up. Origin: T-1897."
+  expires_at: '2026-08-16T10:14:30Z'
+  added_by: root
+  added_at: '2026-05-18T10:14:30Z'

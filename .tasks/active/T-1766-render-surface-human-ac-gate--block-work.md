@@ -41,14 +41,22 @@ Render fixes inherently invoke "is this good enough" — a path that's technical
 - [x] **Self-application: T-1766 closure** — T-1766's body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as render-surface examples). The predicate correctly flags T-1766 as render-touching — meta-honest result. Adding a [REVIEW] Human AC below to satisfy the gate self-applies the rule the task creates.
 - [x] **Retroactive hygiene applied to T-1763/T-1764/T-1765** — Each completed task gained a `[REVIEW]` Human AC with copy-pasteable Steps/Expected/If-not. Commit 34e7127d. Documentary only — the tasks already shipped; this records what eyes the human would have applied if the gate had existed.
 - [x] **Documentation updated** — `CLAUDE.md` "AC Classification Guidance" section gains a new bullet (5th) under "Make it a Human AC if ANY apply": render-surface trigger + cite T-1766 / bypass flag / origin tasks.
+- [x] **Block-message conformance (T-1897 split):** [REVIEWER] Block message names (a) which file(s) triggered the gate, (b) the exact `[REVIEW]` AC template to copy-paste, (c) the bypass flag with rationale syntax — conformance check via `bin/fw reviewer T-1766` (human-ac-mechanical-signal pattern silent on the residual UX-taste [REVIEW] body).
 
 ### Human
-- [ ] [REVIEW] Block-message UX is actionable
+- [ ] [REVIEW] Block-message UX is crisp — a new agent reading the message can act without re-opening T-1766 (wording is self-contained; the three pieces of info are easy to extract under cognitive load)
   **Steps:**
-  1. Trigger the gate intentionally on a fresh test task: create a render-surface build task (components: ["web/templates/tasks.html"]) with no Human AC, then `bin/fw task update T-XXX --status work-completed`.
+  1. Trigger the gate intentionally on a fresh test task: create a render-surface build task (`components: ["web/templates/tasks.html"]`) with no Human AC, then `bin/fw task update T-XXX --status work-completed`.
   2. Read the block message (lines under `ERROR: Cannot complete build task — touches render surface`).
-  **Expected:** the message names (a) which file(s) made it fire, (b) the exact `[REVIEW]` AC template to copy-paste, (c) the bypass flag with rationale syntax. A new agent should be able to act without re-reading T-1766.
-  **If not:** flag specific phrasing to tighten, or reopen for second pass.
+  3. Ask: would a fresh agent on first read know exactly what to copy and where, or would they need to chase to T-1766's body?
+  **Expected:** Self-contained — fresh agent acts without re-reading the source task.
+  **If not:** Flag the specific phrasing or layout that requires lookup; agent reworks the block-message string.
+  <!-- T-1897 split (2026-05-18): the previous AC blended two claims —
+       (a) conformance: "message names (a) file, (b) template, (c) bypass syntax"
+           → moved to Agent [REVIEWER] AC above, verified by reviewer-PASS.
+       (b) taste: "a new agent should be able to act without re-reading T-1766"
+           → residual [REVIEW] above (genuine cognitive-load UX judgment). -->
+
 
 ## Verification
 
@@ -58,6 +66,8 @@ bats tests/unit/test_render_surface_gate.bats
 grep -q "5\. \*\*Touches a rendering surface" CLAUDE.md
 bash -n agents/task-create/update-task.sh
 FRAMEWORK_ROOT=$(pwd) bats tests/unit/test_render_surface_gate.bats
+# T-1897 re-class: reviewer confirms the human-ac-mechanical-signal pattern stays silent (split residue is taste-only)
+test "$(bin/fw reviewer T-1766 2>&1 | grep -c 'human-ac-mechanical-signal')" -eq 0
 # Self-application: T-1766 itself does NOT touch render surface, so gate is no-op.
 # We can verify by sourcing the predicate and asserting it returns 1 for T-1766's components.
 bash -c 'source lib/render_surface.sh && task_touches_render_surface .tasks/active/T-1766-render-surface-human-ac-gate--block-work.md && echo FAIL || echo OK_NOOP'
@@ -163,8 +173,8 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-ec558bcb
-- **Timestamp:** 2026-05-18T09:30:52Z
+- **Scan ID:** R-34b99b07
+- **Timestamp:** 2026-05-18T10:20:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

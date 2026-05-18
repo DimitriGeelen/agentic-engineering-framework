@@ -41,14 +41,11 @@ T-1713 GO decision frames work as three internal spikes (parser, comparison, ins
 - [x] **Self-application:** T-1762's own work-completed transition either passes the gate (it's a build with single deliverable: "the gate") or refuses with rationale documenting the meta-recursion.
 - [x] **Documentation:** `## Decisions` section captures Spike 2 false-positive count (target ≤1 per T-1713 GO threshold) + parser agreement on the 4-fixture sample (target ≥80% per T-1713 GO threshold).
 - [x] **Historic regression pinned:** Bats fixture `tests/unit/test_task_pair_acd_gate.bats::"T-1442/T-1485 historic regression"` runs the gate against `T-1485` (real build under T-1442) and asserts exit 1 + "Evidence persistence" or "Layer 2" surfaced. Reclassified from Human → Agent (2026-05-06) — deterministic bats command with binary pass/fail by T-954 ("deterministic / reversible / internal / mechanical"), not subjective judgment.
+- [x] **Gate-refusal conformance:** [REVIEWER] (T-1897 re-class) Gate refusal message names the missing deliverable, points at the inception that promised it, and shows `--scope-reduction-acknowledged` bypass syntax — conformance check via `bin/fw reviewer T-1762` (human-ac-mechanical-signal pattern silent).
 
 ### Human
-- [ ] [REVIEW] Confirm gate refusal message is actionable
-  **Steps:**
-  1. From a scratch consumer / test instance, attempt to close a fake build task that's missing one of its inception's deliverables: `cd /tmp/scratch && /opt/999-Agentic-Engineering-Framework/bin/fw task update T-FAKE --status work-completed`
-  2. Read the refusal message
-  **Expected:** Message names the missing deliverable, points at the inception that promised it, and shows the `--scope-reduction-acknowledged` bypass syntax explicitly
-  **If not:** Note which information was missing or unclear; recommend message revision before close
+<!-- T-1897 re-class (2026-05-18): the previous [REVIEW] AC ("Confirm gate refusal message is actionable — names missing deliverable / points at inception / shows bypass syntax") was conformance-dialect — Expected was deterministic shell-grep-able pattern matching. Re-classed as Agent AC above (covered by reviewer-PASS Verification). No residual taste claim remains. -->
+
 
 
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -80,6 +77,8 @@ bin/fw test bats tests/unit/test_task_pair_acd_gate.bats
 bash lib/task_pair_acd.sh extract_deliverables .tasks/completed/T-1713-task-pair-acd-gate-detect-substrate-vs-d.md >/dev/null
 # Regression: existing P-010/P-011 still gate before P-012
 bin/fw test bats tests/unit/update_task.bats
+# T-1897 re-class: reviewer confirms the human-ac-mechanical-signal pattern no longer fires
+test "$(bin/fw reviewer T-1762 2>&1 | grep -c 'human-ac-mechanical-signal')" -eq 0
 
 ## RCA
 
@@ -189,8 +188,8 @@ Three convergent signals justify shipping:
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-49b90b8c
-- **Timestamp:** 2026-05-18T09:30:52Z
+- **Scan ID:** R-37677d59
+- **Timestamp:** 2026-05-18T10:20:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

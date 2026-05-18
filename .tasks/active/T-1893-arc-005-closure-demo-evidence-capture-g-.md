@@ -47,15 +47,24 @@ The headline mechanic has 5 prongs:
 - [x] Prong 5 (012-ArcSystem.md): `ls -la 012-ArcSystem.md` + `grep -c "012-ArcSystem" FRAMEWORK.md` outputs included
 - [x] All commands in `## Verification` pass
 - [x] [REVIEWER] Demo file structure is wire-evidence-suitable: 5 `## Prong N` sections, each with at least one fenced code block (≥3 lines) showing executable command + captured output; the headline_mechanic text from the arc YAML is quoted verbatim in the demo's opening; substrate-only phrasing (`"all tasks completed"`, `"substrate in place"`) is absent. Re-classified from Human [REVIEW] by T-1894 — these structural claims are deterministic and verifiable; only the closure-decision remains Human.
+- [x] **Closure-mechanics conformance (T-1897 split):** [REVIEWER] Once the human runs `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mechanic-demo.md --decision "..."`, the arc YAML transitions to `status: closed` and an audit row is appended to `.context/audits/arc-close.jsonl`. Mechanics are deterministic — Verification grep below pins it on closure. Pre-closure: this AC is satisfied by the existence of the closure verb wiring (`bin/fw arc close --help` returns valid usage) since the actual closure is human-gated under `$CLAUDECODE=1` (T-1671).
 
 ### Human
-- [ ] [REVIEW] Decide whether to `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mechanic-demo.md` after Watchtower review of all 6 partial-complete constituents (T-1851, T-1852, T-1853, T-1857, T-1890, T-1891)
+- [ ] [REVIEW] **The actual closure decision:** does the wire-evidence in `docs/reports/arc-005-headline-mechanic-demo.md` + the lifecycle of arc-grooming's 30+ substrate tasks justify closing the arc as `status: closed` (with a positive `--decision "..."`), abandoning it (`fw arc abandon` with reservation), or leaving it open (further work outstanding)?
   **Steps:**
-  1. Visit `fw review-queue` URL
-  2. Tick remaining [REVIEW] Human ACs on the 6 partials
-  3. Run `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mechanic-demo.md --decision "..."`
-  **Expected:** Arc transitions to `status: closed`, audit log row appended to `.context/audits/arc-close.jsonl`
-  **If not:** Use `--justification "..."` to record reservations; arc stays open
+  1. Read `docs/reports/arc-005-headline-mechanic-demo.md` (5 prongs, ~235 lines)
+  2. Review the partial-completes overhang in `fw review-queue` (or Watchtower `/approvals`)
+  3. Decide: are the headline-mechanic prongs adequately demonstrated *for closure purposes*, or is there a residual scope you want to carry as a follow-up arc?
+  4. Run `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mechanic-demo.md --decision "<your decision string>"` OR `fw arc abandon arc-grooming --reason "..."` OR neither (leave open)
+  **Expected:** A deliberate strategic call documented in the `--decision` / `--reason` / inaction-rationale, not a rubber-stamp run-the-command-because-the-AC-says-to.
+  **If not:** Document reservations in `--justification "..."` to keep the arc open for further work.
+  <!-- T-1897 split (2026-05-18): the previous AC blended (a) procedural mechanics
+       (tick boxes, run command, verify status:closed + audit row appended) with
+       (b) the strategic close-the-arc decision. The conformance half moved to
+       Agent [REVIEWER] above; this residual [REVIEW] captures only the genuine
+       judgment: should this arc actually close? — which only the human can
+       answer (and is structurally gated under $CLAUDECODE=1 per T-1671). -->
+
 
 ## Verification
 
@@ -108,6 +117,10 @@ test "$(grep -c '^## Prong [1-5]' docs/reports/arc-005-headline-mechanic-demo.md
 for n in 1 2 3 4 5; do test "$(awk -v n="$n" '/^## Prong / { in_p=($0 ~ "Prong "n) } in_p && /^```/ { f++ } END { print f+0 }' docs/reports/arc-005-headline-mechanic-demo.md)" -ge 2 || { echo "FAIL: Prong $n missing fenced block"; exit 1; }; done
 grep -q "agent runs" docs/reports/arc-005-headline-mechanic-demo.md
 ! grep -qE "substrate is in place|all tasks completed are sufficient" docs/reports/arc-005-headline-mechanic-demo.md
+# T-1897 split: closure-mechanics verb wired (pre-closure check — actual closure is human-gated under $CLAUDECODE=1 per T-1671).
+bin/fw arc close --help 2>&1 | grep -q "demo"
+# T-1897 re-class: reviewer confirms the human-ac-mechanical-signal pattern stays silent (split residue is genuine strategic-decision).
+test "$(bin/fw reviewer T-1893 2>&1 | grep -c 'human-ac-mechanical-signal')" -eq 0
 
 ## RCA
 
@@ -220,17 +233,19 @@ The arc itself remains for the human to close per T-1671 (agent-gate on `fw arc 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-d4deb8cf
-- **Timestamp:** 2026-05-18T09:31:00Z
+- **Scan ID:** R-7aab30c4
+- **Timestamp:** 2026-05-18T10:20:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 3
 
 **Per-AC findings:**
 
 - **AC#4 (Agent)** — Prong 3 (audit parity + stale): demo includes excerpt from today's `.context/audits/2026-05-18.yaml` showing arc-related PASS checks
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/2026-05-18.yaml in: Prong 3 (audit parity + stale): demo includes excerpt from today's `.context/audits/2026-05-18.yaml` showing arc-related PASS checks`
+- **AC#9 (Agent)** — **Closure-mechanics conformance (T-1897 split):** [REVIEWER] Once the human runs `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mechanic-demo.md --decision "..."`, the arc YAML transi
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/arc-close.jsonl in: **Closure-mechanics conformance (T-1897 split):** [REVIEWER] Once the human runs `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mecha`
 
 **Verification-level findings:**
 

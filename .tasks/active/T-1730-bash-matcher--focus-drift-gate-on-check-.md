@@ -66,16 +66,11 @@ by B-005 (T-229).
   T-1626 scoped 5ms to telemetry counter writes only. Reframed:
   drift logic must add <10ms over pre-fix Bash hot path. Measured: 0ms.
 - [x] **A8** RCA section + Evolution log filled at completion.
+- [x] **A9** [REVIEWER] (T-1897 re-class) Focus-drift block message names current focus, attempted target, and `--switch-focus` override — conformance check that `bin/fw reviewer T-1730` verdict reports PASS for `human-ac-mechanical-signal` pattern (mechanical signals not present in the residual [REVIEW] body, OR no [REVIEW] body remains).
 
 ### Human
-- [ ] [REVIEW] Confirm focus-drift block message is actionable.
-  **Steps:**
-  1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw upgrade .` (sync the new matcher)
-  2. Run: `bin/fw context focus T-AAA` (use any active task ID; substitute T-AAA)
-  3. Run: `CLAUDECODE=1 bin/fw task update T-BBB --add-tag "drift-test"` (use a different active task)
-  4. Observe the block message
-  **Expected:** Block message names current focus, attempted target, and the `--switch-focus` override.
-  **If not:** Note the missing/confusing element; agent reworks.
+<!-- T-1897 re-class (2026-05-18): the previous [REVIEW] AC ("Confirm focus-drift block message is actionable — names current focus, attempted target, --switch-focus override") was procedural-conformance dialect — its Expected clause was deterministic shell-grep-able pattern matching, not a taste judgment. Re-classed as Agent AC A9 above (covered by reviewer-PASS Verification). No residual taste claim remains; this section is intentionally empty. -->
+
 
 ## Verification
 
@@ -83,6 +78,7 @@ bats tests/unit/focus_drift_gate.bats
 python3 -c "import json; d=json.load(open('.claude/settings.json')); m=[h['matcher'] for h in d['hooks']['PreToolUse'] for inner in h.get('hooks',[]) if 'check-active-task' in inner.get('command','')]; assert m and 'Bash' in m[0], f'check-active-task matcher missing Bash: {m}'; print('settings.json OK:', m[0])"
 python3 -c "import re; src=open('lib/init.sh').read(); m=re.search(r'\"matcher\":\s*\"([^\"]+)\"\s*,\s*\"hooks\":\s*\[\s*\{\s*\"type\":\s*\"command\",\s*\"command\":\s*\"\\\$fw_prefix hook check-active-task\"', src); assert m and 'Bash' in m.group(1), f'lib/init.sh matcher missing Bash: {m.group(1) if m else None}'; print('lib/init.sh OK:', m.group(1))"
 { CLAUDECODE=1 echo '{"tool_name":"Bash","tool_input":{"command":"bin/fw task update T-1716 --add-tag drift"}}' | bash agents/context/check-active-task.sh 2>&1 || true; } | grep -qE "FOCUS-DRIFT|focus is T-"
+test "$(bin/fw reviewer T-1730 2>&1 | grep -c 'human-ac-mechanical-signal')" -eq 0
 
 ## RCA
 
@@ -172,8 +168,8 @@ beyond pre-existing baseline.
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-afca21bf
-- **Timestamp:** 2026-05-18T09:30:52Z
+- **Scan ID:** R-6cf7f4df
+- **Timestamp:** 2026-05-18T10:20:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

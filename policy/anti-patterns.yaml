@@ -170,12 +170,19 @@ patterns:
       Override: `fw reviewer override add T-XXX --pattern human-ac-mechanical-signal
       --ac N --reason "..." --ttl 90` suppresses the finding (T-1443 v1.4).
     examples_positive:
+      # I/O-checking dialect (T-1896 original):
       - "[REVIEW] Confirm endpoint returns 200 — Expected: `curl -sf URL` exits 0"
       - "[REVIEW] Check log file — Expected: `grep -q ERROR /var/log/app.log` returns 1"
+      # Conformance-checking dialect (T-1897 widening):
+      - "[REVIEW] Confirm block message complete — Expected: message names the missing deliverable and points at inception override flag"
+      - "[REVIEW] Confirm focus-drift block — Expected: message shows current focus task and contains the --switch-focus override flag"
+      - "[REVIEW] Confirm closure side-effect — Expected: audit log row appended to .context/audits/foo.jsonl"
     examples_negative:
       - "[REVIEW] Dashboard reads cleanly — Expected: layout feels intuitive"
       - "[REVIEW] Decide whether to close arc — Expected: arc transitions to closed"
       - "[REVIEW] Banner reads as obvious supersedes note — Expected: voice + framing tells a fresh reader"
+      # Gate 2b (T-1897): taste in AC LINE suppresses even if Expected has mechanical signals:
+      - "[REVIEW] Reviewer finding wording reads usefully — Expected: Finding text names the AC by index (taste 'reads' in header wins)"
 
   - id: AC-verify-mismatch
     name: "Checked AC names a file path the verification never touches"
