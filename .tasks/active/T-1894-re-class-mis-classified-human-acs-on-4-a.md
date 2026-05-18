@@ -138,6 +138,18 @@ test "$(grep -c '^## Prong [1-5]' docs/reports/arc-005-headline-mechanic-demo.md
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-18 — T-1890 had ZERO genuine Human ACs after the split
+
+- **What changed:** Expected each task to retain at least one judgment-class `[REVIEW]` AC. T-1890's sole Human AC turned out to be 100% mechanical once unpacked — "both mechanisms are named with one-line guidance for when to pick which" is a pure grep. The Human section is now empty for T-1890. That's the right answer (don't fake-up taste claims to fill space) but worth recording: not every task needs a Human AC, and the previous instinct to add one "because it's a `### Human` section" was itself a mis-class signal.
+- **Plan impact:** No re-scope. Updated T-1894's own Rationale to mention this explicitly — 3 of 4 tasks retain a genuine `[REVIEW]`, 1 (T-1890) has none.
+- **Triggered:** No new sub-task. Pattern observation: when re-classifying, the honest outcome may be "no Human AC at all" — don't synthesise one to balance the split.
+
+### 2026-05-18 — `[REVIEWER]` prefix was the right shape; would have been simpler at authoring time
+
+- **What changed:** Used `[REVIEWER]` prefix (T-1811) on the new Agent ACs rather than rewriting them as plain Agent ACs. Reason: makes the audit trail visible — anyone scanning the AC list sees this was lifted from a `[REVIEW]` claim, not always-Agent. Costs nothing structurally; helps the human reviewer of the re-class judge whether the split was honest.
+- **Plan impact:** None.
+- **Triggered:** Suggests a discipline for the next hook-author / task-author: when an AC has any deterministic sub-claim, default to `[REVIEWER]` Agent shape from the start. Authoring-time discipline is cheaper than audit-then-split. Not filing a structural enforcement yet — would want a 3rd instance pattern lock.
+
 ## Recommendation
 
 **Recommendation:** GO
