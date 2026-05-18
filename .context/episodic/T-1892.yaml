@@ -1,0 +1,126 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1892: fabric enrichment sweep — auto-resolve 47 cards (+143 edges), close audit WARN
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T06:44:48Z
+# ============================================================================
+
+task_id: T-1892
+task_name: "fabric enrichment sweep — auto-resolve 47 cards (+143 edges), close audit WARN"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T06:30:42Z
+completed: 2026-05-18T06:44:39Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-18T08:44:21+02:00
+last_commit: 2026-05-18T08:44:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric enrichment — 47 cards enriched, +143 edges, scrub 7 C-NNN FPs
+
+# Key outcomes
+outcomes:
+  - '`bin/fw fabric enrich` (without --dry-run) runs successfully.'
+  - 'Post-enrichment, `bin/fw fabric drift 2>&1 | grep -oE "unregistered: [0-9]+, orphaned: [0-9]+, stale: [0-9]+"` reports unregistered: 0, orphaned: 0 (stale count may stay non-zero — those are directory-target deps the enricher doesn''t address).'
+  - '`bin/fw audit 2>&1 | grep "cards have no edges"` shows a smaller number than 38 (likely close to 0; some cards genuinely have no static-detectable deps).'
+  - 'All YAML files under `.fabric/components/` still parse cleanly: `python3 -c "import yaml; [yaml.safe_load(open(p)) for p in __import__(''glob'').glob(''.fabric/components/*.yaml'')]"` exits 0.'
+  - 'No card outside the 47-card touch set was modified (verify via `git diff --stat .fabric/components/ | wc -l`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-18 — keep enrich + scrub vs revert'
+    chose: 'Keep the 140 mostly-good edges; surgically scrub the 7 newly-added C-NNN false positives.'
+    rationale: 'Net value-additive. Reverting would discard real improvements (47 cards moved from no-edges to has-edges) for the cost of 7 false positives — bad trade.'
+    alternatives_rejected: ['Wholesale revert + file a "fix enricher first" task — would have parked the WARN-close indefinitely behind a separate fix that may take multiple sessions to land.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/add-learning.yaml'
+  - '.fabric/components/agents-context-check-active-task.yaml'
+  - '.fabric/components/agents-context-check-arc-id.yaml'
+  - '.fabric/components/agents-context-check-settings-edit.yaml'
+  - '.fabric/components/agents-context-lib-decision.yaml'
+  - '.fabric/components/agents-context-lib-episodic.yaml'
+  - '.fabric/components/agents-context-lib-pattern.yaml'
+  - '.fabric/components/agents-handover-handover.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/audit-yaml-validator.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/lib-arc_membership-sh.yaml'
+  - '.fabric/components/lib-arc_membership.yaml'
+  - '.fabric/components/lib-arc.yaml'
+  - '.fabric/components/lib-evolution_log.yaml'
+  - '.fabric/components/lib-inception.yaml'
+  - '.fabric/components/lib-migrations-arc-id-migration.yaml'
+  - '.fabric/components/lib-render_surface.yaml'
+  - '.fabric/components/tests-playwright-conftest.yaml'
+  - '.fabric/components/tests-playwright-test_arcs_detail_arc_id_membership.yaml'
+  - '.fabric/components/tests-playwright-test_arcs_lifecycle_tabs.yaml'
+  - '.fabric/components/tests-playwright-test_arcs_renders_without_constituent_field.yaml'
+  - '.fabric/components/tests-playwright-test_landing_arc_cards.yaml'
+  - '.fabric/components/tests-unit-arc_abandon.yaml'
+  - '.fabric/components/tests-unit-arc_create_no_constituent_tasks.yaml'
+  - '.fabric/components/tests-unit-arc_dual_identity_verbs.yaml'
+  - '.fabric/components/tests-unit-arc_id_validation_guard.yaml'
+  - '.fabric/components/tests-unit-arc_lifecycle_state_machine.yaml'
+  - '.fabric/components/tests-unit-arc_membership_agent_surfaces.yaml'
+  - '.fabric/components/tests-unit-arc_membership_shared.yaml'
+  - '.fabric/components/tests-unit-arc_membership_union.yaml'
+  - '.fabric/components/tests-unit-arc_next_numeric_id_octal.yaml'
+  - '.fabric/components/tests-unit-audit_anchor_task_existence.yaml'
+  - '.fabric/components/tests-unit-audit_arc_progress_arc_id.yaml'
+  - '.fabric/components/tests-unit-audit_ctl013_skip_nested_audit.yaml'
+  - '.fabric/components/tests-unit-audit_ctl_arc_tag_only_pattern.yaml'
+  - '.fabric/components/tests-unit-audit_d10_html_comment_blindness.yaml'
+  - '.fabric/components/tests-unit-audit_stale_arc_warning.yaml'
+  - '.fabric/components/tests-unit-check_active_task_switch_focus.yaml'
+  - '.fabric/components/tests-unit-episodic_yaml_decision_escape.yaml'
+  - '.fabric/components/tests-unit-hook_check_settings_edit.yaml'
+  - '.fabric/components/tests-unit-test_arc_membership_shared.yaml'
+  - '.fabric/components/tests-unit-test_arc_membership_web_surfaces.yaml'
+  - '.fabric/components/tests-unit-test_render_surface_gate.yaml'
+  - '.fabric/components/web-app.yaml'
+  - '.fabric/components/web-blueprints-arcs.yaml'
+  - '.fabric/components/web-blueprints-core.yaml'
+  - '.fabric/components/web-blueprints-tasks.yaml'
+  - '.fabric/components/web-shared.yaml'
+  - '.tasks/active/T-1892-fabric-enrichment-sweep--auto-resolve-47.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T08:44:21"
+    action: "T-1892: fabric enrichment — 47 cards enriched, +143 edges, scrub 7 C-NNN FPs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [maintenance, fabric, audit-warn-close]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 50
+  lines_added: 804
+  lines_removed: 328
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1892-fabric-enrichment-sweep--auto-resolve-47.md
+generated_by: context-agent-hybrid

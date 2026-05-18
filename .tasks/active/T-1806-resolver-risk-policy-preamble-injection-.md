@@ -138,8 +138,8 @@ python3 -c "import sys; sys.path.insert(0, 'lib'); from resolver import _risk_po
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-e83ce0e3
-- **Timestamp:** 2026-05-17T07:15:56Z
+- **Scan ID:** R-f9eb1254
+- **Timestamp:** 2026-05-18T09:30:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

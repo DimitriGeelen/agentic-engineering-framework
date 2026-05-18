@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1857: 012-ArcSystem.md + FRAMEWORK.md updates (T-NEW-9)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T09:41:02Z
+# ============================================================================
+
+task_id: T-1857
+task_name: "012-ArcSystem.md + FRAMEWORK.md updates (T-NEW-9)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T14:53:22Z
+completed: 2026-05-16T22:34:46Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`012-ArcSystem.md` exists at repo root with sections: Overview, Arc Structure, Arc Fields Reference, Statuses (Four-State Lifecycle), Dual Identity (slug ↔ arc-NNN), D-Immutability Axiom, Task ↔ Arc Membership, fw arc CLI, Audit Checks, Watchtower Surface, Relation to Tasks, Relation to Other Concepts (Inception, Horizon, Learnings, Directives, Component Fabric), D-Immutability worked example, Why arcs exist'
+  - '`FRAMEWORK.md` glossary contains an `Arc` entry (also added `D-Immutability` entry)'
+  - '`FRAMEWORK.md` Quick Reference contains rows for: `fw arc create`, `fw arc abandon`, `fw arc close`, `fw arc focus`, `fw arc show` (plus `fw arc start`, `fw arc list` as bonus)'
+  - '`FRAMEWORK.md` has Arc System section paralleling Task System (inline section with lifecycle diagram + membership + D-Immutability summary, links to `012-ArcSystem.md` for full reference)'
+  - '`grep -c -i ''arc'' FRAMEWORK.md` returns 30 (well above the >5 threshold — doc density confirms first-class treatment)'
+  - 'Content describes the post-refactor state: arc-NNN sequential immutable IDs (T-1848), four-state lifecycle with `fw arc start` + `fw arc abandon` (T-1852/T-1854), stale + anchor-task audit checks (T-1855/T-1856), `arc_id:` task field with PreToolUse validation hook (T-1849), tag-migration history (T-1850), `constituent_tasks` deprecation (T-1851), Watchtower lifecycle filter tabs (T-1853)'
+  - '[REVIEWER] CLI section in `012-ArcSystem.md` mentions every verb that `bin/fw arc help` exposes (no doc-vs-help drift). Verb list: `create, start, focus, list, show, tag, close, abandon, migrate`. Each appears in 012-ArcSystem.md at least once. Re-classified from Human [REVIEW] by T-1894 — mechanical verb-cross-check is deterministic; only the "reads cleanly" / "summary is faithful" judgment remains Human.'
+  - '[REVIEW] `012-ArcSystem.md` reads cleanly as the canonical Arc System reference + `FRAMEWORK.md`''s inline summary is faithful'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-17 — 012-ArcSystem.md as the canonical doc (vs inline-only in FRAMEWORK.md)'
+    chose: 'Standalone numbered doc at repo root, mirroring `010-TaskSystem.md`''s structure and slot.'
+    rationale: 'The arc system is now first-class alongside the task system. A standalone doc gets its own retrieval surface (`fw ask "arc lifecycle"`, `fw docs 012`, `/docs/012-ArcSystem` in Watchtower), can grow without bloating FRAMEWORK.md, and signals "this is a peer concept, not a subsection of tasks."'
+    alternatives_rejected: ['Inline-only in FRAMEWORK.md (would bloat the orientation doc and bury detail); separate `docs/arcs.md` (breaks the numbered-doc-at-root convention shared with 001-, 005-, 010-, 011-, 015-, 020-, 025-, 030-).']
+  - decision: '2026-05-17 — Lifecycle ASCII diagram (vs Mermaid / image)'
+    chose: 'Plain ASCII diagram with Unicode box-drawing chars in a code fence.'
+    rationale: 'Renders identically in any Markdown viewer, in `cat`, in `less`, in Watchtower''s renderer. No mermaid dependency, no image asset to track. Diff-friendly. Total cost: 8 lines.'
+    alternatives_rejected: ['Mermaid (would require a Mermaid renderer; framework''s Watchtower doesn''t have one); SVG / image (asset to version-control + scale-up cost; loses grep-ability of state names).']
+  - decision: '2026-05-17 — `grep -c -i ''arc''` threshold ≥ 6 (not >5 as spec''d)'
+    chose: '`>= 6` in the Verification block, matching spec''s `> 5` intent.'
+    rationale: '`>5` in shell `test` would be `-gt 5` ≡ `>= 6`. Wrote it as `-ge 6` for clarity. Actual count is 30 — well above the floor.'
+    alternatives_rejected: ['Higher thresholds (would risk false-fail on legitimate doc edits); content matching (more brittle than density check for a quick sanity test).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1901 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, documentation, canonical, T-NEW-9]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1901
+  commits: 1
+  files_changed: 13
+  lines_added: 1458
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1857-012-arcsystemmd--frameworkmd-updates-t-n.md
+generated_by: context-agent-hybrid

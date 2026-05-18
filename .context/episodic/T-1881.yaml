@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1881: Audit-time lint: fail on grep arc:slug patterns without arc_id read
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T15:56:07Z
+# ============================================================================
+
+task_id: T-1881
+task_name: "Audit-time lint: fail on grep arc:slug patterns without arc_id read"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-17T14:07:15Z
+completed: 2026-05-17T15:56:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-17T17:43:28+02:00
+last_commit: 2026-05-17T17:56:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  write real ACs for ctl-arc-tag-only-pattern audit check. ship T-NEW-16 — ctl-arc-tag-only-pattern audit check + 9 regression tests. tick ACs (6/6), Evolution log (2 entries), Recommendation GO. RCA section (G-019 — bug-class title triggered gate)
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` has a `ctl-arc-tag-only-pattern` block (lines 679-714) that scans `lib/`, `web/`, `agents/`, `bin/`, `tools/` for `grep` invocations matching legacy `arc:<slug>` tag patterns'
+  - 'Allowlist excludes `lib/arc_membership.{sh,py}`, `lib/arc.sh`, `lib/migrations/`, `tests/`, `docs/`, `.fabric/`, `.context/`'
+  - 'When zero violations: emits `[PASS] No inline arc:<slug> tag-only scans outside canonical lib (T-1881)`'
+  - 'When violations found: emits `[FAIL]` per violation with file:line + evidence (first 5 lines) + mitigation pointing at `lib/arc_membership.{sh,py}`'
+  - 'Regression test pins the check: `tests/unit/audit_ctl_arc_tag_only_pattern.bats` (9 tests: clean-state PASS, synthetic violations in web/agents, allowlist coverage for tests/docs/canonical-lib, multi-violation count, false-positive guards for current_arc/arc_id)'
+  - 'Live tree scan returns 0 violations (`Violations: 0` against `PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'RCA section (G-019 — bug-class title triggered gate)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.fabric/components/tests-unit-audit_ctl_arc_tag_only_pattern.yaml'
+  - '.tasks/active/T-1881-audit-time-lint-fail-on-grep-arcslug-pat.md'
+  - 'tests/unit/audit_ctl_arc_tag_only_pattern.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-17T17:43:28"
+    action: "T-1881: write real ACs for ctl-arc-tag-only-pattern audit check"
+  - time: "2026-05-17T17:50:11"
+    action: "T-1881: ship T-NEW-16 — ctl-arc-tag-only-pattern audit check + 9 regression tests"
+  - time: "2026-05-17T17:51:26"
+    action: "T-1881: tick ACs (6/6), Evolution log (2 entries), Recommendation GO"
+  - time: "2026-05-17T17:56:02"
+    action: "T-1881: RCA section (G-019 — bug-class title triggered gate)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 108 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-grooming, future-prevention, audit-check]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 108
+  commits: 4
+  files_changed: 4
+  lines_added: 360
+  lines_removed: 78
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1881-audit-time-lint-fail-on-grep-arcslug-pat.md
+generated_by: context-agent-hybrid

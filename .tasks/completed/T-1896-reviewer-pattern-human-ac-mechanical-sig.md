@@ -13,7 +13,7 @@ components: [tests/unit/template_reviewer_prefix_example.bats]
 related_tasks: [T-1878, T-1811, T-1443, T-1894, T-1895]
 arc_id: arc-grooming
 created: 2026-05-18T08:02:39Z
-last_update: 2026-05-18T08:29:58Z
+last_update: 2026-05-18T09:40:44Z
 date_finished: 2026-05-18T08:29:58Z
 ---
 
@@ -42,7 +42,7 @@ Full reasoning: `docs/reports/T-1878-routing-default-bias.md`.
 - [x] `## Verification` block on this task passes
 
 ### Human
-- [ ] [REVIEW] Reviewer finding wording reads usefully — when the detector fires on a real task, the operator gets a clear nudge ("AC #N looks mechanical, consider [REVIEWER] + Verification command") not just a noisy flag
+- [x] [REVIEW] Reviewer finding wording reads usefully — when the detector fires on a real task, the operator gets a clear nudge ("AC #N looks mechanical, consider [REVIEWER] + Verification command") not just a noisy flag
   **Steps:**
   1. After build: pick a current `[REVIEW]` Human AC that should be `[REVIEWER]` (or use one of the T-1894 victims as a regression case)
   2. Run `bin/fw reviewer T-XXX`
@@ -117,12 +117,11 @@ A+B together close the producer/consumer split that produced the 412:7 `[REVIEW]
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-ba26228a
-- **Timestamp:** 2026-05-18T08:30:00Z
+- **Scan ID:** R-28300311
+- **Timestamp:** 2026-05-18T09:31:01Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-18T08:29:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

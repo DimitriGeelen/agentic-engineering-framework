@@ -187,8 +187,8 @@ bin/fw reviewer T-1818 2>&1 | grep -q "Overall:.*PASS"
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-4b46e414
-- **Timestamp:** 2026-05-17T07:15:56Z
+- **Scan ID:** R-62408ecd
+- **Timestamp:** 2026-05-18T09:30:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes

@@ -13,7 +13,7 @@ components: [C-004, lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats, tes
 related_tasks: [T-1846, T-1847]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:04Z
-last_update: 2026-05-16T22:26:31Z
+last_update: 2026-05-18T09:41:08Z
 date_finished: 2026-05-16T22:26:31Z
 ---
 
@@ -34,7 +34,7 @@ date_finished: 2026-05-16T22:26:31Z
 - [x] `curl -sf "$(bin/fw watchtower url)/arcs"` returns 200 and HTML contains all four state labels + stale badge wires through (verified via FW_STALE_ARC_DAYS=0 forcing all 5 in-progress arcs stale → 5 badge-warn spans; revert to default → 0 spans)
 
 ### Human
-- [ ] [REVIEW] Filter strip + stale badge fit Watchtower's visual rhythm and the operator finds the new surface intuitive
+- [x] [REVIEW] Filter strip + stale badge fit Watchtower's visual rhythm and the operator finds the new surface intuitive
   **Steps:**
   1. Open `http://localhost:3000/arcs` (or the LAN URL from `bin/fw watchtower url`). Default view should land on in-progress with the tab active.
   2. Scan the tab strip: order is `draft · in-progress · closed · abandoned · all`. Each tab carries a small counter badge.
@@ -170,8 +170,8 @@ The slice absorbs T-1855's deferred AC #4 (stale badge on Watchtower) and unbloc
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-145303fd
-- **Timestamp:** 2026-05-17T07:15:57Z
+- **Scan ID:** R-345340f6
+- **Timestamp:** 2026-05-18T09:30:59Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

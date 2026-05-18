@@ -13,7 +13,7 @@ components: []
 related_tasks: [T-1846, T-1847, T-1653]
 arc_id: arc-grooming
 created: 2026-05-15T14:52:54Z
-last_update: 2026-05-16T21:25:15Z
+last_update: 2026-05-18T09:40:20Z
 date_finished: 2026-05-16T21:25:15Z
 ---
 
@@ -35,7 +35,7 @@ date_finished: 2026-05-16T21:25:15Z
 - [x] [REVIEWER] Deprecation banner mechanical structure on `docs/reports/T-1653-arcs-as-first-class.md`: references T-1851 + T-1850 explicitly, links to `docs/reports/T-1846-arc-grooming-inception.md` and `.context/handoffs/HANDOFF-arc-grooming-2026-05-15.md`, and both link targets exist. Re-classified from Human [REVIEW] by T-1894 — mechanical claims (references + link-target existence) lifted to verification commands below; only "reads as obvious superseded note" remains Human.
 
 ### Human
-- [ ] [REVIEW] Deprecation banner in `docs/reports/T-1653-arcs-as-first-class.md` reads as an obvious "this design has been superseded in part" note
+- [x] [REVIEW] Deprecation banner in `docs/reports/T-1653-arcs-as-first-class.md` reads as an obvious "this design has been superseded in part" note
   **Steps:**
   1. Open the file in a Markdown viewer or VSCode preview
   2. Read the top banner block (before "## What the user asked for")
@@ -147,8 +147,8 @@ The Evolution section captures one observability follow-up (audit's T-1813 tag-f
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-ef6a7164
-- **Timestamp:** 2026-05-18T07:28:48Z
+- **Scan ID:** R-f07ef509
+- **Timestamp:** 2026-05-18T09:30:59Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

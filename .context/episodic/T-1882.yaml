@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1882: Promote CTL-028 status-drift check to compliance section (pre-push catches before ship)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T18:35:12Z
+# ============================================================================
+
+task_id: T-1882
+task_name: "Promote CTL-028 status-drift check to compliance section (pre-push catches before ship)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-17T18:25:53Z
+completed: 2026-05-17T18:33:03Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-17T20:27:13+02:00
+last_commit: 2026-05-17T20:32:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file prevention slice — CTL-028 promotion to compliance section. ship CTL-028 promotion to compliance section + 4 regression tests
+
+# Key outcomes
+outcomes:
+  - 'CTL-028 fires when audit runs with `--section compliance` (was: only fired with `--section oe-daily`)'
+  - 'CTL-028 still fires when audit runs with `--section oe-daily` (no regression)'
+  - '`COMPLETED_SCAN` is populated when compliance section is requested (dependency wiring)'
+  - 'Regression tests added to `tests/unit/audit_ctl028_completed_status_consistency.bats` — 4 new T-1882 cases exercise compliance / oe-daily / pre-push-profile / structure-only paths; all 8 PASS'
+  - 'Pre-push audit (`bin/fw audit --section structure,compliance,quality,discovery`) emits CTL-028 line in output'
+  - 'No new audit warnings/failures introduced on the live tree (regression check)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-17 — Section assignment: compliance, not structure'
+    chose: 'Gate CTL-028 with `compliance || oe-daily`. Promote to compliance section.'
+    rationale: '(a) Pre-push audit already includes compliance — minimal change to scope. (b) Compliance is semantically correct: CTL-028 checks state-machine compliance (started-work in completed/ violates the lifecycle), not directory structure (which is about file layout). (c) Avoids expanding the structure section which is intentionally fast.'
+    alternatives_rejected: ['Adding CTL-028 to structure section — would force COMPLETED_SCAN to populate even when only structure was requested (e.g. fast cron 30m run), unnecessary work for the common case. Also semantically off (CTL-028 isn''t a structure check).']
+    alternatives_rejected: ['Adding a new "drift" section — yet-another-section grows the section taxonomy with one check. Not worth the overhead vs. reusing compliance.']
+  - decision: '2026-05-17 — Physical relocation of CTL-028 block (not just gate-widening)'
+    chose: 'Move the CTL-028 block out of the oe-daily `if` block (lines 2024-2402) into its own conditional gated on `compliance || oe-daily`.'
+    rationale: 'The original location was nested inside `if should_run_section "oe-daily"` — wrapping with an inner `compliance || oe-daily` gate would have been dead code (the outer gate only opens when oe-daily is requested). Physical relocation outside the oe-daily block is the only way to make `--section compliance` fire CTL-028.'
+    alternatives_rejected: ['Duplicating the check in compliance section — adds maintenance burden; the underlying check is the same.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-1882-promote-ctl-028-status-drift-check-to-co.md'
+  - 'tests/unit/audit_ctl028_completed_status_consistency.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-17T20:27:13"
+    action: "T-1882: file prevention slice — CTL-028 promotion to compliance section"
+  - time: "2026-05-17T20:32:59"
+    action: "T-1882: ship CTL-028 promotion to compliance section + 4 regression tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-grooming, audit, prevention, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 3
+  lines_added: 288
+  lines_removed: 63
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1882-promote-ctl-028-status-drift-check-to-co.md
+generated_by: context-agent-hybrid

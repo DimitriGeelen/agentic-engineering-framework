@@ -122,8 +122,8 @@ Pure helper extension (`enrich_with_dispatch_recency`) keeps the audit-time chec
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-a31cf56f
-- **Timestamp:** 2026-05-17T07:15:55Z
+- **Scan ID:** R-5ddaeb93
+- **Timestamp:** 2026-05-18T09:30:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

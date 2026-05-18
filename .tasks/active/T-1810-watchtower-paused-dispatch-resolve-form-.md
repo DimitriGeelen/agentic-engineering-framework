@@ -142,8 +142,8 @@ The endpoint piggybacks on `lib/pause_resolve.resolve_pause()` (slice 5), so the
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-04636d20
-- **Timestamp:** 2026-05-17T07:15:56Z
+- **Scan ID:** R-a1a1a93b
+- **Timestamp:** 2026-05-18T09:30:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

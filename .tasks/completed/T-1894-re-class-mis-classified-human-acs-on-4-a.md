@@ -4,9 +4,9 @@ name: "re-class mis-classified Human ACs on 4 arc-grooming partial-completes"
 description: >
   re-class mis-classified Human ACs on 4 arc-grooming partial-completes
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [hygiene, ac-classification, arc-grooming-cleanup]
 components: []
@@ -17,8 +17,8 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T07:30:08Z
-last_update: 2026-05-18T07:30:08Z
-date_finished: null
+last_update: 2026-05-18T09:40:56Z
+date_finished: 2026-05-18T07:37:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -47,7 +47,7 @@ The 3 other arc-grooming partials (T-1852, T-1853, T-1891, plus T-1893's closure
 - [x] All commands in this task's `## Verification` pass
 
 ### Human
-- [ ] [REVIEW] The re-classification preserves the intent of each original AC (mechanical half moved, taste half retained)
+- [x] [REVIEW] The re-classification preserves the intent of each original AC (mechanical half moved, taste half retained)
   **Steps:**
   1. For each of T-1851, T-1857, T-1890, T-1893: read the `### Agent` AC added by this task and the `### Human` `[REVIEW]` AC that remains
   2. Confirm: the mechanical claim is exactly what a future static scan would catch; the taste claim is exactly what genuinely needs your eyes
@@ -195,3 +195,14 @@ test "$(grep -c '^## Prong [1-5]' docs/reports/arc-005-headline-mechanic-demo.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1894-re-class-mis-classified-human-acs-on-4-a.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-b77a503f
+- **Timestamp:** 2026-05-18T09:31:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+### 2026-05-18T07:37:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

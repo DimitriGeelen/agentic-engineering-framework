@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1883: Promote CTL-012 unchecked-AC check to compliance section (twin of CTL-028, closes detection-window for AC-drift class)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T19:12:01Z
+# ============================================================================
+
+task_id: T-1883
+task_name: "Promote CTL-012 unchecked-AC check to compliance section (twin of CTL-028, closes detection-window for AC-drift class)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-17T19:03:53Z
+completed: 2026-05-17T19:09:57Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-17T21:05:02+02:00
+last_commit: 2026-05-17T21:09:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file CTL-012 promotion slice — twin of CTL-028. ship CTL-012 promotion to compliance section + 5 regression tests
+
+# Key outcomes
+outcomes:
+  - 'CTL-012 fires when audit runs with `--section compliance` (was: only fired with `--section oe-daily`)'
+  - 'CTL-012 still fires when audit runs with `--section oe-daily` (no regression)'
+  - '`COMPLETED_SCAN` continues to populate when compliance section is requested (T-1882 wiring reused, no additional change needed)'
+  - 'New bats file `tests/unit/audit_ctl012_compliance_section.bats` — 5 cases (compliance, oe-daily, pre-push-profile, structure-only negative, clean PASS). All 5 PASS.'
+  - 'Pre-push audit profile (`--section structure,compliance,quality,discovery`) emits CTL-012 line'
+  - 'No new audit warnings/failures on the live tree — pre-existing CTL-012 WARNs surfaced on T-678 + T-436 (these were already firing daily; promotion just makes them visible at pre-push too)'
+  - 'CTL-012 does NOT fire from `--section structure` alone (negative test PASS — gate granularity, mirrors T-1882 test #8)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-17 — Same gate as CTL-028 (`compliance || oe-daily`)'
+    chose: 'Mirror T-1882''s gate pattern exactly. CTL-012 lives in the same code region just below CTL-028.'
+    rationale: 'Symmetry — both checks share scan path, both detect post-fact desync, both should fire at same cadences. Easier for future readers to reason about.'
+    alternatives_rejected: ['Promoting only to compliance (drop oe-daily). Would leave a gap if pre-push audit is bypassed via `--no-verify` (Tier-2); the daily cron remains as a backstop.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-1883-promote-ctl-012-unchecked-ac-check-to-co.md'
+  - 'tests/unit/audit_ctl012_compliance_section.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-17T21:05:02"
+    action: "T-1883: file CTL-012 promotion slice — twin of CTL-028"
+  - time: "2026-05-17T21:09:51"
+    action: "T-1883: ship CTL-012 promotion to compliance section + 5 regression tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-grooming, audit, prevention, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 3
+  lines_added: 356
+  lines_removed: 49
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1883-promote-ctl-012-unchecked-ac-check-to-co.md
+generated_by: context-agent-hybrid

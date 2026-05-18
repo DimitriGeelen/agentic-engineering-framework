@@ -1,0 +1,248 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1850: tags:[arc:*] → arc_id one-shot migration (T-NEW-3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-16T09:28:33Z
+# ============================================================================
+
+task_id: T-1850
+task_name: "tags:[arc:*] → arc_id one-shot migration (T-NEW-3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T14:52:50Z
+completed: 2026-05-16T09:27:46Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-16T11:27:34+02:00
+last_commit: 2026-05-16T11:27:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tags:[arc:*] → arc_id migration (T-NEW-3) — 162 tasks rewritten
+
+# Key outcomes
+outcomes:
+  - '`lib/migrations/arc-id-migration.sh` exists, executable, supports `--dry-run` and `--apply` modes (plus `--resolve T-XXXX=ARC_ID` for multi-arc).'
+  - 'Migration scans `.tasks/{active,completed}/*.md`, moves `arc:X` from `tags:` list to `arc_id: X` field. Slug form by default; T-1848 arc-NNN form supported by the resolver. 162 tasks migrated.'
+  - 'T-1717 and T-1719 explicitly resolved to `arc_id: embeddings-strategy` (Q3 per-task decision from T-1846). Both verified post-migration.'
+  - 'Multi-arc tagged tasks (>1 `arc:*` tag) halt the run unless `--resolve TASK_ID=arc_id` flag supplied. Verified: dry-run with no --resolve flags halted with exit 3 + listed T-1717 + T-1719 with copy-pasteable --resolve hints.'
+  - 'Migration report at `.context/audits/arc-id-migration-<date>.yaml` with summary counts + migrated list + stale_arc_cleared list + resolutions_applied list.'
+  - 'Report is `git add`''d and committed atomically with the frontmatter changes (this commit).'
+  - 'Second run produces no further changes (idempotent). Verified: second `--apply` showed Migrated=0, Stale-arc-cleared=0, all 1841 tasks classified as no_arc_tag.'
+  - 'After migration: `grep -rE ''^tags:.*arc:'' .tasks/{active,completed}/` returns zero matches (verified manually).'
+  - 'Stale-arc class handled: `arc:ntfy` on T-708 + T-710 (no ntfy.yaml exists) stripped from tags without adding arc_id — would have failed T-1849 hook otherwise. Logged in report `stale_arc_cleared:` section.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/arc-id-migration-2026-05-16.yaml'
+  - '.fabric/components/lib-migrations-arc-id-migration.yaml'
+  - 'lib/migrations/arc-id-migration.sh'
+  - '.tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md'
+  - '.tasks/active/T-1677-tag-format-drift-21-legacy-termlink-sess.md'
+  - '.tasks/active/T-1700-v1-build-install--integrate-litellm-prox.md'
+  - '.tasks/active/T-1701-v1-build-install--integrate-pi-rpc-backe.md'
+  - '.tasks/active/T-1702-boundary-hook-extend-to-outside-path-arg.md'
+  - '.tasks/active/T-1707-fw-doctor-scope-tagging--split-project-v.md'
+  - '.tasks/active/T-1718-evolution-gate--vertical-slice-disciplin.md'
+  - '.tasks/active/T-1719-embeddings-strategy-v1--slice-1-post-wri.md'
+  - '.tasks/active/T-1730-bash-matcher--focus-drift-gate-on-check-.md'
+  - '.tasks/active/T-1731-human-ac-tick-guard--block-agent-from-ch.md'
+  - '.tasks/active/T-1737-slice-2-userpromptsubmit-hook--promptund.md'
+  - '.tasks/active/T-1742-spike-d-follow-up-re-run-qwen35-with---m.md'
+  - '.tasks/active/T-1761-orchestrator-mcp-scan-auto-classify-by-n.md'
+  - '.tasks/active/T-1762-task-pair-acd-gate-p-012-wire-g-066-pron.md'
+  - '.tasks/active/T-1773-spawn-side-dispatch-driver-read-resolver.md'
+  - '.tasks/active/T-1774-fw-resolver-run-cli-integration-of-spawn.md'
+  - '.tasks/active/T-1775-libollamalooppy--claude--p-worker-primit.md'
+  - '.tasks/active/T-1776-fallback-workflow-contract-gap--defaulty.md'
+  - '.tasks/active/T-1792-watchtower-orchestrator-add-dispatch-sub.md'
+  - '.tasks/active/T-1794-watchtower-orchestrator-extend-dispatch-.md'
+  - '.tasks/active/T-1795-watchtower-orchestrator-extend-dispatch-.md'
+  - '.tasks/active/T-1796-watchtower-orchestrator-add-outcome-qual.md'
+  - '.tasks/active/T-1797-termlink-worker-primitive--libtermlinkwo.md'
+  - '.tasks/active/T-1799-watchtower-orchestrator-add-workflow-cov.md'
+  - '.tasks/active/T-1801-extend-workflow-coverage-panel-with-miss.md'
+  - '.tasks/active/T-1802-workflow-coverage-panel-per-workflow-las.md'
+  - '.tasks/active/T-1803-workflow-coverage-audit-stale-workflow-w.md'
+  - '.tasks/active/T-1805-pauserequested-terminalevent-class--subs.md'
+  - '.tasks/active/T-1806-resolver-risk-policy-preamble-injection-.md'
+  - '.tasks/active/T-1807-workflow-schema-lint--pausethreshold-all.md'
+  - '.tasks/active/T-1808-paused-dispatch-surface--fw-review-queue.md'
+  - '.tasks/active/T-1810-watchtower-paused-dispatch-resolve-form-.md'
+  - '.tasks/active/T-1818-v2-peer-consult-slice-1-framework-half--.md'
+  - '.tasks/active/T-1820-joint-smoke-test-slice--v2-peer-consult-.md'
+  - '.tasks/active/T-1821-t-1820-follow-up-live-joint-smoke-demo-w.md'
+  - '.tasks/active/T-1842-fabric-exclude-blindness--honor-exclude-.md'
+  - '.tasks/active/T-1843-t-1603-smarter-hook--mirror-sync-stderr-.md'
+  - '.tasks/active/T-1844-pre-commit-secret-scan-hook--root-cause-.md'
+  - '.tasks/active/T-1848-sequential-arc-nnn-immutable-ids-t-new-1.md'
+  - '.tasks/active/T-1850-tagsarc--arcid-one-shot-migration-t-new-.md'
+  - '.tasks/active/T-1851-deprecate-constituenttasks-field-t-new-4.md'
+  - '.tasks/active/T-1852-lifecycle-state-machine-add-draft--aband.md'
+  - '.tasks/active/T-1853-watchtower-arcs-lifecycle-filter-tabs-t-.md'
+  - '.tasks/active/T-1854-fw-arc-abandon-cli-verb-t-new-6.md'
+  - '.tasks/active/T-1855-stale-arc-audit-warning-30d-t-new-7.md'
+  - '.tasks/active/T-1856-anchor-task-existence-audit-check-t-new-.md'
+  - '.tasks/active/T-1857-012-arcsystemmd--frameworkmd-updates-t-n.md'
+  - '.tasks/completed/T-1257-fix-context-blind-fw-path-rule-in-claude.md'
+  - '.tasks/completed/T-1634-fw-upgrade-no-args-read-upstream-url-fro.md'
+  - '.tasks/completed/T-1635-fw-upgrade-fresh-machine-simulation-guar.md'
+  - '.tasks/completed/T-1641-t-1061-orchestrator-arc-reconsideration-.md'
+  - '.tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md'
+  - '.tasks/completed/T-1643-arc-b--framework-side-wiring-of-orchestr.md'
+  - '.tasks/completed/T-1644-arc-c--orchestrator-arc-drift-defenses-t.md'
+  - '.tasks/completed/T-1645-g-015-reframe--sub-agent-tmp-bypass-narr.md'
+  - '.tasks/completed/T-1646-mcp-tool-taskid-enforcement-audit--agent.md'
+  - '.tasks/completed/T-1647-watchtower-orchestrator-page--orchestrat.md'
+  - '.tasks/completed/T-1648-governance-frame-0x8-protocol-regression.md'
+  - '.tasks/completed/T-1649-task-type-tag-format-invariant--termlink.md'
+  - '.tasks/completed/T-1650-routecache-persistence-schema-regression.md'
+  - '.tasks/completed/T-1651-wezterm-plugin-contract-test--pin-termli.md'
+  - '.tasks/completed/T-1652-cross-repo-fabric-cards-for-opttermlink-.md'
+  - '.tasks/completed/T-1654-fix-framework-dispatch-tag-drift--agents.md'
+  - '.tasks/completed/T-1655-g-062-mechanism-1-codify-arc-completion-.md'
+  - '.tasks/completed/T-1656-g-062-mechanism-2-fw-audit-arc-completio.md'
+  - '.tasks/completed/T-1657-g-062-mechanism-3-fw-task-review-extra-g.md'
+  - '.tasks/completed/T-1661-t-1653-phase-1-build-arc-system-mvp--con.md'
+  - '.tasks/completed/T-1663-termlink-dispatch-runsh-switch-to-stream.md'
+  - '.tasks/completed/T-1664-framework-dispatch-path-populate-modelus.md'
+  - '.tasks/completed/T-1665-t-1656-arc-completion-detective-never-fi.md'
+  - '.tasks/completed/T-1666-t-1642-b4-framework-fw-config-plumbing-f.md'
+  - '.tasks/completed/T-1667-rca--systemic-remediation-for-acd-self-a.md'
+  - '.tasks/completed/T-1668-implement-acd-enforcement-gates---headli.md'
+  - '.tasks/completed/T-1669-wire-framework-dispatch-into-orchestrato.md'
+  - '.tasks/completed/T-1670-default-to-open-structural-gate-gap--age.md'
+  - '.tasks/completed/T-1671-implement-default-to-open-agent-gate-in-.md'
+  - '.tasks/completed/T-1672-update-watchtower-arcsid-close-instructi.md'
+  - '.tasks/completed/T-1673-fabric-drift-orphan-check-prepends-proje.md'
+  - '.tasks/completed/T-1675-project-shape-conflation-umbrella--frame.md'
+  - '.tasks/completed/T-1688-g-064-candidate-consumer-survey--classif.md'
+  - '.tasks/completed/T-1689-v1-resolver--workflow-lookup--context-as.md'
+  - '.tasks/completed/T-1690-v1-outcome-enrichment-hook--task-complet.md'
+  - '.tasks/completed/T-1691-v1-ollama-proxy-adapter--pick-proxy-lite.md'
+  - '.tasks/completed/T-1692-v1-pi-backend-integration--rpc-mode-wrap.md'
+  - '.tasks/completed/T-1693-ship-baseline-workflow-files-default--in.md'
+  - '.tasks/completed/T-1694-fw-doctor-extensions--pi-installed-check.md'
+  - '.tasks/completed/T-1695-fw-orchestrator-improve-cli-stub--reserv.md'
+  - '.tasks/completed/T-1706-v4-build-thin-tool-loop-worker-for-ollam.md'
+  - '.tasks/completed/T-1708-workerkind-drift-regression-test--pin-va.md'
+  - '.tasks/completed/T-1709-permanent-disposable-aef-review-instance.md'
+  - '.tasks/completed/T-1710-failure-mode-discrimination-in-disposabl.md'
+  - '.tasks/completed/T-1711-register-acd-concern-g-066-t-1442t-1443-.md'
+  - '.tasks/completed/T-1712-fw-orchestrator-status-filter-t-stress--.md'
+  - '.tasks/completed/T-1713-task-pair-acd-gate-detect-substrate-vs-d.md'
+  - '.tasks/completed/T-1714-substrate-bypass-fw-termlink-dispatch-du.md'
+  - '.tasks/completed/T-1716-filing-time---recommendation-gate-on-fw-.md'
+  - '.tasks/completed/T-1717-embeddings-generation-strategy-for-conte.md'
+  - '.tasks/completed/T-1721-frictionless-artefact-links--auto-render.md'
+  - '.tasks/completed/T-1722-build-watchtower-renderer-auto-links-art.md'
+  - '.tasks/completed/T-1723-t-1722-follow-up-extend-artefact-linkifi.md'
+  - '.tasks/completed/T-1727-v05-build--escalation-scan-with-llm-augm.md'
+  - '.tasks/completed/T-1729-meta-rca-agent-did-substantive-work-rca-.md'
+  - '.tasks/completed/T-1732-prompt-triage-as-g-064-first-real-consum.md'
+  - '.tasks/completed/T-1733-prompt-triage-v05-spike-a--first-orchest.md'
+  - '.tasks/completed/T-1734-validworkerkinds-drift-between-binfw-and.md'
+  - '.tasks/completed/T-1736-spike-b-prompt-triage-classifier-accurac.md'
+  - '.tasks/completed/T-1738-resolver-dispatch---var-keyvalue-for-cus.md'
+  - '.tasks/completed/T-1739-t-1730-follow-up-focus-drift-gates-claud.md'
+  - '.tasks/completed/T-1740-revise-prompt-triage-template--direct-co.md'
+  - '.tasks/completed/T-1741-evaluate-alternative-ollama-models-for-p.md'
+  - '.tasks/completed/T-1743-spike-d-off-ramp-re-score-4-model-result.md'
+  - '.tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md'
+  - '.tasks/completed/T-1747-harden-webdiscoverprojectroot--remove-st.md'
+  - '.tasks/completed/T-1748-harden-v05-parseverdictenvelope--regex-f.md'
+  - '.tasks/completed/T-1749-fw-orchestrator-status---outcomes--surfa.md'
+  - '.tasks/completed/T-1750-g-064-closure-readiness-mechanical-gauge.md'
+  - '.tasks/completed/T-1751-gitignore-ephemeral-working-state-files-.md'
+  - '.tasks/completed/T-1752-fw-gaps-surfaces-closurecheckcommand-ver.md'
+  - '.tasks/completed/T-1755-classify-59-new-termlinkagent-mcp-tools-.md'
+  - '.tasks/completed/T-1756-re-parse-historical-parse-fail-outcomes-.md'
+  - '.tasks/completed/T-1757-fw-orchestrator-status-outcomes--dedupe-.md'
+  - '.tasks/completed/T-1758-fabric-enrich--python-pathlibliteral-pat.md'
+  - '.tasks/completed/T-1759-extend-fabric-watch-patterns--add-libpy-.md'
+  - '.tasks/completed/T-1760-classify-18-new-termlinkagent-analytics-.md'
+  - '.tasks/completed/T-1767-fix-escalation-scan-v05-cron-deploy-gap-.md'
+  - '.tasks/completed/T-1768-structural-drift-detection-between-cron-.md'
+  - '.tasks/completed/T-1769-cron-generate-shape--bats-fixture-pinnin.md'
+  - '.tasks/completed/T-1777-spawn-driver-persist-terminalevent-into-.md'
+  - '.tasks/completed/T-1778-fw-resolver-runexplain--surface-terminal.md'
+  - '.tasks/completed/T-1779-orchestrator-status-terminalevent-breakd.md'
+  - '.tasks/completed/T-1780-fw-outcome-read--surface-terminalevent-s.md'
+  - '.tasks/completed/T-1781-fw-orchestrator-status--show-terminaleve.md'
+  - '.tasks/completed/T-1782-fw-outcome-list--show-terminalevent-stat.md'
+  - '.tasks/completed/T-1783-fw-outcome-read---tail-events-n-show-las.md'
+  - '.tasks/completed/T-1784-fw-orchestrator-status---task-t-xxx-filt.md'
+  - '.tasks/completed/T-1785-fw-orchestrator-status---since-duration-.md'
+  - '.tasks/completed/T-1786-fw-orchestrator-status---worker-kind-x-f.md'
+  - '.tasks/completed/T-1787-fw-orchestrator-status---recent-n-contro.md'
+  - '.tasks/completed/T-1788-fw-orchestrator-status-surface-model--by.md'
+  - '.tasks/completed/T-1789-fw-orchestrator-routes-surface-route-cac.md'
+  - '.tasks/completed/T-1790-fw-orchestrator-statusroutes---task-type.md'
+  - '.tasks/completed/T-1791-fw-orchestrator-status---model-x-filter-.md'
+  - '.tasks/completed/T-1793-fw-orchestrator-status---workflow-resolv.md'
+  - '.tasks/completed/T-1798-workflow-dispatcher-coverage-check--fw-a.md'
+  - '.tasks/completed/T-1800-provider-coverage-check--extend-workflow.md'
+  - '.tasks/completed/T-1804-cross-agent-conversation-arc--joint-aef-.md'
+  - '.tasks/completed/T-1809-pause-re-dispatch-chain--fw-pause-resolv.md'
+  - '.tasks/completed/T-1812-reviewer-pass-on-dispatch-safety-arc-tas.md'
+  - '.tasks/completed/T-1813-audit-arc-completion-check-ignores-tag-t.md'
+  - '.tasks/completed/T-1815-l-369-follow-through-scrub-vacuous-verif.md'
+  - '.tasks/completed/T-1816-fix-dispatch-safety-arc-yaml--unquoted-c.md'
+  - '.tasks/completed/T-1817-watchtower-arcs-detail-page-misses-tag-a.md'
+  - '.tasks/completed/T-1819-seed-peer-consult-promptsyaml--framework.md'
+  - '.tasks/completed/T-1822-fix-project-boundary-cwd-trap--vendored-.md'
+  - '.tasks/completed/T-1823-webtestapppy-consumer-vs-framework-data-.md'
+  - '.tasks/completed/T-1838-fw-doctor-asymmetric-version-skew-detect.md'
+  - '.tasks/completed/T-1839-fw-upgrade-silent-downgrade-guard--refus.md'
+  - '.tasks/completed/T-1841-findprojectroot-sentinel--skip-agentic-f.md'
+  - '.tasks/completed/T-1845-pre-commit-large-file-gate--untrack-acci.md'
+  - '.tasks/completed/T-1846-arc-grooming--resolve-q1q2q3--plan-t-new.md'
+  - '.tasks/completed/T-1847-scaffold-arc-grooming-workspace--file-10.md'
+  - '.tasks/completed/T-1849-task-arcid-field--tier-1-validation-bloc.md'
+  - '.tasks/completed/T-1871-fix-episodic-generator-yaml-escape--back.md'
+  - '.tasks/completed/T-708-libnotifysh--thin-wrapper-calling-skills.md'
+  - '.tasks/completed/T-710-fw-notify-cli--setup-test-enable-disable.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-16T11:27:34"
+    action: "T-1850: tags:[arc:*] → arc_id migration (T-NEW-3) — 162 tasks rewritten"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1114 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, data-migration, idempotent, T-NEW-3]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1114
+  commits: 1
+  files_changed: 168
+  lines_added: 818
+  lines_removed: 183
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1850-tagsarc--arcid-one-shot-migration-t-new-.md
+generated_by: context-agent-hybrid

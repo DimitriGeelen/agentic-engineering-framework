@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1877: lib/arc.sh _arc_next_numeric_id octal-parse latent bug fix (T-NEW-13)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T07:05:33Z
+# ============================================================================
+
+task_id: T-1877
+task_name: "lib/arc.sh _arc_next_numeric_id octal-parse latent bug fix (T-NEW-13)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-17T07:01:10Z
+completed: 2026-05-17T07:05:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-17T09:05:02+02:00
+last_commit: 2026-05-17T09:05:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ship T-NEW-13 — lib/arc.sh _arc_next_numeric_id octal-parse latent-bug fix
+
+# Key outcomes
+outcomes:
+  - '`_arc_next_numeric_id` no longer fails when arc-008 or arc-009 exist in `.context/arcs/`. `cur` is base-10-forced via `$((10#$cur))` immediately after extract; arithmetic stays integer-form throughout the loop.'
+  - '`cur` is normalized to integer form immediately after the awk extract so the loop-internal `max="$cur"` stores integer-form, not a leading-zero string.'
+  - '`tests/unit/arc_next_numeric_id_octal.bats` reproduces the bug WITHOUT the fix (verified by `git stash`/run/pop: octal-boundary tests FAIL on unfixed code), and verifies the fix handles arc-001 through arc-099 contiguously (including 008, 009, 010, 099→100 transitions).'
+  - 'All new bats cases pass: `bats tests/unit/arc_next_numeric_id_octal.bats` exits 0. 8/8 pass with fix in place.'
+  - 'No regression on the existing arc creation flow: empty→001, 001..005→006, 007→008, gap-handling honors D-Immutability.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'ship T-NEW-13 — lib/arc.sh _arc_next_numeric_id octal-parse latent-bug fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/arc.sh'
+  - '.tasks/active/T-1876-watchtower-arcsslug-reads-arcid-frontmat.md'
+  - '.tasks/active/T-1877-libarcsh-arcnextnumericid-octal-parse-la.md'
+  - 'tests/unit/arc_next_numeric_id_octal.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-17T09:05:02"
+    action: "T-1877: ship T-NEW-13 — lib/arc.sh _arc_next_numeric_id octal-parse latent-bug fix"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc, arc-grooming, lib-arc, bug, T-NEW-13]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 4
+  lines_added: 307
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1877-libarcsh-arcnextnumericid-octal-parse-la.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1896: Reviewer pattern human-ac-mechanical-signal — catch [REVIEW]-mis-class at task close (T-1878 B)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T09:40:45Z
+# ============================================================================
+
+task_id: T-1896
+task_name: "Reviewer pattern human-ac-mechanical-signal — catch [REVIEW]-mis-class at task close (T-1878 B)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-18T08:02:39Z
+completed: 2026-05-18T08:38:02Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-05-18T10:30:23+02:00
+last_commit: 2026-05-18T10:38:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reviewer pattern human-ac-mechanical-signal (T-1878 B) — three-gate detector for mis-classed [REVIEW] ACs. register fabric cards for new reviewer tests (L-349 hygiene). Phase 2 validation in T-1878 artefact — 2 historical hits (T-1116, T-1372) on 1783 corpus. suppress historical human-ac-mechanical-signal hits (T-1116, T-1372) — 365d overrides per L-400
+
+# Key outcomes
+outcomes:
+  - 'New pattern `human-ac-mechanical-signal` added to `policy/anti-patterns.yaml` — id, name, detection_confidence=heuristic, lie_severity=partial, detector_ref, description citing T-1878/T-1894 precedent, examples_positive + examples_negative'
+  - 'Detector `detect_human_ac_mechanical_signal` implemented in `lib/reviewer/static_scan.py` — scans each `[REVIEW]`-prefixed Human AC''s Expected clause for mechanical signals: `grep`, `wc`, exit-code patterns, file-exists checks, `curl`, HTTP status codes, "appended", "status:" fields; emits CONCERN finding with the AC line number + Expected clause excerpt; wired into `scan_task` orchestration'
+  - 'Three-gate suppression: detector silent when (a) AC not under `### Human` subhead, (b) AC body has strategic markers (`decide`/`approve`/`authorize`/`escalate`/`sign-off`), or (c) Expected contains taste signals (`feels`/`reads`/`cleanly`/`tone`/`voice`/`intuitive`/`natural`/`rhythm`/`lands`) — avoids false positives on T-1893-style strategic ACs and T-1851/T-1857-style taste-genuine [REVIEW]s'
+  - 'Python unit tests `tests/unit/test_reviewer_human_ac_mechanical_signal.py` — 11 tests covering positive (grep / curl HTTP / file-appended / status-field) + negative (taste signals / strategic AC body / non-Human-subhead / non-REVIEW prefix / no-Expected-clause) + wire-up via `scan_task`'
+  - 'Bats test `tests/unit/reviewer_human_ac_mechanical_signal.bats` — runs `bin/fw reviewer` against synthetic positive (T-9897) and negative (T-9898) fixture tasks; pins catalogue entry presence + detector function export'
+  - 'Override mechanism inherits from `bin/fw reviewer override` (T-1443 v1.4) by composition — `fw reviewer override add T-XXX --pattern human-ac-mechanical-signal --ac N --reason "..." --ttl 90` suppresses the finding for that AC; no new code'
+  - 'Regression: real arc-grooming partial-completes (T-1851/T-1857/T-1893 post-T-1894 cleanup) all PASS the new detector — no false positives on the historical [REVIEW]s'
+  - '`## Verification` block on this task passes'
+  - '[REVIEW] Reviewer finding wording reads usefully — when the detector fires on a real task, the operator gets a clear nudge ("AC #N looks mechanical, consider [REVIEWER] + Verification command") not just a noisy flag'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/reviewer-overrides.yaml'
+  - 'docs/generated/components/lib-reviewer-static_scan.md'
+  - 'docs/reports/T-1878-routing-default-bias.md'
+  - '.fabric/components/tests-unit-reviewer_human_ac_mechanical_signal.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_human_ac_mechanical_signal.yaml'
+  - 'lib/reviewer/static_scan.py'
+  - 'policy/anti-patterns.yaml'
+  - '.tasks/active/T-1895-template--claudemd-reviewer-example-for-.md'
+  - '.tasks/active/T-1896-reviewer-pattern-human-ac-mechanical-sig.md'
+  - 'tests/unit/reviewer_human_ac_mechanical_signal.bats'
+  - 'tests/unit/test_reviewer_human_ac_mechanical_signal.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T10:30:23"
+    action: "T-1896: reviewer pattern human-ac-mechanical-signal (T-1878 B) — three-gate detector for mis-classed [REVIEW] ACs"
+  - time: "2026-05-18T10:30:48"
+    action: "T-1896: register fabric cards for new reviewer tests (L-349 hygiene)"
+  - time: "2026-05-18T10:36:22"
+    action: "T-1896: Phase 2 validation in T-1878 artefact — 2 historical hits (T-1116, T-1372) on 1783 corpus"
+  - time: "2026-05-18T10:38:02"
+    action: "T-1896: suppress historical human-ac-mechanical-signal hits (T-1116, T-1372) — 365d overrides per L-400"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 35 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, ac-routing, governance, reviewer, T-1878-B]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 35
+  commits: 4
+  files_changed: 11
+  lines_added: 717
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1896-reviewer-pattern-human-ac-mechanical-sig.md
+generated_by: context-agent-hybrid

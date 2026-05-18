@@ -180,8 +180,8 @@ One [REVIEW] Human AC: confirm the create→start two-step is acceptable as a br
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-032efc3e
-- **Timestamp:** 2026-05-17T07:15:57Z
+- **Scan ID:** R-50ef9732
+- **Timestamp:** 2026-05-18T09:30:59Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

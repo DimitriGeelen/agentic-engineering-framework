@@ -17,7 +17,7 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T08:01:29Z
-last_update: 2026-05-18T08:21:07Z
+last_update: 2026-05-18T09:40:51Z
 date_finished: 2026-05-18T08:20:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,7 +43,7 @@ Full reasoning: `docs/reports/T-1878-routing-default-bias.md`.
 - [x] `## Verification` block on this task passes.
 
 ### Human
-- [ ] [REVIEW] Template + CLAUDE.md additions read naturally — a fresh agent skimming the template recognises `[REVIEWER]` as a peer of `[REVIEW]`, not a footnote
+- [x] [REVIEW] Template + CLAUDE.md additions read naturally — a fresh agent skimming the template recognises `[REVIEWER]` as a peer of `[REVIEW]`, not a footnote
   **Steps:**
   1. Open `.tasks/templates/default.md` and read the `### Human` block comment from top
   2. Open `CLAUDE.md` §AC Classification Guidance and read the new author-time rule
@@ -161,12 +161,11 @@ The one residual `[REVIEW]` AC is genuine taste — "fresh agent recognises [REV
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-346d2923
-- **Timestamp:** 2026-05-18T08:20:36Z
+- **Scan ID:** R-b99f1c91
+- **Timestamp:** 2026-05-18T09:31:01Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-18T08:20:35Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

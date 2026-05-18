@@ -182,12 +182,17 @@ grep -q "bin/fw resolver run T-1773 cheap-research" .tasks/active/T-1773-spawn-s
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-81fd5f76
-- **Timestamp:** 2026-05-17T07:15:54Z
+- **Scan ID:** R-bc61f668
+- **Timestamp:** 2026-05-18T09:30:53Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] **#H1: End-to-end CLI smoke (after T-1701 #H1+#H2 + pi installed)**
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='exit code' in Expected: stdout shows status=success, events_count > 0, dispatch_id; exit code 0.`
 
 **Verification-level findings:**
 

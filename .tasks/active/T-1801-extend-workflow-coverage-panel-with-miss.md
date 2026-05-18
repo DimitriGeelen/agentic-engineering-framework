@@ -107,8 +107,8 @@ curl -sf "$(bin/fw watchtower url)/orchestrator" | grep -q "provider"
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-273314c2
-- **Timestamp:** 2026-05-17T07:15:55Z
+- **Scan ID:** R-088e2a0b
+- **Timestamp:** 2026-05-18T09:30:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

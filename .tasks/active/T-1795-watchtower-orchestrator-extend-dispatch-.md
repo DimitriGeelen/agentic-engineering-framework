@@ -109,8 +109,8 @@ python3 -m pytest tests/unit/test_orchestrator_dispatch_substrate.py tests/unit/
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-c27adc3e
-- **Timestamp:** 2026-05-17T07:15:55Z
+- **Scan ID:** R-9d93ed35
+- **Timestamp:** 2026-05-18T09:30:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

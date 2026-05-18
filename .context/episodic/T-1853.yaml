@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1853: Watchtower /arcs lifecycle filter tabs (T-NEW-5b)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-18T09:41:08Z
+# ============================================================================
+
+task_id: T-1853
+task_name: "Watchtower /arcs lifecycle filter tabs (T-NEW-5b)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T14:53:04Z
+completed: 2026-05-16T22:26:31Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`/arcs` index renders four filter tabs: draft, in-progress (default), closed, abandoned + an "all" tab (T-1852 four-state lifecycle + "all" synthetic)'
+  - 'Clicking each tab restricts the arc list to that status (server-side `?status=<label>` query param routed through `_filter_arcs`)'
+  - 'Default landing view = in-progress tab active (Playwright `test_arcs_default_landing_marks_in_progress_active` proves it)'
+  - 'Counter badges show count per state (rendered as `.tab-count` spans on every tab — Playwright `test_arcs_tabs_carry_counter_badges` proves it)'
+  - 'Playwright test in `tests/playwright/test_arcs_lifecycle_tabs.py` guards each tab renders + is clickable + restricts the list (DOM-content assertion via Playwright `expect`, NOT element-presence grep — T-1575)'
+  - '`curl -sf "$(bin/fw watchtower url)/arcs"` returns 200 and HTML contains all four state labels + stale badge wires through (verified via FW_STALE_ARC_DAYS=0 forcing all 5 in-progress arcs stale → 5 badge-warn spans; revert to default → 0 spans)'
+  - '[REVIEW] Filter strip + stale badge fit Watchtower''s visual rhythm and the operator finds the new surface intuitive'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-17 — server-side query-param filter (`?status=...`) vs client-side hide/show'
+    chose: 'Server-side filter. Each tab is a plain `<a href="/arcs?status=X">` — the request returns only the matching arcs.'
+    rationale: 'Watchtower has a session-cookie + SSR-only architecture; client-side JS state is intentionally rare. Server-side filter is grep-able in router code, debuggable from curl, and shareable via URL (the operator can bookmark `/arcs?status=closed`). Counter badges still reflect the full state count, not the filtered count.'
+    alternatives_rejected: ['Client-side hide/show via JS — would require Alpine/HTMX or an inline script, both alien to this codebase. Plus client-side filtering hides the URL-as-state pattern operators have come to expect on `/tasks`.']
+  - decision: '2026-05-17 — synthetic "all" tab as the 5th label'
+    chose: 'Add an `all` tab at the right end of the strip — pass through `_filter_arcs` unchanged.'
+    rationale: 'A 4-state lifecycle without an "all" escape hatch hides the corpus-wide view. Adding `all` is one extra label in a list (`_LIFECYCLE_STATES + ("all",)`) and one extra entry in `_state_counts` — trivial cost, big UX win for "show me everything regardless of state."'
+    alternatives_rejected: ['Default to "in-progress" only, hide all-view behind a "more" affordance — adds clicks for a non-edge use case.']
+  - decision: '2026-05-17 — first-1KB regex scan instead of yaml.safe_load per task'
+    chose: '`head = fh.read(1024)` + line-regex extraction of `id:`, `arc_id:`, `tags:` from task frontmatter. No yaml-parse for the batched scan.'
+    rationale: 'Task frontmatter is *guaranteed* to live in the first ~512 bytes by template convention. Yaml parse over 1841 files cost ~10s; regex over the same files costs ~30ms. The regex doesn''t validate YAML — but we don''t need validation in a presentation-layer task-count, only field extraction. If a task frontmatter is malformed it doesn''t show up under any arc — which is correct degraded behaviour.'
+    alternatives_rejected: ['ijson / streaming yaml-parser (over-engineered for frontmatter); read-once full-file + cache (memory bloat for 1841 markdown files); precompute index at watchtower startup (staleness within the same process).']
+  - decision: '2026-05-17 — sort order: in-progress → draft → closed → abandoned'
+    chose: '`status_rank = {"in-progress": 0, "draft": 1, "closed": 2, "abandoned": 3}`'
+    rationale: 'Operator scanning the "all" tab sees active work first, then unstarted work (draft), then archived (closed/abandoned). Matches the order on the filter strip — predictable cognitive flow.'
+    alternatives_rejected: ['Alphabetical (`abandoned < closed < draft < in-progress` — wrong-end-first); recency-only (loses lifecycle grouping).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1893 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, lifecycle, ui, watchtower, T-NEW-5b]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1893
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1853-watchtower-arcs-lifecycle-filter-tabs-t-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1856: Anchor-task existence audit check (T-NEW-8)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-16T09:38:46Z
+# ============================================================================
+
+task_id: T-1856
+task_name: "Anchor-task existence audit check (T-NEW-8)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-15T14:53:17Z
+completed: 2026-05-16T09:37:15Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-16T11:35:53+02:00
+last_commit: 2026-05-16T11:35:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  anchor_task existence audit check (T-NEW-8)
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` adds anchor-task check: WARN when arc YAML''s `anchor_task: T-X` references a task not found in `.tasks/active/` or `.tasks/completed/`. Placed in STRUCTURE section after YAML-parse loop.'
+  - 'Check passes silently for arcs without `anchor_task:` set OR with `anchor_task: null`. Pass line only when ≥1 anchor was checked (no false-positive pass on zero-anchor scans).'
+  - 'Warning only — `fw audit` exit code unaffected. Verified: orphan-anchor fixture exits ≤1, never 2.'
+  - 'Test: `tests/unit/audit_anchor_task_existence.bats` covers 5 cases. 5/5 pass.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.fabric/components/tests-unit-audit_anchor_task_existence.yaml'
+  - '.tasks/active/T-1856-anchor-task-existence-audit-check-t-new-.md'
+  - '.tasks/completed/T-1850-tagsarc--arcid-one-shot-migration-t-new-.md'
+  - 'tests/unit/audit_anchor_task_existence.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-16T11:35:53"
+    action: "T-1856: anchor_task existence audit check (T-NEW-8)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1123 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, audit, T-NEW-8]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1123
+  commits: 1
+  files_changed: 5
+  lines_added: 220
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1856-anchor-task-existence-audit-check-t-new-.md
+generated_by: context-agent-hybrid

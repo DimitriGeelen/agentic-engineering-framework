@@ -139,8 +139,8 @@ out=$(bin/fw watchtower url 2>/dev/null); curl -sf "${out}/approvals" -o /dev/nu
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-f25fecab
-- **Timestamp:** 2026-05-17T07:15:56Z
+- **Scan ID:** R-2280054f
+- **Timestamp:** 2026-05-18T09:30:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

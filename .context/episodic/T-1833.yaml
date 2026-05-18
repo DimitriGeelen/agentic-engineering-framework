@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1833: T-1736 spike harvest read session JSONLs outside PROJECT_ROOT — path-isolation violation (Layer 3 RCA of fw-upgrade-incident-2026-05-14)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T07:00:28Z
+# ============================================================================
+
+task_id: T-1833
+task_name: "T-1736 spike harvest read session JSONLs outside PROJECT_ROOT — path-isolation violation (Layer 3 RCA of fw-upgrade-incident-2026-05-14)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-14T20:42:00Z
+completed: 2026-05-17T07:00:23Z
+duration_days: 3
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated (source-line evidence at scripts/spikes/T-1736-harvest.py:116)'
+  - 'Assumptions tested (A1: grep audit clean except T-1736 family; A2: only T-1736-sampled.jsonl survives; A3: T-1702/T-1707 already in flight for argument-level boundary; A4: T-1736 family scripts on no critical path)'
+  - 'Recommendation written with rationale (GO, three prongs: scrub/gate/audit)'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3498 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, fw-upgrade-incident-2026-05-14, path-isolation, spike-harvest, security]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3498
+  commits: 1
+  files_changed: 4
+  lines_added: 246
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1833-t-1736-spike-harvest-read-session-jsonls.md
+generated_by: context-agent-hybrid

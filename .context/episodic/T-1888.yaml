@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1888: ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits to remind agent to refresh enforcement baseline
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-17T21:00:10Z
+# ============================================================================
+
+task_id: T-1888
+task_name: "ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits to remind agent to refresh enforcement baseline"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-17T20:41:20Z
+completed: 2026-05-17T20:58:28Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/context/check-settings-edit.sh` exists, executable, follows the existing check-fabric-new-file.sh pattern (JSON stdin/stdout, exit 0)'
+  - 'Hook script returns empty output when tool_name != Write/Edit or file_path != `.claude/settings.json`'
+  - 'Hook script emits `additionalContext` with the L-398 reminder when the matched edit occurs'
+  - '`.claude/settings.json` PostToolUse section registers `fw hook check-settings-edit` on `Write|Edit` matcher'
+  - 'Baseline refreshed after registration (dogfood — `fw doctor` reports Enforcement baseline intact)'
+  - '`tests/unit/hook_check_settings_edit.bats` exists with 3 cases: match-fires, non-match-silent, non-settings-write-silent — all PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-grooming, prevention, governance, hooks]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1888-ship-t-1886-rca-candidate-b--posttooluse.md
+generated_by: context-agent-hybrid

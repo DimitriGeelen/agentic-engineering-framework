@@ -208,12 +208,17 @@ python3 -m pytest tests/unit/test_ollama_loop.py tests/unit/test_spawn.py -v
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-83908863
-- **Timestamp:** 2026-05-17T07:15:54Z
+- **Scan ID:** R-0bdf3c7b
+- **Timestamp:** 2026-05-18T09:30:53Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] **#H1: End-to-end ollama-loop smoke (after T-1700 #H1+#H2 — litellm running)**
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='status: success' in Expected: stdout shows `status: success`, `events_count > 0`; dispatches.jsonl last row has `outcome: success` (not `pending`).`
 
 **Verification-level findings:**
 

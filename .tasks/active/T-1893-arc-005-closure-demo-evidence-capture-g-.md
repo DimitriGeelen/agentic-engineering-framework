@@ -220,8 +220,8 @@ The arc itself remains for the human to close per T-1671 (agent-gate on `fw arc 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-367d9630
-- **Timestamp:** 2026-05-18T07:28:49Z
+- **Scan ID:** R-d4deb8cf
+- **Timestamp:** 2026-05-18T09:31:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

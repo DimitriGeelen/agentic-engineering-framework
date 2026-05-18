@@ -13,7 +13,7 @@ components: [tests/playwright/test_arcs_lifecycle_tabs.py, web/blueprints/arcs.p
 related_tasks: [T-1846, T-1847, T-1653]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:22Z
-last_update: 2026-05-16T22:34:46Z
+last_update: 2026-05-18T09:41:02Z
 date_finished: 2026-05-16T22:34:46Z
 ---
 
@@ -35,7 +35,7 @@ date_finished: 2026-05-16T22:34:46Z
 - [x] [REVIEWER] CLI section in `012-ArcSystem.md` mentions every verb that `bin/fw arc help` exposes (no doc-vs-help drift). Verb list: `create, start, focus, list, show, tag, close, abandon, migrate`. Each appears in 012-ArcSystem.md at least once. Re-classified from Human [REVIEW] by T-1894 — mechanical verb-cross-check is deterministic; only the "reads cleanly" / "summary is faithful" judgment remains Human.
 
 ### Human
-- [ ] [REVIEW] `012-ArcSystem.md` reads cleanly as the canonical Arc System reference + `FRAMEWORK.md`'s inline summary is faithful
+- [x] [REVIEW] `012-ArcSystem.md` reads cleanly as the canonical Arc System reference + `FRAMEWORK.md`'s inline summary is faithful
   **Steps:**
   1. Open `012-ArcSystem.md` in a Markdown viewer.
   2. Read Overview + Four-State Lifecycle ASCII diagram + Dual Identity table — does it land?
@@ -168,8 +168,8 @@ All 6 Agent ACs satisfied. The doc is testable (9 grep-based assertions in Verif
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-1f7105ee
-- **Timestamp:** 2026-05-18T07:28:48Z
+- **Scan ID:** R-91f7c6a1
+- **Timestamp:** 2026-05-18T09:31:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

@@ -204,12 +204,17 @@ The three deferred routes (ollama-loop, TermLink, Task) raise `NotImplementedErr
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-a895cc68
-- **Timestamp:** 2026-05-17T07:15:54Z
+- **Scan ID:** R-de6edbd6
+- **Timestamp:** 2026-05-18T09:39:15Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] **#H1: End-to-end smoke (after T-1701 #H1 + #H2)**
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='status: success' in Expected: stdout shows `status: success`, `events_count > 0`, exit code 0; `.context/dispatches.jsonl` last row has `outcome: success` (not `pending`)`
 
 **Verification-level findings:**
 
