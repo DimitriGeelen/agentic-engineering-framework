@@ -4,20 +4,20 @@ name: "fix double-render on arcs/arc-005 and 2 sibling pages — templates exten
 description: >
   fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.html but render_page wraps in _wrapper.html (which also extends base.html), producing two full Watchtower headers
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/orchestrator.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T11:26:56Z
-last_update: 2026-05-18T11:26:56Z
-date_finished: null
+last_update: 2026-05-18T11:42:17Z
+date_finished: 2026-05-18T11:42:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -31,12 +31,12 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] None of the 3 `render_page`-rendered templates (`arc_detail.html`, `arcs_index.html`, `orchestrator.html`) start with `{% extends "base.html" %}` (verified by grep).
-- [ ] `curl -sf http://localhost:3000/arcs/arc-005` returns HTTP 200 and the response body contains exactly one `<nav` opening tag (proxy for one Watchtower chrome instance — base.html emits `<nav class="site-nav">` for the top bar).
-- [ ] Same one-`<nav>` assertion holds for `/arcs` and `/orchestrator`.
-- [ ] htmx fragment behaviour preserved: `curl -sf -H "HX-Request: true" http://localhost:3000/arcs/arc-005` returns the fragment without `<nav` (no chrome on htmx swaps).
-- [ ] No regression on the 3 `render_template`-rendered routes: `/escalation-drift`, `/reviewer/audit`, `/reviewer/overrides` each return HTTP 200 with exactly one `<nav` (the abortive sweep through these templates was reverted in-iteration).
-- [ ] RCA section filled in (workflow_type=build + title contains "fix").
+- [x] None of the 3 `render_page`-rendered templates (`arc_detail.html`, `arcs_index.html`, `orchestrator.html`) start with `{% extends "base.html" %}` (verified by grep).
+- [x] `curl -sf http://localhost:3000/arcs/arc-005` returns HTTP 200 and the response body contains exactly one `<nav` opening tag (proxy for one Watchtower chrome instance — base.html emits `<nav class="site-nav">` for the top bar).
+- [x] Same one-`<nav>` assertion holds for `/arcs` and `/orchestrator`.
+- [x] htmx fragment behaviour preserved: `curl -sf -H "HX-Request: true" http://localhost:3000/arcs/arc-005` returns the fragment without `<nav` (no chrome on htmx swaps).
+- [x] No regression on the 3 `render_template`-rendered routes: `/escalation-drift`, `/reviewer/audit`, `/reviewer/overrides` each return HTTP 200 with exactly one `<nav` (the abortive sweep through these templates was reverted in-iteration).
+- [x] RCA section filled in (workflow_type=build + title contains "fix").
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -68,8 +68,6 @@ date_finished: null
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-
-### Human
 - [ ] [REVIEW] Layout reads clean — only one Watchtower header at the top, no visible page-in-page
   **Steps:**
   1. Open http://192.168.10.107:3000/arcs/arc-005 in browser
@@ -105,20 +103,23 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# All checks use `test "$(... | grep -c)" -eq N` pattern per L-387/L-393 —
+# avoids SIGPIPE/pipefail failures from `grep -q` closing stdin early.
+
 # AC1: none of the 3 render_page templates still extend base.html
 test "$(grep -l '{% extends \"base.html\" %}' web/templates/arc_detail.html web/templates/arcs_index.html web/templates/orchestrator.html 2>/dev/null | wc -l)" -eq 0
 
 # AC2: arc-005 page returns 200 with exactly one <nav opening tag
-out=$(curl -sf "$(bin/fw watchtower url)/arcs/arc-005"); echo "$out" | grep -o '<nav' | wc -l | grep -q '^1$'
+test "$(curl -sf "$(bin/fw watchtower url)/arcs/arc-005" | grep -c '<nav')" -eq 1
 
 # AC3: same one-<nav check across the other 2 render_page routes
-for path in /arcs /orchestrator; do out=$(curl -sf "$(bin/fw watchtower url)$path"); echo "$out" | grep -o '<nav' | wc -l | grep -q '^1$' || { echo "FAIL: $path"; exit 1; }; done
+for path in /arcs /orchestrator; do test "$(curl -sf "$(bin/fw watchtower url)$path" | grep -c '<nav')" -eq 1 || { echo "FAIL: $path"; exit 1; }; done
 
 # AC4: htmx fragment behaviour preserved — no <nav on HX-Request
-out=$(curl -sf -H "HX-Request: true" "$(bin/fw watchtower url)/arcs/arc-005"); echo "$out" | grep -o '<nav' | wc -l | grep -q '^0$'
+test "$(curl -sf -H "HX-Request: true" "$(bin/fw watchtower url)/arcs/arc-005" | grep -c '<nav')" -eq 0
 
 # AC5: regression check on the 3 render_template routes (sweep-revert)
-for path in /escalation-drift /reviewer/audit /reviewer/overrides; do out=$(curl -sf "$(bin/fw watchtower url)$path"); echo "$out" | grep -o '<nav' | wc -l | grep -q '^1$' || { echo "FAIL: $path (regression)"; exit 1; }; done
+for path in /escalation-drift /reviewer/audit /reviewer/overrides; do test "$(curl -sf "$(bin/fw watchtower url)$path" | grep -c '<nav')" -eq 1 || { echo "FAIL: $path (regression)"; exit 1; }; done
 
 ## RCA
 
@@ -168,6 +169,20 @@ for path in /escalation-drift /reviewer/audit /reviewer/overrides; do out=$(curl
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 5 Agent ACs PASS. Visual confirmation via Playwright shows a single Watchtower nav at the top of `/arcs/arc-005` with content directly below (arc-005-after.png). Regression check on the 3 `render_template` routes left them at one-`<nav>` each (no breakage from the abortive sweep). RCA filed: structural prevention follow-up logged (render_page-side runtime check) but out of scope per "one bug = one task".
+
+**Evidence:**
+- AC1 grep: 0/3 render_page templates still extend base.html
+- AC2/AC3: `/arcs/arc-005`, `/arcs`, `/orchestrator` each return exactly one `<nav` (was 2 on /arcs/arc-005 before the fix)
+- AC4: HX-Request fragment returns zero `<nav` (chrome stripped on htmx swaps)
+- AC5 regression: `/escalation-drift`, `/reviewer/audit`, `/reviewer/overrides` each still return one `<nav` after the in-iteration revert
+- Playwright screenshot pair: `arc-005-current.png` (before, two stacked Watchtower bars) vs `arc-005-after.png` (after, one bar, content immediately below)
+- Commit `3f4bb4bb`
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -195,3 +210,15 @@ for path in /escalation-drift /reviewer/audit /reviewer/overrides; do out=$(curl
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1898-fix-double-render-on-arcsarc-005-and-5-s.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-27bf3d0a
+- **Timestamp:** 2026-05-18T11:42:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-18T11:42:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
