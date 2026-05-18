@@ -8,9 +8,9 @@ status: started-work
 workflow_type: inception
 owner: human
 horizon: now
-tags: []
+tags: [arc-closure-ux, watchtower, governance]
 components: []
-related_tasks: []
+related_tasks: [T-1671, T-679, T-1626, T-1633, T-1641, T-1667, T-1670]
 created: 2026-05-18T18:33:39Z
 last_update: 2026-05-18T18:35:29Z
 date_finished: null
