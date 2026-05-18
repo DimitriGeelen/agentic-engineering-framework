@@ -3061,3 +3061,17 @@ X'` returning empty group."
   date: 2026-05-18
   context: Added via context agent
   application: TBD
+- id: L-400
+  learning: "T-1878 A+B (T-1895/T-1896) closed the prefix-adoption gap (412:7 [REVIEW]:[REVIEWER]); corpus sweep on 1783 completed tasks caught 2 historical hits (T-1116 Expected='file contains', T-1372 Expected='exit 0'). Completed-tasks mis-class rate ≈100x lower than partial-completes (13%) — the detector's value is at next task close, not retro-fix"
+  source: P-011
+  task: T-1896
+  date: 2026-05-18
+  context: Added via context agent
+  application: TBD
+- id: L-401
+  learning: "When asked to bucket [REVIEW] Human ACs by judgment-need across N tasks, run 'bin/fw reviewer T-XXX' first and read needs_human + finding patterns — do NOT hand-bucket. T-1443 v1.3 needs_human signal + T-1896 human-ac-mechanical-signal detector + T-1897 widened conformance dialect together ARE the structural answer. Hand-bucketing 32 partial-completes is what the agent did instead of using the tools shipped specifically to remove that toil. The reviewer's 'Needs Human: yes' on T-1818/T-1834 + 'Needs Human: no' on 30 others gave the same answer in 30 seconds that the hand-bucket took an Explore agent dispatch + manual reasoning + a user correction round-trip."
+  source: P-009
+  task: T-1687
+  date: 2026-05-18
+  context: Added via context agent
+  application: TBD
