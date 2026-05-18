@@ -22,6 +22,11 @@ current_task: null
 priorities: []
 EOF
     cd "$TEST_ROOT"
+    # Pin PROJECT_ROOT to the test sandbox. Without this, an inherited
+    # PROJECT_ROOT from the parent (e.g. when update-task.sh runs this
+    # bats file under the verification gate) makes bin/fw walk the
+    # real project's .tasks/ instead of $TEST_ROOT.
+    export PROJECT_ROOT="$TEST_ROOT"
 }
 
 teardown() {
