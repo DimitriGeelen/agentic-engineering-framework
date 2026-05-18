@@ -447,7 +447,11 @@ PYREV
                 return 0
             fi
             local matched
-            matched=$(render_surface_files_in "$TASK_FILE" 2>/dev/null | head -3 | sed 's/^/    - /')
+            # T-1900: was `... | head -3 | sed`. Under set -eo pipefail, head's
+            # stdin-close after 3 lines sent SIGPIPE upstream → exit 141 →
+            # set -e killed the script BEFORE printing the error below.
+            # awk reads to EOF and never closes its stdin early, so no SIGPIPE.
+            matched=$(render_surface_files_in "$TASK_FILE" 2>/dev/null | awk 'NR<=3 { print "    - " $0 }')
             echo -e "${RED}ERROR: Cannot complete build task — touches render surface but has no [REVIEW] Human AC.${NC}" >&2
             echo "" >&2
             echo "T-1766 (P-013): Visual/UX changes need eyes, not only tests." >&2
