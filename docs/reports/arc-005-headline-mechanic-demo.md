@@ -245,15 +245,13 @@ Before `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mechanic-
 
 T-1902 (filed 2026-05-18) proposes a `/arcs/<slug>/close` Watchtower surface so closure is one-click for the human without weakening T-1671. Inception **decided GO** by human via Watchtower at 2026-05-18T20:13Z; implementation slices (CLI verb `fw arc review`, `/arcs/<slug>/close` page, backend POST handler, prerequisite-check function) pending build-task filing in a future session.
 
-### Sibling prevention work shipped 2026-05-18 (same arc-grooming closure cluster RCA)
+### Sibling work shipped 2026-05-18 (same arc-grooming closure cluster RCA)
 
 | Task | Class | Outcome |
 |---|---|---|
 | T-1902 | inception | GO — close-review surface approved |
 | T-1903 | build (prevention) | `fw task archive-eligible` sweep verb + CTL-029 audit detector — prevents L-403 re-class trap recurrence |
 | T-1905 | inception | DEFER — `/arcs` kanban feature-parity scoped into 4 ordered build slices |
-| T-1906 | build (prevention) | auto-skeleton `docs/reports/T-XXX-<slug>.md` at inception filing — closes C-001 recurrence class (15+ historical WARNs) |
-| T-1907 | inception | DEFER — historical C-001 backfill, 3 options evaluated |
 | T-1908 | build (bug) | `safe-commands.sh` env-prefix stripping — repairs L-399/T-1890 producer/consumer parity contract |
 
 The arc-grooming arc's closure path is now: T-1891 [REVIEW] (human taste judgment) → human invokes `fw arc close arc-grooming --from-watchtower` via T-1902-implemented surface (once built) or current raw CLI.

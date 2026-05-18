@@ -305,55 +305,6 @@ if [ "$WORKFLOW_TYPE" = "inception" ]; then
     fi
 fi
 
-# T-1906: auto-skeleton research artefact for inception tasks (C-001 prevention).
-# Background: 15+ inceptions filed without artefacts surfaced as audit WARNs
-# (C-001 detector). The CLAUDE.md §Inception Discipline rule ("create artefact
-# BEFORE conducting research") was advisory text; create-task.sh never wrote
-# the file. The commit-msg hook (T-226/G-009) catches the second inception
-# commit but single-commit inceptions slipped past. Writing a skeleton at
-# filing time so the artefact exists to fill in incrementally closes the gap.
-if [ "$WORKFLOW_TYPE" = "inception" ]; then
-    REPORT_PATH="$PROJECT_ROOT/docs/reports/${TASK_ID}-${SLUG}.md"
-    if [ ! -e "$REPORT_PATH" ]; then
-        mkdir -p "$PROJECT_ROOT/docs/reports"
-        cat > "$REPORT_PATH" <<EOF
-# $TASK_ID — $NAME
-
-**Inception artefact (C-001).** Filed $TIMESTAMP by agent; awaiting human inception-decide.
-
-## Origin
-
-<!-- Why was this inception filed? What conversation, observation, or
-     event triggered it? Capture the dialogue/reasoning that motivated
-     filing this inception (rather than a build task). -->
-
-## Research
-
-<!-- Conduct exploration here. Findings, spike results, prototype
-     outcomes, file paths with line refs, evidence bullets. Update this
-     section incrementally as exploration progresses — the thinking
-     trail IS the artefact (CLAUDE.md §Inception Discipline rule 6). -->
-
-## Dialogue Log
-
-<!-- For phases involving human dialogue: questions asked, answers given,
-     course corrections, decisions that emerged. Captures WHY and HOW
-     the reasoning evolved (CLAUDE.md §Inception Discipline rule 7). -->
-
-## Recommendation
-
-<!-- The agent's recommended decision (GO / NO-GO / DEFER) with
-     rationale + evidence. Mirrors the task file's ## Recommendation
-     block; this artefact persists when the task archives to completed/. -->
-
-## Cross-references
-
-<!-- Related tasks, prior incidents, gaps, learnings. -->
-EOF
-        echo -e "${GREEN}Auto-created research artefact:${NC} docs/reports/${TASK_ID}-${SLUG}.md (C-001 prevention, T-1906)"
-    fi
-fi
-
 # Success output
 echo ""
 echo -e "${GREEN}=== Task Created ===${NC}"
