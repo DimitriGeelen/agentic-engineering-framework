@@ -22,27 +22,47 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+**For whom:** the human, when reviewing the /arcs kanban.
+
+**What:** T-1904 shipped a 4-column lifecycle kanban replacing T-1853 tabs. User followed up: cards should show more status fields, be inline-editable like `/tasks`, support filtering, and have a see-all view. The just-shipped kanban is layout-complete but feature-thin compared to `/tasks`.
+
+**Why now:** the kanban just shipped — momentum is right to scope the polish slice before context drifts.
+
+**Research artefact:** [docs/reports/T-1905-arcs-kanban-feature-parity.md](../../docs/reports/T-1905-arcs-kanban-feature-parity.md) — full inventory of `/tasks` features, mapping to arc data model, status transition matrix, and 4-slice decomposition.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. The `inline_select` Jinja macro at `web/templates/_partials/inline_select.html` is structurally reusable for arc cards (proves at slice-2).
+2. Arc status transitions can be safely gated client-side by limiting the `<select>` options — closed/abandoned require server-side enforcement too (proves at slice-3).
+3. Slice-3 cannot ship without T-1902 (`/arcs/<slug>/close`) because clicking "close" in an inline-status select must route there, not POST a direct status flip.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+Inventory completed in research artefact. Validated assumptions structurally:
+
+- ✅ `inline_select` is reusable — already used 8 times across `/tasks` kanban + table views
+- ✅ `lib/arc.sh` has CLI verbs for every transition we'd surface (`fw arc focus`, `fw arc abandon`, `fw arc close --from-watchtower`)
+- ✅ Slice-3 depends on T-1902 — design is "redirect to close-surface, do not flip" → T-1902 must ship first
+
+No prototype needed at inception phase; build slices are concrete enough to estimate.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- T-1848 D-Immutability: arc `id`, `slug`, `created` fields are never editable post-creation
+- T-1671 §ACD: closing an arc is a strategic decision routed through the T-1902 close-review surface — never a direct inline edit
+- T-1855: stale-arc badge (already present on cards) derives from constituent-task commit timestamps via `arc_id:` frontmatter (NOT `tags:[arc:...]`, post-T-1850)
+- Slice-3 (inline status select) is structurally blocked until T-1902 ships
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN scope:**
+- Four ordered build slices (T-1906 read-only enrichment, T-1907 inline name + focus toggle, T-1908 inline status with gated transitions, T-1909 filters + see-all view) — see research artefact for details
+
+**OUT of scope:**
+- Bulk arc operations (per-arc decisions warrant per-arc UI)
+- Inline editing of `decision` / `headline_mechanic` (decision-level fields, not data fields)
+- Auto-status-flip rules (separate inception)
+- Changing T-1671 §ACD or T-1848 D-Immutability axioms
 
 ## Acceptance Criteria
 
