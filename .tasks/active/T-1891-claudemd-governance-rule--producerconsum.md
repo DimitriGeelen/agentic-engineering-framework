@@ -79,19 +79,15 @@ test "$(grep -c 'L-399' CLAUDE.md)" -ge 1
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+(Filed against the tag-flagged bug-class detection — this task is a docs codification, not a bugfix, but captures the underlying RCA for completeness since the tags carry `meta-rca:T-1890`.)
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Symptom:** L-399 (the broader-class learning that the focus-drift bypass contract was missing consumer-side acceptance) lived only in `.context/project/learnings.yaml` and not in CLAUDE.md. Future hook authors who read CLAUDE.md but not learnings.yaml would have re-introduced the producer/consumer split.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Root cause:** Knowledge-distribution gap. The framework has two normative surfaces — CLAUDE.md (loaded auto into every Claude Code session) and learnings.yaml (surfaced by `fw work-on` related-knowledge but otherwise not always read). When a learning has framework-author-facing relevance (vs project-operator-facing), it belongs in BOTH — the learning for episodic recall, the CLAUDE.md section for normative authority.
+
+**Why structurally allowed:** No rule says "if a learning is framework-author-facing, also codify in CLAUDE.md." The bug-fix-learning-checkpoint rule (CLAUDE.md §Bug-Fix Learning Checkpoint) explicitly covers learnings.yaml capture but stops there.
+
+**Prevention:** This task itself plus a future-candidate rule: "if a learning captures a framework-authoring pattern (vs an operational pattern), promote it to CLAUDE.md when the third instance lands." Not codifying that meta-rule yet — speculative, no evidence of repetition.
 
 ## Evolution
 
