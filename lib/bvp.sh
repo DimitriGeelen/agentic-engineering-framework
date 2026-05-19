@@ -1155,11 +1155,19 @@ def usage():
     print("""fw bvp — Business Value Points (read-only)
 
 USAGE:
-  fw bvp                          rank all scored tasks by BVP (desc)
-  fw bvp T-<id>                   per-driver detail for one task
-  fw bvp arcs                     rank arcs by global-driver BVP
+  fw bvp                          rank all confirmed-scored tasks by BVP (desc)
+  fw bvp --include-proposed       also rank tasks with estimator-proposed scores
+                                  (T-1938; SOURCE column distinguishes confirmed/proposed;
+                                  cost falls back to cost_estimate_proposed: too)
+  fw bvp T-<id>                   per-driver detail for one task; cost section
+                                  falls back to cost_estimate_proposed: when
+                                  cost_estimate: is absent (T-1938)
+  fw bvp arcs                     rank arcs by global-driver BVP; falls back to
+                                  constituent-task rollup when arc lacks direct
+                                  scores (T-1937; SOURCE column)
   fw bvp --quadrant {hv-lc|hv-hc|lv-lc|lv-hc}
-                                  filter ranking by quadrant (BVP median × cost median)
+                                  filter ranking by quadrant (BVP median × cost median);
+                                  combine with --include-proposed
   fw bvp weight --set Dn=N --rationale "..." [--i-am-human|--from-watchtower]
                                   change driver weight (§ACD-gated, M6)
   fw bvp driver --add "name" --weight N --rationale "..." [--drop Dn]
