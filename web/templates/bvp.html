@@ -48,7 +48,7 @@
   {% endif %}
 
   {% if empty %}
-    <p><strong>No scored entities yet.</strong> The scatter is empty until tasks/arcs carry confirmed <code>bvp_scores:</code> (set via <code>fw bvp confirm T-XXX --i-am-human</code> after T-1922 estimator proposes scores).</p>
+    <p><strong>No scored entities yet.</strong> The scatter is empty until tasks/arcs carry confirmed <code>bvp_scores:</code> (via <code>fw bvp confirm T-XXX --i-am-human</code>) or estimator-proposed <code>bvp_scores_proposed:</code> (via the T-1922 worker; advisory). Proposed scores render at reduced opacity until confirmed.</p>
     <p>Once scoring lands, this page will show a four-quadrant scatter:</p>
     <ul>
       <li><strong>HV-LC</strong> (high value, low cost) — top-left, prime auto-promote zone</li>
