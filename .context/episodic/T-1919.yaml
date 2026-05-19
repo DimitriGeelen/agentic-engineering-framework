@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1919: BVP T-NEW-4: fw bvp read-only CLI verbs (rank, detail T-<id>, arcs, --quadrant filter)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-19T07:30:45Z
+# ============================================================================
+
+task_id: T-1919
+task_name: "BVP T-NEW-4: fw bvp read-only CLI verbs (rank, detail T-<id>, arcs, --quadrant filter)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: 2026-05-19T07:30:38Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/bvp.sh` exists and exports the four read verbs above'
+  - '`bin/fw` routes `bvp` to `lib/bvp.sh`'
+  - '`fw bvp` outputs ranked task list, BVP desc, columns: T-ID | name | BVP | cost | quadrant'
+  - '`fw bvp T-<id>` outputs: per-driver scores (D1..Dn), per-driver weight, weighted total, 3-component cost (blast_radius / tier / effort separately + composite)'
+  - '`fw bvp arcs` outputs ranked arc list, global-driver-only (per D2)'
+  - '`fw bvp --quadrant hv-lc` filters; same for hv-hc, lv-lc, lv-hc'
+  - 'Verbs are read-only — running them does NOT modify any file (verified by git status diff before/after — 135 == 135)'
+  - 'Cost composite uses 0.6/0.3/0.1 weights from F8; falls back to T-shirt S=2/M=4/L=6/XL=8 if blast_radius unavailable (Q2)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 30 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-4, cli]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 30
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1919-bvp-fw-bvp-read-only-cli-rank-detail-arcs-q.md
+generated_by: context-agent-hybrid

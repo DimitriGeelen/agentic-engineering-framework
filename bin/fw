@@ -3049,6 +3049,15 @@ case "$cmd" in
         arc_dispatch "$@"
         exit $?
         ;;
+    bvp)
+        # T-1919 (arc-006): Business Value Points read-only CLI.
+        # Verbs: <empty>=rank, T-<id>=detail, arcs, --quadrant FILTER, --help
+        # Mutating verbs (weight/driver/confirm) land in T-1920/T-1924.
+        # shellcheck disable=SC1091
+        . "$FRAMEWORK_ROOT/lib/bvp.sh"
+        bvp_dispatch "$@"
+        exit $?
+        ;;
     cron)
         # T-448: Cron registry management
         cron_subcmd="${1:-}"
