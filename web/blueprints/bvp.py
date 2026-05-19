@@ -210,8 +210,115 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
     return points
 
 
+def _arc_member_tasks(arc_slug: str, arc_id_str: str) -> list[dict]:
+    """T-1936: return frontmatter dicts of tasks whose `arc_id:` matches
+    the arc slug or canonical arc-NNN id.
+
+    Both `arc_id: value-prioritisation` and `arc_id: arc-006` are accepted
+    bindings to the same arc (per T-1849 dual-form rule).
+    """
+    members: list[dict] = []
+    patterns = [
+        str(PROJECT_ROOT / ".tasks" / "active" / "T-*.md"),
+        str(PROJECT_ROOT / ".tasks" / "completed" / "T-*.md"),
+    ]
+    targets = {x for x in (arc_slug, arc_id_str) if x}
+    for pattern in patterns:
+        for p in sorted(glob.glob(pattern)):
+            fm = _parse_frontmatter(Path(p))
+            if not fm:
+                continue
+            arc_id = fm.get("arc_id")
+            if arc_id and str(arc_id) in targets:
+                members.append(fm)
+    return members
+
+
+def _arc_rolled_up_scores(members: list[dict]) -> tuple[dict[str, int] | None, str]:
+    """T-1936: mean-aggregate per-driver scores across arc members.
+
+    Returns (scores_dict, mode) where mode ∈ {derived-confirmed,
+    derived-proposed, ""}. derived-confirmed requires every contributing
+    member to have confirmed `bvp_scores:`. Mixed mode degrades to
+    derived-proposed (sovereignty: one proposed input taints the whole).
+    """
+    if not members:
+        return None, ""
+    per_driver: dict[str, list[int]] = {}
+    any_proposed = False
+    for fm in members:
+        confirmed = fm.get("bvp_scores") or {}
+        if confirmed and isinstance(confirmed, dict):
+            for k, v in confirmed.items():
+                if isinstance(v, (int, float)):
+                    per_driver.setdefault(k, []).append(int(v))
+            continue
+        proposed = _latest_proposed_scores(fm)
+        if proposed:
+            any_proposed = True
+            for k, v in proposed.items():
+                if isinstance(v, (int, float)):
+                    per_driver.setdefault(k, []).append(int(v))
+    if not per_driver:
+        return None, ""
+    scores = {k: round(sum(vs) / len(vs)) for k, vs in per_driver.items()}
+    mode = "derived-proposed" if any_proposed else "derived-confirmed"
+    return scores, mode
+
+
+def _arc_rolled_up_cost(members: list[dict]) -> tuple[dict | None, str]:
+    """T-1936: aggregate cost components across arc members.
+
+    Aggregation:
+      - blast_radius: max (arc blast is union)
+      - tier: mean rounded
+      - effort: sum, clamped to [0, 9] (arcs ARE thick — bigger than tasks)
+
+    Returns (cost_dict, mode) parallel to `_arc_rolled_up_scores`.
+    """
+    if not members:
+        return None, ""
+    brs: list[int] = []
+    tiers: list[int] = []
+    efforts: list[int] = []
+    any_proposed = False
+    for fm in members:
+        ce = fm.get("cost_estimate")
+        if not (isinstance(ce, dict) and ce):
+            ce = _latest_proposed_cost_estimate(fm)
+            if ce:
+                any_proposed = True
+        if not ce:
+            continue
+        if isinstance(ce.get("blast_radius"), (int, float)):
+            brs.append(int(ce["blast_radius"]))
+        if isinstance(ce.get("tier"), (int, float)):
+            tiers.append(int(ce["tier"]))
+        if isinstance(ce.get("effort"), (int, float)):
+            efforts.append(int(ce["effort"]))
+    if not brs and not tiers and not efforts:
+        return None, ""
+    cost = {
+        "blast_radius": max(brs) if brs else 0,
+        "tier": round(sum(tiers) / len(tiers)) if tiers else 0,
+        "effort": min(9, sum(efforts)) if efforts else 0,
+    }
+    mode = "derived-proposed" if any_proposed else "derived-confirmed"
+    return cost, mode
+
+
 def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
-    """T-1934: include arcs with proposed scores (advisory) alongside confirmed."""
+    """T-1934 + T-1936: render arc points.
+
+    Resolution order:
+      1. Direct `bvp_scores:` on arc YAML → mode `direct-confirmed`
+      2. Direct `bvp_scores_proposed:` → mode `direct-proposed`
+      3. Rollup from member tasks via `arc_id:` → mode `derived-{confirmed,proposed}`
+      4. Skip (no signal)
+
+    Sovereignty: a direct `bvp_scores:` on the arc always overrides the
+    rollup (human authority signal at arc level outranks aggregate).
+    """
     points: list[dict] = []
     for p in sorted(glob.glob(str(PROJECT_ROOT / ".context" / "arcs" / "*.yaml"))):
         try:
@@ -220,15 +327,41 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
             continue
         confirmed = data.get("bvp_scores") or {}
         proposed = _latest_proposed_scores(data)
-        if not confirmed and not proposed:
-            continue
-        is_proposed = not confirmed
-        scores = confirmed if confirmed else proposed
+        bvp_mode = ""
+        scores: dict | None = None
+        rolled_cost: dict | None = None
+        cost_mode = ""
+
+        if confirmed:
+            scores, bvp_mode = confirmed, "direct-confirmed"
+        elif proposed:
+            scores, bvp_mode = proposed, "direct-proposed"
+        else:
+            arc_slug = data.get("slug") or Path(p).stem
+            arc_id_str = str(data.get("id") or "")
+            members = _arc_member_tasks(arc_slug, arc_id_str)
+            scores, bvp_mode = _arc_rolled_up_scores(members)
+            if not scores:
+                continue
+            rolled_cost, cost_mode = _arc_rolled_up_cost(members)
+
+        is_proposed = bvp_mode in ("direct-proposed", "derived-proposed")
         raw, norm = _compute_bvp(scores, weights)
-        ce, ce_mode = _resolve_cost_estimate(data, is_proposed=is_proposed)
-        cost, br, tier, effort, src = _compute_cost(ce, default_when_absent=is_proposed)
-        if ce_mode == "proposed" and src != "default-medium":
-            src = src + "-proposed"
+
+        if rolled_cost is not None:
+            cost, br, tier, effort, src = _compute_cost(rolled_cost, default_when_absent=is_proposed)
+            if cost_mode and src != "default-medium":
+                # cost_mode is "derived-confirmed" or "derived-proposed"; the
+                # render-side cares about the provenance ("derived" = rolled up
+                # from members), not the confirmed/proposed status of the inputs
+                # (already encoded in `is_proposed`). Sufix the source for
+                # tooltip diagnosability.
+                src = f"{src}-derived"
+        else:
+            ce, ce_mode = _resolve_cost_estimate(data, is_proposed=is_proposed)
+            cost, br, tier, effort, src = _compute_cost(ce, default_when_absent=is_proposed)
+            if ce_mode == "proposed" and src != "default-medium":
+                src = src + "-proposed"
         points.append({
             "kind": "arc",
             "id": data.get("id") or Path(p).stem,
