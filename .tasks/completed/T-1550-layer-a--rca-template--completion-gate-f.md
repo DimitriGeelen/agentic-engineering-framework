@@ -12,8 +12,20 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-27T15:58:34Z
-last_update: 2026-04-27T16:03:36Z
+last_update: '2026-05-19T17:56:23Z'
 date_finished: 2026-04-27T16:03:36Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1550: Layer A: ## RCA template + completion gate for bug-class tasks (T-1548 GO)

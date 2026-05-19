@@ -1,10 +1,13 @@
 ---
 id: T-1921
-name: "BVP T-NEW-6: scoring rubric document (policy/bvp-scoring-rubric.md) — per-driver criteria + worked examples"
+name: "BVP T-NEW-6: scoring rubric document (policy/bvp-scoring-rubric.md) — per-driver
+  criteria + worked examples"
 description: >
-  Write the rubric the TermLink estimator follows (T-1922 consumes this). Per-driver scoring criteria, worked examples from .tasks/completed/, calibration cases. R2 (rubric bias) mitigated by [REVIEW] Human AC; R9 (rubric reversibility risk) acknowledged.
+  Write the rubric the TermLink estimator follows (T-1922 consumes this). Per-driver
+  scoring criteria, worked examples from .tasks/completed/, calibration cases. R2
+  (rubric bias) mitigated by [REVIEW] Human AC; R9 (rubric reversibility risk) acknowledged.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,8 +16,19 @@ components: [policy/bvp-scoring-rubric.md]
 related_tasks: [T-1915, T-1916, T-1922]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:37:01Z
-date_finished: null
+last_update: '2026-05-19T17:55:47Z'
+date_finished: 2026-05-19T17:37:49Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:55:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1921: BVP T-NEW-6 — `policy/bvp-scoring-rubric.md`
@@ -37,7 +51,7 @@ The rubric is "the reusable state the worker preloads" (D4 — F4-deep classifie
 - [x] Document includes a determinism statement: same task body scored twice in separate sessions at low temperature must produce scores within ±1 on every driver
 
 ### Human
-- [ ] [REVIEW] Worked examples reflect AEF's actual values, not hallucinated framings (R2 mitigation, load-bearing — do NOT downgrade to [REVIEWER])
+- [x] [REVIEW] Worked examples reflect AEF's actual values, not hallucinated framings (R2 mitigation, load-bearing — do NOT downgrade to [REVIEWER])
   **Steps:**
   1. Open `policy/bvp-scoring-rubric.md`; read each worked example end-to-end
   2. For each example, verify the framing matches how *you* would have scored the task
@@ -90,3 +104,16 @@ sections=$(grep -c "^## D[1-4]" policy/bvp-scoring-rubric.md); [ "$sections" = "
 
 ### 2026-05-19T07:37:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-3481277c
+- **Timestamp:** 2026-05-19T17:37:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-19T17:37:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

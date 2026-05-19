@@ -2,19 +2,36 @@
 id: T-1850
 name: "tags:[arc:*] → arc_id one-shot migration (T-NEW-3)"
 description: >
-  Idempotent migration script lib/migrations/arc-id-migration.sh: scans .tasks/{active,completed}/, moves arc:X tag → arc_id: X field. T-1717 and T-1719 → arc_id: embeddings-strategy (Q3 decision). Multi-arc tasks halt unless --resolve flag supplied. Committable report written to .context/audits/arc-id-migration-YYYY-MM-DD.yaml (Q2 answer). Second run is no-op (idempotent). Deps: T-NEW-2.
+  Idempotent migration script lib/migrations/arc-id-migration.sh: scans .tasks/{active,completed}/,
+  moves arc:X tag → arc_id: X field. T-1717 and T-1719 → arc_id: embeddings-strategy
+  (Q3 decision). Multi-arc tasks halt unless --resolve flag supplied. Committable
+  report written to .context/audits/arc-id-migration-YYYY-MM-DD.yaml (Q2 answer).
+  Second run is no-op (idempotent). Deps: T-NEW-2.
 
 status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [build, data-migration, idempotent, T-NEW-3]
-components: [agents/context/check-arc-id.sh, C-009, lib/migrations/arc-id-migration.sh, tests/unit/arc_id_validation_guard.bats]
+components: [agents/context/check-arc-id.sh, C-009, 
+      lib/migrations/arc-id-migration.sh, 
+      tests/unit/arc_id_validation_guard.bats]
 related_tasks: [T-1846, T-1847, T-1848, T-1717, T-1719]
 arc_id: arc-grooming
 created: 2026-05-15T14:52:50Z
-last_update: 2026-05-16T09:27:46Z
+last_update: '2026-05-19T17:56:23Z'
 date_finished: 2026-05-16T09:27:46Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=4
+      (body:framework-level-ux); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1850: tags:[arc:*] → arc_id one-shot migration (T-NEW-3)

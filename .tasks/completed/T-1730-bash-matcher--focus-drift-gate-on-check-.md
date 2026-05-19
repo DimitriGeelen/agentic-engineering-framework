@@ -2,19 +2,35 @@
 id: T-1730
 name: "Bash matcher + focus-drift gate on check-active-task (T-1729 sibling 1)"
 description: >
-  Close G1 (Bash matcher gap) + G3 (focus-target drift) from T-1729 meta-RCA. Add Bash to check-active-task matcher in settings.json; augment hook to detect target-vs-focus drift on fw task update T-X / fw context add-* --task T-X / git commit -m T-X. --switch-focus override logged via log_gate_bypass. Bats coverage pins both the gap and the post-fix wiring per docs/reports/T-1729-meta-rca.md sections 7 + 5.1.
+  Close G1 (Bash matcher gap) + G3 (focus-target drift) from T-1729 meta-RCA. Add
+  Bash to check-active-task matcher in settings.json; augment hook to detect target-vs-focus
+  drift on fw task update T-X / fw context add-* --task T-X / git commit -m T-X. --switch-focus
+  override logged via log_gate_bypass. Bats coverage pins both the gap and the post-fix
+  wiring per docs/reports/T-1729-meta-rca.md sections 7 + 5.1.
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [meta-rca:T-1729, structural-gate, governance-bypass-prevention]
-components: [agents/context/check-active-task.sh, C-009, lib/init.sh, tests/unit/focus_drift_gate.bats]
+components: [agents/context/check-active-task.sh, C-009, lib/init.sh, 
+      tests/unit/focus_drift_gate.bats]
 related_tasks: [T-1729, T-1671, T-1259]
 arc_id: orchestrator-rethink
 created: 2026-05-05T05:41:36Z
-last_update: 2026-05-18T10:22:31Z
+last_update: '2026-05-19T17:56:23Z'
 date_finished: 2026-05-05T07:08:19Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 4
+      D3: 0
+      D4: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); 
+      D3=0 (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1730: Bash matcher + focus-drift gate on check-active-task (T-1729 sibling 1)
@@ -168,8 +184,8 @@ beyond pre-existing baseline.
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-69775fd8
-- **Timestamp:** 2026-05-18T10:22:25Z
+- **Scan ID:** R-f8a5cc00
+- **Timestamp:** 2026-05-18T11:22:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

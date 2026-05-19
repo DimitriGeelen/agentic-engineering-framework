@@ -1,8 +1,11 @@
 ---
 id: T-1923
-name: "BVP T-NEW-7b: bvp-estimator scheduled sweep + fw resume SLA fallback (split parent T-NEW-7)"
+name: "BVP T-NEW-7b: bvp-estimator scheduled sweep + fw resume SLA fallback (split
+  parent T-NEW-7)"
 description: >
-  Periodic sweep for stale-scored tasks; fw resume synchronous fallback with 10s hard cap (Q4 default); on timeout flag task `unscored: true` and let async sweep handle later. Resume itself never blocked by estimator.
+  Periodic sweep for stale-scored tasks; fw resume synchronous fallback with 10s hard
+  cap (Q4 default); on timeout flag task `unscored: true` and let async sweep handle
+  later. Resume itself never blocked by estimator.
 
 status: captured
 workflow_type: build
@@ -13,8 +16,19 @@ components: [agents/termlink/bvp-estimator/, bin/fw, .context/cron-registry.yaml
 related_tasks: [T-1915, T-1916, T-1922]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:00:00Z
-date_finished: null
+last_update: '2026-05-19T17:56:35Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1923: BVP T-NEW-7b — scheduled sweep + `fw resume` fallback

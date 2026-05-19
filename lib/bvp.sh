@@ -303,20 +303,42 @@ def cmd_detail(task_id):
         print(f"File:  {path.relative_to(PROJECT_ROOT)}")
         print()
         scores = fm.get('bvp_scores') or {}
-        if not scores:
-            print("No bvp_scores: set. Run `fw bvp confirm` (T-1924) to score.")
+        proposed_list = fm.get('bvp_scores_proposed') or []
+        proposed_latest = proposed_list[-1] if proposed_list and isinstance(proposed_list[-1], dict) else None
+        proposed_scores = (proposed_latest.get('scores') or {}) if proposed_latest else {}
+
+        if not scores and not proposed_scores:
+            print("No bvp_scores: set. Run `fw bvp estimate` (T-1922) to propose, then `fw bvp confirm` (T-1924) to score.")
         else:
+            label = "CONFIRMED" if scores else "PROPOSED (advisory)"
+            display = scores or proposed_scores
+            print(f"{label}")
             print(f"{'DRIVER':<6} {'NAME':<14} {'WEIGHT':>6} {'SCORE':>5} {'CONTRIB':>7}")
             print('-' * 50)
-            raw, norm, used = compute_bvp(scores, weights)
+            raw, norm, used = compute_bvp(display, weights)
             for d_id, w in weights.items():
-                s = scores.get(d_id)
+                s = display.get(d_id)
                 contrib = (s * w) if s is not None else '-'
                 s_str = str(s) if s is not None else '-'
                 contrib_str = str(contrib) if contrib != '-' else '-'
                 print(f"{d_id:<6} {driver_names.get(d_id,'')[:14]:<14} {w:>6} {s_str:>5} {contrib_str:>7}")
             print('-' * 50)
             print(f"{'TOTAL':<27} {raw:>5}   (norm: {norm:.2f})")
+            if scores and proposed_scores and proposed_scores != scores:
+                # Show estimator's latest take alongside the confirmed scores —
+                # surfaces M3 v2-delta candidates (re-confirm with --override).
+                delta = max(
+                    (abs(int(proposed_scores.get(k, 0)) - int(v)) for k, v in scores.items()),
+                    default=0,
+                )
+                print()
+                print(f"PROPOSED (estimator latest, max delta={delta}):  "
+                      + " ".join(f"{k}={proposed_scores.get(k, '-')}"
+                                 for k in weights))
+                ts = proposed_latest.get('ts') if proposed_latest else None
+                est = proposed_latest.get('estimator') if proposed_latest else None
+                if ts or est:
+                    print(f"  ts={ts or '-'}  estimator={est or '-'}")
 
         print()
         ce = fm.get('cost_estimate')
@@ -1015,6 +1037,15 @@ USAGE:
   fw bvp confirm T-<id> [--override Dn=N]... [--i-am-human|--from-watchtower]
                                   move bvp_scores_proposed → bvp_scores
                                   (sovereignty boundary, F7/D8, §ACD-gated)
+  fw bvp estimate T-<id> [--dry-run] [--json]
+                                  score a task and write bvp_scores_proposed:
+                                  (heuristic v1, NOT sovereignty-bearing)
+  fw bvp estimate all [--dry-run] [--limit N] [--statuses ...]
+                                  score every task; M3 v2-delta skip applies
+  fw bvp estimate determinism T-<id> [--runs N]
+                                  R3 regression guard (max delta ≤1)
+  fw bvp estimate measure-a3 [--n N] [--output PATH]
+                                  A3 latency measurement (mean <5s SLA)
   fw bvp auto-promote [--dry-run]
                                   promote captured → started-work for HV/LC
                                   tasks (off by default; reads policy
@@ -1077,5 +1108,46 @@ PYEOF
 
 # ---------------------------------------------------------------- dispatcher
 bvp_dispatch() {
+    # T-1922: 'estimate' verb routes to the standalone heuristic worker
+    # (agents/termlink/bvp-estimator/estimator.py). Kept out of the
+    # in-process Python heredoc because the estimator is a separate
+    # concern (writes bvp_scores_proposed:, not read-only math) and the
+    # script must also be invokable directly via TermLink convention.
+    if [ "${1:-}" = "estimate" ]; then
+        shift
+        local sub="${1:-}"
+        if [ -z "$sub" ] || [ "$sub" = "--help" ] || [ "$sub" = "-h" ]; then
+            cat <<'EOF'
+fw bvp estimate — score tasks against BVP rubric (writes proposed only)
+
+USAGE:
+  fw bvp estimate T-<id> [--dry-run] [--json]
+                            score one task; writes bvp_scores_proposed:
+                            unless M3 v2-delta says skip
+  fw bvp estimate all [--dry-run] [--limit N] [--statuses S1 S2]
+                            score every task; --statuses filters by frontmatter
+  fw bvp estimate determinism T-<id> [--runs 3]
+                            run N times, verify max delta ≤1 (R3)
+  fw bvp estimate measure-a3 [--n 20] [--output PATH]
+                            A3 measurement: mean/p95 latency on N tasks
+
+NOTES:
+  - bvp_scores_proposed: is advisory; confirmed bvp_scores: is set by
+    `fw bvp confirm` (§ACD-gated, human authority).
+  - Heuristic engine (v1): bit-deterministic, zero token cost, ~10ms/task.
+  - Estimator script: agents/termlink/bvp-estimator/estimator.py
+EOF
+            return 0
+        fi
+        # Single-task convenience: `fw bvp estimate T-XXX` → `... one T-XXX`
+        if echo "$sub" | grep -qE '^T-[0-9]+$'; then
+            PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                python3 "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/estimator.py" one "$@"
+            return $?
+        fi
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            python3 "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/estimator.py" "$@"
+        return $?
+    fi
     _bvp_python_engine "$@"
 }

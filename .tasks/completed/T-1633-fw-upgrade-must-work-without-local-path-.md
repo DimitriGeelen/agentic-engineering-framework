@@ -1,8 +1,10 @@
 ---
 id: T-1633
-name: "fw upgrade must work without local-path knowledge — upstream URL + fresh-machine simulation guard"
+name: "fw upgrade must work without local-path knowledge — upstream URL + fresh-machine
+  simulation guard"
 description: >
-  fw upgrade must work without local-path knowledge — upstream URL + fresh-machine simulation guard
+  fw upgrade must work without local-path knowledge — upstream URL + fresh-machine
+  simulation guard
 
 status: work-completed
 workflow_type: inception
@@ -12,8 +14,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-01T10:13:34Z
-last_update: 2026-05-01T10:29:47Z
+last_update: '2026-05-19T17:56:23Z'
 date_finished: 2026-05-01T10:29:47Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 1
+      D3: 0
+      D4: 5
+    rationale: D1=2 (body:learning-ref); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=5 (body:class-neutral)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1633: fw upgrade must work without local-path knowledge — upstream URL + fresh-machine simulation guard

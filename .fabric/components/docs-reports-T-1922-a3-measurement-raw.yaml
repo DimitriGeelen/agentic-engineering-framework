@@ -1,0 +1,20 @@
+id: docs/reports/T-1922-a3-measurement-raw.json
+name: T-1922-a3-measurement-raw
+type: config
+subsystem: unknown
+location: docs/reports/T-1922-a3-measurement-raw.json
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-19
+created_by: unknown

@@ -1,8 +1,11 @@
 ---
 id: T-1933
-name: "BVP T-NEW-15: canonical doc 040-ValueDrivers.md + FRAMEWORK.md glossary/Quick Reference updates (cites Geelen origin + AEF adaptations)"
+name: "BVP T-NEW-15: canonical doc 040-ValueDrivers.md + FRAMEWORK.md glossary/Quick
+  Reference updates (cites Geelen origin + AEF adaptations)"
 description: >
-  New canonical doc 040-ValueDrivers.md mirroring 010-TaskSystem.md / 012-ArcSystem.md structure. FRAMEWORK.md glossary gains BVP terms; Quick Reference adds the new fw bvp + fw arc approve-driver verbs. Cites Geelen 2019 origin AND AEF adaptations.
+  New canonical doc 040-ValueDrivers.md mirroring 010-TaskSystem.md / 012-ArcSystem.md
+  structure. FRAMEWORK.md glossary gains BVP terms; Quick Reference adds the new fw
+  bvp + fw arc approve-driver verbs. Cites Geelen 2019 origin AND AEF adaptations.
 
 status: work-completed
 workflow_type: build
@@ -13,8 +16,19 @@ components: [040-ValueDrivers.md, FRAMEWORK.md]
 related_tasks: [T-1915, T-1916, T-1917, T-1920, T-1924, T-1926, T-1932]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T13:46:56Z
+last_update: '2026-05-19T17:56:35Z'
 date_finished: 2026-05-19T13:46:56Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1933: BVP T-NEW-15 — `040-ValueDrivers.md` + FRAMEWORK.md updates

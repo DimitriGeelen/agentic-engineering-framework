@@ -2,7 +2,9 @@
 id: T-1928
 name: "BVP T-NEW-12a: Watchtower /bvp static scatter read-only (split parent T-NEW-12)"
 description: >
-  New Watchtower tab /bvp. Static quadrant scatter — arcs as larger dots, tasks as smaller, axes BVP_norm × cost. Read-only — no weight mutation yet (12b adds sliders). Render-surface, [REVIEW] Human AC required (T-1766 P-013).
+  New Watchtower tab /bvp. Static quadrant scatter — arcs as larger dots, tasks as
+  smaller, axes BVP_norm × cost. Read-only — no weight mutation yet (12b adds sliders).
+  Render-surface, [REVIEW] Human AC required (T-1766 P-013).
 
 status: work-completed
 workflow_type: build
@@ -13,8 +15,19 @@ components: [bin/fw, lib/bvp.sh]
 related_tasks: [T-1915, T-1916, T-1919]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T16:52:32Z
+last_update: '2026-05-19T17:56:35Z'
 date_finished: 2026-05-19T16:52:32Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 3
+      D4: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1928: BVP T-NEW-12a — `/bvp` static scatter (read-only)

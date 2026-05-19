@@ -1,8 +1,10 @@
 ---
 id: T-1671
-name: "Implement Default-to-OPEN agent gate in fw arc close — refuse closure when CLAUDECODE=1 (T-1670 build, mirror T-1259 inception-decide)"
+name: "Implement Default-to-OPEN agent gate in fw arc close — refuse closure when
+  CLAUDECODE=1 (T-1670 build, mirror T-1259 inception-decide)"
 description: >
-  Implement Default-to-OPEN agent gate in fw arc close — refuse closure when CLAUDECODE=1 (T-1670 build, mirror T-1259 inception-decide)
+  Implement Default-to-OPEN agent gate in fw arc close — refuse closure when CLAUDECODE=1
+  (T-1670 build, mirror T-1259 inception-decide)
 
 status: work-completed
 workflow_type: build
@@ -13,8 +15,19 @@ components: [lib/arc.sh, tests/unit/test_arc_system.py]
 related_tasks: []
 arc_id: orchestrator-rethink
 created: 2026-05-02T07:38:50Z
-last_update: 2026-05-02T07:45:23Z
+last_update: '2026-05-19T17:56:23Z'
 date_finished: 2026-05-02T07:45:23Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1671: Implement Default-to-OPEN agent gate in fw arc close — refuse closure when CLAUDECODE=1 (T-1670 build, mirror T-1259 inception-decide)

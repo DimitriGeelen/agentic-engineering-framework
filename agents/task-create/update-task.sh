@@ -1041,6 +1041,24 @@ if [ -n "$NEW_STATUS" ]; then
             fi
         fi
 
+        # === BVP Estimator Trigger (T-1922) ===
+        # On transition to started-work ("ready"), fire the BVP estimator
+        # in the background. Heuristic engine is ~10ms so the update latency
+        # impact is negligible, but we background it anyway in case a future
+        # v2-LLM engine lands and goes over the budget. Failures are silent —
+        # the estimator's output is advisory; a missing proposed score does
+        # not block any downstream gate.
+        if [ "$NEW_STATUS" = "started-work" ] && [ -n "$TASK_ID" ]; then
+            if [ -x "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" ]; then
+                (
+                    PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                    "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" \
+                        one "$TASK_ID" >/dev/null 2>&1
+                ) &
+                disown 2>/dev/null || true
+            fi
+        fi
+
         # === Concurrent Started-Work Advisory (T-554) ===
         # Warn when starting work if other tasks are already started-work.
         # Advisory only — does not block. Helps maintain single-task focus.

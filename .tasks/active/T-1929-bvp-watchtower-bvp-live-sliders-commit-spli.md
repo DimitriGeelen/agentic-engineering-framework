@@ -2,19 +2,34 @@
 id: T-1929
 name: "BVP T-NEW-12b: Watchtower /bvp live weight sliders + commit (split parent T-NEW-12)"
 description: >
-  Adds live client-side weight sliders to /bvp — moving a slider previews re-rank without committing. Separate Commit button writes via fw bvp weight (T-1920) so audit-trail (D9) is preserved. Render-surface, [REVIEW] Human AC required.
+  Adds live client-side weight sliders to /bvp — moving a slider previews re-rank
+  without committing. Separate Commit button writes via fw bvp weight (T-1920) so
+  audit-trail (D9) is preserved. Render-surface, [REVIEW] Human AC required.
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [bvp, build, slice-12b, web, render-surface, novel-mechanism]
-components: [bin/fw, lib/bvp.sh, tests/playwright/test_bvp_scatter.py, web/blueprints/bvp.py, web/blueprints/__init__.py, web/shared.py, web/templates/bvp.html]
+components: [bin/fw, lib/bvp.sh, tests/playwright/test_bvp_scatter.py, 
+      web/blueprints/bvp.py, web/blueprints/__init__.py, web/shared.py, 
+      web/templates/bvp.html]
 related_tasks: [T-1915, T-1916, T-1920, T-1928]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T17:13:31Z
+last_update: '2026-05-19T17:56:35Z'
 date_finished: 2026-05-19T17:13:31Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 0
+    rationale: D1=4 (tag:novel-mechanism,body:structural-gate); D2=0 
+      (no-signal); D3=3 (body:component-discoverability); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1929: BVP T-NEW-12b — `/bvp` live sliders + commit

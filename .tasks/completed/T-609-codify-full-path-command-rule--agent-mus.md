@@ -1,8 +1,13 @@
 ---
 id: T-609
-name: "Codify full-path command rule — agent must give copy-pasteable commands with cd and absolute paths"
+name: "Codify full-path command rule — agent must give copy-pasteable commands with
+  cd and absolute paths"
 description: >
-  When the agent gives humans commands to run, they must be single-line, copy-pasteable, with cd to PROJECT_ROOT and bin/fw not bare fw. Currently only in agent memory — needs to be in CLAUDE.md as a structural rule under Agent Behavioral Rules. Also update Human AC format to use full paths in Steps blocks. Origin: user friction running fw inception decide from wrong directory.
+  When the agent gives humans commands to run, they must be single-line, copy-pasteable,
+  with cd to PROJECT_ROOT and bin/fw not bare fw. Currently only in agent memory —
+  needs to be in CLAUDE.md as a structural rule under Agent Behavioral Rules. Also
+  update Human AC format to use full paths in Steps blocks. Origin: user friction
+  running fw inception decide from wrong directory.
 
 status: work-completed
 workflow_type: build
@@ -12,8 +17,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T15:27:09Z
-last_update: 2026-03-25T15:34:01Z
+last_update: '2026-05-19T17:56:24Z'
 date_finished: 2026-03-25T15:34:01Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 4
+      D4: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-609: Codify full-path command rule — agent must give copy-pasteable commands with cd and absolute paths

@@ -1,8 +1,10 @@
 ---
 id: T-1687
-name: "install + apply grill-with-docs skill — grilling session on orchestrator-as-triage architectural plan"
+name: "install + apply grill-with-docs skill — grilling session on orchestrator-as-triage
+  architectural plan"
 description: >
-  install + apply grill-with-docs skill — grilling session on orchestrator-as-triage architectural plan
+  install + apply grill-with-docs skill — grilling session on orchestrator-as-triage
+  architectural plan
 
 status: started-work
 workflow_type: build
@@ -12,8 +14,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-02T19:15:25Z
-last_update: 2026-05-18T19:02:20Z
-date_finished: null
+last_update: '2026-05-19T17:56:35Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1687: install + apply grill-with-docs skill — grilling session on orchestrator-as-triage architectural plan

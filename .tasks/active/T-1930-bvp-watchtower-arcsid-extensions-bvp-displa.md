@@ -1,8 +1,11 @@
 ---
 id: T-1930
-name: "BVP T-NEW-13: Watchtower /arcs/<id> extensions — arc-level BVP, coherence warnings, proposed_scoped_drivers render with approve buttons"
+name: "BVP T-NEW-13: Watchtower /arcs/<id> extensions — arc-level BVP, coherence warnings,
+  proposed_scoped_drivers render with approve buttons"
 description: >
-  Extend existing /arcs/<id> page with arc-level BVP near top, per-driver coherence warnings inline, proposed_scoped_drivers rendered with timestamps and approve action buttons (calls fw arc approve-driver via --from-watchtower).
+  Extend existing /arcs/<id> page with arc-level BVP near top, per-driver coherence
+  warnings inline, proposed_scoped_drivers rendered with timestamps and approve action
+  buttons (calls fw arc approve-driver via --from-watchtower).
 
 status: work-completed
 workflow_type: build
@@ -13,8 +16,19 @@ components: [012-ArcSystem.md, lib/arc.sh]
 related_tasks: [T-1915, T-1916, T-1926, T-1927]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T17:02:48Z
+last_update: '2026-05-19T17:56:35Z'
 date_finished: 2026-05-19T17:02:48Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1930: BVP T-NEW-13 — `/arcs/<id>` extensions

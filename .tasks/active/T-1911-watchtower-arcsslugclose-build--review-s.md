@@ -1,8 +1,16 @@
 ---
 id: T-1911
-name: "Watchtower /arcs/<slug>/close build — review surface, POST handler, CLI fw arc review (T-1902 build slices)"
+name: "Watchtower /arcs/<slug>/close build — review surface, POST handler, CLI fw
+  arc review (T-1902 build slices)"
 description: >
-  Build the close-review surface GO'd by user via T-1902 inception. /arcs/<slug>/close renders arc summary, headline_mechanic, anchor-task review status, demo-evidence input (path/url/none), decision text, justification (only when demo=none), §ACD three-question check, and Submit button. POST handler shells to fw arc close --from-watchtower so the canonical contract is preserved. Also adds fw arc review CLI verb (mirrors fw task review). This unblocks Slice 3 of T-1905 (inline-status select with closed→/close redirect) and answers user's 'why can't agent close-out' — agent CAN, on the human's behalf via Watchtower.
+  Build the close-review surface GO'd by user via T-1902 inception. /arcs/<slug>/close
+  renders arc summary, headline_mechanic, anchor-task review status, demo-evidence
+  input (path/url/none), decision text, justification (only when demo=none), §ACD
+  three-question check, and Submit button. POST handler shells to fw arc close --from-watchtower
+  so the canonical contract is preserved. Also adds fw arc review CLI verb (mirrors
+  fw task review). This unblocks Slice 3 of T-1905 (inline-status select with closed→/close
+  redirect) and answers user's 'why can't agent close-out' — agent CAN, on the human's
+  behalf via Watchtower.
 
 status: started-work
 workflow_type: build
@@ -13,10 +21,21 @@ components: []
 related_tasks: [T-1902, T-1671, T-1668, T-1626, T-1909, T-1910]
 arc_id: arc-005
 created: 2026-05-18T21:30:46Z
-last_update: 2026-05-18T21:30:46Z
-date_finished: null
+last_update: '2026-05-19T17:56:35Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1911: Watchtower /arcs/<slug>/close build — review surface, POST handler, CLI fw arc review (T-1902 build slices)

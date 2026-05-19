@@ -1,8 +1,17 @@
 ---
 id: T-1771
-name: "make cron drift actionable: audit-summary visibility + cron-touching task verification convention"
+name: "make cron drift actionable: audit-summary visibility + cron-touching task verification
+  convention"
 description: >
-  T-1768 GO follow-up. (e) audit.sh replicates fw doctor's cron-drift check and FAILs on registry/deployed mismatch — drift becomes counted failure in /audit page + cron runs (escalates alongside other findings, established pattern). (c) CLAUDE.md addendum: cron-touching tasks MUST include 'bin/fw doctor 2>&1 | grep -q "Cron registry in sync"' in ## Verification — catches drift at task-completion time before broken state ships. Together: (e) catches drift in autonomous monitoring; (c) prevents the T-1767 mode (cron-touching task that never deploys) at task-close. Anchor: T-1687 (orchestrator-rethink arc, G-064 closure path). Predecessor: T-1768 inception (GO 2026-05-06).
+  T-1768 GO follow-up. (e) audit.sh replicates fw doctor's cron-drift check and FAILs
+  on registry/deployed mismatch — drift becomes counted failure in /audit page + cron
+  runs (escalates alongside other findings, established pattern). (c) CLAUDE.md addendum:
+  cron-touching tasks MUST include 'bin/fw doctor 2>&1 | grep -q "Cron registry in
+  sync"' in ## Verification — catches drift at task-completion time before broken
+  state ships. Together: (e) catches drift in autonomous monitoring; (c) prevents
+  the T-1767 mode (cron-touching task that never deploys) at task-close. Anchor: T-1687
+  (orchestrator-rethink arc, G-064 closure path). Predecessor: T-1768 inception (GO
+  2026-05-06).
 
 status: work-completed
 workflow_type: build
@@ -12,8 +21,19 @@ tags: [governance, cron, audit]
 components: [C-004]
 related_tasks: []
 created: 2026-05-06T17:08:48Z
-last_update: 2026-05-06T17:53:45Z
+last_update: '2026-05-19T17:56:23Z'
 date_finished: 2026-05-06T17:53:45Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1771: make cron drift actionable: audit-summary visibility + cron-touching task verification convention

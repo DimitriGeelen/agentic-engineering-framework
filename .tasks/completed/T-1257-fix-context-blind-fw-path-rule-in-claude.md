@@ -13,8 +13,19 @@ components: []
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-04-14T22:00:28Z
-last_update: 2026-05-02T10:07:10Z
+last_update: '2026-05-19T17:56:24Z'
 date_finished: 2026-04-16T04:41:10Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 4
+      D4: 2
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1257: Fix context-blind fw path rule in CLAUDE.md — consumers use .agentic-framework/bin/fw

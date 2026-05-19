@@ -1,8 +1,10 @@
 ---
 id: T-679
-name: "Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework"
+name: "Path C workflow refinement — document TermLink-based external ingestion, redo
+  vnx experiment from scratch, capture learnings for TermLink and framework"
 description: >
-  Inception: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
+  Inception: Path C workflow refinement — document TermLink-based external ingestion,
+  redo vnx experiment from scratch, capture learnings for TermLink and framework
 
 status: work-completed
 workflow_type: inception
@@ -12,8 +14,19 @@ tags: [path-c, termlink, ingestion, process-improvement]
 components: []
 related_tasks: [T-678, T-677, T-549, T-559]
 created: 2026-03-28T21:30:03Z
-last_update: 2026-04-13T06:23:24Z
+last_update: '2026-05-19T17:56:24Z'
 date_finished: 2026-03-28T21:55:27Z
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 5
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=5 (body:class-neutral)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-679: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework

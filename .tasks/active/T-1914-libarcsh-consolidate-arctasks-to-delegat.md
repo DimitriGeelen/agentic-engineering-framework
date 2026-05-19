@@ -1,8 +1,10 @@
 ---
 id: T-1914
-name: "lib/arc.sh consolidate _arc_tasks_* to delegate to lib/arc_membership.sh (sibling cleanup from T-1913)"
+name: "lib/arc.sh consolidate _arc_tasks_* to delegate to lib/arc_membership.sh (sibling
+  cleanup from T-1913)"
 description: >
-  lib/arc.sh consolidate _arc_tasks_* to delegate to lib/arc_membership.sh (sibling cleanup from T-1913)
+  lib/arc.sh consolidate _arc_tasks_* to delegate to lib/arc_membership.sh (sibling
+  cleanup from T-1913)
 
 status: started-work
 workflow_type: refactor
@@ -17,10 +19,22 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T22:44:53Z
-last_update: 2026-05-18T22:44:53Z
-date_finished: null
+last_update: '2026-05-19T17:56:35Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-05-19T17:56:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1914: lib/arc.sh consolidate _arc_tasks_* to delegate to lib/arc_membership.sh (sibling cleanup from T-1913)
