@@ -99,7 +99,24 @@ def _parse_frontmatter(path: Path) -> dict | None:
         return None
 
 
+def _latest_proposed_scores(fm: dict) -> dict | None:
+    """T-1934: pull the newest proposed-score entry's scores dict, if any."""
+    proposed = fm.get("bvp_scores_proposed")
+    if not proposed or not isinstance(proposed, list):
+        return None
+    latest = proposed[-1] if isinstance(proposed[-1], dict) else None
+    if not latest:
+        return None
+    scores = latest.get("scores")
+    if not scores or not isinstance(scores, dict):
+        return None
+    return scores
+
+
 def _collect_task_points(weights: dict[str, int]) -> list[dict]:
+    """T-1934: returns both confirmed and proposed points. Confirmed scores
+    take precedence (proposed is skipped if confirmed exists for the same
+    task — the scatter shows one point per task)."""
     points: list[dict] = []
     patterns = [
         str(PROJECT_ROOT / ".tasks" / "active" / "T-*.md"),
@@ -110,9 +127,12 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
             fm = _parse_frontmatter(Path(p))
             if not fm:
                 continue
-            scores = fm.get("bvp_scores") or {}
-            if not scores:
+            confirmed = fm.get("bvp_scores") or {}
+            proposed = _latest_proposed_scores(fm)
+            if not confirmed and not proposed:
                 continue
+            is_proposed = not confirmed
+            scores = confirmed if confirmed else proposed
             raw, norm = _compute_bvp(scores, weights)
             cost, br, tier, effort, src = _compute_cost(fm.get("cost_estimate"))
             if cost is None:
@@ -130,20 +150,25 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
                 "effort": effort,
                 "status": fm.get("status") or "-",
                 "scores": {k: int(v) for k, v in scores.items() if isinstance(v, (int, float))},
+                "proposed": is_proposed,
             })
     return points
 
 
 def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
+    """T-1934: include arcs with proposed scores (advisory) alongside confirmed."""
     points: list[dict] = []
     for p in sorted(glob.glob(str(PROJECT_ROOT / ".context" / "arcs" / "*.yaml"))):
         try:
             data = yaml.safe_load(Path(p).read_text()) or {}
         except yaml.YAMLError:
             continue
-        scores = data.get("bvp_scores") or {}
-        if not scores:
+        confirmed = data.get("bvp_scores") or {}
+        proposed = _latest_proposed_scores(data)
+        if not confirmed and not proposed:
             continue
+        is_proposed = not confirmed
+        scores = confirmed if confirmed else proposed
         raw, norm = _compute_bvp(scores, weights)
         cost, br, tier, effort, src = _compute_cost(data.get("cost_estimate"))
         points.append({
@@ -160,6 +185,7 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
             "effort": effort,
             "status": data.get("status") or "-",
             "scores": {k: int(v) for k, v in scores.items() if isinstance(v, (int, float))},
+            "proposed": is_proposed,
         })
     return points
 

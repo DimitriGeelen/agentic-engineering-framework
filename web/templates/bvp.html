@@ -62,6 +62,18 @@
       Quadrant scatter — {{ task_points|length }} task(s), {{ arc_points|length }} arc(s).
       Hover a dot to see cost composite (blast_radius × 0.6 + tier × 0.3 + effort × 0.1) or T-shirt fallback (Q2).
     </small></p>
+    <p id="bvp-scatter-legend"><small>
+      <strong>Legend:</strong>
+      <span style="display:inline-block;width:10px;height:10px;background:steelblue;border-radius:50%;vertical-align:middle;"></span>
+      filled = confirmed task &nbsp;·&nbsp;
+      <span style="display:inline-block;width:10px;height:10px;border:1.5px solid steelblue;border-radius:50%;vertical-align:middle;"></span>
+      outlined = <strong>proposed</strong> task (estimator output, advisory — confirm via <code>fw bvp confirm T-XXX --i-am-human</code>)
+      &nbsp;·&nbsp;
+      <span style="display:inline-block;width:14px;height:14px;background:#d4623a;border-radius:50%;vertical-align:middle;"></span>
+      arc (confirmed) &nbsp;·&nbsp;
+      <span style="display:inline-block;width:14px;height:14px;border:2px solid #d4623a;border-radius:50%;vertical-align:middle;"></span>
+      arc (proposed)
+    </small></p>
   {% endif %}
 
   <details>
@@ -302,31 +314,68 @@
     } else {
       cost = "cost: absent";
     }
-    return `<strong>${d.id}</strong> [${d.kind}]<br>${d.name}<br>BVP_norm ${d.bvp_norm.toFixed(3)} (raw ${d.bvp_raw})<br>${cost}`;
+    // T-1934: surface proposed vs confirmed in the tooltip explicitly
+    const advisory = d.proposed ? " <em>(proposed)</em>" : "";
+    return `<strong>${d.id}</strong> [${d.kind}]${advisory}<br>${d.name}<br>BVP_norm ${d.bvp_norm.toFixed(3)} (raw ${d.bvp_raw})<br>${cost}`;
   }
 
   function drawPoints(taskData, arcData) {
-    const tSel = g.selectAll(".pt-task").data(taskData, d => d.id);
-    tSel.exit().remove();
-    tSel.enter().append("circle")
-      .attr("class", "pt-task")
-      .attr("r", 4).attr("fill", "steelblue").attr("opacity", 0.7)
+    // T-1934: split confirmed (filled) from proposed (outlined). Same data
+    // shape; the .proposed flag drives the visual style.
+    const confirmedTasks = taskData.filter(d => !d.proposed);
+    const proposedTasks  = taskData.filter(d => d.proposed);
+    const confirmedArcs  = arcData.filter(d => !d.proposed);
+    const proposedArcs   = arcData.filter(d => d.proposed);
+
+    // Confirmed tasks — filled steelblue
+    const tCSel = g.selectAll(".pt-task-confirmed").data(confirmedTasks, d => d.id);
+    tCSel.exit().remove();
+    tCSel.enter().append("circle")
+      .attr("class", "pt-task pt-task-confirmed")
+      .attr("r", 4).attr("fill", "steelblue").attr("opacity", 0.85)
       .on("mouseover", function(event, d) { tip.style("opacity", 1).html(tipHTML(d)); })
       .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
       .on("mouseout",  function()          { tip.style("opacity", 0); })
-      .merge(tSel)
+      .merge(tCSel)
       .attr("cx", d => x(d.cost)).attr("cy", d => y(d.bvp_norm));
 
-    const aSel = g.selectAll(".pt-arc").data(arcData, d => d.id);
-    aSel.exit().remove();
-    aSel.enter().append("circle")
-      .attr("class", "pt-arc")
+    // Proposed tasks — outlined steelblue (stroke-only)
+    const tPSel = g.selectAll(".pt-task-proposed").data(proposedTasks, d => d.id);
+    tPSel.exit().remove();
+    tPSel.enter().append("circle")
+      .attr("class", "pt-task pt-task-proposed")
+      .attr("r", 4).attr("fill", "none")
+      .attr("stroke", "steelblue").attr("stroke-width", 1.5).attr("opacity", 0.65)
+      .on("mouseover", function(event, d) { tip.style("opacity", 1).html(tipHTML(d)); })
+      .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
+      .on("mouseout",  function()          { tip.style("opacity", 0); })
+      .merge(tPSel)
+      .attr("cx", d => x(d.cost)).attr("cy", d => y(d.bvp_norm));
+
+    // Confirmed arcs — filled orange
+    const aCSel = g.selectAll(".pt-arc-confirmed").data(confirmedArcs, d => d.id);
+    aCSel.exit().remove();
+    aCSel.enter().append("circle")
+      .attr("class", "pt-arc pt-arc-confirmed")
       .attr("r", 9).attr("fill", "#d4623a").attr("opacity", 0.85)
       .attr("stroke", "#7a3a23").attr("stroke-width", 1)
       .on("mouseover", function(event, d) { tip.style("opacity", 1).html(tipHTML(d)); })
       .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
       .on("mouseout",  function()          { tip.style("opacity", 0); })
-      .merge(aSel)
+      .merge(aCSel)
+      .attr("cx", d => x(d.cost || 4)).attr("cy", d => y(d.bvp_norm));
+
+    // Proposed arcs — outlined orange
+    const aPSel = g.selectAll(".pt-arc-proposed").data(proposedArcs, d => d.id);
+    aPSel.exit().remove();
+    aPSel.enter().append("circle")
+      .attr("class", "pt-arc pt-arc-proposed")
+      .attr("r", 9).attr("fill", "none")
+      .attr("stroke", "#d4623a").attr("stroke-width", 2).attr("opacity", 0.75)
+      .on("mouseover", function(event, d) { tip.style("opacity", 1).html(tipHTML(d)); })
+      .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
+      .on("mouseout",  function()          { tip.style("opacity", 0); })
+      .merge(aPSel)
       .attr("cx", d => x(d.cost || 4)).attr("cy", d => y(d.bvp_norm));
   }
 
