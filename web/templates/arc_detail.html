@@ -89,6 +89,125 @@
 <p><strong>Specialized view available:</strong> <a href="/orchestrator">→ /orchestrator</a> (MCP audit, live sessions, recent dispatches).</p>
 {% endif %}
 
+{# ── T-1930 (arc-006): BVP signals — arc-level scores, coherence, proposed drivers ── #}
+{% if bvp_info %}
+<section id="bvp-signals" data-arc-bvp="{{ arc_slug }}" style="margin: 1rem 0 1.5rem 0;">
+    <h2>BVP signals</h2>
+
+    {# Arc-level BVP numeric + per-driver breakdown #}
+    <div class="stats-strip">
+        <div class="stat-box">
+            <div class="v">
+                {% if bvp_info.has_scores %}{{ "%.3f"|format(bvp_info.norm) }}{% else %}—{% endif %}
+            </div>
+            <div class="l">Arc BVP_norm</div>
+        </div>
+        <div class="stat-box">
+            <div class="v">
+                {% if bvp_info.has_scores %}{{ bvp_info.raw }}{% else %}—{% endif %}
+            </div>
+            <div class="l">Arc BVP_raw (Σ score×weight)</div>
+        </div>
+    </div>
+
+    {% if not bvp_info.has_scores %}
+    <p class="muted">Arc has no <code>bvp_scores:</code> set. Score via <code>fw bvp confirm</code> or edit <code>.context/arcs/{{ arc_slug }}.yaml</code> directly.</p>
+    {% endif %}
+
+    <details>
+        <summary>Per-driver breakdown ({{ bvp_info.per_driver|length }} drivers)</summary>
+        <table>
+            <thead>
+                <tr><th>Driver</th><th>Weight</th><th>Score</th><th>Contribution</th></tr>
+            </thead>
+            <tbody>
+                {% for d in bvp_info.per_driver %}
+                <tr>
+                    <td><code>{{ d.id }}</code></td>
+                    <td>{{ d.weight }}</td>
+                    <td>{% if d.score is not none %}{{ d.score }}{% else %}<span class="missing">—</span>{% endif %}</td>
+                    <td>{% if d.contrib is not none %}{{ d.contrib }}{% else %}<span class="missing">—</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </details>
+
+    {# Coherence warnings — per-driver (T-1927, M4). Empty = passing. #}
+    {% if bvp_info.coherence_findings %}
+    <h3>Coherence warnings</h3>
+    <p class="muted">Arc claims a driver as important, but the constituent tasks don't support it. Either revise the arc claim or revise the rubric (R2 detection — systematic single-driver warnings indicate rubric bias).</p>
+    <ul>
+        {% for f in bvp_info.coherence_findings %}
+        <li>
+            <span class="badge badge-warn">{{ f.driver }} = {{ f.claim }}</span>
+            but {{ f.n_low }} of {{ f.n_total }} constituents score ≤ {{ f.task_max }}
+            ({{ "%.0f%%"|format(f.frac * 100) }}, threshold {{ "%.0f%%"|format(f.fraction_threshold * 100) }})
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted"><em>No coherence warnings — arc claims align with constituent scores (or the arc has no in-progress status / no scoring constituents to compare against).</em></p>
+    {% endif %}
+
+    {# Currently approved scoped drivers #}
+    {% if bvp_info.scoped_drivers %}
+    <h3>Scoped drivers ({{ bvp_info.scoped_drivers|length }} / 3 max)</h3>
+    <table>
+        <thead><tr><th>Name</th><th>Weight</th><th>Rationale</th><th>Approved</th></tr></thead>
+        <tbody>
+            {% for sd in bvp_info.scoped_drivers %}
+            <tr>
+                <td><code>{{ sd.get('name', '?') }}</code></td>
+                <td>{{ sd.get('weight', '—') }}</td>
+                <td>{{ sd.get('rationale', '')|truncate(120, True) }}</td>
+                <td><small>{{ sd.get('approved_ts', sd.get('ts', '—')) }}</small></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {# Proposed drivers — agent-suggested, awaiting approve / approve-none #}
+    {% if bvp_info.proposed_drivers %}
+    <h3>Proposed scoped drivers ({{ bvp_info.proposed_drivers|length }} awaiting approval)</h3>
+    <p class="muted">Estimator-proposed drivers. Approve up to 3 (M2; weight ≤6), or approve none with justification (R6: ≥30 chars).</p>
+    {% for p in bvp_info.proposed_drivers %}
+    <article style="margin-bottom: 1rem; padding: 0.8rem;">
+        <header style="margin-bottom: 0.5rem;">
+            <strong>{{ p.get('name', '?') }}</strong>
+            <small class="muted">· proposed {{ p.get('ts', '—') }} by {{ p.get('source', 'agent') }}</small>
+        </header>
+        {% if p.get('rationale') %}<p>{{ p.rationale }}</p>{% endif %}
+        <form method="POST" action="/api/arc/{{ arc_slug }}/approve-driver" style="display: inline;">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="name" value="{{ p.get('name', '') }}">
+            <label>Weight (1-6): <input type="number" name="weight" min="1" max="6" value="{{ p.get('weight', 4) }}" style="width: 5em;" required></label>
+            <label>Rationale: <input type="text" name="rationale" value="{{ p.get('rationale', '') }}" minlength="10" style="width: 22em;" required></label>
+            <button type="submit">Approve</button>
+        </form>
+    </article>
+    {% endfor %}
+    {% else %}
+    <p class="muted"><em>No proposed scoped drivers awaiting approval. (When the BVP estimator T-1922 runs against this arc's anchor task, candidates will appear here.)</em></p>
+    {% endif %}
+
+    {# Approve none — also flips status draft → in-progress per T-1926 #}
+    <details>
+        <summary>Approve none (mark "no scoped drivers needed")</summary>
+        <p class="muted">For arcs where global D1-D4 already capture the value dimensions and no arc-specific driver would add signal.</p>
+        <form method="POST" action="/api/arc/{{ arc_slug }}/approve-none">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <label>Justification (≥30 characters, R6):
+                <textarea name="justification" rows="2" minlength="30" required style="width: 100%;"
+                  placeholder="Why no scoped drivers — what distinguishes this arc that the four constitutional directives already cover?"></textarea>
+            </label>
+            <button type="submit">Approve none</button>
+        </form>
+    </details>
+</section>
+{% endif %}
+
 {% if reports %}
 <h2>Reports &amp; evidence</h2>
 <p class="muted">Arc-keyed reports under <code>docs/reports/{{ arc_id }}-*.md</code>:</p>

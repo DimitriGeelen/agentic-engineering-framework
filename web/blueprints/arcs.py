@@ -555,6 +555,8 @@ def arc_detail(arc_id: str):
     focused = (focus_val == arc_slug or (arc_numeric and focus_val == arc_numeric))
     has_specialized_view = (arc_slug == "orchestrator-rethink")
     reports = _arc_reports(arc_slug)
+    # T-1930 (arc-006): BVP signals — arc-level scores, coherence, proposed drivers.
+    bvp_info = _bvp_signals(arc, arc_slug, arc_numeric)
     return render_page(
         "arc_detail.html",
         page_title=f"Arc: {arc.get('name', arc_id)}",
@@ -566,7 +568,247 @@ def arc_detail(arc_id: str):
         focused=focused,
         has_specialized_view=has_specialized_view,
         reports=reports,
+        bvp_info=bvp_info,
     )
+
+
+# ── T-1930 (arc-006): BVP signals on arc detail ───────────────────────────
+# Reuses compute_bvp from web/blueprints/bvp.py to keep one math source.
+# Coherence check mirrors agents/audit/audit.sh bvp_coherence_findings —
+# same per-driver formula, scoped to a single arc.
+
+def _bvp_coherence_for_arc(arc: dict, arc_slug: str, arc_numeric: str) -> list[dict]:
+    """Return per-driver coherence findings for one arc.
+
+    Same rules as agents/audit/audit.sh:
+      - arc claims driver D_n with weight ≥ ARC_MIN (default 4)
+      - constituents are tasks tagged arc_id=<slug or arc-NNN>
+      - finding fires when ≥ FRACTION of scoring constituents score
+        the driver ≤ TASK_MAX (default 1)
+    Skips silently when the corpus can't answer (no scoring tasks).
+    """
+    if arc.get("status") != "in-progress":
+        return []
+    arc_min = int(os.environ.get("BVP_COHERENCE_ARC_MIN", "4"))
+    task_max = int(os.environ.get("BVP_COHERENCE_TASK_MAX", "1"))
+    fraction = float(os.environ.get("BVP_COHERENCE_FRACTION", "0.70"))
+
+    claims: dict[str, int] = {}
+    for sd in (arc.get("scoped_drivers") or []):
+        try:
+            w = int(sd.get("weight", 0))
+        except (TypeError, ValueError):
+            continue
+        if w >= arc_min:
+            claims[str(sd.get("name") or "?")] = w
+    arc_bvp = arc.get("bvp_scores") or {}
+    if isinstance(arc_bvp, dict):
+        for did, val in arc_bvp.items():
+            try:
+                v = int(val)
+            except (TypeError, ValueError):
+                continue
+            if v >= arc_min:
+                claims[str(did)] = v
+    if not claims:
+        return []
+
+    # Collect constituent task paths (either slug or arc-NNN form).
+    constituent_paths: list[Path] = []
+    tasks_dir = PROJECT_ROOT / ".tasks"
+    for sub in ("active", "completed"):
+        for p in (tasks_dir / sub).glob("T-*.md"):
+            try:
+                m = _FRONTMATTER_RE.match(p.read_text())
+            except OSError:
+                continue
+            if not m:
+                continue
+            try:
+                fm = yaml.safe_load(m.group(1)) or {}
+            except yaml.YAMLError:
+                continue
+            aid = str(fm.get("arc_id") or "").strip()
+            if aid and (aid == arc_slug or (arc_numeric and aid == arc_numeric)):
+                constituent_paths.append(p)
+    if not constituent_paths:
+        return []
+
+    findings: list[dict] = []
+    for driver_id, claim_val in claims.items():
+        scores = []
+        for p in constituent_paths:
+            try:
+                m = _FRONTMATTER_RE.match(p.read_text())
+            except OSError:
+                continue
+            if not m:
+                continue
+            try:
+                fm = yaml.safe_load(m.group(1)) or {}
+            except yaml.YAMLError:
+                continue
+            s = (fm.get("bvp_scores") or {}).get(driver_id)
+            if s is None:
+                continue
+            try:
+                scores.append(int(s))
+            except (TypeError, ValueError):
+                continue
+        if not scores:
+            continue
+        n_low = sum(1 for s in scores if s <= task_max)
+        n_total = len(scores)
+        frac = n_low / n_total
+        if frac >= fraction:
+            findings.append({
+                "driver": driver_id,
+                "claim": claim_val,
+                "n_low": n_low,
+                "n_total": n_total,
+                "frac": frac,
+                "task_max": task_max,
+                "fraction_threshold": fraction,
+            })
+    return findings
+
+
+def _bvp_signals(arc: dict, arc_slug: str, arc_numeric: str) -> dict:
+    """Aggregate BVP signals shown on /arcs/<id>.
+
+    Returns:
+      { has_scores, raw, norm, per_driver, weights, coherence_findings,
+        proposed_drivers, scoped_drivers }
+
+    has_scores is False when the arc has no `bvp_scores:` — the block
+    still renders so the human sees proposed-driver approve buttons.
+    """
+    from web.blueprints.bvp import _compute_bvp, _driver_weights, _load_policy
+
+    policy = _load_policy()
+    weights = _driver_weights(policy)
+    arc_scores = arc.get("bvp_scores") or {}
+    if isinstance(arc_scores, dict) and arc_scores:
+        raw, norm = _compute_bvp(arc_scores, weights)
+        has_scores = True
+    else:
+        raw, norm = 0, 0.0
+        has_scores = False
+
+    per_driver = []
+    for d_id, w in weights.items():
+        s = arc_scores.get(d_id) if isinstance(arc_scores, dict) else None
+        try:
+            s_int = int(s) if s is not None else None
+        except (TypeError, ValueError):
+            s_int = None
+        per_driver.append({
+            "id": d_id,
+            "weight": w,
+            "score": s_int,
+            "contrib": (s_int * w) if s_int is not None else None,
+        })
+
+    proposed = arc.get("proposed_scoped_drivers") or []
+    if not isinstance(proposed, list):
+        proposed = []
+    # Render newest first (D7).
+    proposed_sorted = sorted(
+        (p for p in proposed if isinstance(p, dict)),
+        key=lambda p: str(p.get("ts") or ""),
+        reverse=True,
+    )
+
+    scoped = arc.get("scoped_drivers") or []
+    if not isinstance(scoped, list):
+        scoped = []
+
+    coherence = _bvp_coherence_for_arc(arc, arc_slug, arc_numeric)
+
+    return {
+        "has_scores": has_scores,
+        "raw": raw,
+        "norm": norm,
+        "per_driver": per_driver,
+        "weights": weights,
+        "coherence_findings": coherence,
+        "proposed_drivers": proposed_sorted,
+        "scoped_drivers": scoped,
+    }
+
+
+@bp.route("/api/arc/<arc_id>/approve-driver", methods=["POST"])
+def arc_approve_driver(arc_id):
+    """T-1930: shell `fw arc approve-driver <slug> '<name>' [--weight N] --from-watchtower`.
+
+    Returns the rendered arc detail page (redirect) on success, or an
+    error message inline on failure.
+    """
+    from flask import redirect
+    if not _ARC_ID_RE.match(arc_id):
+        abort(404)
+    slug = _resolve_arc_slug(arc_id)
+    if slug is None:
+        abort(404)
+    name = (request.form.get("name") or "").strip()
+    weight_raw = (request.form.get("weight") or "").strip()
+    rationale = (request.form.get("rationale") or "").strip()
+    if not name:
+        return '<p style="color: var(--pico-del-color);">Driver name required.</p>', 400
+    if len(name) > 64:
+        return '<p style="color: var(--pico-del-color);">Driver name too long (max 64).</p>', 400
+    cmd = ["bin/fw", "arc", "approve-driver", slug, name, "--from-watchtower"]
+    if weight_raw:
+        try:
+            w = int(weight_raw)
+        except ValueError:
+            return '<p style="color: var(--pico-del-color);">Weight must be an integer.</p>', 400
+        cmd += ["--weight", str(w)]
+    if rationale:
+        cmd += ["--rationale", rationale]
+    try:
+        result = subprocess.run(
+            cmd, cwd=str(PROJECT_ROOT),
+            capture_output=True, text=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError) as e:
+        return f'<p style="color: var(--pico-del-color);">Failed to invoke fw: {e}</p>', 500
+    if result.returncode != 0:
+        err = (result.stderr or "").strip() or f"fw arc approve-driver exited {result.returncode}"
+        # Show only first line (block messages can be long).
+        first = err.splitlines()[0] if err else "unknown error"
+        return f'<p style="color: var(--pico-del-color);">{first}</p>', 400
+    return redirect(f"/arcs/{slug}")
+
+
+@bp.route("/api/arc/<arc_id>/approve-none", methods=["POST"])
+def arc_approve_none(arc_id):
+    """T-1930: shell `fw arc approve-driver <slug> --none --justification "<≥30 chars>" --from-watchtower`."""
+    from flask import redirect
+    if not _ARC_ID_RE.match(arc_id):
+        abort(404)
+    slug = _resolve_arc_slug(arc_id)
+    if slug is None:
+        abort(404)
+    justification = (request.form.get("justification") or "").strip()
+    if len(justification) < 30:
+        return '<p style="color: var(--pico-del-color);">Justification must be ≥30 characters (R6).</p>', 400
+    cmd = [
+        "bin/fw", "arc", "approve-driver", slug,
+        "--none", "--justification", justification, "--from-watchtower",
+    ]
+    try:
+        result = subprocess.run(
+            cmd, cwd=str(PROJECT_ROOT),
+            capture_output=True, text=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError) as e:
+        return f'<p style="color: var(--pico-del-color);">Failed to invoke fw: {e}</p>', 500
+    if result.returncode != 0:
+        err = (result.stderr or "").strip() or f"fw arc approve-driver exited {result.returncode}"
+        first = err.splitlines()[0] if err else "unknown error"
+        return f'<p style="color: var(--pico-del-color);">{first}</p>', 400
+    return redirect(f"/arcs/{slug}")
 
 
 # ── T-1910: Slice 2 — inline edit endpoints ──────────────────────────────
