@@ -87,6 +87,9 @@ see below).
 | `decision` | optional | Free-text closure decision, set by `fw arc close --decision`. |
 | `abandoned_at` | optional | T-1854: set by `fw arc abandon` on `draft|in-progress → abandoned`. |
 | `abandonment_reason` | optional | T-1854: free-text reason (≥30 chars), set by `fw arc abandon --reason`. |
+| `bvp_scores` | optional | T-1918 (arc-006): arc-level BVP scores (map; same shape as task `bvp_scores:`). Aggregate may differ from `sum(task.bvp_scores)` because arcs apply scoped_drivers. |
+| `scoped_drivers` | optional | T-1918 (arc-006): list of `{name, weight}` entries — max **3**, weight integer **≤6** (M2, T-1926). Approved by `fw arc approve-driver` (§ACD-gated). Drives per-arc BVP. Empty list is the safe default. |
+| `proposed_scoped_drivers` | optional | T-1918 (arc-006): list of timestamped `{name, source, ts}` proposals from `fw arc show-suggestions` (T-1926) or the estimator. Uncapped (D7-reframe: persists for reuse, not audit). |
 
 ---
 

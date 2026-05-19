@@ -93,6 +93,11 @@ Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
   - Empty/missing/null → task is unassigned to any arc (allowed; arcs are optional)
   - PreToolUse hook `check-arc-id` (Write|Edit on `.tasks/{active,completed}/T-*.md`) refuses saves under agent control when `arc_id` is non-empty and does **not** resolve to an existing arc YAML. Override: `FW_ALLOW_ARC_ID_DRIFT=1` (logged Tier-2 in `.gate-bypass-log.yaml`).
   - Coexists with the legacy `tags: [arc:<slug>, ...]` form (T-NEW-3 / T-1850 will migrate `arc:*` tags into `arc_id`).
+- `bvp_scores`, `bvp_scores_proposed`, `cost_estimate` (T-1918, arc-006) — Business Value Points scoring fields.
+  - `bvp_scores:` (map) — confirmed per-driver scores 0-5, set only by `fw bvp confirm` (T-1924). Sovereignty boundary. Shape `{D1: <0-5>, D2: <0-5>, D3: <0-5>, D4: <0-5>, [<free-driver-id>: <0-5>]…}`.
+  - `bvp_scores_proposed:` (list of timestamped entries) — estimator-proposed scores written by the TermLink BVP estimator worker (T-1922). Persists only when the proposal differs from `bvp_scores:` by ≥2 on any driver (M3 v2-delta semantics).
+  - `cost_estimate:` (map) — F8 composite `0.6×blast_radius + 0.3×tier + 0.1×effort`. Q2 fallback: T-shirt `S/M/L/XL` mapped to `2/4/6/8` when `blast_radius` is not computable yet. Read by auto-promote (T-1931) and `fw bvp rank` (T-1919).
+  - Audit (`fw audit`) treats unknown frontmatter fields as silent additions (A2). Documented in `policy/value-drivers.yaml` and `docs/reports/T-1915-bvp-inception.md`.
 
 ### Horizon (Priority Scheduling)
 

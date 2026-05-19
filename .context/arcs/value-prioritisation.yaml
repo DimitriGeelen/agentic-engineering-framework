@@ -14,3 +14,8 @@ demo_evidence: null
 created: 2026-05-18T22:58:05Z
 closed_at: null
 decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields backfilled to align
+# with new arc-creation defaults. Semantics in docs/reports/T-1915-bvp-inception.md.
+bvp_scores: {}
+scoped_drivers: []
+proposed_scoped_drivers: []

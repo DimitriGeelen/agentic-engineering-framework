@@ -416,6 +416,11 @@ demo_evidence: null
 created: ${now}
 closed_at: null
 decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
 YAML
 
     echo "Created arc '${id}' (${arc_numeric_id}) → $(_arc_path "$id")"
