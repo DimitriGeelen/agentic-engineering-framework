@@ -103,6 +103,7 @@ NAV_GROUPS = [
     ("Work", [
         ("Tasks",       "tasks.tasks",              None),
         ("Arcs",        "arcs.arcs_index",          None),
+        ("BVP",         "bvp.bvp_scatter",          None),
         ("Inception",   "inception.inception_list",  None),
         ("Assumptions", "inception.assumptions_list", None),
         ("Timeline",    "timeline.timeline",         None),

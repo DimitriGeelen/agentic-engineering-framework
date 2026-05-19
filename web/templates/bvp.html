@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article>
+  <header>
+    <hgroup>
+      <h2>BVP Quadrant Scatter</h2>
+      <p>Business Value Points vs composite cost. Tasks = small dots, arcs = larger dots. Read-only — live weight sliders ship in T-1929.</p>
+    </hgroup>
+  </header>
+
+  {% if weights %}
+  <details>
+    <summary>Current driver weights</summary>
+    <table>
+      <thead><tr><th>Driver</th><th>Weight</th></tr></thead>
+      <tbody>
+        {% for d_id, w in weights.items() %}
+        <tr><td><code>{{ d_id }}</code></td><td>{{ w }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><small>Edit weights via <code>fw bvp weight --set Dn=N --rationale "…" --i-am-human</code> (§ACD-gated, D8).</small></p>
+  </details>
+  {% endif %}
+
+  {% if empty %}
+    <p><strong>No scored entities yet.</strong> The scatter is empty until tasks/arcs carry confirmed <code>bvp_scores:</code> (set via <code>fw bvp confirm T-XXX --i-am-human</code> after T-1922 estimator proposes scores).</p>
+    <p>Once scoring lands, this page will show a four-quadrant scatter:</p>
+    <ul>
+      <li><strong>HV-LC</strong> (high value, low cost) — top-left, prime auto-promote zone</li>
+      <li><strong>HV-HC</strong> (high value, high cost) — top-right, strategic but expensive</li>
+      <li><strong>LV-LC</strong> (low value, low cost) — bottom-left, quick wins</li>
+      <li><strong>LV-HC</strong> (low value, high cost) — bottom-right, avoid</li>
+    </ul>
+  {% else %}
+    <div id="scatter-quadrant" data-quadrant="scatter" style="margin:1rem 0;"></div>
+    <p><small>
+      Quadrant scatter — {{ task_points|length }} task(s), {{ arc_points|length }} arc(s).
+      Hover a dot to see cost composite (blast_radius × 0.6 + tier × 0.3 + effort × 0.1) or T-shirt fallback (Q2).
+    </small></p>
+  {% endif %}
+
+  <details>
+    <summary>Raw data ({{ task_points|length + arc_points|length }} point(s))</summary>
+    <table>
+      <thead>
+        <tr><th>Kind</th><th>ID</th><th>Name</th><th>BVP_norm</th><th>Cost</th><th>Source</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for p in arc_points %}
+        <tr>
+          <td><strong>arc</strong></td>
+          <td><code>{{ p.id }}</code></td>
+          <td>{{ p.name }}</td>
+          <td>{{ "%.3f"|format(p.bvp_norm) }}</td>
+          <td>{{ "%.2f"|format(p.cost) if p.cost is not none else "—" }}</td>
+          <td>{{ p.cost_source }}</td>
+          <td>{{ p.status }}</td>
+        </tr>
+        {% endfor %}
+        {% for p in task_points %}
+        <tr>
+          <td>task</td>
+          <td><code>{{ p.id }}</code></td>
+          <td>{{ p.name }}</td>
+          <td>{{ "%.3f"|format(p.bvp_norm) }}</td>
+          <td>{{ "%.2f"|format(p.cost) }}</td>
+          <td>{{ p.cost_source }}</td>
+          <td>{{ p.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+</article>
+
+{% if not empty %}
+<script src="{{ url_for('static', filename='d3.v7.min.js') }}"></script>
+<script id="bvp-data" type="application/json">{
+  "tasks": {{ task_points|tojson }},
+  "arcs":  {{ arc_points|tojson }}
+}</script>
+<script>
+(function() {
+  const payload = JSON.parse(document.getElementById("bvp-data").textContent);
+  const tasks = payload.tasks || [];
+  const arcs = payload.arcs || [];
+  const all = tasks.concat(arcs);
+  if (!all.length) return;
+
+  const container = document.getElementById("scatter-quadrant");
+  const width  = Math.min(container.clientWidth || 900, 900);
+  const height = 520;
+  const margin = {top: 20, right: 20, bottom: 50, left: 60};
+  const innerW = width  - margin.left - margin.right;
+  const innerH = height - margin.top  - margin.bottom;
+
+  const costMax = Math.max(8, d3.max(all, d => d.cost || 0)) * 1.05;
+  const x = d3.scaleLinear().domain([0, costMax]).range([0, innerW]);
+  const y = d3.scaleLinear().domain([0, 1]).range([innerH, 0]);
+
+  const bvpVals  = all.map(d => d.bvp_norm);
+  const costVals = all.map(d => d.cost).filter(v => v != null);
+  const bvpMedian  = d3.median(bvpVals)  || 0.5;
+  const costMedian = d3.median(costVals) || 4.0;
+
+  const svg = d3.select(container).append("svg")
+    .attr("width", width).attr("height", height).attr("role", "img")
+    .attr("aria-label", "BVP quadrant scatter");
+
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Quadrant guides at median
+  g.append("line").attr("x1", x(costMedian)).attr("x2", x(costMedian))
+    .attr("y1", 0).attr("y2", innerH).attr("stroke", "#888").attr("stroke-dasharray", "3,3");
+  g.append("line").attr("y1", y(bvpMedian)).attr("y2", y(bvpMedian))
+    .attr("x1", 0).attr("x2", innerW).attr("stroke", "#888").attr("stroke-dasharray", "3,3");
+
+  // Axes
+  g.append("g").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x));
+  g.append("g").call(d3.axisLeft(y));
+  g.append("text").attr("x", innerW/2).attr("y", innerH + 40)
+    .attr("text-anchor", "middle").text("Cost composite (F8: 0.6·br + 0.3·tier + 0.1·effort)");
+  g.append("text").attr("transform", "rotate(-90)").attr("x", -innerH/2).attr("y", -45)
+    .attr("text-anchor", "middle").text("BVP_norm");
+
+  // Quadrant labels (HV-LC top-left etc.)
+  const labelStyle = { "font-size": "0.7rem", "fill": "#999", "pointer-events": "none" };
+  g.append("text").attr("x", x(0)+5).attr("y", y(1)+15)
+    .attr("style", "font-size:0.7rem;fill:#999;").text("HV-LC");
+  g.append("text").attr("x", innerW-40).attr("y", y(1)+15)
+    .attr("style", "font-size:0.7rem;fill:#999;").text("HV-HC");
+  g.append("text").attr("x", x(0)+5).attr("y", innerH-5)
+    .attr("style", "font-size:0.7rem;fill:#999;").text("LV-LC");
+  g.append("text").attr("x", innerW-40).attr("y", innerH-5)
+    .attr("style", "font-size:0.7rem;fill:#999;").text("LV-HC");
+
+  // Tooltip
+  const tip = d3.select(container).append("div")
+    .attr("class", "bvp-tip")
+    .style("position", "absolute").style("padding", "6px 8px")
+    .style("background", "rgba(20,20,25,0.92)").style("color", "#eee")
+    .style("border-radius", "4px").style("font-size", "0.75rem")
+    .style("pointer-events", "none").style("opacity", 0);
+
+  function tipHTML(d) {
+    let cost = "";
+    if (d.cost_source === "three-component") {
+      cost = `cost ${d.cost.toFixed(2)} = ${(d.blast_radius*0.6).toFixed(2)} (br ${d.blast_radius}) + ${(d.tier*0.3).toFixed(2)} (tier ${d.tier}) + ${(d.effort*0.1).toFixed(2)} (effort ${d.effort})`;
+    } else if (d.cost_source === "tshirt") {
+      cost = `cost ${d.cost.toFixed(1)} (T-shirt Q2 fallback)`;
+    } else {
+      cost = "cost: absent";
+    }
+    return `<strong>${d.id}</strong> [${d.kind}]<br>${d.name}<br>BVP_norm ${d.bvp_norm.toFixed(3)} (raw ${d.bvp_raw})<br>${cost}`;
+  }
+
+  // Draw tasks (small)
+  g.selectAll(".pt-task").data(tasks).enter().append("circle")
+    .attr("class", "pt-task")
+    .attr("cx", d => x(d.cost)).attr("cy", d => y(d.bvp_norm))
+    .attr("r", 4).attr("fill", "steelblue").attr("opacity", 0.7)
+    .on("mouseover", function(event, d) {
+      tip.style("opacity", 1).html(tipHTML(d));
+    })
+    .on("mousemove", function(event) {
+      tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px");
+    })
+    .on("mouseout", function() { tip.style("opacity", 0); });
+
+  // Draw arcs (larger)
+  g.selectAll(".pt-arc").data(arcs).enter().append("circle")
+    .attr("class", "pt-arc")
+    .attr("cx", d => x(d.cost || 4)).attr("cy", d => y(d.bvp_norm))
+    .attr("r", 9).attr("fill", "#d4623a").attr("opacity", 0.85)
+    .attr("stroke", "#7a3a23").attr("stroke-width", 1)
+    .on("mouseover", function(event, d) {
+      tip.style("opacity", 1).html(tipHTML(d));
+    })
+    .on("mousemove", function(event) {
+      tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px");
+    })
+    .on("mouseout", function() { tip.style("opacity", 0); });
+})();
+</script>
+{% endif %}
+{% endblock %}
