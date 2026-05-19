@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1926: BVP T-NEW-10: fw arc approve-driver + fw arc show-suggestions verbs (§ACD-gated, flips draft→in-progress, weight cap ≤6)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-19T07:47:49Z
+# ============================================================================
+
+task_id: T-1926
+task_name: "BVP T-NEW-10: fw arc approve-driver + fw arc show-suggestions verbs (§ACD-gated, flips draft→in-progress, weight cap ≤6)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: 2026-05-19T07:47:44Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw arc approve-driver <arc> "<name>" [--weight N]` appends to `scoped_drivers:` (cap 3); on first approval also flips `status: draft → in-progress` — proven by smoke: arc-006 draft→in-progress on first approval, scoped_drivers grew correctly'
+  - 'Refuses (actionable error) when `scoped_drivers:` already has 3 entries — proven by smoke: after adding d1/d2/d3, 4th attempt refused with current-drivers listing'
+  - 'Refuses `--weight N` for N > 6 (M2 scoped-driver weight cap) — proven by smoke: `--weight 9` refused with M2 reason + suggestion to use global free driver'
+  - '`fw arc approve-driver <arc> --none --justification "<≥30 chars>"` also flips status to in-progress AND writes to `.context/audits/arc-scoped-driver-bypass.jsonl` (arc_id, justification, ts) — proven by smoke: bypass log entry written with all fields including agent_session signal'
+  - 'Refuses `--none` without `--justification` or with justification under 30 chars — proven by smoke: both refusals fire with actionable errors'
+  - 'Refuses under `$CLAUDECODE=1` unless `--i-am-human` or `--from-watchtower` (M6, §ACD) — proven by smoke: §ACD error message lists both overrides'
+  - '`fw arc show-suggestions <arc>` renders all entries in `proposed_scoped_drivers:` grouped by suggestion event timestamp (D7 — read-only, no mutations) — implemented; renders approved + proposed (empty in current state), grouped by ts newest-first'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 47 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-10, cli, arc, acd-gate]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 47
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1926-bvp-fw-arc-approve-driver-fw-arc-show-sugge.md
+generated_by: context-agent-hybrid

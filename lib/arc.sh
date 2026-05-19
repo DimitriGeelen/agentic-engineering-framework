@@ -1000,7 +1000,272 @@ arc_dispatch() {
         close)   arc_close   "$@";;
         abandon) arc_abandon "$@";;
         migrate) arc_migrate "$@";;
+        approve-driver)   arc_approve_driver   "$@";;   # T-1926 (arc-006)
+        show-suggestions) arc_show_suggestions "$@";;   # T-1926 (arc-006)
         help|--help|-h) arc_help;;
         *) echo "Unknown verb: $verb" >&2; arc_help; return 2;;
     esac
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-1926 (arc-006, value-prioritisation): arc approve-driver + show-suggestions.
+#
+# arc_approve_driver: appends to scoped_drivers: (cap 3, M2 weight ≤6) or accepts
+# `--none --justification "..."` to declare zero scoped drivers. On first
+# approval (or on --none), flips arc status: draft → in-progress.
+#
+# arc_show_suggestions: read-only render of proposed_scoped_drivers: grouped by
+# event timestamp (D7-reframe — workflow verb the human runs when focus shifts
+# to an arc, NOT a debug verb).
+#
+# §ACD shape from T-1671 reused (refuse under $CLAUDECODE=1 unless --i-am-human
+# or --from-watchtower). Form validation precedes authority gate per T-1920
+# ordering decision.
+
+arc_approve_driver() {
+    local id="" name="" weight="" justification="" want_none=false
+    local i_am_human=false from_watchtower=false
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --weight) weight="$2"; shift 2;;
+            --none) want_none=true; shift;;
+            --justification) justification="$2"; shift 2;;
+            --i-am-human) i_am_human=true; shift;;
+            --from-watchtower) from_watchtower=true; shift;;
+            --help|-h) _arc_approve_help; return 0;;
+            *)
+                if [ -z "$id" ]; then id="$1"
+                elif [ -z "$name" ]; then name="$1"
+                else echo "Unexpected arg: $1" >&2; return 2; fi
+                shift;;
+        esac
+    done
+
+    if [ -z "$id" ]; then
+        _arc_approve_help
+        return 2
+    fi
+
+    id="$(_arc_normalize_input "$id")"
+    _arc_validate_id "$id" || return 2
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+
+    # ── --none path ──
+    if [ "$want_none" = "true" ]; then
+        if [ -z "$justification" ]; then
+            echo "Error: --none requires --justification (≥30 chars)." >&2
+            echo "  Explain why this arc has no driver worth scoring separately." >&2
+            return 2
+        fi
+        if [ "${#justification}" -lt 30 ]; then
+            echo "Error: --justification must be ≥30 characters (got ${#justification})." >&2
+            return 2
+        fi
+        if ! _arc_approve_driver_acd_gate "approve-driver --none" "$i_am_human" "$from_watchtower"; then
+            return 1
+        fi
+        _arc_log_scoped_bypass "$id" "$justification"
+        _arc_flip_to_in_progress_if_draft "$id"
+        echo "OK: arc '$id' approved with no scoped drivers (--none)."
+        echo "  Justification logged to .context/audits/arc-scoped-driver-bypass.jsonl"
+        return 0
+    fi
+
+    # ── approve-driver normal path ──
+    if [ -z "$name" ]; then
+        echo "Error: driver name is required." >&2
+        _arc_approve_help
+        return 2
+    fi
+
+    local w="${weight:-3}"
+    if ! printf '%s' "$w" | grep -qE '^[0-9]+$'; then
+        echo "Error: --weight must be an integer (got: $w)" >&2
+        return 2
+    fi
+    if [ "$w" -lt 0 ] || [ "$w" -gt 6 ]; then
+        echo "Error: --weight $w out of range. Scoped-driver weight is capped at 6 (M2)." >&2
+        echo "  Reason: scoped drivers must not overwhelm the constitutional directives." >&2
+        echo "  If you need a higher weight, propose this as a global free driver via fw bvp driver --add." >&2
+        return 2
+    fi
+
+    # Cap check: max 3 scoped drivers.
+    local f
+    f="$(_arc_path "$id")"
+    local current_count
+    current_count=$(python3 -c "
+import yaml
+d = yaml.safe_load(open('$f')) or {}
+print(len(d.get('scoped_drivers') or []))
+")
+    if [ "$current_count" -ge 3 ]; then
+        echo "Error: scoped_drivers: already at cap (3 entries). M2 enforces max 3 per arc." >&2
+        echo "  Current drivers:" >&2
+        python3 -c "
+import yaml
+d = yaml.safe_load(open('$f')) or {}
+for sd in (d.get('scoped_drivers') or []):
+    print(f\"    - {sd.get('name')} (weight={sd.get('weight')})\")
+" >&2
+        return 1
+    fi
+
+    if ! _arc_approve_driver_acd_gate "approve-driver" "$i_am_human" "$from_watchtower"; then
+        return 1
+    fi
+
+    # Append + flip-if-draft via python (preserves YAML structure).
+    python3 - "$f" "$name" "$w" <<'PY'
+import sys, datetime
+try:
+    from ruamel.yaml import YAML
+    yaml_r = YAML(); yaml_r.preserve_quotes = True; yaml_r.indent(mapping=2, sequence=4, offset=2)
+    HAS_RUAMEL = True
+except ImportError:
+    import yaml
+    HAS_RUAMEL = False
+
+fn, name, weight = sys.argv[1], sys.argv[2], int(sys.argv[3])
+
+if HAS_RUAMEL:
+    with open(fn) as fh: data = yaml_r.load(fh)
+else:
+    import yaml
+    data = yaml.safe_load(open(fn).read())
+
+sd = data.get('scoped_drivers') or []
+ts = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')
+sd.append({'name': name, 'weight': weight, 'approved_at': ts})
+data['scoped_drivers'] = sd
+
+if data.get('status') == 'draft':
+    data['status'] = 'in-progress'
+
+if HAS_RUAMEL:
+    with open(fn, 'w') as fh: yaml_r.dump(data, fh)
+else:
+    with open(fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+PY
+
+    echo "OK: approved scoped driver '$name' (weight=$w) on arc '$id'."
+    local new_status
+    new_status=$(awk -F': ' '/^status:/ {print $2; exit}' "$f" | tr -d ' ')
+    [ "$new_status" = "in-progress" ] && echo "  Arc status: draft → in-progress (first driver decision)."
+    return 0
+}
+
+arc_show_suggestions() {
+    local id="${1:-}"
+    if [ -z "$id" ] || [ "$id" = "--help" ] || [ "$id" = "-h" ]; then
+        echo "Usage: fw arc show-suggestions <arc-id>"
+        echo ""
+        echo "  Render all entries in proposed_scoped_drivers: grouped by event timestamp."
+        echo "  Read-only (D7-reframe: workflow verb the human runs when focus shifts to"
+        echo "  an arc, NOT a debug verb)."
+        echo ""
+        echo "  See: fw arc approve-driver <arc-id> \"<name>\" [--weight N] [--i-am-human]"
+        return 0
+    fi
+    id="$(_arc_normalize_input "$id")"
+    _arc_validate_id "$id" || return 2
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+    local f
+    f="$(_arc_path "$id")"
+    python3 - "$f" "$id" <<'PY'
+import sys, yaml
+fn, arc_id = sys.argv[1], sys.argv[2]
+data = yaml.safe_load(open(fn).read()) or {}
+proposed = data.get('proposed_scoped_drivers') or []
+approved = data.get('scoped_drivers') or []
+
+print(f"Arc: {arc_id}")
+print(f"Status: {data.get('status','-')}")
+print()
+print(f"Approved scoped_drivers ({len(approved)}/3):")
+if approved:
+    for sd in approved:
+        print(f"  - {sd.get('name')} (weight={sd.get('weight')}, approved_at={sd.get('approved_at','-')})")
+else:
+    print("  (none yet)")
+print()
+print(f"Proposed (history, {len(proposed)} entries):")
+if not proposed:
+    print("  (none — primary agent has not yet proposed any drivers)")
+else:
+    # Group by ts; newest first.
+    groups = {}
+    for p in proposed:
+        ts = p.get('ts', '?')
+        groups.setdefault(ts, []).append(p)
+    for ts in sorted(groups.keys(), reverse=True):
+        print(f"  [{ts}]")
+        for p in groups[ts]:
+            print(f"    - {p.get('name','-')} (source={p.get('source','-')})")
+            r = p.get('rationale')
+            if r:
+                print(f"      → {r}")
+PY
+    return 0
+}
+
+_arc_approve_help() {
+    echo "Usage:"
+    echo "  fw arc approve-driver <arc-id> \"<name>\" [--weight N] [--i-am-human|--from-watchtower]"
+    echo "  fw arc approve-driver <arc-id> --none --justification \"<≥30 chars>\""
+    echo ""
+    echo "  Appends to scoped_drivers: (cap 3, M2 weight ≤6, default weight=3)."
+    echo "  On first approval — or on --none — flips arc status: draft → in-progress."
+    echo "  --none --justification declares the arc has no scoped drivers worth tracking;"
+    echo "  the justification is logged to .context/audits/arc-scoped-driver-bypass.jsonl."
+    echo ""
+    echo "  Refuses under \$CLAUDECODE=1 unless --i-am-human or --from-watchtower (M6, §ACD)."
+}
+
+_arc_approve_driver_acd_gate() {
+    local verb="$1" i_am_human="$2" from_watchtower="$3"
+    if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = "false" ] && [ "$from_watchtower" = "false" ]; then
+        echo "Error: agents must not invoke 'fw arc $verb' directly (§ACD, M6)." >&2
+        echo "" >&2
+        echo "  Driver approval is policy-edit authority (D8 — sovereignty at policy-edit time)" >&2
+        echo "  and belongs to the human, recorded via Watchtower." >&2
+        echo "" >&2
+        echo "  Overrides (mirror T-1259 inception-decide / T-1671 arc-close):" >&2
+        echo "    --i-am-human       human typing into an agent session (rare)" >&2
+        echo "    --from-watchtower  Flask backend POST" >&2
+        return 1
+    fi
+    return 0
+}
+
+_arc_log_scoped_bypass() {
+    local arc_id="$1" justification="$2"
+    local log="$PROJECT_ROOT/.context/audits/arc-scoped-driver-bypass.jsonl"
+    mkdir -p "$(dirname "$log")"
+    local ts
+    ts=$(_arc_now)
+    # Escape any embedded double-quotes in the justification for JSON safety.
+    local justification_safe
+    justification_safe=$(printf '%s' "$justification" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')
+    printf '{"arc_id":"%s","ts":"%s","justification":"%s","who":"%s","agent_session":%s}\n' \
+        "$arc_id" "$ts" "$justification_safe" "${USER:-unknown}" \
+        "$([ "${CLAUDECODE:-}" = "1" ] && echo true || echo false)" >> "$log"
+}
+
+_arc_flip_to_in_progress_if_draft() {
+    local id="$1"
+    local f
+    f="$(_arc_path "$id")"
+    local cur
+    cur=$(awk -F': ' '/^status:/ {print $2; exit}' "$f" | tr -d ' ')
+    if [ "$cur" = "draft" ]; then
+        python3 - "$f" <<'PY'
+import re, sys
+fn = sys.argv[1]
+text = open(fn).read()
+new = re.sub(r'^status:\s*draft\s*$', 'status: in-progress', text, count=1, flags=re.MULTILINE)
+open(fn, "w").write(new)
+PY
+        echo "  Arc status: draft → in-progress (driver decision recorded)."
+    fi
 }
