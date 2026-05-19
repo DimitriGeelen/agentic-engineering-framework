@@ -2,7 +2,12 @@
 id: T-1701
 name: "v1 build: install + integrate pi RPC backend for worker_kind=pi dispatch"
 description: >
-  Build follow-up to T-1692 GO. npm install -g @mariozechner/pi-coding-agent, pi /login (one-time interactive), implement lib/pi_worker.py (~80 LOC subprocess.Popen with JSONL framing, NOT readline), wire into lib/resolver.py as worker_kind=pi path, ship cheap-research.yaml workflow, smoke-test dispatch + verify cost=0 subscription path, induce 429 to verify retryable extraction. See T-1692 ## Recommendation for full 8-step scope.
+  Build follow-up to T-1692 GO. npm install -g @mariozechner/pi-coding-agent, pi /login
+  (one-time interactive), implement lib/pi_worker.py (~80 LOC subprocess.Popen with
+  JSONL framing, NOT readline), wire into lib/resolver.py as worker_kind=pi path,
+  ship cheap-research.yaml workflow, smoke-test dispatch + verify cost=0 subscription
+  path, induce 429 to verify retryable extraction. See T-1692 ## Recommendation for
+  full 8-step scope.
 
 status: started-work
 workflow_type: build
@@ -13,8 +18,19 @@ components: []
 related_tasks: [T-1692, T-1696, T-1693, T-1694]
 arc_id: orchestrator-rethink
 created: 2026-05-03T15:47:11Z
-last_update: 2026-05-06T18:53:14Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=4
+      (body:framework-level-ux); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1701: v1 build: install + integrate pi RPC backend for worker_kind=pi dispatch

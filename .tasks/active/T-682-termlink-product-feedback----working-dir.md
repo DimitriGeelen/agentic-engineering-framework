@@ -2,7 +2,9 @@
 id: T-682
 name: "TermLink product feedback — --working-dir flag for spawn + MCP as default"
 description: >
-  F-6: TermLink spawn has no --working-dir flag, requiring a separate cd step after spawn. Also TermLink MCP server should be recommended as default for AI agent integrations. File as feature requests for TermLink product (Vincent). Discovered during T-679.
+  F-6: TermLink spawn has no --working-dir flag, requiring a separate cd step after
+  spawn. Also TermLink MCP server should be recommended as default for AI agent integrations.
+  File as feature requests for TermLink product (Vincent). Discovered during T-679.
 
 status: captured
 workflow_type: inception
@@ -12,8 +14,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T21:37:45Z
-last_update: 2026-05-15T19:54:39Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-682: TermLink product feedback — --working-dir flag for spawn + MCP as default

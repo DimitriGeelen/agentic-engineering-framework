@@ -1,20 +1,43 @@
 ---
 id: T-1719
-name: "Embeddings strategy V1 — Slice 1 (post-write hook + happiness signal + one-provider routing)"
+name: "Embeddings strategy V1 — Slice 1 (post-write hook + happiness signal + one-provider
+  routing)"
 description: >
-  Slice 1 of T-1717 (Embeddings strategy GO conditional). Smallest end-to-end vertical proving the loop: post-write incremental embedding on lib/learnings.sh add + update-task.sh work-completed (closes catastrophic A1 amnesia case <5s freshness), happiness flag schema (--happiness +1..+5/-1..-5 on task complete), one provider-routing decision through litellm (fw ask routes via resolver, ollama default + cloud fallback when unreachable), Watchtower telemetry panel. Falsifier: after 7 days of usage, amnesia self-reports drop AND retrieval miss-rate decreases. BLOCKED on T-1717 GO recording (status: captured). Headline mechanic locked from T-1717 Recommendation. Pilot consumer of orchestrator substrate — closes G-064 partially. Eats Evolution-gate dogfood (T-1718 Slice 1) from filing.
+  Slice 1 of T-1717 (Embeddings strategy GO conditional). Smallest end-to-end vertical
+  proving the loop: post-write incremental embedding on lib/learnings.sh add + update-task.sh
+  work-completed (closes catastrophic A1 amnesia case <5s freshness), happiness flag
+  schema (--happiness +1..+5/-1..-5 on task complete), one provider-routing decision
+  through litellm (fw ask routes via resolver, ollama default + cloud fallback when
+  unreachable), Watchtower telemetry panel. Falsifier: after 7 days of usage, amnesia
+  self-reports drop AND retrieval miss-rate decreases. BLOCKED on T-1717 GO recording
+  (status: captured). Headline mechanic locked from T-1717 Recommendation. Pilot consumer
+  of orchestrator substrate — closes G-064 partially. Eats Evolution-gate dogfood
+  (T-1718 Slice 1) from filing.
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [T-1717-implementation, G-064-closure-pilot, vertical-slice-1, blocked-on-t-1717-go]
+tags: [T-1717-implementation, G-064-closure-pilot, vertical-slice-1, 
+      blocked-on-t-1717-go]
 components: []
-related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697, T-1698, T-1700, T-1443, T-679]
+related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697, 
+      T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-05-04T15:26:25Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1719: Embeddings strategy V1 — Slice 1 (post-write hook + happiness signal + one-provider routing)

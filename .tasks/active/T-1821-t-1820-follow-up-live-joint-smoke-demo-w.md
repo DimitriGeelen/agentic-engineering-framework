@@ -1,8 +1,17 @@
 ---
 id: T-1821
-name: "T-1820 follow-up: live joint-smoke demo when TermLink wires aggregator handler at hub startup"
+name: "T-1820 follow-up: live joint-smoke demo when TermLink wires aggregator handler
+  at hub startup"
 description: >
-  T-1820 partial-shipped substrate (deploy + framework subscriber operational). Headline mechanic (live binary-to-binary observation of inbox.queued) NOT yet demonstrated — three CLI posts to inbox:<id> with file.init produced no event. Working hypothesis: the handler that injects inbox.queued into the aggregator runs inside the integration test (via init_aggregator), not at hub startup. Needs TermLink-side fix (wire init_aggregator at hub boot OR add a CLI command that triggers the existing path). When TermLink resolves, re-run the smoke against the live hub: spawn consumer, drive the trigger, observe event on framework subscriber, capture transcript, file demo artefact. Related: T-1820, T-1636, T-1818, T-1819, T-1804.
+  T-1820 partial-shipped substrate (deploy + framework subscriber operational). Headline
+  mechanic (live binary-to-binary observation of inbox.queued) NOT yet demonstrated
+  — three CLI posts to inbox:<id> with file.init produced no event. Working hypothesis:
+  the handler that injects inbox.queued into the aggregator runs inside the integration
+  test (via init_aggregator), not at hub startup. Needs TermLink-side fix (wire init_aggregator
+  at hub boot OR add a CLI command that triggers the existing path). When TermLink
+  resolves, re-run the smoke against the live hub: spawn consumer, drive the trigger,
+  observe event on framework subscriber, capture transcript, file demo artefact. Related:
+  T-1820, T-1636, T-1818, T-1819, T-1804.
 
 status: captured
 workflow_type: build
@@ -13,8 +22,19 @@ components: []
 related_tasks: [T-1820, T-1636, T-1818, T-1819, T-1804]
 arc_id: orchestrator-rethink
 created: 2026-05-14T05:48:29Z
-last_update: 2026-05-14T05:48:29Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1821: T-1820 follow-up: live joint-smoke demo when TermLink wires aggregator handler at hub startup

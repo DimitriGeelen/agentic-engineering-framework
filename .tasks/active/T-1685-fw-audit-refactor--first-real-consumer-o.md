@@ -1,8 +1,10 @@
 ---
 id: T-1685
-name: "fw audit refactor — first real consumer of the orchestrator, route slow analytical checks through fw termlink dispatch"
+name: "fw audit refactor — first real consumer of the orchestrator, route slow analytical
+  checks through fw termlink dispatch"
 description: >
-  Inception: fw audit refactor — first real consumer of the orchestrator, route slow analytical checks through fw termlink dispatch
+  Inception: fw audit refactor — first real consumer of the orchestrator, route slow
+  analytical checks through fw termlink dispatch
 
 status: captured
 workflow_type: inception
@@ -12,8 +14,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-02T18:50:52Z
-last_update: 2026-05-15T19:55:15Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 4
+      D3: 0
+      D4: 2
+    rationale: D1=2 (body:learning-ref,body:concern-ref); D2=4 
+      (body:fw-audit-or-doctor); D3=0 (no-signal); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1685: fw audit refactor — first real consumer of the orchestrator, route slow analytical checks through fw termlink dispatch

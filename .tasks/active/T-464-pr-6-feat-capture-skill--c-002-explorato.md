@@ -13,8 +13,19 @@ tags: [onedev, pr]
 components: []
 related_tasks: []
 created: 2026-03-12T18:00:01Z
-last_update: 2026-04-28T17:35:14Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-464: PR #6: feat: /capture skill + C-002 Exploratory Conversation Guard

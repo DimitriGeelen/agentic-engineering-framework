@@ -1,8 +1,10 @@
 ---
 id: T-1624
-name: "Refresh ring20-dashboard hub.secret on this anchor — secret-mismatch after .143 migration (T-1054 heal)"
+name: "Refresh ring20-dashboard hub.secret on this anchor — secret-mismatch after
+  .143 migration (T-1054 heal)"
 description: >
-  Refresh ring20-dashboard hub.secret on this anchor — secret-mismatch after .143 migration (T-1054 heal)
+  Refresh ring20-dashboard hub.secret on this anchor — secret-mismatch after .143
+  migration (T-1054 heal)
 
 status: started-work
 workflow_type: build
@@ -12,8 +14,19 @@ tags: [termlink, secret, fleet, security, from-g-045, t-1054-heal]
 components: []
 related_tasks: [T-1054, T-1055, T-1623]
 created: 2026-04-30T20:27:35Z
-last_update: 2026-04-30T20:27:35Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1624: Refresh ring20-dashboard hub.secret on this anchor — secret-mismatch after .143 migration (T-1054 heal)

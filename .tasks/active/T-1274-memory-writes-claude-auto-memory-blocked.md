@@ -1,6 +1,9 @@
 ---
 id: T-1274
-name: "Memory writes (claude auto-memory) blocked by onboarding task gate — agent on consumer project couldn't save memory about wrong fw path because T-001-T-005 weren't complete. Memory is the exact mechanism that would prevent recurrence of the problem being observed. Memory should not be gated by task onboarding."
+name: "Memory writes (claude auto-memory) blocked by onboarding task gate — agent
+  on consumer project couldn't save memory about wrong fw path because T-001-T-005
+  weren't complete. Memory is the exact mechanism that would prevent recurrence of
+  the problem being observed. Memory should not be gated by task onboarding."
 description: >
   Promoted from observation OBS-013
 
@@ -12,8 +15,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-16T05:29:24Z
-last_update: 2026-04-28T18:51:59Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1274: Memory writes (claude auto-memory) blocked by onboarding task gate — agent on consumer project couldn't save memory about wrong fw path because T-001-T-005 weren't complete. Memory is the exact mechanism that would prevent recurrence of the problem being observed. Memory should not be gated by task onboarding.

@@ -12,8 +12,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-21T16:02:14Z
-last_update: 2026-04-28T17:35:24Z
+last_update: '2026-05-19T18:27:46Z'
 date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-544: Create TermLink Homebrew tap with GitHub Actions builds

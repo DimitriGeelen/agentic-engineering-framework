@@ -1,8 +1,13 @@
 ---
 id: T-1677
-name: "tag-format drift: 21 legacy TermLink sessions carry task=/role= prefixes — cross-repo validator half"
+name: "tag-format drift: 21 legacy TermLink sessions carry task=/role= prefixes —
+  cross-repo validator half"
 description: >
-  T-1654 fixed framework-side spawns to emit canonical 'task:' prefix; T-1649 was framework-side half of validator work. 21 live sessions (incl. 10x task=T-1641) persist with old tags. Audit fires WARN on orchestrator-rethink arc. Cross-repo half (validator in /opt/termlink) is the structural close per audit mitigation. Framework-side optional: sweep retag for live sessions before arc close.
+  T-1654 fixed framework-side spawns to emit canonical 'task:' prefix; T-1649 was
+  framework-side half of validator work. 21 live sessions (incl. 10x task=T-1641)
+  persist with old tags. Audit fires WARN on orchestrator-rethink arc. Cross-repo
+  half (validator in /opt/termlink) is the structural close per audit mitigation.
+  Framework-side optional: sweep retag for live sessions before arc close.
 
 status: captured
 workflow_type: refactor
@@ -13,8 +18,19 @@ components: []
 related_tasks: []
 arc_id: orchestrator-rethink
 created: 2026-05-02T11:05:49Z
-last_update: 2026-05-02T11:05:49Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1677: tag-format drift: 21 legacy TermLink sessions carry task=/role= prefixes — cross-repo validator half

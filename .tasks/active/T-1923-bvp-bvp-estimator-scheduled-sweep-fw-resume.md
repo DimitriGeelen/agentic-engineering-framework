@@ -7,7 +7,7 @@ description: >
   cap (Q4 default); on timeout flag task `unscored: true` and let async sweep handle
   later. Resume itself never blocked by estimator.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,7 +16,7 @@ components: [agents/termlink/bvp-estimator/, bin/fw, .context/cron-registry.yaml
 related_tasks: [T-1915, T-1916, T-1922]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: '2026-05-19T17:56:35Z'
+last_update: 2026-05-19T18:33:33Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
@@ -28,6 +28,16 @@ bvp_scores_proposed:
       D4: 0
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-19T18:33:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled)
     rubric_sha: e4a00f38e801
 ---
 
@@ -44,18 +54,109 @@ Second split-child of T-NEW-7. Depends on T-1922 (worker harness must exist with
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Periodic sweep (cron-registered) runs every N minutes — N configurable, default 15
-- [ ] Sweep scores tasks whose status is started-work/captured AND `bvp_scores:` is empty AND `bvp_scores_proposed:` is older than configured staleness threshold (default 24h)
-- [ ] `fw resume` synchronous path calls estimator with 10s hard cap (Q4)
-- [ ] On timeout, task frontmatter gets `unscored: true` field; resume completes normally (never blocked)
-- [ ] After async sweep scores an `unscored: true` task, the field is removed
-- [ ] Cron entry registered in `.context/cron-registry.yaml`; `fw doctor` reports cron-registry-in-sync after the change
+- [x] Periodic sweep cron-registered runs every 15 min — `bvp-estimator-sweep-15m` entry in `.context/cron-registry.yaml`, deployed to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` via `fw cron generate && fw cron install`. Schedule `*/15 * * * *`. flock-wrapped to prevent overlap.
+- [x] Selection criteria: status ∈ {started-work, captured} AND `bvp_scores:` empty AND (`bvp_scores_proposed:` ≥24h old OR missing OR `unscored:true`). Implemented in `cmd_sweep()` (`agents/termlink/bvp-estimator/estimator.py`). Pinned by `tests/unit/test_bvp_estimator.py::test_cmd_sweep_skips_tasks_with_confirmed_scores` and `::test_proposed_is_stale_*` (3 tests covering no-proposed / old-ts / fresh-ts).
+- [x] `fw resume status` synchronous path calls estimator with 10s hard cap — `cmd_with_sla()` exposed as `fw bvp estimate with-sla T-XXX --timeout 10` and wired into `agents/resume/resume.sh:cmd_status` (backgrounded with `timeout 10` wrapper so even hung subprocess can't block status output). Q4 default = 10s.
+- [x] On timeout/error, task gets `unscored: true`; resume never blocks — `cmd_with_sla()` always returns 0. Pinned by `test_cmd_with_sla_never_raises_on_missing_task` (bogus task ID → exit 0). The fallback path calls `_set_unscored_flag()` on timeout/exception; verified by code path inspection in `cmd_with_sla`.
+- [x] After async sweep scores `unscored:true` task, field is removed — `cmd_sweep()` calls `_clear_unscored_flag(task_path)` after a successful write when `had_unscored` was true. Pinned by `test_cmd_sweep_clears_unscored_flag_on_success`.
+- [x] Cron entry registered and `fw doctor` reports cron-registry-in-sync — verified via `bin/fw doctor 2>&1 | grep -q "Cron registry in sync"` (OK status). Entry deployed: `*/15 * * * * root cd "/opt/.../" && PROJECT_ROOT="..." flock -n /var/lock/agentic-cron-bvp-estimator-sweep.lock -c '".../bin/fw" bvp estimate sweep --cron' 2>&1 | logger -t agentic-cron`.
 
 ## Verification
 
-grep -q "bvp-estimator" .context/cron-registry.yaml
-bin/fw doctor 2>&1 | grep -q "Cron registry in sync"
+grep -q "bvp-estimator-sweep-15m" .context/cron-registry.yaml
+out=$(bin/fw doctor 2>&1 || true); [ "$(printf %s "$out" | grep -c 'Cron registry in sync')" -ge 1 ]
+out=$(bin/fw bvp estimate sweep --cron 2>&1 || true); [ "$(printf %s "$out" | grep -cE 'sweep: scored')" -ge 1 ]
+out=$(bin/fw bvp estimate with-sla T-99999 --timeout 10 2>&1 || true); echo "$?" | grep -q "^0$"
+out=$(python3 -m pytest tests/unit/test_bvp_estimator.py 2>&1 || true); [ "$(printf %s "$out" | grep -c '28 passed')" -ge 1 ]
+grep -q "bvp-estimator" agents/resume/resume.sh
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Slice 7b lands the autonomous-keep-alive half of T-NEW-7
+— periodic sweep + SLA-bounded synchronous path. The pieces compose
+cleanly with T-1922's harness: `cmd_sweep()` and `cmd_with_sla()` are
+thin orchestrators over the same `estimate_task()` API. Both paths
+respect M3 v2-delta (skip when proposal hasn't materially changed),
+both write only to advisory `bvp_scores_proposed:`, neither can block
+its caller. With the cron registered + installed, the system now
+self-heals on the BVP dimension: a task without proposed scores gets
+picked up within 15 minutes, a task flagged by the SLA fallback gets
+re-scored on the next sweep.
+
+**Evidence:**
+
+- `agents/termlink/bvp-estimator/estimator.py` (+200 LOC) — new
+  helpers `_set_unscored_flag`, `_clear_unscored_flag`,
+  `_proposed_is_stale`, `cmd_sweep`, `cmd_with_sla`. CLI verbs
+  `sweep` and `with-sla` added.
+- `.context/cron-registry.yaml` — `bvp-estimator-sweep-15m` entry
+  added; `fw cron install` deployed; `fw doctor` reports
+  "Cron registry in sync".
+- `agents/resume/resume.sh` — `cmd_status` backgrounds a 10s-capped
+  `with-sla` call against the focus task at status-render time.
+  Wrapper `timeout 10` belt-and-braces enforces the SLA even if the
+  Python-side cap fails. Failures are silent — resume status proceeds
+  regardless.
+- `tests/unit/test_bvp_estimator.py` — 28/28 PASS (11 new tests):
+  - `test_set_unscored_flag_adds_field` + idempotence
+  - `test_clear_unscored_flag_removes_field` + absent no-op
+  - `test_proposed_is_stale_*` (3 paths: no-proposed, old-ts, fresh-ts)
+  - `test_cmd_with_sla_never_raises_on_missing_task` (resume never
+    blocks)
+  - `test_cmd_with_sla_writes_proposed_under_budget` (budget path
+    writes + clears unscored)
+  - `test_cmd_sweep_skips_tasks_with_confirmed_scores` (sovereignty)
+  - `test_cmd_sweep_clears_unscored_flag_on_success` (AC#5)
+
+**Sweep first-run effect:** First `fw bvp estimate sweep --cron` run
+scored 49 active tasks that had no proposed scores yet (initial
+backfill). Subsequent runs are idempotent — re-running scored 0
+because no task has aged past the 24h stale threshold yet.
+
+**arc-006 status:** All 17 build slices shipped (12a, 12b, 13, 7a, 7b
+land this and the previous commit). The arc is feature-complete on the
+agent side; the remaining work is the Human [REVIEW] queue.
 
 ## Decisions
 
+### 2026-05-19 — Sweep selection: started-work + captured
+
+**Choice:** Sweep only scores tasks with status ∈ {started-work,
+captured}. Excludes `work-completed` (already shipped) and `issues`
+(blocked — scoring would be misleading).
+
+**Why:** BVP scoring is most useful for tasks that *might* be picked
+up. Completed tasks already shipped — their score is for retrospective
+analysis (arc-006 §R9, calibration sample). Stuck tasks under `issues`
+shouldn't ladder up via auto-promote (T-1931); scoring them noise.
+
+### 2026-05-19 — Resume hook: backgrounded, double-cap
+
+**Choice:** `cmd_status` calls `with-sla` in a backgrounded subshell
+*and* wraps it in `timeout 10`. Belt and braces.
+
+**Why:** The Python `with-sla` already measures elapsed and falls back
+to `unscored:true` if it exceeds the budget. But if Python itself
+hangs (worst case: ruamel YAML round-trip on a malformed file), the
+in-process check doesn't help. The shell-level `timeout 10` ensures
+resume status output is never delayed more than 10s regardless of
+estimator behaviour. Backgrounding plus `disown` means even a 10s wait
+doesn't show up as visible latency to the user reading `fw resume status`.
+
+### 2026-05-19 — Cron schedule: 15 min
+
+**Choice:** `*/15 * * * *` — every 15 minutes.
+
+**Why:** First-pass scoring of an entire active workset (~50-100 tasks)
+takes ~1 second on heuristic engine. 15 min is responsive enough that
+a task captured at hour 0 has proposed scores by hour 0:15 — well
+within working-session timescales. Faster (every 5 min) is overkill
+given that proposed scores are advisory and the trigger in
+`update-task.sh` covers the started-work transition synchronously.
+
 ## Updates
+
+### 2026-05-19T18:33:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

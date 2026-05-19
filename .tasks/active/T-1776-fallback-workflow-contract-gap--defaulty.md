@@ -1,8 +1,10 @@
 ---
 id: T-1776
-name: "fallback-workflow contract gap — default.yaml declares worker_kind: TermLink which spawn driver does not route"
+name: "fallback-workflow contract gap — default.yaml declares worker_kind: TermLink
+  which spawn driver does not route"
 description: >
-  fallback-workflow contract gap — default.yaml declares worker_kind: TermLink which spawn driver does not route
+  fallback-workflow contract gap — default.yaml declares worker_kind: TermLink which
+  spawn driver does not route
 
 status: started-work
 workflow_type: build
@@ -13,8 +15,19 @@ components: []
 related_tasks: [T-1773, T-1775]
 arc_id: orchestrator-rethink
 created: 2026-05-09T21:18:59Z
-last_update: 2026-05-09T21:18:59Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1776: fallback-workflow contract gap — default.yaml declares worker_kind: TermLink which spawn driver does not route

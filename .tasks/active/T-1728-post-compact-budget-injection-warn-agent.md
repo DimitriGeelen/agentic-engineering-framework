@@ -1,8 +1,10 @@
 ---
 id: T-1728
-name: "post-compact budget injection: warn agent that prior budget assertions are stale + cite live gauge path"
+name: "post-compact budget injection: warn agent that prior budget assertions are
+  stale + cite live gauge path"
 description: >
-  post-compact budget injection: warn agent that prior budget assertions are stale + cite live gauge path
+  post-compact budget injection: warn agent that prior budget assertions are stale
+  + cite live gauge path
 
 status: started-work
 workflow_type: build
@@ -12,8 +14,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-04T22:00:07Z
-last_update: 2026-05-04T22:00:07Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1728: post-compact budget injection: warn agent that prior budget assertions are stale + cite live gauge path

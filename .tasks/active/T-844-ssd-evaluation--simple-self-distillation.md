@@ -2,7 +2,8 @@
 id: T-844
 name: "SSD evaluation — Simple Self-Distillation for code generation (arxiv 2604.01193)"
 description: >
-  Inception: SSD evaluation — Simple Self-Distillation for code generation (arxiv 2604.01193)
+  Inception: SSD evaluation — Simple Self-Distillation for code generation (arxiv
+  2604.01193)
 
 status: captured
 workflow_type: inception
@@ -12,8 +13,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T13:27:15Z
-last_update: 2026-04-28T16:09:26Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-844: SSD evaluation — Simple Self-Distillation for code generation (arxiv 2604.01193)

@@ -2,7 +2,15 @@
 id: T-1718
 name: "Evolution-gate + vertical-slice discipline for inception → build transitions"
 description: >
-  Structural mechanism that makes spec-vs-build drift visible during build. Surfaced from T-1717 Phase 3 grill (Q4) — 'understanding of what we need and want evolves with the process of materialisation'. Adds (a) mandatory ## Evolution section in build tasks populated at slice boundaries; (b) update-task.sh gate refusing slice-progress with empty Evolution log (same shape as T-1550 RCA gate); (c) vertical-slice discipline — smallest end-to-end deliverable before parallel streams; (d) fw inception revise affordance for mid-build pivots without abandoning the task. Prerequisite for T-1717 GO if approved. Sibling structural fix surfaced from T-1717 grill, not part of T-1717 scope.
+  Structural mechanism that makes spec-vs-build drift visible during build. Surfaced
+  from T-1717 Phase 3 grill (Q4) — 'understanding of what we need and want evolves
+  with the process of materialisation'. Adds (a) mandatory ## Evolution section in
+  build tasks populated at slice boundaries; (b) update-task.sh gate refusing slice-progress
+  with empty Evolution log (same shape as T-1550 RCA gate); (c) vertical-slice discipline
+  — smallest end-to-end deliverable before parallel streams; (d) fw inception revise
+  affordance for mid-build pivots without abandoning the task. Prerequisite for T-1717
+  GO if approved. Sibling structural fix surfaced from T-1717 grill, not part of T-1717
+  scope.
 
 status: started-work
 workflow_type: build
@@ -13,8 +21,19 @@ components: []
 related_tasks: [T-1717, T-1550, T-1716, T-1671, T-1259, T-1260, G-062, G-066]
 arc_id: embeddings-strategy
 created: 2026-05-04T14:50:48Z
-last_update: 2026-05-04T15:19:43Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 1
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=1 
+      (body:error-msg-improved); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1718: Evolution-gate + vertical-slice discipline for inception → build transitions

@@ -201,3 +201,12 @@ jobs:
     origin_task: T-1615
     status: active
     description: "T-1611-B passive observation. Samples Watchtower PID's RSS/VSZ/CPU/etime every 5 min. Distinguishes memory-leak re-saturation from request-rate queueing — if RSS climbs monotonically over many hours, T-1612's threaded=True fix is incomplete and T-1611-C (gunicorn swap) reopens. Outputs: .context/monitors/watchtower-rss.jsonl (10080-line retention) + watchtower-rss-latest.yaml."
+
+  - id: bvp-estimator-sweep-15m
+    name: "BVP estimator sweep (15 min, T-1923)"
+    schedule: "*/15 * * * *"
+    command: "flock -n /var/lock/agentic-cron-bvp-estimator-sweep.lock -c 'fw bvp estimate sweep --cron'"
+    source_file: agentic-audit.crontab
+    origin_task: T-1923
+    status: active
+    description: "T-1923 (arc-006 BVP slice 7b). Periodic sweep over active tasks (status ∈ {started-work, captured}) where bvp_scores: is empty AND (bvp_scores_proposed: older than 24h OR unscored: true was flagged by the SLA-fallback path). Heuristic engine takes ~10ms per task so the full sweep is sub-second; flock prevents overlap. M3 v2-delta skips writes when proposal hasn't changed materially. Pairs with fw resume's with-sla 10s hard cap (T-1923 AC#3/AC#4) — resume never blocks on the estimator; the sweep mops up any tasks the sync path flagged."

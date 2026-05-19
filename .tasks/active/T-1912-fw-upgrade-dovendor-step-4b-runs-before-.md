@@ -1,8 +1,10 @@
 ---
 id: T-1912
-name: "fw upgrade do_vendor step 4b runs BEFORE step 9 version-ahead check — runtime downgrade slips past T-1839 guard, creates split-brain (runtime older, pin newer)"
+name: "fw upgrade do_vendor step 4b runs BEFORE step 9 version-ahead check — runtime
+  downgrade slips past T-1839 guard, creates split-brain (runtime older, pin newer)"
 description: >
-  fw upgrade do_vendor step 4b runs BEFORE step 9 version-ahead check — runtime downgrade slips past T-1839 guard, creates split-brain (runtime older, pin newer)
+  fw upgrade do_vendor step 4b runs BEFORE step 9 version-ahead check — runtime downgrade
+  slips past T-1839 guard, creates split-brain (runtime older, pin newer)
 
 status: started-work
 workflow_type: build
@@ -17,10 +19,21 @@ arc_id: arc-004
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T22:08:27Z
-last_update: 2026-05-18T22:08:27Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1912: fw upgrade do_vendor step 4b runs BEFORE step 9 version-ahead check — runtime downgrade slips past T-1839 guard, creates split-brain (runtime older, pin newer)

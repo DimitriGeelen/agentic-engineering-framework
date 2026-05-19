@@ -2,7 +2,8 @@
 id: T-1062
 name: "WezTerm task-aware terminal chrome via TermLink RPC"
 description: >
-  Phase 1 from T-1061: WezTerm Lua plugin querying existing TermLink RPC APIs for task state in terminal chrome. Zero new TermLink code needed. 3-6 weeks.
+  Phase 1 from T-1061: WezTerm Lua plugin querying existing TermLink RPC APIs for
+  task state in terminal chrome. Zero new TermLink code needed. 3-6 weeks.
 
 status: started-work
 workflow_type: build
@@ -12,8 +13,19 @@ tags: [termlink, wezterm, usability]
 components: []
 related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:02Z
-last_update: 2026-04-20T07:17:58Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 4
+      D4: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1062: WezTerm task-aware terminal chrome via TermLink RPC

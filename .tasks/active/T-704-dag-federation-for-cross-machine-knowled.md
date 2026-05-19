@@ -2,7 +2,8 @@
 id: T-704
 name: "DAG federation for cross-machine knowledge graphs"
 description: >
-  Cross-machine knowledge graphs without central coordination. Relevant for TermLink multi-agent. Score: 18/20 (D1:4 D2:5 D3:4 D4:5). Source: T-697 pattern harvest #9.
+  Cross-machine knowledge graphs without central coordination. Relevant for TermLink
+  multi-agent. Score: 18/20 (D1:4 D2:5 D3:4 D4:5). Source: T-697 pattern harvest #9.
 
 status: captured
 workflow_type: inception
@@ -12,8 +13,19 @@ tags: [federation, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:58:02Z
-last_update: 2026-05-15T19:54:39Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-704: DAG federation for cross-machine knowledge graphs

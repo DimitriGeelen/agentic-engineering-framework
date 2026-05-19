@@ -2,7 +2,13 @@
 id: T-1309
 name: "Ship watchtower.service systemd template + make fw watchtower start systemd-aware"
 description: >
-  Inception triggered by termlink T-1122 DEFER recommendation. Research artifact at /opt/termlink/docs/reports/T-1122-watchtower-wsgi-migration-recommendation.md. Core finding: the restart-race symptom that motivated WSGI migration is a process-management problem, not a WSGI-server problem. Swap is unwarranted on a single-host LAN tool with Flask-SocketIO threading mode. Real fix is systemd wrapping. See research artifact for full reasoning + 3 proposed follow-ups (systemd unit template, fw watchtower start systemd-aware, Werkzeug warning suppression).
+  Inception triggered by termlink T-1122 DEFER recommendation. Research artifact at
+  /opt/termlink/docs/reports/T-1122-watchtower-wsgi-migration-recommendation.md. Core
+  finding: the restart-race symptom that motivated WSGI migration is a process-management
+  problem, not a WSGI-server problem. Swap is unwarranted on a single-host LAN tool
+  with Flask-SocketIO threading mode. Real fix is systemd wrapping. See research artifact
+  for full reasoning + 3 proposed follow-ups (systemd unit template, fw watchtower
+  start systemd-aware, Werkzeug warning suppression).
 
 status: captured
 workflow_type: inception
@@ -12,8 +18,19 @@ tags: [watchtower, systemd, reliability, from-termlink]
 components: []
 related_tasks: []
 created: 2026-04-18T20:02:19Z
-last_update: 2026-05-15T19:54:38Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 4
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=4
+      (body:cross-machine)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1309: Ship watchtower.service systemd template + make fw watchtower start systemd-aware

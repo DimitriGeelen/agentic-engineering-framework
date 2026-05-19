@@ -1,6 +1,7 @@
 ---
 id: T-1542
-name: "fw upgrade from inside a consumer crashes at step 4b/9 — detect bare-from-consumer case and route to upstream"
+name: "fw upgrade from inside a consumer crashes at step 4b/9 — detect bare-from-consumer
+  case and route to upstream"
 description: >
   Promoted from OBS-032. fw upgrade run from inside a consumer project (no target
   arg) crashes at 4b/9 because FRAMEWORK_ROOT resolves to the consumer's vendored
@@ -18,8 +19,19 @@ components: []
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-04-27T13:19:34Z
-last_update: 2026-05-02T10:07:11Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 1
+      D3: 4
+      D4: 2
+    rationale: D1=3 (body:test-or-audit-check); D2=1 (body:log-or-error-line); 
+      D3=4 (body:framework-level-ux); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1542: fw upgrade from inside a consumer crashes at step 4b/9 — detect bare-from-consumer case and route to upstream

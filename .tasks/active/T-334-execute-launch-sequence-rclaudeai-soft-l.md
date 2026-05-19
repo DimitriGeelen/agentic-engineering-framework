@@ -2,7 +2,10 @@
 id: T-334
 name: "Execute launch sequence: r/ClaudeAI soft launch → Show HN → amplification"
 description: >
-  Launch sequence: Week -1: Post to r/ClaudeAI with 'here is what I built' framing + submit to Console.dev and TLDR newsletters. Week 0: Show HN Tuesday 9 AM PT with 200-word intro comment. Week +1: Product Hunt + r/programming + pitch Latent Space. Requires: demo video, all GitHub quick wins done, CONTRIBUTING.md ready. Ref: docs/reports/T-327-visibility-strategy.md
+  Launch sequence: Week -1: Post to r/ClaudeAI with 'here is what I built' framing
+  + submit to Console.dev and TLDR newsletters. Week 0: Show HN Tuesday 9 AM PT with
+  200-word intro comment. Week +1: Product Hunt + r/programming + pitch Latent Space.
+  Requires: demo video, all GitHub quick wins done, CONTRIBUTING.md ready. Ref: docs/reports/T-327-visibility-strategy.md
 
 status: started-work
 workflow_type: build
@@ -12,8 +15,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:46Z
-last_update: 2026-04-28T17:35:04Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-334: Execute launch sequence: r/ClaudeAI soft launch → Show HN → amplification

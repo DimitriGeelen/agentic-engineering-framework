@@ -16,7 +16,7 @@ components: [agents/termlink/bvp-estimator/]
 related_tasks: [T-1915, T-1916, T-1918, T-1921]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: '2026-05-19T17:56:34Z'
+last_update: '2026-05-19T18:27:46Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:34Z'
@@ -28,6 +28,16 @@ bvp_scores_proposed:
       D4: 0
     rationale: D1=0 (tag:novel-mechanism); D2=0 (no-signal); D3=0 (no-signal); 
       D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 3
+      D3: 0
+      D4: 0
+    rationale: D1=0 (tag:novel-mechanism); D2=3 (body:component-silent-failure);
+      D3=0 (no-signal); D4=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

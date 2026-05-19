@@ -2,7 +2,9 @@
 id: T-803
 name: "Landing page token widget — show current session tokens on Watchtower dashboard"
 description: >
-  Add a token usage summary widget to the Watchtower landing page (/). Show current session token count, cache hit rate, and link to /costs. Quick integration using the costs blueprint parsing.
+  Add a token usage summary widget to the Watchtower landing page (/). Show current
+  session token count, cache hit rate, and link to /costs. Quick integration using
+  the costs blueprint parsing.
 
 status: started-work
 workflow_type: build
@@ -12,8 +14,19 @@ tags: [watchtower, tokens, observability]
 components: [watchtower-web-ui]
 related_tasks: [T-802, T-801, T-799]
 created: 2026-04-03T19:17:34Z
-last_update: 2026-04-28T11:34:56Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 2
+      D3: 0
+      D4: 0
+    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=0 
+      (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-803: Landing page token widget — show current session tokens on Watchtower dashboard

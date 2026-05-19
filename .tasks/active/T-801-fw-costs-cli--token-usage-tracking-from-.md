@@ -2,7 +2,13 @@
 id: T-801
 name: "fw costs CLI — token usage tracking from JSONL transcripts"
 description: >
-  Build task following T-799 (GO) and T-800 (GO) inception decisions. Implement fw costs CLI that parses Claude Code JSONL session transcripts to report token usage per-session and project totals. Subscription model — cost measured in tokens consumed, not dollars. Data source: ~/.claude/projects/ JSONL files with per-turn usage objects containing input_tokens, cache_creation_input_tokens, cache_read_input_tokens, output_tokens. Key deliverables: (1) JSONL parser extracting token usage, (2) fw costs command with session/project/summary views, (3) Watchtower integration for token dashboard.
+  Build task following T-799 (GO) and T-800 (GO) inception decisions. Implement fw
+  costs CLI that parses Claude Code JSONL session transcripts to report token usage
+  per-session and project totals. Subscription model — cost measured in tokens consumed,
+  not dollars. Data source: ~/.claude/projects/ JSONL files with per-turn usage objects
+  containing input_tokens, cache_creation_input_tokens, cache_read_input_tokens, output_tokens.
+  Key deliverables: (1) JSONL parser extracting token usage, (2) fw costs command
+  with session/project/summary views, (3) Watchtower integration for token dashboard.
 
 status: started-work
 workflow_type: build
@@ -12,8 +18,19 @@ tags: [cost, tokens, observability, cli]
 components: [bin-fw, budget-gate]
 related_tasks: [T-799, T-800, T-596, T-699]
 created: 2026-04-03T19:01:09Z
-last_update: 2026-04-28T11:33:36Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-801: fw costs CLI — token usage tracking from JSONL transcripts

@@ -1,8 +1,14 @@
 ---
 id: T-1636
-name: "Orchestrator routing: refactor composite cache key to RoutingKey newtype before adding more dimensions"
+name: "Orchestrator routing: refactor composite cache key to RoutingKey newtype before
+  adding more dimensions"
 description: >
-  T-1064 supplementary review flagged the composite cache key 'method::task_type' (single string concat) as adequate now but a string-concat-hell trap once more routing dimensions land (priority class, tenant, etc.). Refactor to a RoutingKey newtype before that happens. Cross-repo: lives in /opt/termlink, dispatch via fw termlink dispatch --project /opt/termlink. Not blocking — future cleanup, captured horizon:later. Origin: T-1064 review notes 2026-04-30.
+  T-1064 supplementary review flagged the composite cache key 'method::task_type'
+  (single string concat) as adequate now but a string-concat-hell trap once more routing
+  dimensions land (priority class, tenant, etc.). Refactor to a RoutingKey newtype
+  before that happens. Cross-repo: lives in /opt/termlink, dispatch via fw termlink
+  dispatch --project /opt/termlink. Not blocking — future cleanup, captured horizon:later.
+  Origin: T-1064 review notes 2026-04-30.
 
 status: captured
 workflow_type: refactor
@@ -12,8 +18,19 @@ tags: [from-T-1064, termlink, routing, cleanup]
 components: []
 related_tasks: [T-1064, T-1641]
 created: 2026-05-01T10:44:54Z
-last_update: 2026-05-01T10:44:54Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1636: Orchestrator routing: refactor composite cache key to RoutingKey newtype before adding more dimensions

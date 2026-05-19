@@ -1,8 +1,16 @@
 ---
 id: T-1909
-name: "Render arc_id badge on task surfaces — finish the T-1849 visibility job (kanban + list + arc-detail constituents)"
+name: "Render arc_id badge on task surfaces — finish the T-1849 visibility job (kanban
+  + list + arc-detail constituents)"
 description: >
-  Complete the visible surface for the arc_id design principle agreed 2026-05-15 (HANDOFF-arc-grooming Q1 → T-1848 / T-1849 / T-1850). Tasks now carry arc_id: in frontmatter, 162 were migrated, six reader surfaces sweep arc_id, but the /tasks kanban card and list view do NOT display the arc_id badge — arc membership is invisible except via filter chip. Also the /arcs/<slug> constituent-tasks table has no arc_id column. This is the symmetric-to-T-XXXX visibility the user explicitly wanted: 'tasks can be assigned to arcs, simply by filling in an ARc-id field value in the tasks arc-id value field ... that all wraps into the corresponding arc'. Render the badge on three surfaces.
+  Complete the visible surface for the arc_id design principle agreed 2026-05-15 (HANDOFF-arc-grooming
+  Q1 → T-1848 / T-1849 / T-1850). Tasks now carry arc_id: in frontmatter, 162 were
+  migrated, six reader surfaces sweep arc_id, but the /tasks kanban card and list
+  view do NOT display the arc_id badge — arc membership is invisible except via filter
+  chip. Also the /arcs/<slug> constituent-tasks table has no arc_id column. This is
+  the symmetric-to-T-XXXX visibility the user explicitly wanted: 'tasks can be assigned
+  to arcs, simply by filling in an ARc-id field value in the tasks arc-id value field
+  ... that all wraps into the corresponding arc'. Render the badge on three surfaces.
 
 status: started-work
 workflow_type: build
@@ -10,13 +18,25 @@ owner: claude-code
 horizon: now
 tags: [watchtower, ui, arc]
 components: []
-related_tasks: [T-1848, T-1849, T-1850, T-1874, T-1876, T-1879, T-1880, T-1904, T-1905]
+related_tasks: [T-1848, T-1849, T-1850, T-1874, T-1876, T-1879, T-1880, T-1904, 
+      T-1905]
 arc_id: arc-005
 created: 2026-05-18T21:02:27Z
-last_update: 2026-05-18T21:02:27Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1909: Render arc_id badge on task surfaces — finish the T-1849 visibility job (kanban + list + arc-detail constituents)

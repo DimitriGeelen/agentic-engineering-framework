@@ -2,7 +2,12 @@
 id: T-1702
 name: "Boundary hook: extend to outside-path arguments + scope-tag fw doctor findings"
 description: >
-  G-065 fix: extend check-project-boundary.sh to detect Bash commands whose arguments resolve to paths outside PROJECT_ROOT (with allowlist for /tmp, /usr, /etc, /root/.local, ~/.claude), and tag fw doctor findings as scope:project vs scope:host. Origin: 2026-05-03 housekeeping session — agent ran du/find/grep against /root/.agentic-framework after the cd was already blocked. Read-side cross-boundary access undetected for as long as the hook has existed.
+  G-065 fix: extend check-project-boundary.sh to detect Bash commands whose arguments
+  resolve to paths outside PROJECT_ROOT (with allowlist for /tmp, /usr, /etc, /root/.local,
+  ~/.claude), and tag fw doctor findings as scope:project vs scope:host. Origin: 2026-05-03
+  housekeeping session — agent ran du/find/grep against /root/.agentic-framework after
+  the cd was already blocked. Read-side cross-boundary access undetected for as long
+  as the hook has existed.
 
 status: started-work
 workflow_type: build
@@ -13,8 +18,19 @@ components: []
 related_tasks: [T-559]
 arc_id: orchestrator-rethink
 created: 2026-05-03T18:22:59Z
-last_update: 2026-05-03T21:58:34Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1702: Boundary hook: extend to outside-path arguments + scope-tag fw doctor findings

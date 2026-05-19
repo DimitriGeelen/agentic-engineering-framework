@@ -1,8 +1,10 @@
 ---
 id: T-1761
-name: "orchestrator-mcp-scan auto-classify by naming convention (eliminate T-1755/T-1760 toil)"
+name: "orchestrator-mcp-scan auto-classify by naming convention (eliminate T-1755/T-1760
+  toil)"
 description: >
-  orchestrator-mcp-scan auto-classify by naming convention (eliminate T-1755/T-1760 toil)
+  orchestrator-mcp-scan auto-classify by naming convention (eliminate T-1755/T-1760
+  toil)
 
 status: started-work
 workflow_type: inception
@@ -13,8 +15,19 @@ components: ["agents/audit/orchestrator-mcp-scan.sh"]
 related_tasks: ["T-1755", "T-1760", "T-1646"]
 arc_id: orchestrator-rethink
 created: 2026-05-06T06:08:25Z
-last_update: 2026-05-06T06:08:25Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1761: orchestrator-mcp-scan auto-classify by naming convention (eliminate T-1755/T-1760 toil)

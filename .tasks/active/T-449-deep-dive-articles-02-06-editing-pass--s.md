@@ -2,18 +2,38 @@
 id: T-449
 name: "Deep-dive articles 02-06: editing pass — strip fabricated stats, tighten voice"
 description: >
-  Edit pass on unpublished articles 02 (Tier 0), 03 (Context Budget), 05 (Healing Loop), 06 (Authority Model). These have the right structure and real incidents but need: (1) strip any percentage/statistic that cannot be traced to actual project data, (2) replace closing analogy if it reads as agent-generated, (3) tighten voice to match author tone (no hype, specific evidence, cross-domain analogies from governance background). Articles 02-06 are rescuable with one pass. See feedback in conversation and docs/reports/T-445-readme-overhaul.md for voice guide.
+  Edit pass on unpublished articles 02 (Tier 0), 03 (Context Budget), 05 (Healing
+  Loop), 06 (Authority Model). These have the right structure and real incidents but
+  need: (1) strip any percentage/statistic that cannot be traced to actual project
+  data, (2) replace closing analogy if it reads as agent-generated, (3) tighten voice
+  to match author tone (no hype, specific evidence, cross-domain analogies from governance
+  background). Articles 02-06 are rescuable with one pass. See feedback in conversation
+  and docs/reports/T-445-readme-overhaul.md for voice guide.
 
 status: captured
 workflow_type: refactor
 owner: human
 horizon: next
 tags: [content, deep-dives]
-components: [docs/articles/deep-dives/02-tier0-protection.md, docs/articles/deep-dives/03-context-budget.md, docs/articles/deep-dives/05-healing-loop.md, docs/articles/deep-dives/06-authority-model.md]
+components: [docs/articles/deep-dives/02-tier0-protection.md, 
+      docs/articles/deep-dives/03-context-budget.md, 
+      docs/articles/deep-dives/05-healing-loop.md, 
+      docs/articles/deep-dives/06-authority-model.md]
 related_tasks: [T-450, T-338, T-446]
 created: 2026-03-12T06:37:40Z
-last_update: 2026-03-27T17:34:22Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-449: Deep-dive articles 02-06: editing pass — strip fabricated stats, tighten voice

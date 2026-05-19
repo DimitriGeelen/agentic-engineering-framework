@@ -2,7 +2,10 @@
 id: T-1700
 name: "v1 build: install + integrate litellm proxy for ollama-backed dispatch"
 description: >
-  Build follow-up to T-1691 GO. Install litellm[proxy], wire ollama-research.yaml workflow with env: ANTHROPIC_BASE_URL=http://localhost:4000, run 10 tool-use dispatches, decide >=90% pass = ship / else swap to claude-code-router. See T-1691 ## Recommendation for full 8-step scope.
+  Build follow-up to T-1691 GO. Install litellm[proxy], wire ollama-research.yaml
+  workflow with env: ANTHROPIC_BASE_URL=http://localhost:4000, run 10 tool-use dispatches,
+  decide >=90% pass = ship / else swap to claude-code-router. See T-1691 ## Recommendation
+  for full 8-step scope.
 
 status: started-work
 workflow_type: build
@@ -13,8 +16,19 @@ components: []
 related_tasks: [T-1691, T-1696, T-1693]
 arc_id: orchestrator-rethink
 created: 2026-05-03T15:46:59Z
-last_update: 2026-05-05T07:53:42Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1700: v1 build: install + integrate litellm proxy for ollama-backed dispatch

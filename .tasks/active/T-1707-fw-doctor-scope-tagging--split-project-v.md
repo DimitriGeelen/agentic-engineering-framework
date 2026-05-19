@@ -2,7 +2,9 @@
 id: T-1707
 name: "fw doctor scope tagging — split project vs host findings (T-1702 Stream 2)"
 description: >
-  T-1702 deferred: every fw doctor finding gets a scope: tag (project | host). Host-scope findings include explanatory text. Closes G-065 alongside T-1702 Stream 1 (already shipped 91eeacdbb).
+  T-1702 deferred: every fw doctor finding gets a scope: tag (project | host). Host-scope
+  findings include explanatory text. Closes G-065 alongside T-1702 Stream 1 (already
+  shipped 91eeacdbb).
 
 status: started-work
 workflow_type: build
@@ -13,8 +15,19 @@ components: []
 related_tasks: [T-1702]
 arc_id: orchestrator-rethink
 created: 2026-05-03T22:05:43Z
-last_update: 2026-05-04T00:00:00Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 3
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=3
+      (body:portability-abstraction)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1707: fw doctor scope tagging — split project vs host findings (T-1702 Stream 2)

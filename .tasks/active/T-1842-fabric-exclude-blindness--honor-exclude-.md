@@ -1,8 +1,10 @@
 ---
 id: T-1842
-name: "fabric exclude: blindness — honor exclude in do_scan + do_drift (consumer Penelope T-1458 pickup)"
+name: "fabric exclude: blindness — honor exclude in do_scan + do_drift (consumer Penelope
+  T-1458 pickup)"
 description: >
-  fabric exclude: blindness — honor exclude in do_scan + do_drift (consumer Penelope T-1458 pickup)
+  fabric exclude: blindness — honor exclude in do_scan + do_drift (consumer Penelope
+  T-1458 pickup)
 
 status: started-work
 workflow_type: build
@@ -13,8 +15,19 @@ components: []
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-05-14T22:30:42Z
-last_update: 2026-05-14T22:38:34Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 0
+      D4: 0
+    rationale: D1=2 (body:concern-ref); D2=2 (body:telemetry-or-audit-entry); 
+      D3=0 (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1842: fabric exclude: blindness — honor exclude in do_scan + do_drift (consumer Penelope T-1458 pickup)

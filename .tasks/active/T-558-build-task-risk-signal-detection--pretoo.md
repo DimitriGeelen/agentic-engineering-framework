@@ -1,8 +1,17 @@
 ---
 id: T-558
-name: "Build task risk signal detection — PreToolUse gate requiring inception for high-impact builds"
+name: "Build task risk signal detection — PreToolUse gate requiring inception for
+  high-impact builds"
 description: >
-  Apply structural risk signals as PreToolUse gate on BUILD tasks (not inception creation). When a build task edits files that trigger risk signals (new subsystem via fabric, cross-subsystem impact >3 dependents, external system files in deploy/infrastructure/, governance layer files, irreversible operations), warn or block: 'This build touches 3 subsystems — did you do inception first?' Signals are observable at build time (unlike inception creation time where future is unknown). Extends check-active-task.sh with ~60 lines. Precedent: budget gate, task gate, build readiness gate. Origin: T-549 steelman/strawman analysis — steelman signals valid but apply to builds not inceptions.
+  Apply structural risk signals as PreToolUse gate on BUILD tasks (not inception creation).
+  When a build task edits files that trigger risk signals (new subsystem via fabric,
+  cross-subsystem impact >3 dependents, external system files in deploy/infrastructure/,
+  governance layer files, irreversible operations), warn or block: 'This build touches
+  3 subsystems — did you do inception first?' Signals are observable at build time
+  (unlike inception creation time where future is unknown). Extends check-active-task.sh
+  with ~60 lines. Precedent: budget gate, task gate, build readiness gate. Origin:
+  T-549 steelman/strawman analysis — steelman signals valid but apply to builds not
+  inceptions.
 
 status: captured
 workflow_type: inception
@@ -12,8 +21,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T16:36:06Z
-last_update: 2026-04-28T16:09:25Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-558: Build task risk signal detection — PreToolUse gate requiring inception for high-impact builds

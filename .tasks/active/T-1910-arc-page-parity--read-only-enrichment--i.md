@@ -1,8 +1,16 @@
 ---
 id: T-1910
-name: "Arc page parity — read-only enrichment + inline editable name/focus + filters (Slices 1+2+4 of T-1905)"
+name: "Arc page parity — read-only enrichment + inline editable name/focus + filters
+  (Slices 1+2+4 of T-1905)"
 description: >
-  Ship what was discussed in T-1905 and never built: arc CARDS on /arcs and the arc DETAIL page show more status fields AND are inline-editable, plus filter controls. Slice 1 = read-only field enrichment on arc cards (status badge label, created date short, decision snippet on closed). Slice 2 = inline editable arc name (card + detail h1) and focus dot click-to-toggle; backend POST endpoints + lib/arc.sh helpers. Slice 4 = filter chips on /arcs (focused, stale, status) + see-all list view. Excludes Slice 3 (inline status select) which depends on T-1902 build still being open. This is the unfinished discussion the user explicitly named on 2026-05-18.
+  Ship what was discussed in T-1905 and never built: arc CARDS on /arcs and the arc
+  DETAIL page show more status fields AND are inline-editable, plus filter controls.
+  Slice 1 = read-only field enrichment on arc cards (status badge label, created date
+  short, decision snippet on closed). Slice 2 = inline editable arc name (card + detail
+  h1) and focus dot click-to-toggle; backend POST endpoints + lib/arc.sh helpers.
+  Slice 4 = filter chips on /arcs (focused, stale, status) + see-all list view. Excludes
+  Slice 3 (inline status select) which depends on T-1902 build still being open. This
+  is the unfinished discussion the user explicitly named on 2026-05-18.
 
 status: started-work
 workflow_type: build
@@ -13,10 +21,21 @@ components: []
 related_tasks: [T-1904, T-1905, T-1909, T-1902, T-1848, T-1849]
 arc_id: arc-005
 created: 2026-05-18T21:14:31Z
-last_update: 2026-05-18T21:14:31Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1910: Arc page parity — read-only enrichment + inline editable name/focus + filters (Slices 1+2+4 of T-1905)

@@ -2,7 +2,9 @@
 id: T-332
 name: "Submit to awesome lists (awesome-ai-agents, awesome-agents, awesome-copilot)"
 description: >
-  Submit PRs to: (1) e2b-dev/awesome-ai-agents, (2) kyrolabs/awesome-agents, (3) github/awesome-copilot agents section. One-line description, correct alphabetical position, link to GitHub repo. Requires 30+ stars for some lists. Ref: docs/reports/T-327-visibility-strategy.md
+  Submit PRs to: (1) e2b-dev/awesome-ai-agents, (2) kyrolabs/awesome-agents, (3) github/awesome-copilot
+  agents section. One-line description, correct alphabetical position, link to GitHub
+  repo. Requires 30+ stars for some lists. Ref: docs/reports/T-327-visibility-strategy.md
 
 status: started-work
 workflow_type: build
@@ -12,8 +14,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:40Z
-last_update: 2026-04-30T00:49:36Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-332: Submit to awesome lists (awesome-ai-agents, awesome-agents, awesome-copilot)

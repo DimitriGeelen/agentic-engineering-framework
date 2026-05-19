@@ -584,6 +584,182 @@ def cmd_all(dry_run: bool = False, limit: int | None = None,
     return 0 if n_err == 0 else 1
 
 
+def _clear_unscored_flag(task_path: Path) -> bool:
+    """Remove `unscored: true` from frontmatter if present. Returns True on
+    successful clear, False if no flag was set (no-op). Used by sweep when
+    estimator successfully scores a previously-timed-out task (T-1923 AC#5)."""
+    text = task_path.read_text()
+    m = _FM_RE.match(text)
+    if not m:
+        return False
+    fm_text = m.group(1)
+    body_text = m.group(2)
+    if _HAS_RUAMEL:
+        fm = _ruamel.load(fm_text)
+    else:
+        fm = yaml.safe_load(fm_text) or {}
+    if not fm or not fm.get("unscored"):
+        return False
+    del fm["unscored"]
+    if _HAS_RUAMEL:
+        from io import StringIO
+        buf = StringIO()
+        _ruamel.dump(fm, buf)
+        new_fm_text = buf.getvalue().rstrip("\n")
+    else:
+        new_fm_text = yaml.safe_dump(fm, sort_keys=False, default_flow_style=False).rstrip("\n")
+    task_path.write_text(f"---\n{new_fm_text}\n---\n{body_text}")
+    return True
+
+
+def _set_unscored_flag(task_path: Path) -> bool:
+    """Mark `unscored: true` on frontmatter — signals to sweep that this
+    task hit the SLA fallback and should be re-attempted (T-1923 AC#4)."""
+    text = task_path.read_text()
+    m = _FM_RE.match(text)
+    if not m:
+        return False
+    fm_text = m.group(1)
+    body_text = m.group(2)
+    if _HAS_RUAMEL:
+        fm = _ruamel.load(fm_text)
+    else:
+        fm = yaml.safe_load(fm_text) or {}
+    fm = fm or {}
+    if fm.get("unscored") is True:
+        return False  # already set
+    fm["unscored"] = True
+    if _HAS_RUAMEL:
+        from io import StringIO
+        buf = StringIO()
+        _ruamel.dump(fm, buf)
+        new_fm_text = buf.getvalue().rstrip("\n")
+    else:
+        new_fm_text = yaml.safe_dump(fm, sort_keys=False, default_flow_style=False).rstrip("\n")
+    task_path.write_text(f"---\n{new_fm_text}\n---\n{body_text}")
+    return True
+
+
+def _proposed_is_stale(fm: dict, stale_hours: int) -> bool:
+    """A task's proposed scores are stale if the newest entry's `ts` is older
+    than `stale_hours` (T-1923 AC#2). Tasks with no proposed at all are
+    considered stale (eligible for first-pass scoring)."""
+    proposed = fm.get("bvp_scores_proposed")
+    if not proposed or not isinstance(proposed, list):
+        return True
+    latest = proposed[-1] if isinstance(proposed[-1], dict) else None
+    if not latest:
+        return True
+    ts = latest.get("ts")
+    if not ts:
+        return True
+    try:
+        # Strip Z, parse as UTC
+        dt = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return True
+    age = datetime.now(timezone.utc) - dt
+    return age.total_seconds() >= stale_hours * 3600
+
+
+def cmd_sweep(stale_hours: int = 24,
+              statuses: list[str] | None = None,
+              cron: bool = False) -> int:
+    """T-1923 scheduled sweep — score stale tasks; clear unscored:true on success.
+
+    Selection criteria (AC#2):
+      - status ∈ statuses (default: started-work, captured)
+      - `bvp_scores:` is empty (unconfirmed)
+      - `bvp_scores_proposed:` is older than stale_hours OR missing entirely
+      - OR `unscored: true` is set (priority: SLA-fallback victims)
+
+    Output in --cron mode is quieter (just final summary). Without --cron,
+    each task is printed.
+    """
+    drivers = _load_drivers()
+    statuses = statuses or ["started-work", "captured"]
+    task_files = sorted((PROJECT_ROOT / ".tasks" / "active").glob("T-*.md"))
+
+    n_scored = n_unscored_cleared = n_skipped = n_err = 0
+    for tp in task_files:
+        try:
+            fm, _ = parse_task(tp)
+            if not fm:
+                continue
+            if fm.get("status") not in statuses:
+                continue
+            if fm.get("bvp_scores"):
+                continue  # confirmed; not the sweep's job
+            had_unscored = fm.get("unscored") is True
+            if not had_unscored and not _proposed_is_stale(fm, stale_hours):
+                n_skipped += 1
+                continue
+            result = estimate_task(tp, drivers)
+            wrote, reason = write_proposed(
+                tp, result["scores"], result["evidence"],
+                result["rubric_sha"], dry_run=False
+            )
+            if had_unscored:
+                # Re-read to get the (post-write) frontmatter and clear flag
+                if _clear_unscored_flag(tp):
+                    n_unscored_cleared += 1
+            if wrote:
+                n_scored += 1
+                if not cron:
+                    sc = " ".join(f"{k}={v}" for k, v in result["scores"].items())
+                    print(f"{fm.get('id', tp.stem)}: {sc}  [{reason}]")
+            else:
+                n_skipped += 1
+        except Exception as e:
+            n_err += 1
+            print(f"ERROR on {tp.name}: {e}", file=sys.stderr)
+
+    print(f"sweep: scored {n_scored}, unscored-cleared {n_unscored_cleared}, "
+          f"skipped {n_skipped}, errors {n_err} "
+          f"(stale_hours={stale_hours}, statuses={','.join(statuses)})")
+    return 0 if n_err == 0 else 1
+
+
+def cmd_with_sla(task_id: str, timeout_s: int = 10) -> int:
+    """T-1923 fw resume synchronous path: score ONE task with a hard cap.
+
+    If the estimator completes within timeout_s, the proposal is written
+    normally. If it would exceed the cap, the task is flagged
+    `unscored: true` so the async sweep picks it up later. Either way,
+    this function exits 0 — resume itself is NEVER blocked by estimator
+    behaviour (T-1923 AC#3/AC#4).
+    """
+    task_path = _resolve_task(task_id)
+    if not task_path:
+        # No task → nothing to do, exit silently (resume continues)
+        return 0
+    drivers = _load_drivers()
+    t0 = time.monotonic()
+    try:
+        result = estimate_task(task_path, drivers)
+        elapsed = time.monotonic() - t0
+        if elapsed >= timeout_s:
+            # Estimator finished but blew the budget — flag for sweep
+            _set_unscored_flag(task_path)
+            print(f"{task_id}: estimator exceeded {timeout_s}s SLA "
+                  f"({elapsed:.2f}s), flagged unscored:true for async sweep",
+                  file=sys.stderr)
+            return 0
+        # Within budget — write normally + clear any stale unscored flag
+        write_proposed(
+            task_path, result["scores"], result["evidence"],
+            result["rubric_sha"], dry_run=False
+        )
+        _clear_unscored_flag(task_path)
+        return 0
+    except Exception as e:
+        # Estimator errored — flag for sweep, never block resume
+        _set_unscored_flag(task_path)
+        print(f"{task_id}: estimator failed ({e}), flagged unscored:true",
+              file=sys.stderr)
+        return 0
+
+
 def cmd_determinism(task_id: str, runs: int = 3) -> int:
     """Run N times against the same task; report max delta per driver.
 
@@ -675,6 +851,19 @@ def main(argv: list[str]) -> int:
     p_a3.add_argument("--n", type=int, default=20)
     p_a3.add_argument("--output", type=Path)
 
+    p_sweep = sub.add_parser("sweep", help="T-1923 periodic sweep — stale + unscored")
+    p_sweep.add_argument("--stale-hours", type=int, default=24,
+                         help="re-score proposed scores older than this (default 24h)")
+    p_sweep.add_argument("--statuses", nargs="+",
+                         default=["started-work", "captured"])
+    p_sweep.add_argument("--cron", action="store_true",
+                         help="quieter output for cron")
+
+    p_sla = sub.add_parser("with-sla", help="T-1923 fw resume sync path with hard cap")
+    p_sla.add_argument("task_id")
+    p_sla.add_argument("--timeout", type=int, default=10,
+                       help="seconds before flagging unscored:true (default 10s, Q4 default)")
+
     args = p.parse_args(argv)
     if args.cmd == "one":
         return cmd_one(args.task_id, dry_run=args.dry_run, json_out=args.json)
@@ -684,6 +873,11 @@ def main(argv: list[str]) -> int:
         return cmd_determinism(args.task_id, runs=args.runs)
     if args.cmd == "measure-a3":
         return cmd_measure_a3(n=args.n, output=args.output)
+    if args.cmd == "sweep":
+        return cmd_sweep(stale_hours=args.stale_hours,
+                         statuses=args.statuses, cron=args.cron)
+    if args.cmd == "with-sla":
+        return cmd_with_sla(args.task_id, timeout_s=args.timeout)
     return 2
 
 

@@ -1,8 +1,15 @@
 ---
 id: T-1659
-name: "fw fabric register accepts .agentic-framework/ vendored paths and creates malformed cards"
+name: "fw fabric register accepts .agentic-framework/ vendored paths and creates malformed
+  cards"
 description: >
-  Witness 2026-05-01: 'bin/fw fabric register .agentic-framework/lib/hook-telemetry.sh' produced a card at .fabric/components/.yaml (empty filename, dot-only). Two bugs: (1) accepts vendored-copy path that already has an upstream card (lib/hook-telemetry.sh), (2) filename-derivation logic returns empty when path starts with dot-prefix component. Should: detect vendored path → reject with hint to register upstream instead; OR derive filename robustly from full path (e.g. agentic-framework-lib-hook-telemetry.yaml). Not orchestrator-arc; framework hygiene.
+  Witness 2026-05-01: 'bin/fw fabric register .agentic-framework/lib/hook-telemetry.sh'
+  produced a card at .fabric/components/.yaml (empty filename, dot-only). Two bugs:
+  (1) accepts vendored-copy path that already has an upstream card (lib/hook-telemetry.sh),
+  (2) filename-derivation logic returns empty when path starts with dot-prefix component.
+  Should: detect vendored path → reject with hint to register upstream instead; OR
+  derive filename robustly from full path (e.g. agentic-framework-lib-hook-telemetry.yaml).
+  Not orchestrator-arc; framework hygiene.
 
 status: captured
 workflow_type: build
@@ -12,8 +19,19 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-01T17:09:56Z
-last_update: 2026-05-01T17:10:22Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1659: fw fabric register accepts .agentic-framework/ vendored paths and creates malformed cards

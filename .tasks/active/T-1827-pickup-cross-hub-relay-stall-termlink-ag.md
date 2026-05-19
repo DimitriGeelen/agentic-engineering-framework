@@ -1,8 +1,10 @@
 ---
 id: T-1827
-name: "Pickup: Cross-hub relay stall: termlink-agents framework:pickup offsets 9+10 never reached framework-agent (only seq 47 visible) (from 999-Agentic-Engineering-Framework)"
+name: "Pickup: Cross-hub relay stall: termlink-agents framework:pickup offsets 9+10
+  never reached framework-agent (only seq 47 visible) (from 999-Agentic-Engineering-Framework)"
 description: >
-  Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task T-1826. Type: bug-report.
+  Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task
+  T-1826. Type: bug-report.
 
 status: started-work
 workflow_type: build
@@ -12,10 +14,21 @@ tags: [pickup, bug-report, fw-upgrade-incident-2026-05-14, termlink-relay]
 components: [agents-termlink-termlink, lib-mirror]
 related_tasks: [T-1826, T-1828, T-1829]
 created: 2026-05-14T14:26:01Z
-last_update: 2026-05-14T18:27:26Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
 source_task_id_in_origin: T-1826
 source_project_in_origin: "999-Agentic-Engineering-Framework"
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1827: Pickup: Cross-hub relay stall: termlink-agents framework:pickup offsets 9+10 never reached framework-agent (only seq 47 visible) (from 999-Agentic-Engineering-Framework)

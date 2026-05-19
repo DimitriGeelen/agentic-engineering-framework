@@ -1,8 +1,12 @@
 ---
 id: T-1737
-name: "Slice 2: UserPromptSubmit hook + $PROMPT_UNDER_TRIAGE substitution (T-1733 sibling)"
+name: "Slice 2: UserPromptSubmit hook + $PROMPT_UNDER_TRIAGE substitution (T-1733
+  sibling)"
 description: >
-  T-1733 Slice 1 proved substrate but resolver does not substitute $PROMPT_UNDER_TRIAGE — Slice 2 wires the UserPromptSubmit hook to dispatch with the actual prompt and surface verdict via additionalContext on GO. Substrate (Spike A) and accuracy (Spike B) are prerequisites.
+  T-1733 Slice 1 proved substrate but resolver does not substitute $PROMPT_UNDER_TRIAGE
+  — Slice 2 wires the UserPromptSubmit hook to dispatch with the actual prompt and
+  surface verdict via additionalContext on GO. Substrate (Spike A) and accuracy (Spike
+  B) are prerequisites.
 
 status: captured
 workflow_type: build
@@ -13,8 +17,19 @@ components: []
 related_tasks: []
 arc_id: orchestrator-rethink
 created: 2026-05-05T07:36:46Z
-last_update: 2026-05-05T09:31:42Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1737: Slice 2: UserPromptSubmit hook + $PROMPT_UNDER_TRIAGE substitution (T-1733 sibling)

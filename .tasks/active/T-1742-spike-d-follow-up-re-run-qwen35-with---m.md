@@ -2,7 +2,12 @@
 id: T-1742
 name: "Spike D follow-up: re-run qwen35 with --max-tokens 4096 to recover 7 parse-fails"
 description: >
-  Spike D (T-1741) qwen35 produced 7 parse-fails out of 50 (14%) at max_tokens=2048 — qwen35 is also a reasoning model, may exceed budget. Re-run only qwen35 with --max-tokens 4096 against the T-1736 50-prompt benchmark, re-compute T-1741 metrics. Marginal off-ramp: even if all 7 parse-fails are correct, ceiling is ~+14pp accuracy; realistic +4-8pp. Doesn't fix DEFER F1 architectural ceiling. Filed captured/later per L-349 — human triage decides whether to run.
+  Spike D (T-1741) qwen35 produced 7 parse-fails out of 50 (14%) at max_tokens=2048
+  — qwen35 is also a reasoning model, may exceed budget. Re-run only qwen35 with --max-tokens
+  4096 against the T-1736 50-prompt benchmark, re-compute T-1741 metrics. Marginal
+  off-ramp: even if all 7 parse-fails are correct, ceiling is ~+14pp accuracy; realistic
+  +4-8pp. Doesn't fix DEFER F1 architectural ceiling. Filed captured/later per L-349
+  — human triage decides whether to run.
 
 status: captured
 workflow_type: build
@@ -13,8 +18,19 @@ components: []
 related_tasks: [T-1741, T-1737]
 arc_id: orchestrator-rethink
 created: 2026-05-05T09:25:26Z
-last_update: 2026-05-05T09:25:26Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1742: Spike D follow-up: re-run qwen35 with --max-tokens 4096 to recover 7 parse-fails

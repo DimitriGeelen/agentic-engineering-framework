@@ -1,8 +1,15 @@
 ---
 id: T-1611
-name: "Swap local Watchtower Werkzeug dev server for gunicorn — saturation under browser auto-refresh"
+name: "Swap local Watchtower Werkzeug dev server for gunicorn — saturation under browser
+  auto-refresh"
 description: >
-  Local Watchtower (python -m web.app on :3000) saturates after long uptime under browser auto-refresh + htmx polling. 33h uptime + LAN browser open → 52% CPU, /health responds but / hangs >10s, sequential localhost curls all timeout. T-1122 (TermLink) concluded WSGI swap was unwarranted because Flask-SocketIO threading mode "should" handle load; today's evidence contradicts that. T-1309 covers systemd wrapping (restart hygiene), separate concern. This inception asks: should we run gunicorn locally too, instead of Werkzeug dev server?
+  Local Watchtower (python -m web.app on :3000) saturates after long uptime under
+  browser auto-refresh + htmx polling. 33h uptime + LAN browser open → 52% CPU, /health
+  responds but / hangs >10s, sequential localhost curls all timeout. T-1122 (TermLink)
+  concluded WSGI swap was unwarranted because Flask-SocketIO threading mode "should"
+  handle load; today's evidence contradicts that. T-1309 covers systemd wrapping (restart
+  hygiene), separate concern. This inception asks: should we run gunicorn locally
+  too, instead of Werkzeug dev server?
 
 status: captured
 workflow_type: inception
@@ -12,8 +19,19 @@ tags: [watchtower, performance, wsgi, from-saturation-incident]
 components: []
 related_tasks: [T-1122, T-1309]
 created: 2026-04-30T07:25:07Z
-last_update: 2026-05-15T19:54:39Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 5
+      D3: 0
+      D4: 0
+    rationale: D1=1 (body:fix-without-learning); D2=5 
+      (body:silent-class-removed); D3=0 (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1611: Swap local Watchtower Werkzeug dev server for gunicorn — saturation under browser auto-refresh

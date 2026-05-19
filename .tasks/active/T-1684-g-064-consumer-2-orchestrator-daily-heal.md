@@ -1,8 +1,20 @@
 ---
 id: T-1684
-name: "G-064 consumer #2: orchestrator daily health-check cron — autonomous workload to keep route_cache learning"
+name: "G-064 consumer #2: orchestrator daily health-check cron — autonomous workload
+  to keep route_cache learning"
 description: >
-  Filed as proposed resolution for G-064 candidate #2 (smallest, most reversible). Daily cron job that dispatches a tiny prompt ('Reply with the single word: ok') across all three known task_types (build/design/inception) without --model. Each dispatch resolves through route_cache → spawns claude → exits → record-outcome updates the cache → /orchestrator surface reflects the change. Result: route_cache.last_used timestamps stay current daily, and the substrate has at least one autonomous consumer running on its own schedule. Implementation sketch: add ~10-line entry to .context/cron/agentic-audit.crontab calling a new agents/orchestrator/daily-healthcheck.sh that loops over task_types and dispatches; writes a summary line to .context/audits/orchestrator-daily-LATEST.yaml. After 7 days of green runs, G-064 is mitigated (not closed — the cron is the weakest consumer; #1 audit refactor or #3 opt-in flag would be stronger). NOT to be promoted/started without human GO — this is the proposal, not the work.
+  Filed as proposed resolution for G-064 candidate #2 (smallest, most reversible).
+  Daily cron job that dispatches a tiny prompt ('Reply with the single word: ok')
+  across all three known task_types (build/design/inception) without --model. Each
+  dispatch resolves through route_cache → spawns claude → exits → record-outcome updates
+  the cache → /orchestrator surface reflects the change. Result: route_cache.last_used
+  timestamps stay current daily, and the substrate has at least one autonomous consumer
+  running on its own schedule. Implementation sketch: add ~10-line entry to .context/cron/agentic-audit.crontab
+  calling a new agents/orchestrator/daily-healthcheck.sh that loops over task_types
+  and dispatches; writes a summary line to .context/audits/orchestrator-daily-LATEST.yaml.
+  After 7 days of green runs, G-064 is mitigated (not closed — the cron is the weakest
+  consumer; #1 audit refactor or #3 opt-in flag would be stronger). NOT to be promoted/started
+  without human GO — this is the proposal, not the work.
 
 status: captured
 workflow_type: build
@@ -12,8 +24,19 @@ tags: [orchestrator-rethink, gap-consumer, cron]
 components: []
 related_tasks: []
 created: 2026-05-02T17:38:49Z
-last_update: 2026-05-02T17:38:49Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1684: G-064 consumer #2: orchestrator daily health-check cron — autonomous workload to keep route_cache learning

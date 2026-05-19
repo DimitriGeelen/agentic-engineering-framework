@@ -1,8 +1,15 @@
 ---
 id: T-1639
-name: "TermLink: throughput benchmark for governance subscriber — harden non-blocking claim"
+name: "TermLink: throughput benchmark for governance subscriber — harden non-blocking
+  claim"
 description: >
-  T-1066 supplementary review flagged that the non-blocking shape is structurally guaranteed (broadcast.resubscribe + bounded mpsc + try_send) but the AC step 'run benchmarks' has no test backing it. Add a cargo bench (or harness test) showing pre/post Output frame throughput parity with subscriber attached vs detached. Hardens the non-blocking claim from architectural to measured. Cross-repo: /opt/termlink crates/termlink-session/benches/ or tests/. Captured horizon:later. Origin: T-1066 review notes 2026-04-30.
+  T-1066 supplementary review flagged that the non-blocking shape is structurally
+  guaranteed (broadcast.resubscribe + bounded mpsc + try_send) but the AC step 'run
+  benchmarks' has no test backing it. Add a cargo bench (or harness test) showing
+  pre/post Output frame throughput parity with subscriber attached vs detached. Hardens
+  the non-blocking claim from architectural to measured. Cross-repo: /opt/termlink
+  crates/termlink-session/benches/ or tests/. Captured horizon:later. Origin: T-1066
+  review notes 2026-04-30.
 
 status: captured
 workflow_type: test
@@ -12,8 +19,19 @@ tags: [from-T-1066, termlink, benchmark, performance]
 components: []
 related_tasks: [T-1066, T-1641]
 created: 2026-05-01T10:45:22Z
-last_update: 2026-05-01T10:45:22Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1639: TermLink: throughput benchmark for governance subscriber — harden non-blocking claim

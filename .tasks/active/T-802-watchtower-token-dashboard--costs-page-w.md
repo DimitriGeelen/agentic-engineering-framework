@@ -2,7 +2,10 @@
 id: T-802
 name: "Watchtower token dashboard — /costs page with session table and project summary"
 description: >
-  Add /costs page to Watchtower showing token usage data from fw costs. Display project summary (total tokens by category), per-session table with sorting, and current session highlights. Uses lib/costs.sh parsing functions. Follow-up from T-801 (fw costs CLI).
+  Add /costs page to Watchtower showing token usage data from fw costs. Display project
+  summary (total tokens by category), per-session table with sorting, and current
+  session highlights. Uses lib/costs.sh parsing functions. Follow-up from T-801 (fw
+  costs CLI).
 
 status: started-work
 workflow_type: build
@@ -12,8 +15,19 @@ tags: [watchtower, tokens, observability]
 components: [watchtower-web-ui]
 related_tasks: [T-801, T-799, T-800]
 created: 2026-04-03T19:09:41Z
-last_update: 2026-04-28T11:34:28Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-802: Watchtower token dashboard — /costs page with session table and project summary

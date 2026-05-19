@@ -1,8 +1,14 @@
 ---
 id: T-1637
-name: "Multi-LLM routing: cost-aware learning — weight RouteCache success rates by cost-per-call"
+name: "Multi-LLM routing: cost-aware learning — weight RouteCache success rates by
+  cost-per-call"
 description: >
-  T-1065 supplementary review flagged that 'cost-effective' in the AC was not directly enforced — RouteCache learns success rates but not cost-per-success. A 90%-success opus call beats a 70%-success haiku call regardless of cost. Add cost_per_call weighting to ModelStats and best_model_for() so cheap models can be preferred for high-success-rate task types. Cross-repo: /opt/termlink crates/termlink-mcp/src/route_cache.rs. Not blocking — future feature, captured horizon:later. Origin: T-1065 review notes 2026-04-30.
+  T-1065 supplementary review flagged that 'cost-effective' in the AC was not directly
+  enforced — RouteCache learns success rates but not cost-per-success. A 90%-success
+  opus call beats a 70%-success haiku call regardless of cost. Add cost_per_call weighting
+  to ModelStats and best_model_for() so cheap models can be preferred for high-success-rate
+  task types. Cross-repo: /opt/termlink crates/termlink-mcp/src/route_cache.rs. Not
+  blocking — future feature, captured horizon:later. Origin: T-1065 review notes 2026-04-30.
 
 status: captured
 workflow_type: build
@@ -12,8 +18,19 @@ tags: [from-T-1065, termlink, multi-llm, cost-routing]
 components: []
 related_tasks: [T-1065, T-1641]
 created: 2026-05-01T10:45:13Z
-last_update: 2026-05-01T10:45:13Z
-date_finished: null
+last_update: '2026-05-19T18:27:45Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1637: Multi-LLM routing: cost-aware learning — weight RouteCache success rates by cost-per-call

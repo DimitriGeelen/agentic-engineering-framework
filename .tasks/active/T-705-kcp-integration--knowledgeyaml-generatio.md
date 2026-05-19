@@ -1,8 +1,12 @@
 ---
 id: T-705
-name: "KCP integration — knowledge.yaml generation from fabric/context + MCP bridge adoption"
+name: "KCP integration — knowledge.yaml generation from fabric/context + MCP bridge
+  adoption"
 description: >
-  Evaluate adopting KCP (Knowledge Context Protocol) from Cantara. Generate knowledge.yaml from existing fabric cards + context data. Add kcp-mcp bridge to default MCP config. Stay on KCP upgrade path — become adopter, contribute upstream. Thor Henning Hetland actively developing. Source: T-697 deep-dive, T-487 spec research.
+  Evaluate adopting KCP (Knowledge Context Protocol) from Cantara. Generate knowledge.yaml
+  from existing fabric cards + context data. Add kcp-mcp bridge to default MCP config.
+  Stay on KCP upgrade path — become adopter, contribute upstream. Thor Henning Hetland
+  actively developing. Source: T-697 deep-dive, T-487 spec research.
 
 status: captured
 workflow_type: inception
@@ -12,8 +16,19 @@ tags: [kcp, integration, mcp]
 components: []
 related_tasks: []
 created: 2026-03-29T08:58:11Z
-last_update: 2026-04-28T16:09:26Z
-date_finished: null
+last_update: '2026-05-19T18:27:46Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-05-19T18:27:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 4
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=4
+      (body:cross-machine)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-705: KCP integration — knowledge.yaml generation from fabric/context + MCP bridge adoption

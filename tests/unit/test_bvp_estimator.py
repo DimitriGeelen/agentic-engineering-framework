@@ -265,5 +265,156 @@ def test_estimate_returns_required_fields(tmp_path):
     assert result["latency_s"] >= 0
 
 
+# ---------------------------------------- T-1923 unscored flag + staleness
+
+def test_set_unscored_flag_adds_field(tmp_path):
+    path = _make_task(tmp_path, "Body.")
+    assert estimator._set_unscored_flag(path) is True
+    fm, _ = estimator.parse_task(path)
+    assert fm.get("unscored") is True
+
+
+def test_set_unscored_flag_idempotent(tmp_path):
+    path = _make_task(tmp_path, "Body.")
+    assert estimator._set_unscored_flag(path) is True
+    # Second call is no-op
+    assert estimator._set_unscored_flag(path) is False
+
+
+def test_clear_unscored_flag_removes_field(tmp_path):
+    path = _make_task(tmp_path, "Body.")
+    estimator._set_unscored_flag(path)
+    assert estimator._clear_unscored_flag(path) is True
+    fm, _ = estimator.parse_task(path)
+    assert "unscored" not in fm
+
+
+def test_clear_unscored_flag_noop_when_absent(tmp_path):
+    path = _make_task(tmp_path, "Body.")
+    assert estimator._clear_unscored_flag(path) is False
+
+
+def test_proposed_is_stale_no_proposed_returns_true():
+    assert estimator._proposed_is_stale({}, 24) is True
+    assert estimator._proposed_is_stale({"bvp_scores_proposed": []}, 24) is True
+    assert estimator._proposed_is_stale({"bvp_scores_proposed": None}, 24) is True
+
+
+def test_proposed_is_stale_old_timestamp_returns_true():
+    fm = {
+        "bvp_scores_proposed": [
+            {"ts": "2020-01-01T00:00:00Z", "scores": {}}
+        ]
+    }
+    assert estimator._proposed_is_stale(fm, 24) is True
+
+
+def test_proposed_is_stale_recent_timestamp_returns_false():
+    from datetime import datetime, timezone
+    recent_ts = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    fm = {
+        "bvp_scores_proposed": [
+            {"ts": recent_ts, "scores": {}}
+        ]
+    }
+    assert estimator._proposed_is_stale(fm, 24) is False
+
+
+# -------------------------------------------- T-1923 with-sla wrapper
+
+def test_cmd_with_sla_never_raises_on_missing_task():
+    """T-1923 AC: resume is NEVER blocked by estimator. Even bogus task IDs
+    must exit 0 silently."""
+    rc = estimator.cmd_with_sla("T-99999999", timeout_s=10)
+    assert rc == 0
+
+
+def test_cmd_with_sla_writes_proposed_under_budget(tmp_path, monkeypatch):
+    """Within budget → proposed is written, unscored flag is cleared."""
+    # Use a real task file in PROJECT_ROOT/.tasks/active/ — needs _resolve_task
+    # to find it. Patch PROJECT_ROOT to tmp_path so we don't pollute the real
+    # task corpus during tests.
+    active = tmp_path / ".tasks" / "active"
+    active.mkdir(parents=True)
+    task_path = active / "T-99998-synthetic.md"
+    task_path.write_text(
+        "---\n"
+        "id: T-99998\n"
+        "name: \"SLA budget test\"\n"
+        "status: started-work\n"
+        "workflow_type: build\n"
+        "owner: agent\n"
+        "horizon: now\n"
+        "unscored: true\n"
+        "---\n\n"
+        "Body mentions a PreToolUse hook.\n"
+    )
+    monkeypatch.setattr(estimator, "PROJECT_ROOT", tmp_path)
+    rc = estimator.cmd_with_sla("T-99998", timeout_s=10)
+    assert rc == 0
+    fm, _ = estimator.parse_task(task_path)
+    # unscored cleared
+    assert "unscored" not in fm
+    # proposed written
+    assert isinstance(fm.get("bvp_scores_proposed"), list)
+    assert len(fm["bvp_scores_proposed"]) >= 1
+
+
+# ---------------------------------------------- T-1923 sweep verb
+
+def test_cmd_sweep_skips_tasks_with_confirmed_scores(tmp_path, monkeypatch):
+    """Sweep must NOT re-score tasks that already have confirmed bvp_scores:."""
+    active = tmp_path / ".tasks" / "active"
+    active.mkdir(parents=True)
+    task_path = active / "T-99997-already-confirmed.md"
+    task_path.write_text(
+        "---\n"
+        "id: T-99997\n"
+        "name: \"Already confirmed\"\n"
+        "status: started-work\n"
+        "workflow_type: build\n"
+        "owner: agent\n"
+        "horizon: now\n"
+        "bvp_scores:\n  D1: 4\n  D2: 3\n  D3: 1\n  D4: 0\n"
+        "---\n\n"
+        "Body has many signals: PreToolUse hook, fw doctor, cross-machine, "
+        "Recommendation block.\n"
+    )
+    monkeypatch.setattr(estimator, "PROJECT_ROOT", tmp_path)
+    rc = estimator.cmd_sweep(stale_hours=24, cron=True)
+    assert rc == 0
+    fm, _ = estimator.parse_task(task_path)
+    # Confirmed scores untouched
+    assert fm["bvp_scores"] == {"D1": 4, "D2": 3, "D3": 1, "D4": 0}
+    # No proposed written (sweep skipped this task)
+    assert not fm.get("bvp_scores_proposed")
+
+
+def test_cmd_sweep_clears_unscored_flag_on_success(tmp_path, monkeypatch):
+    """When sweep successfully scores a task previously flagged unscored,
+    the flag must be removed (T-1923 AC#5)."""
+    active = tmp_path / ".tasks" / "active"
+    active.mkdir(parents=True)
+    task_path = active / "T-99996-unscored.md"
+    task_path.write_text(
+        "---\n"
+        "id: T-99996\n"
+        "name: \"SLA fallback victim\"\n"
+        "status: started-work\n"
+        "workflow_type: build\n"
+        "owner: agent\n"
+        "horizon: now\n"
+        "unscored: true\n"
+        "---\n\n"
+        "Body mentions a fw doctor check.\n"
+    )
+    monkeypatch.setattr(estimator, "PROJECT_ROOT", tmp_path)
+    rc = estimator.cmd_sweep(stale_hours=24, cron=True)
+    assert rc == 0
+    fm, _ = estimator.parse_task(task_path)
+    assert "unscored" not in fm  # AC#5: flag cleared
+    assert isinstance(fm.get("bvp_scores_proposed"), list)
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
