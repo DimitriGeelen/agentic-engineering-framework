@@ -4,7 +4,7 @@ name: "BVP T-NEW-15: canonical doc 040-ValueDrivers.md + FRAMEWORK.md glossary/Q
 description: >
   New canonical doc 040-ValueDrivers.md mirroring 010-TaskSystem.md / 012-ArcSystem.md structure. FRAMEWORK.md glossary gains BVP terms; Quick Reference adds the new fw bvp + fw arc approve-driver verbs. Cites Geelen 2019 origin AND AEF adaptations.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,7 +13,7 @@ components: [040-ValueDrivers.md, FRAMEWORK.md]
 related_tasks: [T-1915, T-1916, T-1917, T-1920, T-1924, T-1926, T-1932]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:00:00Z
+last_update: 2026-05-19T13:37:48Z
 date_finished: null
 ---
 
@@ -52,3 +52,6 @@ grep -qi "blog.dimitrigeelen" 040-ValueDrivers.md
 ## Decisions
 
 ## Updates
+
+### 2026-05-19T13:37:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
