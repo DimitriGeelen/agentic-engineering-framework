@@ -1,0 +1,20 @@
+id: tests/unit/test_audit_cron_registry_generated_drift.bats
+name: test_audit_cron_registry_generated_drift
+type: script
+subsystem: unknown
+location: tests/unit/test_audit_cron_registry_generated_drift.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-19
+created_by: unknown

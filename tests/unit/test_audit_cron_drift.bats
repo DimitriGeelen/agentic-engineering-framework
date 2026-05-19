@@ -55,13 +55,16 @@ _run_structure_audit() {
 
 @test "in-sync: registry == generated == deployed → PASS, no drift FAIL" {
     _minimal_registry
-    echo "# generated" > "$SOURCE_PATH"
+    # T-1943: must actually generate (not write a stub) so the
+    # registry→generated drift check sees a current source.
+    "$FRAMEWORK_ROOT/bin/fw" cron generate >/dev/null
     cp "$SOURCE_PATH" "$DEPLOYED_PATH"
     _run_structure_audit
     [ "$status" -eq 0 ]
     [[ "$output" == *"Cron registry in sync with $DEPLOYED_PATH"* ]]
     [[ "$output" != *"Cron drift:"*"differs from deployed"* ]]
     [[ "$output" != *"generated but not installed"* ]]
+    [[ "$output" != *"registry edited but not generated"* ]]
 }
 
 @test "registry vs deployed mismatch → FAIL counted in summary" {
