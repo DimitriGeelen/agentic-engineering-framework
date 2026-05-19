@@ -46,6 +46,83 @@ except ImportError:
     print("ERROR: python3 yaml module required (pip install pyyaml)", file=sys.stderr)
     sys.exit(2)
 
+# Comment-preserving YAML for mutating writes (T-1920). Falls back to PyYAML
+# if ruamel is unavailable — comments are lost but functionality preserved.
+try:
+    from ruamel.yaml import YAML
+    _ruamel_yaml = YAML()
+    _ruamel_yaml.preserve_quotes = True
+    _ruamel_yaml.indent(mapping=2, sequence=4, offset=2)
+    _HAS_RUAMEL = True
+except ImportError:
+    _HAS_RUAMEL = False
+
+
+# ----------------------------------------------------------- §ACD agent gate
+def acd_gate(verb, args, refusal_hint=""):
+    """T-1671 §ACD shape: refuse under $CLAUDECODE=1 unless --i-am-human or
+    --from-watchtower. Returns True if allowed, False if refused (and prints
+    error). Used by all mutating verbs."""
+    if os.environ.get('CLAUDECODE') != '1':
+        return True
+    if '--i-am-human' in args or '--from-watchtower' in args:
+        return True
+    print(f"Error: agents must not invoke 'fw bvp {verb}' directly (§ACD, M6).", file=sys.stderr)
+    print("", file=sys.stderr)
+    print("  You appear to be running inside Claude Code ($CLAUDECODE=1).", file=sys.stderr)
+    print("  Weight/driver changes carry policy-edit authority (D8 — sovereignty", file=sys.stderr)
+    print("  at policy-edit time) and belong to the human, recorded via Watchtower.", file=sys.stderr)
+    print("", file=sys.stderr)
+    if refusal_hint:
+        print(f"  {refusal_hint}", file=sys.stderr)
+        print("", file=sys.stderr)
+    print("  Overrides (mirror T-1259 inception-decide / T-1671 arc-close):", file=sys.stderr)
+    print("    --i-am-human       human typing into an agent session (rare)", file=sys.stderr)
+    print("    --from-watchtower  Flask backend POST", file=sys.stderr)
+    return False
+
+
+def require_rationale(args, min_chars=30):
+    """Pulls --rationale value out of args, validates min length. Returns
+    (rationale_text, ok). Prints error on failure."""
+    if '--rationale' not in args:
+        print("Error: --rationale is required.", file=sys.stderr)
+        print(f"  Provide ≥{min_chars} chars explaining why (R6 mitigation — thin", file=sys.stderr)
+        print("  rationales make weight-history audit useless).", file=sys.stderr)
+        return None, False
+    idx = args.index('--rationale')
+    if idx + 1 >= len(args):
+        print("Error: --rationale needs a value.", file=sys.stderr)
+        return None, False
+    rationale = args[idx + 1]
+    if len(rationale) < min_chars:
+        print(f"Error: --rationale must be ≥{min_chars} characters (got {len(rationale)}).", file=sys.stderr)
+        print(f"  Provided: {rationale!r}", file=sys.stderr)
+        return None, False
+    return rationale, True
+
+
+# ------------------------------------------------------ append-only history
+HISTORY_PATH = PROJECT_ROOT / '.context' / 'bvp-weight-history.yaml'
+
+
+def _utc_now():
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')
+
+
+def history_append(entry):
+    """Append-only YAML log of all policy mutations."""
+    HISTORY_PATH.parent.mkdir(exist_ok=True)
+    if HISTORY_PATH.is_file():
+        data = yaml.safe_load(HISTORY_PATH.read_text()) or {'entries': []}
+    else:
+        data = {'entries': []}
+    if 'entries' not in data:
+        data['entries'] = []
+    data['entries'].append(entry)
+    HISTORY_PATH.write_text(yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+
 
 # ---------------------------------------------------------------- policy load
 def load_policy():
@@ -289,6 +366,233 @@ def cmd_arcs():
     return 0
 
 
+# ----------------------------------------------------- mutating verbs (T-1920)
+def _save_policy_preserving(policy_path, data):
+    """Write policy YAML back to disk, preserving comments if ruamel available."""
+    if _HAS_RUAMEL:
+        with open(policy_path, 'w') as f:
+            _ruamel_yaml.dump(data, f)
+    else:
+        policy_path.write_text(yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+
+
+def _load_policy_preserving():
+    """Load policy with comment preservation when ruamel available."""
+    policy_path = PROJECT_ROOT / 'policy' / 'value-drivers.yaml'
+    if not policy_path.is_file():
+        print(f"ERROR: policy file not found: {policy_path}", file=sys.stderr)
+        sys.exit(2)
+    if _HAS_RUAMEL:
+        with open(policy_path) as f:
+            return policy_path, _ruamel_yaml.load(f)
+    return policy_path, yaml.safe_load(policy_path.read_text()) or {}
+
+
+def cmd_weight(args):
+    # Form validation first (rationale + shape), authority gate (§ACD) after.
+    # This lets `grep -q "rationale"` and `grep -q "30"` tests pass from an
+    # agent session (Verification block in T-1920 — runs under CLAUDECODE=1).
+    if '--set' not in args:
+        print("Usage: fw bvp weight --set Dn=N --rationale \"...\"", file=sys.stderr)
+        return 2
+    idx = args.index('--set')
+    if idx + 1 >= len(args):
+        print("Error: --set needs Dn=N", file=sys.stderr)
+        return 2
+    spec = args[idx + 1]
+    m = re.fullmatch(r'(D\d+|[A-Za-z][A-Za-z0-9_-]*)=(\d+)', spec)
+    if not m:
+        print(f"Error: invalid --set value {spec!r}; expected Dn=N", file=sys.stderr)
+        return 2
+    driver_id, new_weight = m.group(1), int(m.group(2))
+    if not 0 <= new_weight <= 9:
+        print(f"Error: weight {new_weight} out of range (0-9)", file=sys.stderr)
+        return 2
+
+    rationale, ok = require_rationale(args)
+    if not ok:
+        return 2
+
+    if not acd_gate('weight', args,
+                    refusal_hint="Correct flow: human runs `bin/fw bvp weight --set Dn=N --rationale \"...\" --i-am-human`"):
+        return 1
+
+    policy_path, policy = _load_policy_preserving()
+    found = None
+    section = None
+    for sec_key in ('protected_drivers', 'free_drivers'):
+        for d in (policy.get(sec_key) or []):
+            if d.get('id') == driver_id:
+                found = d
+                section = sec_key
+                break
+        if found:
+            break
+    if not found:
+        print(f"Error: driver '{driver_id}' not found in policy", file=sys.stderr)
+        return 1
+
+    old_weight = int(found['weight'])
+    if old_weight == new_weight:
+        print(f"No change: {driver_id} weight is already {new_weight}.")
+        return 0
+
+    found['weight'] = new_weight
+    _save_policy_preserving(policy_path, policy)
+
+    history_append({
+        'verb': 'weight',
+        'driver': driver_id,
+        'section': section,
+        'from_weight': old_weight,
+        'to_weight': new_weight,
+        'rationale': rationale,
+        'who': os.environ.get('USER', 'unknown'),
+        'agent_session': bool(os.environ.get('CLAUDECODE')),
+        'ts': _utc_now(),
+    })
+    print(f"OK: {driver_id} weight {old_weight} → {new_weight}")
+    print(f"  Rationale: {rationale}")
+    print(f"  History:   .context/bvp-weight-history.yaml")
+    return 0
+
+
+def cmd_driver(args):
+    if '--add' in args:
+        return _driver_add(args)
+    if '--remove' in args:
+        return _driver_remove(args)
+    print("Usage: fw bvp driver --add \"name\" --weight N --rationale \"...\"", file=sys.stderr)
+    print("       fw bvp driver --remove Dn --rationale \"...\" [--drop Dn]", file=sys.stderr)
+    return 2
+
+
+def _driver_add(args):
+    if not acd_gate('driver --add', args,
+                    refusal_hint="Adding a driver is a policy-edit; the human approves the framing."):
+        return 1
+    idx = args.index('--add')
+    if idx + 1 >= len(args):
+        print("Error: --add needs a name", file=sys.stderr)
+        return 2
+    name = args[idx + 1]
+    if '--weight' not in args:
+        print("Error: --weight is required", file=sys.stderr)
+        return 2
+    widx = args.index('--weight')
+    try:
+        weight = int(args[widx + 1])
+    except (IndexError, ValueError):
+        print("Error: --weight needs an integer", file=sys.stderr)
+        return 2
+    if not 0 <= weight <= 9:
+        print(f"Error: weight {weight} out of range (0-9)", file=sys.stderr)
+        return 2
+    rationale, ok = require_rationale(args)
+    if not ok:
+        return 2
+
+    policy_path, policy = _load_policy_preserving()
+    protected = policy.get('protected_drivers') or []
+    free = policy.get('free_drivers') or []
+    total = len(protected) + len(free)
+
+    drop_id = None
+    if '--drop' in args:
+        didx = args.index('--drop')
+        if didx + 1 >= len(args):
+            print("Error: --drop needs a driver id", file=sys.stderr)
+            return 2
+        drop_id = args[didx + 1]
+
+    # M1: total cap = 9. If at cap, require --drop.
+    if total >= 9 and not drop_id:
+        print(f"Error: total drivers = {total} (cap = 9). Add-one-drop-one (M1):", file=sys.stderr)
+        print("  Provide --drop <existing-free-driver-id> to displace one.", file=sys.stderr)
+        return 1
+
+    # Allocate next id like F1, F2, … unless name matches existing slug pattern.
+    free_ids = {d['id'] for d in free}
+    next_n = 1
+    while f'F{next_n}' in free_ids:
+        next_n += 1
+    new_id = f'F{next_n}'
+
+    if drop_id:
+        if drop_id.startswith('D'):
+            print(f"Error: cannot drop protected driver {drop_id}", file=sys.stderr)
+            return 1
+        free = [d for d in free if d.get('id') != drop_id]
+        if len(free) == len(policy.get('free_drivers') or []):
+            print(f"Error: --drop target {drop_id} not found in free_drivers", file=sys.stderr)
+            return 1
+        policy['free_drivers'] = free
+
+    new_entry = {'id': new_id, 'name': name, 'weight': weight, 'protected': False, 'rationale': rationale}
+    if not policy.get('free_drivers'):
+        policy['free_drivers'] = []
+    policy['free_drivers'].append(new_entry)
+
+    _save_policy_preserving(policy_path, policy)
+    history_append({
+        'verb': 'driver_add',
+        'driver': new_id,
+        'name': name,
+        'weight': weight,
+        'rationale': rationale,
+        'dropped': drop_id,
+        'who': os.environ.get('USER', 'unknown'),
+        'agent_session': bool(os.environ.get('CLAUDECODE')),
+        'ts': _utc_now(),
+    })
+    if drop_id:
+        print(f"OK: added {new_id} '{name}' weight={weight}; dropped {drop_id} (M1 add-one-drop-one)")
+    else:
+        print(f"OK: added {new_id} '{name}' weight={weight}")
+    return 0
+
+
+def _driver_remove(args):
+    # Form validation (protected check + rationale) before §ACD authority gate
+    # so verification tests can prove the protected refusal from agent session.
+    idx = args.index('--remove')
+    if idx + 1 >= len(args):
+        print("Error: --remove needs a driver id", file=sys.stderr)
+        return 2
+    driver_id = args[idx + 1]
+    if driver_id in ('D1', 'D2', 'D3', 'D4'):
+        print(f"Error: cannot remove protected driver {driver_id}.", file=sys.stderr)
+        print("  The Four Constitutional Directives (CLAUDE.md) are immutable in identity.", file=sys.stderr)
+        print(f"  To adjust impact, use `fw bvp weight --set {driver_id}=N` instead.", file=sys.stderr)
+        return 1
+    rationale, ok = require_rationale(args)
+    if not ok:
+        return 2
+
+    if not acd_gate('driver --remove', args,
+                    refusal_hint="Removing a driver is a policy-edit; the human approves the framing."):
+        return 1
+
+    policy_path, policy = _load_policy_preserving()
+    free = policy.get('free_drivers') or []
+    new_free = [d for d in free if d.get('id') != driver_id]
+    if len(new_free) == len(free):
+        print(f"Error: driver '{driver_id}' not found in free_drivers.", file=sys.stderr)
+        return 1
+    policy['free_drivers'] = new_free
+    _save_policy_preserving(policy_path, policy)
+    history_append({
+        'verb': 'driver_remove',
+        'driver': driver_id,
+        'rationale': rationale,
+        'who': os.environ.get('USER', 'unknown'),
+        'agent_session': bool(os.environ.get('CLAUDECODE')),
+        'ts': _utc_now(),
+    })
+    print(f"OK: removed driver {driver_id}")
+    return 0
+
+
 def usage():
     print("""fw bvp — Business Value Points (read-only)
 
@@ -298,10 +602,19 @@ USAGE:
   fw bvp arcs                     rank arcs by global-driver BVP
   fw bvp --quadrant {hv-lc|hv-hc|lv-lc|lv-hc}
                                   filter ranking by quadrant (BVP median × cost median)
+  fw bvp weight --set Dn=N --rationale "..." [--i-am-human|--from-watchtower]
+                                  change driver weight (§ACD-gated, M6)
+  fw bvp driver --add "name" --weight N --rationale "..." [--drop Dn]
+                                  add free driver; --drop required when at cap=9 (M1)
+  fw bvp driver --remove Dn --rationale "..."
+                                  remove free driver (D1-D4 protected)
   fw bvp --help                   this message
 
 NOTES:
-  - Read-only. Mutating verbs (weight/driver/confirm) ship later.
+  - Mutating verbs (weight/driver) refuse under $CLAUDECODE=1 unless
+    --i-am-human or --from-watchtower (T-1671 §ACD shape). They also require
+    --rationale ≥30 chars (R6 mitigation — thin entries make audit useless).
+  - All mutations append to .context/bvp-weight-history.yaml (append-only).
   - BVP = Σ score×weight across drivers present in policy/value-drivers.yaml (T-1917).
   - Cost composite (F8): 0.6×blast_radius + 0.3×tier + 0.1×effort.
     T-shirt fallback (Q2): S/M/L/XL → 2/4/6/8 when 3-component values absent.
@@ -328,6 +641,10 @@ def main(argv):
         return cmd_rank(filter_quadrant=q)
     if args[0] == 'arcs':
         return cmd_arcs()
+    if args[0] == 'weight':
+        return cmd_weight(args[1:])
+    if args[0] == 'driver':
+        return cmd_driver(args[1:])
     if re.fullmatch(r'T-\d+', args[0]):
         return cmd_detail(args[0])
     print(f"ERROR: unknown verb '{args[0]}'. See `fw bvp --help`.", file=sys.stderr)

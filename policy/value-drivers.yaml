@@ -45,32 +45,32 @@ protected_drivers:
     name: Antifragility
     weight: 9
     protected: true
-    rationale: "System strengthens under stress; failures are learning events. CLAUDE.md Directive 1."
+    rationale: "System strengthens under stress; failures are learning events. CLAUDE.md
+      Directive 1."
   - id: D2
     name: Reliability
     weight: 7
     protected: true
-    rationale: "Predictable, observable, auditable execution; no silent failures. CLAUDE.md Directive 2."
+    rationale: "Predictable, observable, auditable execution; no silent failures.
+      CLAUDE.md Directive 2."
   - id: D3
     name: Usability
     weight: 5
     protected: true
-    rationale: "Joy to use/extend/debug; sensible defaults; actionable errors. CLAUDE.md Directive 3."
+    rationale: "Joy to use/extend/debug; sensible defaults; actionable errors. CLAUDE.md
+      Directive 3."
   - id: D4
     name: Portability
     weight: 3
     protected: true
-    rationale: "No provider/language/environment lock-in; prefer standards. CLAUDE.md Directive 4."
+    rationale: "No provider/language/environment lock-in; prefer standards. CLAUDE.md
+      Directive 4."
 
 # Up to 5 additional global drivers. Weight integer 0-9. Total drivers (protected +
 # free) capped at 9 — adding a 6th triggers M1 "add-one-drop-one": new driver
 # displaces an existing free driver in one audit-logged event. Removing a free
 # driver is also §ACD-gated (T-1920).
 free_drivers: []
-
-# Auto-promote thresholds. enabled:false by default — sovereignty at policy-edit
-# time (D8). Flipping enabled:true is §ACD-gated by T-1932. Thresholds tuned by
-# rubric outcomes; review schedule lives in docs/reports/T-1915-bvp-inception.md §3.
 auto_promote:
   enabled: false
   bvp_norm_min: 0.85

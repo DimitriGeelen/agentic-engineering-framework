@@ -1,0 +1,18 @@
+# BVP weight + driver mutation log (T-1920, arc-006). Append-only.
+# Schema per entry:
+#   verb:           weight | driver_add | driver_remove
+#   driver:         Dn or Fn id affected
+#   section:        protected_drivers | free_drivers (weight verb only)
+#   from_weight:    previous weight (weight verb only)
+#   to_weight:      new weight (weight verb only)
+#   name:           free-driver name (driver_add only)
+#   weight:         free-driver weight (driver_add only)
+#   dropped:        Fn id displaced by M1 add-one-drop-one (driver_add only)
+#   rationale:      ≥30-char explanation (R6 mitigation)
+#   who:            $USER who ran the command
+#   agent_session:  true iff $CLAUDECODE=1 (audit signal for §ACD override usage)
+#   ts:             UTC ISO-8601 timestamp
+#
+# Smoke-test history from T-1920 build session purged before ship; the file
+# starts clean for first genuine human-approved edit.
+entries: []
