@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1924: BVP T-NEW-8: fw bvp confirm verb — bvp_scores_proposed → bvp_scores (Sovereignty boundary, §ACD gated)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-19T07:52:04Z
+# ============================================================================
+
+task_id: T-1924
+task_name: "BVP T-NEW-8: fw bvp confirm verb — bvp_scores_proposed → bvp_scores (Sovereignty boundary, §ACD gated)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: 2026-05-19T07:51:59Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw bvp confirm T-<id>` copies `bvp_scores_proposed:` into `bvp_scores:` with `confirmed_by:`, `confirmed_at:` fields — proven by smoke on T-99988 probe: bvp_scores written, confirmed_by=root, confirmed_at=ISO-8601 UTC'
+  - '`fw bvp confirm T-<id> --override D2=4` accepts proposed but overrides D2 to 4 in the confirmed write — proven by smoke: proposed D1=3 + --override D1=5 → confirmed D1=5, other drivers from proposed preserved'
+  - 'After confirm, running T-1922 worker on the same task does NOT overwrite `bvp_scores:` (verifies M3 sticky semantics) — design fact: confirm clears `bvp_scores_proposed:` to `[]` AND sets `bvp_scores:`; T-1922 (when it ships) reads bvp_scores presence as the "sticky" signal per M3. Verified architectural intent; full integration test lands when T-1922 implements the estimator'
+  - 'Refuses under `$CLAUDECODE=1` unless `--i-am-human` or `--from-watchtower` (F7 + M6 — confirmation is Sovereignty) — proven by smoke on T-99999 (nonexistent task, still hits §ACD refusal); ordering: form parse → §ACD → filesystem lookup'
+  - '`bvp_scores_proposed:` block is cleared after confirm (next sweep can re-populate per M3) — proven by smoke: probe''s bvp_scores_proposed: was `[]` post-confirm; re-confirm without new --override refused with "Nothing to confirm" + actionable hint'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-8, cli, sovereignty, acd-gate]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 51
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1924-bvp-fw-bvp-confirm-verb-proposed-confirmed-.md
+generated_by: context-agent-hybrid

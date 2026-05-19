@@ -467,6 +467,157 @@ def cmd_driver(args):
     return 2
 
 
+# ---------------------------------------------------------- confirm (T-1924)
+def cmd_confirm(args):
+    """Move bvp_scores_proposed: → bvp_scores: with confirmed_by/at; clear proposed.
+
+    Sovereignty boundary (F7, D8): only the human confirms. After confirm, the
+    estimator's M3 v2-delta logic must skip this task (T-1922 reads bvp_scores
+    presence as the "sticky" signal). --override D=N lets the human alter
+    individual driver scores at confirm time.
+
+    Form validation precedes §ACD (consistent with T-1920/T-1926).
+    """
+    if '--help' in args or '-h' in args or not args:
+        print("""Usage: fw bvp confirm T-<id> [--override Dn=N]... [--i-am-human|--from-watchtower]
+
+  Moves bvp_scores_proposed: → bvp_scores: on the named task.
+  Records confirmed_by (=$USER) and confirmed_at (UTC ISO-8601).
+  Clears bvp_scores_proposed: so the estimator's next sweep can re-populate
+  per M3 v2-delta semantics.
+
+  Overrides:
+    --override Dn=N    set/replace Dn score at confirm time (after proposed
+                        baseline). May be repeated for multiple drivers.
+    --i-am-human       sovereignty override for §ACD gate (T-1671 shape)
+    --from-watchtower  Flask backend POST
+
+  Refuses under $CLAUDECODE=1 unless --i-am-human or --from-watchtower.
+
+  Note: confirm has NO effect if the task has no bvp_scores_proposed: AND no
+  --override flags — there's nothing to write. In that case, propose first
+  (T-1922 estimator) or supply --override values directly.
+""")
+        return 0
+
+    # Pull target task id.
+    task_id = None
+    for a in args:
+        if re.fullmatch(r'T-\d+', a):
+            task_id = a
+            break
+    if not task_id:
+        print("Error: fw bvp confirm requires a task id (T-NNN).", file=sys.stderr)
+        return 2
+
+    # Pull --override Dn=N pairs (may repeat).
+    overrides = {}
+    i = 0
+    while i < len(args):
+        if args[i] == '--override':
+            if i + 1 >= len(args):
+                print("Error: --override needs Dn=N", file=sys.stderr)
+                return 2
+            spec = args[i + 1]
+            m = re.fullmatch(r'(D\d+|F\d+|[A-Za-z][A-Za-z0-9_-]*)=(\d+)', spec)
+            if not m:
+                print(f"Error: invalid --override value {spec!r}; expected Dn=N", file=sys.stderr)
+                return 2
+            score = int(m.group(2))
+            if not 0 <= score <= 5:
+                print(f"Error: score {score} out of range (0-5)", file=sys.stderr)
+                return 2
+            overrides[m.group(1)] = score
+            i += 2
+            continue
+        i += 1
+
+    # §ACD gate fires AFTER form parse (task id + overrides shape) but BEFORE
+    # filesystem lookup. Reason: sovereignty check should not depend on whether
+    # the target exists (typo'd task id under CLAUDECODE=1 must still surface
+    # the §ACD refusal). Different ordering from cmd_weight (where rationale
+    # validation precedes §ACD) — confirm has no comparable "form" check that
+    # benefits from running first.
+    if not acd_gate('confirm', args,
+                    refusal_hint="Correct flow: human reviews proposed scores in Watchtower or runs `fw bvp confirm T-<id> --i-am-human`"):
+        return 1
+
+    # Locate task file.
+    matches = []
+    for sub in ('active', 'completed'):
+        for p in (PROJECT_ROOT / '.tasks' / sub).glob(f'{task_id}-*.md'):
+            matches.append(p)
+    if not matches:
+        print(f"Error: task {task_id} not found.", file=sys.stderr)
+        return 1
+    task_path = matches[0]
+
+    # Read frontmatter via ruamel for preservation, fall back to PyYAML.
+    if _HAS_RUAMEL:
+        with open(task_path) as fh:
+            raw = fh.read()
+    else:
+        raw = task_path.read_text()
+    m = _FM_RE.match(raw)
+    if not m:
+        print(f"Error: task file {task_path} has no frontmatter.", file=sys.stderr)
+        return 1
+    fm_text = m.group(1)
+
+    if _HAS_RUAMEL:
+        from io import StringIO
+        fm = _ruamel_yaml.load(fm_text)
+    else:
+        fm = yaml.safe_load(fm_text)
+
+    proposed = fm.get('bvp_scores_proposed') if fm else None
+    if not proposed and not overrides:
+        print(f"Nothing to confirm for {task_id}: bvp_scores_proposed: is empty and no --override values supplied.", file=sys.stderr)
+        print("Either run the estimator first (T-1922) or supply --override Dn=N flags.", file=sys.stderr)
+        return 1
+
+    # Build the confirmed map. Proposed is a list of timestamped entries
+    # (per T-1918 schema); take the newest entry's scores dict.
+    confirmed = {}
+    if proposed:
+        latest = proposed[-1] if isinstance(proposed, list) else proposed
+        # latest is expected to have a 'scores' key per M3, or be the scores dict directly.
+        if isinstance(latest, dict):
+            if 'scores' in latest:
+                confirmed.update({k: int(v) for k, v in (latest.get('scores') or {}).items()})
+            else:
+                confirmed.update({k: int(v) for k, v in latest.items() if isinstance(v, (int, float)) and not isinstance(v, bool)})
+    confirmed.update(overrides)
+
+    if not confirmed:
+        print(f"Error: no scores to write — proposed was non-empty but didn't contain a score map.", file=sys.stderr)
+        return 1
+
+    fm['bvp_scores'] = confirmed
+    fm['bvp_scores_proposed'] = []  # M3 — cleared; estimator may re-populate next sweep.
+    fm['confirmed_by'] = os.environ.get('USER', 'unknown')
+    fm['confirmed_at'] = _utc_now()
+
+    # Re-serialise frontmatter + write back.
+    if _HAS_RUAMEL:
+        buf = StringIO()
+        _ruamel_yaml.dump(fm, buf)
+        new_fm_text = buf.getvalue().rstrip()
+    else:
+        new_fm_text = yaml.safe_dump(fm, sort_keys=False, default_flow_style=False).rstrip()
+
+    new_body = raw[:m.start(1)] + new_fm_text + raw[m.end(1):]
+    task_path.write_text(new_body)
+
+    print(f"OK: confirmed bvp_scores for {task_id}")
+    print(f"  Scores: {confirmed}")
+    if overrides:
+        print(f"  Overrides applied: {overrides}")
+    print(f"  Confirmed by: {fm['confirmed_by']}  at: {fm['confirmed_at']}")
+    print(f"  bvp_scores_proposed: cleared (M3 — estimator may re-propose if next pass diverges by ≥2)")
+    return 0
+
+
 def _driver_add(args):
     if not acd_gate('driver --add', args,
                     refusal_hint="Adding a driver is a policy-edit; the human approves the framing."):
@@ -608,6 +759,9 @@ USAGE:
                                   add free driver; --drop required when at cap=9 (M1)
   fw bvp driver --remove Dn --rationale "..."
                                   remove free driver (D1-D4 protected)
+  fw bvp confirm T-<id> [--override Dn=N]... [--i-am-human|--from-watchtower]
+                                  move bvp_scores_proposed → bvp_scores
+                                  (sovereignty boundary, F7/D8, §ACD-gated)
   fw bvp --help                   this message
 
 NOTES:
@@ -645,6 +799,8 @@ def main(argv):
         return cmd_weight(args[1:])
     if args[0] == 'driver':
         return cmd_driver(args[1:])
+    if args[0] == 'confirm':
+        return cmd_confirm(args[1:])
     if re.fullmatch(r'T-\d+', args[0]):
         return cmd_detail(args[0])
     print(f"ERROR: unknown verb '{args[0]}'. See `fw bvp --help`.", file=sys.stderr)
