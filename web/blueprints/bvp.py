@@ -67,9 +67,17 @@ def _compute_bvp(scores: dict, weights: dict[str, int]) -> tuple[int, float]:
     return raw, raw / (5 * weight_sum)
 
 
-def _compute_cost(ce: dict | None) -> tuple[float | None, float | None, float | None, float | None, str]:
-    """Return (composite, blast_radius, tier, effort, source)."""
+def _compute_cost(ce: dict | None, *, default_when_absent: bool = False) -> tuple[float | None, float | None, float | None, float | None, str]:
+    """Return (composite, blast_radius, tier, effort, source).
+
+    T-1934: when default_when_absent=True (proposed-mode rendering), an
+    absent cost_estimate falls back to T-shirt M (4.0) with source
+    "default-medium" so the point still renders. The proper cost
+    estimator is the T-1935 follow-up.
+    """
     if not isinstance(ce, dict):
+        if default_when_absent:
+            return float(TSHIRT["M"]), None, None, None, "default-medium"
         return None, None, None, None, "absent"
     br, tier, effort = ce.get("blast_radius"), ce.get("tier"), ce.get("effort")
     if br is not None and tier is not None and effort is not None:
@@ -79,6 +87,8 @@ def _compute_cost(ce: dict | None) -> tuple[float | None, float | None, float | 
     if size and str(size).upper() in TSHIRT:
         v = float(TSHIRT[str(size).upper()])
         return v, None, None, None, "tshirt"
+    if default_when_absent:
+        return float(TSHIRT["M"]), None, None, None, "default-medium"
     return None, None, None, None, "absent"
 
 
@@ -134,7 +144,7 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
             is_proposed = not confirmed
             scores = confirmed if confirmed else proposed
             raw, norm = _compute_bvp(scores, weights)
-            cost, br, tier, effort, src = _compute_cost(fm.get("cost_estimate"))
+            cost, br, tier, effort, src = _compute_cost(fm.get("cost_estimate"), default_when_absent=is_proposed)
             if cost is None:
                 continue
             points.append({
@@ -170,7 +180,7 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
         is_proposed = not confirmed
         scores = confirmed if confirmed else proposed
         raw, norm = _compute_bvp(scores, weights)
-        cost, br, tier, effort, src = _compute_cost(data.get("cost_estimate"))
+        cost, br, tier, effort, src = _compute_cost(data.get("cost_estimate"), default_when_absent=is_proposed)
         points.append({
             "kind": "arc",
             "id": data.get("id") or Path(p).stem,
