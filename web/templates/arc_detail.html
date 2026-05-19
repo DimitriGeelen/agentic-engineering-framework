@@ -111,7 +111,16 @@
     </div>
 
     {% if not bvp_info.has_scores %}
-    <p class="muted">Arc has no <code>bvp_scores:</code> set. Score via <code>fw bvp confirm</code> or edit <code>.context/arcs/{{ arc_slug }}.yaml</code> directly.</p>
+    <p class="muted">Arc has no <code>bvp_scores:</code> set and no constituent task scores to roll up. Score via <code>fw bvp confirm</code> or edit <code>.context/arcs/{{ arc_slug }}.yaml</code> directly.</p>
+    {% elif bvp_info.bvp_mode and bvp_info.bvp_mode != 'direct-confirmed' %}
+    <p class="muted">
+        <small>Source: <code>{{ bvp_info.bvp_mode }}</code>
+        {% if bvp_info.bvp_mode == 'direct-proposed' %}— arc has estimator-proposed scores (advisory; no direct confirmation yet).
+        {% elif bvp_info.bvp_mode == 'derived-confirmed' %}— rolled up from constituent task <code>bvp_scores:</code> (no arc-level scores set yet).
+        {% elif bvp_info.bvp_mode == 'derived-proposed' %}— rolled up from constituent task scores; at least one input is estimator-proposed (advisory).
+        {% endif %}
+        </small>
+    </p>
     {% endif %}
 
     <details>

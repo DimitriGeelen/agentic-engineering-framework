@@ -683,11 +683,30 @@ def _bvp_signals(arc: dict, arc_slug: str, arc_numeric: str) -> dict:
     has_scores is False when the arc has no `bvp_scores:` — the block
     still renders so the human sees proposed-driver approve buttons.
     """
-    from web.blueprints.bvp import _compute_bvp, _driver_weights, _load_policy
+    from web.blueprints.bvp import (
+        _compute_bvp, _driver_weights, _load_policy,
+        _latest_proposed_scores, _arc_member_tasks, _arc_rolled_up_scores,
+    )
 
     policy = _load_policy()
     weights = _driver_weights(policy)
-    arc_scores = arc.get("bvp_scores") or {}
+    arc_scores: dict = arc.get("bvp_scores") or {}
+    bvp_mode = ""
+    # T-1939: parity with /bvp scatter (T-1934 + T-1936). Resolution ladder
+    # mirrors web.blueprints.bvp._collect_arc_points: direct-confirmed →
+    # direct-proposed → constituent rollup → empty.
+    if isinstance(arc_scores, dict) and arc_scores:
+        bvp_mode = "direct-confirmed"
+    else:
+        direct_proposed = _latest_proposed_scores(arc)
+        if direct_proposed:
+            arc_scores, bvp_mode = direct_proposed, "direct-proposed"
+        else:
+            members = _arc_member_tasks(arc_slug, arc_numeric)
+            rolled, mode = _arc_rolled_up_scores(members)
+            if rolled:
+                arc_scores, bvp_mode = rolled, mode  # derived-{confirmed,proposed}
+
     if isinstance(arc_scores, dict) and arc_scores:
         raw, norm = _compute_bvp(arc_scores, weights)
         has_scores = True
@@ -734,6 +753,7 @@ def _bvp_signals(arc: dict, arc_slug: str, arc_numeric: str) -> dict:
         "coherence_findings": coherence,
         "proposed_drivers": proposed_sorted,
         "scoped_drivers": scoped,
+        "bvp_mode": bvp_mode,  # T-1939: provenance label (see ladder above)
     }
 
 
