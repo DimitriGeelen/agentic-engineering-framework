@@ -4,7 +4,7 @@ name: "BVP T-NEW-14a: auto-promote logic + log, off by default (split parent T-N
 description: >
   Auto-promote logic reading auto_promote.* from policy/value-drivers.yaml. When enabled and a task is HV/LC (bvp_norm ≥ bvp_norm_min and cost ≤ cost_max), promote captured → started-work. Respects max_concurrent. Logs every promotion to .context/bvp-auto-promote-log.yaml. R4 detection metadata captured.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,7 +13,7 @@ components: [lib/bvp.sh, .context/bvp-auto-promote-log.yaml]
 related_tasks: [T-1915, T-1916, T-1917, T-1924]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:00:00Z
+last_update: 2026-05-19T13:47:44Z
 date_finished: null
 ---
 
@@ -52,3 +52,6 @@ grep -q "auto_promote" lib/bvp.sh
 - **Plan impact:** Default OFF is non-negotiable (D8). T-1932 handles enabling-path; this slice MUST ship with enabled:false default and zero promotion on test.
 
 ## Updates
+
+### 2026-05-19T13:47:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

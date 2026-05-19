@@ -263,6 +263,13 @@ fw tier0 approve     # Approve a blocked destructive command
 | Focus arc | `fw arc focus <slug>` |
 | List arcs | `fw arc list` |
 | Show arc detail | `fw arc show <slug>` |
+| Rank tasks by BVP | `fw bvp` |
+| Show per-driver detail for a task | `fw bvp T-XXX` |
+| Filter ranking by quadrant | `fw bvp --quadrant {hv-lc\|hv-hc\|lv-lc\|lv-hc}` |
+| Change driver weight (§ACD) | `fw bvp weight --set Dn=N --rationale "..."` |
+| Confirm task scores | `fw bvp confirm T-XXX` |
+| Approve arc-scoped driver (§ACD) | `fw arc approve-driver <arc> "<name>" [--weight N]` |
+| Surface estimator-proposed scoped drivers | `fw arc show-suggestions <arc>` |
 
 ## Glossary
 
@@ -281,6 +288,12 @@ fw tier0 approve     # Approve a blocked destructive command
 | **Project Memory** | Patterns, decisions, and learnings accumulated across all tasks. Persists between sessions. Stored in `.context/project/`. |
 | **Sovereignty** | The human's absolute authority in the Authority Model. Humans can override anything but are accountable for the outcome. Structural gates enforce sovereignty — agents cannot bypass them. |
 | **Working Memory** | Active session state: current focus, pending actions, recent context. Lives in `.context/working/`. Refreshed each session via `fw context init`. |
+| **BVP (Business Value Points)** | A directive-weighted score on tasks/arcs: `Σ(driver_weight × driver_score)` where score is 0–5 and weight is 0–9. Surfaces high-value/low-cost work in the quadrant view. Adapted from Geelen 2019; see `040-ValueDrivers.md`. |
+| **Value Driver** | A named dimension along which work is scored. Carries a weight (integer 0–9). Total drivers (protected + free) ≤ 9. See `040-ValueDrivers.md`. |
+| **Free Driver** | A project-level value driver beyond the four constitutional directives. Up to 5 per project; adding a 6th triggers M1 add-one-drop-one. Managed via `fw bvp driver --add/--remove` (§ACD). |
+| **Arc-Scoped Driver** | A driver registered on a single arc, distinguishing what the global directives don't capture. Cap 3 per arc, weight ≤ 6 (M2). Managed via `fw arc approve-driver` (§ACD). |
+| **Directive Scoring** | The per-task act of assigning 0–5 to each driver. Calibrated to ±1 across independent scorers; rubric in `policy/bvp-scoring-rubric.md`. |
+| **Quadrant** | The split of the task list on median BVP × median cost (`hv-lc`, `hv-hc`, `lv-lc`, `lv-hc`). Medians are recomputed live each invocation — no calibration thresholds to set. |
 
 ## Installation
 
