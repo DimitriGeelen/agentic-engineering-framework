@@ -162,13 +162,21 @@ The `## Verification` section contains shell commands that **must pass** before 
 
 If the toolchain is not installed on the gate-running host, scope the command (e.g. `command -v dotnet >/dev/null && dotnet build`). Don't omit the check.
 
-**Cron-touching tasks (L-364, T-1771):** If your task edited `.context/cron-registry.yaml`, anything under `.context/cron/`, or any cron generator code (`bin/fw cron generate|install`, `agents/audit/audit.sh` cron schedule helpers), `## Verification` MUST include:
+**Cron-touching tasks (L-364, T-1771, T-1942, T-1943):** If your task edited `.context/cron-registry.yaml`, anything under `.context/cron/`, or any cron generator code (`bin/fw cron generate|install`, `agents/audit/audit.sh` cron schedule helpers), `## Verification` MUST include:
 
 ```
-bin/fw doctor 2>&1 | grep -q "Cron registry in sync"
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
 ```
 
-The chain is registry → generated → deployed. Each transition is a separate state — "wired" is not "deployed". Without this check, a cron-touching task can ship work-completed while the deployed crontab is still the previous version and the new job never fires (T-1767 origin: 3 days of silent drift). The `fw doctor` line + this AC catches drift at task-close, before the broken state ships. T-1771 also wires this into `fw audit` (FAIL on registry/deployed mismatch), so autonomous monitoring catches it post-ship — but task-close is the earlier, cheaper gate.
+The chain is registry → generated → deployed — three transitions, three drift classes (T-1942):
+
+1. **registry → generated** — `fw cron generate` not run after registry edit. Doctor emits `WARN Cron registry edited but not generated`. Audit emits FAIL (T-1943).
+2. **generated → deployed** — `fw cron install` not run after regenerate. Doctor emits `WARN Cron registry drift`. Audit emits FAIL (T-1771).
+3. **deployed → executable** — cron line is on disk but fails at exec time (cwd / env / missing module). L-365 advisory; no automated gate yet.
+
+Each transition is a separate state — "wired" is not "deployed", "deployed" is not "executable". The verification command above checks BOTH the "in sync" PASS (generated↔deployed) AND the absence of the new "edited but not generated" WARN (registry↔generated). Without both clauses, a registry-edited-but-never-regenerated state passes the gate because the in-sync line still fires (origin: T-1935 — 3+ days of silent drift before T-1941 cleared it).
+
+T-1942 + T-1943 close the registry→generated leg at both surfaces (doctor WARN, audit FAIL). T-1771 covers generated→deployed. Task-close is the earliest gate; audit's daily cron catches anything that slips past.
 
 ### Task Lifecycle
 
