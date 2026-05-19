@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1917: BVP T-NEW-2: policy/value-drivers.yaml schema + initial content (D1-D4 weights 9/7/5/3, free-driver section, auto_promote off)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-19T07:11:05Z
+# ============================================================================
+
+task_id: T-1917
+task_name: "BVP T-NEW-2: policy/value-drivers.yaml schema + initial content (D1-D4 weights 9/7/5/3, free-driver section, auto_promote off)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: 2026-05-19T07:10:59Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`policy/` directory exists at repo root'
+  - '`policy/value-drivers.yaml` exists with 4 protected entries: id=D1 weight=9 name=Antifragility, id=D2 weight=7 name=Reliability, id=D3 weight=5 name=Usability, id=D4 weight=3 name=Portability'
+  - 'Each protected entry has a `protected: true` field (refuses `fw bvp driver --remove`)'
+  - '`free_drivers: []` with inline comment documenting cap=5 and weight-range 0-9 and "add-one-drop-one" behavior (M1)'
+  - '`auto_promote:` block with `enabled: false`, `bvp_norm_min: 0.85`, `cost_max: 1`, `max_concurrent: 1` (M5)'
+  - 'Inline comment at top of file references this task, the handoff path, and the artefact path'
+  - '`fw audit` passes after the file is added (verifies A2 — audit YAML-parse accepts the new policy file)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-2, policy]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1917-bvp-policyvalue-driversyaml-schema-initial.md
+generated_by: context-agent-hybrid

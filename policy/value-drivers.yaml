@@ -1,0 +1,78 @@
+# Business Value Points (BVP) — value driver policy
+#
+# Source of truth for BVP scoring. Read by:
+#   - lib/bvp.sh                   (T-1919 read-only, T-1920 mutating)
+#   - lib/bvp.sh auto-promote      (T-1931 logic, T-1932 enabling)
+#   - lib/arc.sh approve-driver    (T-1926 arc-scoped drivers)
+#   - web/blueprints/bvp.py        (T-1928/T-1929)
+#   - web/blueprints/arcs.py       (T-1930)
+#
+# Filed under: T-1917 (BVP T-NEW-2)
+# Handoff:     .context/handoffs/HANDOFF-value-prioritisation-2026-05-15.md
+# Artefact:    docs/reports/T-1915-bvp-inception.md
+# Mechanics:   M1 (driver cap + add-one-drop-one), M5 (auto-promote thresholds)
+#
+# Driver model
+# ============
+#   protected_drivers:  The Four Constitutional Directives (CLAUDE.md). Immutable
+#                       in identity, weight may be adjusted via `fw bvp weight`
+#                       (T-1920) under §ACD; `--remove` is refused (protected:
+#                       true).
+#   free_drivers:       Up to 5 additional global drivers. Total drivers
+#                       (protected + free) capped at 9 — adding a 6th free driver
+#                       triggers M1 "add-one-drop-one": the new driver displaces
+#                       one existing free driver, captured as a single audit-
+#                       logged event.
+#
+# Weight semantics
+# ================
+#   Weight is an integer 0-9. Multiplied by the per-task per-driver score 0-5
+#   (rubric in policy/bvp-scoring-rubric.md, T-1921) to produce that driver's
+#   contribution to the task's BVP. Sum across drivers = task BVP; normalized
+#   by max-possible to produce bvp_norm in [0, 1].
+#
+# Auto-promote
+# ============
+#   When enabled, tasks with bvp_norm ≥ bvp_norm_min AND cost ≤ cost_max are
+#   promoted captured → started-work without per-event human approval. The
+#   sovereignty boundary is the enabling itself (D8): flipping auto_promote
+#   .enabled to true is §ACD-gated (T-1932). Default ships OFF.
+
+schema_version: 1
+
+protected_drivers:
+  - id: D1
+    name: Antifragility
+    weight: 9
+    protected: true
+    rationale: "System strengthens under stress; failures are learning events. CLAUDE.md Directive 1."
+  - id: D2
+    name: Reliability
+    weight: 7
+    protected: true
+    rationale: "Predictable, observable, auditable execution; no silent failures. CLAUDE.md Directive 2."
+  - id: D3
+    name: Usability
+    weight: 5
+    protected: true
+    rationale: "Joy to use/extend/debug; sensible defaults; actionable errors. CLAUDE.md Directive 3."
+  - id: D4
+    name: Portability
+    weight: 3
+    protected: true
+    rationale: "No provider/language/environment lock-in; prefer standards. CLAUDE.md Directive 4."
+
+# Up to 5 additional global drivers. Weight integer 0-9. Total drivers (protected +
+# free) capped at 9 — adding a 6th triggers M1 "add-one-drop-one": new driver
+# displaces an existing free driver in one audit-logged event. Removing a free
+# driver is also §ACD-gated (T-1920).
+free_drivers: []
+
+# Auto-promote thresholds. enabled:false by default — sovereignty at policy-edit
+# time (D8). Flipping enabled:true is §ACD-gated by T-1932. Thresholds tuned by
+# rubric outcomes; review schedule lives in docs/reports/T-1915-bvp-inception.md §3.
+auto_promote:
+  enabled: false
+  bvp_norm_min: 0.85
+  cost_max: 1
+  max_concurrent: 1

@@ -4,7 +4,7 @@ name: "Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inc
 description: >
   Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md (risks/assumption-review/framings) + file 18 build slices under arc-006
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-19T06:41:19Z
-last_update: 2026-05-19T06:41:19Z
-date_finished: null
+last_update: 2026-05-19T07:07:04Z
+date_finished: 2026-05-19T07:07:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -80,8 +80,9 @@ test -f docs/reports/T-1915-bvp-inception.md
 # Build-slice count: arc-006 should hold T-1915 + T-1916 + 17 build slices = 19 tasks once everything is filed.
 # (Initial filing count is 18; T-1916 itself is added by the time this gate fires.)
 out=$(bin/fw arc show value-prioritisation 2>&1); echo "$out" | grep -q "T-1915"
-# Each build slice has real ACs (no placeholder "[First criterion]" remaining in arc-006 tasks)
-! grep -l "\[First criterion\]" .tasks/active/T-19[0-9][0-9]-* 2>/dev/null | xargs grep -l "arc_id: value-prioritisation" 2>/dev/null
+# Each build slice has real ACs (no unfilled "- [ ] [First criterion]" template AC remaining in arc-006 build slices)
+# Anchored on the actual AC line — string occurrences inside Verification blocks or comments don't count.
+out=$(grep -l "^- \[ \] \[First criterion\]" .tasks/active/T-19[0-9][0-9]-*.md 2>/dev/null | xargs -r grep -l "^arc_id: value-prioritisation" 2>/dev/null); test -z "$out"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -125,6 +126,16 @@ out=$(bin/fw arc show value-prioritisation 2>&1); echo "$out" | grep -q "T-1915"
 -->
 
 ## Evolution
+
+### 2026-05-19 — Filing & verification regex
+- **What changed:** Original Verification command (`! grep -l "\[First criterion\]" .tasks/active/T-19[0-9][0-9]-* | xargs grep -l "arc_id: value-prioritisation"`) was self-referential — it matched T-1916 itself because the Verification line and Recommendation evidence quoted the placeholder string literally. Discovered at first work-completed attempt: gate failed pointing at T-1916.
+- **Plan impact:** Verification must anchor on the actual unfilled-AC line shape (`^- [ ] [First criterion]`), not the string anywhere in the file. String references in commentary/evidence are legitimate and shouldn't trip the gate.
+- **Triggered:** in-task fix only — verification command rewritten to `grep -l "^- \[ \] \[First criterion\]" ... | xargs -r grep -l "^arc_id: value-prioritisation" ...; test -z "$out"`. No external pivot. Self-referential verification is a class to watch for in any "no unfilled placeholders" check that lives inside the task body it audits.
+
+### 2026-05-19 — T-1915 auto-close discovery
+- **What changed:** Started this task expecting to enrich T-1915 in-place; mid-filing discovered T-1915 had transitioned to `work-completed` via a `--skip-sovereignty` bypass that looked like an §ACD violation. User clarified it was a Watchtower POST (the legitimate `--from-watchtower` exemption from T-1259/T-1260). Bypass log doesn't distinguish "Watchtower POST" from "agent bypass" at that surface.
+- **Plan impact:** Re-targeted enrichment from T-1915's body to `docs/reports/T-1915-bvp-inception.md` (frozen artefact) + per-slice build task bodies. Closed task body can't be edited anyway.
+- **Triggered:** Filed observation worth-considering — bypass log entries for Watchtower POSTs are indistinguishable from genuine bypasses, future agent could mis-alarm. Not a separate task yet; if it recurs, would land as a bypass-log enrichment task (annotate POST source).
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -187,3 +198,15 @@ out=$(bin/fw arc show value-prioritisation 2>&1); echo "$out" | grep -q "T-1915"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1916-enrich-t-1915-bvp-inception-capture--wri.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-87588ed1
+- **Timestamp:** 2026-05-19T07:07:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-19T07:07:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

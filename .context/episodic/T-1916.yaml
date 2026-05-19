@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1916: Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md (risks/assumption-review/framings) + file 18 build slices under arc-006
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-19T07:07:10Z
+# ============================================================================
+
+task_id: T-1916
+task_name: "Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md (risks/assumption-review/framings) + file 18 build slices under arc-006"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-19T06:41:19Z
+completed: 2026-05-19T07:07:04Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-19T08:53:44+02:00
+last_commit: 2026-05-19T08:53:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  enrich BVP inception capture — artefact + 17 build slices
+
+# Key outcomes
+outcomes:
+  - '`docs/reports/T-1915-bvp-inception.md` exists, covers §1 decision-recap, §2 risks register R1-R9, §3 assumption-review schedule A1-A6, §4 framings F4-deep/D7-reframe/D8/F8-mechanic/Geelen/reversibility, §5 cross-slice dependency graph, §6 build-slice manifest, §7 specific mechanics M1-M7'
+  - '17 build tasks filed under arc-006 (`arc_id: value-prioritisation`), each with real ACs (no placeholders), full components list, and explicit dependencies in body'
+  - 'Each filed build task references the corresponding T-NEW-N slice from the handoff'
+  - '`bin/fw arc show value-prioritisation` reports 19 tasks (T-1915 anchor + T-1916 enrichment + 17 build slices) — note: 19 not 18, T-1916 itself counts in the arc once tagged with arc_id'
+  - 'Final commit ties the enrichment artefact + all build-slice files under one logical change'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-1915-bvp-inception.md'
+  - '.tasks/active/T-1916-enrich-t-1915-bvp-inception-capture--wri.md'
+  - '.tasks/active/T-1917-bvp-policyvalue-driversyaml-schema-initial.md'
+  - '.tasks/active/T-1918-bvp-task-and-arc-frontmatter-schema-extens.md'
+  - '.tasks/active/T-1919-bvp-fw-bvp-read-only-cli-rank-detail-arcs-q.md'
+  - '.tasks/active/T-1920-bvp-fw-bvp-weight-driver-mutating-verbs-au.md'
+  - '.tasks/active/T-1921-bvp-scoring-rubric-policybvp-scoring-rubri.md'
+  - '.tasks/active/T-1922-bvp-termlink-bvp-estimator-worker-harness-r.md'
+  - '.tasks/active/T-1923-bvp-bvp-estimator-scheduled-sweep-fw-resume.md'
+  - '.tasks/active/T-1924-bvp-fw-bvp-confirm-verb-proposed-confirmed-.md'
+  - '.tasks/active/T-1925-bvp-document-primary-agent-arc-scoped-drive.md'
+  - '.tasks/active/T-1926-bvp-fw-arc-approve-driver-fw-arc-show-sugge.md'
+  - '.tasks/active/T-1927-bvp-per-driver-coherence-audit-check-fw-audi.md'
+  - '.tasks/active/T-1928-bvp-watchtower-bvp-static-scatter-read-only.md'
+  - '.tasks/active/T-1929-bvp-watchtower-bvp-live-sliders-commit-spli.md'
+  - '.tasks/active/T-1930-bvp-watchtower-arcsid-extensions-bvp-displa.md'
+  - '.tasks/active/T-1931-bvp-auto-promote-logic-log-off-by-default-s.md'
+  - '.tasks/active/T-1932-bvp-auto-promote-enabling-cron-trigger-wirin.md'
+  - '.tasks/active/T-1933-bvp-canonical-doc-040-valuedriversmd-framewo.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T08:53:44"
+    action: "T-1916: enrich BVP inception capture — artefact + 17 build slices"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [enrichment, build, bvp, handoff-followup]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 25
+  commits: 1
+  files_changed: 19
+  lines_added: 1384
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1916-enrich-t-1915-bvp-inception-capture--wri.md
+generated_by: context-agent-hybrid
