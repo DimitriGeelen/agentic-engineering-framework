@@ -210,3 +210,12 @@ jobs:
     origin_task: T-1923
     status: active
     description: "T-1923 (arc-006 BVP slice 7b). Periodic sweep over active tasks (status ∈ {started-work, captured}) where bvp_scores: is empty AND (bvp_scores_proposed: older than 24h OR unscored: true was flagged by the SLA-fallback path). Heuristic engine takes ~10ms per task so the full sweep is sub-second; flock prevents overlap. M3 v2-delta skips writes when proposal hasn't changed materially. Pairs with fw resume's with-sla 10s hard cap (T-1923 AC#3/AC#4) — resume never blocks on the estimator; the sweep mops up any tasks the sync path flagged."
+
+  - id: bvp-cost-estimator-sweep-15m
+    name: "BVP cost-estimator sweep (15 min, T-1935)"
+    schedule: "*/15 * * * *"
+    command: "flock -n /var/lock/agentic-cron-bvp-cost-estimator-sweep.lock -c 'fw bvp estimate-cost sweep --cron'"
+    source_file: agentic-audit.crontab
+    origin_task: T-1935
+    status: active
+    description: "T-1935 (arc-006 BVP slice 7c). Parallel sweep to bvp-estimator-sweep-15m but for cost_estimate (the F8 x-axis). Same scope (started-work / captured, cost_estimate empty, proposed stale or unscored). Sovereignty: writes only to cost_estimate_proposed:, never to cost_estimate:. Heuristic: blast_radius from `components:` count, tier from tags/workflow_type lookup, effort from body length + AC count. R3 deterministic (10-run delta=0)."

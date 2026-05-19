@@ -17,7 +17,7 @@ components: [web/blueprints/bvp.py, web/templates/bvp.html,
 related_tasks: [T-1915, T-1916, T-1922, T-1923, T-1928]
 arc_id: value-prioritisation
 created: 2026-05-19T18:36:52Z
-last_update: '2026-05-19T18:45:02Z'
+last_update: '2026-05-19T19:08:39Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:45:02Z'
@@ -29,6 +29,16 @@ bvp_scores_proposed:
       D4: 0
     rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T19:08:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

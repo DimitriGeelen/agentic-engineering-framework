@@ -54,3 +54,56 @@ def test_compute_cost_default_off_by_default():
     semantics. Confirmed-only callers must continue to skip un-costed entities."""
     cost, br, tier, effort, src = bvp._compute_cost(None)
     assert (cost, src) == (None, "absent")
+
+
+# ----------------------------------------------------------------------------
+# T-1935: _resolve_cost_estimate routing for confirmed/proposed/default
+# ----------------------------------------------------------------------------
+
+
+def test_resolve_cost_estimate_confirmed_takes_precedence():
+    fm = {
+        "cost_estimate": {"blast_radius": 3, "tier": 2, "effort": 5},
+        "cost_estimate_proposed": [{"cost_estimate": {"blast_radius": 9, "tier": 9, "effort": 9}}],
+    }
+    ce, mode = bvp._resolve_cost_estimate(fm, is_proposed=True)
+    assert mode == "confirmed"
+    assert ce == {"blast_radius": 3, "tier": 2, "effort": 5}
+
+
+def test_resolve_cost_estimate_reads_proposed_when_proposed_mode():
+    fm = {
+        "cost_estimate_proposed": [
+            {"cost_estimate": {"blast_radius": 5, "tier": 3, "effort": 7}},
+            {"cost_estimate": {"blast_radius": 1, "tier": 2, "effort": 3}},  # latest
+        ],
+    }
+    ce, mode = bvp._resolve_cost_estimate(fm, is_proposed=True)
+    assert mode == "proposed"
+    assert ce == {"blast_radius": 1, "tier": 2, "effort": 3}  # latest entry wins
+
+
+def test_resolve_cost_estimate_ignores_proposed_when_confirmed_mode():
+    """T-1934 confirmed-strict: confirmed-mode BVP point with no cost_estimate
+    must NOT silently borrow from cost_estimate_proposed:."""
+    fm = {
+        "cost_estimate_proposed": [{"cost_estimate": {"blast_radius": 1, "tier": 2, "effort": 3}}],
+    }
+    ce, mode = bvp._resolve_cost_estimate(fm, is_proposed=False)
+    assert mode == "default"
+    assert ce is None
+
+
+def test_resolve_cost_estimate_default_when_nothing():
+    ce, mode = bvp._resolve_cost_estimate({}, is_proposed=True)
+    assert (ce, mode) == (None, "default")
+
+
+def test_latest_proposed_cost_estimate_returns_none_on_malformed():
+    """Robustness: malformed cost_estimate_proposed: doesn't crash."""
+    assert bvp._latest_proposed_cost_estimate({}) is None
+    assert bvp._latest_proposed_cost_estimate({"cost_estimate_proposed": []}) is None
+    assert bvp._latest_proposed_cost_estimate({"cost_estimate_proposed": [None]}) is None
+    assert bvp._latest_proposed_cost_estimate({"cost_estimate_proposed": [{}]}) is None
+    assert bvp._latest_proposed_cost_estimate(
+        {"cost_estimate_proposed": [{"cost_estimate": "not a dict"}]}) is None

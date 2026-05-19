@@ -123,6 +123,48 @@ def _latest_proposed_scores(fm: dict) -> dict | None:
     return scores
 
 
+def _latest_proposed_cost_estimate(fm: dict) -> dict | None:
+    """T-1935: pull the newest proposed cost_estimate entry, if any.
+
+    Returns the inner `cost_estimate` dict (shape `{blast_radius, tier,
+    effort}`) — caller treats it identically to a confirmed
+    `cost_estimate:` field. Sovereignty: never reads from `cost_estimate:`
+    so callers must dispatch to this only when confirmed is absent.
+    """
+    proposed = fm.get("cost_estimate_proposed")
+    if not proposed or not isinstance(proposed, list):
+        return None
+    latest = proposed[-1] if isinstance(proposed[-1], dict) else None
+    if not latest:
+        return None
+    ce = latest.get("cost_estimate")
+    if not ce or not isinstance(ce, dict):
+        return None
+    return ce
+
+
+def _resolve_cost_estimate(fm: dict, *, is_proposed: bool) -> tuple[dict | None, str]:
+    """T-1935: resolve which cost_estimate to feed into `_compute_cost`.
+
+    Returns (cost_dict, mode_tag) where mode_tag is one of:
+      - "confirmed"           — `cost_estimate:` field present
+      - "proposed"            — `cost_estimate_proposed:` latest entry
+      - "default"             — neither; caller falls back to default-medium
+
+    `is_proposed` parameter tells us whether the BVP point itself is in
+    proposed-mode; we route to proposed-cost only in that case (else stay
+    strict). This preserves T-1934's confirmed-strict semantics.
+    """
+    confirmed = fm.get("cost_estimate")
+    if isinstance(confirmed, dict) and confirmed:
+        return confirmed, "confirmed"
+    if is_proposed:
+        proposed = _latest_proposed_cost_estimate(fm)
+        if proposed:
+            return proposed, "proposed"
+    return None, "default"
+
+
 def _collect_task_points(weights: dict[str, int]) -> list[dict]:
     """T-1934: returns both confirmed and proposed points. Confirmed scores
     take precedence (proposed is skipped if confirmed exists for the same
@@ -144,7 +186,10 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
             is_proposed = not confirmed
             scores = confirmed if confirmed else proposed
             raw, norm = _compute_bvp(scores, weights)
-            cost, br, tier, effort, src = _compute_cost(fm.get("cost_estimate"), default_when_absent=is_proposed)
+            ce, ce_mode = _resolve_cost_estimate(fm, is_proposed=is_proposed)
+            cost, br, tier, effort, src = _compute_cost(ce, default_when_absent=is_proposed)
+            if ce_mode == "proposed" and src != "default-medium":
+                src = src + "-proposed"
             if cost is None:
                 continue
             points.append({
@@ -180,7 +225,10 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
         is_proposed = not confirmed
         scores = confirmed if confirmed else proposed
         raw, norm = _compute_bvp(scores, weights)
-        cost, br, tier, effort, src = _compute_cost(data.get("cost_estimate"), default_when_absent=is_proposed)
+        ce, ce_mode = _resolve_cost_estimate(data, is_proposed=is_proposed)
+        cost, br, tier, effort, src = _compute_cost(ce, default_when_absent=is_proposed)
+        if ce_mode == "proposed" and src != "default-medium":
+            src = src + "-proposed"
         points.append({
             "kind": "arc",
             "id": data.get("id") or Path(p).stem,

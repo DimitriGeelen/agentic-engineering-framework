@@ -511,6 +511,192 @@ def write_proposed(task_path: Path, scores: dict[str, int],
     return True, "wrote"
 
 
+# ---- Cost estimator (T-1935, arc-006 T-NEW-7c) ------------------------------
+#
+# Parallel to BVP scoring above. Proposes the three F8 cost components per
+# task — blast_radius, tier, effort — written to `cost_estimate_proposed:`
+# (advisory list). The confirmed `cost_estimate:` field stays human-only via
+# `fw bvp confirm-cost`. Sovereignty preserved. R3 bit-deterministic by
+# construction (same input → same output). v1-heuristic engine.
+#
+# Why a separate code path instead of generalizing estimate_task:
+#   - The semantics differ (scores 0-5 per driver vs three named components).
+#   - The frontmatter target is different (bvp_scores_proposed vs
+#     cost_estimate_proposed) — keeping write paths separate prevents
+#     accidental cross-write.
+#   - Engine reuse comes for free at the harness level (sweep / with-sla)
+#     because both write functions return the same `(wrote, reason)` tuple.
+
+COST_TIER_TAGS = {"tier-0": 0, "tier-1": 1, "tier-2": 2, "tier-3": 3, "tier-4": 4}
+COST_WORKFLOW_TIER = {
+    "inception": 4, "specification": 4, "design": 3,
+    "build": 2, "refactor": 3, "test": 1, "decommission": 2,
+}
+
+
+def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """Heuristic: count `components:` entries → 0/1/3/5/7/9 scale.
+
+    Components are explicit declarations of what the task touches; longer
+    lists imply wider blast radius. The 0/1/3/5/7/9 ladder is non-linear by
+    design — a component count of 7 vs 8 is rarely meaningful, but 0 vs 1
+    vs 5+ is.
+    """
+    components = fm.get("components") or []
+    if not isinstance(components, list):
+        return 0, ["→0 (components-malformed)"]
+    n = len([c for c in components if c])
+    if n == 0: return 0, ["→0 (no-components)"]
+    if n == 1: return 1, ["→1 (single-component)"]
+    if n <= 3: return 3, [f"→3 ({n}-components)"]
+    if n <= 6: return 5, [f"→5 ({n}-components-medium-blast)"]
+    if n <= 9: return 7, [f"→7 ({n}-components-large-blast)"]
+    return 9, [f"→9 ({n}-components-cross-cutting)"]
+
+
+def score_tier(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """Heuristic: tag-table lookup wins; fallback to workflow_type table.
+
+    Tags are explicit (`tier-0`, `tier-1`, …) when authors annotated the
+    task; workflow_type is the universal fallback. Both tables are
+    documented at module top.
+    """
+    for t in tags:
+        if t in COST_TIER_TAGS:
+            v = COST_TIER_TAGS[t]
+            return v, [f"→{v} (tag:{t})"]
+    wf = fm.get("workflow_type") or "build"
+    v = COST_WORKFLOW_TIER.get(wf, 2)
+    return v, [f"→{v} (workflow:{wf})"]
+
+
+_AC_CHECKBOX_RE = re.compile(r"^\s*-\s*\[[ xX]\]", re.M)
+
+
+def score_effort(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """Heuristic: body-line-count / 50 + AC-checkbox count, clamped to [1, 8]."""
+    body_lines = body.count("\n")
+    ac_count = len(_AC_CHECKBOX_RE.findall(body))
+    raw = body_lines // 50 + ac_count
+    v = max(1, min(8, raw))
+    return v, [f"→{v} (lines={body_lines},acs={ac_count})"]
+
+
+def estimate_cost(task_path: Path) -> dict:
+    """Score one task's cost components; return canonical envelope.
+
+    Shape: `{cost_estimate: {blast_radius, tier, effort}, evidence: {...},
+    version, rubric_sha, latency_s}`. Mirrors `estimate_task` so callers
+    can pattern-match identically.
+    """
+    t0 = time.monotonic()
+    fm, body = parse_task(task_path)
+    tags = list(fm.get("tags") or [])
+
+    br, br_ev = score_blast_radius(fm, body, tags)
+    tier, tier_ev = score_tier(fm, body, tags)
+    eff, eff_ev = score_effort(fm, body, tags)
+
+    return {
+        "cost_estimate": {"blast_radius": br, "tier": tier, "effort": eff},
+        "evidence": {"blast_radius": br_ev, "tier": tier_ev, "effort": eff_ev},
+        "version": ESTIMATOR_ID,
+        "rubric_sha": _rubric_sha(),
+        "latency_s": round(time.monotonic() - t0, 4),
+    }
+
+
+def _cost_v2_delta_should_skip(proposed: dict, confirmed: dict | None) -> bool:
+    """M3 v2-delta for cost: skip if confirmed exists AND every component
+    differs by <2.
+
+    Sovereignty: never reads from `cost_estimate_proposed`. Only `cost_estimate`
+    (confirmed) is the comparison baseline.
+    """
+    if not confirmed or not isinstance(confirmed, dict):
+        return False
+    relevant = {k: confirmed.get(k) for k in ("blast_radius", "tier", "effort")}
+    if all(v is None for v in relevant.values()):
+        return False
+    for k, conf in relevant.items():
+        prop = proposed.get(k)
+        if conf is None or prop is None:
+            continue
+        if abs(int(prop) - int(conf)) >= 2:
+            return False
+    return True
+
+
+def _cost_short_rationale(evidence: dict[str, list[str]]) -> str:
+    parts = []
+    for component, ev in evidence.items():
+        arrow = next((e for e in ev if e.startswith("→")), "→?")
+        signals = [e for e in ev if not e.startswith("→")]
+        sig_str = ",".join(signals[:2]) if signals else "no-signal"
+        parts.append(f"{component}={arrow.split()[0][1:]} ({sig_str})")
+    return "; ".join(parts)
+
+
+def write_proposed_cost(task_path: Path, cost_estimate: dict,
+                        evidence: dict[str, list[str]], rubric_sha: str,
+                        dry_run: bool = False) -> tuple[bool, str]:
+    """Write the proposed cost entry. Returns (wrote, reason).
+
+    Reasons: `wrote`, `no-frontmatter`, `v2-delta-skip`, `no-change-since-last`,
+    `dry-run`.
+    """
+    text = task_path.read_text()
+    m = _FM_RE.match(text)
+    if not m:
+        return False, "no-frontmatter"
+    fm_text = m.group(1)
+    body_text = m.group(2)
+
+    if _HAS_RUAMEL:
+        fm = _ruamel.load(fm_text)
+    else:
+        fm = yaml.safe_load(fm_text) or {}
+
+    confirmed = fm.get("cost_estimate") if fm else None
+    if _cost_v2_delta_should_skip(cost_estimate, confirmed):
+        return False, "v2-delta-skip"
+
+    entry = {
+        "ts": _utc_now(),
+        "estimator": ESTIMATOR_ID,
+        "cost_estimate": dict(cost_estimate),
+        "rationale": _cost_short_rationale(evidence),
+        "rubric_sha": rubric_sha,
+    }
+
+    existing = fm.get("cost_estimate_proposed") if fm else None
+    if existing is None or not isinstance(existing, list):
+        fm["cost_estimate_proposed"] = [entry]
+    else:
+        if existing and isinstance(existing[-1], dict) and \
+           existing[-1].get("estimator") == ESTIMATOR_ID and \
+           existing[-1].get("cost_estimate") == entry["cost_estimate"]:
+            return False, "no-change-since-last"
+        existing.append(entry)
+        fm["cost_estimate_proposed"] = existing
+
+    fm["last_update"] = _utc_now()
+
+    if _HAS_RUAMEL:
+        from io import StringIO
+        buf = StringIO()
+        _ruamel.dump(fm, buf)
+        new_fm_text = buf.getvalue().rstrip("\n")
+    else:
+        new_fm_text = yaml.safe_dump(fm, sort_keys=False, default_flow_style=False).rstrip("\n")
+
+    new_text = f"---\n{new_fm_text}\n---\n{body_text}"
+    if dry_run:
+        return False, "dry-run"
+    task_path.write_text(new_text)
+    return True, "wrote"
+
+
 # ---- CLI --------------------------------------------------------------------
 
 def _resolve_task(task_id: str) -> Path | None:
@@ -827,6 +1013,166 @@ def cmd_measure_a3(n: int = 20, output: Path | None = None) -> int:
     return 0
 
 
+def cmd_cost_one(task_id: str, dry_run: bool = False, json_out: bool = False) -> int:
+    task_path = _resolve_task(task_id)
+    if not task_path:
+        print(f"ERROR: task {task_id} not found", file=sys.stderr)
+        return 1
+    result = estimate_cost(task_path)
+    wrote, reason = write_proposed_cost(
+        task_path, result["cost_estimate"], result["evidence"],
+        result["rubric_sha"], dry_run=dry_run
+    )
+    result["wrote"] = wrote
+    result["reason"] = reason
+    result["task_id"] = task_id
+    result["task_path"] = str(task_path.relative_to(PROJECT_ROOT))
+    if json_out:
+        print(json.dumps(result, indent=2))
+    else:
+        ce = result["cost_estimate"]
+        ce_str = " ".join(f"{k}={v}" for k, v in ce.items())
+        print(f"{task_id}: {ce_str}  [{reason}]  ({result['latency_s']}s)")
+    return 0
+
+
+def cmd_cost_all(dry_run: bool = False, limit: int | None = None,
+                 statuses: list[str] | None = None) -> int:
+    task_files: list[Path] = []
+    for sub in ("active", "completed"):
+        task_files.extend(sorted((PROJECT_ROOT / ".tasks" / sub).glob("T-*.md")))
+    if limit:
+        task_files = task_files[:limit]
+
+    n_wrote = n_skip = n_err = 0
+    total_latency = 0.0
+    for tp in task_files:
+        fm, _ = parse_task(tp)
+        if statuses and (fm.get("status") not in statuses):
+            continue
+        try:
+            result = estimate_cost(tp)
+            wrote, reason = write_proposed_cost(
+                tp, result["cost_estimate"], result["evidence"],
+                result["rubric_sha"], dry_run=dry_run
+            )
+            total_latency += result["latency_s"]
+            if wrote:
+                n_wrote += 1
+            else:
+                n_skip += 1
+        except Exception as e:
+            n_err += 1
+            print(f"ERROR on {tp.name}: {e}", file=sys.stderr)
+
+    print(f"cost-estimated {n_wrote + n_skip + n_err} tasks: "
+          f"{n_wrote} wrote, {n_skip} skipped, {n_err} errored. "
+          f"Total latency {total_latency:.2f}s.")
+    return 0 if n_err == 0 else 1
+
+
+def _cost_proposed_is_stale(fm: dict, stale_hours: int) -> bool:
+    """Mirror of `_proposed_is_stale` for cost_estimate_proposed.
+
+    Returns True when the task SHOULD be re-scored (no proposed yet, OR
+    the last proposed is older than `stale_hours`, OR explicitly flagged
+    `unscored: true`).
+    """
+    if fm.get("unscored"):
+        return True
+    proposed = fm.get("cost_estimate_proposed") or []
+    if not proposed or not isinstance(proposed, list):
+        return True
+    last = proposed[-1] if isinstance(proposed[-1], dict) else None
+    if not last:
+        return True
+    ts = last.get("ts")
+    if not ts:
+        return True
+    try:
+        from datetime import datetime, timezone
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        delta_h = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+        return delta_h > stale_hours
+    except Exception:
+        return True
+
+
+def cmd_cost_sweep(stale_hours: int = 24,
+                   statuses: list[str] | None = None,
+                   cron: bool = False) -> int:
+    """T-1935 — periodic cost sweep. Mirrors T-1923's bvp sweep semantics.
+
+    Scope: tasks with status ∈ statuses AND (no `cost_estimate:` OR
+    `cost_estimate_proposed:` is stale/missing OR `unscored: true`).
+    Sovereignty: never overwrites confirmed `cost_estimate:`.
+    """
+    if statuses is None:
+        statuses = ["started-work", "captured"]
+    task_files: list[Path] = []
+    for sub in ("active", "completed"):
+        task_files.extend(sorted((PROJECT_ROOT / ".tasks" / sub).glob("T-*.md")))
+
+    n_scored = n_skip = n_err = 0
+    total_latency = 0.0
+
+    for tp in task_files:
+        try:
+            fm, _ = parse_task(tp)
+            if fm.get("status") not in statuses:
+                continue
+            if fm.get("cost_estimate"):
+                # Confirmed score exists — leave it alone (sovereignty).
+                continue
+            if not _cost_proposed_is_stale(fm, stale_hours):
+                continue
+            had_unscored = bool(fm.get("unscored"))
+            result = estimate_cost(tp)
+            wrote, reason = write_proposed_cost(
+                tp, result["cost_estimate"], result["evidence"],
+                result["rubric_sha"], dry_run=False
+            )
+            total_latency += result["latency_s"]
+            if wrote:
+                n_scored += 1
+                if had_unscored:
+                    _clear_unscored_flag(tp)
+            else:
+                n_skip += 1
+        except Exception as e:
+            n_err += 1
+            if not cron:
+                print(f"ERROR on {tp.name}: {e}", file=sys.stderr)
+
+    msg = (f"cost-sweep: scored {n_scored}, skipped {n_skip}, errored {n_err}; "
+           f"total latency {total_latency:.2f}s")
+    if cron:
+        # Cron uses logger -t agentic-cron — stdout is sufficient.
+        print(msg)
+    else:
+        print(msg)
+    return 0 if n_err == 0 else 1
+
+
+def cmd_cost_determinism(task_id: str, runs: int = 3) -> int:
+    """R3 contract check: 3 (or 10) runs must yield bit-identical output."""
+    task_path = _resolve_task(task_id)
+    if not task_path:
+        print(f"ERROR: task {task_id} not found", file=sys.stderr)
+        return 1
+    runs_data = [estimate_cost(task_path) for _ in range(runs)]
+    base = runs_data[0]["cost_estimate"]
+    max_delta = 0
+    for r in runs_data[1:]:
+        for k, v in r["cost_estimate"].items():
+            d = abs(int(v) - int(base.get(k, 0)))
+            if d > max_delta:
+                max_delta = d
+    print(f"{task_id}: {runs} runs, cost max delta per component = {max_delta} (deterministic={max_delta == 0})")
+    print(f"  cost_estimate: {base}")
+    return 0 if max_delta <= 1 else 1
+
+
 def main(argv: list[str]) -> int:
     p = argparse.ArgumentParser(prog="bvp-estimator",
                                 description="BVP estimator v1 (heuristic)")
@@ -864,6 +1210,28 @@ def main(argv: list[str]) -> int:
     p_sla.add_argument("--timeout", type=int, default=10,
                        help="seconds before flagging unscored:true (default 10s, Q4 default)")
 
+    # T-1935: cost-estimator verbs (parallel to bvp ones).
+    p_cone = sub.add_parser("cost-one", help="T-1935 cost-estimate a single task")
+    p_cone.add_argument("task_id")
+    p_cone.add_argument("--dry-run", action="store_true")
+    p_cone.add_argument("--json", action="store_true")
+
+    p_call = sub.add_parser("cost-all", help="T-1935 cost-estimate every task")
+    p_call.add_argument("--dry-run", action="store_true")
+    p_call.add_argument("--limit", type=int)
+    p_call.add_argument("--statuses", nargs="+")
+
+    p_csweep = sub.add_parser("cost-sweep", help="T-1935 periodic cost sweep")
+    p_csweep.add_argument("--stale-hours", type=int, default=24)
+    p_csweep.add_argument("--statuses", nargs="+",
+                          default=["started-work", "captured"])
+    p_csweep.add_argument("--cron", action="store_true")
+
+    p_cdet = sub.add_parser("cost-determinism",
+                            help="T-1935 R3 determinism check (10 runs by default)")
+    p_cdet.add_argument("task_id")
+    p_cdet.add_argument("--runs", type=int, default=10)
+
     args = p.parse_args(argv)
     if args.cmd == "one":
         return cmd_one(args.task_id, dry_run=args.dry_run, json_out=args.json)
@@ -878,6 +1246,15 @@ def main(argv: list[str]) -> int:
                          statuses=args.statuses, cron=args.cron)
     if args.cmd == "with-sla":
         return cmd_with_sla(args.task_id, timeout_s=args.timeout)
+    if args.cmd == "cost-one":
+        return cmd_cost_one(args.task_id, dry_run=args.dry_run, json_out=args.json)
+    if args.cmd == "cost-all":
+        return cmd_cost_all(dry_run=args.dry_run, limit=args.limit, statuses=args.statuses)
+    if args.cmd == "cost-sweep":
+        return cmd_cost_sweep(stale_hours=args.stale_hours,
+                              statuses=args.statuses, cron=args.cron)
+    if args.cmd == "cost-determinism":
+        return cmd_cost_determinism(args.task_id, runs=args.runs)
     return 2
 
 

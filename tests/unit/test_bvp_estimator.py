@@ -416,5 +416,172 @@ def test_cmd_sweep_clears_unscored_flag_on_success(tmp_path, monkeypatch):
     assert isinstance(fm.get("bvp_scores_proposed"), list)
 
 
+# ----------------------------------------------------------------------------
+# T-1935: cost-estimator coverage (parallel to BVP scoring tests above)
+# ----------------------------------------------------------------------------
+
+
+def _write_task(tmp_path: Path, slug: str, fm_extra: str = "", body: str = "Body.") -> Path:
+    """Helper: build a minimal valid task file."""
+    p = tmp_path / ".tasks" / "active"
+    p.mkdir(parents=True, exist_ok=True)
+    f = p / f"{slug}-test.md"
+    fm = (
+        "---\n"
+        f"id: {slug}\n"
+        f"name: \"{slug} test\"\n"
+        "status: started-work\n"
+        "workflow_type: build\n"
+        "owner: agent\n"
+        "horizon: now\n"
+        + fm_extra
+        + "---\n\n"
+        + body + "\n"
+    )
+    f.write_text(fm)
+    return f
+
+
+def test_score_blast_radius_zero_when_no_components():
+    fm = {"components": []}
+    v, ev = estimator.score_blast_radius(fm, "", [])
+    assert v == 0
+    assert any("no-components" in e for e in ev)
+
+
+def test_score_blast_radius_ladder():
+    """0/1/3/5/7/9 ladder by component count."""
+    cases = [
+        (1, 1), (2, 3), (3, 3), (4, 5), (6, 5), (7, 7), (9, 7), (10, 9), (20, 9),
+    ]
+    for n, expected in cases:
+        fm = {"components": [f"x{i}" for i in range(n)]}
+        v, _ = estimator.score_blast_radius(fm, "", [])
+        assert v == expected, f"n={n} → expected {expected}, got {v}"
+
+
+def test_score_tier_tag_table_wins_over_workflow():
+    fm = {"workflow_type": "build"}
+    v, ev = estimator.score_tier(fm, "", ["tier-0", "other"])
+    assert v == 0
+    assert any("tier-0" in e for e in ev)
+
+
+def test_score_tier_workflow_fallback():
+    for wf, expected in [("inception", 4), ("build", 2), ("test", 1)]:
+        fm = {"workflow_type": wf}
+        v, _ = estimator.score_tier(fm, "", [])
+        assert v == expected, f"wf={wf} → expected {expected}, got {v}"
+
+
+def test_score_effort_clamped_to_1_and_8():
+    v, _ = estimator.score_effort({}, "", [])
+    assert v == 1
+    body = "x\n" * 500 + "- [ ] a\n" * 20
+    v, _ = estimator.score_effort({}, body, [])
+    assert v == 8
+
+
+def test_estimate_cost_returns_required_fields(tmp_path):
+    task = _write_task(tmp_path, "T-99001",
+                       fm_extra='tags: [tier-2]\ncomponents: [a/b, c/d]\n')
+    result = estimator.estimate_cost(task)
+    assert set(result.keys()) >= {"cost_estimate", "evidence", "version", "rubric_sha", "latency_s"}
+    ce = result["cost_estimate"]
+    assert set(ce.keys()) == {"blast_radius", "tier", "effort"}
+    assert all(isinstance(v, int) for v in ce.values())
+
+
+def test_estimate_cost_deterministic_10_runs(tmp_path):
+    task = _write_task(tmp_path, "T-99002", fm_extra='components: [a, b, c, d, e]\n',
+                       body="Body line.\n" * 20 + "- [ ] AC1\n- [ ] AC2\n")
+    base = estimator.estimate_cost(task)["cost_estimate"]
+    for _ in range(10):
+        nxt = estimator.estimate_cost(task)["cost_estimate"]
+        assert nxt == base, f"non-deterministic: {nxt} != {base}"
+
+
+def test_cost_v2_delta_skip_when_within_1():
+    proposed = {"blast_radius": 3, "tier": 2, "effort": 5}
+    confirmed = {"blast_radius": 3, "tier": 2, "effort": 5}
+    assert estimator._cost_v2_delta_should_skip(proposed, confirmed) is True
+    confirmed = {"blast_radius": 4, "tier": 2, "effort": 5}
+    assert estimator._cost_v2_delta_should_skip(proposed, confirmed) is True
+
+
+def test_cost_v2_delta_no_skip_when_any_component_delta_2():
+    proposed = {"blast_radius": 3, "tier": 2, "effort": 5}
+    confirmed = {"blast_radius": 5, "tier": 2, "effort": 5}
+    assert estimator._cost_v2_delta_should_skip(proposed, confirmed) is False
+
+
+def test_cost_v2_delta_no_skip_when_no_confirmed():
+    proposed = {"blast_radius": 3, "tier": 2, "effort": 5}
+    assert estimator._cost_v2_delta_should_skip(proposed, None) is False
+    assert estimator._cost_v2_delta_should_skip(proposed, {}) is False
+
+
+def test_write_proposed_cost_creates_cost_estimate_proposed(tmp_path):
+    task = _write_task(tmp_path, "T-99003", fm_extra='components: [x]\n')
+    ce = {"blast_radius": 1, "tier": 2, "effort": 3}
+    ev = {"blast_radius": ["→1 (single-component)"], "tier": ["→2 (workflow:build)"],
+          "effort": ["→3 (lines=2,acs=0)"]}
+    wrote, reason = estimator.write_proposed_cost(task, ce, ev, "abc123")
+    assert wrote is True
+    assert reason == "wrote"
+    fm, _ = estimator.parse_task(task)
+    cp = fm.get("cost_estimate_proposed")
+    assert isinstance(cp, list) and len(cp) == 1
+    assert cp[0]["cost_estimate"] == ce
+    assert "cost_estimate" not in fm or not fm["cost_estimate"]
+
+
+def test_write_proposed_cost_never_touches_confirmed(tmp_path):
+    task = _write_task(tmp_path, "T-99004",
+                       fm_extra='cost_estimate:\n  blast_radius: 5\n  tier: 3\n  effort: 4\n'
+                                'components: [x]\n')
+    ce = {"blast_radius": 0, "tier": 0, "effort": 0}
+    ev = {"blast_radius": ["→0"], "tier": ["→0"], "effort": ["→0"]}
+    wrote, _ = estimator.write_proposed_cost(task, ce, ev, "abc123")
+    assert wrote is True
+    fm, _ = estimator.parse_task(task)
+    assert fm["cost_estimate"] == {"blast_radius": 5, "tier": 3, "effort": 4}
+
+
+def test_write_proposed_cost_skips_v2_delta(tmp_path):
+    task = _write_task(tmp_path, "T-99005",
+                       fm_extra='cost_estimate:\n  blast_radius: 3\n  tier: 2\n  effort: 5\n')
+    ce = {"blast_radius": 3, "tier": 2, "effort": 5}
+    ev = {"blast_radius": ["→3"], "tier": ["→2"], "effort": ["→5"]}
+    wrote, reason = estimator.write_proposed_cost(task, ce, ev, "abc123")
+    assert wrote is False
+    assert reason == "v2-delta-skip"
+
+
+def test_cost_proposed_is_stale_branches():
+    """3 paths: no-proposed → stale, old-ts → stale, fresh-ts → not stale."""
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    old_ts = (now - timedelta(hours=48)).isoformat().replace("+00:00", "Z")
+    fresh_ts = (now - timedelta(hours=1)).isoformat().replace("+00:00", "Z")
+    assert estimator._cost_proposed_is_stale({}, 24) is True
+    assert estimator._cost_proposed_is_stale(
+        {"cost_estimate_proposed": [{"ts": old_ts}]}, 24) is True
+    assert estimator._cost_proposed_is_stale(
+        {"cost_estimate_proposed": [{"ts": fresh_ts}]}, 24) is False
+
+
+def test_cmd_cost_sweep_skips_confirmed(tmp_path, monkeypatch):
+    """Sovereignty: cmd_cost_sweep must NEVER overwrite a confirmed cost_estimate."""
+    task = _write_task(tmp_path, "T-99006",
+                       fm_extra='cost_estimate:\n  blast_radius: 5\n  tier: 3\n  effort: 4\n')
+    monkeypatch.setattr(estimator, "PROJECT_ROOT", tmp_path)
+    rc = estimator.cmd_cost_sweep(stale_hours=24, cron=True)
+    assert rc == 0
+    fm, _ = estimator.parse_task(task)
+    assert fm["cost_estimate"] == {"blast_radius": 5, "tier": 3, "effort": 4}
+    assert not fm.get("cost_estimate_proposed")
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))

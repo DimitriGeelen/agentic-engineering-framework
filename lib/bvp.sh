@@ -1149,5 +1149,60 @@ EOF
             python3 "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/estimator.py" "$@"
         return $?
     fi
+    # T-1935: 'estimate-cost' verb — parallel routing for cost-estimator
+    # (writes cost_estimate_proposed: only). Single-task convenience same
+    # pattern as 'estimate' above.
+    if [ "${1:-}" = "estimate-cost" ]; then
+        shift
+        local sub="${1:-}"
+        if [ -z "$sub" ] || [ "$sub" = "--help" ] || [ "$sub" = "-h" ]; then
+            cat <<'EOF'
+fw bvp estimate-cost — propose cost_estimate per task (advisory)
+
+USAGE:
+  fw bvp estimate-cost T-<id> [--dry-run] [--json]
+                            score one task; writes cost_estimate_proposed:
+                            (blast_radius/tier/effort) unless v2-delta skip
+  fw bvp estimate-cost all [--dry-run] [--limit N] [--statuses S1 S2]
+                            score every task
+  fw bvp estimate-cost sweep [--stale-hours 24] [--statuses S1 S2] [--cron]
+                            periodic sweep — re-score stale or unscored
+  fw bvp estimate-cost determinism T-<id> [--runs 10]
+                            R3 contract check: 10 runs delta=0
+
+NOTES:
+  - cost_estimate_proposed: is advisory; confirmed cost_estimate: is set
+    by the human via `fw bvp confirm-cost` (future work).
+  - Heuristic v1: blast_radius from components: count; tier from tags
+    (tier-N) or workflow_type; effort from body line count + AC count.
+  - Estimator script: agents/termlink/bvp-estimator/estimator.py
+EOF
+            return 0
+        fi
+        # Single-task convenience: `fw bvp estimate-cost T-XXX` → `... cost-one T-XXX`
+        if echo "$sub" | grep -qE '^T-[0-9]+$'; then
+            PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                python3 "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/estimator.py" cost-one "$@"
+            return $?
+        fi
+        # Map fw-side verb (sweep / all / determinism) to estimator verbs (cost-sweep / cost-all / cost-determinism)
+        case "$sub" in
+            sweep|all|determinism)
+                shift
+                PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                    python3 "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/estimator.py" "cost-$sub" "$@"
+                return $?
+                ;;
+            cost-*)
+                # Allow direct passthrough for power users
+                PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                    python3 "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/estimator.py" "$@"
+                return $?
+                ;;
+        esac
+        echo "ERROR: unknown estimate-cost subverb: $sub" >&2
+        echo "Try: fw bvp estimate-cost --help" >&2
+        return 2
+    fi
     _bvp_python_engine "$@"
 }
