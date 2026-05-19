@@ -360,14 +360,93 @@ def cmd_detail(task_id):
     return 1
 
 
+# ---------------- T-1937: CLI parity with web /bvp arc rollup ----------------
+# Mirrors web/blueprints/bvp.py {_arc_member_tasks, _arc_rolled_up_scores,
+# _arc_rolled_up_cost, _latest_proposed_scores}. Kept in sync structurally.
+# Adding a column-only feature here — sovereignty boundary unchanged: estimator
+# proposals never reach `bvp_scores:`; the rollup only READS those proposals.
+def _latest_proposed_scores(fm):
+    """Return the latest entry's scores dict from bvp_scores_proposed:, or None."""
+    proposed = fm.get('bvp_scores_proposed')
+    if not proposed or not isinstance(proposed, list):
+        return None
+    latest = proposed[-1] if isinstance(proposed[-1], dict) else None
+    if not latest:
+        return None
+    scores = latest.get('scores')
+    if not scores or not isinstance(scores, dict):
+        return None
+    return scores
+
+
+def _arc_member_tasks(arc_slug, arc_id_str):
+    """T-1849 dual-form: tasks bind via arc_id: <slug> OR arc_id: arc-NNN."""
+    members = []
+    patterns = [
+        str(PROJECT_ROOT / '.tasks' / 'active' / 'T-*.md'),
+        str(PROJECT_ROOT / '.tasks' / 'completed' / 'T-*.md'),
+    ]
+    targets = {x for x in (arc_slug, arc_id_str) if x}
+    if not targets:
+        return members
+    for pattern in patterns:
+        for p in sorted(glob.glob(pattern)):
+            fm = parse_frontmatter(Path(p))
+            if not fm:
+                continue
+            arc_id = fm.get('arc_id')
+            if arc_id and str(arc_id) in targets:
+                members.append(fm)
+    return members
+
+
+def _arc_rolled_up_scores(members):
+    """Mean-aggregate per-driver scores. Sovereignty: any proposed input taints
+    mode → derived-proposed (parallel to web blueprint)."""
+    if not members:
+        return None, ''
+    per_driver = {}
+    any_proposed = False
+    for fm in members:
+        confirmed = fm.get('bvp_scores') or {}
+        if confirmed and isinstance(confirmed, dict):
+            for k, v in confirmed.items():
+                if isinstance(v, (int, float)):
+                    per_driver.setdefault(k, []).append(int(v))
+            continue
+        proposed = _latest_proposed_scores(fm)
+        if proposed:
+            any_proposed = True
+            for k, v in proposed.items():
+                if isinstance(v, (int, float)):
+                    per_driver.setdefault(k, []).append(int(v))
+    if not per_driver:
+        return None, ''
+    scores = {k: round(sum(vs) / len(vs)) for k, vs in per_driver.items()}
+    mode = 'derived-proposed' if any_proposed else 'derived-confirmed'
+    return scores, mode
+
+
 def cmd_arcs():
     policy = load_policy()
     global_weights = driver_weights(policy)
     rows = []
     for path, data in collect_arcs():
         scores = data.get('bvp_scores') or {}
-        if not scores:
-            continue
+        source = ''
+        if scores:
+            source = 'direct'
+        else:
+            proposed = _latest_proposed_scores(data)
+            if proposed:
+                scores, source = proposed, 'direct-proposed'
+            else:
+                arc_slug = data.get('slug') or path.stem
+                arc_id_str = str(data.get('id') or '')
+                members = _arc_member_tasks(arc_slug, arc_id_str)
+                scores, source = _arc_rolled_up_scores(members)
+                if not scores:
+                    continue
         raw, norm, _ = compute_bvp(scores, global_weights)
         rows.append({
             'slug': data.get('slug', path.stem),
@@ -376,16 +455,17 @@ def cmd_arcs():
             'bvp_raw': raw,
             'bvp_norm': norm,
             'status': data.get('status', '-'),
+            'source': source,
         })
     if not rows:
-        print("No arcs have `bvp_scores:` set yet.")
+        print("No arcs have `bvp_scores:` set yet (and no constituent-task rollup available).")
         print("Per D2: arcs compared across arcs use only global drivers (D1-D4 + free).")
         return 0
     rows.sort(key=lambda r: r['bvp_norm'], reverse=True)
-    print(f"{'ARC':<8} {'SLUG':<24} {'STATUS':<12} {'BVP':>6} {'NORM':>6}  NAME")
-    print('-' * 80)
+    print(f"{'ARC':<8} {'SLUG':<24} {'STATUS':<12} {'BVP':>5} {'NORM':>6}  {'SOURCE':<18} NAME")
+    print('-' * 96)
     for r in rows:
-        print(f"{r['arc_id']:<8} {r['slug']:<24} {r['status']:<12} {r['bvp_raw']:>6} {r['bvp_norm']:>6.2f}  {r['name']}")
+        print(f"{r['arc_id']:<8} {r['slug']:<24} {r['status']:<12} {r['bvp_raw']:>5} {r['bvp_norm']:>6.2f}  {r['source']:<18} {r['name']}")
     return 0
 
 
