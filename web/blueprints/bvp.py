@@ -377,6 +377,12 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
             "status": data.get("status") or "-",
             "scores": {k: int(v) for k, v in scores.items() if isinstance(v, (int, float))},
             "proposed": is_proposed,
+            # T-1941: surface the 4-tier provenance slug so the scatter tooltip
+            # can distinguish direct vs derived (rollup) — the scatter previously
+            # collapsed both into `proposed: bool` and lost the rollup signal.
+            # Empty string when no scores route emitted a mode (defensive; the
+            # `continue` above on `not scores` should make this unreachable).
+            "bvp_mode": bvp_mode or "",
         })
     return points
 

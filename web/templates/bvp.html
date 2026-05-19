@@ -316,7 +316,14 @@
     }
     // T-1934: surface proposed vs confirmed in the tooltip explicitly
     const advisory = d.proposed ? " <em>(proposed)</em>" : "";
-    return `<strong>${d.id}</strong> [${d.kind}]${advisory}<br>${d.name}<br>BVP_norm ${d.bvp_norm.toFixed(3)} (raw ${d.bvp_raw})<br>${cost}`;
+    // T-1941: for arc dots, append the 4-tier provenance slug so users can
+    // tell direct-confirmed (anchored arc score) from derived-confirmed
+    // (rolled up from members) — same for proposed.
+    let provenance = "";
+    if (d.kind === "arc" && d.bvp_mode) {
+      provenance = `<br><small>source: <code>${d.bvp_mode}</code></small>`;
+    }
+    return `<strong>${d.id}</strong> [${d.kind}]${advisory}<br>${d.name}<br>BVP_norm ${d.bvp_norm.toFixed(3)} (raw ${d.bvp_raw})<br>${cost}${provenance}`;
   }
 
   function drawPoints(taskData, arcData) {

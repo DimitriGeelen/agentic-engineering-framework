@@ -3111,9 +3111,9 @@ X'` returning empty group."
   context: Added via context agent
   application: TBD
 - id: L-407
-  learning: "Silent-corpus migration pattern extends to additive feature fields, not just format migrations. T-1934 added bvp_scores_proposed: as advisory; T-1936 used it in /bvp scatter via rollup helpers. Three other readers diverged silently (lib/bvp.sh cmd_arcs/cmd_rank/cmd_detail; web/blueprints/arcs.py _bvp_signals). Sweep all consumer sites for the old-format read pattern even when storage is purely additive — readers that ignore the new field still emit divergent renders. Fixed in T-1937/T-1938/T-1939 cluster (3 sibling slices, ~28 tests, ~600 LOC ported helpers)."
+  learning: "Silent-corpus migration pattern extends to additive feature fields, not just format migrations. T-1934 added bvp_scores_proposed: as advisory; T-1936 used it in /bvp scatter via rollup helpers. Three other readers diverged silently (lib/bvp.sh cmd_arcs/cmd_rank/cmd_detail; web/blueprints/arcs.py _bvp_signals). Sweep all consumer sites for the old-format read pattern even when storage is purely additive — readers that ignore the new field still emit divergent renders. Fixed in T-1937/T-1938/T-1939 cluster (3 sibling slices, ~28 tests, ~600 LOC ported helpers). T-1941 strengthening: the sweep must cover BOTH storage-field READERS and COMPUTED-VALUE PROPAGATORS — the 7th drift site (web/blueprints/bvp.py:_collect_arc_points) *computed* bvp_mode locally but failed to *propagate* it into the payload dict. Grepping for `bvp_scores` finds storage-field consumers; finding propagators requires data-flow inspection from the new field's *uses* outward. Add to sweep recipe: for each new field, trace its computed-value descendants (variables, locals, intermediate dicts) and verify each one is either persisted in the relevant output channel or explicitly dropped with comment."
   source: L-397
   task: T-1939
   date: 2026-05-19
-  context: Added via context agent
-  application: TBD
+  context: Added via context agent; T-1941 strengthening
+  application: T-1941 (7th drift site closure — payload propagation gap)
