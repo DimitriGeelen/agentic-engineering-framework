@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1925: BVP T-NEW-9: document primary-agent arc-scoped-driver suggestion workflow in CLAUDE.md + AGENTS.md (D5/D6, R5 mitigation)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-19T07:44:05Z
+# ============================================================================
+
+task_id: T-1925
+task_name: "BVP T-NEW-9: document primary-agent arc-scoped-driver suggestion workflow in CLAUDE.md + AGENTS.md (D5/D6, R5 mitigation)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: 2026-05-19T07:44:00Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md gains a new §Arc-Scoped Driver Suggestion Workflow (T-1925, arc-006) documenting the 5-step workflow under §Agent Behavioral Rules (placed adjacent to §Arc Completion Discipline)'
+  - 'AGENTS.md mirrors the workflow inline (single section appended before FRAMEWORK.md pointer)'
+  - 'Both docs include the verbatim sentence: "Manufacturing drivers to look thorough is worse than proposing zero and recommending --none."'
+  - 'Both docs include the D6 quality criterion: "Rationale must explain what each driver distinguishes that globals don''t."'
+  - 'Both docs surface `fw arc show-suggestions` as a workflow verb (D7-reframe) — explicitly framed as "workflow verb the human runs when focus shifts to an arc, not a debug verb"'
+  - 'Worked example included in both docs: hypothetical `replay-debug` arc with 3 plausible candidate drivers (determinism/replay-fidelity/forensic-detail) AND 3 bad candidates (reliability/usability/correctness) for contrast'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-9, docs]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 44
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1925-bvp-document-primary-agent-arc-scoped-drive.md
+generated_by: context-agent-hybrid

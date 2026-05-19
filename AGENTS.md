@@ -79,4 +79,35 @@ fw git commit -m "T-XXX: Fix the bug"   # Commit with traceability
 fw handover --commit                     # End session
 ```
 
+## Arc-Scoped Driver Suggestion Workflow (T-1925, arc-006)
+
+When a new arc is created, the primary agent runs this 5-step workflow **after the arc's anchor-task body is filled** but **before any driver is approved**. Goal: surface arc-specific drivers that distinguish the arc from global D1-D4 directives. Approval stays with the human (D8 — sovereignty at policy-edit time).
+
+**Steps (D5 timing):**
+
+1. Read the arc anchor-task body in full. Don't propose drivers from the arc name alone.
+2. List 2-3 candidate drivers, each with a one-line rationale stating what the driver distinguishes that D1-D4 do not. If you can't state the distinction in one line, the candidate isn't worth proposing.
+3. Write candidates to `proposed_scoped_drivers:` in the arc YAML (each as `{name, rationale, source: agent, ts}`). This is a proposal — `scoped_drivers:` only mutates via `fw arc approve-driver` (T-1926, §ACD-gated).
+4. Surface proposals via `fw arc show-suggestions <arc-id>` (D7-reframe — workflow verb the human runs when focus shifts to an arc, not a debug verb). Human approves up to 3 with `fw arc approve-driver` or runs `--none --justification "..."`.
+5. Zero approved drivers is a valid outcome. Arcs without scoped drivers rank by global D1-D4 only.
+
+**R5 mitigation — the verbatim rule:**
+
+> Manufacturing drivers to look thorough is worse than proposing zero and recommending --none.
+
+**D6 quality criterion:**
+
+> Rationale must explain what each driver distinguishes that globals don't.
+
+**Caps:**
+- `proposed_scoped_drivers:` — uncapped (D7-reframe: persists for reuse).
+- `scoped_drivers:` — max **3** entries, each weight **≤6** (M2). Approved only.
+
+**Worked example.** Arc `replay-debug` ("agent replays a failed dispatch from `dispatches.jsonl` and observes the same outcome → confirms determinism") might propose:
+- `determinism` (weight 5) — distinguishes from D1 (Antifragility): tests reproducibility, not stress-resilience.
+- `replay-fidelity` (weight 4) — distinguishes from D2: not just "no silent failures" but "bit-identical outcome under identical inputs".
+- `forensic-detail` (weight 3) — distinguishes from D3 (Usability): for the developer replaying, not the agent working.
+
+Bad candidates (don't do this): `reliability`, `usability`, `correctness` — duplicate global drivers, dilute scoring.
+
 For the complete operating guide, see [FRAMEWORK.md](FRAMEWORK.md).

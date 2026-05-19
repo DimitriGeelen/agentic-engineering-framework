@@ -789,6 +789,43 @@ Enforced structurally. `fw arc create` requires `--headline-mechanic "<who> <doe
 
 **Evidence:** T-1626, T-1633, T-1641 (origin); T-1667 (3rd-incident RCA → demo+headline-mechanic gates); T-1670 (4th-incident agent auto-close → T-1671 closure-decision gate).
 
+### Arc-Scoped Driver Suggestion Workflow (T-1925, arc-006)
+
+When a new arc is created (via `fw arc create` or `fw work-on` of an arc anchor task), the primary agent runs this 5-step workflow **after the arc's anchor-task body is filled** but **before any driver is approved**. The goal is to surface arc-specific drivers that would distinguish the arc from the global D1-D4 directives. Approval stays with the human (M6, D8).
+
+**Steps (D5 — timing matters):**
+
+1. **Read the arc anchor-task body in full** (Problem Statement, Scope Fence, Risks, Decisions). Do **not** propose drivers from the arc name alone.
+2. **List 2-3 candidate drivers**, each with a one-line rationale of what the driver distinguishes that the four constitutional directives (D1-D4) do not. If you cannot articulate the distinction in one line, the candidate is not worth proposing.
+3. **Write the candidates to `proposed_scoped_drivers:` in the arc YAML** (each as `{name, rationale, source: agent, ts}`). This is a *proposal*, not an assignment — `scoped_drivers:` only mutates via `fw arc approve-driver` (T-1926, §ACD-gated).
+4. **Surface the proposals to the human via `fw arc show-suggestions <arc-id>`** (T-1926; D7-reframe — this is a workflow verb the human runs when focus shifts to an arc, not a debug verb). The human reviews, approves up to 3 with `fw arc approve-driver` or runs `--none --justification "..."` to indicate the arc has no scoped drivers worth tracking separately.
+5. **If the human approves zero drivers, that is a valid outcome.** Arcs without scoped drivers rank by global D1-D4 only.
+
+**R5 mitigation — the verbatim rule:**
+
+> Manufacturing drivers to look thorough is worse than proposing zero and recommending --none.
+
+Why this matters: every approved scoped driver costs interpretive bandwidth (humans must reason about it, the estimator must score every member task against it). Drivers that don't distinguish the arc are noise that drowns out signal.
+
+**D6 quality criterion:**
+
+> Rationale must explain what each driver distinguishes that globals don't.
+
+A rationale of "this arc is about reliability" does not meet D6 — that's already D2. A rationale of "this arc trades short-term reliability for long-term observability; we want to score tasks that improve the *observability* dimension separately" does meet D6.
+
+**Asymmetric caps:**
+- `proposed_scoped_drivers:` — uncapped (D7-reframe: persists for reuse not audit).
+- `scoped_drivers:` — max **3** entries, each with weight **≤6** (M2). Approved entries only.
+
+**Worked example.** Consider a hypothetical arc `replay-debug` ("agent replays a failed dispatch from `dispatches.jsonl` and observes the same outcome → confirms determinism"). Plausible candidate drivers:
+- `determinism` (weight 5) — *distinguishes from D1: this arc tests that the framework's reasoning is reproducible, not that it strengthens under stress.*
+- `replay-fidelity` (weight 4) — *distinguishes from D2: not just "no silent failures" but "outcome under identical inputs is bit-identical".*
+- `forensic-detail` (weight 3) — *distinguishes from D3: usability for the developer doing the replay, not the agent doing the work.*
+
+A bad set of candidates (don't do this): `reliability`, `usability`, `correctness` — these duplicate global drivers and would dilute scoring.
+
+**Surfaced through:** `fw arc show-suggestions <arc-id>` (T-1926); Watchtower `/arcs/<id>` shows proposed drivers with Approve buttons (T-1930).
+
 ## Plan Mode Prohibition
 
 **NEVER use the built-in `EnterPlanMode` tool.** It bypasses all framework governance:
