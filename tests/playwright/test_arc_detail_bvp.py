@@ -78,3 +78,68 @@ def test_arc_detail_coherence_section_renders(page, base_url):
     assert has_warn_header or has_passing_note, (
         "Coherence area should render either warnings or passing note"
     )
+
+
+# ── T-1940: structural pin for T-1939's bvp_mode provenance label ──
+# The /arcs/<slug> page renders `<small>Source: <code>{bvp_mode}</code> ...</small>`
+# whenever bvp_mode is non-empty AND != 'direct-confirmed'. The label IS the
+# provenance contract — humans cannot interpret derived/proposed numbers without
+# knowing which 4-tier ladder rung produced them.
+#
+# value-prioritisation arc currently renders `derived-proposed` (rollup of
+# constituent task scores, at least one is estimator-proposed). When the arc's
+# state changes (e.g., a future fw bvp confirm of the arc itself flips it to
+# direct-confirmed), this test would need updating — the contract pins the
+# *mechanism*, not a frozen value.
+
+
+def test_arc_detail_renders_source_label_when_derived(page, base_url):
+    """The provenance label MUST render when bvp_mode is not direct-confirmed."""
+    page.goto(f"{base_url}/arcs/{_ARC_SLUG}", wait_until="domcontentloaded")
+    bvp = page.locator("#bvp-signals")
+    # The provenance line lives inside a <p class="muted"> with a <small> child.
+    # We pin the "Source:" prefix + the <code> element containing the mode slug.
+    # Substring match on .text_content() (DOM-content assertion, T-1575).
+    label_text = bvp.locator("p.muted small").first.text_content() or ""
+    assert "Source:" in label_text, (
+        f"Expected 'Source:' provenance prefix in arc detail; got: {label_text!r}"
+    )
+    # Mode slug must be one of the four documented derived/proposed values
+    # (direct-confirmed should never render this label).
+    assert any(
+        m in label_text
+        for m in ("direct-proposed", "derived-confirmed", "derived-proposed")
+    ), f"Expected derived/proposed mode slug; got: {label_text!r}"
+
+
+def test_arc_detail_source_label_includes_mode_explanation(page, base_url):
+    """The per-mode explanation substring must accompany the slug. The
+    template renders three variant strings (one per non-confirmed mode);
+    at least one must match the rendered text."""
+    page.goto(f"{base_url}/arcs/{_ARC_SLUG}", wait_until="domcontentloaded")
+    bvp = page.locator("#bvp-signals")
+    label_text = bvp.locator("p.muted small").first.text_content() or ""
+    explanations = [
+        "arc has estimator-proposed scores",                       # direct-proposed
+        "rolled up from constituent task",                         # derived-confirmed
+        "rolled up from constituent task scores",                  # derived-proposed
+    ]
+    matched = [e for e in explanations if e in label_text]
+    assert matched, (
+        f"Expected per-mode explanation in provenance label; got: {label_text!r}"
+    )
+
+
+def test_arc_detail_source_label_uses_code_for_mode_slug(page, base_url):
+    """Provenance mode slug must be rendered inside a <code> element —
+    structural cue that this is a machine-readable enum, not prose."""
+    page.goto(f"{base_url}/arcs/{_ARC_SLUG}", wait_until="domcontentloaded")
+    bvp = page.locator("#bvp-signals")
+    code_slug = bvp.locator("p.muted small code").first
+    expect(code_slug).to_be_visible()
+    slug_text = (code_slug.text_content() or "").strip()
+    assert slug_text in {
+        "direct-proposed",
+        "derived-confirmed",
+        "derived-proposed",
+    }, f"Unexpected mode slug rendered: {slug_text!r}"
