@@ -745,6 +745,67 @@ def _driver_remove(args):
     return 0
 
 
+def _auto_promote_log_event(event):
+    """Append a typed event (enable/disable/promotion) to the auto-promote log."""
+    AUTO_PROMOTE_LOG.parent.mkdir(exist_ok=True)
+    if AUTO_PROMOTE_LOG.is_file():
+        data = yaml.safe_load(AUTO_PROMOTE_LOG.read_text()) or {'entries': []}
+    else:
+        data = {'entries': []}
+    if 'entries' not in data:
+        data['entries'] = []
+    data['entries'].append(event)
+    AUTO_PROMOTE_LOG.write_text(yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+
+
+def _auto_promote_set_enabled(value, rationale, mechanism_args):
+    """Flip auto_promote.enabled in policy. Preserves comments via ruamel."""
+    policy_path = PROJECT_ROOT / 'policy' / 'value-drivers.yaml'
+    if _HAS_RUAMEL:
+        data = _ruamel_yaml.load(policy_path.read_text())
+        data['auto_promote']['enabled'] = value
+        from io import StringIO
+        buf = StringIO()
+        _ruamel_yaml.dump(data, buf)
+        policy_path.write_text(buf.getvalue())
+    else:
+        data = yaml.safe_load(policy_path.read_text())
+        data['auto_promote']['enabled'] = value
+        policy_path.write_text(yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+
+
+def _auto_promote_file_review_reminder():
+    """File a captured task with revisit_at 30d ahead (R7 mitigation).
+
+    Best-effort — uses bin/fw task create. Returns (task_id, err) tuple.
+    """
+    from datetime import datetime, timezone, timedelta
+    revisit = (datetime.now(timezone.utc) + timedelta(days=30)).date().isoformat()
+    import subprocess
+    name = f"BVP auto-promote 30-day review (revisit {revisit}, R7 mitigation)"
+    desc = (f"R7 (escalation drift) requires the human to revisit auto-promote "
+            f"after 30 days of operation. Check the auto-promote log for false "
+            f"positives, surprise promotions, and whether the thresholds need "
+            f"calibration. Filed automatically by `fw bvp auto-promote --enable`.")
+    proc = subprocess.run(
+        ['bin/fw', 'task', 'create',
+         '--name', name,
+         '--description', desc,
+         '--type', 'specification',
+         '--horizon', 'later',
+         '--owner', 'human',
+         '--tags', 'bvp,auto-promote,review,r7-mitigation'],
+        cwd=str(PROJECT_ROOT),
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        return None, proc.stderr[:300]
+    # Try to extract task ID from output
+    m = re.search(r'T-\d+', proc.stdout)
+    return (m.group(0) if m else None), None
+
+
 def cmd_auto_promote(args):
     """Promote captured → started-work for tasks meeting bvp_norm and cost thresholds.
 
@@ -772,6 +833,47 @@ def cmd_auto_promote(args):
     decision timestamp. Post-hoc forensics must be able to reconstruct WHY
     each promotion fired without re-running the math.
     """
+    # ---- enable/disable verbs (§ACD-gated, T-1932) ---------------------
+    if '--enable' in args:
+        if not acd_gate('auto-promote --enable', args,
+                        refusal_hint="Enabling auto-promote is a policy-edit (D8). Run from Watchtower or pass --i-am-human."):
+            return 1
+        rationale, ok = require_rationale(args)
+        if not ok:
+            return 2
+        _auto_promote_set_enabled(True, rationale, args)
+        _auto_promote_log_event({
+            'event': 'enable',
+            'ts': _utc_now(),
+            'rationale': rationale,
+            'actor': os.environ.get('USER', 'unknown'),
+            'mechanism': 'fw-bvp-auto-promote-enable',
+        })
+        # R7 mitigation: file a 30-day review reminder.
+        review_id, err = _auto_promote_file_review_reminder()
+        if err:
+            print(f"WARN: failed to file 30-day review task: {err}", file=sys.stderr)
+        else:
+            print(f"OK: auto_promote.enabled flipped → true")
+            if review_id:
+                print(f"  30-day review reminder filed: {review_id} (R7 mitigation)")
+            else:
+                print(f"  30-day review reminder filed (task ID not parsed from output)")
+        return 0
+
+    if '--disable' in args:
+        # Disabling is always safe — no rationale, no §ACD (the safety direction).
+        _auto_promote_set_enabled(False, None, args)
+        _auto_promote_log_event({
+            'event': 'disable',
+            'ts': _utc_now(),
+            'actor': os.environ.get('USER', 'unknown'),
+            'mechanism': 'fw-bvp-auto-promote-disable',
+        })
+        print("OK: auto_promote.enabled flipped → false")
+        return 0
+
+    # ---- normal "run a promotion pass" path -----------------------------
     dry_run = '--dry-run' in args
 
     policy = load_policy()
@@ -859,6 +961,7 @@ def cmd_auto_promote(args):
             print(f"WARN: failed to promote {c['task_id']}: {proc.stderr[:200]}", file=sys.stderr)
             continue
         log_entries.append({
+            'event': 'promotion',
             'task_id': c['task_id'],
             'ts': _utc_now(),
             'bvp_norm': round(c['bvp_norm'], 4),
@@ -916,6 +1019,11 @@ USAGE:
                                   promote captured → started-work for HV/LC
                                   tasks (off by default; reads policy
                                   auto_promote.*; M5 thresholds; T-1931)
+  fw bvp auto-promote --enable --rationale "..." [--i-am-human|--from-watchtower]
+                                  flip auto_promote.enabled true (§ACD, D8)
+                                  + file 30-day R7 review task (T-1932)
+  fw bvp auto-promote --disable
+                                  flip auto_promote.enabled false (always safe)
   fw bvp --help                   this message
 
 NOTES:

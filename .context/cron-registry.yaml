@@ -184,6 +184,15 @@ jobs:
   # (Tier 0). Until that joint deployment, the `fw peer subscribe` CLI verb
   # exists and is invocable on-demand, but no scheduled invocations happen.
 
+  - id: bvp-auto-promote-hourly
+    name: "BVP auto-promote pass (hourly; off by default)"
+    schedule: "47 * * * *"
+    command: "flock -n /var/lock/agentic-cron-bvp-auto-promote.lock -c 'fw bvp auto-promote'"
+    source_file: agentic-audit.crontab
+    origin_task: T-1932
+    status: active
+    description: "T-1932 (arc-006 BVP slice 14b). Hourly auto-promote pass — when policy/value-drivers.yaml auto_promote.enabled is false (the ship default), the verb prints a no-op message and exits 0; no side effects. When enabled by the human via `fw bvp auto-promote --enable --rationale ...` (§ACD-gated, D8), the pass scans captured tasks meeting bvp_norm ≥ bvp_norm_min AND cost ≤ cost_max, respects max_concurrent, and promotes captured → started-work with full R4 metadata logged to .context/bvp-auto-promote-log.yaml. Always safe to invoke; the policy flag is the only authority signal."
+
   - id: watchtower-rss-5m
     name: "Watchtower RSS observation (5 min, T-1611-B)"
     schedule: "*/5 * * * *"

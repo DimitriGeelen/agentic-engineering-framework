@@ -1,21 +1,21 @@
 # Auto-promote log — Business Value Points (BVP)
 #
-# Append-only audit trail of every auto-promotion event.
-# Written by `fw bvp auto-promote` (T-1931). One entry per promotion.
+# Append-only audit trail of every auto-promotion event AND every
+# enable/disable event. Written by `fw bvp auto-promote` (T-1931 + T-1932).
 #
-# R4 detection mandate: each entry must let a forensic reader reconstruct
-# the cost formula's reasoning without re-running the math.
+# Three event types share the entries: list, distinguished by `event:`:
 #
-# Fields per entry:
-#   task_id                   — promoted task (e.g., T-1234)
-#   ts                        — UTC ISO-8601 timestamp of promotion
-#   bvp_norm                  — normalized BVP at decision time (0..1)
-#   cost                      — composite cost at decision time (F8)
-#   cost_components.*         — three components + source
-#                               (three-component | tshirt | absent)
-#   thresholds_at_decision.*  — live bvp_norm_min, cost_max, max_concurrent
-#                               (captured because policy mutates)
-#   mechanism                 — always 'fw-bvp-auto-promote' for this verb
+#   event: promotion       (T-1931) — a captured → started-work promotion
+#                                    fired. R4 metadata mandatory.
+#   event: enable          (T-1932) — auto_promote.enabled flipped true.
+#                                    Carries rationale + actor.
+#   event: disable         (T-1932) — auto_promote.enabled flipped false.
+#                                    Always safe; no rationale required.
+#
+# R4 detection mandate (event: promotion): each entry must let a forensic
+# reader reconstruct the cost formula's reasoning without re-running the
+# math. Required fields: task_id, ts, bvp_norm, cost, cost_components.*
+# (blast_radius, tier, effort, source), thresholds_at_decision.*, mechanism.
 #
 # Reversibility: every promotion is captured-style; the human can revert
 # via `fw task update T-XXX --status captured` if undesired. The log entry
