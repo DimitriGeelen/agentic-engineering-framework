@@ -350,3 +350,10 @@ single moment, not seven small ones.
 
 That coherence is the arc's headline mechanic. Everything else is
 plumbing.
+
+## See also
+
+- `010-TaskSystem.md` — task lifecycle, frontmatter, and the arc_id field
+- `040-ValueDrivers.md` — Business Value Points and arc-scoped drivers,
+  including the `scoped_drivers` / `proposed_scoped_drivers` / `bvp_scores`
+  arc fields and the `fw arc approve-driver` workflow

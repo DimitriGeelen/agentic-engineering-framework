@@ -304,3 +304,10 @@ The task system feeds directly into the three memory types:
 When a task moves to "Work Completed," the framework generates an
 **episodic summary** — a condensed version of the task's journey
 optimized for future reference by agents working on similar tasks.
+
+## See also
+
+- `012-ArcSystem.md` — multi-task workspaces (arcs) and their lifecycle
+- `040-ValueDrivers.md` — Business Value Points, directive-weighted scoring,
+  and the `bvp_scores` / `bvp_scores_proposed` / `cost_estimate` task
+  frontmatter fields
