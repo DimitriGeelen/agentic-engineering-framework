@@ -257,3 +257,19 @@ field and rendered in the template's stats strip.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1939-bvp-t-1936t-1937-sibling--arcsslug-bvp-s.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-4ac226b1
+- **Timestamp:** 2026-05-19T20:26:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — Unit tests in `tests/unit/test_bvp_signals_rollup.py` cover: direct-confirmed bypass, derived-confirmed via task rollup, mixed-mode degrades to derived-proposed, fallback to empty when no signal anywh
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_bvp_signals_rollup.py in: Unit tests in `tests/unit/test_bvp_signals_rollup.py` cover: direct-confirmed bypass, derived-confirmed via task rollup, mixed-mode degrades to derive`
+- **AC#1 (Human)** — [REVIEW] `/arcs/value-prioritisation` BVP signals block renders coherently with the new rollup data
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows a' in Expected: BVP block shows arc-006 at BVP_norm≈0.31, per-driver scores visible, provenance labelled as derived`
