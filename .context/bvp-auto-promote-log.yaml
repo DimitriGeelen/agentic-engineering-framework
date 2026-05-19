@@ -1,0 +1,24 @@
+# Auto-promote log — Business Value Points (BVP)
+#
+# Append-only audit trail of every auto-promotion event.
+# Written by `fw bvp auto-promote` (T-1931). One entry per promotion.
+#
+# R4 detection mandate: each entry must let a forensic reader reconstruct
+# the cost formula's reasoning without re-running the math.
+#
+# Fields per entry:
+#   task_id                   — promoted task (e.g., T-1234)
+#   ts                        — UTC ISO-8601 timestamp of promotion
+#   bvp_norm                  — normalized BVP at decision time (0..1)
+#   cost                      — composite cost at decision time (F8)
+#   cost_components.*         — three components + source
+#                               (three-component | tshirt | absent)
+#   thresholds_at_decision.*  — live bvp_norm_min, cost_max, max_concurrent
+#                               (captured because policy mutates)
+#   mechanism                 — always 'fw-bvp-auto-promote' for this verb
+#
+# Reversibility: every promotion is captured-style; the human can revert
+# via `fw task update T-XXX --status captured` if undesired. The log entry
+# remains as the historical record of the decision (D-immutable).
+
+entries: []

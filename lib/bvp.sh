@@ -104,6 +104,7 @@ def require_rationale(args, min_chars=30):
 
 # ------------------------------------------------------ append-only history
 HISTORY_PATH = PROJECT_ROOT / '.context' / 'bvp-weight-history.yaml'
+AUTO_PROMOTE_LOG = PROJECT_ROOT / '.context' / 'bvp-auto-promote-log.yaml'
 
 
 def _utc_now():
@@ -744,6 +745,155 @@ def _driver_remove(args):
     return 0
 
 
+def cmd_auto_promote(args):
+    """Promote captured → started-work for tasks meeting bvp_norm and cost thresholds.
+
+    Reads auto_promote.{enabled,bvp_norm_min,cost_max,max_concurrent} from
+    policy/value-drivers.yaml. When enabled=false (the SHIP DEFAULT, T-1917),
+    this verb is a no-op and prints why.
+
+    Sovereignty boundary (D8): the act of flipping auto_promote.enabled to true
+    is §ACD-gated (T-1932 ships the enable verb). This verb itself runs whatever
+    policy says — no §ACD here.
+
+    Promotion rules:
+      - Status must be `captured` (not started-work / issues / work-completed).
+      - bvp_scores: must be CONFIRMED (set by `fw bvp confirm`, T-1924).
+        Tasks with only bvp_scores_proposed: do NOT auto-promote — the
+        confirmation step is the sovereignty boundary.
+      - bvp_norm ≥ bvp_norm_min AND cost ≤ cost_max (both threshold gates).
+      - Respects max_concurrent: counts currently-started tasks; promotes only
+        up to (max_concurrent − already_started).
+      - Candidates sorted by bvp_norm desc, then cost asc.
+
+    R4 detection: every promotion writes a full-disclosure entry to
+    .context/bvp-auto-promote-log.yaml with bvp_norm, cost, the three cost
+    components (blast_radius, tier, effort), the live thresholds, and the
+    decision timestamp. Post-hoc forensics must be able to reconstruct WHY
+    each promotion fired without re-running the math.
+    """
+    dry_run = '--dry-run' in args
+
+    policy = load_policy()
+    ap = policy.get('auto_promote') or {}
+    enabled = bool(ap.get('enabled', False))
+    bvp_norm_min = float(ap.get('bvp_norm_min', 0.85))
+    cost_max = float(ap.get('cost_max', 1))
+    max_concurrent = int(ap.get('max_concurrent', 1))
+
+    if not enabled:
+        print("Auto-promote disabled (policy/value-drivers.yaml: auto_promote.enabled=false). No-op.")
+        print("To enable, run: fw bvp auto-promote --enable (T-1932; §ACD-gated).")
+        return 0
+
+    weights = driver_weights(policy)
+    if not weights:
+        print("ERROR: no drivers in policy — cannot compute bvp_norm.", file=sys.stderr)
+        return 2
+    max_possible = 5 * sum(weights.values())
+
+    # Count currently started-work tasks (concurrency ceiling).
+    started_count = 0
+    for path in sorted((PROJECT_ROOT / '.tasks' / 'active').glob('T-*.md')):
+        fm = parse_frontmatter(path)
+        if fm and fm.get('status') == 'started-work':
+            started_count += 1
+
+    headroom = max(0, max_concurrent - started_count)
+    if headroom == 0:
+        print(f"At max_concurrent ({max_concurrent}): {started_count} task(s) already started-work. No headroom.")
+        return 0
+
+    # Build candidate list.
+    candidates = []
+    for path in sorted((PROJECT_ROOT / '.tasks' / 'active').glob('T-*.md')):
+        fm = parse_frontmatter(path)
+        if not fm or fm.get('status') != 'captured':
+            continue
+        scores = fm.get('bvp_scores') or {}
+        if not scores:
+            continue  # M3 sovereignty boundary: only confirmed scores promote.
+        raw_bvp, bvp_norm, _ = compute_bvp(scores, weights)
+        cost_estimate = fm.get('cost_estimate') or {}
+        composite, br, tier, effort, source = compute_cost(cost_estimate)
+        if composite is None:
+            continue  # No cost ⇒ can't compare to cost_max safely.
+        if bvp_norm < bvp_norm_min or composite > cost_max:
+            continue
+        candidates.append({
+            'task_id': fm.get('id'),
+            'path': path,
+            'bvp_norm': bvp_norm,
+            'cost': composite,
+            'blast_radius': br,
+            'tier': tier,
+            'effort': effort,
+            'cost_source': source,
+        })
+
+    candidates.sort(key=lambda c: (-c['bvp_norm'], c['cost']))
+    to_promote = candidates[:headroom]
+
+    if not to_promote:
+        print(f"No HV/LC candidates eligible (thresholds: bvp_norm≥{bvp_norm_min}, cost≤{cost_max}).")
+        return 0
+
+    print(f"Auto-promote: {len(to_promote)} candidate(s) (headroom={headroom}, dry_run={dry_run}).")
+    for c in to_promote:
+        print(f"  {c['task_id']}  bvp_norm={c['bvp_norm']:.3f}  cost={c['cost']:.3f}  (source={c['cost_source']})")
+
+    if dry_run:
+        print("--dry-run: no promotion performed, no log entry written.")
+        return 0
+
+    import subprocess
+    log_entries = []
+    for c in to_promote:
+        proc = subprocess.run(
+            ['bin/fw', 'task', 'update', c['task_id'], '--status', 'started-work'],
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode != 0:
+            print(f"WARN: failed to promote {c['task_id']}: {proc.stderr[:200]}", file=sys.stderr)
+            continue
+        log_entries.append({
+            'task_id': c['task_id'],
+            'ts': _utc_now(),
+            'bvp_norm': round(c['bvp_norm'], 4),
+            'cost': round(c['cost'], 4),
+            'cost_components': {
+                'blast_radius': c['blast_radius'],
+                'tier': c['tier'],
+                'effort': c['effort'],
+                'source': c['cost_source'],
+            },
+            'thresholds_at_decision': {
+                'bvp_norm_min': bvp_norm_min,
+                'cost_max': cost_max,
+                'max_concurrent': max_concurrent,
+            },
+            'mechanism': 'fw-bvp-auto-promote',
+        })
+        print(f"OK: promoted {c['task_id']} captured → started-work")
+
+    if log_entries:
+        AUTO_PROMOTE_LOG.parent.mkdir(exist_ok=True)
+        if AUTO_PROMOTE_LOG.is_file():
+            data = yaml.safe_load(AUTO_PROMOTE_LOG.read_text()) or {'entries': []}
+        else:
+            data = {'entries': []}
+        if 'entries' not in data:
+            data['entries'] = []
+        data['entries'].extend(log_entries)
+        AUTO_PROMOTE_LOG.write_text(yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+        rel = AUTO_PROMOTE_LOG.relative_to(PROJECT_ROOT)
+        print(f"Logged {len(log_entries)} promotion(s) → {rel}")
+
+    return 0
+
+
 def usage():
     print("""fw bvp — Business Value Points (read-only)
 
@@ -762,6 +912,10 @@ USAGE:
   fw bvp confirm T-<id> [--override Dn=N]... [--i-am-human|--from-watchtower]
                                   move bvp_scores_proposed → bvp_scores
                                   (sovereignty boundary, F7/D8, §ACD-gated)
+  fw bvp auto-promote [--dry-run]
+                                  promote captured → started-work for HV/LC
+                                  tasks (off by default; reads policy
+                                  auto_promote.*; M5 thresholds; T-1931)
   fw bvp --help                   this message
 
 NOTES:
@@ -801,6 +955,8 @@ def main(argv):
         return cmd_driver(args[1:])
     if args[0] == 'confirm':
         return cmd_confirm(args[1:])
+    if args[0] == 'auto-promote':
+        return cmd_auto_promote(args[1:])
     if re.fullmatch(r'T-\d+', args[0]):
         return cmd_detail(args[0])
     print(f"ERROR: unknown verb '{args[0]}'. See `fw bvp --help`.", file=sys.stderr)

@@ -4,7 +4,7 @@ name: "BVP T-NEW-14b: auto-promote enabling + cron/trigger wiring (split parent 
 description: >
   Enabling-path via `fw bvp auto-promote --enable --rationale "..."` (§ACD-gated, per D8 sovereignty-at-policy-edit-time). Cron trigger registered. 30-day review reminder pre-staged per R7 mitigation.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,7 +13,7 @@ components: [lib/bvp.sh, .context/cron-registry.yaml]
 related_tasks: [T-1915, T-1916, T-1931]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:00:00Z
+last_update: 2026-05-19T13:54:43Z
 date_finished: null
 ---
 
@@ -44,3 +44,6 @@ bin/fw doctor 2>&1 | grep -q "Cron registry in sync"
 ## Decisions
 
 ## Updates
+
+### 2026-05-19T13:54:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
