@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1927: BVP T-NEW-11: per-driver coherence audit check (fw audit warns when arc claims D_n≥4 but ≥70% constituents score D_n≤1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-19T08:38:17Z
+# ============================================================================
+
+task_id: T-1927
+task_name: "BVP T-NEW-11: per-driver coherence audit check (fw audit warns when arc claims D_n≥4 but ≥70% constituents score D_n≤1)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: 2026-05-19T08:38:12Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` gains a new section emitting `BVP coherence: arc <id> claims D<n>=<x> but tasks don''t support it (Y of Z constituents score Dn ≤ M, F of fraction threshold F0)` warnings when applicable — proven by fixture (see below)'
+  - 'Check is per-driver — separate WARN per mismatched driver, not aggregated (loop emits one line per driver in claims dict)'
+  - 'Check is non-blocking — uses `warn` function (WARN_COUNT++, FAIL_COUNT untouched); audit exit code driven by FAIL_COUNT only'
+  - 'Thresholds defined as env-overridable variables: `BVP_COHERENCE_ARC_MIN=4`, `BVP_COHERENCE_TASK_MAX=1`, `BVP_COHERENCE_FRACTION=0.7` (env-var override syntax `${BVP_COHERENCE_*:-default}` — cleaner than hard constants)'
+  - 'Test fixture: constructed probe arc `T1927-coherence-probe` (in-progress, scoped_drivers D1 weight=5, bvp_scores D1:5) + 5 constituent tasks (T-99901..T-99905, arc_id=T1927-coherence-probe, bvp_scores D1:0). Cron audit 2026-05-19T08:30:01Z emitted: `WARN: BVP coherence: arc T1927-coherence-probe claims D1=5 but tasks don''t support it (5 of 5 constituents score D1 ≤ 1, 1.00 of fraction threshold 0.7)` — exact expected line. Probe fixture remains uncommitted at session-end (budget critical); will be cleaned up in next session before commit'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 98 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-11, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 98
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1927-bvp-per-driver-coherence-audit-check-fw-audi.md
+generated_by: context-agent-hybrid

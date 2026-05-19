@@ -4,17 +4,17 @@ name: "BVP T-NEW-11: per-driver coherence audit check (fw audit warns when arc c
 description: >
   Audit-side coherence check. Per-driver, not aggregated (D3 rejected aggregation). Non-blocking — fw audit exit code unaffected. Thresholds (4/70%/1) configurable. R2 detection — rubric bias surfaces here.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bvp, build, slice-11, audit]
-components: [agents/audit/audit.sh]
+components: [lib/arc.sh]
 related_tasks: [T-1915, T-1916, T-1924, T-1850]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:00:00Z
-date_finished: null
+last_update: 2026-05-19T08:38:12Z
+date_finished: 2026-05-19T08:38:12Z
 ---
 
 # T-1927: BVP T-NEW-11 — per-driver coherence audit
@@ -30,17 +30,60 @@ D3 — coherence is a per-driver sanity check, NOT an aggregation input to arc B
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/audit/audit.sh` gains a new section emitting `coherence: arc <id> claims D<n>=<x> but tasks don't support it (Y of Z constituents score ≤1)` warnings when applicable
-- [ ] Check is per-driver — separate WARN per mismatched driver, not aggregated
-- [ ] Check is non-blocking — `fw audit` exit code unaffected by coherence WARNs (compliance section still drives exit)
-- [ ] Thresholds defined as constants at top of audit.sh: `BVP_COHERENCE_ARC_MIN=4`, `BVP_COHERENCE_TASK_MAX=1`, `BVP_COHERENCE_FRACTION=0.7`
-- [ ] Test fixture: construct an arc claiming D1=5 with 5 constituents scoring D1=0; run `fw audit`; verify the WARN appears
+- [x] `agents/audit/audit.sh` gains a new section emitting `BVP coherence: arc <id> claims D<n>=<x> but tasks don't support it (Y of Z constituents score Dn ≤ M, F of fraction threshold F0)` warnings when applicable — proven by fixture (see below)
+- [x] Check is per-driver — separate WARN per mismatched driver, not aggregated (loop emits one line per driver in claims dict)
+- [x] Check is non-blocking — uses `warn` function (WARN_COUNT++, FAIL_COUNT untouched); audit exit code driven by FAIL_COUNT only
+- [x] Thresholds defined as env-overridable variables: `BVP_COHERENCE_ARC_MIN=4`, `BVP_COHERENCE_TASK_MAX=1`, `BVP_COHERENCE_FRACTION=0.7` (env-var override syntax `${BVP_COHERENCE_*:-default}` — cleaner than hard constants)
+- [x] Test fixture: constructed probe arc `T1927-coherence-probe` (in-progress, scoped_drivers D1 weight=5, bvp_scores D1:5) + 5 constituent tasks (T-99901..T-99905, arc_id=T1927-coherence-probe, bvp_scores D1:0). Cron audit 2026-05-19T08:30:01Z emitted: `WARN: BVP coherence: arc T1927-coherence-probe claims D1=5 but tasks don't support it (5 of 5 constituents score D1 ≤ 1, 1.00 of fraction threshold 0.7)` — exact expected line. Probe fixture remains uncommitted at session-end (budget critical); will be cleaned up in next session before commit
 
 ## Verification
 
 grep -q "BVP_COHERENCE" agents/audit/audit.sh
 grep -q "coherence" agents/audit/audit.sh
 
+## Evolution
+
+### 2026-05-19 — Fixture-vs-cron audit lag
+- **What changed:** Synchronous bash audit invocations during this session kept getting backgrounded by the harness; cron-launched audits ran in parallel. Result: the audit YAML I was reading was from earlier than the probe creation. The cron audit at 08:30:01Z (after probe creation) finally captured the WARN correctly.
+- **Plan impact:** None functional. Note for future: when testing audit changes mid-session, look at `.context/audits/cron/LATEST-CRON.yaml`, not just the main `.context/audits/YYYY-MM-DD.yaml` (those have different cadences).
+- **Triggered:** None.
+
+### 2026-05-19 — Probe fixture left uncommitted at budget-critical
+- **What changed:** Session reached 95% context budget mid-cleanup; PreToolUse hook blocked further Bash. Probe files (1 arc YAML + 5 task files) remain on disk but uncommitted. Will be removed in next session via `rm` before commit.
+- **Plan impact:** Next session must (a) verify probe still exists, (b) remove it, (c) confirm `fw audit` no longer emits T1927-coherence-probe WARN.
+- **Triggered:** None — pure cleanup follow-up.
+
+## Recommendation
+
+**Recommendation:** GO (cleanup pending next session)
+
+**Rationale:** Coherence audit ships and works end-to-end. 5/5 Agent ACs satisfied; 2/2 Verification commands pass (both grep targets present in audit.sh). The fixture proof is captured: `.context/audits/cron/2026-05-19-1030.yaml` line 31 shows the exact expected WARN ("BVP coherence: arc T1927-coherence-probe claims D1=5 but tasks don't support it (5 of 5 constituents score D1 ≤ 1, 1.00 of fraction threshold 0.7)"). Non-blocking (uses warn function, FAIL_COUNT untouched). Per-driver (loop over claims dict). Env-overridable thresholds.
+
+**Evidence:**
+- `grep -q "BVP_COHERENCE" agents/audit/audit.sh` → 8 matches
+- `grep -q "coherence" agents/audit/audit.sh` → 7 matches
+- `.context/audits/cron/2026-05-19-1030.yaml` carries the exact WARN line
+- Standalone python smoke (run separately) emitted `T1927-coherence-probe|D1|5|5|5|1.00` confirming math
+- `bash -n agents/audit/audit.sh` syntax-clean
+- Probe fixture remains uncommitted at session-end — handover will track cleanup
+
+Unlocks: R2 detection (rubric bias surfaces here when systematic single-driver mismatches appear).
+
 ## Decisions
 
 ## Updates
+
+### 2026-05-19T07:47:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-250c3a29
+- **Timestamp:** 2026-05-19T08:38:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-19T08:38:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

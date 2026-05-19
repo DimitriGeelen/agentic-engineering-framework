@@ -679,6 +679,143 @@ if [ "$arcs_checked_for_staleness" -gt 0 ] && [ "$stale_arc_count" -eq 0 ]; then
     pass "All $arcs_checked_for_staleness in-progress arc(s) had task commits within ${stale_arc_threshold} days"
 fi
 
+# T-1927 (T-NEW-11, arc-006): per-driver coherence audit.
+# WARN when an arc claims a driver is important (weight ≥ BVP_COHERENCE_ARC_MIN
+# OR arc bvp_scores[Dn] ≥ BVP_COHERENCE_ARC_MIN) but ≥ BVP_COHERENCE_FRACTION of
+# its constituent tasks score that driver ≤ BVP_COHERENCE_TASK_MAX.
+#
+# Per-driver, NOT aggregated (D3 rejected aggregation). Non-blocking — coherence
+# WARNs are signal, not failure; the compliance section still drives exit codes.
+#
+# Thresholds (handoff §7 M4): arc-claims ≥4, task-scores ≤1, fraction ≥0.7.
+# Configurable via env vars; defaults applied if unset.
+BVP_COHERENCE_ARC_MIN="${BVP_COHERENCE_ARC_MIN:-4}"
+BVP_COHERENCE_TASK_MAX="${BVP_COHERENCE_TASK_MAX:-1}"
+BVP_COHERENCE_FRACTION="${BVP_COHERENCE_FRACTION:-0.7}"
+
+# Run a python pass that enumerates in-progress arcs, reads their scoped_drivers
+# and bvp_scores, walks constituent tasks via arc_id (post-T-1850 single source
+# of truth), and emits one line per mismatched driver: "ARC|DRIVER|N_LOW|N_TOTAL".
+bvp_coherence_findings=$(python3 - "$PROJECT_ROOT" "$BVP_COHERENCE_ARC_MIN" "$BVP_COHERENCE_TASK_MAX" "$BVP_COHERENCE_FRACTION" <<'PY' 2>/dev/null
+import sys, re, glob, yaml
+from pathlib import Path
+
+PROJECT_ROOT = Path(sys.argv[1])
+ARC_MIN = int(sys.argv[2])
+TASK_MAX = int(sys.argv[3])
+FRACTION = float(sys.argv[4])
+
+_FM_RE = re.compile(r'^---\n(.*?)\n---', re.S)
+
+def task_score(path, driver_id):
+    """Return int score for driver_id from task frontmatter, or None if absent."""
+    try:
+        text = path.read_text()
+    except Exception:
+        return None
+    m = _FM_RE.match(text)
+    if not m:
+        return None
+    try:
+        fm = yaml.safe_load(m.group(1)) or {}
+    except yaml.YAMLError:
+        return None
+    scores = fm.get('bvp_scores') or {}
+    if not isinstance(scores, dict):
+        return None
+    return scores.get(driver_id)
+
+arcs_dir = PROJECT_ROOT / '.context' / 'arcs'
+if not arcs_dir.is_dir():
+    sys.exit(0)
+
+# Index task files by their `arc_id:` frontmatter value.
+tasks_by_arc = {}
+for sub in ('active', 'completed'):
+    for p in (PROJECT_ROOT / '.tasks' / sub).glob('T-*.md'):
+        try:
+            text = p.read_text()
+        except Exception:
+            continue
+        m = _FM_RE.match(text)
+        if not m:
+            continue
+        try:
+            fm = yaml.safe_load(m.group(1)) or {}
+        except yaml.YAMLError:
+            continue
+        arc_id = fm.get('arc_id')
+        if not arc_id:
+            continue
+        tasks_by_arc.setdefault(arc_id, []).append(p)
+
+for arc_path in sorted(arcs_dir.glob('*.yaml')):
+    try:
+        arc = yaml.safe_load(arc_path.read_text()) or {}
+    except yaml.YAMLError:
+        continue
+    if arc.get('status') != 'in-progress':
+        continue
+    slug = arc.get('slug') or arc_path.stem
+    arc_nnn = arc.get('id')
+
+    # Collect drivers the arc "claims" as important.
+    claims = {}  # driver_id → asserted_value (arc-side)
+    for sd in (arc.get('scoped_drivers') or []):
+        try:
+            w = int(sd.get('weight', 0))
+        except (TypeError, ValueError):
+            continue
+        if w >= ARC_MIN:
+            claims[sd.get('name', '?')] = w
+    arc_bvp = arc.get('bvp_scores') or {}
+    if isinstance(arc_bvp, dict):
+        for did, val in arc_bvp.items():
+            try:
+                v = int(val)
+            except (TypeError, ValueError):
+                continue
+            if v >= ARC_MIN:
+                claims[did] = v
+
+    if not claims:
+        continue
+
+    # Constituents — search by either slug or arc-NNN form per T-1849.
+    constituents = list(tasks_by_arc.get(slug, []))
+    if arc_nnn:
+        constituents += list(tasks_by_arc.get(arc_nnn, []))
+    constituents = list(set(constituents))
+    if not constituents:
+        continue
+
+    for driver_id, claim_val in claims.items():
+        scores = []
+        for p in constituents:
+            s = task_score(p, driver_id)
+            if s is None:
+                continue
+            scores.append(int(s))
+        if not scores:
+            continue
+        n_low = sum(1 for s in scores if s <= TASK_MAX)
+        n_total = len(scores)
+        if n_total == 0:
+            continue
+        frac = n_low / n_total
+        if frac >= FRACTION:
+            print(f"{slug}|{driver_id}|{claim_val}|{n_low}|{n_total}|{frac:.2f}")
+PY
+)
+
+if [ -n "$bvp_coherence_findings" ]; then
+    while IFS='|' read -r c_arc c_driver c_val c_low c_total c_frac; do
+        warn "BVP coherence: arc ${c_arc} claims ${c_driver}=${c_val} but tasks don't support it (${c_low} of ${c_total} constituents score ${c_driver} ≤ ${BVP_COHERENCE_TASK_MAX}, ${c_frac} of fraction threshold ${BVP_COHERENCE_FRACTION})" \
+             "Per-driver coherence check (T-1927, M4)" \
+             "Either revise the arc claim (fw arc approve-driver / adjust bvp_scores) or revise the rubric (R2 detection — systematic single-driver warnings indicate rubric bias, not arc mis-scoring)"
+    done <<< "$bvp_coherence_findings"
+fi
+
 # T-1881 (T-NEW-16, arc-grooming): ctl-arc-tag-only-pattern.
 # After T-1880 consolidation, inline `grep ... arc:<slug>` legacy-tag scans
 # are forbidden outside the canonical helpers. Any NEW occurrence in
