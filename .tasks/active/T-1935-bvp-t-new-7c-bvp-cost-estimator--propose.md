@@ -100,9 +100,14 @@ clean follow-up.
 - [x] After full sweep, `curl /bvp` returns >0 task points NOT at x=4 (i.e., the dots spread across the x-axis). — Verified: 57/72 (79%) of task points now render at `three-component-proposed` cost source with composite cost ∈ [0.8, 2.2]. The 15 remaining default-medium points are completed-status tasks the sweep doesn't touch (correct scope per AC#3 in T-1923 carried forward).
 
 ### Human
-<!-- All ACs above are deterministic/structural — no [REVIEW] Human ACs required.
-     If visual blast-radius distribution looks wrong on the scatter, that's
-     fed back as a follow-up rather than blocking this slice. -->
+- [ ] [REVIEW] Spread of cost-estimator-proposed dots on `/bvp` reads as informative — the dots distribute meaningfully across the x-axis instead of clustering at a single point, AND the distribution roughly reflects "small/medium/large change" intuition for a sample of named tasks.
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/bvp` in a browser
+  2. Hover over 3-5 outlined dots distributed across the x-axis (left, middle, right)
+  3. Read the tooltip — cost composite components (blast_radius/tier/effort) should be visible
+  4. Spot-check one obvious case (e.g., a small bugfix should sit toward the left; a multi-component arc anchor should sit further right)
+  **Expected:** Dots are NOT all at the same x position. Cost composite spread matches rough intuition. Tooltip shows component breakdown.
+  **If not:** Note specific task IDs where cost looks wrong (too small / too large) — feeds back to v2 heuristic tuning or v2-fabric variant.
 
 ## Verification
 
