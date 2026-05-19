@@ -19,11 +19,13 @@ documented in 040-ValueDrivers.md; tests pin them in `lib/bvp.sh`.
 from __future__ import annotations
 
 import glob
+import json
 import re
+import subprocess
 from pathlib import Path
 
 import yaml
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 
 from web.shared import PROJECT_ROOT
 
@@ -127,6 +129,7 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
                 "tier": tier,
                 "effort": effort,
                 "status": fm.get("status") or "-",
+                "scores": {k: int(v) for k, v in scores.items() if isinstance(v, (int, float))},
             })
     return points
 
@@ -156,8 +159,68 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
             "tier": tier,
             "effort": effort,
             "status": data.get("status") or "-",
+            "scores": {k: int(v) for k, v in scores.items() if isinstance(v, (int, float))},
         })
     return points
+
+
+@bp.route("/api/bvp/commit-weights", methods=["POST"])
+def bvp_commit_weights():
+    """T-1929 (arc-006): commit driver weight changes via `fw bvp weight`.
+
+    Body fields:
+      rationale : str (≥30 chars, R6 enforced server-side too)
+      changes   : JSON list of {driver: <Dn|free_name>, weight: 0-9}
+
+    Shells once per change to `bin/fw bvp weight --set Dn=N
+    --rationale "<...>" --from-watchtower`. Stops on first failure and
+    reports it. §ACD + history audit stay in the fw command.
+    """
+    rationale = (request.form.get("rationale") or "").strip()
+    raw_changes = request.form.get("changes") or "[]"
+    if len(rationale) < 30:
+        return "Rationale must be ≥30 characters (R6).", 400
+    try:
+        changes = json.loads(raw_changes)
+    except json.JSONDecodeError:
+        return "Invalid changes payload (not JSON).", 400
+    if not isinstance(changes, list) or not changes:
+        return "No changes provided.", 400
+    if len(changes) > 16:
+        return "Too many changes in one commit (max 16).", 400
+
+    results = []
+    for change in changes:
+        if not isinstance(change, dict):
+            return f"Bad change shape: {change!r}", 400
+        driver = str(change.get("driver") or "").strip()
+        try:
+            weight = int(change.get("weight"))
+        except (TypeError, ValueError):
+            return f"Bad weight for driver {driver!r}", 400
+        if not re.fullmatch(r"D\d+|[A-Za-z][A-Za-z0-9_-]*", driver):
+            return f"Bad driver name {driver!r}", 400
+        if not 0 <= weight <= 9:
+            return f"Driver {driver}: weight {weight} out of range (0-9)", 400
+        cmd = [
+            "bin/fw", "bvp", "weight",
+            "--set", f"{driver}={weight}",
+            "--rationale", rationale,
+            "--from-watchtower",
+        ]
+        try:
+            result = subprocess.run(
+                cmd, cwd=str(PROJECT_ROOT),
+                capture_output=True, text=True, timeout=30,
+            )
+        except (subprocess.SubprocessError, OSError) as e:
+            return f"Subprocess error on {driver}: {e}", 500
+        if result.returncode != 0:
+            err = (result.stderr or result.stdout or "").strip()
+            first = err.splitlines()[0] if err else f"fw bvp weight exited {result.returncode}"
+            return f"Commit failed at {driver}: {first}", 400
+        results.append({"driver": driver, "weight": weight})
+    return json.dumps({"committed": results, "count": len(results)}), 200, {"Content-Type": "application/json"}
 
 
 @bp.route("/bvp")

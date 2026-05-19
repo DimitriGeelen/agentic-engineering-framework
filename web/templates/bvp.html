@@ -10,18 +10,41 @@
   </header>
 
   {% if weights %}
-  <details>
-    <summary>Current driver weights</summary>
-    <table>
-      <thead><tr><th>Driver</th><th>Weight</th></tr></thead>
+  {# ── T-1929: live weight sliders ── #}
+  <section id="bvp-sliders" style="margin: 1rem 0 1.5rem 0;">
+    <h3>Live weight sliders</h3>
+    <p class="muted">Drag a slider to preview re-ranking client-side (no commit). Press <strong>Commit</strong> to persist via <code>fw bvp weight --from-watchtower</code> (§ACD, D8). Rationale ≥30 chars required (R6).</p>
+    <table id="bvp-sliders-table">
+      <thead><tr><th>Driver</th><th>Server weight</th><th>Slider</th><th>Current</th></tr></thead>
       <tbody>
         {% for d_id, w in weights.items() %}
-        <tr><td><code>{{ d_id }}</code></td><td>{{ w }}</td></tr>
+        <tr data-driver="{{ d_id }}">
+          <td><code>{{ d_id }}</code></td>
+          <td class="server-weight" data-server-weight="{{ w }}">{{ w }}</td>
+          <td>
+            <input type="range" name="slider-{{ d_id }}" min="0" max="9" value="{{ w }}"
+                   class="bvp-slider" data-driver="{{ d_id }}"
+                   style="width: 180px;">
+          </td>
+          <td><span class="live-weight" data-driver="{{ d_id }}">{{ w }}</span></td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
-    <p><small>Edit weights via <code>fw bvp weight --set Dn=N --rationale "…" --i-am-human</code> (§ACD-gated, D8).</small></p>
-  </details>
+    <form id="bvp-commit-form" method="POST" action="/api/bvp/commit-weights" style="margin-top: 0.8rem;">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label>Rationale (≥30 characters):
+        <textarea name="rationale" rows="2" minlength="30" required style="width: 100%;"
+                  placeholder="Why are you changing these weights? Cite evidence (incident, decision, periodic re-weighting cycle)."></textarea>
+      </label>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+        <button type="submit" id="bvp-commit-btn" disabled>Commit changes</button>
+        <button type="button" id="bvp-reset-btn">Reset to server values</button>
+        <span id="bvp-diff-summary" class="muted"></span>
+      </div>
+      <div id="bvp-commit-result" style="margin-top: 0.5rem;"></div>
+    </form>
+  </section>
   {% endif %}
 
   {% if empty %}
@@ -75,12 +98,138 @@
   </details>
 </article>
 
-{% if not empty %}
+{% if weights or not empty %}
 <script src="{{ url_for('static', filename='d3.v7.min.js') }}"></script>
 <script id="bvp-data" type="application/json">{
-  "tasks": {{ task_points|tojson }},
-  "arcs":  {{ arc_points|tojson }}
+  "tasks":   {{ task_points|tojson }},
+  "arcs":    {{ arc_points|tojson }},
+  "weights": {{ weights|tojson }}
 }</script>
+{% endif %}
+
+{% if weights %}
+<script>
+(function() {
+  // ── T-1929: live slider preview + commit ──
+  const payload   = JSON.parse(document.getElementById("bvp-data").textContent);
+  const baseWeights = Object.assign({}, payload.weights || {});
+  const liveWeights = Object.assign({}, baseWeights);
+
+  function computeBVP(scores, weights) {
+    let raw = 0, ws = 0;
+    for (const did in weights) {
+      if (Object.prototype.hasOwnProperty.call(scores, did)) {
+        raw += Number(scores[did]) * Number(weights[did]);
+        ws  += Number(weights[did]);
+      }
+    }
+    if (ws === 0) return {raw: 0, norm: 0};
+    return {raw: raw, norm: raw / (5 * ws)};
+  }
+
+  function recomputePoint(p, weights) {
+    const r = computeBVP(p.scores || {}, weights);
+    return Object.assign({}, p, {bvp_norm: r.norm, bvp_raw: r.raw});
+  }
+
+  function refreshLiveLabels() {
+    document.querySelectorAll(".live-weight").forEach(span => {
+      const d = span.getAttribute("data-driver");
+      span.textContent = liveWeights[d];
+    });
+  }
+
+  function diffSummary() {
+    const changes = [];
+    for (const d in liveWeights) {
+      if (Number(liveWeights[d]) !== Number(baseWeights[d])) {
+        changes.push(`${d}: ${baseWeights[d]}→${liveWeights[d]}`);
+      }
+    }
+    const el = document.getElementById("bvp-diff-summary");
+    const btn = document.getElementById("bvp-commit-btn");
+    if (changes.length === 0) {
+      el.textContent = "no changes";
+      btn.disabled = true;
+    } else {
+      el.textContent = "pending: " + changes.join(", ");
+      btn.disabled = false;
+    }
+  }
+
+  function rerenderScatter() {
+    if (typeof window.bvpRedrawScatter === "function") {
+      const tasks = (payload.tasks || []).map(p => recomputePoint(p, liveWeights));
+      const arcs  = (payload.arcs  || []).map(p => recomputePoint(p, liveWeights));
+      window.bvpRedrawScatter(tasks, arcs);
+    }
+  }
+
+  document.querySelectorAll(".bvp-slider").forEach(slider => {
+    slider.addEventListener("input", evt => {
+      const d = slider.getAttribute("data-driver");
+      liveWeights[d] = Number(slider.value);
+      refreshLiveLabels();
+      diffSummary();
+      rerenderScatter();
+    });
+  });
+
+  document.getElementById("bvp-reset-btn").addEventListener("click", () => {
+    for (const d in baseWeights) {
+      liveWeights[d] = baseWeights[d];
+      const sl = document.querySelector(`.bvp-slider[data-driver="${d}"]`);
+      if (sl) sl.value = baseWeights[d];
+    }
+    refreshLiveLabels();
+    diffSummary();
+    rerenderScatter();
+    document.getElementById("bvp-commit-result").innerHTML = "";
+  });
+
+  // Commit posts: rationale + changed-only driver weights.
+  document.getElementById("bvp-commit-form").addEventListener("submit", async (evt) => {
+    evt.preventDefault();
+    const result = document.getElementById("bvp-commit-result");
+    const rationale = evt.target.rationale.value.trim();
+    if (rationale.length < 30) {
+      result.innerHTML = '<p style="color: var(--pico-del-color);">Rationale must be ≥30 characters (R6).</p>';
+      return;
+    }
+    const changes = [];
+    for (const d in liveWeights) {
+      if (Number(liveWeights[d]) !== Number(baseWeights[d])) {
+        changes.push({driver: d, weight: liveWeights[d]});
+      }
+    }
+    if (!changes.length) {
+      result.innerHTML = '<p>No changes to commit.</p>';
+      return;
+    }
+    const fd = new FormData();
+    fd.append("rationale", rationale);
+    fd.append("changes", JSON.stringify(changes));
+    try {
+      const resp = await fetch(evt.target.action, {method: "POST", body: fd});
+      if (resp.ok) {
+        result.innerHTML = '<p style="color: var(--pico-ins-color);">Committed. Reloading…</p>';
+        setTimeout(() => location.reload(), 800);
+      } else {
+        const txt = await resp.text();
+        result.innerHTML = `<p style="color: var(--pico-del-color);">Commit failed: ${txt}</p>`;
+      }
+    } catch (e) {
+      result.innerHTML = `<p style="color: var(--pico-del-color);">Network error: ${e}</p>`;
+    }
+  });
+
+  refreshLiveLabels();
+  diffSummary();
+})();
+</script>
+{% endif %}
+
+{% if not empty %}
 <script>
 (function() {
   const payload = JSON.parse(document.getElementById("bvp-data").textContent);
@@ -156,32 +305,38 @@
     return `<strong>${d.id}</strong> [${d.kind}]<br>${d.name}<br>BVP_norm ${d.bvp_norm.toFixed(3)} (raw ${d.bvp_raw})<br>${cost}`;
   }
 
-  // Draw tasks (small)
-  g.selectAll(".pt-task").data(tasks).enter().append("circle")
-    .attr("class", "pt-task")
-    .attr("cx", d => x(d.cost)).attr("cy", d => y(d.bvp_norm))
-    .attr("r", 4).attr("fill", "steelblue").attr("opacity", 0.7)
-    .on("mouseover", function(event, d) {
-      tip.style("opacity", 1).html(tipHTML(d));
-    })
-    .on("mousemove", function(event) {
-      tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px");
-    })
-    .on("mouseout", function() { tip.style("opacity", 0); });
+  function drawPoints(taskData, arcData) {
+    const tSel = g.selectAll(".pt-task").data(taskData, d => d.id);
+    tSel.exit().remove();
+    tSel.enter().append("circle")
+      .attr("class", "pt-task")
+      .attr("r", 4).attr("fill", "steelblue").attr("opacity", 0.7)
+      .on("mouseover", function(event, d) { tip.style("opacity", 1).html(tipHTML(d)); })
+      .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
+      .on("mouseout",  function()          { tip.style("opacity", 0); })
+      .merge(tSel)
+      .attr("cx", d => x(d.cost)).attr("cy", d => y(d.bvp_norm));
 
-  // Draw arcs (larger)
-  g.selectAll(".pt-arc").data(arcs).enter().append("circle")
-    .attr("class", "pt-arc")
-    .attr("cx", d => x(d.cost || 4)).attr("cy", d => y(d.bvp_norm))
-    .attr("r", 9).attr("fill", "#d4623a").attr("opacity", 0.85)
-    .attr("stroke", "#7a3a23").attr("stroke-width", 1)
-    .on("mouseover", function(event, d) {
-      tip.style("opacity", 1).html(tipHTML(d));
-    })
-    .on("mousemove", function(event) {
-      tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px");
-    })
-    .on("mouseout", function() { tip.style("opacity", 0); });
+    const aSel = g.selectAll(".pt-arc").data(arcData, d => d.id);
+    aSel.exit().remove();
+    aSel.enter().append("circle")
+      .attr("class", "pt-arc")
+      .attr("r", 9).attr("fill", "#d4623a").attr("opacity", 0.85)
+      .attr("stroke", "#7a3a23").attr("stroke-width", 1)
+      .on("mouseover", function(event, d) { tip.style("opacity", 1).html(tipHTML(d)); })
+      .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
+      .on("mouseout",  function()          { tip.style("opacity", 0); })
+      .merge(aSel)
+      .attr("cx", d => x(d.cost || 4)).attr("cy", d => y(d.bvp_norm));
+  }
+
+  // Initial draw
+  drawPoints(tasks, arcs);
+
+  // T-1929 hook: slider live-recompute calls this to redraw without server roundtrip
+  window.bvpRedrawScatter = function(newTasks, newArcs) {
+    drawPoints(newTasks || [], newArcs || []);
+  };
 })();
 </script>
 {% endif %}
