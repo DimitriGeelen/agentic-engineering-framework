@@ -1,8 +1,8 @@
 ---
-id: T-1937
-name: "BVP T-1936 follow-up — fw bvp arcs CLI parity with /bvp web rollup"
+id: T-1938
+name: "BVP T-1937 sibling — fw bvp / fw bvp T-XXX cost include proposed fallback"
 description: >
-  BVP T-1936 follow-up — fw bvp arcs CLI parity with /bvp web rollup
+  BVP T-1937 sibling — fw bvp / fw bvp T-XXX cost include proposed fallback
 
 status: started-work
 workflow_type: build
@@ -10,13 +10,13 @@ owner: agent
 horizon: now
 tags: [arc:value-prioritisation, parity]
 components: [lib-bvp]
-related_tasks: [T-1936, T-1934, T-1935, T-1919]
+related_tasks: [T-1937, T-1936, T-1934, T-1935, T-1919]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-05-19T19:53:53Z
+created: 2026-05-19T19:59:47Z
 last_update: '2026-05-19T20:00:01Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
@@ -44,43 +44,54 @@ cost_estimate_proposed:
   - ts: '2026-05-19T20:00:01Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
-      blast_radius: 1
+      blast_radius: 0
       tier: 2
-      effort: 8
-    rationale: blast_radius=1 (no-signal); tier=2 (no-signal); effort=8 
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-1937: BVP T-1936 follow-up — fw bvp arcs CLI parity with /bvp web rollup
+# T-1938: BVP T-1937 sibling — fw bvp / fw bvp T-XXX cost include proposed fallback
 
 ## Context
 
-T-1936 shipped constituent-task rollup for arc-level BVP+cost on Watchtower `/bvp`
-(5 arc dots render for arc-002..006 via `_arc_rolled_up_scores` / `_arc_rolled_up_cost`
-in `web/blueprints/bvp.py`). The matching CLI verb `fw bvp arcs` (lib/bvp.sh
-`cmd_arcs`) still reads only direct `bvp_scores:` on the arc YAML — arcs whose
-constituents have proposed scores but the arc itself has empty `bvp_scores: {}`
-print "No arcs have bvp_scores: set yet" while the same arcs render perfectly
-on the web surface. Two consumer sites of the same data, diverged.
+T-1937 closed CLI/web parity for `fw bvp arcs` (arc-level rollup). Two
+sibling drifts remain on task-level surfaces in `lib/bvp.sh`:
 
-This is the silent-corpus-migration anti-pattern (T-1850 cluster, L-329):
-storage format extended on one site without sweeping the other. The fix is
-mechanical parity — port `_arc_rolled_up_scores` and `_arc_rolled_up_cost` to
-the CLI side, route through them when direct arc-level scores are absent.
-Maintain mixed-mode-degrades-to-`derived-proposed` so the sovereignty boundary
-is preserved in the CLI output too.
+1. **`cmd_rank`** (the bare `fw bvp` verb) reads only direct `bvp_scores:`
+   and skips all 57+ tasks carrying `bvp_scores_proposed:`. Result:
+   "No tasks have bvp_scores: set yet" — same root cause as T-1937
+   (silent-corpus-migration, L-329/T-1850 cluster).
+2. **`cmd_detail`** cost block reads only `cost_estimate:` and prints
+   "cost_estimate: absent" for tasks carrying `cost_estimate_proposed:`
+   (the BVP score block already handles proposed fallback correctly —
+   only the cost section drifted).
+
+Sovereignty boundary calibration: web `/bvp` shows proposed by default
+because the visual context makes provenance obvious (T-1934 `cost_source`
+suffix). CLI lacks that affordance. So `cmd_rank` should:
+- Default to confirmed-only (sovereignty-conservative)
+- Add `--include-proposed` flag for explicit opt-in
+- Stamp source column so the user sees provenance
+
+`cmd_detail` cost section is different — single-task detail-view context
+already signals "advisory" via the existing `PROPOSED (advisory)` label
+on the score block. Cost section can mirror that: show proposed cost
+when confirmed is absent, labelled `PROPOSED (estimator)` like the score
+block already does.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `cmd_arcs` in `lib/bvp.sh` falls back to constituent-task rollup when arc YAML lacks direct `bvp_scores:`, mirroring `web/blueprints/bvp.py:_collect_arc_points`
-- [x] Rollup uses arc_id-dual-form matching (slug OR arc-NNN), same as web blueprint (T-1849)
-- [x] Output row includes a `source` column distinguishing `direct` vs `derived-confirmed` vs `derived-proposed`
-- [x] `fw bvp arcs` returns at least one row (5 arc dots visible on /bvp must also show in CLI) — verified by `bin/fw bvp arcs 2>&1 | grep -E "arc-00[2-6]"`
-- [x] Unit tests in `tests/unit/test_bvp_cli_arcs_rollup.py` cover: empty members case, direct-confirmed bypass, derived-confirmed via task rollup, mixed-mode degrades to derived-proposed, both arc_id forms resolve
-- [x] All new tests PASS via `cd tests && python3 -m pytest unit/test_bvp_cli_arcs_rollup.py -q`
-- [x] Existing CLI BVP tests still PASS via `cd tests && python3 -m pytest unit/test_bvp_estimator.py unit/test_bvp_blueprint_cost.py -q`
+- [x] `cmd_rank` accepts `--include-proposed` flag; without it, only confirmed-score tasks rank (sovereignty-conservative default)
+- [x] When `--include-proposed` is set, `cmd_rank` falls back to `bvp_scores_proposed:` for tasks lacking confirmed scores
+- [x] `cmd_rank` row output includes a `SOURCE` column (`confirmed` / `proposed`) when proposed are included
+- [x] `cmd_detail` cost section falls back to `cost_estimate_proposed:` when `cost_estimate:` is absent, labelled `PROPOSED (estimator)` parallel to the score block convention
+- [x] `bin/fw bvp --include-proposed 2>&1 | grep -E "^T-1937"` returns at least one row (T-1937 has proposed scores set by the v1 cron sweep)
+- [x] `bin/fw bvp T-1937 2>&1 | grep -q "PROPOSED.*estimator"` shows the cost section now reads proposed
+- [x] Unit tests in `tests/unit/test_bvp_cli_rank_proposed.py` cover: confirmed-only default, --include-proposed opt-in, source column distinction, cost detail proposed fallback
+- [x] All new tests PASS; existing CLI BVP tests still PASS (`unit/test_bvp_cli_arcs_rollup.py`, `unit/test_bvp_estimator.py`, `unit/test_bvp_blueprint_cost.py`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,9 +151,9 @@ is preserved in the CLI output too.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-cd /opt/999-Agentic-Engineering-Framework/tests && python3 -m pytest unit/test_bvp_cli_arcs_rollup.py -q
-cd /opt/999-Agentic-Engineering-Framework/tests && python3 -m pytest unit/test_bvp_estimator.py unit/test_bvp_blueprint_cost.py -q
-out=$(cd /opt/999-Agentic-Engineering-Framework && bin/fw bvp arcs 2>&1); echo "$out" | grep -qE "arc-00[2-6]"
+cd /opt/999-Agentic-Engineering-Framework/tests && python3 -m pytest unit/test_bvp_cli_rank_proposed.py unit/test_bvp_cli_arcs_rollup.py unit/test_bvp_estimator.py unit/test_bvp_blueprint_cost.py -q
+out=$(cd /opt/999-Agentic-Engineering-Framework && bin/fw bvp --include-proposed 2>&1); echo "$out" | grep -q "^T-1937"
+out=$(cd /opt/999-Agentic-Engineering-Framework && bin/fw bvp T-1937 2>&1); echo "$out" | grep -q "PROPOSED.*estimator"
 
 ## RCA
 
@@ -188,47 +199,47 @@ out=$(cd /opt/999-Agentic-Engineering-Framework && bin/fw bvp arcs 2>&1); echo "
 
 **Recommendation:** GO
 
-**Rationale:** Silent-corpus divergence between `lib/bvp.sh:cmd_arcs` and
-`web/blueprints/bvp.py:_collect_arc_points` closed. The CLI now renders the
-same 5 arcs the web surface renders (arc-002..006, all `derived-proposed`
-via constituent-task rollup), preserves the sovereignty boundary
-(mixed-mode degrades to `derived-proposed`), and exposes provenance via a
-new `SOURCE` column. Mirrors T-1936 helper shapes 1:1; T-1850 cluster
-anti-pattern caught one step earlier (within-arc instead of cross-arc).
+**Rationale:** Two task-level CLI drift sites closed. `fw bvp`
+(rank) gains `--include-proposed` opt-in; default remains
+confirmed-only (sovereignty-conservative). `fw bvp T-XXX` (detail)
+cost section falls back to `cost_estimate_proposed:` parallel to
+the score block which already did so — closing the last drift in
+this file. Help text now nudges users toward the flag when no
+confirmed scores exist yet. 8/8 new tests + 75 sibling tests PASS.
 
 **Evidence:**
-- `bin/fw bvp arcs` output shows arc-006 (`value-prioritisation`) at BVP=37 norm=0.31 source=`derived-proposed` — matches /bvp arc dot positioning
-- 12/12 new tests PASS (`tests/unit/test_bvp_cli_arcs_rollup.py`)
-- 63/63 sibling BVP tests still PASS (no regression)
-- `_arc_member_tasks`, `_arc_rolled_up_scores`, `_latest_proposed_scores` structurally mirror web blueprint (sovereignty boundary preserved)
+- `bin/fw bvp --include-proposed` ranks 71 tasks with SOURCE column (proposed/confirmed)
+- `bin/fw bvp T-1937` shows `Cost components (PROPOSED (estimator))` with composite 2.00
+- 83/83 BVP tests PASS — full file suite green
+- Sovereignty preserved: bare `fw bvp` (no flag) still says "No tasks have bvp_scores: set yet" with help-text nudge
 
 ## Evolution
 
-### 2026-05-19 — silent-corpus drift caught one consumer earlier
+### 2026-05-19 — scope-root pattern applied successfully
 
-- **What changed:** T-1936 shipped rollup on the web side only. CLI `fw bvp arcs` continued returning "No arcs have bvp_scores: set yet" even with 5 arcs renderable. Caught immediately on resume by running the CLI command — pattern-recognised as T-1850 cluster anti-pattern (silent-corpus migration).
-- **Plan impact:** T-1936 should have included CLI parity in original scope. Filed as T-1937 follow-up rather than re-opening T-1936.
-- **Triggered:** This task (T-1937). No further sub-tasks needed — full parity reached.
+- **What changed:** After shipping T-1937 (arc rollup parity), grep-swept `lib/bvp.sh` for sibling drifts before declaring done. Found two: cmd_rank ignored proposed entirely; cmd_detail cost ignored proposed even though detail's score block already handled it.
+- **Plan impact:** No need for a future "T-1939 sibling-of-sibling" — full file parity reached.
+- **Triggered:** This task (T-1938). Applied "scope root, not symptom" (memory rule from T-1871 → T-1873 origin) — same file, same anti-pattern, fixed together.
 
 ## Decisions
 
-### 2026-05-19 — port helpers vs. shell-out to web
+### 2026-05-19 — --include-proposed flag vs always-on
 
-- **Chose:** Duplicate the rollup helpers structurally in `lib/bvp.sh`'s python body.
-- **Why:** Web blueprint is Flask-app-resident — invoking it from CLI would require Flask boot. Three helpers (~60 LOC) is cheaper than a Flask dependency for a read-only CLI.
-- **Rejected:** (a) Shell-out to `curl /bvp` JSON — adds runtime dependency on a running Watchtower. (b) Move helpers to a shared `lib/bvp_rollup.py` — viable refactor but would touch web blueprint imports; deferred to a future consolidation slice if a third consumer emerges.
+- **Chose:** Opt-in flag.
+- **Why:** CLI lacks the visual affordance the web `/bvp` scatter has for distinguishing proposed (color/opacity). Always-on would silently mix advisory + confirmed in a flat table — bad sovereignty signal. Opt-in keeps the bare `fw bvp` output sovereignty-clean.
+- **Rejected:** Always-on (mirrors web) — would create the very confusion the sovereignty boundary exists to prevent.
 
-### 2026-05-19 — SOURCE column placement
+### 2026-05-19 — SOURCE column only when --include-proposed
 
-- **Chose:** Inline column between NORM and NAME, name `SOURCE`.
-- **Why:** Provenance is the most-asked question for `derived-proposed` rows ("why is this arc scored?"). Putting it before NAME keeps it visible without scrolling.
-- **Rejected:** Append after NAME (would get truncated by terminal width on long names).
+- **Chose:** Conditional column.
+- **Why:** Bare `fw bvp` already implies confirmed-only; an unused SOURCE column would just take screen width and confuse the table. Conditional rendering preserves the slim default output.
+- **Rejected:** Always render — taxes the common case for no benefit.
 
-### 2026-05-19 — keep existing tests at 75-pass total instead of consolidating
+### 2026-05-19 — cmd_detail cost label `PROPOSED (estimator)` matches score block
 
-- **Chose:** New test file `test_bvp_cli_arcs_rollup.py` rather than extending `test_bvp_estimator.py`.
-- **Why:** CLI rollup is a distinct concern from estimator scoring; test file naming should map 1:1 to surface. Future readers find arc-rollup tests by name.
-- **Rejected:** Single-mega-test-file — would obscure which surface each test guards.
+- **Chose:** Same label shape as the existing `PROPOSED (advisory)` score block label.
+- **Why:** Reader's mental model is already calibrated — `PROPOSED (...)` means estimator/advisory at this file. Keeps reader from having to learn a second convention.
+- **Rejected:** Inventing a new label like `[ADVISORY]` — would fragment the convention within a single command's output.
 
 ## Decisions
 
@@ -253,7 +264,7 @@ anti-pattern caught one step earlier (within-arc instead of cross-arc).
 
 ## Updates
 
-### 2026-05-19T19:53:53Z — task-created [task-create-agent]
+### 2026-05-19T19:59:47Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1937-bvp-t-1936-follow-up--fw-bvp-arcs-cli-pa.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1938-bvp-t-1937-sibling--fw-bvp--fw-bvp-t-xxx.md
 - **Context:** Initial task creation

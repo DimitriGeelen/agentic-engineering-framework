@@ -242,16 +242,33 @@ def quadrant(bvp_norm, cost, bvp_median, cost_median):
 
 
 # --------------------------------------------------------------------- verbs
-def cmd_rank(filter_quadrant=None):
+def cmd_rank(filter_quadrant=None, include_proposed=False):
+    """T-1938: --include-proposed opt-in falls back to bvp_scores_proposed:
+    for tasks lacking confirmed scores. Sovereignty default is confirmed-only;
+    explicit consent is required to fold in advisory inputs."""
     policy = load_policy()
     weights = driver_weights(policy)
     rows = []
     for path, fm in collect_tasks():
         scores = fm.get('bvp_scores') or {}
+        source = 'confirmed'
         if not scores:
-            continue  # only score-bearing tasks rank
+            if not include_proposed:
+                continue  # default: confirmed-only
+            proposed = _latest_proposed_scores(fm)
+            if not proposed:
+                continue
+            scores, source = proposed, 'proposed'
         raw, norm, _ = compute_bvp(scores, weights)
-        cost, _, _, _, src = compute_cost(fm.get('cost_estimate'))
+        ce = fm.get('cost_estimate')
+        # Cost: confirmed first; under --include-proposed, fall back to proposed.
+        cost, _, _, _, src = compute_cost(ce)
+        if cost is None and include_proposed:
+            ce_proposed = _latest_proposed_cost_estimate(fm)
+            if ce_proposed:
+                cost, _, _, _, src = compute_cost(ce_proposed)
+                if src == 'three-component':
+                    src = 'three-component-proposed'
         rows.append({
             'id': fm.get('id', path.stem),
             'name': (fm.get('name') or '')[:50],
@@ -259,11 +276,16 @@ def cmd_rank(filter_quadrant=None):
             'bvp_norm': norm,
             'cost': cost,
             'cost_src': src,
+            'source': source,
         })
 
     if not rows:
-        print("No tasks have `bvp_scores:` set yet.")
-        print("Score tasks via `fw bvp confirm T-<id>` (T-1924) once that slice ships.")
+        if include_proposed:
+            print("No tasks have `bvp_scores:` or `bvp_scores_proposed:` set yet.")
+        else:
+            print("No tasks have `bvp_scores:` set yet.")
+            print("Score tasks via `fw bvp confirm T-<id>` (T-1924) once that slice ships.")
+            print("Or pass `--include-proposed` to see estimator-proposed scores (advisory).")
         return 0
 
     bvp_vals = [r['bvp_norm'] for r in rows]
@@ -280,12 +302,33 @@ def cmd_rank(filter_quadrant=None):
             return 0
 
     rows.sort(key=lambda r: r['bvp_norm'], reverse=True)
-    print(f"{'TASK':<10} {'BVP':>6} {'NORM':>6} {'COST':>6} {'QUAD':>6}  NAME")
-    print('-' * 80)
-    for r in rows:
-        cost_str = f"{r['cost']:.1f}" if r['cost'] is not None else '-'
-        print(f"{r['id']:<10} {r['bvp_raw']:>6} {r['bvp_norm']:>6.2f} {cost_str:>6} {r['quadrant']:>6}  {r['name']}")
+    if include_proposed:
+        print(f"{'TASK':<10} {'BVP':>5} {'NORM':>6} {'COST':>5} {'QUAD':>6}  {'SOURCE':<10} NAME")
+        print('-' * 96)
+        for r in rows:
+            cost_str = f"{r['cost']:.1f}" if r['cost'] is not None else '-'
+            print(f"{r['id']:<10} {r['bvp_raw']:>5} {r['bvp_norm']:>6.2f} {cost_str:>5} {r['quadrant']:>6}  {r['source']:<10} {r['name']}")
+    else:
+        print(f"{'TASK':<10} {'BVP':>6} {'NORM':>6} {'COST':>6} {'QUAD':>6}  NAME")
+        print('-' * 80)
+        for r in rows:
+            cost_str = f"{r['cost']:.1f}" if r['cost'] is not None else '-'
+            print(f"{r['id']:<10} {r['bvp_raw']:>6} {r['bvp_norm']:>6.2f} {cost_str:>6} {r['quadrant']:>6}  {r['name']}")
     return 0
+
+
+def _latest_proposed_cost_estimate(fm):
+    """T-1938 / mirrors web blueprint: pull newest cost_estimate_proposed: entry."""
+    proposed = fm.get('cost_estimate_proposed')
+    if not proposed or not isinstance(proposed, list):
+        return None
+    latest = proposed[-1] if isinstance(proposed[-1], dict) else None
+    if not latest:
+        return None
+    ce = latest.get('cost_estimate')
+    if not ce or not isinstance(ce, dict):
+        return None
+    return ce
 
 
 def cmd_detail(task_id):
@@ -343,7 +386,16 @@ def cmd_detail(task_id):
         print()
         ce = fm.get('cost_estimate')
         cost, br, tier, effort, src = compute_cost(ce)
-        print("Cost components:")
+        cost_source_label = 'CONFIRMED'
+        if cost is None:
+            # T-1938: fall back to cost_estimate_proposed: when absent (mirrors
+            # score block which already does this — fixes sibling drift).
+            ce_proposed = _latest_proposed_cost_estimate(fm)
+            if ce_proposed:
+                cost, br, tier, effort, src = compute_cost(ce_proposed)
+                cost_source_label = 'PROPOSED (estimator)'
+                ce = ce_proposed
+        print(f"Cost components ({cost_source_label}):")
         if src == 'three-component':
             print(f"  blast_radius: {br:.1f}  × 0.6 = {br*0.6:.2f}")
             print(f"  tier:         {tier:.1f}  × 0.3 = {tier*0.3:.2f}")
@@ -1153,8 +1205,13 @@ NOTES:
 # --------------------------------------------------------------------- entry
 def main(argv):
     args = argv[1:]
+    # T-1938: --include-proposed is a positional flag valid for rank surfaces.
+    include_proposed = False
+    if '--include-proposed' in args:
+        include_proposed = True
+        args = [a for a in args if a != '--include-proposed']
     if not args:
-        return cmd_rank()
+        return cmd_rank(include_proposed=include_proposed)
     if args[0] in ('--help', '-h', 'help'):
         return usage()
     if args[0] == '--quadrant':
@@ -1165,7 +1222,7 @@ def main(argv):
         if q not in ('hv-lc', 'hv-hc', 'lv-lc', 'lv-hc'):
             print(f"ERROR: invalid quadrant '{q}'", file=sys.stderr)
             return 2
-        return cmd_rank(filter_quadrant=q)
+        return cmd_rank(filter_quadrant=q, include_proposed=include_proposed)
     if args[0] == 'arcs':
         return cmd_arcs()
     if args[0] == 'weight':
