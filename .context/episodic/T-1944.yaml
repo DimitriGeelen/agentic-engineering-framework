@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1944: extract cron drift python heredoc to lib helper L-408 prevention
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-20T06:07:17Z
+# ============================================================================
+
+task_id: T-1944
+task_name: "extract cron drift python heredoc to lib helper L-408 prevention"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-20T05:51:39Z
+completed: 2026-05-20T06:03:09Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-20T08:01:06+02:00
+last_commit: 2026-05-20T08:01:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  extract cron-drift python heredoc to lib/cron_dry_run.py (L-332/L-408)
+
+# Key outcomes
+outcomes:
+  - '`lib/cron_dry_run.py` exists, executable, takes 3 positional args (project_root, registry_file, fw_path), emits the same crontab text the heredocs emitted (byte-identical for the in-repo state).'
+  - '`bin/fw` no longer contains an inline `python3 - ... <<''PY'' ... PY` block; the doctor cron check invokes `lib/cron_dry_run.py` and `bash -n bin/fw` produces no warnings.'
+  - '`agents/audit/audit.sh` no longer contains an inline `python3 - ... <<''PY'' ... PY` block; the audit cron check invokes `lib/cron_dry_run.py` and `bash -n agents/audit/audit.sh` produces no warnings.'
+  - '`bats tests/unit/test_cron_registry_generated_drift.bats` — all 3 T-1942 tests still pass after the refactor.'
+  - '`bats tests/unit/test_audit_cron_registry_generated_drift.bats` — all 3 T-1943 tests still pass after the refactor.'
+  - '`bats tests/unit/test_audit_cron_drift.bats` — all 5 T-1771 tests still pass.'
+  - '`bin/fw doctor` runs without the cosmetic "unterminated here-document" warning on the first line.'
+  - '`lib/cron_dry_run.py` registered in `.fabric/components/`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-20 — Extract to lib/*.py (not lib/*.sh or inline `python3 -c`)'
+    chose: 'New file `lib/cron_dry_run.py` with `#!/usr/bin/env python3` shebang'
+    rationale: 'L-332''s explicit prescription. Matches the established convention (`lib/doctor-hook-exercise.py`, `lib/ollama_loop.py`, `lib/outcome.py`, ...). Inline `python3 -c "..."` would not fit ~30 lines without escaping headaches; a `.sh` shim would just push the heredoc problem one level down.'
+    alternatives_rejected: ['(a) Single-line `python3 -c` — too long, escape-prone. (b) Bash-native generation — would re-implement the registry parser. (c) Wrap inline heredoc in a function — doesn''t fix the parse-error self-lockout class.']
+  - decision: '2026-05-20 — Cross-link L-408 to L-332 in learnings.yaml'
+    chose: 'Append a one-line cross-reference to L-408''s body noting it is the 3rd-incident reinforcement of L-332, not a new class.'
+    rationale: 'Honest provenance — the prevention rule existed; the issue was rule discoverability at task-create time. Future-prevention candidates depend on framing this as a meta-class (rule not consulted) rather than a fresh learning.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - '.fabric/components/lib-cron_dry_run.yaml'
+  - 'lib/cron_dry_run.py'
+  - '.tasks/active/T-1944-extract-cron-drift-python-heredoc-to-lib.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-20T08:01:06"
+    action: "T-1944: extract cron-drift python heredoc to lib/cron_dry_run.py (L-332/L-408)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, future-prevention, L-408, L-332, refactor]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 5
+  lines_added: 339
+  lines_removed: 79
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1944-extract-cron-drift-python-heredoc-to-lib.md
+generated_by: context-agent-hybrid

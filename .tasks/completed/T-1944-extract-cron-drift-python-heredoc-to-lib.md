@@ -4,12 +4,12 @@ name: "extract cron drift python heredoc to lib helper L-408 prevention"
 description: >
   extract cron drift python heredoc to lib helper L-408 prevention
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: [arc:value-prioritisation, future-prevention, L-408, L-332, refactor]
-components: [bin-fw, agents-audit-audit]
+components: [C-004, bin/fw, lib/cron_dry_run.py]
 related_tasks: [T-1942, T-1943, T-1629]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T05:51:39Z
-last_update: '2026-05-20T06:00:02Z'
-date_finished:
+last_update: 2026-05-20T06:03:09Z
+date_finished: 2026-05-20T06:03:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -69,14 +69,14 @@ source of truth for the generation algorithm.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/cron_dry_run.py` exists, executable, takes 3 positional args (project_root, registry_file, fw_path), emits the same crontab text the heredocs emitted (byte-identical for the in-repo state).
-- [ ] `bin/fw` no longer contains an inline `python3 - ... <<'PY' ... PY` block; the doctor cron check invokes `lib/cron_dry_run.py` and `bash -n bin/fw` produces no warnings.
-- [ ] `agents/audit/audit.sh` no longer contains an inline `python3 - ... <<'PY' ... PY` block; the audit cron check invokes `lib/cron_dry_run.py` and `bash -n agents/audit/audit.sh` produces no warnings.
-- [ ] `bats tests/unit/test_cron_registry_generated_drift.bats` — all 3 T-1942 tests still pass after the refactor.
-- [ ] `bats tests/unit/test_audit_cron_registry_generated_drift.bats` — all 3 T-1943 tests still pass after the refactor.
-- [ ] `bats tests/unit/test_audit_cron_drift.bats` — all 5 T-1771 tests still pass.
-- [ ] `bin/fw doctor` runs without the cosmetic "unterminated here-document" warning on the first line.
-- [ ] `lib/cron_dry_run.py` registered in `.fabric/components/`.
+- [x] `lib/cron_dry_run.py` exists, executable, takes 3 positional args (project_root, registry_file, fw_path), emits the same crontab text the heredocs emitted (byte-identical for the in-repo state).
+- [x] `bin/fw` no longer contains an inline `python3 - ... <<'PY' ... PY` block; the doctor cron check invokes `lib/cron_dry_run.py` and `bash -n bin/fw` produces no warnings.
+- [x] `agents/audit/audit.sh` no longer contains an inline `python3 - ... <<'PY' ... PY` block; the audit cron check invokes `lib/cron_dry_run.py` and `bash -n agents/audit/audit.sh` produces no warnings.
+- [x] `bats tests/unit/test_cron_registry_generated_drift.bats` — all 3 T-1942 tests still pass after the refactor.
+- [x] `bats tests/unit/test_audit_cron_registry_generated_drift.bats` — all 3 T-1943 tests still pass after the refactor.
+- [x] `bats tests/unit/test_audit_cron_drift.bats` — all 5 T-1771 tests still pass.
+- [x] `bin/fw doctor` runs without the cosmetic "unterminated here-document" warning on the first line.
+- [x] `lib/cron_dry_run.py` registered in `.fabric/components/`.
 
 ### Human
 
@@ -166,6 +166,12 @@ test -x lib/cron_dry_run.py
 
 ## Evolution
 
+### 2026-05-20 — L-332 was already the canonical rule; L-408 was a duplicate trigger
+
+- **What changed:** Surfacing the related-knowledge sidebar on `fw work-on` revealed L-332 (2026-05-01, T-1629) — the pre-existing rule banning `$(cmd <<EOF ... EOF)` in hot-path bash dispatchers, with prescriptive guidance ("any Python helper >10 lines goes in lib/*.py"). The L-408 entry written last segment (T-1942) was the 3rd-incident reinforcement of the same class, not a new class. The arc-006 work that introduced the heredocs (T-1942/T-1943) bypassed L-332 because the related-knowledge surface wasn't consulted at the start of that task.
+- **Plan impact:** Refactor is mechanical (extract → invoke), but the meta-finding is that the prevention rule existed and was missed. Suggests future-prevention work: surface L-rules whose `application:` field is "TBD" more aggressively at task-create time, or attach class-tagged learnings to hook block-messages (e.g. the bin/fw boundary check could echo "L-332" when it sees an inline `$(... <<EOF ...)` in a Write/Edit diff).
+- **Triggered:** No new sub-task — this Evolution entry plus a learnings.yaml update to cross-link L-408 → L-332 ("3rd-incident reinforcement, same class") is the prevention. Larger "auto-surface learnings on task-create" idea logged here but not filed; would need its own inception.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -187,6 +193,30 @@ test -x lib/cron_dry_run.py
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## Recommendation
+
+**Recommendation:** GO (work-completed)
+
+**Rationale:** Pure structural refactor with byte-equivalent output. Eliminates the cosmetic warning that polluted every `bin/fw` invocation, removes ~40 lines of duplicated Python between `bin/fw` and `agents/audit/audit.sh`, and routes both surfaces through a single source of truth (`lib/cron_dry_run.py`). Closes the L-332/L-408 prevention loop the framework had explicitly written but the agent had still violated 3× in 2026-05. All three bats suites (T-1942 / T-1943 / T-1771) remain green; doctor and audit functional behaviour is unchanged.
+
+**Evidence:**
+- bin/fw / audit.sh parse clean (`bash -n` no warnings); previously: `bin/fw: line 1713: warning: command substitution: 1 unterminated here-document` on every invocation
+- T-1942 bats 3/3 PASS, T-1943 bats 3/3 PASS, T-1771 bats 5/5 PASS (no regression)
+- `bin/fw doctor` first line is the banner, not the cosmetic warning (drift gate green: in-sync line present, edited-but-not-generated absent)
+- `lib/cron_dry_run.py` byte-identical to on-disk `agentic-audit.crontab` in the framework repo
+- Commit `0e0d7d56`; fabric card created (`.fabric/components/lib-cron_dry_run.yaml`)
+
+## Decisions
+
+### 2026-05-20 — Extract to lib/*.py (not lib/*.sh or inline `python3 -c`)
+- **Chose:** New file `lib/cron_dry_run.py` with `#!/usr/bin/env python3` shebang
+- **Why:** L-332's explicit prescription. Matches the established convention (`lib/doctor-hook-exercise.py`, `lib/ollama_loop.py`, `lib/outcome.py`, ...). Inline `python3 -c "..."` would not fit ~30 lines without escaping headaches; a `.sh` shim would just push the heredoc problem one level down.
+- **Rejected:** (a) Single-line `python3 -c` — too long, escape-prone. (b) Bash-native generation — would re-implement the registry parser. (c) Wrap inline heredoc in a function — doesn't fix the parse-error self-lockout class.
+
+### 2026-05-20 — Cross-link L-408 to L-332 in learnings.yaml
+- **Chose:** Append a one-line cross-reference to L-408's body noting it is the 3rd-incident reinforcement of L-332, not a new class.
+- **Why:** Honest provenance — the prevention rule existed; the issue was rule discoverability at task-create time. Future-prevention candidates depend on framing this as a meta-class (rule not consulted) rather than a fresh learning.
 
 ## Decisions
 
@@ -215,3 +245,15 @@ test -x lib/cron_dry_run.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1944-extract-cron-drift-python-heredoc-to-lib.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-79fdd2ee
+- **Timestamp:** 2026-05-20T06:07:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-20T06:03:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
