@@ -60,6 +60,10 @@
           {
             "type": "command",
             "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-arc-id"
+          },
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-heredoc-cmd-sub"
           }
         ]
       },
