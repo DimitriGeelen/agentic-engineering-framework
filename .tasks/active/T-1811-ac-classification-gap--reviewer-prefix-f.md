@@ -147,8 +147,8 @@ Detected via T-1810 follow-up triage: 7 Group C tasks were initially classified 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-433a4f19
-- **Timestamp:** 2026-05-20T07:39:38Z
+- **Scan ID:** R-6de17adf
+- **Timestamp:** 2026-05-20T07:43:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
