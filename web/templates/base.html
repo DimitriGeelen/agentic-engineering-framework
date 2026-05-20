@@ -273,12 +273,16 @@
 
         /* T-1909: arc-membership badge — surfaced wherever a task is rendered. */
         .arc-badge {
+            /* T-1968: text color was var(--pico-secondary), which in dark mode
+               is a blue-ish that has no contrast against --pico-secondary-background
+               (also blue-ish in dark mode). Use --pico-color (main text colour)
+               to guarantee contrast against the subtle pill background. */
             display: inline-flex;
             align-items: center;
             padding: 0.1rem 0.45rem;
             border-radius: 999px;
             background: var(--pico-secondary-background);
-            color: var(--pico-secondary);
+            color: var(--pico-color);
             font-size: 0.72rem;
             font-weight: 600;
             text-decoration: none;
