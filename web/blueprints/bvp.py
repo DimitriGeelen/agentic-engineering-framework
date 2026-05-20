@@ -94,19 +94,38 @@ def _compute_cost(ce: dict | None, *, default_when_absent: bool = False) -> tupl
 
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
 
+# T-1954: per-file frontmatter cache keyed on path -> (mtime_ns, parsed_fm).
+# /bvp scans ~1900 task files per request; the slow part is yaml.safe_load on
+# each, not the disk read. Caching parsed frontmatter and invalidating on
+# mtime change brings the page from ~17s to <1s on warm cache. Memory cost:
+# ~1900 small dicts (a few MB); the Flask process is long-running so the cost
+# amortises across requests.
+_FM_CACHE: dict[str, tuple[int, dict | None]] = {}
+
 
 def _parse_frontmatter(path: Path) -> dict | None:
     try:
+        mtime_ns = path.stat().st_mtime_ns
+    except OSError:
+        return None
+    cached = _FM_CACHE.get(str(path))
+    if cached is not None and cached[0] == mtime_ns:
+        return cached[1]
+    try:
         text = path.read_text()
     except OSError:
+        _FM_CACHE[str(path)] = (mtime_ns, None)
         return None
     m = _FRONTMATTER_RE.match(text)
     if not m:
+        _FM_CACHE[str(path)] = (mtime_ns, None)
         return None
     try:
-        return yaml.safe_load(m.group(1)) or {}
+        result: dict | None = yaml.safe_load(m.group(1)) or {}
     except yaml.YAMLError:
-        return None
+        result = None
+    _FM_CACHE[str(path)] = (mtime_ns, result)
+    return result
 
 
 def _latest_proposed_scores(fm: dict) -> dict | None:

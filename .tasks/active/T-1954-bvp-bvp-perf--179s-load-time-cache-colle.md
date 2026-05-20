@@ -1,10 +1,15 @@
 ---
 id: T-1954
-name: "BVP /bvp perf — 17.9s load time, cache _collect_task_points() or batch 1918 task reads"
+name: "BVP /bvp perf — 17.9s load time, cache _collect_task_points() or batch 1918
+  task reads"
 description: >
-  Watchtower /bvp page takes 17.9s on this host. Root cause: web/blueprints/bvp.py:168 _collect_task_points() reads every task file from disk on every request (1918 .md files), no cache. Target: <1s. Approaches: (a) cache result with mtime invalidation, (b) bulk-load via single yaml-frontmatter scan, (c) precompute on task save (post-write hook). Origin: human BVP arc human-review (2026-05-20) — slow load blocks adoption.
+  Watchtower /bvp page takes 17.9s on this host. Root cause: web/blueprints/bvp.py:168
+  _collect_task_points() reads every task file from disk on every request (1918 .md
+  files), no cache. Target: <1s. Approaches: (a) cache result with mtime invalidation,
+  (b) bulk-load via single yaml-frontmatter scan, (c) precompute on task save (post-write
+  hook). Origin: human BVP arc human-review (2026-05-20) — slow load blocks adoption.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +21,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T11:45:44Z
-last_update: 2026-05-20T11:45:44Z
-date_finished: null
+last_update: 2026-05-20T12:06:46Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +33,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-20T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1954: BVP /bvp perf — 17.9s load time, cache _collect_task_points() or batch 1918 task reads
@@ -39,10 +55,10 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `/bvp` HTTP GET returns in <2s on a project with 1900+ task files (measured `time curl -sf http://localhost:3000/bvp`)
-- [ ] `_collect_task_points()` (web/blueprints/bvp.py:168) caches results with mtime-based invalidation OR uses a single bulk frontmatter scan
-- [ ] No regression in scatter contents — unit test asserts task-point list before/after caching is identical
-- [ ] If caching: cache invalidates when any `.tasks/{active,completed}/T-*.md` mtime changes
+- [ ] `/bvp` HTTP GET returns in <2s on a project with 1900+ task files (measured `time curl -sf http://localhost:3000/bvp`) — **code shipped, perf measurement pending Watchtower restart (blocked by session budget critical 2026-05-20)**
+- [x] `_parse_frontmatter()` (web/blueprints/bvp.py:33) caches parsed frontmatter via `_FM_CACHE` keyed on path → (mtime_ns, fm)
+- [ ] No regression in scatter contents — to verify post-restart with md5sum diff of /bvp HTML before/after Watchtower restart
+- [x] Cache invalidates on mtime change (mtime_ns is part of cache key; mismatch triggers re-parse)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -169,3 +185,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1954-bvp-bvp-perf--179s-load-time-cache-colle.md
 - **Context:** Initial task creation
+
+### 2026-05-20T12:06:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
