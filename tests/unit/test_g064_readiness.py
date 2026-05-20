@@ -257,3 +257,108 @@ def test_default_no_strict_returns_0_even_when_not_ready(tmp_path):
         capture_output=True, text=True,
     )
     assert result.returncode == 0
+
+
+# ---------------------------------------------------------------------------
+# T-1952 — v0.5 LATEST fallback (idempotency-saturation case)
+# ---------------------------------------------------------------------------
+
+
+def test_v0_5_latest_missing_backward_compat(gauge):
+    """No v0.5 LATEST file → old behaviour, no new fields populated."""
+    a = gauge.assess([], v0_5_latest=None)
+    assert a["v0_5_last_generated"] is None
+    assert a["v0_5_last_dispatched"] is None
+    assert a["v0_5_last_skipped_idempotent"] is None
+    assert a["v0_5_date_added_to_cron"] is False
+    assert a["cron_firing_dates"] == []
+
+
+def test_v0_5_latest_in_window_adds_cron_date(gauge):
+    """v0.5 LATEST with `generated` ts in cron window → date counted."""
+    v0_5 = {
+        "generated": "2026-05-06T05:33:01+00:00",
+        "dispatched": 0,
+        "skipped_idempotent": 83,
+    }
+    a = gauge.assess([], v0_5_latest=v0_5)
+    assert a["v0_5_last_generated"] == "2026-05-06T05:33:01+00:00"
+    assert a["v0_5_last_dispatched"] == 0
+    assert a["v0_5_last_skipped_idempotent"] == 83
+    assert a["v0_5_date_added_to_cron"] is True
+    assert a["cron_firing_dates"] == ["2026-05-06"]
+
+
+def test_v0_5_latest_outside_window_does_not_add(gauge):
+    """v0.5 LATEST with ts outside cron window → not counted."""
+    v0_5 = {
+        "generated": "2026-05-06T16:26:00+00:00",  # manual run
+        "dispatched": 0,
+        "skipped_idempotent": 83,
+    }
+    a = gauge.assess([], v0_5_latest=v0_5)
+    assert a["v0_5_last_generated"] == "2026-05-06T16:26:00+00:00"
+    assert a["v0_5_date_added_to_cron"] is False
+    assert a["cron_firing_dates"] == []
+
+
+def test_v0_5_latest_does_not_double_count(gauge):
+    """v0.5 LATEST date already in cron_firing_dates via dispatch row → no double."""
+    rows = [_row("T-A", "2026-05-06T05:33:00+00:00")]  # adds 2026-05-06
+    v0_5 = {
+        "generated": "2026-05-06T05:34:00+00:00",  # same date, in window
+        "dispatched": 0,
+        "skipped_idempotent": 83,
+    }
+    a = gauge.assess(rows, v0_5_latest=v0_5)
+    assert a["cron_firing_dates"] == ["2026-05-06"]  # single entry
+    assert a["v0_5_date_added_to_cron"] is False  # not newly added
+
+
+def test_v0_5_latest_malformed_does_not_crash(gauge):
+    """v0.5 LATEST with missing or malformed `generated` → graceful fallback."""
+    # Empty dict
+    a = gauge.assess([], v0_5_latest={})
+    assert a["v0_5_last_generated"] is None
+    assert a["v0_5_date_added_to_cron"] is False
+    # Malformed ts
+    a = gauge.assess([], v0_5_latest={"generated": "not-a-ts"})
+    assert a["v0_5_last_generated"] == "not-a-ts"
+    assert a["v0_5_date_added_to_cron"] is False
+
+
+def test_read_v0_5_latest_helper(gauge, tmp_path):
+    """_read_v0_5_latest parses minimal yaml fields without pyyaml."""
+    p = tmp_path / "v0_5.yaml"
+    p.write_text(
+        "generated: '2026-05-20T03:33:01.952466+00:00'\n"
+        "dispatched: 0\n"
+        "skipped_idempotent: 83\n"
+        "model: claude-3-5-sonnet-hermes3\n"
+    )
+    result = gauge._read_v0_5_latest(p)
+    assert result is not None
+    assert result["generated"] == "2026-05-20T03:33:01.952466+00:00"
+    assert result["dispatched"] == 0
+    assert result["skipped_idempotent"] == 83
+
+
+def test_read_v0_5_latest_missing_file(gauge, tmp_path):
+    """Missing file → None, no crash."""
+    result = gauge._read_v0_5_latest(tmp_path / "nope.yaml")
+    assert result is None
+    assert gauge._read_v0_5_latest(None) is None
+
+
+def test_render_human_shows_saturation_note(gauge):
+    """When dispatched=0 + skipped_idempotent>0, render the saturation hint."""
+    v0_5 = {
+        "generated": "2026-05-06T05:33:01+00:00",
+        "dispatched": 0,
+        "skipped_idempotent": 83,
+    }
+    a = gauge.assess([], v0_5_latest=v0_5)
+    text = gauge.render_human(a)
+    assert "v0.5 LATEST:" in text
+    assert "idempotency saturation" in text
+    assert "Avoid manual re-runs" in text

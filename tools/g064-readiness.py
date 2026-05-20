@@ -17,6 +17,28 @@ Closure precondition (per concerns.yaml G-064 status_notes 2026-05-05):
 
 Synthetic dispatches (T-stress-* prefix per T-1712) are excluded.
 
+Two cron-fire evidence sources (T-1952, post-2026-05-20 incident):
+  1. dispatch.jsonl rows with ts in cron window  (primary — strongest signal)
+  2. .context/working/escalation-drift-LATEST-v0.5.yaml `generated` field
+     (fallback — catches idempotency-saturation case where cron correctly
+     no-ops because manual runs filled the 7-day skip window)
+
+The v0.5 yaml is rewritten on every cron fire regardless of whether
+candidates were dispatched. Reading its `generated` timestamp lets the
+gauge detect a cron-fire whose dispatched=0 due to skipped_idempotent>0.
+Without this, idempotency saturation makes correctly-firing crons
+indistinguishable from a broken cron — exactly the G-064 signature
+(substrate exists, observability lies). Only the most-recent fire is
+detected via this fallback (yaml is overwritten).
+
+KNOWN BUG (T-1953): CRON_HOUR_UTC=5 assumes the crontab schedule
+"33 5 * * *" runs at UTC 05:33. But cron interprets that as LOCAL
+time; on hosts where TZ != UTC the actual UTC fire is offset. The
+window check therefore misses real cron rows on non-UTC hosts. The
+v0.5 LATEST fallback uses the *file's `generated` timestamp* directly
+which is correct (it's a UTC ts), but the comparison against the
+cron window still inherits the TZ bug. Fix tracked in T-1953.
+
 Usage:
   python3 tools/g064-readiness.py            # human-readable
   python3 tools/g064-readiness.py --json     # machine-readable
@@ -75,8 +97,45 @@ def _read_dispatches(path: Path) -> list[dict]:
     return rows
 
 
-def assess(rows: list[dict]) -> dict:
-    """Return readiness assessment dict from dispatch rows."""
+def _read_v0_5_latest(path: Path | None) -> dict | None:
+    """Read the v0.5 LATEST yaml as cron-fire fallback evidence (T-1952).
+
+    Returns a dict with `generated`, `dispatched`, `skipped_idempotent` when
+    the file exists and parses; None when missing or unparseable. Uses a tiny
+    line-grep parser instead of pyyaml so the gauge stays dependency-free.
+    """
+    if path is None or not path.is_file():
+        return None
+    try:
+        text = path.read_text()
+    except OSError:
+        return None
+    result: dict = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if line.startswith("generated:"):
+            val = line.split(":", 1)[1].strip()
+            result["generated"] = val.strip("'\"")
+        elif line.startswith("dispatched:"):
+            try:
+                result["dispatched"] = int(line.split(":", 1)[1].strip())
+            except ValueError:
+                pass
+        elif line.startswith("skipped_idempotent:"):
+            try:
+                result["skipped_idempotent"] = int(line.split(":", 1)[1].strip())
+            except ValueError:
+                pass
+    return result if "generated" in result else None
+
+
+def assess(rows: list[dict], v0_5_latest: dict | None = None) -> dict:
+    """Return readiness assessment dict from dispatch rows + optional v0.5 LATEST.
+
+    `v0_5_latest` is the dict from `_read_v0_5_latest` or None. When supplied
+    and its `generated` timestamp falls within the cron window, its date is
+    added to cron_firing_dates (T-1952: idempotency-saturation fallback).
+    """
     cron_dates: set[str] = set()
     manual_dates: set[str] = set()
     cron_count = 0
@@ -110,6 +169,24 @@ def assess(rows: list[dict]) -> dict:
             manual_dates.add(date_str)
             manual_count += 1
 
+    # T-1952: v0.5 LATEST fallback. A v0.5 cron fire that no-ops due to
+    # idempotency saturation still rewrites the LATEST yaml — its `generated`
+    # timestamp is reliable cron-fire evidence even when dispatched=0.
+    v0_5_generated: str | None = None
+    v0_5_dispatched: int | None = None
+    v0_5_skipped: int | None = None
+    v0_5_date_added = False
+    if v0_5_latest:
+        v0_5_generated = v0_5_latest.get("generated")
+        v0_5_dispatched = v0_5_latest.get("dispatched")
+        v0_5_skipped = v0_5_latest.get("skipped_idempotent")
+        dt = _parse_ts(v0_5_generated or "")
+        if dt is not None and _is_cron_firing(dt):
+            date_str = dt.astimezone(timezone.utc).strftime("%Y-%m-%d")
+            if date_str not in cron_dates:
+                cron_dates.add(date_str)
+                v0_5_date_added = True
+
     ready = len(cron_dates) >= CLOSURE_DATE_THRESHOLD
     return {
         "workflow": WORKFLOW,
@@ -123,6 +200,10 @@ def assess(rows: list[dict]) -> dict:
         "latest_ts": latest,
         "closure_threshold_dates": CLOSURE_DATE_THRESHOLD,
         "cron_window": f"{CRON_HOUR_UTC:02d}:{CRON_MIN_UTC:02d} UTC +/- {CRON_WINDOW_MIN} min",
+        "v0_5_last_generated": v0_5_generated,
+        "v0_5_last_dispatched": v0_5_dispatched,
+        "v0_5_last_skipped_idempotent": v0_5_skipped,
+        "v0_5_date_added_to_cron": v0_5_date_added,
         "ready": ready,
         "verdict": "READY" if ready else "NOT_READY",
     }
@@ -143,6 +224,19 @@ def render_human(a: dict) -> str:
     if a["synthetic_skipped"]:
         lines.append(f"  Synthetic skipped:{a['synthetic_skipped']}")
     lines.append("")
+    if a.get("v0_5_last_generated"):
+        marker = " (+1 cron-firing date)" if a.get("v0_5_date_added_to_cron") else ""
+        lines.append(f"v0.5 LATEST:        {a['v0_5_last_generated']}{marker}")
+        d = a.get("v0_5_last_dispatched")
+        s = a.get("v0_5_last_skipped_idempotent")
+        if d is not None or s is not None:
+            lines.append(f"  dispatched={d if d is not None else '?'} "
+                         f"skipped_idempotent={s if s is not None else '?'}")
+        if d == 0 and s and s > 0:
+            lines.append(f"  NOTE: idempotency saturation — cron fired but {s} candidates")
+            lines.append("        were already scanned within 7d window. Avoid manual re-runs")
+            lines.append("        of tools/escalation-scan-v0.5.py to let cron own the workload.")
+        lines.append("")
     if a["cron_firing_dates"]:
         lines.append("Cron-firing dates: " + ", ".join(a["cron_firing_dates"]))
     else:
@@ -180,6 +274,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="path to dispatches.jsonl (default: $PROJECT_ROOT/.context/dispatches.jsonl)",
     )
+    parser.add_argument(
+        "--v0-5-latest",
+        default=None,
+        help="path to escalation-drift-LATEST-v0.5.yaml (default: "
+             "$PROJECT_ROOT/.context/working/escalation-drift-LATEST-v0.5.yaml)",
+    )
     args = parser.parse_args(argv)
 
     project_root = os.environ.get("PROJECT_ROOT") or str(Path(__file__).resolve().parents[1])
@@ -187,6 +287,11 @@ def main(argv: list[str] | None = None) -> int:
         path = Path(args.dispatches)
     else:
         path = Path(project_root) / ".context" / "dispatches.jsonl"
+
+    if args.v0_5_latest:
+        v0_5_path: Path | None = Path(args.v0_5_latest)
+    else:
+        v0_5_path = Path(project_root) / ".context" / "working" / "escalation-drift-LATEST-v0.5.yaml"
 
     if not path.is_file():
         msg = {"error": "dispatches.jsonl not found", "path": str(path)}
@@ -205,7 +310,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"ERROR: cannot read {path}: {e}", file=sys.stderr)
         return 2
 
-    a = assess(rows)
+    v0_5_latest = _read_v0_5_latest(v0_5_path)
+    a = assess(rows, v0_5_latest=v0_5_latest)
     if args.json:
         print(json.dumps(a, indent=2))
     else:
