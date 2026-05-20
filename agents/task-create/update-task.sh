@@ -83,8 +83,12 @@ check_acceptance_criteria() {
     local human_acs placeholder_acs placeholder_count
 
     ac_section=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
-    # Strip HTML comments — template examples contain checkbox patterns that get miscounted
-    ac_section=$(echo "$ac_section" | sed '/<!--/,/-->/d')
+    # Strip HTML comments — template examples contain checkbox patterns that get miscounted.
+    # T-1967 (L-414 root cause): sed range matching does NOT close on the same line where
+    # it opens — `/<!--/,/-->/d` on a one-line `<!-- ... -->` enters delete-mode at that
+    # line and stays there until the NEXT `-->` later in the file, swallowing Agent ACs.
+    # Fix: strip one-line comments first, then run the range strip for genuine multi-line.
+    ac_section=$(echo "$ac_section" | sed -E 's/<!--[^>]*-->//g' | sed '/<!--/,/-->/d')
     [ -z "$ac_section" ] && return 0
 
     has_agent_header=$(echo "$ac_section" | grep -c '^### Agent' || true)
@@ -942,8 +946,9 @@ if [ -n "$NEW_STATUS" ]; then
             # T-193: Partial-complete re-run — check if human ACs now satisfied
             echo -e "${CYAN}Re-checking partial-complete status...${NC}"
             AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
-            # Strip HTML comments — template examples contain checkbox patterns
-            AC_SECTION=$(echo "$AC_SECTION" | sed '/<!--/,/-->/d')
+            # Strip HTML comments — template examples contain checkbox patterns.
+            # T-1967: two-step strip (one-line first, then range) — see line ~87.
+            AC_SECTION=$(echo "$AC_SECTION" | sed -E 's/<!--[^>]*-->//g' | sed '/<!--/,/-->/d')
             ALL_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
             ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
             ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED))
