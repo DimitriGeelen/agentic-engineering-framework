@@ -19,7 +19,7 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T22:44:53Z
-last_update: '2026-05-19T17:56:35Z'
+last_update: '2026-05-19T21:45:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +34,16 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=2 
       (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
       (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 3
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=3 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -97,6 +107,13 @@ Consolidation: replace the three inline implementations with thin wrappers that 
 -->
 
 ## Verification
+
+grep -q "source.*arc_membership.sh" lib/arc.sh
+test "$(grep -cE '^\s*grep -lE.*\$PROJECT_ROOT.*\.tasks' lib/arc.sh)" -eq 0
+out=$(bats tests/unit/arc_membership_dual_id.bats 2>&1); echo "$out" | grep -qE "^ok 7"
+test "$(bin/fw arc show arc-grooming 2>&1 | grep -cE '^  T-[0-9]+')" -ge 36
+test "$(bin/fw arc show arc-005 2>&1 | grep -cE '^  T-[0-9]+')" -ge 36
+out=$(bin/fw arc list 2>&1); echo "$out" | grep -q "arc-005"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

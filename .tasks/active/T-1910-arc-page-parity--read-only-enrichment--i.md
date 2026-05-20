@@ -21,7 +21,7 @@ components: []
 related_tasks: [T-1904, T-1905, T-1909, T-1902, T-1848, T-1849]
 arc_id: arc-005
 created: 2026-05-18T21:14:31Z
-last_update: '2026-05-19T18:27:46Z'
+last_update: '2026-05-19T21:45:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -35,6 +35,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -128,7 +138,7 @@ Today: kanban view + a legacy flat-list via `?status=X`. Need:
 
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); curl -sf -o /dev/null "$WT_URL/arcs"
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); curl -sf -o /dev/null "$WT_URL/arcs/arc-grooming"
-WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs" 2>&1); echo "$out" | grep -q 'class="badge badge-info">in-progress\|class="badge badge-draft">draft\|class="badge badge-ok">closed'
+WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs" 2>&1); echo "$out" | grep -qE 'class="badge badge-(info|draft|ok)"[^>]*>(in-progress|draft|closed)'
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs?view=list" 2>&1); echo "$out" | grep -q 'arc-row\|arc-card'
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs?focused=true" 2>&1); echo "$out" | grep -q 'arc-card\|arc-row\|empty'
 out=$(bin/fw test playwright tests/playwright/test_arc_page_parity.py 2>&1); echo "$out" | grep -qE "[0-9]+ passed"
