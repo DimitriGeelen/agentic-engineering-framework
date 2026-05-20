@@ -6,7 +6,7 @@ description: >
   Inception: Arc closure review parity — extend inception-decide approval pattern
   to fw arc close (Recommendation surfaces on /approvals + /review)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -14,8 +14,8 @@ tags: [approval-ux, watchtower, arc, T-1911-followup]
 components: []
 related_tasks: []
 created: 2026-05-20T17:26:11Z
-last_update: 2026-05-20T17:29:20Z
-date_finished:
+last_update: 2026-05-20T17:54:51Z
+date_finished: 2026-05-20T17:54:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -28,6 +28,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-20T17:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -98,15 +108,15 @@ If any of these reveal that the existing substrate is *not* plugin-pointed clean
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -172,7 +182,25 @@ Inception-decide and arc-close are structurally the same human-sovereign decisio
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Inception-decide and arc-close are structurally the same human-sovereign decision (agent prepares, human approves), but only one half has the cognitive-work-on-agent / decision-on-human split wired. /arcs/<slug>/close (T-1911) is a blank form the human fills from scratch; no agent Recommendation surfaces, no entry on /approvals, no fw arc review parity. The substrate to extend exists (review.html template, review-queue ingestion, --from-watchtower exemption pattern, §ACD gate already shared). Cost is bounded (4 surfaces: arc Recommendation schema, /approvals ingestion, /arcs/<slug>/review render, fw arc review CLI). Closing arc-005 itself is gated on this work — meta-relevant. GO to scope the inception; defer decide-go to human via Watchtower.
+
+Evidence:
+
+- `web/templates/arc_close.html` (T-1911) — blank form, no agent-recommendation surface. Confirmed by reading the file: only metadata + human-fills-from-scratch fields. The §ACD prompt is text-only; no rationale slot.
+- `web/templates/review.html` + `web/templates/_approvals_content.html` — the inception-side surface. Renders task `## Recommendation` block, ingests from review-queue. Re-usable shape.
+- `bin/fw review-queue` output (just ran): lists DECISIONS for inception GO/NO-GO and VERDICTS for Human-AC verification. Zero entries for close-ready arcs — confirms ingestion gap.
+- `bin/fw arc list`: arc-003 at 0.90, arc-004 at 0.83, arc-005 at 0.92 — three in-progress arcs above G-062's 0.80 closure-pressure threshold. None surface on `/approvals`.
+- `bin/fw arc 2>&1 | grep review`: returns nothing. `fw arc review` is not implemented (was an AC on T-1911 but never landed).
+- Closing arc-005 is the meta-demo: the headline_mechanic includes "lifecycle has draft/in-progress/closed/abandoned tabs in Watchtower" — closing via a `/arcs/<slug>/review` page would be the cleanest wire-evidence of that mechanic firing, satisfying G-062.
+- Cost: 4 build slices, all small (template + thin handler + one CLI verb). Comparable to T-1909/T-1910 individually (each ~2-3 file edits + Playwright tests).
+
+**Date**: 2026-05-20T17:54:51Z
 
 ## Updates
 
@@ -193,3 +221,35 @@ Inception-decide and arc-close are structurally the same human-sovereign decisio
 
 ### 2026-05-20T17:29:20Z — status-update [task-update-agent]
 - **Change:** tags: +T-1911-followup
+
+### 2026-05-20T17:54:51Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Inception-decide and arc-close are structurally the same human-sovereign decision (agent prepares, human approves), but only one half has the cognitive-work-on-agent / decision-on-human split wired. /arcs/<slug>/close (T-1911) is a blank form the human fills from scratch; no agent Recommendation surfaces, no entry on /approvals, no fw arc review parity. The substrate to extend exists (review.html template, review-queue ingestion, --from-watchtower exemption pattern, §ACD gate already shared). Cost is bounded (4 surfaces: arc Recommendation schema, /approvals ingestion, /arcs/<slug>/review render, fw arc review CLI). Closing arc-005 itself is gated on this work — meta-relevant. GO to scope the inception; defer decide-go to human via Watchtower.
+
+Evidence:
+
+- `web/templates/arc_close.html` (T-1911) — blank form, no agent-recommendation surface. Confirmed by reading the file: only metadata + human-fills-from-scratch fields. The §ACD prompt is text-only; no rationale slot.
+- `web/templates/review.html` + `web/templates/_approvals_content.html` — the inception-side surface. Renders task `## Recommendation` block, ingests from review-queue. Re-usable shape.
+- `bin/fw review-queue` output (just ran): lists DECISIONS for inception GO/NO-GO and VERDICTS for Human-AC verification. Zero entries for close-ready arcs — confirms ingestion gap.
+- `bin/fw arc list`: arc-003 at 0.90, arc-004 at 0.83, arc-005 at 0.92 — three in-progress arcs above G-062's 0.80 closure-pressure threshold. None surface on `/approvals`.
+- `bin/fw arc 2>&1 | grep review`: returns nothing. `fw arc review` is not implemented (was an AC on T-1911 but never landed).
+- Closing arc-005 is the meta-demo: the headline_mechanic includes "lifecycle has draft/in-progress/closed/abandoned tabs in Watchtower" — closing via a `/arcs/<slug>/review` page would be the cleanest wire-evidence of that mechanic firing, satisfying G-062.
+- Cost: 4 build slices, all small (template + thin handler + one CLI verb). Comparable to T-1909/T-1910 individually (each ~2-3 file edits + Playwright tests).
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-72eff3a6
+- **Timestamp:** 2026-05-20T17:54:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-20T17:54:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

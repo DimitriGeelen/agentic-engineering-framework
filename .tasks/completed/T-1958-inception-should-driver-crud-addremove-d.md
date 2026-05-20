@@ -14,7 +14,7 @@ description: >
   web UI) / NO-GO (keep CLI-only, document why) / DEFER (revisit after BVP arc closes).
   Origin: human BVP arc human-review (2026-05-20).
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -22,8 +22,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-20T11:46:36Z
-last_update: 2026-05-20T12:37:26Z
-date_finished:
+last_update: 2026-05-20T17:54:41Z
+date_finished: 2026-05-20T17:54:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 cost_estimate_proposed:
@@ -106,15 +106,15 @@ bin/fw assumption add "..." --task T-1958
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -203,7 +203,44 @@ Total estimated cost: ~80 LOC blueprint + ~60 LOC template per slice. Both shipp
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — build the add-driver and remove-driver Watchtower forms.
+
+Rationale:
+
+All three GO criteria are satisfied:
+
+1. §ACD agent-gate is already wired on `fw bvp driver`: `lib/bvp.sh:64-68` refuses under `$CLAUDECODE=1` unless `--i-am-human` or `--from-watchtower`. Adding a Watchtower form does NOT introduce a new bypass — it consumes the exemption the framework already provisioned for exactly this case.
+2. Pattern reapplies cleanly. T-1929 (`/bvp` weight sliders) and T-1926 (`/arcs/<slug>` approve-driver form) already implement the form-with-CSRF-and-rationale → `bin/fw bvp <verb> --from-watchtower` shape. Add/remove driver is a structurally identical shell-out. Zero new failure modes; the Flask blueprint stays a thin wrapper over the canonical CLI.
+3. Rationale friction is sufficient. R6 (≥30 chars) is the same friction the CLI imposes. Combined with CSRF + explicit click-to-commit, accidental edits require deliberate steps. Current empirical evidence (T-1929 shipped 2 days ago, no reported accidental commits) supports A3.
+
+None of the NO-GO conditions hold:
+- The sovereignty boundary for `fw bvp driver` and `fw bvp weight` is the same boundary (both edit `policy/value-drivers.yaml`). The framework has already decided one is OK via Watchtower; the other inherits.
+- CLI-only friction is not load-bearing for the use case the human flagged. The human was already a power user on the BVP arc and was blocked from a routine action by lack of UI parity — the friction was the wrong friction.
+- 0 free drivers is the starting inventory, not the steady-state. The form enables the steady-state.
+
+Evidence:
+- `lib/bvp.sh:776` `_driver_add()` and `lib/bvp.sh:617` dispatcher — `--from-watchtower` already routes correctly
+- `lib/bvp.sh:64-68` `_acd_gate()` — refuses under `$CLAUDECODE=1` without `--i-am-human|--from-watchtower`
+- `policy/value-drivers.yaml:43-73` — current state: 4 protected, 0 free, cap 9 (M1)
+- `web/blueprints/bvp.py:409-465` (`bvp_commit_weights`) — proven shell-out pattern from T-1929 with CSRF + rationale + per-change loop
+- `web/blueprints/arcs.py` (T-1926 `arc_approve_driver`) — proven shell-out pattern for arc-level driver approval
+
+Recommended build slices (file as TWO separate tasks AFTER `fw inception decide T-1958 go`):
+
+- T-NEW-A — `web/blueprints/bvp.py` add `/api/bvp/driver/add` POST endpoint + `web/templates/bvp.html` insert add-driver form below the weight sliders. Shell-out: `bin/fw bvp driver --add "<name>" --weight N --rationale "..." [--drop Dn] --from-watchtower`. Form fields: name (slug, regex `[A-Za-z][A-Za-z0-9_-]`), weight (0-9 slider), rationale (textarea, ≥30 chars), drop-driver dropdown (visible only when at cap=9).
+
+- T-NEW-B — `web/blueprints/bvp.py` add `/api/bvp/driver/remove` POST endpoint + remove button per free-driver row in the weight-sliders table. Shell-out: `bin/fw bvp driver --remove Dn --rationale "..." --from-watchtower`. Confirm with a "Are you sure? (free drivers only; D1-D4 cannot be removed)" prompt — backend must additionally refuse Dn matching D1-D4 (the CLI already does, but the form should surface the refusal as a 400 with the protected-driver message).
+
+Total estimated cost: ~80 LOC blueprint + ~60 LOC template per slice. Both shippable in <2 hours each.
+
+Out-of-scope follow-ups NOT recommended now:
+- Per-arc driver CRUD (separate from global): T-1926 already shipped the arc-side mechanism on `/arcs/<slug>` (Approve-driver form, partial CRUD). Wait for first cycle of arc-scoped drivers in the wild before extending.
+- Bulk-edit table: explicitly rejected by A4 (one row per write, with rationale, is the friction-as-feature design).
+- Calculator/visualisation UI for "how each global driver applies to each arc": separate complaint, already addressed by T-1956 (driver weights above-the-fold) — re-evaluate if human still finds it unclear after T-1956 lands.
+
+**Date**: 2026-05-20T17:54:40Z
 
 ## Updates
 
@@ -212,3 +249,54 @@ Total estimated cost: ~80 LOC blueprint + ~60 LOC template per slice. Both shipp
 
 ### 2026-05-20T12:37:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-20T17:54:40Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — build the add-driver and remove-driver Watchtower forms.
+
+Rationale:
+
+All three GO criteria are satisfied:
+
+1. §ACD agent-gate is already wired on `fw bvp driver`: `lib/bvp.sh:64-68` refuses under `$CLAUDECODE=1` unless `--i-am-human` or `--from-watchtower`. Adding a Watchtower form does NOT introduce a new bypass — it consumes the exemption the framework already provisioned for exactly this case.
+2. Pattern reapplies cleanly. T-1929 (`/bvp` weight sliders) and T-1926 (`/arcs/<slug>` approve-driver form) already implement the form-with-CSRF-and-rationale → `bin/fw bvp <verb> --from-watchtower` shape. Add/remove driver is a structurally identical shell-out. Zero new failure modes; the Flask blueprint stays a thin wrapper over the canonical CLI.
+3. Rationale friction is sufficient. R6 (≥30 chars) is the same friction the CLI imposes. Combined with CSRF + explicit click-to-commit, accidental edits require deliberate steps. Current empirical evidence (T-1929 shipped 2 days ago, no reported accidental commits) supports A3.
+
+None of the NO-GO conditions hold:
+- The sovereignty boundary for `fw bvp driver` and `fw bvp weight` is the same boundary (both edit `policy/value-drivers.yaml`). The framework has already decided one is OK via Watchtower; the other inherits.
+- CLI-only friction is not load-bearing for the use case the human flagged. The human was already a power user on the BVP arc and was blocked from a routine action by lack of UI parity — the friction was the wrong friction.
+- 0 free drivers is the starting inventory, not the steady-state. The form enables the steady-state.
+
+Evidence:
+- `lib/bvp.sh:776` `_driver_add()` and `lib/bvp.sh:617` dispatcher — `--from-watchtower` already routes correctly
+- `lib/bvp.sh:64-68` `_acd_gate()` — refuses under `$CLAUDECODE=1` without `--i-am-human|--from-watchtower`
+- `policy/value-drivers.yaml:43-73` — current state: 4 protected, 0 free, cap 9 (M1)
+- `web/blueprints/bvp.py:409-465` (`bvp_commit_weights`) — proven shell-out pattern from T-1929 with CSRF + rationale + per-change loop
+- `web/blueprints/arcs.py` (T-1926 `arc_approve_driver`) — proven shell-out pattern for arc-level driver approval
+
+Recommended build slices (file as TWO separate tasks AFTER `fw inception decide T-1958 go`):
+
+- T-NEW-A — `web/blueprints/bvp.py` add `/api/bvp/driver/add` POST endpoint + `web/templates/bvp.html` insert add-driver form below the weight sliders. Shell-out: `bin/fw bvp driver --add "<name>" --weight N --rationale "..." [--drop Dn] --from-watchtower`. Form fields: name (slug, regex `[A-Za-z][A-Za-z0-9_-]`), weight (0-9 slider), rationale (textarea, ≥30 chars), drop-driver dropdown (visible only when at cap=9).
+
+- T-NEW-B — `web/blueprints/bvp.py` add `/api/bvp/driver/remove` POST endpoint + remove button per free-driver row in the weight-sliders table. Shell-out: `bin/fw bvp driver --remove Dn --rationale "..." --from-watchtower`. Confirm with a "Are you sure? (free drivers only; D1-D4 cannot be removed)" prompt — backend must additionally refuse Dn matching D1-D4 (the CLI already does, but the form should surface the refusal as a 400 with the protected-driver message).
+
+Total estimated cost: ~80 LOC blueprint + ~60 LOC template per slice. Both shippable in <2 hours each.
+
+Out-of-scope follow-ups NOT recommended now:
+- Per-arc driver CRUD (separate from global): T-1926 already shipped the arc-side mechanism on `/arcs/<slug>` (Approve-driver form, partial CRUD). Wait for first cycle of arc-scoped drivers in the wild before extending.
+- Bulk-edit table: explicitly rejected by A4 (one row per write, with rationale, is the friction-as-feature design).
+- Calculator/visualisation UI for "how each global driver applies to each arc": separate complaint, already addressed by T-1956 (driver weights above-the-fold) — re-evaluate if human still finds it unclear after T-1956 lands.
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a604fe4d
+- **Timestamp:** 2026-05-20T17:54:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-20T17:54:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
