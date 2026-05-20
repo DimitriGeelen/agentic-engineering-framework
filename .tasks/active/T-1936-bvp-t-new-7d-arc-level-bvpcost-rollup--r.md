@@ -10,20 +10,20 @@ description: >
   either: (a) the human runs fw bvp confirm --arc <slug>, OR (b) all constituent tasks
   have confirmed scores (in which case the rollup becomes derived-confirmed).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bvp, build, slice-7d, arc-rollup, web, arc-006]
-components: []
+components: [lib/bvp.sh, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_scatter_arc_mode.py, web/blueprints/arcs.py, web/blueprints/bvp.py, web/templates/arc_detail.html, web/templates/bvp.html]
 related_tasks: [T-1915, T-1916, T-1922, T-1934, T-1935]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-19T19:24:41Z
-last_update: '2026-05-19T19:30:01Z'
-date_finished:
+last_update: 2026-05-20T19:09:14Z
+date_finished: 2026-05-20T19:09:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -203,6 +203,11 @@ out=$(curl -sf "$(bin/fw watchtower url)/bvp" 2>&1 || true); [ "$(printf %s "$ou
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-20 — arc-001 (closed) has no `arc_id:` members; legacy `arc:*` tag corpus still live
+- **What changed:** Filing assumed all arcs would have member tasks via `arc_id:` once T-1850's migration ran. Implementation surfaced that arc-001 has 0 members via `arc_id:` despite being the original dispatch-safety arc with 11 tracked tasks (it lives on the legacy `tags: [arc:dispatch-safety]` form). 5 of 6 arcs render dots; arc-001 silently doesn't.
+- **Plan impact:** The "all arcs render" assumption is false until the legacy `arc:*` tag → `arc_id:` migration completes. The rollup code itself is correct — the data hasn't fully migrated. Two co-existing identity surfaces (T-1849 + T-1850) is still partially live.
+- **Triggered:** No new task (T-1850 already owns the migration). Captured as evidence that the rollup is well-defined on member-set absence (empty → skip; AC#2 covers this). When T-1850 closes, arc-001 will join the scatter without code change.
+
 ## Recommendation
 
 **Recommendation:** GO
@@ -296,3 +301,20 @@ hard-coded truth. Same logic for cost_estimate.
 ### 2026-05-19T19:25:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-b4e2e185
+- **Timestamp:** 2026-05-20T19:09:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] Arc dots distribute meaningfully on the scatter — they sit at reasonable BVP-norm and cost-composite positions relative to their member tasks, AND it's visually clear they're arcs (larger cir
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows `' in Expected: Arc dots are visible, distinct from task dots, and sit at reasonable rolled-up positions. Tooltip shows `derived` provenance for cost.`
+
+### 2026-05-20T19:09:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
