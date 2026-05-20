@@ -15,7 +15,7 @@
     <h3>Live weight sliders</h3>
     <p class="muted">Drag a slider to preview re-ranking client-side (no commit). Press <strong>Commit</strong> to persist via <code>fw bvp weight --from-watchtower</code> (§ACD, D8). Rationale ≥30 chars required (R6).</p>
     <table id="bvp-sliders-table">
-      <thead><tr><th>Driver</th><th>Server weight</th><th>Slider</th><th>Current</th></tr></thead>
+      <thead><tr><th>Driver</th><th>Server weight</th><th>Slider</th><th>Current</th><th></th></tr></thead>
       <tbody>
         {% for d_id, w in weights.items() %}
         <tr data-driver="{{ d_id }}">
@@ -27,6 +27,15 @@
                    style="width: 180px;">
           </td>
           <td><span class="live-weight" data-driver="{{ d_id }}">{{ w }}</span></td>
+          <td>
+            {# T-1965 (T-1958 B): per-row Remove for free drivers only — D1-D4 are protected #}
+            {% if not d_id.startswith('D') %}
+              <button type="button" class="dr-remove-btn" data-driver="{{ d_id }}"
+                      style="font-size:0.8rem; padding:0.2rem 0.5rem;">Remove</button>
+            {% else %}
+              <span class="muted" style="font-size:0.75rem;" title="D1-D4 are immutable in identity">protected</span>
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -44,6 +53,52 @@
       </div>
       <div id="bvp-commit-result" style="margin-top: 0.5rem;"></div>
     </form>
+    <div id="dr-remove-result" style="margin-top: 0.5rem;"></div>
+    <script>
+      // T-1965 (T-1958 B): per-row Remove free driver. Click → prompt rationale →
+      // POST /api/bvp/driver/remove → reload on success.
+      (function() {
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
+        const result = document.getElementById('dr-remove-result');
+        document.querySelectorAll('.dr-remove-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const driver = btn.getAttribute('data-driver');
+            if (!confirm(`Remove driver ${driver}? Free drivers only — D1-D4 cannot be removed.`)) return;
+            const rationale = prompt(`Rationale for removing ${driver} (≥30 chars):`, '');
+            if (rationale === null) return;
+            if (rationale.length < 30) {
+              result.textContent = `✗ Rationale must be ≥30 characters (got ${rationale.length}).`;
+              result.style.color = '#b00';
+              return;
+            }
+            result.textContent = `Removing ${driver}…`;
+            result.style.color = '';
+            try {
+              const fd = new FormData();
+              fd.append('_csrf_token', csrf);
+              fd.append('driver', driver);
+              fd.append('rationale', rationale);
+              const resp = await fetch('/api/bvp/driver/remove', { method: 'POST', body: fd });
+              const text = await resp.text();
+              if (resp.ok) {
+                let payload;
+                try { payload = JSON.parse(text); } catch { payload = { message: text }; }
+                result.textContent = '✓ ' + (payload.message || `Removed ${driver}.`) + ' Reloading…';
+                result.style.color = 'green';
+                setTimeout(() => window.location.reload(), 800);
+              } else {
+                result.textContent = '✗ ' + text;
+                result.style.color = '#b00';
+              }
+            } catch (e) {
+              result.textContent = '✗ Network error: ' + e.message;
+              result.style.color = '#b00';
+            }
+          });
+        });
+      })();
+    </script>
   </section>
 
   {# ── T-1964 (T-1958 A): add free driver form ── #}

@@ -520,6 +520,48 @@ def bvp_driver_add():
     return json.dumps({"ok": True, "message": out, "name": name, "weight": weight, "dropped": drop_id}), 200, {"Content-Type": "application/json"}
 
 
+@bp.route("/api/bvp/driver/remove", methods=["POST"])
+def bvp_driver_remove():
+    """T-1965 (T-1958 B): remove a free driver via `fw bvp driver --remove`.
+
+    Form fields:
+      driver    : str (Fn or free-driver id; D1-D4 refused with 400)
+      rationale : str (≥30 chars, R6)
+
+    Server refuses D1-D4 (D1-D4 are immutable in identity, CLAUDE.md).
+    §ACD authority + history audit stay in fw.
+    """
+    driver_id = (request.form.get("driver") or "").strip()
+    rationale = (request.form.get("rationale") or "").strip()
+
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", driver_id):
+        return f"Bad driver id {driver_id!r}: must match [A-Za-z][A-Za-z0-9_-]*", 400
+    if driver_id in ("D1", "D2", "D3", "D4"):
+        return f"Cannot remove protected driver {driver_id} (D1-D4 are immutable in identity).", 400
+    if len(rationale) < 30:
+        return "Rationale must be ≥30 characters (R6).", 400
+
+    cmd = [
+        "bin/fw", "bvp", "driver",
+        "--remove", driver_id,
+        "--rationale", rationale,
+        "--from-watchtower",
+    ]
+    try:
+        result = subprocess.run(
+            cmd, cwd=str(PROJECT_ROOT),
+            capture_output=True, text=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError) as e:
+        return f"Subprocess error: {e}", 500
+    if result.returncode != 0:
+        err = (result.stderr or result.stdout or "").strip()
+        first = err.splitlines()[0] if err else f"fw bvp driver --remove exited {result.returncode}"
+        return f"Remove failed: {first}", 400
+    out = (result.stdout or "").strip()
+    return json.dumps({"ok": True, "message": out, "removed": driver_id}), 200, {"Content-Type": "application/json"}
+
+
 @bp.route("/bvp")
 def bvp_scatter():
     policy = _load_policy()

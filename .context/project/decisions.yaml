@@ -1031,3 +1031,73 @@ decisions:
     date: 2026-05-16
     task: T-1857
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-150
+    decision: "Inline dry-run inside doctor (Python heredoc), no new subcommand."
+    scope: project
+    date: 2026-05-19
+    task: T-1942
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-151
+    decision: "Full content diff between dry-run output and on-disk source."
+    scope: project
+    date: 2026-05-19
+    task: T-1942
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-152
+    decision: "All ACs as Agent (no Human review section)."
+    scope: project
+    date: 2026-05-19
+    task: T-1942
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-153
+    decision: "Shared verbatim heredoc across doctor, audit, and `fw cron generate`."
+    scope: project
+    date: 2026-05-19
+    task: T-1943
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-154
+    decision: "New file `lib/cron_dry_run.py` with `#!/usr/bin/env python3` shebang"
+    scope: project
+    date: 2026-05-20
+    task: T-1944
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-155
+    decision: "Append a one-line cross-reference to L-408's body noting it is the 3rd-incident reinforcement of L-332, not a new class."
+    scope: project
+    date: 2026-05-20
+    task: T-1944
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-156
+    decision: "Advisory warning to stderr; exit 0 always."
+    scope: project
+    date: 2026-05-20
+    task: T-1945
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-157
+    decision: "Extract detection logic to a python file; bash side stays parse-safe."
+    scope: project
+    date: 2026-05-20
+    task: T-1945
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-158
+    decision: "Drop the file at `agents/context/check-heredoc-cmd-sub.sh`."
+    scope: project
+    date: 2026-05-20
+    task: T-1945
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-159
+    decision: "Render `<span class=\"muted\">protected</span>` for D1-D4 instead of an empty cell or no cell at all."
+    scope: project
+    date: 2026-05-20
+    task: T-1965
+    rationale: "Auto-captured from task file on completion"
