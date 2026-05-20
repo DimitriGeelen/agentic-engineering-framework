@@ -745,6 +745,105 @@ def detect_human_ac_mechanical_signal(ac_section: str) -> list[Finding]:
     return findings
 
 
+def detect_reviewer_prose_mismatch(ac_section: str) -> list[Finding]:
+    """`[REVIEWER]` Human AC whose Expected reads as a prose-quality check.
+
+    The reviewer (this module) has 9 detectors — none evaluate natural-language
+    prose quality. When an author files a prose-clarity AC as `[REVIEWER]`
+    hoping `fw reviewer T-XXX` substitutes for human reading, the scanner
+    silently ignores that AC (no detector fires) while reporting on other ACs.
+    Overall verdict can be PASS / CONCERN-on-some-other-AC while the prose AC
+    gets zero signal — false-success class (worse than acknowledged failure).
+
+    Gates (all must hold):
+      1. AC sits under `### Human` subhead and body starts with `[REVIEWER]`
+      2. AC body or Expected clause contains taste / prose-quality vocabulary
+         (reuses _HUMAN_AC_TASTE_RE: reads, tone, rhythm, intuitive, ...)
+
+    Heuristic, partial lie-severity -> CONCERN, needs_human=no.
+    Origin: T-1947 (L-409). T-1811 [REVIEWER] AC 'Updated CLAUDE.md section
+    reads clearly' got no reviewer attention; scanner reported CONCERN on
+    Agent AC#3 instead, leaving the prose dimension structurally invisible.
+
+    Mirrors detect_human_ac_mechanical_signal but inverted: that one catches
+    `[REVIEW]` ACs that should be `[REVIEWER]`; this one catches `[REVIEWER]`
+    ACs that should be `[REVIEW]` (or paired with one).
+    """
+    findings: list[Finding] = []
+    if not ac_section:
+        return findings
+
+    current_subhead = "ACs"
+    counter = 0
+    cur_ac_body: list[str] = []
+    cur_ac_state: dict | None = None
+
+    def _check_and_emit(ac_state: dict, body_lines: list[str]):
+        if not ac_state or not ac_state.get("is_reviewer"):
+            return
+        if "human" not in current_subhead.lower():
+            return
+        ac_body_text = ac_state["body_text"]
+        joined = "\n".join(body_lines)
+        haystack = ac_body_text + "\n" + joined
+        if not _HUMAN_AC_TASTE_RE.search(haystack):
+            return
+        taste_match = _HUMAN_AC_TASTE_RE.search(haystack)
+        expected_match = re.search(
+            r"\*\*Expected:?\*\*\s*(.*?)(?=\n\s*\*\*(?:If\s+not|Steps|Why|Origin)|\Z)",
+            joined,
+            re.DOTALL | re.IGNORECASE,
+        )
+        snippet_src = (
+            expected_match.group(1).strip()[:140]
+            if expected_match
+            else ac_body_text[:140]
+        ).replace("\n", " ")
+        findings.append(
+            Finding(
+                pattern_id="reviewer-prose-mismatch",
+                pattern_name="[REVIEWER] Human AC has prose-quality Expected (should be [REVIEW] or paired)",
+                detection_confidence="heuristic",
+                lie_severity="partial",
+                location=f"AC#{ac_state['counter']} ({current_subhead})",
+                evidence=f"matched={taste_match.group(0)!r} in: {snippet_src}",
+                ac_index=ac_state["counter"],
+                ac_subhead=current_subhead,
+                ac_text=ac_body_text[:200],
+            )
+        )
+
+    for raw in ac_section.splitlines():
+        stripped = raw.strip()
+        if re.match(r"^#{2,}\s+\S", stripped):
+            if cur_ac_state is not None:
+                _check_and_emit(cur_ac_state, cur_ac_body)
+            current_subhead = stripped.lstrip("# ").strip()
+            counter = 0
+            cur_ac_state = None
+            cur_ac_body = []
+            continue
+        m = _AC_LINE_RE.match(raw)
+        if m:
+            if cur_ac_state is not None:
+                _check_and_emit(cur_ac_state, cur_ac_body)
+            counter += 1
+            body = m.group("body")
+            is_reviewer = bool(re.match(r"^\[REVIEWER\]", body.strip(), re.IGNORECASE))
+            cur_ac_state = {
+                "counter": counter,
+                "body_text": body,
+                "is_reviewer": is_reviewer,
+            }
+            cur_ac_body = []
+            continue
+        if cur_ac_state is not None:
+            cur_ac_body.append(raw)
+    if cur_ac_state is not None:
+        _check_and_emit(cur_ac_state, cur_ac_body)
+    return findings
+
+
 def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> list[Finding]:
     """AC checked AND mentions a specific file path, but no verification line touches it.
 
@@ -894,6 +993,8 @@ def scan_task(
     findings.extend(detect_ac_verify_mismatch(ac_section, verif_section))
     # v1.3-seed +1: T-1896 — [REVIEW] mechanical-Expected catch (T-1878 B)
     findings.extend(detect_human_ac_mechanical_signal(ac_section))
+    # v1.4 +1: T-1947 — [REVIEWER] prose-Expected catch (L-409, inverse of above)
+    findings.extend(detect_reviewer_prose_mismatch(ac_section))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 

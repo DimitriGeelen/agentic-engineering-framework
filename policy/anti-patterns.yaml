@@ -184,6 +184,47 @@ patterns:
       # Gate 2b (T-1897): taste in AC LINE suppresses even if Expected has mechanical signals:
       - "[REVIEW] Reviewer finding wording reads usefully — Expected: Finding text names the AC by index (taste 'reads' in header wins)"
 
+  - id: reviewer-prose-mismatch
+    name: "[REVIEWER] Human AC has prose-quality Expected (should be [REVIEW] or paired)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_reviewer_prose_mismatch"
+    description: >
+      A `[REVIEWER]`-prefixed Human acceptance criterion whose body or
+      `**Expected:**` clause contains taste / prose-quality vocabulary
+      (reads/tone/rhythm/intuitive/cleanly/voice/cohesive/...).
+
+      `[REVIEWER]` means "verifiable by `fw reviewer T-XXX` static scan", but
+      the reviewer has zero detectors for natural-language prose quality —
+      its 9 detectors operate on YAML/shell structural patterns only.
+
+      When such ACs are filed as `[REVIEWER]`, the reviewer silently ignores
+      them (no detector fires) and reports verdict on OTHER ACs. The Overall
+      status looks identical at the surface whether the scanner had something
+      to say or stayed silent — false-success class (worse than acknowledged
+      failure per the design-dialogue antifragility principle).
+
+      Such ACs should be `[REVIEW]` (genuine human-taste judgment) OR kept as
+      `[REVIEWER]` only when paired with an explicit `[REVIEW]` AC covering
+      the prose dimension. The `[REVIEWER]` prefix is necessary-but-not-
+      sufficient on prose-quality ACs.
+
+      Origin: T-1947 (L-409). Surfaced via T-1811's own AC#1 `[REVIEWER]
+      Updated CLAUDE.md section reads clearly` — the reviewer reported
+      CONCERN on Agent AC#3 but silently passed over the prose AC.
+
+      Override: `fw reviewer override add T-XXX --pattern reviewer-prose-mismatch
+      --ac N --reason "..." --ttl 90` when the AC is genuinely paired with a
+      `[REVIEW]` sibling (T-1443 v1.4).
+    examples_positive:
+      - "[REVIEWER] Updated section reads clearly — Expected: Reviewer returns PASS"
+      - "[REVIEWER] Form renders cleanly inside review page rhythm — Expected: panel layout reads intuitively"
+      - "[REVIEWER] Document reads accurately — Expected: matches shipped implementation tone"
+    examples_negative:
+      - "[REVIEWER] Block message names both bypass mechanisms — Expected: message contains '--switch-focus' and 'FW_SWITCH_FOCUS=1'"
+      - "[REVIEW] Dashboard reads cleanly — Expected: layout feels intuitive (prefix is [REVIEW], not [REVIEWER])"
+      - "[REVIEWER] Reviewer PASS — Expected: `bin/fw reviewer T-XXX 2>&1 | grep -q 'Overall:.*PASS'`"
+
   - id: AC-verify-mismatch
     name: "Checked AC names a file path the verification never touches"
     detection_confidence: heuristic

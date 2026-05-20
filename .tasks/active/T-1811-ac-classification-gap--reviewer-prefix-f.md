@@ -40,13 +40,18 @@ Concrete instance discovered 2026-05-13 in T-1810 follow-up triage: Group C task
 - [x] Verification command added to this task: `bin/fw verify-acs T-1811 --verbose 2>&1 | grep -q "Reviewer"` proves the integration works on a task with `[REVIEW]` ACs (this task itself, with the test Human AC below)
 
 ### Human
-- [ ] [REVIEWER] Updated CLAUDE.md section reads clearly and the conversion rule is unambiguous
+- [ ] [REVIEW] Updated CLAUDE.md section reads clearly and the conversion rule is unambiguous
+  <!-- T-1947 re-class (L-409): originally tagged [REVIEWER] hoping `fw reviewer T-1811`
+       would verify prose clarity. The reviewer has no natural-language detector — it
+       silently passed over this AC while reporting CONCERN on Agent AC#3 (structural).
+       Prose-quality ACs are genuine human-taste judgment. The new
+       `reviewer-prose-mismatch` detector (T-1947) catches this mis-routing structurally.
+       See CLAUDE.md §AC Classification Guidance "necessary-but-not-sufficient". -->
   **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer T-1811`
-  2. Read the Reviewer Verdict block written to this task
-  3. If Overall=PASS and Needs Human=no, tick this AC; if CONCERN/FAIL, read findings and fix or override
-  **Expected:** Reviewer returns PASS with no findings on the doc-update AC text
-  **If not:** Address findings or `fw reviewer override add T-1811 --pattern X --reason "..."`
+  1. Read CLAUDE.md §AC Classification Guidance, particularly the "Three Human-AC prefixes" table and the `[REVIEWER]` necessary-but-not-sufficient paragraph
+  2. Assess: does the conversion rule read unambiguously? Does the worked example make the routing test clear?
+  **Expected:** A reader unfamiliar with T-1811's history can apply the [REVIEW] / [REVIEWER] / [RUBBER-STAMP] test on a fresh AC without further explanation
+  **If not:** Edit the prose; note specific paragraphs that lost the reader
 
 ## Verification
 
@@ -142,8 +147,8 @@ Detected via T-1810 follow-up triage: 7 Group C tasks were initially classified 
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-3b1cb220
-- **Timestamp:** 2026-05-18T09:30:58Z
+- **Scan ID:** R-433a4f19
+- **Timestamp:** 2026-05-20T07:39:38Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
