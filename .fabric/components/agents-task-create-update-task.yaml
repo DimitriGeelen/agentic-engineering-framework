@@ -30,9 +30,11 @@ depends_on:
   type: calls
 - target: lib/render_surface.sh
   type: calls
+- target: agents/termlink/bvp-estimator/bvp-estimator.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-20'
 depended_by:
 - target: C-004
   type: called_by
@@ -78,6 +80,8 @@ depended_by:
   type: tests_by
 - target: tests/unit/check_active_task_switch_focus.bats
   type: called_by
+- target: tests/unit/check_render_surface_human_ac_sigpipe.bats
+  type: tests_by
 docs:
 - path: docs/articles/deep-dives/06-authority-model.md
   title: 'Deep Dive: The Authority Model'

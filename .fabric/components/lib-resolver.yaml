@@ -23,6 +23,10 @@ depended_by:
   type: uses_by
 - target: lib/workflow_lint.py
   type: called_by
+- target: lib/worker_kinds_parity.py
+  type: called_by
+- target: lib/worker_kinds_parity.py
+  type: uses_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-05-15'
+last_enriched: '2026-05-20'

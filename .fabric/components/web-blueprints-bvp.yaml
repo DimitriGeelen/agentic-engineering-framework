@@ -4,17 +4,21 @@ type: route
 subsystem: watchtower
 location: web/blueprints/bvp.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/shared.py
+  type: calls
+- target: bin/fw
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/blueprints/__init__.py
+  type: called_by
+- target: web/blueprints/__init__.py
+  type: registered_by
+- target: web/blueprints/arcs.py
+  type: called_by
+- target: web/blueprints/arcs.py
+  type: registered_by
 last_verified: 2026-05-19
 created_by: unknown
+last_enriched: '2026-05-20'

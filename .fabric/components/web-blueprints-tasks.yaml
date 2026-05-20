@@ -18,7 +18,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-20'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -61,3 +61,5 @@ depended_by:
   type: tests_by
 - target: tests/playwright/test_landing_arc_cards.py
   type: rendered_by
+- target: web/blueprints/arcs.py
+  type: called_by

@@ -134,12 +134,20 @@ depends_on:
   type: registers
 - target: web/blueprints/arcs.py
   type: registers
+- target: web/blueprints/bvp.py
+  type: calls
+- target: web/blueprints/bvp.py
+  type: registers
 depended_by:
 - target: web/app.py
   type: imported_by
   note: Python package init; implicitly loaded when app.py imports from web.blueprints.*
 - target: web/app.py
   type: called_by
+- target: tests/unit/test_bvp_blueprint_cost.py
+  type: called_by
+- target: tests/unit/test_bvp_scatter_arc_mode.py
+  type: called_by
 last_verified: 2026-03-01
 created_by: unknown
-last_enriched: '2026-05-05'
+last_enriched: '2026-05-20'

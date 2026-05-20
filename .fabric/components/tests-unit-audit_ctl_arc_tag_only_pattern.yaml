@@ -18,7 +18,9 @@ depends_on:
   type: tests
 - target: lib/migrations/arc-id-migration.sh
   type: tests
+- target: C-004
+  type: tests
 depended_by: []
 last_verified: 2026-05-17
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-20'

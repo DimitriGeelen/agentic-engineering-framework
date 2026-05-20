@@ -4,17 +4,21 @@ type: script
 subsystem: framework-core
 location: lib/worker_kinds_parity.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: lib/resolver.py
+  type: calls
+- target: lib/workflow_lint.py
+  type: calls
+- target: bin/fw
+  type: calls
+- target: lib/resolver.py
+  type: uses
+- target: lib/workflow_lint.py
+  type: uses
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: called_by
 last_verified: 2026-05-20
 created_by: unknown
+last_enriched: '2026-05-20'

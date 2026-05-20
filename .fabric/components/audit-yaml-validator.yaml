@@ -46,6 +46,8 @@ depends_on:
   type: calls
 - target: agents/git/lib/large-file-scan.sh
   type: calls
+- target: lib/cron_dry_run.py
+  type: calls
 depended_by:
 - target: cron-audit
   type: triggers
@@ -104,6 +106,8 @@ depended_by:
   type: called_by
 - target: tests/unit/audit_stale_arc_warning.bats
   type: tests_by
+- target: web/blueprints/arcs.py
+  type: called_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-20'

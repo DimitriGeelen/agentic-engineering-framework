@@ -8,6 +8,8 @@ purpose: Resume Agent - Post-compaction recovery and state synchronization
 depends_on:
 - target: lib/paths.sh
   type: calls
+- target: agents/termlink/bvp-estimator/bvp-estimator.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -19,4 +21,4 @@ depended_by:
   type: called_by
 - target: tests/unit/resume.bats
   type: tests_by
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-20'

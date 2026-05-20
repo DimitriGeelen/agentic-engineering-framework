@@ -5,7 +5,9 @@ subsystem: unknown
 location: tools/g064-readiness.py
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: tools/escalation-scan-v0.5.py
+  type: calls
 depended_by:
 - target: tests/unit/test_fw_gaps_closure_check.bats
   type: tests_by
@@ -15,4 +17,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-05
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-20'

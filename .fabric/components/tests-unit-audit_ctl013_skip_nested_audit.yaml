@@ -8,7 +8,11 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: bin/fw
   type: tests
+- target: C-004
+  type: calls
+- target: C-004
+  type: tests
 depended_by: []
 last_verified: 2026-05-15
 created_by: unknown
-last_enriched: '2026-05-16'
+last_enriched: '2026-05-20'

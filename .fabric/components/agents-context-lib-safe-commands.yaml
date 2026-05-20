@@ -13,6 +13,10 @@ depended_by:
   type: called_by
 - target: tests/unit/context_safe_commands.bats
   type: tests_by
+- target: tests/unit/safe_commands_env_prefix.bats
+  type: called_by
+- target: tests/unit/safe_commands_env_prefix.bats
+  type: tests_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-20'

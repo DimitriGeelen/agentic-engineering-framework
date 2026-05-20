@@ -95,9 +95,13 @@ depends_on:
   type: calls
 - target: agents/git/lib/large-file-scan.sh
   type: calls
+- target: lib/cron_dry_run.py
+  type: calls
+- target: lib/worker_kinds_parity.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-20'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -494,4 +498,34 @@ depended_by:
 - target: tests/unit/test_render_surface_gate.bats
   type: tests_by
 - target: agents/context/check-settings-edit.sh
+  type: called_by
+- target: lib/cron_dry_run.py
+  type: called_by
+- target: lib/heredoc_guard.py
+  type: called_by
+- target: lib/worker_kinds_parity.py
+  type: called_by
+- target: tests/unit/arc_create_start_flag.bats
+  type: tests_by
+- target: tests/unit/reviewer_human_ac_mechanical_signal.bats
+  type: tests_by
+- target: tests/unit/safe_commands_env_prefix.bats
+  type: tests_by
+- target: tests/unit/task_archive_eligible.bats
+  type: tests_by
+- target: tests/unit/template_reviewer_prefix_example.bats
+  type: tests_by
+- target: tests/unit/test_audit_cron_registry_generated_drift.bats
+  type: tests_by
+- target: tests/unit/test_bin_fw_no_heredoc_cmd_sub.bats
+  type: tests_by
+- target: tests/unit/test_cron_registry_generated_drift.bats
+  type: tests_by
+- target: tests/unit/test_heredoc_cmd_sub_guard.bats
+  type: tests_by
+- target: tests/unit/test_reviewer_prose_mismatch.bats
+  type: tests_by
+- target: web/blueprints/arcs.py
+  type: called_by
+- target: web/blueprints/bvp.py
   type: called_by

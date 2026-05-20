@@ -27,4 +27,6 @@ depended_by:
   type: extended_by
 - target: web/templates/orchestrator.html
   type: extended_by
-last_enriched: '2026-05-05'
+- target: web/templates/bvp.html
+  type: extended_by
+last_enriched: '2026-05-20'

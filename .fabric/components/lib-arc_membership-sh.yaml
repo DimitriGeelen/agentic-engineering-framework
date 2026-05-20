@@ -33,6 +33,8 @@ depended_by:
   type: called_by
 - target: tests/unit/audit_ctl_arc_tag_only_pattern.bats
   type: tests_by
+- target: tests/unit/arc_membership_dual_id.bats
+  type: tests_by
 last_verified: 2026-05-17
 created_by: T-1885
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-20'

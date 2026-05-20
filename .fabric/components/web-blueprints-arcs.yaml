@@ -21,6 +21,18 @@ depends_on:
   type: calls
 - target: lib/arc.sh
   type: calls
+- target: web/blueprints/bvp.py
+  type: calls
+- target: web/templates/arc_close.html
+  type: renders
+- target: C-004
+  type: calls
+- target: web/blueprints/tasks.py
+  type: calls
+- target: bin/fw
+  type: calls
+- target: web/blueprints/bvp.py
+  type: registers
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -34,6 +46,10 @@ depended_by:
   type: called_by
 - target: tests/playwright/test_arcs_renders_without_constituent_field.py
   type: rendered_by
+- target: tests/playwright/test_arcs_kanban.py
+  type: called_by
+- target: tests/unit/check_render_surface_human_ac_sigpipe.bats
+  type: tests_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-20'

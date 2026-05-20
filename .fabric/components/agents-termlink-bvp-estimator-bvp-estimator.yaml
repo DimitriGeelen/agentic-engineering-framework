@@ -4,17 +4,13 @@ type: script
 subsystem: unknown
 location: agents/termlink/bvp-estimator/bvp-estimator.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/resume/resume.sh
+  type: called_by
+- target: agents/task-create/update-task.sh
+  type: called_by
 last_verified: 2026-05-19
 created_by: unknown
+last_enriched: '2026-05-20'

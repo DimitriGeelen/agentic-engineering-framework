@@ -12,20 +12,16 @@ tags:
 - T-1890
 - T-1730
 - T-1729
-purpose: "Pins the focus-drift bypass mechanism contract introduced by T-1730 and\n\
-  fixed by T-1890. The check-active-task.sh PreToolUse hook blocks under\nCLAUDECODE=1\
-  \ when a Bash command targets a task \u2260 focused task. Two\nbypass mechanisms\
-  \ exist:\n  (a) --switch-focus flag \u2014 for fw commands whose downstream parsers\n\
-  \      (update-task.sh, lib/{learning,pattern,decision}.sh) consume it\n      as\
-  \ a no-op token.\n  (b) FW_SWITCH_FOCUS=1 env-var prefix \u2014 universal, works\
-  \ for `git\n      commit ... T-X: ...` where git rejects unknown flags.\n\nOrigin:\
-  \ T-1890 \u2014 last-session closures of T-1854/T-1855 hit \"Unknown\noption: --switch-focus\"\
-  \ from update-task.sh; agent worked around via\ndirect-invoke `bash agents/task-create/update-task.sh`\
-  \ which the hook\nregex doesn't match \u2192 silent bypass, no audit trail. Producer/consumer\n\
-  split: hook shipped the contract; consumers never honoured it.\n\n9 tests: block-without-bypass,\
-  \ --switch-focus flag allow+log,\nFW_SWITCH_FOCUS=1 allow+log, FW_SWITCH_FOCUS=1\
-  \ unlocks git commit case,\nblock-message names both mechanisms, four downstream\
-  \ consumers each\naccept --switch-focus without Unknown-option exit.\n"
+purpose: "Pins the focus-drift bypass mechanism contract introduced by T-1730 and\nfixed by T-1890. The check-active-task.sh\
+  \ PreToolUse hook blocks under\nCLAUDECODE=1 when a Bash command targets a task ≠ focused task. Two\nbypass mechanisms exist:\n\
+  \  (a) --switch-focus flag — for fw commands whose downstream parsers\n      (update-task.sh, lib/{learning,pattern,decision}.sh)\
+  \ consume it\n      as a no-op token.\n  (b) FW_SWITCH_FOCUS=1 env-var prefix — universal, works for `git\n      commit\
+  \ ... T-X: ...` where git rejects unknown flags.\n\nOrigin: T-1890 — last-session closures of T-1854/T-1855 hit \"Unknown\n\
+  option: --switch-focus\" from update-task.sh; agent worked around via\ndirect-invoke `bash agents/task-create/update-task.sh`\
+  \ which the hook\nregex doesn't match → silent bypass, no audit trail. Producer/consumer\nsplit: hook shipped the contract;\
+  \ consumers never honoured it.\n\n9 tests: block-without-bypass, --switch-focus flag allow+log,\nFW_SWITCH_FOCUS=1 allow+log,\
+  \ FW_SWITCH_FOCUS=1 unlocks git commit case,\nblock-message names both mechanisms, four downstream consumers each\naccept\
+  \ --switch-focus without Unknown-option exit.\n"
 depends_on:
 - target: agents/context/check-active-task.sh
   type: calls
@@ -47,7 +43,11 @@ depends_on:
   type: tests
 - target: bin/fw
   type: tests
+- target: C-002
+  type: calls
+- target: C-002
+  type: tests
 depended_by: []
 last_verified: 2026-05-18
 created_by: claude
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-20'
