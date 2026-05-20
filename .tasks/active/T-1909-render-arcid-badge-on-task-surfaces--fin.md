@@ -12,18 +12,18 @@ description: >
   to arcs, simply by filling in an ARc-id field value in the tasks arc-id value field
   ... that all wraps into the corresponding arc'. Render the badge on three surfaces.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: now
 tags: [watchtower, ui, arc]
-components: []
+components: [lib/arc_membership.sh, lib/arc.sh, tests/playwright/test_arc_badge.py, tests/playwright/test_arc_page_parity.py, tests/unit/arc_membership_dual_id.bats, web/blueprints/arcs.py, web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/base.html, web/templates/_partials/arc_badge.html, web/templates/tasks.html]
 related_tasks: [T-1848, T-1849, T-1850, T-1874, T-1876, T-1879, T-1880, T-1904, 
       T-1905]
 arc_id: arc-005
 created: 2026-05-18T21:02:27Z
-last_update: '2026-05-19T18:27:46Z'
-date_finished:
+last_update: 2026-05-20T14:29:10Z
+date_finished: 2026-05-20T14:29:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -36,6 +36,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -106,10 +116,10 @@ Read `task.arc_id` from frontmatter (already loaded via `get_all_task_metadata`)
 # T-1909 verification — three surfaces + Playwright test
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); curl -sf -o /dev/null "$WT_URL/tasks"
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); curl -sf -o /dev/null "$WT_URL/arcs/arc-grooming"
-WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/tasks?view=board" 2>&1); echo "$out" | grep -q 'class="arc-badge"'
-WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/tasks?view=list" 2>&1); echo "$out" | grep -q '<th>Arc</th>'
-WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs/arc-grooming" 2>&1); echo "$out" | grep -q '<th>Arc</th>'
-out=$(bin/fw test playwright tests/playwright/test_arc_badge.py 2>&1); echo "$out" | grep -q "4 passed"
+WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/tasks?view=board" 2>&1); grep -q 'class="arc-badge"' <<<"$out"
+WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/tasks?view=list" 2>&1); grep -q '<th>Arc</th>' <<<"$out"
+WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs/arc-grooming" 2>&1); grep -q '<th>Arc</th>' <<<"$out"
+out=$(bin/fw test playwright tests/playwright/test_arc_badge.py 2>&1); grep -q "4 passed" <<<"$out"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -176,6 +186,18 @@ out=$(bin/fw test playwright tests/playwright/test_arc_badge.py 2>&1); echo "$ou
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-19 — three surfaces, one macro
+
+- **What changed:** Initial filing assumed badges would need bespoke styling per surface (kanban card vs list table vs arc-detail). During build it became obvious all three want the *same* badge token — the surface only varies in placement (meta row vs column cell). Extracted to a shared Jinja macro (`web/templates/_partials/arc_badge.html`, 24 lines) with one CSS class.
+- **Plan impact:** Reduced from three surface-specific implementations to one macro + three include points. Cut LOC roughly in half versus the naïve plan.
+- **Triggered:** L-AC reuse pattern reinforced for `_partials/` directory; no follow-up task needed.
+
+### 2026-05-19 — defensive fallback to legacy tag
+
+- **What changed:** T-1850 migrated 162 tasks from `tags: [arc:<slug>]` to canonical `arc_id:`, but the migration is one-shot — newly-filed tasks could still arrive with the legacy tag if a stale template or copy-paste leaks. Rendering against `arc_id:` alone would silently miss those.
+- **Plan impact:** Macro reads `arc_id` first, falls back to scanning `tags` for `arc:<slug>` prefix. Defensive against drift without re-introducing dual-source-of-truth — `arc_id` always wins when present.
+- **Triggered:** No follow-up; the fallback is bounded — once the audit catches a stale `arc:` tag it gets migrated by T-1850 logic.
+
 ## Recommendation
 
 **Recommendation:** GO
@@ -220,3 +242,15 @@ The arc_id visibility job (T-1848 + T-1849 + T-1850) shipped the storage layer (
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1909-render-arcid-badge-on-task-surfaces--fin.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-e9ac2c1e
+- **Timestamp:** 2026-05-20T14:29:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-20T14:29:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

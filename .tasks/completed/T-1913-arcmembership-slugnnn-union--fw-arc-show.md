@@ -6,12 +6,12 @@ description: >
   arc_membership slug↔NNN union — fw arc show <slug> misses tasks using NNN form,
   and vice versa (B-1 from arc-005 critical re-audit)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bug, arc-membership, silent-corpus, CLI-Watchtower-parity, T-1880-sibling]
-components: [lib/arc_membership.sh]
+components: [lib/arc_membership.sh, lib/arc.sh, tests/unit/arc_membership_dual_id.bats]
 related_tasks: [T-1880, T-1874, T-1875, T-1876, T-1879, T-1881]
 arc_id: arc-005
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ arc_id: arc-005
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T22:14:02Z
-last_update: '2026-05-19T17:56:36Z'
-date_finished:
+last_update: 2026-05-20T14:23:47Z
+date_finished: 2026-05-20T14:23:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -33,6 +33,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -126,19 +136,13 @@ test "$(bin/fw arc show arc-005 2>&1 | grep -cE '^  T-[0-9]+')" -ge 35
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `bin/fw arc show arc-005` returned 0 task entries (NNN form). `bin/fw arc show arc-grooming` returned 32 tasks but missed every task whose frontmatter used the NNN form `arc_id: arc-005` (slug-form callers were blind to NNN-form members and vice versa). CLI and Watchtower disagreed because Watchtower already happened to query both forms while the CLI did not — a CLI ↔ UI parity break of the worst class (silent miscount).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `lib/arc_membership.sh:arc_tasks_for` matched only on the literal input string. When `arc_id:` admits two equivalent forms (slug `arc-grooming` and immutable NNN `arc-005`, both resolving to the same `.context/arcs/arc-grooming.yaml`), a single-form scan necessarily under-counts. The helper had no dual-id resolver to expand input into both forms before grepping.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** Two compounding gaps. (1) T-1880 extracted `arc_tasks_*` into a shared helper *specifically* to eliminate silent-corpus class for arc-membership scans — but the canonical form at extraction time was slug-only, so the dual-id case was never tested. The NNN form was added later (T-1849/T-1850 D-Immutability axiom) and the helper was never retro-fitted. (2) T-1880 left inline duplicates of `_arc_tasks_*` inside `lib/arc.sh` (line 933 et al) for a "follow-up cleanup"; the CLI dispatched into those duplicates, not the shared helper — so even if the shared helper had been fixed, the CLI bug would have persisted. This is the L-397 canonical-helper-with-residual-silent-corpus pattern repeating one rung down.
+
+**Prevention:** `tests/unit/arc_membership_dual_id.bats` — 7 tests pinning the union behaviour: fixture arc with mixed slug-form + NNN-form + legacy `arc:<slug>` tag tasks; `arc_tasks_for slug` and `arc_tasks_for NNN` must return the same superset; unknown input must degrade to literal-only (no spurious resolution); `arc_tasks_with_arc_id` regression pin so the *single*-form helper stays single-form (not all callers want the union). Sibling cleanup T-1914 then consolidates `lib/arc.sh` duplicates to delegate to the shared helper, closing the rung-down silent-corpus structurally so this class can't recur in arc-membership land.
 
 ## Evolution
 
@@ -216,3 +220,15 @@ test "$(bin/fw arc show arc-005 2>&1 | grep -cE '^  T-[0-9]+')" -ge 35
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1913-arcmembership-slugnnn-union--fw-arc-show.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-2d2a3058
+- **Timestamp:** 2026-05-20T14:23:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-20T14:23:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

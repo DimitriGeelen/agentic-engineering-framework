@@ -6,12 +6,12 @@ description: >
   lib/arc.sh consolidate _arc_tasks_* to delegate to lib/arc_membership.sh (sibling
   cleanup from T-1913)
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactor, consolidation]
-components: [lib/arc.sh, lib/arc_membership.sh]
+components: [lib/arc.sh]
 related_tasks: [T-1880, T-1913, T-1874, T-1879]
 arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T22:44:53Z
-last_update: '2026-05-19T21:45:02Z'
-date_finished:
+last_update: 2026-05-20T14:25:17Z
+date_finished: 2026-05-20T14:25:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -143,8 +143,8 @@ out=$(bin/fw arc list 2>&1); echo "$out" | grep -q "arc-005"
 bats tests/unit/arc_membership_dual_id.bats
 # Inline-scan regression check: lib/arc.sh must not re-introduce the inline grep duplicates
 ! grep -E '^\s*grep -lE.*"\$PROJECT_ROOT"/.tasks' lib/arc.sh
-# Arc show parity with pre-consolidation count
-out=$(bin/fw arc show arc-grooming 2>&1); echo "$out" | grep -q "Tasks ([0-9]"
+# Arc show parity with pre-consolidation count (one task per line, ≥36 entries)
+test "$(bin/fw arc show arc-grooming 2>&1 | grep -cE '^  T-[0-9]+')" -ge 36
 # Arc list still works
 bin/fw arc list >/dev/null 2>&1
 
@@ -234,3 +234,20 @@ bin/fw arc list >/dev/null 2>&1
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1914-libarcsh-consolidate-arctasks-to-delegat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7748dfd4
+- **Timestamp:** 2026-05-20T14:25:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 39
+     - evidence: `bin/fw arc list >/dev/null 2>&1`
+
+### 2026-05-20T14:25:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -12,17 +12,17 @@ description: >
   Slice 3 (inline status select) which depends on T-1902 build still being open. This
   is the unfinished discussion the user explicitly named on 2026-05-18.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: now
 tags: [watchtower, ui, arc]
-components: []
+components: [tests/playwright/test_arc_page_parity.py, web/blueprints/arcs.py, web/templates/arc_detail.html, web/templates/arcs_index.html]
 related_tasks: [T-1904, T-1905, T-1909, T-1902, T-1848, T-1849]
 arc_id: arc-005
 created: 2026-05-18T21:14:31Z
-last_update: '2026-05-19T21:45:02Z'
-date_finished:
+last_update: 2026-05-20T14:31:22Z
+date_finished: 2026-05-20T14:31:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -138,10 +138,10 @@ Today: kanban view + a legacy flat-list via `?status=X`. Need:
 
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); curl -sf -o /dev/null "$WT_URL/arcs"
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); curl -sf -o /dev/null "$WT_URL/arcs/arc-grooming"
-WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs" 2>&1); echo "$out" | grep -qE 'class="badge badge-(info|draft|ok)"[^>]*>(in-progress|draft|closed)'
-WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs?view=list" 2>&1); echo "$out" | grep -q 'arc-row\|arc-card'
-WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs?focused=true" 2>&1); echo "$out" | grep -q 'arc-card\|arc-row\|empty'
-out=$(bin/fw test playwright tests/playwright/test_arc_page_parity.py 2>&1); echo "$out" | grep -qE "[0-9]+ passed"
+WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs" 2>&1); grep -qE 'class="badge badge-(info|draft|ok)"[^>]*>(in-progress|draft|closed)' <<<"$out"
+WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs?view=list" 2>&1); grep -q 'arc-row\|arc-card' <<<"$out"
+WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs?focused=true" 2>&1); grep -q 'arc-card\|arc-row\|empty' <<<"$out"
+out=$(bin/fw test playwright tests/playwright/test_arc_page_parity.py 2>&1); grep -qE "[0-9]+ passed" <<<"$out"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -208,6 +208,18 @@ out=$(bin/fw test playwright tests/playwright/test_arc_page_parity.py 2>&1); ech
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-19 — regex-preserving YAML edit helper
+
+- **What changed:** Original plan was to load the YAML, mutate the field, and rewrite the file. Discovered during build that round-tripping arc YAML through `yaml.safe_load`+`yaml.dump` re-orders keys, normalises quoting, and collapses multi-line strings — destroying human-readable formatting that the arc files rely on (slice dependency comments, multi-paragraph headline_mechanic).
+- **Plan impact:** Built `_update_arc_yaml_field(slug, field, value)` as a regex-preserving in-place edit instead of YAML round-trip. Trade-off: cannot edit nested fields without extending the regex, but `name:`/`focus_dot:` are top-level scalars so the limitation is acceptable for this slice.
+- **Triggered:** No follow-up; future fields needing edit can extend `_update_arc_yaml_field` with new regex patterns, or migrate to a YAML round-trip ONLY for non-cosmetic mutations.
+
+### 2026-05-19 — Slice 3 deferred, not abandoned
+
+- **What changed:** Inline status select was in the original 4-slice plan but the underlying state machine extension (`closed` → reopen flow) belongs to T-1902 which is still in inception. Shipping the select without the backend would leave a UI affordance that mutates state but cannot reverse it.
+- **Plan impact:** Cut Slice 3 from this task explicitly; deferral documented in Recommendation block. Closure-redirect logic (`status==closed → /close` page) was added because it's small AND complements T-1911's close UX.
+- **Triggered:** Slice 3 stays in T-1905 backlog, will be re-filed as separate slice when T-1902 lands. No urgent need.
+
 ## Recommendation
 
 **Recommendation:** GO
@@ -253,3 +265,15 @@ Verified end-to-end via 10 Playwright DOM assertions + live curl checks: status 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1910-arc-page-parity--read-only-enrichment--i.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a82bcf26
+- **Timestamp:** 2026-05-20T14:31:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-20T14:31:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1913: arc_membership slug↔NNN union — fw arc show <slug> misses tasks using NNN form,
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-20T14:23:54Z
+# ============================================================================
+
+task_id: T-1913
+task_name: "arc_membership slug↔NNN union — fw arc show <slug> misses tasks using NNN form,"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T22:14:02Z
+completed: 2026-05-20T14:23:47Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-19T00:21:57+02:00
+last_commit: 2026-05-19T00:22:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc_membership slug↔NNN union — close B-1 from arc-005 re-audit. fabric card + L-NEW learning for arc_membership dual-id fix
+
+# Key outcomes
+outcomes:
+  - '`lib/arc_membership.sh` adds `_arc_resolve_dual_id <input>` helper: takes slug OR NNN, emits `<slug>\t<nnn>` by reading `.context/arcs/`. Empty output if input doesn''t resolve.'
+  - '`arc_tasks_for <input>` modified to union matches across both forms (slug-form arc_id + NNN-form arc_id + legacy `arc:<slug>` tag).'
+  - 'Header comment updated to document the union-across-forms behavior.'
+  - 'Bats test `tests/unit/arc_membership_dual_id.bats`: 7 tests passing — fixture arc with slug-form + NNN-form + legacy-tag tasks; verifies `arc_tasks_for slug` and `arc_tasks_for nnn` both return the full union.'
+  - 'Live verification: `bin/fw arc show arc-grooming` returns 36 tasks (was 32 pre-fix; includes T-1913 itself + the 3 NNN-form active tasks T-1909/10/11 + 32 historical slug-form).'
+  - 'Live verification: `bin/fw arc show arc-005` returns the same 36 tasks (was 0 task entries pre-fix — only the arc card).'
+  - 'No regression: `bin/fw doctor` reports 18 warnings, 0 failures (all warnings pre-existing T-1828 class).'
+  - '**Sibling discovery:** `lib/arc.sh` carries inline duplicates `_arc_tasks_for / _arc_tasks_with_arc_id / _arc_tasks_with_tag` that T-1880''s extraction never consolidated. Applied the same dual-id fix to `lib/arc.sh:_arc_tasks_for` so `fw arc show` (which calls the lib/arc.sh local) gets the fix. Follow-up task should consolidate — see Evolution.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fabric card + L-NEW learning for arc_membership dual-id fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.fabric/components/tests-unit-arc_membership_dual_id.yaml'
+  - 'lib/arc_membership.sh'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-1913-arcmembership-slugnnn-union--fw-arc-show.md'
+  - 'tests/unit/arc_membership_dual_id.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T00:21:57"
+    action: "T-1913: arc_membership slug↔NNN union — close B-1 from arc-005 re-audit"
+  - time: "2026-05-19T00:22:30"
+    action: "T-1913: fabric card + L-NEW learning for arc_membership dual-id fix"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2409 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, arc-membership, silent-corpus, CLI-Watchtower-parity, T-1880-sibling]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2409
+  commits: 2
+  files_changed: 6
+  lines_added: 481
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1913-arcmembership-slugnnn-union--fw-arc-show.md
+generated_by: context-agent-hybrid
