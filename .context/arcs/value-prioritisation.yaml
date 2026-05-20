@@ -18,4 +18,52 @@ decision: null
 # with new arc-creation defaults. Semantics in docs/reports/T-1915-bvp-inception.md.
 bvp_scores: {}
 scoped_drivers: []
-proposed_scoped_drivers: []
+# T-1957: arc-006 self-application. Primary-agent driver proposal per T-1925
+# workflow (5-step). Three candidates; human approves ≤3 via `fw arc approve-driver
+# value-prioritisation "<name>" --weight N --i-am-human|--from-watchtower` or
+# rejects all with `fw arc approve-driver value-prioritisation --none --justification "..."`.
+# Each rationale articulates what the driver distinguishes that global D1-D4 do not (D6).
+proposed_scoped_drivers:
+  - name: sovereignty-preservation
+    weight: 5
+    source: agent
+    ts: '2026-05-20T12:30:00Z'
+    rationale: >-
+      Distinguishes from global D1-D4 by measuring how robustly each unit of
+      arc-006 work preserves the human's score-confirmation and weight-adjustment
+      boundary. The arc already encodes §ACD gates at `fw bvp confirm` (T-1924)
+      and `fw bvp weight` (M6) precisely because Goodhart's-law risk is acute
+      in a prioritisation system — agent-estimated scores trend toward becoming
+      de-facto authority via convenience. D2 (Reliability) asks "is the gate
+      auditable"; this driver asks "is the Sovereignty contract still credible
+      after this change shipped". Material because BVP outputs visibly rank
+      what gets worked on next; a single ergonomic shortcut around a confirm
+      gate would silently erode authority over time.
+  - name: adoption-friction
+    weight: 4
+    source: agent
+    ts: '2026-05-20T12:30:00Z'
+    rationale: >-
+      Distinguishes from global D3 (Usability) by measuring whether each unit
+      of work removes a barrier to using BVP *at all*, not whether the framework
+      is generally joyful. The arc has already produced a §ACD-pattern instance
+      (T-1934 proposed-scatter renders 0 of 88 scored tasks — perfect plumbing,
+      zero visibility, leading to T-1955). D3 cares "does the developer enjoy
+      this"; this driver cares "after this work, would a human or agent actually
+      *invoke* fw bvp / open /bvp instead of falling back to horizon: now". It
+      is a leading indicator of whether the arc itself hits its headline
+      mechanic, distinct from per-task UX polish.
+  - name: estimator-fidelity
+    weight: 3
+    source: agent
+    ts: '2026-05-20T12:30:00Z'
+    rationale: >-
+      Distinguishes from global D2 (Reliability) by measuring how well the
+      BVP heuristic estimator's scores agree with human-confirmed scores.
+      D2 cares "the estimator runs without crashing and writes audit rows";
+      this driver cares "the numbers it produces would not embarrass a human
+      reviewer". The arc encodes a v2-delta semantic (M3) where ≥2 driver-delta
+      between proposed and confirmed signals a needs-split — that is fidelity
+      measurement made operational. Without this driver, the estimator could
+      be perfectly reliable AND systematically wrong, and the global drivers
+      would never surface the divergence.

@@ -1,22 +1,47 @@
 ---
 id: T-1915
-name: "value-prioritisation: Business Value Points — directive-weighted prioritisation for tasks and arcs (HANDOFF-value-prioritisation-2026-05-15)"
+name: "value-prioritisation: Business Value Points — directive-weighted prioritisation
+  for tasks and arcs (HANDOFF-value-prioritisation-2026-05-15)"
 description: >
-  Inception: value-prioritisation: Business Value Points — directive-weighted prioritisation for tasks and arcs (HANDOFF-value-prioritisation-2026-05-15)
+  Inception: value-prioritisation: Business Value Points — directive-weighted prioritisation
+  for tasks and arcs (HANDOFF-value-prioritisation-2026-05-15)
 
 status: started-work
 workflow_type: inception
 owner: human
 horizon: now
 tags: [inception, value-drivers, bvp, prioritisation, handoff-ingested]
-components: [lib/arc.sh, web/blueprints/arcs.py, agents/audit/audit.sh, CLAUDE.md, FRAMEWORK.md, 005-DesignDirectives.md, .tasks/templates/zzz-default.md, .context/arcs/]
+components: [lib/arc.sh, web/blueprints/arcs.py, agents/audit/audit.sh, 
+      CLAUDE.md, FRAMEWORK.md, 005-DesignDirectives.md, 
+      .tasks/templates/zzz-default.md, .context/arcs/]
 related_tasks: [T-1641, T-1653, T-1668, T-1816, T-1846, T-1849, T-1852, T-1854]
 arc_id: value-prioritisation
 created: 2026-05-18T22:55:05Z
-last_update: 2026-05-18T22:57:29Z
-date_finished: null
+last_update: '2026-05-20T12:30:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 4
+      effort: 7
+    rationale: blast_radius=7 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-20T12:30:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1915: value-prioritisation: Business Value Points — directive-weighted prioritisation for tasks and arcs (HANDOFF-value-prioritisation-2026-05-15)
