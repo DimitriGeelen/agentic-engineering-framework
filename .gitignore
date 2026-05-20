@@ -44,7 +44,8 @@ lib/ts/node_modules/
 # Cron audit history (only LATEST-CRON.yaml is tracked)
 .context/audits/cron/2*.yaml
 
-# Temporary screenshots (Playwright MCP output)
+# Temporary screenshots (Playwright MCP output → /tmp/playwright-mcp/ since T-1949).
+# Belt-and-braces: also gitignore stray *.png in case MCP config drifts back to cwd.
 *.png
 # But track documentation screenshots
 !docs/screenshots/*.png

@@ -11,7 +11,9 @@
       "command": "npx",
       "args": [
         "@playwright/mcp@latest",
-        "--no-sandbox"
+        "--no-sandbox",
+        "--output-dir",
+        "/tmp/playwright-mcp"
       ]
     },
     "termlink": {
