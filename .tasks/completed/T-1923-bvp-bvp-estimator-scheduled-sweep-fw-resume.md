@@ -7,17 +7,17 @@ description: >
   cap (Q4 default); on timeout flag task `unscored: true` and let async sweep handle
   later. Resume itself never blocked by estimator.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bvp, build, slice-7b, termlink, cron]
-components: [agents/termlink/bvp-estimator/, bin/fw, .context/cron-registry.yaml]
+components: [agents/resume/resume.sh, agents/task-create/update-task.sh, agents/termlink/bvp-estimator/AGENT.md, agents/termlink/bvp-estimator/bvp-estimator.sh, agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: [T-1915, T-1916, T-1922]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T18:33:33Z
-date_finished:
+last_update: 2026-05-20T18:57:41Z
+date_finished: 2026-05-20T18:57:41Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
     estimator: bvp-estimator-v1-heuristic
@@ -38,6 +38,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
       (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -67,7 +77,7 @@ grep -q "bvp-estimator-sweep-15m" .context/cron-registry.yaml
 out=$(bin/fw doctor 2>&1 || true); [ "$(printf %s "$out" | grep -c 'Cron registry in sync')" -ge 1 ]
 out=$(bin/fw bvp estimate sweep --cron 2>&1 || true); [ "$(printf %s "$out" | grep -cE 'sweep: scored')" -ge 1 ]
 out=$(bin/fw bvp estimate with-sla T-99999 --timeout 10 2>&1 || true); echo "$?" | grep -q "^0$"
-out=$(python3 -m pytest tests/unit/test_bvp_estimator.py 2>&1 || true); [ "$(printf %s "$out" | grep -c '28 passed')" -ge 1 ]
+out=$(python3 -m pytest tests/unit/test_bvp_estimator.py 2>&1 || true); grep -qE '[0-9]+ passed' <<<"$out" && ! grep -qE '[0-9]+ failed' <<<"$out"
 grep -q "bvp-estimator" agents/resume/resume.sh
 
 ## Recommendation
@@ -160,3 +170,22 @@ given that proposed scores are advisory and the trigger in
 
 ### 2026-05-19T18:33:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-7d632156
+- **Timestamp:** 2026-05-20T18:59:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Periodic sweep cron-registered runs every 15 min — `bvp-estimator-sweep-15m` entry in `.context/cron-registry.yaml`, deployed to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` via `fw c
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: Periodic sweep cron-registered runs every 15 min — `bvp-estimator-sweep-15m` entry in `.context/cron-registry.yaml`, deployed to `/etc/cron.d/agentic-`
+- **AC#6 (Agent)** — Cron entry registered and `fw doctor` reports cron-registry-in-sync — verified via `bin/fw doctor 2>&1 | grep -q "Cron registry in sync"` (OK status). Entry deployed: `*/15 * * * * root cd "/opt/.../"
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=var/lock/agentic-cron-bvp-estimator-sweep.lock in: Cron entry registered and `fw doctor` reports cron-registry-in-sync — verified via `bin/fw doctor 2>&1 | grep -q "Cron registry in sync"` (OK status).`
+
+### 2026-05-20T18:57:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

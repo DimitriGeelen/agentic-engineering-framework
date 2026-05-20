@@ -1,0 +1,113 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1922: BVP T-NEW-7a: TermLink bvp-estimator worker — harness + ready-status trigger
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-20T18:55:06Z
+# ============================================================================
+
+task_id: T-1922
+task_name: "BVP T-NEW-7a: TermLink bvp-estimator worker — harness + ready-status trigger"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: 2026-05-20T18:54:59Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-05-19T20:06:16+02:00
+last_commit: 2026-05-19T20:06:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP T-NEW-7a — bvp-estimator harness + ready-status trigger (novel mechanism)
+
+# Key outcomes
+outcomes:
+  - '`agents/termlink/bvp-estimator/` exists with worker script — `estimator.py` (Python), `bvp-estimator.sh` (TermLink-convention wrapper), `AGENT.md` (behavior contract).'
+  - 'Worker can be started via `fw bvp estimate <verb>` (analogue from the `fw termlink dispatch` family — surfaces all four verbs: `one`, `all`, `determinism`, `measure-a3`). Direct invocation also works: `agents/termlink/bvp-estimator/bvp-estimator.sh one T-XXX`.'
+  - 'On task transition to `started-work` ("ready"), worker scores task within SLA — trigger wired in `agents/task-create/update-task.sh` (backgrounded, failures silent — advisory side-effect, does not block `--status` updates). A3 mean latency 2.7ms (SLA 5000ms) — 1850× under budget.'
+  - 'Worker writes ONLY to `bvp_scores_proposed:` — never to `bvp_scores:`. Pinned by `tests/unit/test_bvp_estimator.py:test_write_never_touches_confirmed_scores` which pre-sets `bvp_scores: {D1: 1, ...}` and asserts the values are unchanged after the estimator runs.'
+  - 'v2-delta semantics (M3): when confirmed `bvp_scores:` differs from the proposal by `<2` on every driver, write is skipped (reason: `v2-delta-skip`). When any driver differs by `≥2`, a new entry is appended. Pinned by `test_v2_delta_skip_when_confirmed_within_1`, `test_v2_delta_no_skip_when_any_driver_delta_2`, `test_write_skips_when_v2_delta_below_threshold`.'
+  - 'Determinism — heuristic engine is bit-deterministic by construction. `fw bvp estimate determinism T-XXX --runs 5` returns delta=0 unconditionally. Pinned by `test_same_input_same_output` (3 runs) + `test_determinism_holds_with_random_body` (10 runs).'
+  - 'Worker reads rubric at preload time — `_rubric_sha()` uses a module-level cache (`_RUBRIC_SHA_CACHE`), computed once per process (D4 reusable-state). Rubric SHA `e4a00f38e801` written into every `bvp_scores_proposed:` entry for change-traceability (R9).'
+  - 'A3 measurement captured — `docs/reports/T-1922-a3-measurement.md` (markdown report) + `docs/reports/T-1922-a3-measurement-raw.json` (raw data, 20 historical tasks). Mean 2.7ms, p95 7.3ms, max 7.3ms. Token marginal: 0 (heuristic engine, no LLM dispatch). SLA pass: True.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-19 — Engine: v1 heuristic (pattern classifier)'
+    rationale: ''
+  - decision: '2026-05-19 — Ready trigger: status=started-work in update-task.sh'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/task-create/update-task.sh'
+  - 'agents/termlink/bvp-estimator/AGENT.md'
+  - 'agents/termlink/bvp-estimator/bvp-estimator.sh'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - 'docs/reports/T-1922-a3-measurement.md'
+  - 'docs/reports/T-1922-a3-measurement-raw.json'
+  - '.fabric/components/agents-termlink-bvp-estimator-AGENT.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-bvp-estimator.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-estimator.yaml'
+  - '.fabric/components/docs-reports-T-1922-a3-measurement-raw.yaml'
+  - '.fabric/components/docs-reports-T-1922-a3-measurement.yaml'
+  - '.fabric/components/tests-unit-test_bvp_estimator.yaml'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-1687-install--apply-grill-with-docs-skill--gr.md'
+  - '.tasks/active/T-1911-watchtower-arcsslugclose-build--review-s.md'
+  - '.tasks/active/T-1913-arcmembership-slugnnn-union--fw-arc-show.md'
+  - '.tasks/active/T-1914-libarcsh-consolidate-arctasks-to-delegat.md'
+  - '.tasks/active/T-1922-bvp-termlink-bvp-estimator-worker-harness-r.md'
+  - '.tasks/active/T-1923-bvp-bvp-estimator-scheduled-sweep-fw-resume.md'
+  - '.tasks/active/T-1928-bvp-watchtower-bvp-static-scatter-read-only.md'
+  - '.tasks/active/T-1929-bvp-watchtower-bvp-live-sliders-commit-spli.md'
+  - '.tasks/active/T-1930-bvp-watchtower-arcsid-extensions-bvp-displa.md'
+  - '.tasks/active/T-1933-bvp-canonical-doc-040-valuedriversmd-framewo.md'
+  - '.tasks/completed/T-1144-add-git-push-to-session-end-protocol-and.md'
+  - '.tasks/completed/T-1257-fix-context-blind-fw-path-rule-in-claude.md'
+  - '.tasks/completed/T-1550-layer-a--rca-template--completion-gate-f.md'
+  - '.tasks/completed/T-1633-fw-upgrade-must-work-without-local-path-.md'
+  - '.tasks/completed/T-1671-implement-default-to-open-agent-gate-in-.md'
+  - '.tasks/completed/T-1730-bash-matcher--focus-drift-gate-on-check-.md'
+  - '.tasks/completed/T-1771-make-cron-drift-actionable-audit-summary.md'
+  - '.tasks/completed/T-1850-tagsarc--arcid-one-shot-migration-t-new-.md'
+  - '.tasks/completed/T-1921-bvp-scoring-rubric-policybvp-scoring-rubri.md'
+  - '.tasks/completed/T-609-codify-full-path-command-rule--agent-mus.md'
+  - '.tasks/completed/T-679-path-c-workflow-refinement--document-ter.md'
+  - 'tests/unit/test_bvp_estimator.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T20:06:16"
+    action: "T-1922: BVP T-NEW-7a — bvp-estimator harness + ready-status trigger (novel mechanism)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2154 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-7a, termlink, novel-mechanism]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2154
+  commits: 1
+  files_changed: 35
+  lines_added: 2230
+  lines_removed: 81
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1922-bvp-termlink-bvp-estimator-worker-harness-r.md
+generated_by: context-agent-hybrid

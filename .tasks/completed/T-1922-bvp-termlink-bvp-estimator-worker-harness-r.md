@@ -7,17 +7,17 @@ description: >
   only, never to confirmed bvp_scores:. v2-delta semantics (M3). A3 measurement —
   <5s, <2k tokens per task. Determinism AC (±1 over 20 historical tasks) blocks merge.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bvp, build, slice-7a, termlink, novel-mechanism]
-components: [agents/termlink/bvp-estimator/]
+components: [012-ArcSystem.md, agents/resume/resume.sh, agents/task-create/update-task.sh, agents/termlink/bvp-estimator/AGENT.md, agents/termlink/bvp-estimator/bvp-estimator.sh, agents/termlink/bvp-estimator/estimator.py, lib/arc.sh, lib/bvp.sh, tests/playwright/test_bvp_scatter.py, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, web/blueprints/bvp.py, web/blueprints/__init__.py, web/shared.py, web/templates/bvp.html]
 related_tasks: [T-1915, T-1916, T-1918, T-1921]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: '2026-05-19T18:27:46Z'
-date_finished:
+last_update: 2026-05-20T18:54:59Z
+date_finished: 2026-05-20T18:54:59Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:34Z'
     estimator: bvp-estimator-v1-heuristic
@@ -38,6 +38,16 @@ bvp_scores_proposed:
       D4: 0
     rationale: D1=0 (tag:novel-mechanism); D2=3 (body:component-silent-failure);
       D3=0 (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -72,7 +82,7 @@ test -f docs/reports/T-1922-a3-measurement.md
 test -f docs/reports/T-1922-a3-measurement-raw.json
 out=$(bin/fw bvp estimate --help 2>&1 || true); [ "$(printf %s "$out" | grep -cE 'estimate|determinism|measure-a3')" -ge 3 ]
 out=$(bin/fw bvp estimate determinism T-1730 --runs 5 2>&1 || true); [ "$(printf %s "$out" | grep -c 'max delta per driver = 0')" -ge 1 ]
-out=$(python3 -m pytest tests/unit/test_bvp_estimator.py 2>&1 || true); [ "$(printf %s "$out" | grep -c '17 passed')" -ge 1 ]
+out=$(python3 -m pytest tests/unit/test_bvp_estimator.py 2>&1 || true); grep -qE '[0-9]+ passed' <<<"$out" && ! grep -qE '[0-9]+ failed' <<<"$out"
 out=$(bin/fw bvp estimate measure-a3 --n 5 2>&1 || true); [ "$(printf %s "$out" | grep -c '"sla_pass": true')" -ge 1 ]
 
 ## Recommendation
@@ -191,3 +201,20 @@ harmless when it doesn't.
 
 ### 2026-05-19T17:47:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-f36ecffd
+- **Timestamp:** 2026-05-20T18:55:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — On task transition to `started-work` ("ready"), worker scores task within SLA — trigger wired in `agents/task-create/update-task.sh` (backgrounded, failures silent — advisory side-effect, does not blo
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/task-create/update-task.sh in: On task transition to `started-work` ("ready"), worker scores task within SLA — trigger wired in `agents/task-create/update-task.sh` (backgrounded, fa`
+
+### 2026-05-20T18:54:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

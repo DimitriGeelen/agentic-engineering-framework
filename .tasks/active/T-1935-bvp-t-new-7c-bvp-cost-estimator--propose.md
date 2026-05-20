@@ -12,17 +12,17 @@ description: >
   Deterministic R3 contract. Q4 SLA: 10s synchronous cap. Same TermLink worker harness
   as T-1922.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bvp, build, slice-7c, termlink, cost, arc-006]
-components: [agents/termlink/bvp-estimator/, web/blueprints/bvp.py, lib/bvp.sh]
+components: [agents/termlink/bvp-estimator/estimator.py, bin/fw, lib/bvp.sh, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, tests/unit/test_cron_registry_generated_drift.bats, web/blueprints/bvp.py]
 related_tasks: [T-1915, T-1916, T-1922, T-1923, T-1934]
 arc_id: value-prioritisation
 created: 2026-05-19T19:01:40Z
-last_update: '2026-05-19T19:08:39Z'
-date_finished:
+last_update: 2026-05-20T19:04:40Z
+date_finished: 2026-05-20T19:04:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -183,6 +183,11 @@ out=$(bin/fw bvp estimate-cost determinism T-1922 2>&1 || true); [ "$(printf %s 
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-20 — Default-medium fallback was the common case, not the corner case
+- **What changed:** Filing assumed `_compute_cost`'s default-medium fallback was a rare last-resort. Inspecting `/bvp` before this slice showed nearly all tasks clustered at x=4 because confirmed `cost_estimate:` was empty for ~80% of the corpus and no proposed-read path existed. The fallback was the *common* case, not the corner case.
+- **Plan impact:** Filed scope was "estimator writes proposed". After observing the single-point cluster, scope grew: `_compute_cost` must also *read* `cost_estimate_proposed:` (mirroring the bvp_scores proposed-read path from T-1934). Without that, 72 proposed entries would have been written and nothing on /bvp would display them.
+- **Triggered:** Added AC#7 (`_compute_cost` reads proposed) + AC#10 (visible spread on /bvp). Pinned by `test_resolve_cost_estimate_reads_proposed_when_proposed_mode` + `_ignores_proposed_when_confirmed_mode` (preserves T-1934 confirmed-strict mode for human-only views).
+
 ## Recommendation
 
 **Recommendation:** GO
@@ -311,3 +316,20 @@ class of "where did this number come from?" surprises.
 ### 2026-05-19T19:05:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-354c3134
+- **Timestamp:** 2026-05-20T19:06:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — `web/blueprints/bvp.py:_compute_cost` reads `cost_estimate_proposed:` (latest entry) when `cost_estimate:` is absent and `default_when_absent=True` is set; the default-medium fallback then becomes a l
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/bvp.py in: `web/blueprints/bvp.py:_compute_cost` reads `cost_estimate_proposed:` (latest entry) when `cost_estimate:` is absent and `default_when_absent=True` is`
+
+### 2026-05-20T19:04:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
