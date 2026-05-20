@@ -6,12 +6,12 @@ description: >
   PreToolUse heredoc-in-cmd-sub guard hook for bin/fw — L-332/L-408 surface at edit
   moment
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:value-prioritisation, future-prevention, L-332, L-408, hooks]
-components: [bin-fw]
+components: [agents/context/check-heredoc-cmd-sub.sh, C-009, lib/heredoc_guard.py, tests/unit/test_heredoc_cmd_sub_guard.bats]
 related_tasks: [T-1944, T-1942, T-1943, T-1629]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T06:10:35Z
-last_update: '2026-05-20T06:15:02Z'
-date_finished:
+last_update: 2026-05-20T06:22:04Z
+date_finished: 2026-05-20T06:22:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -158,7 +158,7 @@ Out of scope:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bash -n agents/hooks/check-heredoc-cmd-sub.sh
+bash -n agents/context/check-heredoc-cmd-sub.sh
 bats tests/unit/test_heredoc_cmd_sub_guard.bats
 python3 -c "import json; cfg=json.load(open('.claude/settings.json')); hooks=cfg.get('hooks',{}).get('PreToolUse',[]); assert any('check-heredoc-cmd-sub' in str(h) for h in hooks), 'hook not wired in settings.json'"
 bash -n bin/fw
@@ -276,3 +276,15 @@ out=$(bin/fw doctor 2>&1); echo "$out" | head -1 | grep -q "Framework Health Che
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1945-pretooluse-heredoc-in-cmd-sub-guard-hook.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a0130dbf
+- **Timestamp:** 2026-05-20T06:24:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-20T06:22:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
