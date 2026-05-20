@@ -123,7 +123,19 @@
     </p>
     {% endif %}
 
-    <details>
+    {# T-1956: surface driver weights above the fold as a compact inline list,
+       so reviewers don't miss them. The full table stays in <details open> for
+       per-task contribution numbers. #}
+    {% if bvp_info.per_driver %}
+    <p class="muted" style="margin: 0.25rem 0 0.5rem 0;">
+        <strong>Drivers:</strong>
+        {% for d in bvp_info.per_driver -%}
+        <code>{{ d.id }}={{ d.weight }}</code>{% if not loop.last %} · {% endif %}
+        {%- endfor %}
+    </p>
+    {% endif %}
+
+    <details open>
         <summary>Per-driver breakdown ({{ bvp_info.per_driver|length }} drivers)</summary>
         <table>
             <thead>

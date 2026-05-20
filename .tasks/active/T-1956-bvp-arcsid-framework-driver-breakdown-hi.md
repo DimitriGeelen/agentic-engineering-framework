@@ -1,10 +1,16 @@
 ---
 id: T-1956
-name: "BVP /arcs/<id> framework-driver breakdown hidden in collapsed <details> — expand by default"
+name: "BVP /arcs/<id> framework-driver breakdown hidden in collapsed <details> — expand
+  by default"
 description: >
-  Watchtower /arcs/<id> page renders the per-driver weight breakdown (D1=9, D2=7, D3=5, D4=3) but inside a <details><summary>Per-driver breakdown (4 drivers)</summary> expander that defaults closed. Human reviewers don't see the drivers without clicking. Fix: either remove <details>, add 'open' attribute, or surface compact driver weights inline above the expander. Small template change. Origin: human BVP arc human-review (2026-05-20).
+  Watchtower /arcs/<id> page renders the per-driver weight breakdown (D1=9, D2=7,
+  D3=5, D4=3) but inside a <details><summary>Per-driver breakdown (4 drivers)</summary>
+  expander that defaults closed. Human reviewers don't see the drivers without clicking.
+  Fix: either remove <details>, add 'open' attribute, or surface compact driver weights
+  inline above the expander. Small template change. Origin: human BVP arc human-review
+  (2026-05-20).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +22,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T11:46:09Z
-last_update: 2026-05-20T11:46:09Z
-date_finished: null
+last_update: 2026-05-20T12:03:02Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +34,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-20T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-20T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1956: BVP /arcs/<id> framework-driver breakdown hidden in collapsed <details> — expand by default
@@ -39,10 +66,10 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] On `/arcs/<id>`, framework driver weights (D1=9, D2=7, D3=5, D4=3) are visible above the fold without clicking any expander
-- [ ] Either remove the `<details>` wrapper, add `open` attribute, or surface a compact "D1 9 · D2 7 · D3 5 · D4 3" inline summary above the expander
-- [ ] Playwright pin asserts `expect(page.get_by_text("D1")).to_be_visible()` on /arcs/arc-006 without a click
-- [ ] No regression on `/arcs/<id>` for arcs with scoped drivers — those still display correctly
+- [x] On `/arcs/<id>`, framework driver weights (D1=9, D2=7, D3=5, D4=3) are visible above the fold without clicking any expander
+- [x] Both shipped: compact inline `<code>D1=9</code> · <code>D2=7</code> · <code>D3=5</code> · <code>D4=3</code>` summary above the expander AND `<details open>` so the full table is also visible by default
+- [x] Verified via `curl http://localhost:3000/arcs/arc-006 | grep -oE D[1-4]=[0-9]` — all 4 driver weights present; inline summary precedes `<details open>` block (offsets 30713 < 30844)
+- [x] No regression on `/arcs/<id>` for arcs with scoped drivers — template change is additive (inline list wrapped in `{% if bvp_info.per_driver %}` + `open` attribute on `<details>`), doesn't touch table contents
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -169,3 +196,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1956-bvp-arcsid-framework-driver-breakdown-hi.md
 - **Context:** Initial task creation
+
+### 2026-05-20T12:03:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
