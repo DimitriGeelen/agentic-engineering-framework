@@ -1707,48 +1707,12 @@ else:
         # edit that's never regenerated stays invisible to doctor (T-1935
         # origin: bvp-cost-estimator-sweep entry sat 3+ days drifted while
         # doctor reported "in sync"). Approach: dry-run the same generate
-        # logic to stdout, content-compare against the on-disk source.
+        # logic via lib/cron_dry_run.py, content-compare against the on-disk
+        # source. T-1944: helper extracted to a real file per L-332/L-408
+        # (heredoc-in-$() in bin/fw is the canonical self-lockout shape).
         if [ -f "$cron_source" ]; then
             local _cron_dry_run
-            _cron_dry_run=$(python3 - "$PROJECT_ROOT" "$cron_registry" "$FRAMEWORK_ROOT/bin/fw" <<'PY' 2>/dev/null || echo "__SKIP__")
-import os, re, sys, yaml
-project_root, registry_file, fw_path = sys.argv[1], sys.argv[2], sys.argv[3]
-data = yaml.safe_load(open(registry_file)) or {}
-jobs = data.get('jobs', [])
-slug = re.sub(r'[^a-z0-9_-]', '-', os.path.basename(project_root).lower())
-cron_source = os.path.join(project_root, '.context', 'cron', 'agentic-audit.crontab')
-cron_install = f'/etc/cron.d/agentic-audit-{slug}'
-lines = [
-    f'# Agentic Engineering Framework — Scheduled Jobs (managed by cron-registry.yaml)',
-    f'# Source of truth: {cron_source} (git-tracked)',
-    f'# Installed to: {cron_install}',
-    f'# Project: {project_root}',
-    'SHELL=/bin/bash',
-    'PATH=/usr/local/bin:/usr/bin:/bin',
-    '',
-]
-for job in jobs:
-    schedule = job.get('schedule', '')
-    command = job.get('command', '')
-    name = job.get('name', '')
-    status = job.get('status', 'active')
-    if 'fw ' in command:
-        resolved = re.sub(r'\bfw\b', f'"{fw_path}"', command)
-        resolved = f'cd "{project_root}" && PROJECT_ROOT="{project_root}" {resolved}'
-    else:
-        resolved = f'cd "{project_root}" && {command}'
-    if '2>&1 | logger' not in resolved and '2>/dev/null' not in resolved:
-        resolved += ' 2>&1 | logger -t agentic-cron'
-    elif '2>/dev/null' in resolved:
-        resolved = resolved.replace('2>/dev/null', '2>&1 | logger -t agentic-cron')
-    lines.append(f'# {name}')
-    if status == 'paused':
-        lines.append(f'# PAUSED: {schedule} root {resolved}')
-    else:
-        lines.append(f'{schedule} root {resolved}')
-    lines.append('')
-sys.stdout.write('\n'.join(lines))
-PY
+            _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$PROJECT_ROOT" "$cron_registry" "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo "__SKIP__")
             if [ "$_cron_dry_run" != "__SKIP__" ] && [ -n "$_cron_dry_run" ]; then
                 local _cron_on_disk
                 _cron_on_disk=$(cat "$cron_source" 2>/dev/null)

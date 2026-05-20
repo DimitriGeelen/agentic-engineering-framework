@@ -1024,46 +1024,10 @@ if [ -f "$_cron_registry" ]; then
     # cron entry is invisible to the OS scheduler — same "tasks won't run"
     # class as the deployed-side FAIL below. Origin: T-1935 (bvp-cost-estimator
     # registry entry sat 3+ days drifted while doctor reported "in sync").
+    # T-1944: dry-run logic extracted to lib/cron_dry_run.py per L-332/L-408
+    # (single source of truth + bash side stays parse-safe).
     if [ -f "$_cron_source" ]; then
-        _cron_dry_run=$(python3 - "$PROJECT_ROOT" "$_cron_registry" "$FRAMEWORK_ROOT/bin/fw" <<'PY' 2>/dev/null || echo "__SKIP__")
-import os, re, sys, yaml
-project_root, registry_file, fw_path = sys.argv[1], sys.argv[2], sys.argv[3]
-data = yaml.safe_load(open(registry_file)) or {}
-jobs = data.get('jobs', [])
-slug = re.sub(r'[^a-z0-9_-]', '-', os.path.basename(project_root).lower())
-cron_source = os.path.join(project_root, '.context', 'cron', 'agentic-audit.crontab')
-cron_install = f'/etc/cron.d/agentic-audit-{slug}'
-lines = [
-    f'# Agentic Engineering Framework — Scheduled Jobs (managed by cron-registry.yaml)',
-    f'# Source of truth: {cron_source} (git-tracked)',
-    f'# Installed to: {cron_install}',
-    f'# Project: {project_root}',
-    'SHELL=/bin/bash',
-    'PATH=/usr/local/bin:/usr/bin:/bin',
-    '',
-]
-for job in jobs:
-    schedule = job.get('schedule', '')
-    command = job.get('command', '')
-    name = job.get('name', '')
-    status = job.get('status', 'active')
-    if 'fw ' in command:
-        resolved = re.sub(r'\bfw\b', f'"{fw_path}"', command)
-        resolved = f'cd "{project_root}" && PROJECT_ROOT="{project_root}" {resolved}'
-    else:
-        resolved = f'cd "{project_root}" && {command}'
-    if '2>&1 | logger' not in resolved and '2>/dev/null' not in resolved:
-        resolved += ' 2>&1 | logger -t agentic-cron'
-    elif '2>/dev/null' in resolved:
-        resolved = resolved.replace('2>/dev/null', '2>&1 | logger -t agentic-cron')
-    lines.append(f'# {name}')
-    if status == 'paused':
-        lines.append(f'# PAUSED: {schedule} root {resolved}')
-    else:
-        lines.append(f'{schedule} root {resolved}')
-    lines.append('')
-sys.stdout.write('\n'.join(lines))
-PY
+        _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$PROJECT_ROOT" "$_cron_registry" "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo "__SKIP__")
         if [ "$_cron_dry_run" != "__SKIP__" ] && [ -n "$_cron_dry_run" ]; then
             _cron_on_disk=$(cat "$_cron_source" 2>/dev/null)
             if [ "$_cron_dry_run" != "$_cron_on_disk" ]; then
