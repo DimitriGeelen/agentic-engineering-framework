@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1966: L-415 sweep: replace hard-coded test counts in 4 task ## Verification blocks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-20T19:15:54Z
+# ============================================================================
+
+task_id: T-1966
+task_name: "L-415 sweep: replace hard-coded test counts in 4 task ## Verification blocks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-20T19:12:54Z
+completed: 2026-05-20T19:15:49Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'T-1909 verification: `grep -q "4 passed"` replaced with count-agnostic regex (line 122)'
+  - 'T-1928 verification: `grep -q "5 passed"` replaced with count-agnostic regex (line 69)'
+  - 'T-1929 verification: `grep -c ''8 passed''` replaced with count-agnostic regex (line 68)'
+  - 'T-1930 verification: `grep -c ''7 passed''` replaced with count-agnostic regex (line 66)'
+  - 'Detector sweep clean: scan returns 0 instances of the brittle pattern (`grep -qE ''[0-9]+ passed'' .tasks/active/T-{1909,1928,1929,1930}-*.md` matches 4 updated lines; `grep -E "grep[[:space:]]+-[qc]?[[:space:]]*[''\"][0-9]+ passed"` on the same 4 returns nothing)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [verification, brittle-test, L-415-followup, arc:bvp]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1966-l-415-sweep-replace-hard-coded-test-coun.md
+generated_by: context-agent-hybrid

@@ -3163,3 +3163,24 @@ X'` returning empty group."
   context: "T-1955 was filed during human BVP arc review as '/bvp?mode=proposed renders 0 of 88 scored tasks'. Investigation after T-1954 (perf cache) landed: /bvp already ships 94 proposed task points and they render as outlined dots across all four quadrants — verified via Playwright screenshot. The original symptom was the 17.9s perf timeout, not a missing-data bug. Closing T-1955 as resolved-by-T-1954 with screenshot evidence saved ~3-4 hours of speculative ?mode= filter implementation that would have been a no-op for the current 0-confirmed corpus."
   application: "When a 'data not showing' bug is filed adjacent to a known perf issue, run the screenshot check before writing AC pseudocode. Don't pre-commit to a feature scope based on the bug's original framing — the framing may have been driven by the perf symptom. Capture honest N/A markers for ACs that no longer apply, with brief explanation. The pattern is: investigate → write evidence → reframe ACs honestly → close-as-resolved-by-upstream. Distinct from 'just close it' because the [REVIEW] Human AC asks the filer to confirm the resolution actually matches what they see."
   related: [L-411]
+- id: L-413
+  learning: "Duplicate ## Evolution section pattern: arc-tagged build tasks left an empty '## Evolution' header from the template stub above the filled '## Evolution\\n### YYYY-MM-DD - ...' section. The Evolution completion gate (T-1718) reads the first occurrence and refuses with empty-section. Fix: scrub the duplicate template header (replace 'empty stub + commented template + filled real' with just 'filled real'). Hit 4 times in single batch: T-1937, T-1938, T-1940, T-1941. Detector: grep -c '^## Evolution' on .tasks/active/T-19[0-9]*.md should equal 1 not 2."
+  source: P-011
+  task: T-1687
+  date: 2026-05-20
+  context: Added via context agent
+  application: TBD
+- id: L-414
+  learning: "AC parser section blindness: bin/fw task update --status work-completed counted only 1 AC total on T-1941 — the [REVIEW] AC under ### Human — and reported it as 'agent AC unchecked', ignoring 7 ticked Agent ACs at lines 84-90. The 7 [x] Agent ACs are above ### Human header at line 92, so the parser likely scopes only to the LAST ###-section before the next ## heading. Workaround: --skip-acceptance-criteria after manual verification. Real fix: parser should accumulate ACs across all ### sub-sections under ## Acceptance Criteria, classifying by section. Should file as G-class concern or a task for update-task.sh AC parser."
+  source: P-010
+  task: T-1687
+  date: 2026-05-20
+  context: Added via context agent
+  application: TBD
+- id: L-415
+  learning: "Hard-coded test-count in task ## Verification commands is brittle across sibling task additions. Pattern: 'grep -c \"17 passed\"' in T-1922 verification; T-1935 later added 26 tests to the same file → grep returned 0 → T-1922 completion gate blocked. Hit twice in one session (T-1922 and T-1923) for the same reason. Sibling tasks routinely add tests to a shared file (test_bvp_estimator.py grew 17 → 28 → 43 across 3 slices); whoever closes the parent task last is the one who pays. Fix pattern: use count-agnostic regex like 'grep -qE \"[0-9]+ passed\" <<<$out && ! grep -qE \"[0-9]+ failed\" <<<$out' — accepts any positive count, refuses any failed count, uses here-string to dodge SIGPIPE under pipefail. Detector: grep -rE '[0-9]+ passed' .tasks/ surfaces remaining instances for cleanup."
+  source: P-011
+  task: T-1687
+  date: 2026-05-20
+  context: Added via context agent
+  application: TBD

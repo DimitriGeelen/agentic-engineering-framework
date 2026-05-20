@@ -119,7 +119,7 @@ WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); cur
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/tasks?view=board" 2>&1); grep -q 'class="arc-badge"' <<<"$out"
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/tasks?view=list" 2>&1); grep -q '<th>Arc</th>' <<<"$out"
 WT_URL=$(bin/fw watchtower url 2>/dev/null || echo "http://localhost:3000"); out=$(curl -sf "$WT_URL/arcs/arc-grooming" 2>&1); grep -q '<th>Arc</th>' <<<"$out"
-out=$(bin/fw test playwright tests/playwright/test_arc_badge.py 2>&1); grep -q "4 passed" <<<"$out"
+out=$(bin/fw test playwright tests/playwright/test_arc_badge.py 2>&1); grep -qE '[0-9]+ passed' <<<"$out" && ! grep -qE '[0-9]+ failed' <<<"$out"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

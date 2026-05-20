@@ -63,7 +63,7 @@ Brings BVP signals into the existing arc detail page. Render-surface, [REVIEW] H
 grep -q "approve-driver\|approve_driver" web/blueprints/arcs.py
 grep -q "scoped_drivers\|proposed_scoped" web/blueprints/arcs.py
 out=$(curl -sf "$(bin/fw watchtower url)/arcs/value-prioritisation" 2>&1 || true); [ "$(printf %s "$out" | grep -cE 'BVP signals|bvp-signals')" -ge 1 ]
-out=$(bin/fw test playwright -- tests/playwright/test_arc_detail_bvp.py 2>&1 || true); [ "$(printf %s "$out" | grep -c '7 passed')" -ge 1 ]
+out=$(bin/fw test playwright -- tests/playwright/test_arc_detail_bvp.py 2>&1 || true); grep -qE '[0-9]+ passed' <<<"$out" && ! grep -qE '[0-9]+ failed' <<<"$out"
 
 ## Recommendation
 

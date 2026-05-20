@@ -66,7 +66,7 @@ test -f web/blueprints/bvp.py
 test -f web/templates/bvp.html
 grep -q "bvp_bp\|web.blueprints.bvp" web/blueprints/__init__.py
 out=$(curl -sf "$(bin/fw watchtower url)/bvp" 2>&1); echo "$out" | grep -qi "quadrant\|scatter"
-bin/fw test playwright -- tests/playwright/test_bvp_scatter.py 2>&1 | grep -q "5 passed"
+out=$(bin/fw test playwright -- tests/playwright/test_bvp_scatter.py 2>&1); grep -qE '[0-9]+ passed' <<<"$out" && ! grep -qE '[0-9]+ failed' <<<"$out"
 
 ## Recommendation
 

@@ -65,7 +65,7 @@ grep -q "bvp-slider\|type=\"range\"" web/templates/bvp.html
 grep -q "fetch\|XMLHttpRequest" web/templates/bvp.html
 grep -q "bvp_commit_weights\|commit-weights" web/blueprints/bvp.py
 out=$(curl -sf "$(bin/fw watchtower url)/bvp" 2>&1 || true); [ "$(printf %s "$out" | grep -cE 'bvp-sliders|Live weight sliders|bvp-commit-form')" -ge 1 ]
-out=$(bin/fw test playwright -- tests/playwright/test_bvp_sliders.py 2>&1 || true); [ "$(printf %s "$out" | grep -c '8 passed')" -ge 1 ]
+out=$(bin/fw test playwright -- tests/playwright/test_bvp_sliders.py 2>&1 || true); grep -qE '[0-9]+ passed' <<<"$out" && ! grep -qE '[0-9]+ failed' <<<"$out"
 
 ## Recommendation
 
