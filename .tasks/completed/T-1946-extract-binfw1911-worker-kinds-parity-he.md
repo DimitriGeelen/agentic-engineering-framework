@@ -6,12 +6,12 @@ description: >
   extract bin/fw:1911 worker-kinds parity heredoc to lib + bats lint enforcing zero
   heredoc-in-cmd-sub
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: [arc:value-prioritisation, future-prevention, L-332, L-408, refactor, lint]
-components: [bin-fw]
+components: [bin/fw, lib/worker_kinds_parity.py, tests/unit/test_bin_fw_no_heredoc_cmd_sub.bats]
 related_tasks: [T-1944, T-1945, T-1735, T-1734, T-1629]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T06:40:25Z
-last_update: '2026-05-20T06:45:01Z'
-date_finished:
+last_update: 2026-05-20T06:46:49Z
+date_finished: 2026-05-20T06:46:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -253,3 +253,20 @@ test "$(grep -cE '\$\([^)]*<<' bin/fw)" -eq 0
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1946-extract-binfw1911-worker-kinds-parity-he.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-c708a7ff
+- **Timestamp:** 2026-05-20T06:48:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `bin/fw doctor` invokes the helper as `python3 "$FRAMEWORK_ROOT/lib/worker_kinds_parity.py" "$FW_LIB_DIR"`; the OK/WARN/FAIL surface output is byte-identical to the pre-extraction form.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=FRAMEWORK_ROOT/lib/worker_kinds_parity.py in: `bin/fw doctor` invokes the helper as `python3 "$FRAMEWORK_ROOT/lib/worker_kinds_parity.py" "$FW_LIB_DIR"`; the OK/WARN/FAIL surface output is byte-id`
+
+### 2026-05-20T06:46:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
