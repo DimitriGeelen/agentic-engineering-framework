@@ -1,10 +1,17 @@
 ---
 id: T-1953
-name: "G-064 gauge timezone fix — CRON_HOUR_UTC mismatches actual cron fire (crontab uses LOCAL time)"
+name: "G-064 gauge timezone fix — CRON_HOUR_UTC mismatches actual cron fire (crontab
+  uses LOCAL time)"
 description: >
-  tools/g064-readiness.py defines CRON_HOUR_UTC=5 expecting UTC 05:33 fires, but /etc/cron.d/agentic-audit '33 5 * * *' is interpreted as LOCAL time. On this host (+02:00 summer) actual UTC fire is 03:33. Net effect: NO dispatch row ever matches the cron window — gauge structurally cannot detect cron-fire from dispatch.jsonl. Fix: make window check TZ-aware (convert dt to local before comparing) OR parameterise the cron schedule via env. Tests need TZ-portability fix too. Surfaced during T-1952 (v0.5 LATEST fallback) which masked but didn't fix the underlying TZ bug.
+  tools/g064-readiness.py defines CRON_HOUR_UTC=5 expecting UTC 05:33 fires, but /etc/cron.d/agentic-audit
+  '33 5 * * *' is interpreted as LOCAL time. On this host (+02:00 summer) actual UTC
+  fire is 03:33. Net effect: NO dispatch row ever matches the cron window — gauge
+  structurally cannot detect cron-fire from dispatch.jsonl. Fix: make window check
+  TZ-aware (convert dt to local before comparing) OR parameterise the cron schedule
+  via env. Tests need TZ-portability fix too. Surfaced during T-1952 (v0.5 LATEST
+  fallback) which masked but didn't fix the underlying TZ bug.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +23,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T10:23:14Z
-last_update: 2026-05-20T10:23:14Z
-date_finished: null
+last_update: 2026-05-20T10:28:44Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +35,38 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-20T10:28:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1953: G-064 gauge timezone fix — CRON_HOUR_UTC mismatches actual cron fire (crontab uses LOCAL time)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`tools/g064-readiness.py` defines `CRON_HOUR_UTC=5, CRON_MIN_UTC=33` matching crontab `33 5 * * *`. But cron interprets the crontab schedule as LOCAL time, not UTC. On non-UTC hosts (e.g. Europe/Amsterdam +02:00 summer), the actual UTC fire is 03:33 — outside the 05:33±5min window. Net: NO dispatch row from a real cron fire is ever flagged as cron-source. Bug is structurally invisible until T-1952's v0.5 fallback made it observable.
+
+Origin: T-1952 build (2026-05-20) surfaced this when patched gauge correctly read the v0.5 LATEST timestamp (`generated: 2026-05-20T03:33:01+00:00`) but the cron-window check still didn't fire because the constant was wrong.
+
+Related: L-411 (idempotent-cron observability blindspot) + L-364 (cron registry/generated/deployed three-stage drift class).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_is_cron_firing()` converts dt to LOCAL time and compares against local-time-based constants (matching crontab semantics), OR accepts the cron schedule as injected parameter
+- [ ] Constants renamed/redocumented to reflect LOCAL interpretation (e.g. `CRON_HOUR_LOCAL`)
+- [ ] Existing tests refactored to be TZ-portable (use timestamps that translate to local cron window regardless of test runner TZ; OR force `TZ=UTC` in pytest fixture)
+- [ ] New test asserts that a dt at UTC 03:33 is recognized as cron-firing when the system TZ is +02:00 (covers the T-1952-discovered bug case)
+- [ ] `python3 tools/g064-readiness.py` on this host shows `cron_firings: >0` once any real dispatch happens (currently 0 even after idempotency clears, until this fix lands)
+- [ ] T-1952's KNOWN BUG docstring note removed once fix lands
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,3 +193,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1953-g-064-gauge-timezone-fix--cronhourutc-mi.md
 - **Context:** Initial task creation
+
+### 2026-05-20T10:28:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
