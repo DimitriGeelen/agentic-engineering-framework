@@ -1,10 +1,15 @@
 ---
 id: T-1965
-name: "BVP driver remove form — /api/bvp/driver/remove POST + per-row remove button (T-1958 B)"
+name: "BVP driver remove form — /api/bvp/driver/remove POST + per-row remove button
+  (T-1958 B)"
 description: >
-  T-1958 build child B: web/blueprints/bvp.py /api/bvp/driver/remove POST + remove button per free-driver row in weight-sliders table. Shell-out: `bin/fw bvp driver --remove Dn --rationale '...' --from-watchtower`. Confirm prompt: 'free drivers only; D1-D4 cannot be removed' — backend refuses Dn matching D1-D4 with 400 surfacing the protected-driver message.
+  T-1958 build child B: web/blueprints/bvp.py /api/bvp/driver/remove POST + remove
+  button per free-driver row in weight-sliders table. Shell-out: `bin/fw bvp driver
+  --remove Dn --rationale '...' --from-watchtower`. Confirm prompt: 'free drivers
+  only; D1-D4 cannot be removed' — backend refuses Dn matching D1-D4 with 400 surfacing
+  the protected-driver message.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: now
@@ -16,8 +21,8 @@ related_tasks: [T-1958, T-1964]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T17:57:47Z
-last_update: 2026-05-20T17:57:47Z
-date_finished: null
+last_update: 2026-05-20T18:08:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +33,45 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-20T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-20T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1965: BVP driver remove form — /api/bvp/driver/remove POST + per-row remove button (T-1958 B)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1958 GO (driver CRUD belongs in Watchtower) → T-NEW-B: per-row remove button for free drivers in the live weight sliders table. Mirrors T-1964 (add form) but inline per-row to keep visual locality with the slider it's removing. Server refuses Dn ∈ {D1..D4} with 400 (D1-D4 immutable in identity).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `/api/bvp/driver/remove` POST route exists in `web/blueprints/bvp.py` and shells `bin/fw bvp driver --remove Fn --rationale "<R>" --from-watchtower`
+- [ ] Server-side validation matches CLI: driver id `[A-Za-z][A-Za-z0-9_-]*`, D1-D4 rejected with 400 (protected drivers), rationale ≥30 chars
+- [ ] `web/templates/bvp.html` renders a Remove button in each free-driver row of the weight sliders table (visible only on rows where `driver_id` does NOT start with `D`)
+- [ ] Click handler prompts for rationale (≥30 chars), confirms ("free drivers only; D1-D4 cannot be removed"), then POSTs to `/api/bvp/driver/remove`
+- [ ] Successful remove returns JSON `{ok: true, message, removed}` 200; validation errors return plain-text 400
+- [ ] Route is registered (Flask URL map includes `/api/bvp/driver/remove`)
+- [ ] Remove smoke: F1 added via T-1964 form → removed via T-1965 form → policy file shows `free_drivers: []`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,3 +198,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1965-bvp-driver-remove-form--apibvpdriverremo.md
 - **Context:** Initial task creation
+
+### 2026-05-20T18:08:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

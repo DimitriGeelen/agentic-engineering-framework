@@ -45,6 +45,96 @@
       <div id="bvp-commit-result" style="margin-top: 0.5rem;"></div>
     </form>
   </section>
+
+  {# ── T-1964 (T-1958 A): add free driver form ── #}
+  <section id="bvp-driver-add" style="margin: 1rem 0 1.5rem 0;">
+    <h3>Add free driver</h3>
+    <p class="muted">
+      Add a free driver (D1-D4 are protected — immutable in identity). Total drivers cap at 9 (M1).
+      At cap, you must <em>drop</em> an existing free driver to add a new one (add-one-drop-one).
+      §ACD: posted via <code>fw bvp driver --add --from-watchtower</code>. Rationale ≥30 chars (R6).
+    </p>
+    <form id="bvp-driver-add-form" method="POST" action="/api/bvp/driver/add">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <table style="width:100%; max-width:48rem;">
+        <tr>
+          <td style="width:9rem;"><label for="da-name">Name (slug):</label></td>
+          <td>
+            <input type="text" id="da-name" name="name" required
+                   pattern="[A-Za-z][A-Za-z0-9_-]*"
+                   title="Letters, digits, underscore, hyphen. Must start with a letter."
+                   placeholder="e.g. estimator-fidelity" style="width:100%;">
+          </td>
+        </tr>
+        <tr>
+          <td><label for="da-weight">Weight (0-9):</label></td>
+          <td>
+            <input type="range" id="da-weight" name="weight" min="0" max="9" value="3"
+                   oninput="document.getElementById('da-weight-display').textContent = this.value;">
+            <span id="da-weight-display" style="margin-left:0.5rem;"><strong>3</strong></span>
+          </td>
+        </tr>
+        <tr>
+          <td><label for="da-rationale">Rationale:</label></td>
+          <td>
+            <textarea id="da-rationale" name="rationale" rows="2" minlength="30" required
+                      style="width:100%;"
+                      placeholder="What does this driver distinguish that global D1-D4 do not? (D6 quality criterion, ≥30 chars)"></textarea>
+          </td>
+        </tr>
+        {% if weights|length >= 9 %}
+        <tr id="da-drop-row">
+          <td><label for="da-drop">Drop (M1 add-one-drop-one):</label></td>
+          <td>
+            <select id="da-drop" name="drop" required>
+              <option value="">— select existing free driver to drop —</option>
+              {% for d_id in weights.keys() %}
+                {% if not d_id.startswith('D') %}
+                <option value="{{ d_id }}">{{ d_id }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+            <small class="muted">Total drivers = {{ weights|length }} (cap=9). D1-D4 cannot be dropped.</small>
+          </td>
+        </tr>
+        {% endif %}
+      </table>
+      <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+        <button type="submit" id="da-submit-btn">Add driver</button>
+        <span id="da-result" class="muted"></span>
+      </div>
+    </form>
+    <script>
+      (function() {
+        const form = document.getElementById('bvp-driver-add-form');
+        if (!form) return;
+        form.addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          const result = document.getElementById('da-result');
+          result.textContent = 'Adding…';
+          result.style.color = '';
+          try {
+            const fd = new FormData(form);
+            const resp = await fetch(form.action, { method: 'POST', body: fd });
+            const text = await resp.text();
+            if (resp.ok) {
+              let payload;
+              try { payload = JSON.parse(text); } catch { payload = { message: text }; }
+              result.textContent = '✓ ' + (payload.message || 'Driver added.') + ' Reloading…';
+              result.style.color = 'green';
+              setTimeout(() => window.location.reload(), 800);
+            } else {
+              result.textContent = '✗ ' + text;
+              result.style.color = '#b00';
+            }
+          } catch (e) {
+            result.textContent = '✗ Network error: ' + e.message;
+            result.style.color = '#b00';
+          }
+        });
+      })();
+    </script>
+  </section>
   {% endif %}
 
   {% if empty %}

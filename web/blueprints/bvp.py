@@ -465,6 +465,61 @@ def bvp_commit_weights():
     return json.dumps({"committed": results, "count": len(results)}), 200, {"Content-Type": "application/json"}
 
 
+@bp.route("/api/bvp/driver/add", methods=["POST"])
+def bvp_driver_add():
+    """T-1964 (T-1958 A): add a free driver via `fw bvp driver --add`.
+
+    Form fields:
+      name      : str (regex [A-Za-z][A-Za-z0-9_-]*)
+      weight    : int (0-9)
+      rationale : str (≥30 chars, R6)
+      drop      : str (optional; required when total drivers = cap=9, M1 add-one-drop-one)
+
+    Validations mirror `lib/bvp.sh:_driver_add` so the form surfaces the same
+    refusals the CLI does. §ACD authority + history audit stay in fw.
+    """
+    name = (request.form.get("name") or "").strip()
+    weight_raw = (request.form.get("weight") or "").strip()
+    rationale = (request.form.get("rationale") or "").strip()
+    drop_id = (request.form.get("drop") or "").strip() or None
+
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", name):
+        return "Bad driver name: must match [A-Za-z][A-Za-z0-9_-]*", 400
+    try:
+        weight = int(weight_raw)
+    except ValueError:
+        return "Bad weight: must be an integer 0-9", 400
+    if not 0 <= weight <= 9:
+        return f"Weight {weight} out of range (0-9)", 400
+    if len(rationale) < 30:
+        return "Rationale must be ≥30 characters (R6).", 400
+    if drop_id and drop_id.startswith("D"):
+        return f"Cannot drop protected driver {drop_id} (D1-D4 are immutable in identity).", 400
+
+    cmd = [
+        "bin/fw", "bvp", "driver",
+        "--add", name,
+        "--weight", str(weight),
+        "--rationale", rationale,
+        "--from-watchtower",
+    ]
+    if drop_id:
+        cmd.extend(["--drop", drop_id])
+    try:
+        result = subprocess.run(
+            cmd, cwd=str(PROJECT_ROOT),
+            capture_output=True, text=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError) as e:
+        return f"Subprocess error: {e}", 500
+    if result.returncode != 0:
+        err = (result.stderr or result.stdout or "").strip()
+        first = err.splitlines()[0] if err else f"fw bvp driver --add exited {result.returncode}"
+        return f"Add failed: {first}", 400
+    out = (result.stdout or "").strip()
+    return json.dumps({"ok": True, "message": out, "name": name, "weight": weight, "dropped": drop_id}), 200, {"Content-Type": "application/json"}
+
+
 @bp.route("/bvp")
 def bvp_scatter():
     policy = _load_policy()
