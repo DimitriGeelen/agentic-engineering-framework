@@ -1906,34 +1906,11 @@ else:
     # T-1734 closed a 5-month silent drift between these two tables; this check is
     # the runtime witness that prevents recurrence. After T-1807 the lint logic
     # moved from bin/fw heredoc into lib/workflow_lint.py — the parity comparison
-    # now lives between the two python modules directly.
+    # now lives between the two python modules directly. T-1946 (2026-05-20)
+    # extracted the inline heredoc to lib/worker_kinds_parity.py per L-332/L-408
+    # (last remaining heredoc-in-command-substitution site in bin/fw).
     local _wkp_out
-    _wkp_out=$(python3 - <<PYEOF 2>/dev/null
-import sys
-sys.path.insert(0, "$FW_LIB_DIR")
-try:
-    from resolver import VALID_WORKER_KINDS as resolver_set
-except Exception as e:
-    print(f"FAIL|cannot import lib/resolver.py: {e}")
-    sys.exit(0)
-try:
-    from workflow_lint import VALID_WORKER_KINDS as lint_set
-except Exception as e:
-    print(f"FAIL|cannot import lib/workflow_lint.py: {e}")
-    sys.exit(0)
-only_lint = lint_set - resolver_set
-only_resolver = resolver_set - lint_set
-if not only_lint and not only_resolver:
-    print(f"OK|{sorted(lint_set)}")
-else:
-    diff_parts = []
-    if only_lint:
-        diff_parts.append(f"only in lib/workflow_lint.py: {sorted(only_lint)}")
-    if only_resolver:
-        diff_parts.append(f"only in lib/resolver.py: {sorted(only_resolver)}")
-    print(f"WARN|drift detected — {'; '.join(diff_parts)}")
-PYEOF
-)
+    _wkp_out=$(python3 "$FRAMEWORK_ROOT/lib/worker_kinds_parity.py" "$FW_LIB_DIR" 2>/dev/null)
     case "$_wkp_out" in
         OK\|*)
             local _wkp_set="${_wkp_out#OK|}"
