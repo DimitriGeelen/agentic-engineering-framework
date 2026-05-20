@@ -273,16 +273,18 @@
 
         /* T-1909: arc-membership badge — surfaced wherever a task is rendered. */
         .arc-badge {
-            /* T-1968: text color was var(--pico-secondary), which in dark mode
-               is a blue-ish that has no contrast against --pico-secondary-background
-               (also blue-ish in dark mode). Use --pico-color (main text colour)
-               to guarantee contrast against the subtle pill background. */
+            /* T-1968 v2: Playwright check showed v1 (color: var(--pico-color))
+               resolved to the Pico LINK color inside <a> (the badge is an <a>),
+               not the page text color — still produced dark-blue-on-dark-slate.
+               Real fix: --pico-secondary-inverse (white) — the actual contrast
+               partner of --pico-secondary-background. Same color as the
+               existing :hover rule, so rest and hover match in legibility. */
             display: inline-flex;
             align-items: center;
             padding: 0.1rem 0.45rem;
             border-radius: 999px;
             background: var(--pico-secondary-background);
-            color: var(--pico-color);
+            color: var(--pico-secondary-inverse);
             font-size: 0.72rem;
             font-weight: 600;
             text-decoration: none;
