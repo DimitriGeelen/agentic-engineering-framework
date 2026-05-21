@@ -144,3 +144,51 @@ YAML
     [[ "$output" == *"remove-driver"* ]]
     [[ "$output" == *"T-1976"* ]]
 }
+
+# ── T-1976 latent-bug regression: arc_approve_driver --rationale acceptance ──
+#
+# Pre-existing gap surfaced during T-1976 round-trip: the Watchtower forms
+# (both /approve-driver from Proposed and /add-driver from custom) pass
+# `--rationale R` but the CLI argparse rejected it with "Unexpected arg:
+# --rationale". This pinned the contract: the verb accepts --rationale and
+# persists it on the scoped_drivers entry.
+
+setup_approve_fixture() {
+    cat > "$ARCS_DIR/approve-fixture.yaml" <<'YAML'
+id: arc-291
+slug: approve-fixture
+name: "Approve fixture"
+description: test fixture
+status: in-progress
+anchor_task: T-9992
+created: 2026-01-01T00:00:00Z
+constituent_tasks: []
+scoped_drivers: []
+proposed_scoped_drivers: []
+YAML
+}
+
+@test "T-1976: arc_approve_driver accepts --rationale flag (was 'Unexpected arg')" {
+    setup_approve_fixture
+    run arc_approve_driver "approve-fixture" "rationale-driver" --weight 3 --rationale "rationale should be accepted and persisted on the entry per R6 friction"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"rationale-driver"* ]]
+    # Persisted: rationale field on the scoped_drivers entry
+    run grep -c "rationale:" "$ARCS_DIR/approve-fixture.yaml"
+    [ "$output" -ge 1 ]
+}
+
+@test "T-1976: arc_approve_driver persists rationale text verbatim" {
+    setup_approve_fixture
+    run arc_approve_driver "approve-fixture" "alpha" --weight 4 --rationale "this rationale string should round-trip into the yaml verbatim"
+    [ "$status" -eq 0 ]
+    run grep -F "this rationale string should round-trip into the yaml verbatim" "$ARCS_DIR/approve-fixture.yaml"
+    [ "$status" -eq 0 ]
+}
+
+@test "T-1976: arc_approve_driver without --rationale still works (back-compat)" {
+    setup_approve_fixture
+    run arc_approve_driver "approve-fixture" "no-rationale-driver" --weight 3
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"no-rationale-driver"* ]]
+}

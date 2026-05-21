@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T10:03:43Z
-last_update: 2026-05-21T10:03:43Z
-date_finished: null
+last_update: '2026-05-21T10:15:02Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,6 +29,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-21T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-21T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1976: arc-scoped driver add/remove parity with global /bvp
@@ -90,6 +111,11 @@ python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
 - **What changed:** T-1958 inception's "wait for first cycle in the wild" condition has been met — human raised the gap from the field while reviewing arc-006.
 - **Plan impact:** Scope locked to symmetry with global add/remove (T-1964/T-1965). Explicitly NOT in scope: bulk-edit, edit-in-place (weight/rationale change), arc-scoped weight sliders. Those are follow-ups if and when needed.
 - **Triggered:** This task; no sub-tasks pre-filed.
+
+### 2026-05-21 — Latent --rationale rejection surfaced by round-trip
+- **What changed:** Human round-trip on `/arcs/value-prioritisation` hit `Unexpected arg: --rationale` from `arc_approve_driver`. Root cause: pre-existing — the verb never accepted `--rationale`, but both the existing `/api/arc/<id>/approve-driver` (T-1926 Proposed-driver Approve buttons) and the new T-1976 `/api/arc/<id>/add-driver` shell to it WITH `--rationale R`. The Approve-from-Proposed path had been latent-broken since T-1926 shipped; T-1976 round-trip exposed it.
+- **Plan impact:** Added `--rationale` parsing to `arc_approve_driver` + persists it on the scoped_drivers entry. Three new bats tests pin: accepts flag, persists verbatim, back-compat without flag. No existing test exercised this contract (gap that allowed T-1926's break to ship undetected). Same class as L-417 — satellite text/test references not updated when shape changes.
+- **Triggered:** Bats coverage for `arc_approve_driver` + `--rationale` now in place; verb signature aligned with web layer expectation.
 
 ### 2026-05-21 — Remove-form rendering vs route-existence pin
 - **What changed:** Production `value-prioritisation` arc has zero approved scoped drivers, so the Remove-button DOM branch can't render against the live page. Two paths considered: (a) seed a fixture into the live arc just for the test, (b) split the Remove pin between bats-on-fixture (verb behavior) + Playwright route-existence (server validation refusals).

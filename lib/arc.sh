@@ -1108,11 +1108,12 @@ arc_dispatch() {
 # ordering decision.
 
 arc_approve_driver() {
-    local id="" name="" weight="" justification="" want_none=false
+    local id="" name="" weight="" rationale="" justification="" want_none=false
     local i_am_human=false from_watchtower=false
     while [ $# -gt 0 ]; do
         case "$1" in
             --weight) weight="$2"; shift 2;;
+            --rationale) rationale="$2"; shift 2;;        # T-1976: persist rationale on scoped_drivers entry
             --none) want_none=true; shift;;
             --justification) justification="$2"; shift 2;;
             --i-am-human) i_am_human=true; shift;;
@@ -1201,7 +1202,7 @@ for sd in (d.get('scoped_drivers') or []):
     fi
 
     # Append + flip-if-draft via python (preserves YAML structure).
-    python3 - "$f" "$name" "$w" <<'PY'
+    python3 - "$f" "$name" "$w" "$rationale" <<'PY'
 import sys, datetime
 try:
     from ruamel.yaml import YAML
@@ -1211,7 +1212,7 @@ except ImportError:
     import yaml
     HAS_RUAMEL = False
 
-fn, name, weight = sys.argv[1], sys.argv[2], int(sys.argv[3])
+fn, name, weight, rationale = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
 
 if HAS_RUAMEL:
     with open(fn) as fh: data = yaml_r.load(fh)
@@ -1221,7 +1222,10 @@ else:
 
 sd = data.get('scoped_drivers') or []
 ts = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')
-sd.append({'name': name, 'weight': weight, 'approved_at': ts})
+entry = {'name': name, 'weight': weight, 'approved_at': ts}
+if rationale:
+    entry['rationale'] = rationale
+sd.append(entry)
 data['scoped_drivers'] = sd
 
 if data.get('status') == 'draft':
