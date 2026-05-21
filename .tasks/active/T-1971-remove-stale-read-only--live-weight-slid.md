@@ -115,10 +115,8 @@ Discovered during T-1915 demo-evidence capture for arc-006 closure — visible i
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# Re-verify the swap end-to-end against the live Watchtower
-out=$(curl -s http://localhost:3000/bvp 2>&1)
-echo "$out" | grep -q "Drag a slider below to preview re-ranking"
-! echo "$out" | grep -q "Read-only — live weight sliders ship in T-1929"
+# Re-verify the swap end-to-end against the live Watchtower (single line — gate runs each line separately)
+out=$(curl -s http://localhost:3000/bvp 2>&1); grep -q "Drag a slider below to preview re-ranking" <<<"$out" && ! grep -q "Read-only — live weight sliders ship in T-1929" <<<"$out"
 
 ## RCA
 
