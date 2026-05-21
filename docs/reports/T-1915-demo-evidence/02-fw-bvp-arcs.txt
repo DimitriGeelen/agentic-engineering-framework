@@ -1,0 +1,7 @@
+ARC      SLUG                     STATUS         BVP   NORM  SOURCE             NAME
+------------------------------------------------------------------------------------------------
+arc-002  embeddings-strategy      in-progress     63   0.53  derived-proposed   Embeddings generation strategy — retriev
+arc-005  arc-grooming             in-progress     59   0.49  derived-proposed   Arc grooming — canonicalisation, lifecyc
+arc-003  orchestrator-rethink     in-progress     54   0.45  derived-proposed   Orchestrator routing rethink
+arc-004  project-shape-resilience in-progress     47   0.39  derived-proposed   Project-shape resilience — kill the cons
+arc-006  value-prioritisation     draft           47   0.39  derived-proposed   Value prioritisation — Business Value Po

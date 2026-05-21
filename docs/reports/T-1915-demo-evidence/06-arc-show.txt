@@ -1,0 +1,100 @@
+id: arc-006
+slug: value-prioritisation
+name: "Value prioritisation \u2014 Business Value Points + directive-weighted scoring"
+description: "HANDOFF-value-prioritisation-2026-05-15. Inception T-1915 (recommendation GO; arc-grooming\
+  \ dependency satisfied). Build slices T-NEW-2..15 filed after decide-go."
+status: draft
+anchor_task: T-1915
+headline_mechanic: "agent runs fw bvp \u2192 sees directive-weighted scores (D1/D2/D3/D4 weights 9/7/5/3)\
+  \ + composite cost (blast_radius \xD7 0.6 + tier \xD7 0.3 + effort \xD7 0.1); fw\
+  \ bvp arcs ranks arcs by global drivers; fw arc approve-driver flips draft \u2192\
+  \ in-progress; fw bvp confirm moves proposed \u2192 confirmed; Watchtower /bvp shows\
+  \ quadrant scatter with live weight sliders; auto-promote off by default"
+demo_evidence: null
+created: 2026-05-18T22:58:05Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields backfilled to align
+# with new arc-creation defaults. Semantics in docs/reports/T-1915-bvp-inception.md.
+bvp_scores: {}
+scoped_drivers: []
+# T-1957: arc-006 self-application. Primary-agent driver proposal per T-1925
+# workflow (5-step). Three candidates; human approves ≤3 via `fw arc approve-driver
+# value-prioritisation "<name>" --weight N --i-am-human|--from-watchtower` or
+# rejects all with `fw arc approve-driver value-prioritisation --none --justification "..."`.
+# Each rationale articulates what the driver distinguishes that global D1-D4 do not (D6).
+proposed_scoped_drivers:
+  - name: sovereignty-preservation
+    weight: 5
+    source: agent
+    ts: '2026-05-20T12:30:00Z'
+    rationale: >-
+      Distinguishes from global D1-D4 by measuring how robustly each unit of
+      arc-006 work preserves the human's score-confirmation and weight-adjustment
+      boundary. The arc already encodes §ACD gates at `fw bvp confirm` (T-1924)
+      and `fw bvp weight` (M6) precisely because Goodhart's-law risk is acute
+      in a prioritisation system — agent-estimated scores trend toward becoming
+      de-facto authority via convenience. D2 (Reliability) asks "is the gate
+      auditable"; this driver asks "is the Sovereignty contract still credible
+      after this change shipped". Material because BVP outputs visibly rank
+      what gets worked on next; a single ergonomic shortcut around a confirm
+      gate would silently erode authority over time.
+  - name: adoption-friction
+    weight: 4
+    source: agent
+    ts: '2026-05-20T12:30:00Z'
+    rationale: >-
+      Distinguishes from global D3 (Usability) by measuring whether each unit
+      of work removes a barrier to using BVP *at all*, not whether the framework
+      is generally joyful. The arc has already produced a §ACD-pattern instance
+      (T-1934 proposed-scatter renders 0 of 88 scored tasks — perfect plumbing,
+      zero visibility, leading to T-1955). D3 cares "does the developer enjoy
+      this"; this driver cares "after this work, would a human or agent actually
+      *invoke* fw bvp / open /bvp instead of falling back to horizon: now". It
+      is a leading indicator of whether the arc itself hits its headline
+      mechanic, distinct from per-task UX polish.
+  - name: estimator-fidelity
+    weight: 3
+    source: agent
+    ts: '2026-05-20T12:30:00Z'
+    rationale: >-
+      Distinguishes from global D2 (Reliability) by measuring how well the
+      BVP heuristic estimator's scores agree with human-confirmed scores.
+      D2 cares "the estimator runs without crashing and writes audit rows";
+      this driver cares "the numbers it produces would not embarrass a human
+      reviewer". The arc encodes a v2-delta semantic (M3) where ≥2 driver-delta
+      between proposed and confirmed signals a needs-split — that is fidelity
+      measurement made operational. Without this driver, the estimator could
+      be perfectly reliable AND systematically wrong, and the global drivers
+      would never surface the divergence.
+
+─── Tasks tagged arc:value-prioritisation ───
+  T-1915 [started-work/now]  value-prioritisation: Business Value Points — directive-weighted prioritisation
+  T-1916 [work-completed/now]  Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md (risks/assumption-review/framings) + file 18 build slices under arc-006
+  T-1917 [work-completed/now]  BVP T-NEW-2: policy/value-drivers.yaml schema + initial content (D1-D4 weights 9/7/5/3, free-driver section, auto_promote off)
+  T-1918 [work-completed/now]  BVP T-NEW-3: task and arc frontmatter schema extensions (bvp_scores, bvp_scores_proposed, cost_estimate, scoped_drivers, proposed_scoped_drivers)
+  T-1919 [work-completed/now]  BVP T-NEW-4: fw bvp read-only CLI verbs (rank, detail T-<id>, arcs, --quadrant filter)
+  T-1920 [work-completed/now]  BVP T-NEW-5: fw bvp weight + fw bvp driver mutating verbs + weight history audit log (§ACD agent-gate)
+  T-1921 [work-completed/now]  BVP T-NEW-6: scoring rubric document (policy/bvp-scoring-rubric.md) — per-driver
+  T-1922 [work-completed/now]  BVP T-NEW-7a: TermLink bvp-estimator worker — harness + ready-status trigger
+  T-1923 [work-completed/now]  BVP T-NEW-7b: bvp-estimator scheduled sweep + fw resume SLA fallback (split
+  T-1924 [work-completed/now]  BVP T-NEW-8: fw bvp confirm verb — bvp_scores_proposed → bvp_scores (Sovereignty boundary, §ACD gated)
+  T-1925 [work-completed/now]  BVP T-NEW-9: document primary-agent arc-scoped-driver suggestion workflow in CLAUDE.md + AGENTS.md (D5/D6, R5 mitigation)
+  T-1926 [work-completed/now]  BVP T-NEW-10: fw arc approve-driver + fw arc show-suggestions verbs (§ACD-gated, flips draft→in-progress, weight cap ≤6)
+  T-1927 [work-completed/now]  BVP T-NEW-11: per-driver coherence audit check (fw audit warns when arc claims D_n≥4 but ≥70% constituents score D_n≤1)
+  T-1928 [work-completed/now]  BVP T-NEW-12a: Watchtower /bvp static scatter read-only (split parent T-NEW-12)
+  T-1929 [work-completed/now]  BVP T-NEW-12b: Watchtower /bvp live weight sliders + commit (split parent T-NEW-12)
+  T-1930 [work-completed/now]  BVP T-NEW-13: Watchtower /arcs/<id> extensions — arc-level BVP, coherence warnings,
+  T-1931 [work-completed/now]  BVP T-NEW-14a: auto-promote logic + log, off by default (split parent T-NEW-14, novel_mechanism)
+  T-1932 [work-completed/now]  BVP T-NEW-14b: auto-promote enabling + cron/trigger wiring (split parent T-NEW-14)
+  T-1933 [work-completed/now]  BVP T-NEW-15: canonical doc 040-ValueDrivers.md + FRAMEWORK.md glossary/Quick
+  T-1934 [work-completed/now]  BVP T-NEW-12c: /bvp scatter renders proposed scores (advisory layer)
+  T-1935 [work-completed/now]  BVP T-NEW-7c: bvp-cost-estimator — propose cost_estimate (blast_radius / tier
+  T-1937 [work-completed/now]  BVP T-1936 follow-up — fw bvp arcs CLI parity with /bvp web rollup
+  T-1938 [work-completed/now]  BVP T-1937 sibling — fw bvp / fw bvp T-XXX cost include proposed fallback
+  T-1939 [work-completed/now]  BVP T-1936/T-1937 sibling — /arcs/<slug> BVP signals use constituent rollup
+  T-1940 [work-completed/now]  BVP T-1939 sibling — Playwright pin for /arcs/<slug> bvp_mode provenance label
+  T-1941 [work-completed/now]  BVP T-1940 sibling — emit bvp_mode in /bvp scatter arc payload + tooltip
+  T-1942 [work-completed/now]  fw doctor cron registry→generated drift check (close L-364 cousin that bit
+  T-1943 [work-completed/now]  fw audit registry→generated cron drift FAIL (T-1942 audit-side sibling for
+  T-1944 [work-completed/now]  extract cron drift python heredoc to lib helper L-408 prevention
