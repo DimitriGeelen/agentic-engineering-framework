@@ -6,20 +6,20 @@ description: >
   Badge contrast sweep: fix .badge-info (invisible), .badge-ok (3.55), .badge-muted
   (4.44) — Pico-variable-name anti-pattern
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [ui, a11y, readability, badge, contrast-sweep, arc:arc-grooming]
-components: []
+components: [tests/playwright/test_badge_contrast.py, web/templates/arc_detail.html, web/templates/arcs_index.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T21:22:46Z
-last_update: '2026-05-20T21:30:02Z'
-date_finished:
+last_update: 2026-05-21T06:45:29Z
+date_finished: 2026-05-21T06:45:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -89,7 +89,7 @@ Playwright contrast scan of `/arcs/arc-006` (post T-1968 v2 ship) revealed a sib
 - [x] `.badge-muted` color changed to `var(--pico-color)` at all three sites (4.44 → 9.21)
 - [x] Playwright contrast re-scan on `/arcs/arc-006` shows the three fixed classes ≥4.5: badge-info 5.23, badge-ok 6.67, badge-muted 9.21. `/arcs` index pinned similarly: badge-info 5.23, badge-ok 6.67, badge-draft 5.21 (`badge-warn`/`badge-muted` absent from current fixtures)
 - [x] Watchtower restarted to invalidate Flask template cache
-- [x] After screenshots saved at repo root: `badge-contrast-after.png` (arc detail), `badge-contrast-arcs-after.png` (arcs index)
+- [x] After screenshots saved at `docs/reports/T-1970-evidence/`: `badge-contrast-after.png` (arc detail), `badge-contrast-arcs-after.png` (arcs index) — relocated from repo root per T-1949 cleanup (tracked via gitignore `!docs/reports/T-*-evidence/*.png` exception)
 - [x] Playwright contrast-pin test added: `tests/playwright/test_badge_contrast.py` — guards against future drift; runs computed-style sample on `/arcs/arc-006` and `/arcs` for `.badge-info|.badge-ok|.badge-muted`, asserts ≥4.5 (or skips if class absent in fixture)
 
 ### Human
@@ -280,7 +280,7 @@ is a sibling task (filed if more invisible badges surface).
 - `.badge-info`: 1.00 → 5.23 (was invisible) on `/arcs/arc-006`; 5.23 on `/arcs`
 - `.badge-ok`: 3.55 → 6.67 on both pages
 - `.badge-muted`: 4.44 → 9.21 on `/arcs/arc-006`
-- After screenshots: `badge-contrast-after.png` (arc detail full page), `badge-contrast-arcs-after.png` (arcs index viewport)
+- After screenshots: `docs/reports/T-1970-evidence/badge-contrast-after.png` (arc detail full page), `docs/reports/T-1970-evidence/badge-contrast-arcs-after.png` (arcs index viewport)
 - Pin test: `tests/playwright/test_badge_contrast.py` — 6 parametrised cases (3 classes × 2 pages), each asserts ≥4.5 with explicit `count==0` skip semantics
 - Templates: `web/templates/arc_detail.html:10-13`, `web/templates/arcs_index.html:101-104`, `web/templates/arcs_index.html:164-167` — all three sites updated
 
@@ -292,3 +292,15 @@ is a sibling task (filed if more invisible badges surface).
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1970-badge-contrast-sweep-fix-badge-info-invi.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-700aa35c
+- **Timestamp:** 2026-05-21T06:45:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-21T06:45:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

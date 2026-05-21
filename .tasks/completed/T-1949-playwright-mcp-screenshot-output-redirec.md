@@ -4,7 +4,7 @@ name: "Playwright MCP screenshot output redirect + cleanup 82 root PNGs (12 MB)"
 description: >
   Playwright MCP screenshot output redirect + cleanup 82 root PNGs (12 MB)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +16,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T09:01:05Z
-last_update: 2026-05-20T09:01:05Z
-date_finished: null
+last_update: 2026-05-21T08:59:53Z
+date_finished: 2026-05-21T08:59:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +28,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-20T09:15:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-20T09:15:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 3
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1949: Playwright MCP screenshot output redirect + cleanup 82 root PNGs (12 MB)
@@ -48,6 +69,8 @@ the existing 82 files.
 - [x] 82 root-level PNGs removed; root has zero `*.png` / `*.jpg` / `*.jpeg` / `*.gif`
 - [x] Repo size: 343 MB → 332 MB (11 MB reclaimed)
 - [x] `.gitignore` comment updated to reference `/tmp/playwright-mcp/` and T-1949
+- [x] Post-config residual cleanup (2026-05-21): 4 PNGs landed in repo root *after* `--output-dir` config went live (arc-badge-before/after.png from T-1969 visual diff; badge-contrast-after.png + badge-contrast-arcs-after.png from T-1970). Root cause: Playwright MCP `browser_take_screenshot` honours `--output-dir` only for *auto-named* screenshots; when called with explicit `filename: "X.png"` (no path prefix), it still writes relative to cwd. Mitigation in this task: relocated T-1970 evidence to `docs/reports/T-1970-evidence/` (gitignore exception added: `!docs/reports/T-*-evidence/*.png`); deleted unreferenced T-1969 visual-diff PNGs (T-1969's [REVIEW] AC is structural — `' · '` separator — verifiable without the PNGs)
+- [x] gitignore exception added at `.gitignore:54` to track per-task evidence subdirs (`!docs/reports/T-*-evidence/*.png`) — symmetric with existing `T-*-demo-evidence/` exception
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -80,6 +103,19 @@ the existing 82 files.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Auto-named MCP screenshot output is redirected to `/tmp/playwright-mcp/` (verified by `.mcp.json` args); the original 82-PNG repo bloat (12 MB) was reclaimed; the gitignore guard remains in place as belt-and-braces for the *named*-screenshot case where Playwright MCP still honours cwd. The 4 PNGs that landed in repo root since the original fix are now relocated to per-task evidence subdirs (with a fresh gitignore exception for tracked evidence), so the root tree is clean again and T-1970's visual evidence is preserved at a stable path.
+
+**Evidence:**
+- `ls *.png *.jpg *.jpeg *.gif | wc -l` → 0 (root clean)
+- `.mcp.json` args contain `--output-dir /tmp/playwright-mcp`
+- `.gitignore:54` exception `!docs/reports/T-*-evidence/*.png` (symmetric with existing `T-*-demo-evidence/`)
+- T-1970 evidence relocated to `docs/reports/T-1970-evidence/` and references updated in `.tasks/active/T-1970-…md:92,283`
+- Followup gap captured inline in AC#5: named screenshots still bypass `--output-dir`; mitigation is the standing gitignore. No new follow-up task — the inline gitignore guard plus the cleanup pattern (relocate to `T-*-evidence/`) is sufficient prevention.
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -109,6 +145,7 @@ the existing 82 files.
 
 test "$(ls *.png *.jpg *.jpeg *.gif 2>/dev/null | wc -l)" -eq 0
 python3 -c "import json; c=json.load(open('.mcp.json')); args=c['mcpServers']['playwright']['args']; assert any('output' in a.lower() or 'dir' in a.lower() for a in args), 'no output-dir flag'"
+grep -q '!docs/reports/T-\*-evidence/\*.png' .gitignore
 
 ## RCA
 
@@ -177,3 +214,20 @@ python3 -c "import json; c=json.load(open('.mcp.json')); args=c['mcpServers']['p
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1949-playwright-mcp-screenshot-output-redirec.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-78ba22e6
+- **Timestamp:** 2026-05-21T08:59:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — Post-config residual cleanup (2026-05-21): 4 PNGs landed in repo root *after* `--output-dir` config went live (arc-badge-before/after.png from T-1969 visual diff; badge-contrast-after.png + badge-cont
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=arc-badge-before/after.png in: Post-config residual cleanup (2026-05-21): 4 PNGs landed in repo root *after* `--output-dir` config went live (arc-badge-before/after.png from T-1969 `
+
+### 2026-05-21T08:59:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

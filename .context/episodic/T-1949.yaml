@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1949: Playwright MCP screenshot output redirect + cleanup 82 root PNGs (12 MB)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-21T08:59:58Z
+# ============================================================================
+
+task_id: T-1949
+task_name: "Playwright MCP screenshot output redirect + cleanup 82 root PNGs (12 MB)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-20T09:01:05Z
+completed: 2026-05-21T08:59:53Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-05-20T11:04:21+02:00
+last_commit: 2026-05-20T11:04:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  redirect Playwright MCP screenshot output + cleanup 82 root PNGs (12 MB)
+
+# Key outcomes
+outcomes:
+  - '`.mcp.json` Playwright server gets `--output-dir` (or equivalent flag) pointing to a non-root subdir (likely `.context/screenshots/` or `/tmp/playwright-mcp/`) — verified by reading the MCP server''s actual `--help` output'
+  - 'Chose `/tmp/playwright-mcp` (ephemeral, not project-tracked). Existing `*.png` gitignore covers any drift back to cwd as belt-and-braces'
+  - '82 root-level PNGs removed; root has zero `*.png` / `*.jpg` / `*.jpeg` / `*.gif`'
+  - 'Repo size: 343 MB → 332 MB (11 MB reclaimed)'
+  - '`.gitignore` comment updated to reference `/tmp/playwright-mcp/` and T-1949'
+  - 'Post-config residual cleanup (2026-05-21): 4 PNGs landed in repo root *after* `--output-dir` config went live (arc-badge-before/after.png from T-1969 visual diff; badge-contrast-after.png + badge-contrast-arcs-after.png from T-1970). Root cause: Playwright MCP `browser_take_screenshot` honours `--output-dir` only for *auto-named* screenshots; when called with explicit `filename: "X.png"` (no path prefix), it still writes relative to cwd. Mitigation in this task: relocated T-1970 evidence to `docs/reports/T-1970-evidence/` (gitignore exception added: `!docs/reports/T-*-evidence/*.png`); deleted unreferenced T-1969 visual-diff PNGs (T-1969''s [REVIEW] AC is structural — `'' · ''` separator — verifiable without the PNGs)'
+  - 'gitignore exception added at `.gitignore:54` to track per-task evidence subdirs (`!docs/reports/T-*-evidence/*.png`) — symmetric with existing `T-*-demo-evidence/` exception'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.gitignore'
+  - '.mcp.json'
+  - '.tasks/active/T-1949-playwright-mcp-screenshot-output-redirec.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-20T11:04:21"
+    action: "T-1949: redirect Playwright MCP screenshot output + cleanup 82 root PNGs (12 MB)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1438 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1438
+  commits: 1
+  files_changed: 3
+  lines_added: 184
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1949-playwright-mcp-screenshot-output-redirec.md
+generated_by: context-agent-hybrid
