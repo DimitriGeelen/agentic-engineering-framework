@@ -3185,3 +3185,17 @@ X'` returning empty group."
   date: 2026-05-20
   context: Added via context agent
   application: TBD
+- id: L-416
+  learning: "Pico CSS variable pairs that look like contrast partners (--pico-X-background + --pico-X) often resolve to the same colour at runtime; the actual partner is --pico-X-inverse. Same-colour-on-same-colour bugs are invisible to grep-based template checks — pin computed-style contrast via Playwright. When you find one instance of the anti-pattern, sweep sibling classes in the same file."
+  source: P-011
+  task: T-1970
+  date: 2026-05-21
+  context: Added via context agent
+  application: TBD
+- id: L-417
+  learning: "When a slice ships, satellite text/test references to 'will ship in T-NNNN' become stale and contradict reality. T-1971 (template text), T-1972 (CLI empty-state), T-1973 (module docstring), T-1974 (Playwright test selector) all hit the same anti-pattern in BVP arc within 20 min — same root: substrate evolved, satellite didn't follow. Automated prevention: audit check that scans source for 'ship in T-NNNN' references where T-NNNN resolves to a task in .tasks/completed/. Should be a fw audit pre-completion check on tasks that close a sliced inception."
+  source: P-013
+  task: T-1974
+  date: 2026-05-21
+  context: Added via context agent
+  application: TBD
