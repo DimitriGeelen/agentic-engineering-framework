@@ -860,6 +860,58 @@ else
          "Migrate to lib/arc_membership.{sh,py} (arc_tasks_for / scan_tasks_by_arc_membership). See T-1880 for pattern. Silent-corpus risk class L-397."
 fi
 
+# T-1975 (L-417 prevention): stale-slice-reference scan.
+# When a slice ships, satellite text/tests referencing "ship in T-NNNN"
+# become stale and contradict reality. Origin: T-1971/T-1972/T-1973/T-1974
+# cluster in BVP arc — 4 instances landed in 20 min, all the same pattern:
+# substrate evolved, satellite didn't follow. This check scans source
+# surfaces for two phrasings of the anti-pattern and flags references
+# whose T-NNNN already lives in .tasks/completed/. WARN (not FAIL) until
+# FP rate is measured.
+#
+# Pattern 1: "ship | ships | shipping in T-NNNN" (forecast — present/future)
+# Pattern 2: "once (that )?slice ships"
+# Past-tense "shipped in T-NNNN" is intentionally NOT matched — that's a
+# historical reference (correct documentation), not a stale forecast.
+#
+# Scope: web/templates, web/blueprints, lib (source-of-truth surfaces).
+# Allowlist: tests/, docs/, .fabric/, .context/, .tasks/, audit.sh itself.
+stale_slice_count=0
+stale_slice_evidence=""
+for scan_dir in web/templates web/blueprints lib; do
+    [ -d "$PROJECT_ROOT/$scan_dir" ] || continue
+    while IFS= read -r hit; do
+        [ -z "$hit" ] && continue
+        # Allowlist (out-of-scope or self-referential)
+        case "$hit" in
+            *agents/audit/audit.sh:*) continue ;;
+            *tests/*|*docs/*|*.fabric/*|*.context/*|*.tasks/*) continue ;;
+        esac
+        # Extract T-NNNN from the matched line.
+        t_id=$(echo "$hit" | grep -oE 'T-[0-9]{2,5}' | head -1)
+        if [ -n "$t_id" ]; then
+            # Only flag if T-NNNN resolves to a completed task.
+            if ls "$PROJECT_ROOT/.tasks/completed/${t_id}-"*.md >/dev/null 2>&1; then
+                stale_slice_count=$((stale_slice_count + 1))
+                stale_slice_evidence="$stale_slice_evidence$hit\n"
+            fi
+        else
+            # "once (that )?slice ships" — no T-NNNN to verify; always flag.
+            stale_slice_count=$((stale_slice_count + 1))
+            stale_slice_evidence="$stale_slice_evidence$hit\n"
+        fi
+    done < <(grep -RniE '(\<ship\>|\<ships\>|\<shipping\>)[[:space:]]+in[[:space:]]+T-[0-9]{2,5}|once[[:space:]]+(that[[:space:]]+)?slice[[:space:]]+ships?' \
+                   --include='*.html' --include='*.py' --include='*.sh' \
+                   "$PROJECT_ROOT/$scan_dir" 2>/dev/null || true)
+done
+if [ "$stale_slice_count" -eq 0 ]; then
+    pass "No stale-slice-references (L-417)"
+else
+    warn "Found $stale_slice_count stale-slice-reference(s) — satellite text references a completed task as if still pending" \
+         "$(printf '%b' "$stale_slice_evidence" | head -5)" \
+         "Update the satellite to describe the live behaviour (origin: L-417, T-1971/T-1972/T-1973/T-1974)"
+fi
+
 # Fabric drift detection (T-212 — component topology integrity)
 if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
     fabric_cards=$(find "$PROJECT_ROOT/.fabric/components/" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)

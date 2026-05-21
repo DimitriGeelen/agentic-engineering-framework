@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1975: audit: stale-slice-reference scan — flag 'ship in T-NNNN' where T-NNNN completed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-21T07:53:38Z
+# ============================================================================
+
+task_id: T-1975
+task_name: "audit: stale-slice-reference scan — flag 'ship in T-NNNN' where T-NNNN completed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-21T07:41:37Z
+completed: 2026-05-21T07:52:18Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'New audit check added under `if should_run_section "structure"` in `agents/audit/audit.sh`, after the inline-arc-tag check (T-1881 pattern)'
+  - 'Scan scope: `$PROJECT_ROOT/web/templates`, `$PROJECT_ROOT/web/blueprints`, `$PROJECT_ROOT/lib` (recursive, `*.html`, `*.py`, `*.sh`)'
+  - 'Pattern: case-insensitive regex matching `\<(ship|ships|shipping)\>\s+in\s+T-[0-9]{2,5}` AND `once\s+(?:that\s+)?slice\s+ships?` — past-tense `shipped` deliberately excluded (historical references are correct documentation, not stale forecasts)'
+  - 'For each match: extract `T-NNNN`, check `.tasks/completed/T-NNNN-*.md` exists; flag only when completed task is referenced'
+  - 'Failure mode: WARN (not FAIL — first deployment, conservative; FP rate unknown)'
+  - 'Allowlist: `tests/`, `docs/`, `.fabric/`, `.context/`, `.tasks/`, `agents/audit/audit.sh` itself'
+  - 'PASS line emitted when zero stale references found: `pass "No stale-slice-references (L-417)"`'
+  - 'Unit test `tests/unit/audit_stale_slice_reference.bats` covering: clean tree PASS, seeded stale ref WARN, reference to active task does NOT WARN, allowlisted paths skipped, past-tense excluded (13 tests, all green)'
+  - '`bin/fw audit --section structure` exits 0 (clean tree) AND PASS line present in output'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:arc-grooming]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1975-audit-stale-slice-reference-scan--flag-s.md
+generated_by: context-agent-hybrid
