@@ -83,6 +83,33 @@ def _task_bvp_data(task_data: dict) -> dict:
     }
 
 
+def _task_arc_data(task_data: dict) -> dict | None:
+    """T-1982: load arc YAML for a task with arc_id.
+
+    Returns {arc_id, arc_name, scoped_drivers: [{name, weight, rationale?}, ...]}
+    or None if no arc_id / arc file missing.
+
+    Surfaces scoped drivers so the per-task BVP block can show "these arc
+    drivers have weights but no per-task score" — making the design gap
+    that T-1981 will resolve visible instead of silent.
+    """
+    arc_id = task_data.get("arc_id")
+    if not arc_id:
+        return None
+    arc_path = PROJECT_ROOT / ".context" / "arcs" / f"{arc_id}.yaml"
+    if not arc_path.exists():
+        return None
+    try:
+        arc = yaml.safe_load(arc_path.read_text()) or {}
+    except yaml.YAMLError:
+        return None
+    return {
+        "arc_id": arc_id,
+        "arc_name": arc.get("name") or "",
+        "scoped_drivers": arc.get("scoped_drivers") or [],
+    }
+
+
 # ---------------------------------------------------------------------------
 # Enum loading from status-transitions.yaml (T-1179, G-038)
 # ---------------------------------------------------------------------------
@@ -717,6 +744,10 @@ def task_detail(task_id):
 
     # T-1980: per-task BVP block (parity with /bvp scatter + /arcs/<id> table).
     bvp = _task_bvp_data(task_data)
+    # T-1982: arc membership + scoped-driver visibility on per-task surface.
+    arc_data = _task_arc_data(task_data)
+    arc_name = arc_data["arc_name"] if arc_data else None
+    arc_scoped_drivers = arc_data["scoped_drivers"] if arc_data else []
 
     return render_page(
         "task_detail.html",
@@ -736,6 +767,8 @@ def task_detail(task_id):
         rec_evidence_html=rec_evidence_html,
         reviewer=reviewer,
         bvp=bvp,
+        arc_name=arc_name,
+        arc_scoped_drivers=arc_scoped_drivers,
     )
 
 

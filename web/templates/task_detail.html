@@ -254,6 +254,12 @@
             {{ inline_select(task_id, 'type', ['build','test','refactor','specification','design','decommission','inception'], task.workflow_type, hx_target='#type-result', form_class='inline-flex-center gap-md') }}
             <span id="type-result" class="detail-inline-result"></span>
         </td></tr>
+        {% if task.arc_id %}
+        <tr><th>Arc</th><td>
+            <a href="/arcs/{{ task.arc_id }}"><code>{{ task.arc_id }}</code></a>
+            {% if arc_name %}<span class="muted" style="margin-left: 0.4em;">{{ arc_name }}</span>{% endif %}
+        </td></tr>
+        {% endif %}
         <tr><th>Created</th><td>{{ task.created or '' }}</td></tr>
         <tr><th>Last Update</th><td>{{ task.last_update or '' }}</td></tr>
         {% if task.date_finished %}
@@ -369,6 +375,35 @@
         {% if bvp.mode == 'proposed' %}
             <p class="muted" style="font-size: 0.85em; margin: 0.5rem 0 0 0;"><em>*</em> Estimator-proposed (not yet human-confirmed). Confirm via <code>fw bvp confirm {{ task_id }}</code>.</p>
         {% endif %}
+    {% endif %}
+
+    {# T-1982: arc-scoped drivers — surface the gap T-1981 will resolve.
+       These have weights from the arc YAML but no per-task scores yet, so
+       _compute_bvp silently excludes them. Show them explicitly with their
+       weight + "no score" muted indicator so the gap is visible, not silent. #}
+    {% if arc_scoped_drivers %}
+    <details style="margin-top: 0.8rem;">
+        <summary style="cursor: pointer; font-size: 0.9em;">
+            Arc-scoped drivers
+            <span class="muted">({{ arc_scoped_drivers|length }} weighted but unscored on this task — see <a href="/tasks/T-1981">T-1981</a>)</span>
+        </summary>
+        <table style="margin: 0.5rem 0 0 0; font-size: 0.9em;">
+            <thead><tr><th>Driver</th><th>Score</th><th>Weight</th><th>Rationale</th></tr></thead>
+            <tbody>
+                {% for sd in arc_scoped_drivers %}
+                <tr>
+                    <td><code>{{ sd.get('name', '?') }}</code></td>
+                    <td><span class="muted">— (no score)</span></td>
+                    <td>{{ sd.get('weight', '—') }}</td>
+                    <td class="muted" style="font-size: 0.9em;">{{ sd.get('rationale', '')|truncate(80, True) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="muted" style="font-size: 0.85em; margin: 0.5rem 0 0 0;">
+            These drivers contribute weight from the arc YAML but no per-task scores exist yet, so they're excluded from the BVP calculation above. Design question parked at <a href="/tasks/T-1981">T-1981</a> (extend estimator, manual scoring, or rollup-only).
+        </p>
+    </details>
     {% endif %}
 </section>
 
