@@ -31,13 +31,14 @@ indistinguishable from a broken cron — exactly the G-064 signature
 (substrate exists, observability lies). Only the most-recent fire is
 detected via this fallback (yaml is overwritten).
 
-KNOWN BUG (T-1953): CRON_HOUR_UTC=5 assumes the crontab schedule
-"33 5 * * *" runs at UTC 05:33. But cron interprets that as LOCAL
-time; on hosts where TZ != UTC the actual UTC fire is offset. The
-window check therefore misses real cron rows on non-UTC hosts. The
-v0.5 LATEST fallback uses the *file's `generated` timestamp* directly
-which is correct (it's a UTC ts), but the comparison against the
-cron window still inherits the TZ bug. Fix tracked in T-1953.
+Cron TZ semantics (T-1953): crontab `33 5 * * *` is interpreted in LOCAL
+time. To match real cron fires on non-UTC hosts (e.g. Europe/Amsterdam +02
+summer → cron fires at UTC 03:33), `_is_cron_firing` converts the
+dispatch timestamp to the system local TZ before comparing against
+`CRON_HOUR_LOCAL:CRON_MIN_LOCAL`. Tests pin `TZ=UTC` via the
+`enforce_utc_tz` autouse fixture so they remain portable across runner
+TZs. Origin: T-1952 surfaced the bug via v0.5 LATEST fallback; T-1953
+fixed it.
 
 Usage:
   python3 tools/g064-readiness.py            # human-readable
@@ -58,8 +59,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-CRON_HOUR_UTC = 5
-CRON_MIN_UTC = 33
+CRON_HOUR_LOCAL = 5
+CRON_MIN_LOCAL = 33
 CRON_WINDOW_MIN = 5
 CLOSURE_DATE_THRESHOLD = 3
 SYNTHETIC_PREFIX = "T-stress-"
@@ -76,10 +77,15 @@ def _parse_ts(ts: str) -> datetime | None:
 
 
 def _is_cron_firing(dt: datetime) -> bool:
-    """True if dt (UTC) is within +/- CRON_WINDOW_MIN of CRON_HOUR_UTC:CRON_MIN_UTC."""
-    utc = dt.astimezone(timezone.utc)
-    target = CRON_HOUR_UTC * 60 + CRON_MIN_UTC
-    actual = utc.hour * 60 + utc.minute
+    """True if dt is within +/- CRON_WINDOW_MIN of CRON_HOUR_LOCAL:CRON_MIN_LOCAL.
+
+    Converts dt to system local TZ before comparing. crontab schedules are
+    LOCAL-time (T-1953); on non-UTC hosts the dispatch row's UTC timestamp
+    must be projected into local time to match the cron window correctly.
+    """
+    local = dt.astimezone()
+    target = CRON_HOUR_LOCAL * 60 + CRON_MIN_LOCAL
+    actual = local.hour * 60 + local.minute
     return abs(actual - target) <= CRON_WINDOW_MIN
 
 
@@ -199,7 +205,7 @@ def assess(rows: list[dict], v0_5_latest: dict | None = None) -> dict:
         "earliest_ts": earliest,
         "latest_ts": latest,
         "closure_threshold_dates": CLOSURE_DATE_THRESHOLD,
-        "cron_window": f"{CRON_HOUR_UTC:02d}:{CRON_MIN_UTC:02d} UTC +/- {CRON_WINDOW_MIN} min",
+        "cron_window": f"{CRON_HOUR_LOCAL:02d}:{CRON_MIN_LOCAL:02d} LOCAL +/- {CRON_WINDOW_MIN} min",
         "v0_5_last_generated": v0_5_generated,
         "v0_5_last_dispatched": v0_5_dispatched,
         "v0_5_last_skipped_idempotent": v0_5_skipped,

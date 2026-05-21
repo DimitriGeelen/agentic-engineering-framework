@@ -6,6 +6,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `tools/escalation-scan-v0.5.py` | calls |
+
 ## Used By (3)
 
 | Component | Relationship |

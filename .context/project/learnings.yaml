@@ -3199,3 +3199,10 @@ X'` returning empty group."
   date: 2026-05-21
   context: Added via context agent
   application: "T-1975 — fw audit structure-section check scans web/templates, web/blueprints, lib for present/future-tense 'ship in T-NNNN' against .tasks/completed/. WARN class. Past-tense 'shipped in T-NNNN' excluded (caught FP during dry-run). Refined to add 'once that slice ships' phrasing per the lib/bvp.sh shape. 13/13 bats green."
+- id: L-418
+  learning: "Observability tools that consume cron-fire evidence must respect crontab's LOCAL-time interpretation, not assume UTC. A constant named CRON_HOUR_UTC=5 paired with a UTC-based window check silently mis-classes every real cron row on non-UTC hosts as 'manual', producing structural blindness indistinguishable from 'feature broken'. Test rule: any tool whose output depends on TZ must have at least one regression test that pins a non-UTC TZ and asserts the direction of conversion."
+  source: L-411
+  task: T-1953
+  date: 2026-05-21
+  context: Added via context agent
+  application: TBD

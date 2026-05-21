@@ -20,13 +20,33 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
+import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TOOL_PATH = REPO_ROOT / "tools" / "g064-readiness.py"
+
+
+@pytest.fixture(autouse=True)
+def enforce_utc_tz(monkeypatch):
+    """T-1953: pin TZ=UTC so cron-window tests are portable.
+
+    `_is_cron_firing` converts dt to system local time (crontab schedules
+    are LOCAL-interpreted). Pinning TZ=UTC makes timestamps like
+    `05:33:00+00:00` land in the 05:33 LOCAL window regardless of the
+    test runner's host TZ.
+    """
+    monkeypatch.setenv("TZ", "UTC")
+    if hasattr(time, "tzset"):
+        time.tzset()
+    yield
+    if hasattr(time, "tzset"):
+        time.tzset()
 
 
 @pytest.fixture(scope="module")
@@ -362,3 +382,71 @@ def test_render_human_shows_saturation_note(gauge):
     assert "v0.5 LATEST:" in text
     assert "idempotency saturation" in text
     assert "Avoid manual re-runs" in text
+
+
+# ---------------------------------------------------------------------------
+# T-1953 — TZ-portability regression
+# ---------------------------------------------------------------------------
+
+
+def test_non_utc_tz_recognises_utc_offset_dispatch(gauge, monkeypatch):
+    """Real-host case: TZ=Europe/Amsterdam (+02 summer), crontab `33 5 * * *`
+    fires at UTC 03:33. Dispatch row carries the UTC ts; gauge must still
+    flag it as a cron firing because cron is LOCAL-interpreted.
+
+    Before T-1953: `_is_cron_firing` compared dt.UTC against constants
+    written as UTC → row at 03:33 UTC was 152 min away from 05:33 →
+    classed as manual. Result: zero cron firings ever counted on this
+    host class. The dispatch substrate was correctly populated, the gauge
+    silently lied.
+    """
+    monkeypatch.setenv("TZ", "Europe/Amsterdam")
+    if hasattr(time, "tzset"):
+        time.tzset()
+    try:
+        # 03:33 UTC == 05:33 local (Amsterdam summer +02:00). One cron-fire.
+        rows = [
+            _row("T-cron-local", "2026-05-06T03:33:00+00:00"),
+        ]
+        a = gauge.assess(rows)
+        assert a["cron_firings"] == 1, (
+            "UTC 03:33 must be recognised as cron-firing when system TZ=+02 "
+            "(local 05:33 matches crontab schedule). Pre-T-1953 this was 0."
+        )
+        assert a["cron_firing_dates"] == ["2026-05-06"]
+    finally:
+        monkeypatch.setenv("TZ", "UTC")
+        if hasattr(time, "tzset"):
+            time.tzset()
+
+
+def test_utc_05_33_does_not_fire_when_local_offset(gauge, monkeypatch):
+    """Inverse case: a literal UTC 05:33 dispatch on a +02 host means the
+    cron fired at 07:33 local (NOT the scheduled 05:33). Must be classed
+    as manual, not cron. This pins the directionality of the fix — we're
+    not just "always converting", we're aligning to crontab semantics.
+    """
+    monkeypatch.setenv("TZ", "Europe/Amsterdam")
+    if hasattr(time, "tzset"):
+        time.tzset()
+    try:
+        rows = [
+            _row("T-not-cron", "2026-05-06T05:33:00+00:00"),
+        ]
+        a = gauge.assess(rows)
+        assert a["cron_firings"] == 0
+        assert a["manual_runs"] == 1
+    finally:
+        monkeypatch.setenv("TZ", "UTC")
+        if hasattr(time, "tzset"):
+            time.tzset()
+
+
+def test_cron_window_label_says_local(gauge):
+    """Assess output exposes cron_window string; must reflect LOCAL semantics
+    so the human-readable report doesn't lie to the operator."""
+    a = gauge.assess([])
+    assert "LOCAL" in a["cron_window"], (
+        f"cron_window must say LOCAL (cron is local-interpreted): {a['cron_window']!r}"
+    )
+    assert "05:33" in a["cron_window"]

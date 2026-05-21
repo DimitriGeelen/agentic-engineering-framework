@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1953: G-064 gauge timezone fix — CRON_HOUR_UTC mismatches actual cron fire (crontab
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-21T09:06:15Z
+# ============================================================================
+
+task_id: T-1953
+task_name: "G-064 gauge timezone fix — CRON_HOUR_UTC mismatches actual cron fire (crontab"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-20T10:23:14Z
+completed: 2026-05-21T09:06:08Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_is_cron_firing()` converts dt to LOCAL time via `dt.astimezone()` (no-arg = system local TZ) and compares against `CRON_HOUR_LOCAL:CRON_MIN_LOCAL` — `tools/g064-readiness.py:81-89`'
+  - 'Constants renamed `CRON_HOUR_UTC`/`CRON_MIN_UTC` → `CRON_HOUR_LOCAL`/`CRON_MIN_LOCAL` (line 61-62); `cron_window` output string says `LOCAL` (line 207)'
+  - 'Existing tests pinned to TZ=UTC via `enforce_utc_tz` autouse fixture (lines 32-49) — all 21 pre-existing tests still pass under the rename'
+  - 'New test `test_non_utc_tz_recognises_utc_offset_dispatch` (line 391): pins TZ=Europe/Amsterdam, asserts UTC 03:33 dispatch → cron_firings=1. Plus `test_utc_05_33_does_not_fire_when_local_offset` (inverse case) and `test_cron_window_label_says_local` (operator-facing string)'
+  - '`python3 tools/g064-readiness.py --json` on this host now shows `cron_firings=107 manual_runs=191 verdict=READY` (was structurally 0 before fix; G-064 closure-readiness signal restored)'
+  - 'T-1952''s KNOWN BUG docstring note (lines 34-40 pre-fix) replaced with affirmative "Cron TZ semantics" doc — search confirms no residual `KNOWN BUG` mentions in tools/ tests/'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1362 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1362
+  commits: 1
+  files_changed: 3
+  lines_added: 47
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1953-g-064-gauge-timezone-fix--cronhourutc-mi.md
+generated_by: context-agent-hybrid
