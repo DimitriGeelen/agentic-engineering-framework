@@ -9,7 +9,8 @@ Tasks render as small dots; arcs as larger dots. Cost composite exposes the
 3 sub-components in the hover tooltip (the F8 mechanic must remain
 diagnosable per artefact §4).
 
-Read-only by design. Live weight sliders + commit ship in T-1929 (T-NEW-12b).
+Live weight sliders + commit ship via `fw bvp weight --from-watchtower` (T-1929,
+§ACD gate). Read-only fallback when no `weights` data is available.
 
 Math intentionally duplicates `lib/bvp.sh:_bvp_python_engine` (~30 LOC, two
 formulas) rather than subprocess'ing `fw bvp` per request. The formulas are
