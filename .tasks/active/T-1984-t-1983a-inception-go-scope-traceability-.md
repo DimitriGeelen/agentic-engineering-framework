@@ -185,6 +185,19 @@ bin/fw enforcement baseline 2>&1 | grep -q "baseline saved\|baseline unchanged\|
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 7 Agent ACs are checked. 6 commits landed in sequence. 8/8 verification commands pass. Human AC is a [REVIEW] of the block message rhythm — the message names the failing decision id, the referent shape tried, both override mechanisms, and one-line guidance on which to use. No blocker; ready for human review of block message quality.
+
+**Evidence:**
+- `lib/inception_decisions.py` — parser, 5-shape detector, reachability checks (53 pytest pass)
+- `agents/context/check-inception-decisions.{sh,py}` — PreToolUse hook wired in settings.json (20 bats pass)
+- `agents/task-create/update-task.sh` — close gate with `--skip-inception-scope-trace` + `FW_SKIP_INCEPTION_SCOPE_TRACE=1` (10 bats pass)
+- `tests/unit/upgrade_fresh_machine_simulation.bats` — 3/3 pass, no regression
+- `CLAUDE.md §Task System` — "Inception GO-scope traceability" paragraph with schema example + both override mechanisms
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
