@@ -31,9 +31,18 @@ def test_bvp_page_shows_four_quadrant_tokens(page, base_url):
 
 def test_bvp_page_shows_driver_weights_section(page, base_url):
     """Driver weights are load-bearing — without them the math has no
-    inputs. Surface them in a collapsible details element."""
+    inputs. T-1928 surfaced them behind a `<details>/<summary>` collapse;
+    T-1929 moved them to a permanently-visible slider section. This test
+    asserts the post-T-1929 design: a `<section id="bvp-sliders">` with
+    a "Live weight sliders" heading and at least one range input per
+    directive driver."""
     page.goto(f"{base_url}/bvp", wait_until="domcontentloaded")
-    expect(page.locator("summary", has_text="Current driver weights")).to_be_visible()
+    expect(page.locator("section#bvp-sliders")).to_be_visible()
+    expect(page.locator("section#bvp-sliders h3")).to_contain_text("Live weight sliders")
+    # At least 4 sliders for D1..D4 (free drivers may add more)
+    assert page.locator("section#bvp-sliders input[type=range]").count() >= 4, (
+        "Expected ≥4 directive-driver weight sliders in #bvp-sliders"
+    )
 
 
 def test_bvp_page_references_cost_composite_formula(page, base_url):
