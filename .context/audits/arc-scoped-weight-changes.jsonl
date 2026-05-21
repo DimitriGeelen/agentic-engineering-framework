@@ -1,0 +1,2 @@
+{"arc_id":"value-prioritisation","ts":"2026-05-21T15:45:31Z","driver":"estimator-fidelity","old_weight":3,"new_weight":4,"rationale":"T-1977 smoke test of arc weight slider commit flow live end-to-end","who":"root","agent_session":true}
+{"arc_id":"value-prioritisation","ts":"2026-05-21T15:45:44Z","driver":"estimator-fidelity","old_weight":4,"new_weight":3,"rationale":"T-1977 restore baseline after smoke test to keep arc state stable","who":"root","agent_session":true}

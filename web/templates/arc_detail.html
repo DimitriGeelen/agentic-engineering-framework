@@ -174,16 +174,24 @@
     <p class="muted"><em>No coherence warnings — arc claims align with constituent scores (or the arc has no in-progress status / no scoring constituents to compare against).</em></p>
     {% endif %}
 
-    {# Currently approved scoped drivers — with per-row Remove (T-1976) #}
+    {# Currently approved scoped drivers — with per-row Remove (T-1976) + live weight sliders (T-1977) #}
     {% if bvp_info.scoped_drivers %}
     <h3>Scoped drivers ({{ bvp_info.scoped_drivers|length }} / 3 max)</h3>
-    <table>
-        <thead><tr><th>Name</th><th>Weight</th><th>Rationale</th><th>Approved</th><th></th></tr></thead>
+    <p class="muted"><small>Drag a slider to preview the new weight (no commit). Press <strong>Commit weight changes</strong> below to persist via <code>fw arc set-scoped-weight --from-watchtower</code> (§ACD, D8). Rationale ≥30 chars required (R6). [T-1977]</small></p>
+    <table id="scoped-sliders-table">
+        <thead><tr><th>Name</th><th>Server</th><th>Slider</th><th>Current</th><th>Rationale</th><th>Approved</th><th></th></tr></thead>
         <tbody>
             {% for sd in bvp_info.scoped_drivers %}
             <tr>
                 <td><code>{{ sd.get('name', '?') }}</code></td>
-                <td>{{ sd.get('weight', '—') }}</td>
+                <td class="scoped-server-weight" data-server-weight="{{ sd.get('weight', 3) }}">{{ sd.get('weight', '—') }}</td>
+                <td>
+                    <input type="range" name="slider-{{ sd.get('name', '') }}"
+                           min="1" max="6" value="{{ sd.get('weight', 3) }}"
+                           class="scoped-slider" data-driver="{{ sd.get('name', '') }}"
+                           style="width: 100%; max-width: 200px;">
+                </td>
+                <td><span class="scoped-live-weight" data-driver="{{ sd.get('name', '') }}">{{ sd.get('weight', '—') }}</span></td>
                 <td>{{ sd.get('rationale', '')|truncate(120, True) }}</td>
                 <td><small>{{ sd.get('approved_ts', sd.get('ts', sd.get('approved_at', '—'))) }}</small></td>
                 <td>
@@ -204,6 +212,59 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {# T-1977: batched commit for changed sliders, single rationale per commit. #}
+    <form id="scoped-commit-form" method="POST" action="/api/arc/{{ arc_slug }}/set-scoped-weight" style="margin-top: 0.6rem;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="changes" id="scoped-changes-payload" value="[]">
+        <label>Rationale (≥30 characters, R6):
+            <textarea name="rationale" rows="2" minlength="30" required style="width: 100%;"
+                      placeholder="Why are you changing these weights? Cite evidence (incident, decision, re-weighting cycle)."></textarea>
+        </label>
+        <button type="submit" id="scoped-commit-btn" disabled>Commit weight changes (<span id="scoped-changes-count">0</span>)</button>
+        <small id="scoped-commit-hint" class="muted" style="margin-left: 0.5rem;">Drag a slider to enable.</small>
+    </form>
+
+    <script>
+    (function() {
+        const sliders = document.querySelectorAll(".scoped-slider");
+        const payloadInput = document.getElementById("scoped-changes-payload");
+        const commitBtn = document.getElementById("scoped-commit-btn");
+        const changesCount = document.getElementById("scoped-changes-count");
+        const commitHint = document.getElementById("scoped-commit-hint");
+        if (!sliders.length || !payloadInput) return;
+
+        function recompute() {
+            const changes = [];
+            sliders.forEach(slider => {
+                const driver = slider.getAttribute("data-driver");
+                const newWeight = Number(slider.value);
+                const row = slider.closest("tr");
+                const serverCell = row.querySelector(".scoped-server-weight");
+                const serverWeight = Number(serverCell.getAttribute("data-server-weight"));
+                if (newWeight !== serverWeight) {
+                    changes.push({ name: driver, weight: newWeight });
+                }
+            });
+            payloadInput.value = JSON.stringify(changes);
+            changesCount.textContent = changes.length;
+            commitBtn.disabled = (changes.length === 0);
+            commitHint.textContent = changes.length === 0
+                ? "Drag a slider to enable."
+                : `${changes.length} change(s) staged. Provide rationale and commit.`;
+        }
+
+        sliders.forEach(slider => {
+            slider.addEventListener("input", evt => {
+                const driver = slider.getAttribute("data-driver");
+                const liveSpan = document.querySelector(`.scoped-live-weight[data-driver="${driver}"]`);
+                if (liveSpan) liveSpan.textContent = slider.value;
+                recompute();
+            });
+        });
+        recompute();
+    })();
+    </script>
     {% endif %}
 
     {# Add a custom scoped driver — T-1976 parity with /bvp add-driver form.

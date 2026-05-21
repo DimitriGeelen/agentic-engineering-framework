@@ -970,6 +970,8 @@ Verbs:
                             T-1926: append a scoped driver (cap 3, weight ≤6) or
                             declare none. Refused under \$CLAUDECODE=1 (§ACD, M6).
   remove-driver <id> "<name>" --rationale "<≥30 chars>" [--i-am-human|--from-watchtower]
+  set-scoped-weight <id> "<name>" --weight N --rationale "<≥30 chars>" [--i-am-human|--from-watchtower]
+                            T-1977: mutate scoped_drivers[].weight in place.
                             T-1976: remove a named entry from scoped_drivers:.
                             Refuses on unknown names. Symmetric with
                             'fw bvp driver --remove' for arc-scoped drivers.
@@ -1086,6 +1088,7 @@ arc_dispatch() {
         migrate) arc_migrate "$@";;
         approve-driver)   arc_approve_driver   "$@";;   # T-1926 (arc-006)
         remove-driver)    arc_remove_driver    "$@";;   # T-1976 (arc-006)
+        set-scoped-weight) arc_set_scoped_weight "$@";; # T-1977 (arc-006)
         show-suggestions) arc_show_suggestions "$@";;   # T-1926 (arc-006)
         help|--help|-h) arc_help;;
         *) echo "Unknown verb: $verb" >&2; arc_help; return 2;;
@@ -1385,6 +1388,159 @@ PY
     echo "OK: removed scoped driver '$name' from arc '$id'."
     echo "  Rationale logged to .context/audits/arc-scoped-driver-removals.jsonl"
     return 0
+}
+
+# T-1977: arc set-scoped-weight — mutate scoped_drivers[].weight in place.
+# Mirrors T-1929 /bvp slider commit at arc scope. §ACD-gated. R6 rationale ≥30 chars.
+# Refuses on unknown name; weight constrained to 1-6 (M2).
+arc_set_scoped_weight() {
+    local id="" name="" weight="" rationale=""
+    local i_am_human=false from_watchtower=false
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --weight) weight="$2"; shift 2;;
+            --rationale) rationale="$2"; shift 2;;
+            --i-am-human) i_am_human=true; shift;;
+            --from-watchtower) from_watchtower=true; shift;;
+            --help|-h) _arc_set_scoped_weight_help; return 0;;
+            *)
+                if [ -z "$id" ]; then id="$1"
+                elif [ -z "$name" ]; then name="$1"
+                else echo "Unexpected arg: $1" >&2; return 2; fi
+                shift;;
+        esac
+    done
+
+    if [ -z "$id" ] || [ -z "$name" ]; then
+        _arc_set_scoped_weight_help
+        return 2
+    fi
+
+    if [ -z "$weight" ]; then
+        echo "Error: --weight is required (1-6, M2)." >&2
+        return 2
+    fi
+    if ! printf '%s' "$weight" | grep -qE '^[0-9]+$'; then
+        echo "Error: --weight must be an integer (got: $weight)" >&2
+        return 2
+    fi
+    if [ "$weight" -lt 1 ] || [ "$weight" -gt 6 ]; then
+        echo "Error: --weight $weight out of range. Scoped-driver weight is 1-6 (M2 cap)." >&2
+        echo "  Reason: scoped drivers must not overwhelm the constitutional directives." >&2
+        return 2
+    fi
+
+    if [ -z "$rationale" ]; then
+        echo "Error: --rationale is required (≥30 chars, R6)." >&2
+        echo "  Explain why this weight is changing." >&2
+        return 2
+    fi
+    if [ "${#rationale}" -lt 30 ]; then
+        echo "Error: --rationale must be ≥30 characters (got ${#rationale})." >&2
+        return 2
+    fi
+
+    id="$(_arc_normalize_input "$id")"
+    _arc_validate_id "$id" || return 2
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+
+    local f
+    f="$(_arc_path "$id")"
+
+    # Refuse on unknown driver name (no silent no-op).
+    local found
+    found=$(python3 -c "
+import yaml
+d = yaml.safe_load(open('$f')) or {}
+print('1' if any((sd.get('name') == '$name') for sd in (d.get('scoped_drivers') or [])) else '0')
+")
+    if [ "$found" != "1" ]; then
+        echo "Error: scoped driver '$name' not found on arc '$id'." >&2
+        echo "  Current drivers:" >&2
+        python3 -c "
+import yaml
+d = yaml.safe_load(open('$f')) or {}
+sd = d.get('scoped_drivers') or []
+if not sd:
+    print('    (none)')
+else:
+    for x in sd:
+        print(f\"    - {x.get('name')} (weight={x.get('weight')})\")
+" >&2
+        return 1
+    fi
+
+    if ! _arc_approve_driver_acd_gate "set-scoped-weight" "$i_am_human" "$from_watchtower"; then
+        return 1
+    fi
+
+    # Capture old weight for audit log, then mutate via ruamel (preserve comments).
+    local old_weight
+    old_weight=$(python3 - "$f" "$name" <<'PY'
+import sys, yaml
+fn, name = sys.argv[1], sys.argv[2]
+d = yaml.safe_load(open(fn)) or {}
+for sd in (d.get('scoped_drivers') or []):
+    if sd.get('name') == name:
+        print(sd.get('weight', '?'))
+        break
+PY
+)
+
+    python3 - "$f" "$name" "$weight" <<'PY'
+import sys
+try:
+    from ruamel.yaml import YAML
+    yaml_r = YAML(); yaml_r.preserve_quotes = True; yaml_r.indent(mapping=2, sequence=4, offset=2)
+    HAS_RUAMEL = True
+except ImportError:
+    import yaml
+    HAS_RUAMEL = False
+
+fn, name, new_weight = sys.argv[1], sys.argv[2], int(sys.argv[3])
+
+if HAS_RUAMEL:
+    with open(fn) as fh: data = yaml_r.load(fh)
+else:
+    import yaml
+    data = yaml.safe_load(open(fn).read())
+
+sd = data.get('scoped_drivers') or []
+for entry in sd:
+    if entry.get('name') == name:
+        entry['weight'] = new_weight
+        break
+
+if HAS_RUAMEL:
+    with open(fn, 'w') as fh: yaml_r.dump(data, fh)
+else:
+    with open(fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+PY
+
+    # Audit row to dedicated weight-change history.
+    local log="$PROJECT_ROOT/.context/audits/arc-scoped-weight-changes.jsonl"
+    mkdir -p "$(dirname "$log")"
+    local ts rationale_safe
+    ts=$(_arc_now)
+    rationale_safe=$(printf '%s' "$rationale" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')
+    printf '{"arc_id":"%s","ts":"%s","driver":"%s","old_weight":%s,"new_weight":%s,"rationale":"%s","who":"%s","agent_session":%s}\n' \
+        "$id" "$ts" "$name" "${old_weight:-null}" "$weight" "$rationale_safe" "${USER:-unknown}" \
+        "$([ "${CLAUDECODE:-}" = "1" ] && echo true || echo false)" >> "$log"
+
+    echo "OK: set weight of scoped driver '$name' on arc '$id' (${old_weight:-?} → $weight)."
+    echo "  Change logged to .context/audits/arc-scoped-weight-changes.jsonl"
+    return 0
+}
+
+_arc_set_scoped_weight_help() {
+    echo "Usage:"
+    echo "  fw arc set-scoped-weight <arc-id> \"<name>\" --weight N --rationale \"<≥30 chars>\" [--i-am-human|--from-watchtower]"
+    echo ""
+    echo "  Mutates scoped_drivers[].weight in place (T-1977, mirrors T-1929 /bvp sliders)."
+    echo "  Weight must be 1-6 (M2 cap). Rationale ≥30 chars (R6 anti-Goodhart)."
+    echo "  Audit row appended to .context/audits/arc-scoped-weight-changes.jsonl."
+    echo ""
+    echo "  Refuses under \$CLAUDECODE=1 unless --i-am-human or --from-watchtower (M6, §ACD)."
 }
 
 _arc_remove_driver_help() {

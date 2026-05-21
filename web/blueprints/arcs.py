@@ -19,6 +19,7 @@ Data sources:
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -987,6 +988,70 @@ def arc_remove_driver(arc_id):
         first = err.splitlines()[0] if err else "unknown error"
         return f'<p style="color: var(--pico-del-color);">{first}</p>', 400
     return redirect(f"/arcs/{slug}")
+
+
+@bp.route("/api/arc/<arc_id>/set-scoped-weight", methods=["POST"])
+def arc_set_scoped_weight(arc_id):
+    """T-1977: commit scoped-driver weight changes via `fw arc set-scoped-weight`.
+
+    Mirrors /api/bvp/commit-weights (T-1929) at arc scope. Body fields:
+      rationale : str (≥30 chars, R6)
+      changes   : JSON list of {name: str, weight: 1-6}
+
+    Shells once per change to `bin/fw arc set-scoped-weight <slug> <name>
+    --weight N --rationale "<...>" --from-watchtower`. Stops on first failure.
+    §ACD + history audit stay in the fw command.
+    """
+    if not _ARC_ID_RE.match(arc_id):
+        abort(404)
+    slug = _resolve_arc_slug(arc_id)
+    if slug is None:
+        abort(404)
+    rationale = (request.form.get("rationale") or "").strip()
+    raw_changes = request.form.get("changes") or "[]"
+    if len(rationale) < 30:
+        return "Rationale must be ≥30 characters (R6).", 400
+    try:
+        changes = json.loads(raw_changes)
+    except json.JSONDecodeError:
+        return "Invalid changes payload (not JSON).", 400
+    if not isinstance(changes, list) or not changes:
+        return "No changes provided.", 400
+    if len(changes) > 3:
+        return "Too many changes (max 3 — M2 cap).", 400
+
+    results = []
+    for change in changes:
+        if not isinstance(change, dict):
+            return f"Bad change shape: {change!r}", 400
+        name = str(change.get("name") or "").strip()
+        try:
+            weight = int(change.get("weight"))
+        except (TypeError, ValueError):
+            return f"Bad weight for driver {name!r}", 400
+        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", name):
+            return f"Bad driver name {name!r}", 400
+        if not 1 <= weight <= 6:
+            return f"Driver {name}: weight {weight} out of range (1-6, M2)", 400
+        cmd = [
+            "bin/fw", "arc", "set-scoped-weight", slug, name,
+            "--weight", str(weight),
+            "--rationale", rationale,
+            "--from-watchtower",
+        ]
+        try:
+            result = subprocess.run(
+                cmd, cwd=str(PROJECT_ROOT),
+                capture_output=True, text=True, timeout=30,
+            )
+        except (subprocess.SubprocessError, OSError) as e:
+            return f"Subprocess error on {name}: {e}", 500
+        if result.returncode != 0:
+            err = (result.stderr or result.stdout or "").strip()
+            first = err.splitlines()[0] if err else f"fw arc set-scoped-weight exited {result.returncode}"
+            return f"Commit failed at {name}: {first}", 400
+        results.append({"name": name, "weight": weight})
+    return json.dumps({"committed": results, "count": len(results)}), 200, {"Content-Type": "application/json"}
 
 
 @bp.route("/api/arc/<arc_id>/approve-none", methods=["POST"])
