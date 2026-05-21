@@ -4,20 +4,20 @@ name: "show BVP badge on /tasks listing cards + list view — T-1980 sibling"
 description: >
   show BVP badge on /tasks listing cards + list view — T-1980 sibling
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_tasks_listing_bvp.py, web/blueprints/tasks.py, web/templates/base.html, web/templates/_partials/bvp_badge.html, web/templates/task_detail.html, web/templates/tasks.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T15:52:30Z
-last_update: 2026-05-21T15:52:30Z
-date_finished: null
+last_update: 2026-05-21T16:04:44Z
+date_finished: 2026-05-21T16:04:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +28,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-21T16:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-21T16:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1982: show BVP badge on /tasks listing cards + list view — T-1980 sibling
@@ -48,6 +69,15 @@ User's recurring feedback "still not seeing BVP calculation / scores on tasks fr
 - [x] Playwright test pins DOM: kanban view on `/tasks` also surfaces `.bvp-badge` elements
 
 ### Human
+- [ ] [REVIEW] BVP chip rhythm — does the badge read as informative without crowding the card?
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks (kanban view)
+  2. Scan 5-10 cards in any column
+  3. Switch to list view via the toggle
+  4. Confirm a proposed-mode badge (italic + `*`) reads distinctly from a confirmed badge
+  **Expected:** Chip is visible but not dominant; you can identify high-BVP tasks at a glance; italic+asterisk provenance signal is legible
+  **If not:** Note which cards feel crowded; consider hiding chip in compact view
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -81,8 +111,8 @@ User's recurring feedback "still not seeing BVP calculation / scores on tasks fr
 ## Verification
 
 python3 -c "import ast; ast.parse(open('web/blueprints/tasks.py').read())"
-curl -sf "$(bin/fw watchtower url)/tasks?view=list" | grep -q 'bvp-badge'
-curl -sf "$(bin/fw watchtower url)/tasks" | grep -q 'bvp-badge'
+out=$(curl -sf "$(bin/fw watchtower url)/tasks?view=list" 2>&1); [[ "$out" == *'bvp-badge'* ]]
+out=$(curl -sf "$(bin/fw watchtower url)/tasks" 2>&1); [[ "$out" == *'bvp-badge'* ]]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -190,3 +220,20 @@ curl -sf "$(bin/fw watchtower url)/tasks" | grep -q 'bvp-badge'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1982-show-bvp-badge-on-tasks-listing-cards--l.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-fb6a5b80
+- **Timestamp:** 2026-05-21T16:04:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `web/templates/_partials/bvp_badge.html` macro renders a small chip: confirmed → `BVP 0.58`, proposed → italic `BVP 0.58*` with `title=` tooltip
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/_partials/bvp_badge.html in: `web/templates/_partials/bvp_badge.html` macro renders a small chip: confirmed → `BVP 0.58`, proposed → italic `BVP 0.58*` with `title=` tooltip`
+
+### 2026-05-21T16:04:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

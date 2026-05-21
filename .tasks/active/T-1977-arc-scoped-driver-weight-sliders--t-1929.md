@@ -8,21 +8,21 @@ description: >
   UI per scoped driver below the table with rationale ≥30 chars required at commit.
   Tag arc:value-prioritisation. Related: T-1929, T-1976 (surfaced the gap).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:value-prioritisation]
 arc_id: value-prioritisation
-components: []
+components: [lib/arc.sh, tests/playwright/test_arc_scoped_sliders.py, tests/unit/arc_set_scoped_weight.bats, web/blueprints/arcs.py, web/blueprints/tasks.py, web/templates/arc_detail.html, web/templates/task_detail.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T12:47:49Z
-last_update: '2026-05-21T13:00:02Z'
-date_finished:
+last_update: 2026-05-21T16:03:57Z
+date_finished: 2026-05-21T16:03:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -123,8 +123,8 @@ bash -n lib/arc.sh
 bash -n bin/fw
 python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
 bats tests/unit/arc_set_scoped_weight.bats
-curl -sf "$(bin/fw watchtower url)/arcs/value-prioritisation" | grep -q 'type="range".*data-driver'
-out=$(bin/fw reviewer T-1977 2>&1); echo "$out" | grep -q "Overall:.*PASS"
+out=$(curl -sf "$(bin/fw watchtower url)/arcs/value-prioritisation" 2>&1); [[ "$out" == *'class="scoped-slider"'* ]] && [[ "$out" == *'type="range"'* ]]
+out=$(bin/fw reviewer T-1977 2>&1); [[ "$out" == *"Overall:"*"PASS"* ]]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -168,6 +168,12 @@ out=$(bin/fw reviewer T-1977 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 -->
 
 ## Evolution
+
+### 2026-05-21 — Sigpipe in verification gate
+
+- **What changed:** Capture-first pattern `out=$(cmd); echo "$out" | grep -q PATTERN` from L-387 still SIGPIPEs under `set -eo pipefail` because grep -q closes stdin while echo is writing. Switched to pure-bash substring `[[ "$out" == *PATTERN* ]]` for robustness.
+- **Plan impact:** Future arc-006 verification lines should default to bash substring rather than grep -q.
+- **Triggered:** L-387 needs a follow-up note distinguishing read-all (grep without -q, or grep -c) from short-circuit (grep -q + SIGPIPE).
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -232,3 +238,15 @@ out=$(bin/fw reviewer T-1977 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1977-arc-scoped-driver-weight-sliders--t-1929.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-f51d7ba3
+- **Timestamp:** 2026-05-21T16:04:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-21T16:03:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
