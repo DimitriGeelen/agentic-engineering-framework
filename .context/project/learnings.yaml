@@ -3198,4 +3198,4 @@ X'` returning empty group."
   task: T-1974
   date: 2026-05-21
   context: Added via context agent
-  application: TBD
+  application: "T-1975 — fw audit structure-section check scans web/templates, web/blueprints, lib for present/future-tense 'ship in T-NNNN' against .tasks/completed/. WARN class. Past-tense 'shipped in T-NNNN' excluded (caught FP during dry-run). Refined to add 'once that slice ships' phrasing per the lib/bvp.sh shape. 13/13 bats green."
