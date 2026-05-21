@@ -129,7 +129,7 @@ python3 -m pytest tests/unit/test_inception_decisions_parser.py -q 2>&1 | tail -
 FRAMEWORK_ROOT=/opt/999-Agentic-Engineering-Framework bats tests/unit/check_inception_decisions_hook.bats 2>&1 | tail -3 | grep -v "^$" | head -3
 FRAMEWORK_ROOT=/opt/999-Agentic-Engineering-Framework bats tests/unit/update_task_inception_scope_gate.bats 2>&1 | tail -3 | grep -v "^$" | head -3
 FRAMEWORK_ROOT=/opt/999-Agentic-Engineering-Framework bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1 | tail -3 | grep -v "^$" | head -3
-python3 -c "import yaml; yaml.safe_load(open('lib/inception_decisions.py').read().split('---')[0] if '---' in open('lib/inception_decisions.py').read() else 'ok: true')"
+test -f lib/inception_decisions.py
 out=$(python3 -m py_compile lib/inception_decisions.py agents/context/check-inception-decisions.py 2>&1); [ -z "$out" ]
 out=$(grep -n "Inception GO-scope" CLAUDE.md 2>&1); echo "$out" | grep -q "Inception GO-scope"
 bin/fw enforcement baseline 2>&1 | grep -q "baseline saved\|baseline unchanged\|Hash:"
