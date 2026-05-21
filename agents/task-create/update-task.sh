@@ -524,6 +524,137 @@ check_inception_decision() {
     exit 1
 }
 
+# Inception GO-scope Trace Gate (T-1984, structural prevention for G-066)
+# Fires on --status work-completed for workflow_type: inception tasks that
+# have a non-empty inception_decisions: frontmatter field.
+# Parses each decision's ships_in: referent and validates reachability:
+#   - file path        → PROJECT_ROOT/<path> must exist
+#   - module.function  → symbol grepped in lib/ / agents/ / bin/
+#   - path::test_func  → file exists + function in it
+#   - T-XXX            → task in .tasks/completed/
+#   - deferred:T-YYYY  → task in .tasks/{active,completed}/
+#
+# Grandfathering: if inception_decisions: is empty/missing, gate is silent.
+# Bypass parity (L-399, T-1890):
+#   Direct invocation:  --skip-inception-scope-trace "rationale"
+#   Indirect/git-hook:  FW_SKIP_INCEPTION_SCOPE_TRACE=1
+#
+# Origin: T-1983 GO — closes G-066 (T-1442/T-1443 drifted 26 days after
+# inception close; no gate existed for GO-scope vs shipped deliverables).
+check_inception_scope_trace() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    local task_type
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 \
+        | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    [ "$task_type" = "inception" ] || return 0
+
+    # Grandfather: if python3 unavailable, skip silently (don't block on missing toolchain)
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo -e "${YELLOW}WARN: python3 not found — skip inception-scope-trace check${NC}"
+        return 0
+    fi
+
+    # Grandfather: if lib/inception_decisions.py unavailable, skip silently
+    local lib_py="$FRAMEWORK_ROOT/lib/inception_decisions.py"
+    [ -f "$lib_py" ] || return 0
+
+    # Run reachability check via Python helper
+    # Returns: "OK" or one failure per line prefixed with "FAIL:"
+    local py_output failures
+    py_output=$(python3 - "$TASK_FILE" "$PROJECT_ROOT" <<'PYEOF'
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# argv[0] = "-" (stdin), argv[1] = task_file, argv[2] = project_root
+# But when called via bash heredoc, sys.argv may differ. Use env instead.
+import os
+task_file = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("TASK_FILE", "")
+project_root = sys.argv[2] if len(sys.argv) > 2 else os.environ.get("PROJECT_ROOT", ".")
+
+from pathlib import Path
+from lib.inception_decisions import parse_inception_decisions, check_ships_in_reachable
+
+try:
+    content = Path(task_file).read_text()
+except Exception as e:
+    print(f"IOERR: {e}")
+    sys.exit(0)
+
+result = parse_inception_decisions(content)
+if not result.decisions:
+    print("OK_EMPTY")
+    sys.exit(0)
+
+failures = []
+for dec in result.decisions:
+    if not dec.ships_in:
+        continue
+    err = check_ships_in_reachable(dec.ships_in, dec.id, Path(project_root))
+    if err:
+        failures.append(f"FAIL:{err}")
+
+if failures:
+    for f in failures:
+        print(f)
+else:
+    print("OK")
+PYEOF
+    2>&1) || true
+
+    # Parse output
+    if echo "$py_output" | grep -q "^IOERR:"; then
+        echo -e "${YELLOW}WARN: inception-scope-trace: could not read task file — skipping${NC}"
+        return 0
+    fi
+
+    if echo "$py_output" | grep -q "^OK"; then
+        echo -e "${GREEN}Inception GO-scope trace: all decisions have reachable ships_in \xE2\x9C\x93${NC}"
+        return 0
+    fi
+
+    # Collect failures
+    failures=$(echo "$py_output" | grep "^FAIL:" | sed 's/^FAIL://')
+
+    # Check overrides (L-399 parity — both flag and env-var accepted)
+    if [ "$SKIP_INCEPTION_SCOPE_TRACE" = true ]; then
+        echo -e "${YELLOW}WARNING: inception-scope-trace bypassed (--skip-inception-scope-trace)${NC}"
+        log_gate_bypass "--skip-inception-scope-trace" "check_inception_scope_trace"
+        return 0
+    fi
+
+    if [ "${FW_SKIP_INCEPTION_SCOPE_TRACE:-0}" = "1" ]; then
+        echo -e "${YELLOW}WARNING: inception-scope-trace bypassed (FW_SKIP_INCEPTION_SCOPE_TRACE=1)${NC}"
+        log_gate_bypass "FW_SKIP_INCEPTION_SCOPE_TRACE" "check_inception_scope_trace"
+        return 0
+    fi
+
+    local task_id_short
+    task_id_short=$(basename "$TASK_FILE" | grep -oE '^T-[0-9]+')
+
+    echo -e "${RED}ERROR: INCEPTION-SCOPE-TRACE gate (T-1984, G-066) — ships_in referents unresolved.${NC}" >&2
+    echo "" >&2
+    echo "Inception task $task_id_short has inception_decisions: entries whose" >&2
+    echo "ships_in: referents are not yet reachable. The gate fires at close time" >&2
+    echo "to confirm GO-scope actually landed before the inception is archived." >&2
+    echo "" >&2
+    echo "Failing decision(s):" >&2
+    while IFS= read -r line; do
+        echo "  - $line" >&2
+    done <<< "$failures"
+    echo "" >&2
+    echo "To resolve: ensure each decision's ships_in: referent is reachable." >&2
+    echo "  - file path      → create/ship the file" >&2
+    echo "  - T-XXX          → task must be in .tasks/completed/" >&2
+    echo "  - deferred:T-YYY → target task must exist in .tasks/{active,completed}/" >&2
+    echo "" >&2
+    echo "To override (Tier-2 logged, both required per L-399):" >&2
+    echo "  Direct fw task update:  --skip-inception-scope-trace \"rationale\"" >&2
+    echo "  Via git commit/wrapper: FW_SKIP_INCEPTION_SCOPE_TRACE=1 <command>" >&2
+    echo "  When to pick which: use --skip flag when calling fw task update directly;" >&2
+    echo "  use env-var when the call goes through git commit or other wrappers." >&2
+    exit 1
+}
+
 # Evolution-log Gate (T-1718, structural counter to §ACD/G-062 family)
 # Fires on --status work-completed for arc-tagged build tasks IF the task
 # body already contains a `## Evolution` section (template opt-in: tasks
@@ -817,6 +948,7 @@ SKIP_RECOMMENDATION=false
 SKIP_RCA=false
 SKIP_EVOLUTION=false
 SKIP_INCEPTION_DECISION=false
+SKIP_INCEPTION_SCOPE_TRACE=false
 SKIP_RENDER_REVIEW=false
 SKIP_RENDER_REVIEW_REASON=""
 SCOPE_REDUCTION_ACK=""  # T-1762/P-012: --scope-reduction-acknowledged "rationale"
@@ -838,6 +970,13 @@ while [[ $# -gt 0 ]]; do
         --skip-rca) SKIP_RCA=true; shift ;;
         --skip-evolution) SKIP_EVOLUTION=true; shift ;;
         --skip-inception-decision) SKIP_INCEPTION_DECISION=true; shift ;;
+        --skip-inception-scope-trace)
+            SKIP_INCEPTION_SCOPE_TRACE=true
+            if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]]; then
+                REASON="${REASON:-$2}"
+                shift
+            fi
+            shift ;;
         --skip-render-review)
             SKIP_RENDER_REVIEW=true
             SKIP_RENDER_REVIEW_REASON="${2:-no rationale}"
@@ -858,10 +997,11 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)" >&2
+            echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)" >&2
             echo "  --skip-render-review \"...\" Bypass render-surface Human AC gate (T-1766)" >&2
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_INCEPTION_DECISION=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_INCEPTION_DECISION=true; SKIP_INCEPTION_SCOPE_TRACE=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -881,6 +1021,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)"
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)"
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)"
+            echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)"
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)"
             echo "  --skip-human-ownership       Bypass human ownership reassignment"
             echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
@@ -1135,6 +1276,13 @@ if [ -n "$NEW_STATUS" ]; then
         # Inception tasks must record a go/no-go/defer decision before completion.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_inception_decision
+        fi
+
+        # === Inception GO-scope Trace Gate (T-1984, G-066 prevention) ===
+        # Inception tasks with inception_decisions: populated must have all
+        # ships_in: referents reachable before the inception archives.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_inception_scope_trace
         fi
 
         # === Evolution-log Gate (T-1718, T-1717 grill Q4 remediation) ===
