@@ -17,8 +17,12 @@
   {%- endfor -%}
 {%- endif -%}
 {%- if _aid -%}
+{# T-1969: unified dual-form display "arc-NNN · slug" via arc_display()
+   Jinja global. href still uses the raw _aid — lib/arc.sh _resolve_arc_slug
+   on the backend accepts either form, so navigation works regardless. #}
+{%- set _display = arc_display(_aid) or _aid -%}
 <a class="arc-badge" href="/arcs/{{ _aid }}"
    hx-get="/arcs/{{ _aid }}" hx-target="#content" hx-push-url="true"
-   title="Arc: {{ _aid }}">{{ _aid }}</a>
+   title="Arc: {{ _display }}">{{ _display }}</a>
 {%- endif -%}
 {% endmacro %}

@@ -120,6 +120,46 @@ def _read_arc(arc_id: str) -> dict[str, Any] | None:
     return data
 
 
+# T-1969: arc-badge unified display form.
+# Renders the arc identifier as "arc-NNN · slug" (e.g. "arc-006 · value-prioritisation")
+# so the visual badge always carries both identities — the canonical immutable
+# id (per T-1848 D-Immutability) AND the human-readable slug. Resolves whichever
+# form was stored in `task.arc_id` and produces both at render time.
+#
+# Memoized via lru_cache: arc YAMLs change rarely; this helper is called once per
+# badge on /tasks, /arcs, /bvp etc. (28× on /arcs/arc-006). Cache eviction is
+# acceptable on app restart — no stale-write hazard since the helper reads
+# fresh YAML on cold cache.
+from functools import lru_cache
+
+
+@lru_cache(maxsize=128)
+def arc_display(arc_id_or_slug: str | None) -> str:
+    """Return 'arc-NNN · slug' for a given arc_id or slug, with graceful
+    fallback to the input when either form is unresolvable.
+
+    Behaviour:
+      - Empty/None input → returns "" (caller decides whether to render).
+      - Resolvable: returns f"{canonical_id} · {slug}".
+      - Slug resolves but YAML lacks `id:` field → returns slug alone.
+      - Cannot resolve to a known arc → returns input verbatim (orphan ref).
+    """
+    if not arc_id_or_slug:
+        return ""
+    s = str(arc_id_or_slug).strip()
+    if not s:
+        return ""
+    data = _read_arc(s)
+    if not data:
+        return s  # orphan reference — best-effort, render as-is
+    canonical_id = data.get("id")
+    slug = data.get("slug")
+    if canonical_id and slug and canonical_id != slug:
+        return f"{canonical_id} · {slug}"
+    # Legacy arc missing canonical id, or id==slug (degenerate) — fall back to slug
+    return str(slug or canonical_id or s)
+
+
 _RECENT_PATHS_CACHE: tuple[float, set[str]] | None = None
 
 

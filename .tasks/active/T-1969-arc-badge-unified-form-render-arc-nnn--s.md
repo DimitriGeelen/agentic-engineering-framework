@@ -1,23 +1,26 @@
 ---
 id: T-1969
-name: "Arc badge unified form: render 'arc-NNN · slug' resolving the missing form at render time"
+name: "Arc badge unified form: render 'arc-NNN · slug' resolving the missing form
+  at render time"
 description: >
-  Arc badge unified form: render 'arc-NNN · slug' resolving the missing form at render time
+  Arc badge unified form: render 'arc-NNN · slug' resolving the missing form at render
+  time
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [ui, arc-badge, arc-display, arc:arc-grooming]
-components: []
-related_tasks: []
+components: [web/blueprints/arcs.py, web/app.py, web/templates/_partials/arc_badge.html, tests/unit/test_arc_display_helper.py, tests/playwright/test_arc_badge.py]
+related_tasks: [T-1849, T-1909, T-1968]
+arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T21:19:52Z
-last_update: 2026-05-20T21:19:52Z
-date_finished: null
+last_update: 2026-05-21T08:19:34Z
+date_finished: 2026-05-21T08:19:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +31,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-20T21:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-20T21:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1969: Arc badge unified form: render 'arc-NNN · slug' resolving the missing form at render time
@@ -53,12 +77,12 @@ Existing helpers in `lib/arc.sh`: `_resolve_arc_slug` and `_resolve_arc_id` (per
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Helper in Python that takes either form and returns "arc-NNN · slug" (or single form if the other is unresolvable)
-- [ ] Helper memoized for the request lifecycle (don't re-read arc YAML 28× per `/arcs/arc-006` render)
-- [ ] `arc_badge` macro updated to call the helper and display the combined form
-- [ ] All existing arc-badge instances render the new combined form (Playwright assertion: `/tasks` page contains at least one badge with the ` · ` separator)
-- [ ] Click behavior unchanged — badge still links to `/arcs/<id-or-slug>` (the route accepts both forms per lib/arc.sh:_resolve_arc_slug)
-- [ ] Unit test for the helper: id input → "id · slug", slug input → "id · slug", unresolvable input → falls back gracefully
+- [x] Helper `arc_display(arc_id_or_slug)` in `web/blueprints/arcs.py` returns "arc-NNN · slug", with fallback to single form when YAML lacks `id:` or when id==slug
+- [x] Helper memoized via `@lru_cache(maxsize=128)` — one YAML read per arc per process, not per badge
+- [x] `arc_badge` macro updated to call `arc_display()` Jinja global and display combined form
+- [x] All existing arc-badge instances render the new combined form — Playwright `test_arc_badge_shows_dual_form` passes
+- [x] Click behavior unchanged — badge `href` still uses raw `_aid`; Playwright `test_arc_badge_link_navigates` still passes
+- [x] Unit test `tests/unit/test_arc_display_helper.py` — 8/8 green: empty input, arc-NNN→dual, slug→dual, missing-id-fallback, degenerate-id==slug, unresolvable-verbatim, lru-cache-memoization, whitespace-stripped
 
 ### Human
 - [ ] [REVIEW] Arc badges show consistent "arc-NNN · slug" form across all pages
@@ -127,6 +151,10 @@ Existing helpers in `lib/arc.sh`: `_resolve_arc_slug` and `_resolve_arc_id` (per
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_arc_display_helper.py -q
+python3 -m pytest tests/playwright/test_arc_badge.py -q
+out=$(curl -s http://localhost:3000/tasks 2>&1); grep -qE '>arc-[0-9]{3} · [a-z]' <<<"$out"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -144,6 +172,28 @@ Existing helpers in `lib/arc.sh`: `_resolve_arc_slug` and `_resolve_arc_id` (per
 -->
 
 ## Evolution
+
+### 2026-05-21 — implemented as single-helper + Jinja-global
+
+- **What changed:** Initial spec considered both a Jinja filter and a context processor. Final choice: single Python helper `arc_display()` in `web/blueprints/arcs.py` (next to existing `_resolve_arc_slug` / `_read_arc`), exposed as `arc_display` Jinja global. Reason: keeps related arc-resolution logic colocated; one import in `web/app.py`; no per-request overhead because `lru_cache` is process-wide.
+- **Plan impact:** "Possibly `web/shared.py`" line in Context section is moot — the natural home was `arcs.py` alongside other arc helpers.
+- **Triggered:** No new task.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** User pushback during T-1968 v2 review explicitly named the dual-form ("Both (id · slug)") preference. Implementation is one helper + one Jinja-global registration + one macro change; YAML reads are memoized so the 28-badges-per-page render cost is one cold read per arc. Backend `_resolve_arc_slug` already accepts both forms, so navigation is unchanged. All 8 unit tests + 6 Playwright tests green; live `/tasks` confirms badges now render `arc-003 · orchestrator-rethink` etc.
+
+**Evidence:**
+- `web/blueprints/arcs.py` — new `arc_display()` helper with lru_cache memoization
+- `web/app.py:140-142` — Jinja global registration
+- `web/templates/_partials/arc_badge.html` — macro calls `arc_display(_aid)` for both `title=` and link text
+- `tests/unit/test_arc_display_helper.py` — 8/8 PASS (empty, dual-form-from-id, dual-form-from-slug, missing-id-fallback, degenerate, unresolvable-verbatim, lru-cache, whitespace)
+- `tests/playwright/test_arc_badge.py` — 6/6 PASS (kanban, list, arc-detail, link-nav, dual-form, title-dual-form)
+- Live curl on `/tasks` confirms `arc-003 · orchestrator-rethink`, `arc-002 · embeddings-strategy` rendering
+
+**Review on Watchtower:** http://192.168.10.107:3000/review/T-1969
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -194,3 +244,20 @@ Existing helpers in `lib/arc.sh`: `_resolve_arc_slug` and `_resolve_arc_id` (per
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1969-arc-badge-unified-form-render-arc-nnn--s.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-10659924
+- **Timestamp:** 2026-05-21T08:20:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Helper `arc_display(arc_id_or_slug)` in `web/blueprints/arcs.py` returns "arc-NNN · slug", with fallback to single form when YAML lacks `id:` or when id==slug
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/arcs.py in: Helper `arc_display(arc_id_or_slug)` in `web/blueprints/arcs.py` returns "arc-NNN · slug", with fallback to single form when YAML lacks `id:` or when `
+
+### 2026-05-21T08:19:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -67,3 +67,58 @@ class TestArcBadge:
         assert href and href.startswith("/arcs/"), f"unexpected href: {href}"
         resp = page.goto(_url(href))
         assert resp.status == 200, f"Arc badge link returned {resp.status}, expected 200"
+
+    # ── T-1969: unified dual-form display "arc-NNN · slug" ────────────────
+
+    def test_arc_badge_shows_dual_form(self, page: Page):
+        """At least one arc badge must render as `arc-NNN · slug` after T-1969.
+
+        Both identities are present per T-1848 D-Immutability. Before T-1969 the
+        badge showed whichever form was stored in `task.arc_id` — leading to a
+        visual mix across the page. Now the macro calls `arc_display()` and
+        always renders both. Same applies to the `title=` attribute.
+        """
+        page.goto(_url("/tasks?view=list"))
+        page.wait_for_load_state("domcontentloaded")
+        badges = page.locator("a.arc-badge")
+        assert badges.count() > 0, "Need at least one badge to check dual form"
+        # Aggregate text from up to 20 badges; at least one must contain ' · '
+        joined_text = " | ".join(
+            badges.nth(i).inner_text() for i in range(min(badges.count(), 20))
+        )
+        assert " · " in joined_text, (
+            f"Expected at least one badge with ' · ' separator, "
+            f"got: {joined_text!r}"
+        )
+        # Per-badge shape pin: each must match dual form OR a graceful fallback
+        # (single arc-NNN or bare slug for legacy/degenerate arcs).
+        import re
+        for i in range(min(badges.count(), 20)):
+            text = badges.nth(i).inner_text().strip()
+            ok = (
+                re.match(r"^arc-\d{3} · [a-z][a-z0-9-]*$", text)
+                or re.match(r"^[a-z][a-z0-9-]*$", text)
+                or re.match(r"^arc-\d{3}$", text)
+            )
+            assert ok, (
+                f"Badge text must match 'arc-NNN · slug', 'arc-NNN', "
+                f"or a bare slug — got: {text!r}"
+            )
+
+    def test_arc_badge_title_uses_dual_form(self, page: Page):
+        """The accessibility title= attribute carries the full dual form."""
+        page.goto(_url("/tasks?view=list"))
+        page.wait_for_load_state("domcontentloaded")
+        badges = page.locator("a.arc-badge")
+        assert badges.count() > 0
+        # Find a badge whose title shows the dual form; if any badge has it,
+        # the wiring works (degenerate-only corpus is allowed but unlikely).
+        for i in range(min(badges.count(), 30)):
+            title = badges.nth(i).get_attribute("title") or ""
+            if " · " in title:
+                assert title.startswith("Arc: arc-"), (
+                    f"title= prefix should be 'Arc: arc-NNN · slug', got: {title!r}"
+                )
+                return
+        assert badges.first.get_attribute("title"), \
+            "No badge carries a title= attribute at all"
