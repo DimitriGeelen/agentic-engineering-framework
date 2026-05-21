@@ -192,3 +192,86 @@ YAML
     [ "$status" -eq 0 ]
     [[ "$output" == *"no-rationale-driver"* ]]
 }
+
+# --- T-1979: dedup + proposal cleanup regressions ---
+#
+# Round-trip on T-1976 surfaced two state-transition bugs in arc_approve_driver:
+#   1. No dedup — same name could be appended twice (confirmed in
+#      .context/arcs/value-prioritisation.yaml with estimator-fidelity listed 2×).
+#   2. Approved driver stayed in proposed_scoped_drivers, so the Proposed table
+#      kept showing it as a candidate.
+# These tests pin the fix.
+
+setup_dedup_fixture() {
+    cat > "$ARCS_DIR/dedup-fixture.yaml" <<'YAML'
+id: arc-391
+slug: dedup-fixture
+name: "Dedup fixture"
+description: test fixture
+status: in-progress
+anchor_task: T-9993
+created: 2026-01-01T00:00:00Z
+constituent_tasks: []
+scoped_drivers:
+  - name: existing-driver
+    weight: 4
+    approved_at: 2026-02-01T00:00:00Z
+    rationale: prior approval rationale longer than thirty characters here
+proposed_scoped_drivers:
+  - name: pending-driver
+    weight: 3
+    source: agent
+    ts: 2026-02-02T00:00:00Z
+    rationale: this proposal rationale satisfies the thirty-character minimum
+  - name: other-proposal
+    weight: 2
+    source: agent
+    ts: 2026-02-03T00:00:00Z
+    rationale: second proposal that should survive approval of the first one
+YAML
+}
+
+@test "T-1979: arc_approve_driver refuses duplicate name (exit 1, names timestamp)" {
+    setup_dedup_fixture
+    run arc_approve_driver "dedup-fixture" "existing-driver" --weight 2 --rationale "trying to add a duplicate should be refused with a clear message"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"already in scoped_drivers"* ]]
+    [[ "$output" == *"2026-02-01T00:00:00Z"* ]]
+    [[ "$output" == *"remove-driver"* ]]
+    # State unchanged — still exactly one occurrence of existing-driver entry.
+    run grep -c "name: existing-driver" "$ARCS_DIR/dedup-fixture.yaml"
+    [ "$output" -eq 1 ]
+}
+
+@test "T-1979: arc_approve_driver removes matching proposal on successful approval" {
+    setup_dedup_fixture
+    run arc_approve_driver "dedup-fixture" "pending-driver" --weight 3 --rationale "approving the pending proposal should also remove it from proposed list"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Removed matching proposal for 'pending-driver'"* ]]
+    # pending-driver now in scoped, not in proposed
+    out=$(python3 -c "
+import yaml
+d = yaml.safe_load(open('$ARCS_DIR/dedup-fixture.yaml')) or {}
+sd_names = [s.get('name') for s in (d.get('scoped_drivers') or [])]
+pp_names = [p.get('name') for p in (d.get('proposed_scoped_drivers') or [])]
+print('SCOPED:', sd_names)
+print('PROPOSED:', pp_names)
+")
+    [[ "$out" == *"SCOPED:"*"pending-driver"* ]]
+    [[ "$out" != *"PROPOSED:"*"pending-driver"* ]]
+    # Other proposal survives
+    [[ "$out" == *"PROPOSED:"*"other-proposal"* ]]
+}
+
+@test "T-1979: arc_approve_driver does NOT emit removal info when no proposal matched" {
+    setup_dedup_fixture
+    # Approve a name that is NOT in proposed_scoped_drivers — should be quiet.
+    run arc_approve_driver "dedup-fixture" "fresh-name" --weight 2 --rationale "a fresh driver name not present in proposed list should not trigger info"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"Removed matching proposal"* ]]
+    # Proposed list intact (both original proposals still there).
+    run grep -c "name: pending-driver" "$ARCS_DIR/dedup-fixture.yaml"
+    [ "$output" -eq 1 ]
+    run grep -c "name: other-proposal" "$ARCS_DIR/dedup-fixture.yaml"
+    [ "$output" -eq 1 ]
+}

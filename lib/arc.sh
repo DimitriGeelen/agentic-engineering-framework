@@ -1176,9 +1176,34 @@ arc_approve_driver() {
         return 2
     fi
 
-    # Cap check: max 3 scoped drivers.
     local f
     f="$(_arc_path "$id")"
+
+    # T-1979: Dedup check — refuse if name already in scoped_drivers.
+    # Root cause of T-1976 round-trip bug: heredoc appended unconditionally.
+    local existing_ts
+    existing_ts=$(python3 - "$f" "$name" <<'PY'
+import sys, yaml
+fn, name = sys.argv[1], sys.argv[2]
+d = yaml.safe_load(open(fn)) or {}
+for sd in (d.get('scoped_drivers') or []):
+    if sd.get('name') == name:
+        ts = sd.get('approved_at', '?')
+        # YAML parses unquoted ISO timestamps to datetime; render back to ISO-Z.
+        if hasattr(ts, 'isoformat'):
+            ts = ts.isoformat().replace('+00:00', 'Z')
+        print(ts)
+        break
+PY
+)
+    if [ -n "$existing_ts" ]; then
+        echo "Error: driver '$name' already in scoped_drivers (approved at $existing_ts)." >&2
+        echo "  To re-approve with a different weight, first remove it:" >&2
+        echo "    fw arc remove-driver $id \"$name\" --rationale \"<≥30 chars why>\"" >&2
+        return 1
+    fi
+
+    # Cap check: max 3 scoped drivers.
     local current_count
     current_count=$(python3 -c "
 import yaml
@@ -1227,6 +1252,14 @@ if rationale:
     entry['rationale'] = rationale
 sd.append(entry)
 data['scoped_drivers'] = sd
+
+# T-1979: remove matching proposal from proposed_scoped_drivers (case-sensitive name match).
+# Without this, the Proposed table still shows the driver after approval (T-1976 round-trip bug).
+proposed = data.get('proposed_scoped_drivers') or []
+new_proposed = [p for p in proposed if p.get('name') != name]
+if len(new_proposed) < len(proposed):
+    data['proposed_scoped_drivers'] = new_proposed
+    print(f"Removed matching proposal for '{name}'.")
 
 if data.get('status') == 'draft':
     data['status'] = 'in-progress'
