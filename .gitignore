@@ -49,6 +49,8 @@ lib/ts/node_modules/
 *.png
 # But track documentation screenshots
 !docs/screenshots/*.png
+# And arc demo-evidence bundles (per-arc, e.g. T-1915 BVP arc closure)
+!docs/reports/T-*-demo-evidence/*.png
 datetime
 
 # T-1700/T-1705 working dirs — proxy logs, model pull logs (runtime state)
