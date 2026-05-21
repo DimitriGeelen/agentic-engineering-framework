@@ -7,20 +7,20 @@ description: >
   consume-the-recommendation surface. Closes the asymmetry with inception-decide flow
   (/inception/T-XXX vs /review/T-XXX is the canonical pattern).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: now
 tags: [approval-ux, watchtower, arc, T-1959-followup, arc:arc-grooming]
-components: []
+components: [tests/playwright/test_arc_review_route.py, web/blueprints/arcs.py, web/templates/_approvals_content.html, web/templates/arc_review.html]
 related_tasks: [T-1959, T-1960, T-1961, T-1962, T-1911]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T17:57:15Z
-last_update: 2026-05-21T17:46:25Z
-date_finished:
+last_update: 2026-05-21T17:51:33Z
+date_finished: 2026-05-21T17:51:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -216,3 +216,20 @@ out=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/arcs/dispatch
 
 ### 2026-05-21T17:46:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-75d4bf22
+- **Timestamp:** 2026-05-21T17:51:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — New `web/templates/arc_review.html` renders: arc header (name, slug, status), headline mechanic (when present), completion stats, the Agent Recommendation panel from T-1960 (verdict badge + rationale_
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arc_review.html in: New `web/templates/arc_review.html` renders: arc header (name, slug, status), headline mechanic (when present), completion stats, the Agent Recommenda`
+
+### 2026-05-21T17:51:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
