@@ -548,6 +548,63 @@ def _completion_stats(constituents: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+_DEMO_HINT_RE = re.compile(
+    r"(docs/reports/[^\s)\]\"'<>`]+|https?://[^\s)\]\"'<>`]+)"
+)
+
+
+def _anchor_recommendation(arc: dict[str, Any]) -> dict[str, Any]:
+    """T-1960: read the arc's anchor-task `## Recommendation` block and return
+    a structured dict for /arcs/<slug>/close.
+
+    Returns keys: present (bool), verdict, rationale, evidence, raw,
+    suggested_demo (first docs/reports/* path OR https?:// URL found in
+    evidence text, '' when none), anchor_id ('' when no anchor_task).
+    All keys always present.
+    """
+    out = {
+        "present": False,
+        "verdict": "?",
+        "rationale": "",
+        "evidence": "",
+        "rationale_html": "",
+        "evidence_html": "",
+        "raw": "",
+        "suggested_demo": "",
+        "anchor_id": "",
+    }
+    anchor = str(arc.get("anchor_task") or "").strip()
+    if not anchor:
+        return out
+    out["anchor_id"] = anchor
+    body = None
+    for sub in ("active", "completed"):
+        candidates = sorted((PROJECT_ROOT / ".tasks" / sub).glob(f"{anchor}-*.md"))
+        if candidates:
+            try:
+                body = candidates[0].read_text(encoding="utf-8")
+            except OSError:
+                body = None
+            break
+    if not body:
+        return out
+    from web.shared import extract_recommendation, render_markdown_safe
+    rec = extract_recommendation(body)
+    if not rec.get("raw"):
+        return out
+    out["present"] = True
+    out["verdict"] = rec.get("verdict", "?")
+    out["rationale"] = rec.get("rationale", "")
+    out["evidence"] = rec.get("evidence", "")
+    out["raw"] = rec.get("raw", "")
+    out["rationale_html"] = render_markdown_safe(out["rationale"])
+    out["evidence_html"] = render_markdown_safe(out["evidence"])
+    m = _DEMO_HINT_RE.search(out["evidence"])
+    if m:
+        out["suggested_demo"] = m.group(1).rstrip(".,;:!?)")
+    return out
+
+
 def _arc_reports(arc_id: str) -> list[dict[str, str]]:
     """Find docs/reports/<arc_id>-*.md files for this arc.
 
@@ -1255,6 +1312,11 @@ def arc_close_surface(arc_id):
     arc_numeric = str(arc.get("id") or "").strip()
     focused = (focus_val == arc_slug or (arc_numeric and focus_val == arc_numeric))
     reports = _arc_reports(arc_slug)
+    recommendation = _anchor_recommendation(arc)
+
+    prev_demo_value = request.form.get("demo_value", "") if request.method == "POST" else ""
+    if not prev_demo_value and recommendation.get("suggested_demo"):
+        prev_demo_value = recommendation["suggested_demo"]
 
     return render_page(
         "arc_close.html",
@@ -1266,9 +1328,10 @@ def arc_close_surface(arc_id):
         stats=stats,
         focused=focused,
         reports=reports,
+        recommendation=recommendation,
         error_msg=error_msg,
         prev_demo_mode=request.form.get("demo_mode", "") if request.method == "POST" else "",
-        prev_demo_value=request.form.get("demo_value", "") if request.method == "POST" else "",
+        prev_demo_value=prev_demo_value,
         prev_decision=request.form.get("decision", "") if request.method == "POST" else "",
         prev_justification=request.form.get("justification", "") if request.method == "POST" else "",
     )

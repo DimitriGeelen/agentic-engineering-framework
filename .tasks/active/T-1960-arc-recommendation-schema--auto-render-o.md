@@ -2,9 +2,12 @@
 id: T-1960
 name: "arc Recommendation schema + auto-render on /arcs/<slug>/close"
 description: >
-  T-1959 build child A: agent writes `## Recommendation` (CLOSE/KEEP-OPEN/DEFER) on arc's anchor task; /arcs/<slug>/close reads it and pre-fills demo path + surfaces rationale/evidence inline; human action reduced to Approve/override. See T-1959 Scope Fence for details.
+  T-1959 build child A: agent writes `## Recommendation` (CLOSE/KEEP-OPEN/DEFER) on
+  arc's anchor task; /arcs/<slug>/close reads it and pre-fills demo path + surfaces
+  rationale/evidence inline; human action reduced to Approve/override. See T-1959
+  Scope Fence for details.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: now
@@ -16,8 +19,8 @@ related_tasks: [T-1959, T-1911]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T17:56:28Z
-last_update: 2026-05-20T17:56:28Z
-date_finished: null
+last_update: 2026-05-21T17:22:18Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +31,48 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-20T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-20T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1960: arc Recommendation schema + auto-render on /arcs/<slug>/close
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1959 (inception) decided GO on parity between arc-close and inception-decide approval surfaces. T-1911 shipped the `/arcs/<slug>/close` form, but it renders blank — the human has to recall the demo path, write the decision narrative, and answer §ACD from scratch. The agent's `## Recommendation` on the *anchor task* (the right home per T-1959 A1) has nowhere to surface near the human's decision point.
+
+T-1960 closes that gap: extend the existing `extract_recommendation` parser (web/shared.py) to accept CLOSE/KEEP-OPEN verdicts alongside GO/NO-GO/DEFER, have `arc_close_surface` read the anchor task's Recommendation block, and render rationale/evidence inline on `/arcs/<slug>/close`. Pre-fill the demo-path field from the first `docs/reports/...` link in evidence so the human only Approves or overrides.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `extract_recommendation` in `web/shared.py` recognises `CLOSE` and `KEEP-OPEN` as verdicts (in addition to GO/NO-GO/DEFER), preserving existing GO/NO-GO/DEFER behaviour
+- [x] `arc_close_surface` in `web/blueprints/arcs.py` reads the arc's anchor-task body (when present), calls `extract_recommendation`, and passes a `recommendation` dict to the template — verdict, rationale, evidence, all empty-string-safe when no anchor task or no Recommendation block
+- [x] `web/templates/arc_close.html` renders a Recommendation panel above the form when a recommendation exists — verdict badge + rationale + evidence; absent panel when no recommendation
+- [x] Demo-path field is pre-filled from the first `docs/reports/...` path (or URL) found in the recommendation's evidence text when no POST has occurred and no `prev_demo_value` is set
+- [x] Bats unit test `tests/unit/extract_recommendation_close_keep_open.bats` pins the parser extension (CLOSE / KEEP-OPEN verdicts extracted from fixture bodies)
+- [x] Playwright test `tests/playwright/test_arc_close_recommendation_panel.py` asserts the panel renders on an arc with anchor-task Recommendation (DOM-content assertions per T-1575) — no element-presence grep
+- [x] `bash -n web/blueprints/arcs.py` (syntax via `python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"`)
+- [x] Watchtower restart + live `curl /arcs/value-prioritisation/close` confirms the panel renders with arc-006 anchor recommendation (or absence-rendering on an arc without one)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -74,6 +105,13 @@ date_finished: null
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+- [ ] [REVIEW] Recommendation panel layout reads cleanly above the close form — verdict badge prominent, rationale legible, evidence not buried, demo-path pre-fill obvious
+  **Steps:**
+  1. Open http://192.168.10.107:3000/arcs/value-prioritisation/close (or another arc whose anchor task has a `## Recommendation` block)
+  2. Read the page top-to-bottom
+  **Expected:** Recommendation panel sits between the arc header card and the §ACD prompt. Verdict (CLOSE/KEEP-OPEN/DEFER) is visually distinct from the rationale text. Evidence list is scannable. Demo-path field below shows pre-filled value from the recommendation's first `docs/reports/...` path; field is editable.
+  **If not:** Note what visually clashes (verdict invisible, evidence too dense, demo-path not pre-filled).
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -101,6 +139,12 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
+python3 -c "import ast; ast.parse(open('web/shared.py').read())"
+bats tests/unit/extract_recommendation_close_keep_open.bats
+.venv/bin/python -m pytest tests/playwright/test_arc_close_recommendation_panel.py -q
+out=$(curl -s http://localhost:3000/arcs/value-prioritisation/close 2>&1); [[ "$out" == *"arc-close-hdr"* ]]
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -119,27 +163,15 @@ date_finished: null
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-21 — verdict-extension vs new arc-side schema
+- **What changed:** T-1959 Scope Fence A1 named CLOSE/KEEP-OPEN as the arc-anchor verdicts. The existing `extract_recommendation` parser in `web/shared.py` already serves /review and /approvals for inception-decide (GO/NO-GO/DEFER). Extending one regex alternation gives us four arc-close-bearing verdicts everywhere `extract_recommendation` is called, with no schema bifurcation.
+- **Plan impact:** No new arc-side YAML schema; the anchor task body remains the single source of truth.
+- **Triggered:** Documented the verdict vocabulary in the bats fixture so future agents see CLOSE/KEEP-OPEN as first-class.
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-05-21 — render-layer markdown pre-render (no jinja filter)
+- **What changed:** Initially tried to use a `render_md_safe` jinja filter that doesn't exist. The existing pattern across `/review` and `/tasks/<id>` is pre-render in the blueprint (`render_markdown_safe(rationale)`) and pass `_html` keys to the template.
+- **Plan impact:** Helper returns `rationale_html` + `evidence_html`; template just `| safe`-renders the strings.
+- **Triggered:** Same shape as `review.py:163-168` — kept the cross-surface conformance instead of inventing a filter.
 
 ## Decisions
 
@@ -162,9 +194,30 @@ date_finished: null
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Closes T-1959's load-bearing gap (A1, A2): the agent's CLOSE/KEEP-OPEN advisory now lives on the anchor task's `## Recommendation` block AND surfaces inline on `/arcs/<slug>/close` so the human approves with full context instead of filling a blank form. Single-regex parser extension keeps schema unified across inception-decide and arc-close. Demo path pre-fill removes the recall-from-memory step at decision time. Render-surface gate satisfied by the [REVIEW] AC; all 9 bats + 5 Playwright + curl smoke pass; no blast-radius (helper-add only).
+
+**Evidence:**
+- `web/shared.py`: `extract_recommendation` regex extended `(KEEP-OPEN|NO-GO|CLOSE|GO|DEFER)` — alternation order preserves GO/NO-GO precedence (NO-GO before GO; KEEP-OPEN, CLOSE on the inside)
+- `web/blueprints/arcs.py`: new `_anchor_recommendation(arc)` helper resolves anchor task in active/ or completed/, pre-renders rationale/evidence HTML via `render_markdown_safe`, extracts first `docs/reports/*` or `https?://...` from evidence as `suggested_demo`
+- `web/blueprints/arcs.py`: `arc_close_surface` passes `recommendation=` to template; `prev_demo_value` falls back to `suggested_demo` on GET
+- `web/templates/arc_close.html`: new `.anchor-rec` section above the form with verdict badge, rationale, evidence, demo pre-fill hint
+- bats `tests/unit/extract_recommendation_close_keep_open.bats` (9 tests, all PASS) — CLOSE/KEEP-OPEN extracted, GO/NO-GO/DEFER regression-guarded, case-insensitive, absent-section handled
+- Playwright `tests/playwright/test_arc_close_recommendation_panel.py` (5 tests, all PASS) — DOM-content assertions per T-1575: panel renders, badge shows canonical verdict, anchor link present, rationale substantive, panel positioned above form
+- Live smoke: `curl /arcs/value-prioritisation/close` renders verdict-GO panel with T-1915 rationale + evidence; `curl /arcs/orchestrator-rethink/close` same shape; `curl /arcs/dispatch-safety/close` 302→/arcs/dispatch-safety (closed-arc gate, expected)
+- Absence-rendering: helper returns `present: False` on no-anchor and nonexistent-anchor; template's `{% if recommendation and recommendation.present %}` suppresses the panel cleanly
+
+**Review on Watchtower:** http://192.168.10.107:3000/review/T-1960
+
 ## Updates
 
 ### 2026-05-20T17:56:28Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1960-arc-recommendation-schema--auto-render-o.md
 - **Context:** Initial task creation
+
+### 2026-05-21T17:22:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

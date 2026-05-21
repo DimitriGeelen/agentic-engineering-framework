@@ -504,7 +504,7 @@ def extract_recommendation(body: str) -> dict:
         end = matches[idx + 1].start() if idx + 1 < len(matches) else len(section)
         body_span = section[start:end].strip()
         if bucket == "recommendation":
-            v = re_mod.match(r"\s*(NO-GO|GO|DEFER)\b", body_span, re_mod.IGNORECASE)
+            v = re_mod.match(r"\s*(KEEP-OPEN|NO-GO|CLOSE|GO|DEFER)\b", body_span, re_mod.IGNORECASE)
             if v:
                 out["verdict"] = v.group(1).upper()
         elif bucket == "rationale":
