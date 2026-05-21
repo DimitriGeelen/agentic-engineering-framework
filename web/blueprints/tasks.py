@@ -35,7 +35,16 @@ def _task_bvp_data(task_data: dict) -> dict:
         _resolve_cost_estimate, _latest_proposed_scores,
     )
 
-    weights = _driver_weights(_load_policy())
+    policy = _load_policy()
+    weights = _driver_weights(policy)
+    # T-1981: human-readable driver names from policy (D1 → "Antifragility" etc).
+    driver_names: dict[str, str] = {}
+    for d in (policy.get("protected_drivers") or []):
+        if d.get("id") and d.get("name"):
+            driver_names[d["id"]] = d["name"]
+    for d in (policy.get("free_drivers") or []):
+        if d.get("id") and d.get("name"):
+            driver_names[d["id"]] = d["name"]
 
     scores = task_data.get("bvp_scores") if isinstance(task_data.get("bvp_scores"), dict) else None
     if scores:
@@ -54,6 +63,7 @@ def _task_bvp_data(task_data: dict) -> dict:
                 "cost": None,
                 "cost_source": "none",
                 "weights": weights,
+                "driver_names": driver_names,
             }
 
     is_proposed = mode == "proposed"
@@ -69,6 +79,7 @@ def _task_bvp_data(task_data: dict) -> dict:
         "cost": cost,
         "cost_source": src,
         "weights": weights,
+        "driver_names": driver_names,
     }
 
 

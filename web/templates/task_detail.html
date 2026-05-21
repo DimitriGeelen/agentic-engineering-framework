@@ -337,7 +337,10 @@
                     <tbody>
                     {% for d, s in bvp.scores.items() %}
                         <tr>
-                            <td><code>{{ d }}</code></td>
+                            <td>
+                                <code>{{ d }}</code>
+                                {% if bvp.driver_names.get(d) %}<span class="muted" style="margin-left: 0.4em;">{{ bvp.driver_names[d] }}</span>{% endif %}
+                            </td>
                             <td>{% if bvp.mode == 'proposed' %}<em>{{ s }}*</em>{% else %}{{ s }}{% endif %}</td>
                             <td>{{ bvp.weights.get(d, '—') }}</td>
                         </tr>
