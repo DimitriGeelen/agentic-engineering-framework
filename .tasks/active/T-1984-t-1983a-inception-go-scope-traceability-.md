@@ -16,7 +16,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T22:29:41Z
-last_update: '2026-05-21T22:30:02Z'
+last_update: 2026-05-21T22:34:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,8 +74,8 @@ into the new schema and a separate build task (T-1950A) will land
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Schema: `inception_decisions:` frontmatter field accepted on inception tasks. Each entry is `{id: <slug>, text: <one-liner>, ships_in: <referent>}`. `id:` is a free-text kebab-case slug; uniqueness validated within the task; `text:` is a one-liner; `ships_in:` accepts one of five shapes: (1) file path, (2) `module.function`, (3) `path::test_name`, (4) `T-XXX`, (5) `deferred:T-YYYY`. Parsed via `lib/inception_decisions.sh` (new) or `lib/inception_decisions.py` (preferred for YAML safety).
-- [ ] Schema: `unlocks_inception_decision:` frontmatter field accepted on build tasks. List of `T-XXX:<decision-id>` strings. Validator confirms each referenced inception+decision-id exists.
+- [x] Schema: `inception_decisions:` frontmatter field accepted on inception tasks. Each entry is `{id: <slug>, text: <one-liner>, ships_in: <referent>}`. `id:` is a free-text kebab-case slug; uniqueness validated within the task; `text:` is a one-liner; `ships_in:` accepts one of five shapes: (1) file path, (2) `module.function`, (3) `path::test_name`, (4) `T-XXX`, (5) `deferred:T-YYYY`. Parsed via `lib/inception_decisions.sh` (new) or `lib/inception_decisions.py` (preferred for YAML safety).
+- [x] Schema: `unlocks_inception_decision:` frontmatter field accepted on build tasks. List of `T-XXX:<decision-id>` strings. Validator confirms each referenced inception+decision-id exists.
 - [ ] PreToolUse hook `agents/context/check-inception-decisions` blocks Write|Edit on `.tasks/{active,completed}/T-*.md` when `inception_decisions:` is non-empty AND any entry has malformed shape OR duplicate `id:` OR unresolvable `ships_in:` referent. Override env-var: `FW_ALLOW_INCEPTION_DECISIONS_DRIFT=1` (Tier-2 logged).
 - [ ] Refusal gate: `update-task.sh --status work-completed` on `workflow_type: inception` task with non-empty `inception_decisions:` parses each entry and validates `ships_in:` reachability — file exists, function/symbol defined (grep), task-id is in `.tasks/completed/`, or `deferred:T-YYYY` target exists. Blocks transition with one-paragraph block message naming the failing decision id + override flag.
 - [ ] Bypass parity (L-399): block message names BOTH `--skip-inception-scope-trace "rationale"` (for direct `update-task.sh` invocations) AND `FW_SKIP_INCEPTION_SCOPE_TRACE=1` env-var (for `git commit` and other downstream). Both are accepted, both log Tier-2 entry to `.context/working/.gate-bypass-log.yaml`.
