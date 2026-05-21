@@ -174,22 +174,62 @@
     <p class="muted"><em>No coherence warnings — arc claims align with constituent scores (or the arc has no in-progress status / no scoring constituents to compare against).</em></p>
     {% endif %}
 
-    {# Currently approved scoped drivers #}
+    {# Currently approved scoped drivers — with per-row Remove (T-1976) #}
     {% if bvp_info.scoped_drivers %}
     <h3>Scoped drivers ({{ bvp_info.scoped_drivers|length }} / 3 max)</h3>
     <table>
-        <thead><tr><th>Name</th><th>Weight</th><th>Rationale</th><th>Approved</th></tr></thead>
+        <thead><tr><th>Name</th><th>Weight</th><th>Rationale</th><th>Approved</th><th></th></tr></thead>
         <tbody>
             {% for sd in bvp_info.scoped_drivers %}
             <tr>
                 <td><code>{{ sd.get('name', '?') }}</code></td>
                 <td>{{ sd.get('weight', '—') }}</td>
                 <td>{{ sd.get('rationale', '')|truncate(120, True) }}</td>
-                <td><small>{{ sd.get('approved_ts', sd.get('ts', '—')) }}</small></td>
+                <td><small>{{ sd.get('approved_ts', sd.get('ts', sd.get('approved_at', '—'))) }}</small></td>
+                <td>
+                    <details>
+                        <summary class="muted" style="cursor: pointer; font-size: 0.85em;">Remove</summary>
+                        <form method="POST" action="/api/arc/{{ arc_slug }}/remove-driver" style="margin-top: 0.4rem;">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="name" value="{{ sd.get('name', '') }}">
+                            <label style="font-size: 0.85em;">Rationale (≥30 chars):
+                                <input type="text" name="rationale" minlength="30" required style="width: 22em;"
+                                       placeholder="Why is this driver being removed?">
+                            </label>
+                            <button type="submit" class="secondary outline">Confirm remove</button>
+                        </form>
+                    </details>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
+
+    {# Add a custom scoped driver — T-1976 parity with /bvp add-driver form.
+       Gated by cap (M2 max 3); estimator-proposed drivers use the Approve form below. #}
+    {% if (bvp_info.scoped_drivers|length if bvp_info.scoped_drivers else 0) < 3 %}
+    <details>
+        <summary>Add a custom scoped driver</summary>
+        <p class="muted">For drivers the estimator hasn't proposed but you want to track. M2 cap: max 3 scoped drivers per arc; weight 1-6.</p>
+        <form method="POST" action="/api/arc/{{ arc_slug }}/add-driver">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="grid">
+                <label>Name (regex <code>[A-Za-z][A-Za-z0-9_-]*</code>):
+                    <input type="text" name="name" pattern="[A-Za-z][A-Za-z0-9_\-]*" maxlength="64" required
+                           placeholder="e.g. determinism">
+                </label>
+                <label>Weight (1-6):
+                    <input type="number" name="weight" min="1" max="6" value="3" required style="width: 6em;">
+                </label>
+            </div>
+            <label>Rationale (≥30 chars, R6 — what does this driver distinguish that D1-D4 don't?):
+                <textarea name="rationale" rows="2" minlength="30" required style="width: 100%;"
+                          placeholder="One line explaining what this arc-specific driver captures that the four constitutional directives already covering"></textarea>
+            </label>
+            <button type="submit">Add driver</button>
+        </form>
+    </details>
     {% endif %}
 
     {# Proposed drivers — agent-suggested, awaiting approve / approve-none #}

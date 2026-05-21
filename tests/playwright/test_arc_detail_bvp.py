@@ -143,3 +143,85 @@ def test_arc_detail_source_label_uses_code_for_mode_slug(page, base_url):
         "derived-confirmed",
         "derived-proposed",
     }, f"Unexpected mode slug rendered: {slug_text!r}"
+
+
+# ── T-1976: arc-scoped driver add/remove parity with global /bvp ──
+
+
+def test_arc_detail_renders_add_custom_driver_form(page, base_url):
+    """Add-custom-driver form must render below the Proposed section when
+    scoped_drivers count is under the M2 cap of 3."""
+    page.goto(f"{base_url}/arcs/{_ARC_SLUG}", wait_until="domcontentloaded")
+    expect(
+        page.locator("#bvp-signals summary", has_text="Add a custom scoped driver")
+    ).to_be_visible()
+    form = page.locator(f"#bvp-signals form[action='/api/arc/{_ARC_SLUG}/add-driver']")
+    expect(form).to_have_count(1)
+    # Required fields pinned: name + weight + rationale, all with constraints.
+    expect(form.locator("input[name='name']")).to_have_attribute("required", "")
+    expect(form.locator("input[name='weight']")).to_have_attribute("min", "1")
+    expect(form.locator("input[name='weight']")).to_have_attribute("max", "6")
+    rationale = form.locator("textarea[name='rationale']")
+    expect(rationale).to_have_attribute("minlength", "30")
+    expect(rationale).to_have_attribute("required", "")
+
+
+def test_arc_detail_add_driver_rejects_short_rationale(page, base_url):
+    """POST with <30-char rationale must be rejected by the server (R6)."""
+    resp = page.request.post(
+        f"{base_url}/api/arc/{_ARC_SLUG}/add-driver",
+        form={"name": "test-driver-xxxx", "weight": "3", "rationale": "too short"},
+    )
+    assert resp.status == 400, f"expected 400, got {resp.status}: {resp.text()}"
+    assert "≥30 characters" in resp.text() or "30 characters" in resp.text()
+
+
+def test_arc_detail_add_driver_rejects_invalid_weight(page, base_url):
+    """POST with weight outside 1-6 must be rejected (M2 cap)."""
+    resp = page.request.post(
+        f"{base_url}/api/arc/{_ARC_SLUG}/add-driver",
+        form={
+            "name": "test-driver",
+            "weight": "9",
+            "rationale": "weight 9 should be rejected by the server because cap is 6",
+        },
+    )
+    assert resp.status == 400, f"expected 400, got {resp.status}: {resp.text()}"
+    assert "1-6" in resp.text() or "M2" in resp.text() or "out of range" in resp.text()
+
+
+def test_arc_detail_add_driver_rejects_bad_name(page, base_url):
+    """POST with name not matching regex must be rejected."""
+    resp = page.request.post(
+        f"{base_url}/api/arc/{_ARC_SLUG}/add-driver",
+        form={
+            "name": "9bad name!",
+            "weight": "3",
+            "rationale": "name with leading digit and special chars should be rejected",
+        },
+    )
+    assert resp.status == 400, f"expected 400, got {resp.status}: {resp.text()}"
+
+
+def test_arc_detail_remove_driver_route_rejects_short_rationale(page, base_url):
+    """Remove route exists and rejects <30-char rationale (route-existence pin —
+    DOM rendering of Remove buttons requires fixture data)."""
+    resp = page.request.post(
+        f"{base_url}/api/arc/{_ARC_SLUG}/remove-driver",
+        form={"name": "alpha-driver", "rationale": "too short"},
+    )
+    # We expect 400 (validation) — anything other than 404/405 confirms the route exists.
+    assert resp.status == 400, f"expected 400, got {resp.status}: {resp.text()}"
+    assert "≥30 characters" in resp.text() or "30 characters" in resp.text()
+
+
+def test_arc_detail_remove_driver_route_rejects_bad_name(page, base_url):
+    """Remove route validates driver name regex (route-existence pin)."""
+    resp = page.request.post(
+        f"{base_url}/api/arc/{_ARC_SLUG}/remove-driver",
+        form={
+            "name": "9bad name!",
+            "rationale": "name with leading digit and special chars should be rejected here",
+        },
+    )
+    assert resp.status == 400, f"expected 400, got {resp.status}: {resp.text()}"

@@ -841,6 +841,93 @@ def arc_approve_driver(arc_id):
     return redirect(f"/arcs/{slug}")
 
 
+@bp.route("/api/arc/<arc_id>/add-driver", methods=["POST"])
+def arc_add_driver(arc_id):
+    """T-1976: shell `fw arc approve-driver <slug> '<name>' --weight N --rationale R --from-watchtower`.
+
+    Dedicated route for adding a CUSTOM scoped driver (not from estimator
+    proposals — those use /approve-driver). Stricter validation than the
+    Approve flow: name, weight, and rationale (≥30 chars) are all required.
+    Symmetric with /api/bvp/driver/add (T-1964).
+    """
+    from flask import redirect
+    if not _ARC_ID_RE.match(arc_id):
+        abort(404)
+    slug = _resolve_arc_slug(arc_id)
+    if slug is None:
+        abort(404)
+    name = (request.form.get("name") or "").strip()
+    weight_raw = (request.form.get("weight") or "").strip()
+    rationale = (request.form.get("rationale") or "").strip()
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", name):
+        return '<p style="color: var(--pico-del-color);">Driver name must match [A-Za-z][A-Za-z0-9_-]*</p>', 400
+    if len(name) > 64:
+        return '<p style="color: var(--pico-del-color);">Driver name too long (max 64).</p>', 400
+    try:
+        weight = int(weight_raw)
+    except ValueError:
+        return '<p style="color: var(--pico-del-color);">Weight must be an integer 1-6.</p>', 400
+    if not 1 <= weight <= 6:
+        return f'<p style="color: var(--pico-del-color);">Weight {weight} out of range (1-6, M2 cap).</p>', 400
+    if len(rationale) < 30:
+        return '<p style="color: var(--pico-del-color);">Rationale must be ≥30 characters (R6).</p>', 400
+    cmd = [
+        "bin/fw", "arc", "approve-driver", slug, name,
+        "--weight", str(weight),
+        "--rationale", rationale,
+        "--from-watchtower",
+    ]
+    try:
+        result = subprocess.run(
+            cmd, cwd=str(PROJECT_ROOT),
+            capture_output=True, text=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError) as e:
+        return f'<p style="color: var(--pico-del-color);">Failed to invoke fw: {e}</p>', 500
+    if result.returncode != 0:
+        err = (result.stderr or "").strip() or f"fw arc approve-driver exited {result.returncode}"
+        first = err.splitlines()[0] if err else "unknown error"
+        return f'<p style="color: var(--pico-del-color);">{first}</p>', 400
+    return redirect(f"/arcs/{slug}")
+
+
+@bp.route("/api/arc/<arc_id>/remove-driver", methods=["POST"])
+def arc_remove_driver(arc_id):
+    """T-1976: shell `fw arc remove-driver <slug> '<name>' --rationale R --from-watchtower`.
+
+    Symmetric with /api/bvp/driver/remove (T-1965).
+    """
+    from flask import redirect
+    if not _ARC_ID_RE.match(arc_id):
+        abort(404)
+    slug = _resolve_arc_slug(arc_id)
+    if slug is None:
+        abort(404)
+    name = (request.form.get("name") or "").strip()
+    rationale = (request.form.get("rationale") or "").strip()
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", name):
+        return '<p style="color: var(--pico-del-color);">Driver name must match [A-Za-z][A-Za-z0-9_-]*</p>', 400
+    if len(rationale) < 30:
+        return '<p style="color: var(--pico-del-color);">Rationale must be ≥30 characters (R6).</p>', 400
+    cmd = [
+        "bin/fw", "arc", "remove-driver", slug, name,
+        "--rationale", rationale,
+        "--from-watchtower",
+    ]
+    try:
+        result = subprocess.run(
+            cmd, cwd=str(PROJECT_ROOT),
+            capture_output=True, text=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError) as e:
+        return f'<p style="color: var(--pico-del-color);">Failed to invoke fw: {e}</p>', 500
+    if result.returncode != 0:
+        err = (result.stderr or "").strip() or f"fw arc remove-driver exited {result.returncode}"
+        first = err.splitlines()[0] if err else "unknown error"
+        return f'<p style="color: var(--pico-del-color);">{first}</p>', 400
+    return redirect(f"/arcs/{slug}")
+
+
 @bp.route("/api/arc/<arc_id>/approve-none", methods=["POST"])
 def arc_approve_none(arc_id):
     """T-1930: shell `fw arc approve-driver <slug> --none --justification "<≥30 chars>" --from-watchtower`."""
