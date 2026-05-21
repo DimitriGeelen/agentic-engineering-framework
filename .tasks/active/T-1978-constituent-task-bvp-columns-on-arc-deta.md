@@ -2,22 +2,27 @@
 id: T-1978
 name: "constituent task BVP columns on arc detail"
 description: >
-  Extend the Constituent tasks table on /arcs/<slug> with BVP_norm / BVP_raw / cost_estimate columns. Currently table shows ID/Arc/Name/Type/Status/Horizon — arc-level BVP rollup is visible at top of section but per-task contributions are invisible, so 'which tasks pull the average up/down' is unanswerable from the page. Tag arc:value-prioritisation. Related: T-1956, T-1939, T-1976 (surfaced the gap).
+  Extend the Constituent tasks table on /arcs/<slug> with BVP_norm / BVP_raw / cost_estimate
+  columns. Currently table shows ID/Arc/Name/Type/Status/Horizon — arc-level BVP rollup
+  is visible at top of section but per-task contributions are invisible, so 'which
+  tasks pull the average up/down' is unanswerable from the page. Tag arc:value-prioritisation.
+  Related: T-1956, T-1939, T-1976 (surfaced the gap).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
-tags: []
-components: []
-related_tasks: []
+horizon: now
+tags: [arc:value-prioritisation, bvp, watchtower, web-ui]
+components: [web/blueprints/arcs.py, web/templates/arc_detail.html]
+related_tasks: [T-1956, T-1939, T-1976]
+arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T12:47:55Z
-last_update: 2026-05-21T12:47:55Z
-date_finished: null
+last_update: 2026-05-21T12:50:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +33,80 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-21T12:50:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1978: constituent task BVP columns on arc detail
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Human round-trip on T-1976 surfaced this gap: on `/arcs/<id>` the arc-level BVP rollup (norm + raw stat boxes, per-driver breakdown) is visible, but the Constituent tasks table below shows only ID/Arc/Name/Type/Status/Horizon — no BVP score column. So "which constituent tasks pull the average up/down" is unanswerable from the page. Reuses `_compute_bvp` / `_compute_cost` from `web/blueprints/bvp.py` to keep one math source — numbers in the constituents table must match the `/bvp` scatter exactly.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `web/blueprints/arcs.py` adds `_enrich_constituents_with_bvp(constituents)` helper that, for each constituent, resolves task frontmatter (active/ then completed/), calls `_compute_bvp` + `_compute_cost` from `web.blueprints.bvp` with policy-loaded weights, and attaches `bvp_norm` / `bvp_raw` / `cost` / `cost_source` / `bvp_mode` fields per row. Tasks without score data render `None` (template shows `—`).
+- [x] `arc_detail` route calls the enricher before rendering, passing the enriched list into the template via the same `constituents=` kwarg.
+- [x] `web/templates/arc_detail.html` Constituent tasks table renders three new columns after Horizon: `BVP_norm`, `BVP_raw`, `Cost`. Missing values render as muted `—`. Proposed-mode rows render `BVP_norm` in italic with `*` suffix (provenance signal).
+- [x] Playwright pin (`tests/playwright/test_arc_detail_bvp.py`) on `/arcs/value-prioritisation` asserts the three new column headers exist (`BVP_norm`, `BVP_raw`, `Cost`) and that at least one row has a numeric `bvp_norm` value (proves enrichment fires; arc has scored constituents). 18/18 green incl 2 new T-1978 tests.
+- [x] Math consistency: both `/arcs/value-prioritisation` constituents and `/bvp` scatter call the same `_compute_bvp` / `_compute_cost` helpers from `web.blueprints.bvp` — single math source by construction. Verified by code-level reuse (helper import) rather than per-row numeric diff to avoid coupling test to current arc data.
+- [x] No new Python unit tests for `_compute_bvp` (already pinned by `test_bvp_blueprint_cost.py`).
+
+### Human
+- [ ] [REVIEW] BVP columns read cleanly in the Constituent tasks table — the three new columns are scannable (you can quickly tell which tasks are pulling the rollup up vs down), italic+`*` provenance signal for proposed-mode is unambiguous, and the legend below the H2 explains what the numbers mean without needing to click through.
+  **Steps:**
+  1. Open http://192.168.10.107:3000/arcs/value-prioritisation
+  2. Scroll to "Constituent tasks" section
+  3. Scan the BVP_norm column — confirm you can identify highest/lowest contributors at a glance
+  4. Open http://192.168.10.107:3000/bvp in a second tab and confirm the numbers for the same task ID match
+  **Expected:** Three new columns (BVP_norm, BVP_raw, Cost) render with values for scored tasks and `—` for unscored. Italic `*` rows indicate estimator-proposed (not yet confirmed). Numbers match `/bvp` scatter exactly.
+  **If not:** Note the task ID and the mismatch, screenshot the two surfaces.
+
+## Verification
+
+# Python syntax of touched module
+python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
+# Live render: arc detail returns 200 + three new column headers + at least one numeric BVP_norm
+curl -sf "$(bin/fw watchtower url)/arcs/value-prioritisation" > /tmp/.t1978.html
+grep -q "<th[^>]*>BVP_norm</th>" /tmp/.t1978.html
+grep -q "<th[^>]*>BVP_raw</th>" /tmp/.t1978.html
+grep -q "<th[^>]*>Cost</th>" /tmp/.t1978.html
+grep -qE "[0-9]\.[0-9]{3}" /tmp/.t1978.html
+# Playwright pins (incl 2 new T-1978 tests)
+bin/fw test playwright tests/playwright/test_arc_detail_bvp.py
+
+## RCA
+
+<!-- Non-bug-class — additive feature build. RCA not required. -->
+
+## Evolution
+
+### 2026-05-21 — T-1978 opening (round-trip surfaced gap)
+- **What changed:** Human T-1976 round-trip confirmed the Add/Remove work end-to-end but flagged that the arc-level BVP rollup is opaque — you can see the average but not the per-task contributions. Without that visibility, the rollup is informationally lossy: "BVP_norm = 0.42" doesn't tell you whether 30 tasks are clustered at 0.4 or split 50/50 around 0.2 and 0.6.
+- **Plan impact:** Implementation reuses `_compute_bvp` / `_compute_cost` helpers from `web.blueprints.bvp` rather than recomputing — keeps one math source, eliminates a class of "numbers diverge between /bvp and /arcs/<id>" bugs by construction. Italic+`*` on proposed-mode rows preserves the four-tier ladder provenance signal already established on /bvp.
+- **Triggered:** None — clean reuse path; T-1977 (sliders) still queued.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Closes the per-task BVP visibility gap surfaced by the T-1976 round-trip with minimal new surface — single new helper (`_enrich_constituents_with_bvp`) that delegates to existing `/bvp` math, plus three new columns on the existing constituents table. By-construction math consistency with `/bvp` (single helper source). Italic+`*` provenance signal for proposed-mode preserved.
+
+**Evidence:**
+- `web/blueprints/arcs.py:481-540` — new `_enrich_constituents_with_bvp` helper; route at `arc_detail` calls it before render.
+- `web/templates/arc_detail.html:285-340` — three new columns (BVP_norm, BVP_raw, Cost) with provenance italic+`*` for proposed-mode rows; explanatory legend below H2.
+- `tests/playwright/test_arc_detail_bvp.py` — 2 new T-1978 tests (header presence + numeric row count). 18/18 green.
+- Live render verified: `/arcs/value-prioritisation` shows mixed confirmed + proposed-italic rows with numeric values (sample: `0.583*`, `0.150*`, `70*`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,3 +233,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1978-constituent-task-bvp-columns-on-arc-deta.md
 - **Context:** Initial task creation
+
+### 2026-05-21T12:50:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

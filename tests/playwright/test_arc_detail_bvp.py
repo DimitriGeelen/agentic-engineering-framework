@@ -225,3 +225,47 @@ def test_arc_detail_remove_driver_route_rejects_bad_name(page, base_url):
         },
     )
     assert resp.status == 400, f"expected 400, got {resp.status}: {resp.text()}"
+
+
+# ── T-1978: constituent task BVP columns ──
+
+
+def test_constituent_table_has_bvp_columns(page, base_url):
+    """Constituent tasks table must render three new BVP columns after Horizon."""
+    page.goto(f"{base_url}/arcs/{_ARC_SLUG}", wait_until="domcontentloaded")
+    # Locate the Constituent tasks header to scope the table.
+    constituent_h2 = page.locator("h2", has_text="Constituent tasks")
+    expect(constituent_h2).to_be_visible()
+    # The next table after that header is the constituents table.
+    table = constituent_h2.locator("xpath=following::table[1]")
+    headers = [
+        (th.text_content() or "").strip()
+        for th in table.locator("thead th").all()
+    ]
+    assert "BVP_norm" in headers, f"BVP_norm column missing; headers = {headers}"
+    assert "BVP_raw" in headers, f"BVP_raw column missing; headers = {headers}"
+    assert "Cost" in headers, f"Cost column missing; headers = {headers}"
+
+
+def test_constituent_table_has_at_least_one_numeric_bvp_row(page, base_url):
+    """Enrichment must fire: at least one constituent row must show a
+    numeric BVP_norm value (value-prioritisation has scored constituents)."""
+    import re as _re
+    page.goto(f"{base_url}/arcs/{_ARC_SLUG}", wait_until="domcontentloaded")
+    constituent_h2 = page.locator("h2", has_text="Constituent tasks")
+    table = constituent_h2.locator("xpath=following::table[1]")
+    # Collect bvp_norm cell content (7th column, 0-indexed 6) across rows.
+    rows = table.locator("tbody tr").all()
+    numeric_count = 0
+    for r in rows:
+        cells = r.locator("td").all()
+        if len(cells) < 7:
+            continue
+        bvp_cell_text = (cells[6].text_content() or "").strip()
+        # Strip italic markers / asterisk for matching: numeric pattern.
+        if _re.match(r"^\d+\.\d{3}\*?$", bvp_cell_text):
+            numeric_count += 1
+    assert numeric_count >= 1, (
+        f"Expected at least one row with numeric BVP_norm in arc {_ARC_SLUG} "
+        f"constituents (scored task population should produce > 0); found {numeric_count}"
+    )

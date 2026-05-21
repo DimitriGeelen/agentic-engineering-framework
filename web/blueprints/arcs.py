@@ -478,6 +478,63 @@ def _resolve_constituents(arc: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def _enrich_constituents_with_bvp(constituents: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """T-1978: attach BVP_norm / BVP_raw / cost / mode to each constituent.
+
+    Reuses _compute_bvp / _compute_cost from web.blueprints.bvp so the
+    numbers shown here match the /bvp scatter exactly. Confirmed scores
+    take precedence over proposed (mirrors _collect_task_points).
+    Tasks with no score data carry None (template renders '—').
+    """
+    from web.blueprints.bvp import (
+        _load_policy, _driver_weights, _compute_bvp, _compute_cost,
+        _resolve_cost_estimate, _parse_frontmatter, _latest_proposed_scores,
+    )
+    policy = _load_policy()
+    weights = _driver_weights(policy)
+
+    tasks_dir = PROJECT_ROOT / ".tasks"
+    out: list[dict[str, Any]] = []
+    for c in constituents:
+        c2 = dict(c)
+        if c.get("missing"):
+            c2.update({"bvp_norm": None, "bvp_raw": None, "cost": None, "bvp_mode": ""})
+            out.append(c2)
+            continue
+        tid = c.get("id")
+        path = None
+        for sub in ("active", "completed"):
+            cands = list((tasks_dir / sub).glob(f"{tid}-*.md"))
+            if cands:
+                path = cands[0]
+                break
+        if path is None:
+            c2.update({"bvp_norm": None, "bvp_raw": None, "cost": None, "bvp_mode": ""})
+            out.append(c2)
+            continue
+        fm = _parse_frontmatter(path) or {}
+        confirmed = fm.get("bvp_scores") or {}
+        proposed = _latest_proposed_scores(fm)
+        if not confirmed and not proposed:
+            c2.update({"bvp_norm": None, "bvp_raw": None, "cost": None, "bvp_mode": ""})
+            out.append(c2)
+            continue
+        is_proposed = not confirmed
+        scores = confirmed if confirmed else proposed
+        raw, norm = _compute_bvp(scores, weights)
+        ce, ce_mode = _resolve_cost_estimate(fm, is_proposed=is_proposed)
+        cost, _br, _tier, _effort, src = _compute_cost(ce, default_when_absent=is_proposed)
+        c2.update({
+            "bvp_norm": round(norm, 3) if norm is not None else None,
+            "bvp_raw": raw,
+            "cost": round(cost, 2) if cost is not None else None,
+            "cost_source": src,
+            "bvp_mode": "proposed" if is_proposed else "confirmed",
+        })
+        out.append(c2)
+    return out
+
+
 def _completion_stats(constituents: list[dict[str, Any]]) -> dict[str, Any]:
     if not constituents:
         return {"completed": 0, "total": 0, "ratio": 0.0}
@@ -590,6 +647,10 @@ def arc_detail(arc_id: str):
     arc_slug = str(arc.get("slug") or arc_id).strip()
     constituents = _resolve_constituents(arc)
     stats = _completion_stats(constituents)
+    # T-1978: enrich constituents with per-task BVP_norm / BVP_raw / cost so the
+    # table answers "which tasks pull the average up/down". Reuses the /bvp
+    # compute helpers — same math source, same numbers as the scatter.
+    constituents = _enrich_constituents_with_bvp(constituents)
     focus_val = _read_focus()
     arc_numeric = str(arc.get("id") or "").strip()
     focused = (focus_val == arc_slug or (arc_numeric and focus_val == arc_numeric))

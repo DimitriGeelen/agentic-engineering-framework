@@ -284,6 +284,7 @@
 
 <h2>Constituent tasks</h2>
 {% if constituents %}
+<p class="muted"><small>BVP_norm = score weighted by drivers / max-possible, [0,1]. BVP_raw = unscaled sum. Cost = composite F8. Italic + <code>*</code> = estimator-proposed (not yet human-confirmed). <code>—</code> = no score data yet. Numbers match <a href="/bvp">/bvp</a> scatter (same compute helpers). [T-1978]</small></p>
 <table>
     <thead>
         <tr>
@@ -293,6 +294,9 @@
             <th>Type</th>
             <th>Status</th>
             <th>Horizon</th>
+            <th title="Normalised BVP, weighted by drivers / max-possible, [0,1]">BVP_norm</th>
+            <th title="Raw BVP — unscaled weighted sum">BVP_raw</th>
+            <th title="Composite cost F8 = 0.6·blast_radius + 0.3·tier + 0.1·effort (T-shirt fallback)">Cost</th>
         </tr>
     </thead>
     <tbody>
@@ -309,6 +313,22 @@
                 {% else %}<span class="badge badge-muted">{{ c.status }}</span>{% endif %}
             </td>
             <td>{{ c.horizon }}</td>
+            <td>
+                {% if c.bvp_norm is not none %}
+                    {% if c.bvp_mode == 'proposed' %}<em>{{ '%.3f'|format(c.bvp_norm) }}*</em>
+                    {% else %}{{ '%.3f'|format(c.bvp_norm) }}{% endif %}
+                {% else %}<span class="muted">—</span>{% endif %}
+            </td>
+            <td>
+                {% if c.bvp_raw is not none %}
+                    {% if c.bvp_mode == 'proposed' %}<em>{{ c.bvp_raw }}*</em>
+                    {% else %}{{ c.bvp_raw }}{% endif %}
+                {% else %}<span class="muted">—</span>{% endif %}
+            </td>
+            <td>
+                {% if c.cost is not none %}{{ '%.2f'|format(c.cost) }}
+                {% else %}<span class="muted">—</span>{% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
