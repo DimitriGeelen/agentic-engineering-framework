@@ -14,6 +14,13 @@
         <span class="stat-breakdown">Workers awaiting answer</span>
     </a>
     {% endif %}
+    {% if arc_close_count and arc_close_count > 0 %}
+    <a href="#section-arc-closure" class="approval-stat approval-stat-group decisions-active" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ arc_close_count }}</span>
+        <span class="stat-label">Arc Closure</span>
+        <span class="stat-breakdown">Close-ready arcs</span>
+    </a>
+    {% endif %}
     <a href="#section-verifications" class="approval-stat approval-stat-group {{ 'ac-active' if ac_count else '' }}" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ ac_count }}</span>
         <span class="stat-label">Verifications</span>
@@ -183,6 +190,50 @@
             </button>
         </div>
     </form>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- T-1961: Arc closure — arcs that are close-ready (in-progress + ≥80% complete + anchor Recommendation) -->
+{% if arcs_close_ready %}
+<h2 id="section-arc-closure" class="approvals-group-heading">Arc Closure</h2>
+<div class="section-header">
+    <h3>Arcs ready for review</h3>
+    <small>{{ arc_close_count }} arc{{ '' if arc_close_count == 1 else 's' }} — completion ≥80% with agent <code>## Recommendation</code> on anchor</small>
+</div>
+{% for a in arcs_close_ready %}
+<div class="approval-card arc-closure" data-arc-slug="{{ a.slug }}" data-verdict="{{ a.verdict }}">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            {% set _v = a.verdict %}
+            <span class="verdict-badge" data-verdict="{{ _v }}"
+                  style="display:inline-block; padding:0.15rem 0.55rem; border-radius:3px; font-size:0.72rem; font-weight:700; letter-spacing:0.05em;
+                  {% if _v == 'CLOSE' %}background:#1b5e20; color:#fff;
+                  {% elif _v == 'GO' %}background:#1b5e20; color:#fff;
+                  {% elif _v == 'KEEP-OPEN' %}background:#616161; color:#fff;
+                  {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
+                  {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
+                  {% else %}background:#616161; color:#fff;
+                  {% endif %}"
+                  title="Anchor-task agent recommendation: {{ _v }}">{{ _v }}</span>
+            <a href="/arcs/{{ a.slug }}"><strong>{{ a.name }}</strong></a>
+            <span style="font-size:0.8rem; color:var(--pico-muted-color);">
+                {{ a.completed }}/{{ a.total }} — {{ "%.0f%%" % (a.completion_ratio * 100) }}
+            </span>
+            {% if a.anchor %}
+            <span style="font-size:0.78rem; color:var(--pico-muted-color);">
+                · anchor <a href="/tasks/{{ a.anchor }}">{{ a.anchor }}</a>
+            </span>
+            {% endif %}
+        </div>
+        <div style="display:flex; gap:0.4rem;">
+            <a href="/arcs/{{ a.slug }}" role="button" class="secondary outline" style="margin:0; font-size:0.78rem;">Review</a>
+            <a href="/arcs/{{ a.slug }}/close" role="button" style="margin:0; font-size:0.78rem;">Approve / Override</a>
+        </div>
+    </div>
+    {% if a.headline_mechanic %}
+    <p class="approval-meta" style="margin-top:0.4rem; font-style:italic; line-height:1.4;">{{ a.headline_mechanic }}</p>
+    {% endif %}
 </div>
 {% endfor %}
 {% endif %}

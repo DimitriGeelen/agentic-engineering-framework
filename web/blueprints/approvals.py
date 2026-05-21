@@ -365,6 +365,49 @@ def _load_paused_dispatches():
     return out
 
 
+def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
+    """T-1961: arcs ready for closure review on /approvals.
+
+    Filters: status=='in-progress' AND completion_ratio >= threshold AND
+    anchor-task `## Recommendation` block present. Returns one dict per
+    qualifying arc with the fields the template needs to render a row.
+    """
+    import glob
+    import yaml as _yaml
+    from web.blueprints.arcs import (
+        _resolve_constituents,
+        _completion_stats,
+        _anchor_recommendation,
+    )
+    out: list[dict] = []
+    for f in sorted(glob.glob(str(PROJECT_ROOT / ".context" / "arcs" / "*.yaml"))):
+        try:
+            arc = _yaml.safe_load(open(f).read()) or {}
+        except (OSError, _yaml.YAMLError):
+            continue
+        if str(arc.get("status") or "").strip() != "in-progress":
+            continue
+        constituents = _resolve_constituents(arc)
+        stats = _completion_stats(constituents)
+        if stats["ratio"] < threshold:
+            continue
+        rec = _anchor_recommendation(arc)
+        if not rec.get("present"):
+            continue
+        out.append({
+            "slug": str(arc.get("slug") or "").strip(),
+            "id": str(arc.get("id") or "").strip(),
+            "name": str(arc.get("name") or arc.get("slug") or ""),
+            "anchor": rec.get("anchor_id", ""),
+            "verdict": rec.get("verdict", "?"),
+            "completion_ratio": stats["ratio"],
+            "completed": stats["completed"],
+            "total": stats["total"],
+            "headline_mechanic": str(arc.get("headline_mechanic") or ""),
+        })
+    return out
+
+
 def _build_approvals_context():
     """Build template context for approvals page."""
     pending_tier0 = _load_pending_approvals()
@@ -373,6 +416,7 @@ def _build_approvals_context():
     pending_acs = _load_pending_human_acs()
     deferred_count = _count_deferred_inceptions()
     paused_dispatches = _load_paused_dispatches()  # T-1808
+    arcs_close_ready = _load_close_ready_arcs()  # T-1961
 
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
     go_count = len(pending_go)
@@ -381,7 +425,8 @@ def _build_approvals_context():
         for t in pending_acs
     )
     paused_count = len(paused_dispatches)  # T-1808
-    total = tier0_count + go_count + len(pending_acs) + paused_count
+    arc_close_count = len(arcs_close_ready)  # T-1961
+    total = tier0_count + go_count + len(pending_acs) + paused_count + arc_close_count
 
     # Count tasks ready for batch completion (all human ACs checked)
     ready_count = sum(
@@ -395,11 +440,13 @@ def _build_approvals_context():
         pending_go=pending_go,
         pending_acs=pending_acs,
         paused_dispatches=paused_dispatches,
+        arcs_close_ready=arcs_close_ready,
         tier0_count=tier0_count,
         go_count=go_count,
         ac_count=ac_count,
         ac_task_count=len(pending_acs),
         paused_count=paused_count,
+        arc_close_count=arc_close_count,
         total_count=total,
         active_count=tier0_count,
         ready_count=ready_count,
