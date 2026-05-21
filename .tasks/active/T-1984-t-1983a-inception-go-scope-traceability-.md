@@ -80,7 +80,7 @@ into the new schema and a separate build task (T-1950A) will land
 - [x] Refusal gate: `update-task.sh --status work-completed` on `workflow_type: inception` task with non-empty `inception_decisions:` parses each entry and validates `ships_in:` reachability — file exists, function/symbol defined (grep), task-id is in `.tasks/completed/`, or `deferred:T-YYYY` target exists. Blocks transition with one-paragraph block message naming the failing decision id + override flag.
 - [x] Bypass parity (L-399): block message names BOTH `--skip-inception-scope-trace "rationale"` (for direct `update-task.sh` invocations) AND `FW_SKIP_INCEPTION_SCOPE_TRACE=1` env-var (for `git commit` and other downstream). Both are accepted, both log Tier-2 entry to `.context/working/.gate-bypass-log.yaml`.
 - [x] Tests: bats covering — (a) opt-in: inception without `inception_decisions:` closes fine (grandfathering); (b) opt-in: inception with populated decisions whose ships_in all resolve closes fine; (c) refusal: missing file path / undefined symbol / non-completed task ref / non-existent defer target each block; (d) `deferred:T-YYYY` accepted when target exists; (e) override flag accepted with rationale, bypass log entry written; (f) env-var accepted under `git commit` shape, bypass log entry written; (g) build child with `unlocks_inception_decision:` referencing non-existent decision is rejected by PreToolUse.
-- [ ] Fresh-machine simulation: `tests/unit/upgrade_fresh_machine_simulation.bats` still passes (T-1633 / consumer-facing hygiene — T-1984 must not regress fw upgrade).
+- [x] Fresh-machine simulation: `tests/unit/upgrade_fresh_machine_simulation.bats` still passes (T-1633 / consumer-facing hygiene — T-1984 must not regress fw upgrade).
 - [x] Docs: CLAUDE.md §Task System adds a one-paragraph subsection "Inception GO-scope traceability" with the schema example + override flag + env-var. Watchtower /inceptions surface shows `inception_decisions:` summary count per inception (cosmetic, optional this slice).
 
 ### Human
@@ -125,30 +125,14 @@ into the new schema and a separate build task (T-1950A) will land
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_inception_decisions_parser.py -q 2>&1 | tail -3 | grep -v "^$" | head -3
+FRAMEWORK_ROOT=/opt/999-Agentic-Engineering-Framework bats tests/unit/check_inception_decisions_hook.bats 2>&1 | tail -3 | grep -v "^$" | head -3
+FRAMEWORK_ROOT=/opt/999-Agentic-Engineering-Framework bats tests/unit/update_task_inception_scope_gate.bats 2>&1 | tail -3 | grep -v "^$" | head -3
+FRAMEWORK_ROOT=/opt/999-Agentic-Engineering-Framework bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1 | tail -3 | grep -v "^$" | head -3
+python3 -c "import yaml; yaml.safe_load(open('lib/inception_decisions.py').read().split('---')[0] if '---' in open('lib/inception_decisions.py').read() else 'ok: true')"
+out=$(python3 -m py_compile lib/inception_decisions.py agents/context/check-inception-decisions.py 2>&1); [ -z "$out" ]
+out=$(grep -n "Inception GO-scope" CLAUDE.md 2>&1); echo "$out" | grep -q "Inception GO-scope"
+bin/fw enforcement baseline 2>&1 | grep -q "baseline saved\|baseline unchanged\|Hash:"
 
 ## RCA
 
