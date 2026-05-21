@@ -29,11 +29,25 @@ Enforced structurally. `fw arc create` requires `--headline-mechanic "<who> <doe
 |--------|-------------|
 | `agents/task-create/update-task.sh` | calls |
 
-## Used By (1)
+## Used By (15)
 
 | Component | Relationship |
 |-----------|-------------|
 | `tests/unit/test_arc_system.py` | called_by |
+| `tests/unit/arc_abandon.bats` | called_by |
+| `tests/unit/arc_abandon.bats` | tests_by |
+| `tests/unit/arc_create_no_constituent_tasks.bats` | called_by |
+| `tests/unit/arc_create_no_constituent_tasks.bats` | tests_by |
+| `tests/unit/arc_dual_identity_verbs.bats` | called_by |
+| `tests/unit/arc_dual_identity_verbs.bats` | tests_by |
+| `tests/unit/arc_lifecycle_state_machine.bats` | called_by |
+| `tests/unit/arc_lifecycle_state_machine.bats` | tests_by |
+| `tests/unit/arc_membership_union.bats` | tests_by |
+| `tests/unit/arc_next_numeric_id_octal.bats` | tests_by |
+| `tests/unit/audit_ctl_arc_tag_only_pattern.bats` | called_by |
+| `tests/unit/audit_ctl_arc_tag_only_pattern.bats` | tests_by |
+| `tests/unit/test_arc_membership_web_surfaces.py` | called_by |
+| `web/blueprints/arcs.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-arc.yaml`*

@@ -955,6 +955,10 @@ Verbs:
                             wire-level evidence of the headline_mechanic firing.
                             Use 'none' + --justification (≥30 chars) for arcs
                             with no runtime mechanic — bypass is logged.
+  review <id>               T-1962: print Watchtower /arcs/<id>/close URL + QR code
+                            for human approval. Mirrors 'fw task review T-XXX'.
+                            Use this under \$CLAUDECODE=1 (T-1671 §ACD) — agents
+                            emit the URL, humans submit the form.
   abandon <id> --reason "<≥30 chars>"
                             T-1854: mark arc abandoned (no longer pursued).
                             Allowed source states: draft, in-progress.
@@ -987,6 +991,74 @@ Surfaces:
 EOF
 }
 
+# T-1962: arc review verb — print Watchtower close-review URL + QR code.
+# Mirrors `fw task review T-XXX` shape (T-631/T-634) for arc closure flow.
+# Under $CLAUDECODE=1 the agent uses this in place of `fw arc close` (T-1671):
+#   agent runs `fw arc review <slug>` → emits clickable URL + QR → human opens
+#   /arcs/<slug>/close (T-1911/T-1902) → submits via the §ACD-exempt
+#   `--from-watchtower` path which the Flask backend invokes.
+arc_review() {
+    local id="${1:-}"
+    [ -n "$id" ] || { echo "Usage: fw arc review <arc-id-or-slug>" >&2; return 2; }
+    id="$(_arc_normalize_input "$id")"
+    _arc_validate_id "$id" || return 2
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+
+    local arc_path status anchor name
+    arc_path="$(_arc_path "$id")"
+    status=$(awk '/^status:[[:space:]]/ {print $2; exit}' "$arc_path" | tr -d ' "')
+    anchor=$(awk '/^anchor_task:[[:space:]]/ {print $2; exit}' "$arc_path" | tr -d ' "')
+    name=$(awk -F': ' '/^name:[[:space:]]/ {sub(/^[[:space:]"]+/,"",$2); sub(/[[:space:]"]+$/,"",$2); print $2; exit}' "$arc_path")
+
+    # Refuse on terminal states — no closure review needed.
+    if [ "$status" = "closed" ] || [ "$status" = "abandoned" ]; then
+        echo "Arc '$id' is $status — no close-review URL emitted." >&2
+        echo "View arc detail: \$(fw watchtower url)/arcs/$id" >&2
+        return 1
+    fi
+
+    # Source Watchtower helper for URL resolution (per-project port, T-885/T-1287/T-1376).
+    if ! declare -F _watchtower_url >/dev/null 2>&1; then
+        # shellcheck source=lib/watchtower.sh
+        source "${FRAMEWORK_ROOT:-${PROJECT_ROOT:-.}}/lib/watchtower.sh" 2>/dev/null || true
+    fi
+    local base_url review_url
+    if declare -F _watchtower_url >/dev/null 2>&1; then
+        base_url=$(_watchtower_url "$id" 2>/dev/null || true)
+    fi
+    [ -z "$base_url" ] && base_url="http://localhost:3000"
+    review_url="${base_url}/arcs/${id}/close"
+
+    echo ""
+    echo "══════════════════════════════════════════"
+    echo "  Arc Close Review: $id"
+    [ -n "$name" ]   && echo "  Name:   $name"
+    [ -n "$status" ] && echo "  Status: $status"
+    [ -n "$anchor" ] && echo "  Anchor: $anchor"
+    echo ""
+    echo "  $review_url"
+    echo ""
+
+    # QR code (mirrors lib/review.sh emit_review).
+    python3 -c "
+import sys
+try:
+    import qrcode
+    qr = qrcode.QRCode(border=1, box_size=1)
+    qr.add_data('$review_url')
+    qr.make()
+    qr.print_ascii(invert=True)
+except ImportError:
+    print('  (install python3-qrcode for QR code)')
+" 2>/dev/null
+
+    echo ""
+    echo "  Scan QR or open link above to review/approve arc closure."
+    echo "  Human submits via the form → fw arc close --from-watchtower (T-1671 §ACD-exempt)."
+    echo "══════════════════════════════════════════"
+    echo ""
+}
+
 arc_dispatch() {
     local verb="${1:-help}"
     shift || true
@@ -998,6 +1070,7 @@ arc_dispatch() {
         show)    arc_show    "$@";;
         tag)     arc_tag     "$@";;
         close)   arc_close   "$@";;
+        review)  arc_review  "$@";;                     # T-1962
         abandon) arc_abandon "$@";;
         migrate) arc_migrate "$@";;
         approve-driver)   arc_approve_driver   "$@";;   # T-1926 (arc-006)

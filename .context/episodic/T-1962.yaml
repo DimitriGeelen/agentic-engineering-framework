@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1962: fw arc review <slug> CLI verb — Watchtower URL + QR for close-review page
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-21T09:16:29Z
+# ============================================================================
+
+task_id: T-1962
+task_name: "fw arc review <slug> CLI verb — Watchtower URL + QR for close-review page"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-20T17:57:02Z
+completed: 2026-05-21T09:16:22Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw arc review <slug-or-arc-NNN>` resolves either form via `_arc_normalize_input` (mirrors `arc_close`); refuses unknown slug with `Error: arc ''<id>'' not found` and exit 1 — `lib/arc.sh:arc_review`'
+  - 'On valid input, emits to stdout: Watchtower URL `${base_url}/arcs/<id>/close` (T-1911/T-1902 route), ASCII QR code via python3 qrcode, header `Arc Close Review: <id>`, name, status, anchor task — `lib/arc.sh:arc_review`'
+  - 'Refuses on terminal arc states (`closed`/`abandoned`): emits `Arc ''<id>'' is <status> — no close-review URL emitted`, returns 1, NO `/close` URL appears in output (bats test 5 + 6 assert the URL absence)'
+  - '`arc_help` text lists `review <id>` under verbs with one-line T-1962 description matching the pattern used by `show`/`close`'
+  - 'Bats test `tests/unit/arc_review_verb.bats` pins 10 cases: happy path (slug + arc-NNN), summary content, header banner, closed-refuse (URL absent), abandoned-refuse (URL absent), unknown-slug, no-arg usage, `arc_dispatch review` wiring, `arc_help` presence — 10/10 PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 919 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [approval-ux, arc, T-1959-followup, arc:arc-grooming]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 919
+  commits: 1
+  files_changed: 8
+  lines_added: 1185
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1962-fw-arc-review-slug-cli-verb--watchtower-.md
+generated_by: context-agent-hybrid
