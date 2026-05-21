@@ -98,10 +98,11 @@
     .badge { display: inline-block; padding: 0.05em 0.4em; border-radius: 3px; font-size: 0.7em; }
     .badge-warn { background: #c97a00; color: white; }
     /* T-1910: status badge variants (match arc_detail.html) */
-    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary); }
-    .badge-ok { background: var(--pico-form-element-valid-active-border-color, #2e7d32); color: white; }
+    /* T-1970: contrast fix — see arc_detail.html comment for rationale. */
+    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary-inverse); }
+    .badge-ok { background: #1e6a2a; color: white; }
     .badge-draft { background: var(--pico-card-sectioning-background-color, #444); color: var(--pico-muted-color); border: 1px solid var(--pico-muted-border-color); }
-    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-color); }
     /* T-1910: inline-editable arc name affordance */
     .editable-arc-name { cursor: text; }
     .editable-arc-name:hover { text-decoration: underline dotted; text-decoration-thickness: 1px; }
@@ -161,9 +162,10 @@
     .arc-row.focused { border-left-color: var(--pico-primary); border-left-width: 6px; }
     .arc-row a.arc-name { font-size: 1.1rem; font-weight: bold; }
     .arc-meta { font-size: 0.85rem; color: var(--pico-muted-color); margin-top: 0.25rem; }
-    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary); }
-    .badge-ok { background: var(--pico-form-element-valid-active-border-color, #2e7d32); color: white; }
-    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+    /* T-1970: contrast fix — duplicated for HTMX swap-context list mode. */
+    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary-inverse); }
+    .badge-ok { background: #1e6a2a; color: white; }
+    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-color); }
     .badge-draft { background: var(--pico-card-sectioning-background-color, #444); color: var(--pico-muted-color); border: 1px solid var(--pico-muted-border-color); }
 </style>
 

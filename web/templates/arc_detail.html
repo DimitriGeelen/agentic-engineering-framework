@@ -7,10 +7,13 @@
     .stat-box .v { font-size: 1.4rem; font-weight: bold; }
     .stat-box .l { font-size: 0.8rem; color: var(--pico-muted-color); }
     .badge { display: inline-block; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; }
-    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary); }
-    .badge-ok { background: var(--pico-form-element-valid-active-border-color, #2e7d32); color: white; }
-    .badge-warn { background: #f9a825; color: white; }
-    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+    /* T-1970: contrast fix — --pico-primary-background and --pico-primary
+       resolve to the same blue in dark mode; pair with -inverse for
+       guaranteed contrast against background. Same anti-pattern as T-1968 v1. */
+    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary-inverse); }
+    .badge-ok { background: #1e6a2a; color: white; }
+    .badge-warn { background: #c97a00; color: white; }
+    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-color); }
     .completion-check { padding: 0.5rem 1rem; background: var(--pico-card-sectioning-background-color); border-radius: 4px; margin: 0.5rem 0; }
     .completion-check ol { margin: 0.3em 0 0 1em; }
     .focus-pill { background: var(--pico-primary); color: white; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; vertical-align: middle; }
