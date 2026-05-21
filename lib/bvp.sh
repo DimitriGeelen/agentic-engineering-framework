@@ -284,7 +284,7 @@ def cmd_rank(filter_quadrant=None, include_proposed=False):
             print("No tasks have `bvp_scores:` or `bvp_scores_proposed:` set yet.")
         else:
             print("No tasks have `bvp_scores:` set yet.")
-            print("Score tasks via `fw bvp confirm T-<id>` (T-1924) once that slice ships.")
+            print("Score tasks via `fw bvp confirm T-<id> --i-am-human` (Sovereignty boundary, T-1924).")
             print("Or pass `--include-proposed` to see estimator-proposed scores (advisory).")
         return 0
 
