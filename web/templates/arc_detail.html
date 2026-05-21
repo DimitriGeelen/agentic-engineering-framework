@@ -188,8 +188,8 @@
                 <td><small>{{ sd.get('approved_ts', sd.get('ts', sd.get('approved_at', '—'))) }}</small></td>
                 <td>
                     <details>
-                        <summary class="muted" style="cursor: pointer; font-size: 0.85em;">Remove</summary>
-                        <form method="POST" action="/api/arc/{{ arc_slug }}/remove-driver" style="margin-top: 0.4rem;">
+                        <summary style="cursor: pointer; color: var(--pico-del-color); font-weight: 600;">🗑 Remove driver</summary>
+                        <form method="POST" action="/api/arc/{{ arc_slug }}/remove-driver" style="margin-top: 0.6rem;">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="name" value="{{ sd.get('name', '') }}">
                             <label style="font-size: 0.85em;">Rationale (≥30 chars):
