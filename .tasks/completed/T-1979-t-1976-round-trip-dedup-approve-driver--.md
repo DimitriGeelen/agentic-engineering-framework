@@ -4,12 +4,12 @@ name: "T-1976 round-trip: dedup approve-driver + remove from proposed on approva
 description: >
   T-1976 round-trip: dedup approve-driver + remove from proposed on approval
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:value-prioritisation, bvp, watchtower, bugfix]
-components: [lib-arc]
+components: [lib/arc.sh, tests/unit/arc_remove_driver_verb.bats]
 related_tasks: [T-1976, T-1926, T-1958]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T13:32:14Z
-last_update: 2026-05-21T13:32:14Z
-date_finished: null
+last_update: 2026-05-21T13:41:22Z
+date_finished: 2026-05-21T13:41:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -213,3 +213,15 @@ The same `bats` file covers both approve and remove because they're a state-tran
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1979-t-1976-round-trip-dedup-approve-driver--.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-869a5add
+- **Timestamp:** 2026-05-21T13:41:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-21T13:41:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

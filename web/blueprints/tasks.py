@@ -20,6 +20,59 @@ bp = Blueprint("tasks", __name__)
 
 
 # ---------------------------------------------------------------------------
+# T-1980: per-task BVP/Cost computation reused from /bvp and /arcs/<id> helpers.
+# Same math path → numbers cannot drift between surfaces.
+# ---------------------------------------------------------------------------
+
+def _task_bvp_data(task_data: dict) -> dict:
+    """Compute BVP scores + cost composite for a task frontmatter dict.
+
+    Returns shape: {mode, scores, bvp_raw, bvp_norm, cost, cost_source, weights}.
+    mode is 'confirmed' / 'proposed' / 'none'.
+    """
+    from web.blueprints.bvp import (
+        _load_policy, _driver_weights, _compute_bvp, _compute_cost,
+        _resolve_cost_estimate, _latest_proposed_scores,
+    )
+
+    weights = _driver_weights(_load_policy())
+
+    scores = task_data.get("bvp_scores") if isinstance(task_data.get("bvp_scores"), dict) else None
+    if scores:
+        mode = "confirmed"
+    else:
+        proposed = _latest_proposed_scores(task_data) if isinstance(task_data, dict) else None
+        if proposed:
+            scores = proposed
+            mode = "proposed"
+        else:
+            return {
+                "mode": "none",
+                "scores": None,
+                "bvp_raw": None,
+                "bvp_norm": None,
+                "cost": None,
+                "cost_source": "none",
+                "weights": weights,
+            }
+
+    is_proposed = mode == "proposed"
+    raw, norm = _compute_bvp(scores, weights)
+    ce, _ce_mode = _resolve_cost_estimate(task_data, is_proposed=is_proposed)
+    cost, _br, _tier, _effort, src = _compute_cost(ce, default_when_absent=is_proposed)
+
+    return {
+        "mode": mode,
+        "scores": scores,
+        "bvp_raw": raw,
+        "bvp_norm": norm,
+        "cost": cost,
+        "cost_source": src,
+        "weights": weights,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Enum loading from status-transitions.yaml (T-1179, G-038)
 # ---------------------------------------------------------------------------
 
@@ -651,6 +704,9 @@ def task_detail(task_id):
     rec_rationale_html = render_markdown_safe(rec["rationale"])
     rec_evidence_html = render_markdown_safe(rec["evidence"])
 
+    # T-1980: per-task BVP block (parity with /bvp scatter + /arcs/<id> table).
+    bvp = _task_bvp_data(task_data)
+
     return render_page(
         "task_detail.html",
         page_title=f"Task {task_id}",
@@ -668,6 +724,7 @@ def task_detail(task_id):
         rec_rationale_html=rec_rationale_html,
         rec_evidence_html=rec_evidence_html,
         reviewer=reviewer,
+        bvp=bvp,
     )
 
 
