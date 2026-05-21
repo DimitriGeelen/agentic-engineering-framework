@@ -7,20 +7,20 @@ description: >
   rationale/evidence inline; human action reduced to Approve/override. See T-1959
   Scope Fence for details.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: now
 tags: [approval-ux, watchtower, arc, T-1959-followup, arc:arc-grooming]
-components: []
+components: [tests/playwright/test_arc_close_recommendation_panel.py, tests/unit/extract_recommendation_close_keep_open.bats, web/blueprints/arcs.py, web/shared.py, web/templates/arc_close.html]
 related_tasks: [T-1959, T-1911]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T17:56:28Z
-last_update: 2026-05-21T17:22:18Z
-date_finished:
+last_update: 2026-05-21T17:33:47Z
+date_finished: 2026-05-21T17:33:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -142,7 +142,7 @@ T-1960 closes that gap: extend the existing `extract_recommendation` parser (web
 python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
 python3 -c "import ast; ast.parse(open('web/shared.py').read())"
 bats tests/unit/extract_recommendation_close_keep_open.bats
-.venv/bin/python -m pytest tests/playwright/test_arc_close_recommendation_panel.py -q
+FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_close_recommendation_panel.py -q
 out=$(curl -s http://localhost:3000/arcs/value-prioritisation/close 2>&1); [[ "$out" == *"arc-close-hdr"* ]]
 
 ## RCA
@@ -221,3 +221,20 @@ out=$(curl -s http://localhost:3000/arcs/value-prioritisation/close 2>&1); [[ "$
 
 ### 2026-05-21T17:22:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-26ca5868
+- **Timestamp:** 2026-05-21T17:34:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `web/templates/arc_close.html` renders a Recommendation panel above the form when a recommendation exists — verdict badge + rationale + evidence; absent panel when no recommendation
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arc_close.html in: `web/templates/arc_close.html` renders a Recommendation panel above the form when a recommendation exists — verdict badge + rationale + evidence; abse`
+
+### 2026-05-21T17:33:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
