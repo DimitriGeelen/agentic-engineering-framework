@@ -63,6 +63,10 @@
           },
           {
             "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-inception-decisions"
+          },
+          {
+            "type": "command",
             "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-heredoc-cmd-sub"
           }
         ]
