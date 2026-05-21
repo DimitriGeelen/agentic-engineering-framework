@@ -1,10 +1,11 @@
 ---
 id: T-1948
-name: "T-1947 prose iteration — rewrite CLAUDE.md REVIEWER-prose paragraph per Human review"
+name: "T-1947 prose iteration — rewrite CLAUDE.md REVIEWER-prose paragraph per Human
+  review"
 description: >
   T-1947 prose iteration — rewrite CLAUDE.md REVIEWER-prose paragraph per Human review
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +17,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T08:53:57Z
-last_update: 2026-05-20T08:53:57Z
-date_finished: null
+last_update: 2026-05-21T08:24:23Z
+date_finished: 2026-05-21T08:24:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +29,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-20T09:00:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-20T09:00:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1948: T-1947 prose iteration — rewrite CLAUDE.md REVIEWER-prose paragraph per Human review
@@ -176,3 +198,15 @@ bats tests/unit/test_reviewer_prose_mismatch.bats tests/unit/reviewer_human_ac_m
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1948-t-1947-prose-iteration--rewrite-claudemd.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-1dd95773
+- **Timestamp:** 2026-05-21T08:24:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-21T08:24:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
