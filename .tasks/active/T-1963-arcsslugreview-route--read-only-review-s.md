@@ -2,9 +2,12 @@
 id: T-1963
 name: "/arcs/<slug>/review route — read-only review surface (separate from /close)"
 description: >
-  T-1959 build child D: same template as review.html. Linked from /approvals (T-1961) and from fw arc review (T-1962). /close becomes the submit handler; /review is the consume-the-recommendation surface. Closes the asymmetry with inception-decide flow (/inception/T-XXX vs /review/T-XXX is the canonical pattern).
+  T-1959 build child D: same template as review.html. Linked from /approvals (T-1961)
+  and from fw arc review (T-1962). /close becomes the submit handler; /review is the
+  consume-the-recommendation surface. Closes the asymmetry with inception-decide flow
+  (/inception/T-XXX vs /review/T-XXX is the canonical pattern).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: now
@@ -16,8 +19,8 @@ related_tasks: [T-1959, T-1960, T-1961, T-1962, T-1911]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T17:57:15Z
-last_update: 2026-05-20T17:57:15Z
-date_finished: null
+last_update: 2026-05-21T17:46:25Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +31,47 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-20T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-20T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1963: /arcs/<slug>/review route — read-only review surface (separate from /close)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1959 child D. T-1960 + T-1961 wired the rec onto the anchor and surfaced close-ready arcs on /approvals — but the "Review" CTA on each row currently points to `/arcs/<slug>` (the generic detail page) because the dedicated read-only review surface didn't exist. That breaks parity with the inception flow (`/inception/T-XXX` vs `/review/T-XXX`) and forces the human to dig through tabs to find the rec.
+
+T-1963 adds a thin GET-only `/arcs/<slug>/review` route that renders the anchor-task Recommendation, headline mechanic, completion stats, and a single "Approve / Override" CTA to `/arcs/<slug>/close`. T-1961's Review CTA gets re-pointed to it.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] New GET-only route `/arcs/<arc_id>/review` in `web/blueprints/arcs.py` resolves the arc (404 on miss), calls `_anchor_recommendation`, renders `arc_review.html` — no POST handler (read-only); closed/abandoned arcs still render (vs `/close` which redirects)
+- [x] New `web/templates/arc_review.html` renders: arc header (name, slug, status), headline mechanic (when present), completion stats, the Agent Recommendation panel from T-1960 (verdict badge + rationale_html + evidence_html + suggested demo), an "Approve / Override" CTA linking to `/arcs/<arc_slug>/close`, and a back link to `/arcs/<arc_slug>`
+- [x] When the arc has no anchor task OR no `## Recommendation` block, the page still renders (with an empty-state message instead of the rec panel)
+- [x] `_approvals_content.html` ARC CLOSURE section "Review" CTA hrefs swap from `/arcs/{{ a.slug }}` to `/arcs/{{ a.slug }}/review`
+- [x] Playwright test `tests/playwright/test_arc_review_route.py` asserts the page renders for arc-006 (value-prioritisation, anchor T-1915 with rec) and arc-005 (dispatch-safety, closed but still readable) — DOM-content per T-1575
+- [x] `python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"` succeeds
+- [x] Watchtower restart + `curl /arcs/value-prioritisation/review` returns 200 with recommendation panel; `curl /arcs/dispatch-safety/review` returns 200 (does NOT 302-redirect, unlike `/close`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -74,6 +104,13 @@ date_finished: null
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+- [ ] [REVIEW] /arcs/<slug>/review reads cleanly as a "decide from a brief" surface — header + headline mechanic + completion stats + rec panel + single Approve/Override CTA; no clutter, no editable fields, no §ACD prompt (that lives on /close)
+  **Steps:**
+  1. Open http://192.168.10.107:3000/arcs/value-prioritisation/review
+  2. Read the page top-to-bottom — confirm there are no editable form fields
+  **Expected:** Page reads as a brief. Layout: arc name + status + headline mechanic, then "X/Y constituent tasks completed", then the Agent Recommendation panel, then a prominent "Approve / Override" button that navigates to `/close`. No form, no §ACD prompt, no inputs. Back link returns to `/arcs/<slug>`.
+  **If not:** Note what feels editable/clutter (a stray input field, the §ACD prompt leaking through, missing back link).
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -101,6 +138,11 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
+FW_TEST_PORT=3000 python3 -m pytest tests/playwright/test_arc_review_route.py -q
+out=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/arcs/value-prioritisation/review); [[ "$out" == "200" ]]
+out=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/arcs/dispatch-safety/review); [[ "$out" == "200" ]]
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -119,27 +161,15 @@ date_finished: null
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-21 — closed-arc behaviour: render instead of redirect
+- **What changed:** `/close` 302-redirects when the arc is closed/abandoned (sensible — the form is no longer actionable). For `/review`, the rec should remain *readable* after closure, so the human can audit later what was decided. Made `/review` render in all states; only the "Approve / Override → Close form" CTA is suppressed when status ∈ (closed, abandoned), replaced with a muted notice.
+- **Plan impact:** AC says "closed/abandoned arcs still render" — captured directly in the template branch (`_closed` flag).
+- **Triggered:** Playwright test pins this: `test_arc_review_renders_for_closed_arc_without_redirect` asserts 200 (not 302) for dispatch-safety.
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-05-21 — empty-rec absence-rendering (no anchor or no block)
+- **What changed:** When the arc has no `anchor_task` OR the anchor's body lacks a `## Recommendation` block, the page must still render usefully — the human came here to *find* the rec. Added a `.empty-rec` dashed-border block with explicit "open the anchor task and write one" guidance instead of failing silent.
+- **Plan impact:** Template needs both presence and absence branches; helper already returns `present: False` in those cases (from T-1960 work).
+- **Triggered:** None — both branches landed in the same commit.
 
 ## Decisions
 
@@ -162,9 +192,27 @@ date_finished: null
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Closes the T-1959 trilogy (T-1960 wired the rec onto the anchor, T-1961 listed close-ready arcs on /approvals, T-1963 gives them a dedicated read-only review surface). Now /approvals Review CTA points at `/arcs/<slug>/review` — a brief-style read of the rec with one CTA to act. Matches the inception flow's `/inception/T-XXX` vs `/review/T-XXX` split. Closed arcs stay readable for audit; absence-rendering keeps the page useful even when no rec is written yet. All ACs ticked, 6/6 Playwright green, live smoke confirms 200/200/404 for in-progress/closed/nonexistent.
+
+**Evidence:**
+- `web/blueprints/arcs.py`: new GET-only route `arc_review_surface` — reuses `_read_arc`, `_resolve_constituents`, `_completion_stats`, `_anchor_recommendation`, `_arc_reports`; renders `arc_review.html`
+- `web/templates/arc_review.html`: arc header + headline mechanic + completion stats + rec panel (present/absent branch) + Approve/Override CTA (suppressed when arc is closed/abandoned) + back link to detail
+- `web/templates/_approvals_content.html`: Review CTA href swapped from `/arcs/{{ a.slug }}` → `/arcs/{{ a.slug }}/review`
+- Playwright `tests/playwright/test_arc_review_route.py` (6 tests, PASS) — header visible, panel visible, anchor link, /close CTA href, no editable form fields (read-only contract), closed-arc 200 (no 302), nonexistent 404
+- Live smoke: `/arcs/value-prioritisation/review` returns 200 with verdict-GO panel; `/arcs/dispatch-safety/review` returns 200 with closed-state notice (no redirect); `/arcs/nonexistent-arc/review` returns 404
+
+**Review on Watchtower:** http://192.168.10.107:3000/review/T-1963
+
 ## Updates
 
 ### 2026-05-20T17:57:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1963-arcsslugreview-route--read-only-review-s.md
 - **Context:** Initial task creation
+
+### 2026-05-21T17:46:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

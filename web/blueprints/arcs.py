@@ -1335,3 +1335,32 @@ def arc_close_surface(arc_id):
         prev_decision=request.form.get("decision", "") if request.method == "POST" else "",
         prev_justification=request.form.get("justification", "") if request.method == "POST" else "",
     )
+
+
+# T-1963: read-only review surface for arc closure. Companion to /close.
+# Parity with the inception flow (/inception/T-XXX vs /review/T-XXX): /review
+# is the consume-the-rec surface, /close is the act-on-the-rec form. Closed
+# and abandoned arcs still render here (vs /close which redirects), so the
+# rec stays readable after closure.
+
+@bp.route("/arcs/<arc_id>/review", methods=["GET"])
+def arc_review_surface(arc_id):
+    arc = _read_arc(arc_id)
+    if arc is None:
+        abort(404, description=f"Arc '{arc_id}' not registered.")
+    arc_slug = str(arc.get("slug") or arc_id).strip()
+    constituents = _resolve_constituents(arc)
+    stats = _completion_stats(constituents)
+    recommendation = _anchor_recommendation(arc)
+    reports = _arc_reports(arc_slug)
+    return render_page(
+        "arc_review.html",
+        page_title=f"Review arc: {arc.get('name', arc_id)}",
+        arc=arc,
+        arc_id=arc_id,
+        arc_slug=arc_slug,
+        constituents=constituents,
+        stats=stats,
+        recommendation=recommendation,
+        reports=reports,
+    )
