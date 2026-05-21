@@ -297,6 +297,30 @@
             color: var(--pico-secondary-inverse);
             text-decoration: none;
         }
+
+        /* T-1982: BVP_norm chip — surfaced on /tasks listing cards + list. */
+        .bvp-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            background: var(--pico-muted-background, #e8e8e8);
+            color: var(--pico-color);
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+            border: 1px solid var(--pico-muted-border-color);
+            white-space: nowrap;
+            margin-left: 0.25rem;
+        }
+        .bvp-badge:hover {
+            background: var(--pico-secondary-background);
+            text-decoration: none;
+        }
+        .bvp-badge-proposed em {
+            font-style: italic;
+        }
     </style>
 </head>
 <body hx-boost="true" hx-target="#content" hx-swap="innerHTML">

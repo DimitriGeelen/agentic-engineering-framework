@@ -1,0 +1,21 @@
+{# T-1982: render a compact BVP_norm chip for a task.
+
+   Reads task._bvp = {mode, norm} attached by _attach_bvp_to_tasks (web.blueprints.tasks).
+   - confirmed mode → plain "BVP 0.58"
+   - proposed mode → italic "BVP 0.58*" with tooltip explaining the asterisk
+   - none / missing → nothing
+   The chip links to the task's detail-page BVP block (T-1980).
+#}
+{% macro bvp_badge(task) %}
+{%- set b = task._bvp -%}
+{%- if b and b.norm is not none -%}
+  {%- set norm_fmt = "%.2f"|format(b.norm) -%}
+  {%- if b.mode == 'proposed' -%}
+    <a class="bvp-badge bvp-badge-proposed" href="/tasks/{{ task.id }}#bvp-block"
+       title="Estimator-proposed BVP_norm (not yet human-confirmed). T-1980."><em>BVP {{ norm_fmt }}*</em></a>
+  {%- else -%}
+    <a class="bvp-badge bvp-badge-confirmed" href="/tasks/{{ task.id }}#bvp-block"
+       title="Confirmed BVP_norm. T-1980.">BVP {{ norm_fmt }}</a>
+  {%- endif -%}
+{%- endif -%}
+{% endmacro %}

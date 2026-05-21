@@ -83,6 +83,34 @@ def _task_bvp_data(task_data: dict) -> dict:
     }
 
 
+def _attach_bvp_to_tasks(tasks: list[dict]) -> None:
+    """T-1982: batch-attach `t["_bvp"] = {mode, norm}` to each task in-place.
+
+    Loads policy ONCE (cheaper than 1200 _task_bvp_data calls). Skips cost
+    computation — listing cards just need the norm chip. Tasks with no
+    scores get `_bvp = None` (template renders nothing for none-mode).
+    """
+    from web.blueprints.bvp import (
+        _load_policy, _driver_weights, _compute_bvp, _latest_proposed_scores,
+    )
+    policy = _load_policy()
+    weights = _driver_weights(policy)
+    for t in tasks:
+        scores = t.get("bvp_scores") if isinstance(t.get("bvp_scores"), dict) else None
+        if scores:
+            mode = "confirmed"
+        else:
+            proposed = _latest_proposed_scores(t) if isinstance(t, dict) else None
+            if proposed:
+                scores = proposed
+                mode = "proposed"
+            else:
+                t["_bvp"] = None
+                continue
+        _raw, norm = _compute_bvp(scores, weights)
+        t["_bvp"] = {"mode": mode, "norm": norm}
+
+
 def _task_arc_data(task_data: dict) -> dict | None:
     """T-1982: load arc YAML for a task with arc_id.
 
@@ -651,6 +679,9 @@ def tasks():
         "observation", "handover", "resume", "metrics", "task-system",
         "specification", "design",
     ]
+
+    # T-1982: attach BVP_norm per task so kanban cards + list view can render a chip.
+    _attach_bvp_to_tasks(all_tasks)
 
     view = request.args.get("view", "board")
     if view not in ("board", "list"):

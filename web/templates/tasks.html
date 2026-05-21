@@ -1,5 +1,6 @@
 {% from '_partials/inline_select.html' import inline_select %}
 {% from '_partials/arc_badge.html' import arc_badge %}
+{% from '_partials/bvp_badge.html' import bvp_badge %}
 <style>
 /* ── Full-width override for tasks page ────────────────── */
 main.container:has(.kanban-board),
@@ -492,6 +493,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
             {{ inline_select(task.id, 'horizon', enum_horizons, task.horizon, select_class='inline-horizon-select horizon-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
             {{ inline_select(task.id, 'owner', enum_owners, task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
             {{ arc_badge(task) }}
+            {{ bvp_badge(task) }}
         </div>
     </article>
     {% endmacro %}
@@ -651,6 +653,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
             <th>Type</th>
             <th>Owner</th>
             <th>Arc</th>
+            <th>BVP</th>
             <th>Tags</th>
         </tr>
     </thead>
@@ -679,6 +682,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 <span class="owner-update-result"></span>
             </td>
             <td>{{ arc_badge(task) }}</td>
+            <td>{{ bvp_badge(task) }}</td>
             <td><small>{{ task._tags[:3]|join(', ') }}</small></td>
         </tr>
         {% endfor %}
