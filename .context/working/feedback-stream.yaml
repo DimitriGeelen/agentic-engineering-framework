@@ -8884,3 +8884,147 @@ payload:
   pattern_id: AC-verify-mismatch
   ac_index: 4
   ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-05-22T07:43:49Z'
+scan_id: R-5a812683
+task_id: T-1985
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-22T07:43:49Z'
+scan_id: R-5a812683
+task_id: T-1985
+payload:
+  task_file: .tasks/active/T-1985-t-1950a-reviewer-auto-tick-reviewer-agen.md
+---
+kind: override_applied
+timestamp: '2026-05-22T07:43:49Z'
+scan_id: R-5a812683
+task_id: T-1985
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-05-22T07:43:49Z'
+scan_id: R-5a812683
+task_id: T-1985
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-05-22T07:44:02Z'
+scan_id: R-b0b2fde8
+task_id: T-1985
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-22T07:44:02Z'
+scan_id: R-b0b2fde8
+task_id: T-1985
+payload:
+  task_file: .tasks/active/T-1985-t-1950a-reviewer-auto-tick-reviewer-agen.md
+---
+kind: override_applied
+timestamp: '2026-05-22T07:44:02Z'
+scan_id: R-b0b2fde8
+task_id: T-1985
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-05-22T07:44:02Z'
+scan_id: R-b0b2fde8
+task_id: T-1985
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-05-22T07:44:29Z'
+scan_id: R-edde5eb1
+task_id: T-1985
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-22T07:44:29Z'
+scan_id: R-edde5eb1
+task_id: T-1985
+payload:
+  task_file: .tasks/active/T-1985-t-1950a-reviewer-auto-tick-reviewer-agen.md
+---
+kind: override_applied
+timestamp: '2026-05-22T07:44:29Z'
+scan_id: R-edde5eb1
+task_id: T-1985
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-05-22T07:44:29Z'
+scan_id: R-edde5eb1
+task_id: T-1985
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-05-22T07:44:33Z'
+scan_id: R-24a7b7dc
+task_id: T-1985
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-05-22T07:44:33Z'
+scan_id: R-24a7b7dc
+task_id: T-1985
+payload:
+  task_file: .tasks/active/T-1985-t-1950a-reviewer-auto-tick-reviewer-agen.md
+---
+kind: override_applied
+timestamp: '2026-05-22T07:44:33Z'
+scan_id: R-24a7b7dc
+task_id: T-1985
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-05-22T07:44:33Z'
+scan_id: R-24a7b7dc
+task_id: T-1985
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent

@@ -1009,3 +1009,550 @@ bin/fw contex'
   caller: 'check-active-task focus-drift'
   target: 'T-1890'
   command: 'bin/fw context add-learning "When a PreToolUse hook introduces a bypass contract (e.g. append --flag to override a block), the downstream consumers of every command pattern the hook gates must accep'
+- timestamp: '2026-05-19T21:34:57Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1941'
+  command: 'FW_SWITCH_FOCUS=1 git add tests/playwright/test_bvp_scatter.py && FW_SWITCH_FOCUS=1 git commit -m "T-1941: Playwright pins for /bvp arc payload bvp_mode + tooltip builder
+
+Two new tests in tests/playw'
+- timestamp: '2026-05-19T21:40:40Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1941'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/cron/agentic-audit.crontab && FW_SWITCH_FOCUS=1 git commit -m "T-1941: regenerate agentic-audit.crontab — pre-existing T-1935 cron drift
+
+T-1935 (BVP cost-estimato'
+- timestamp: '2026-05-19T23:05:10Z'
+  task: 'T-1943'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1942'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-1942 --status work-completed 2>&1 | tail -25'
+- timestamp: '2026-05-19T23:11:45Z'
+  task: 'T-1943'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1942'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-1942 --status work-completed 2>&1 | tail -20'
+- timestamp: '2026-05-19T23:20:00Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1943'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1942/T-1943: work-completed — archive + episodic generation
+
+Both Agent-only tasks closed cleanly through P-010 (ACs) + P-011 (verification)
++ T-1718'
+- timestamp: '2026-05-20T06:08:21Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1944'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1944: work-completed — archive + episodic + L-408↔L-332 cross-link
+
+T-1944 closes the L-332/L-408 prevention loop end-to-end: extracted the
+cron re'
+- timestamp: '2026-05-20T06:25:00Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1945'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1945: work-completed — archive
+
+Hook + helper + bats + settings.json wire shipped in 026038f9. ACs
+8/8 ticked, P-011 verification gate green (after p'
+- timestamp: '2026-05-20T06:49:30Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1946'
+  command: 'git add .tasks/completed/T-1946-extract-binfw1911-worker-kinds-parity-he.md && FW_SWITCH_FOCUS=1 git commit -m "T-1946: work-completed — archive
+
+Third layer of L-332/L-408 prevention closed. bin/fw'
+- timestamp: '2026-05-20T07:44:03Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1947'
+  command: 'git add -A && git diff --stat --cached | tail -5 && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1947: partial-complete — Agent ACs done, Human [REVIEW] AC#1 pending (L-409 dogfood)
+
+The new CLA'
+- timestamp: '2026-05-20T07:46:00Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1947'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1947: partial-complete — Agent ACs done, Human [REVIEW] AC pending (L-409 dogfood)
+
+Per the L-409 rule this task ships: the new CLAUDE.md prose parag'
+- timestamp: '2026-05-20T09:51:06Z'
+  task: 'T-1949'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1951'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-1950*.md .tasks/active/T-1951*.md && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1950/T-1951: file G-066 missing-half deliverables (reviewer auto-tick + '
+- timestamp: '2026-05-20T10:15:37Z'
+  task: 'T-1949'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-077: approvals-batch 2026-05-20 — 29-task digest grouped by 8 categories
+
+Single-page surface collapsing /approvals queue from 29 individual /review/T-XXX
+tabs int'
+- timestamp: '2026-05-20T11:48:26Z'
+  task: 'T-1953'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1958'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-195{4,5,6,7,8}*.md && FW_SWITCH_FOCUS=1 git commit -m "T-1954/T-1955/T-1956/T-1957/T-1958: file BVP arc human-review gaps
+
+Five tasks filed from arc-006 human'
+- timestamp: '2026-05-20T12:27:31Z'
+  task: 'T-1957'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1954'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1954: partial-complete — /bvp perf cache verified, [REVIEW] AC pending
+
+Watchtower restarted post-cache-implementation, cold-vs-warm measured.
+Cold ('
+- timestamp: '2026-05-20T12:32:37Z'
+  task: 'T-1955'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1957'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1957: arc-006 self-application — 3 proposed_scoped_drivers + T-1915 estimated
+
+Per T-1925 5-step workflow on the BVP arc that BUILDS the BVP system.'
+- timestamp: '2026-05-20T12:38:37Z'
+  task: 'T-1958'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1955'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1955: resolved-by-T-1954 (no code change) — 94 proposed dots render correctly
+
+Investigation under T-1955 showed the original premise was wrong:
+/bvp'
+- timestamp: '2026-05-20T12:45:59Z'
+  task: 'T-1958'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1955'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1955: capture L-412 — filed-bug-as-symptom-of-perf pattern
+
+T-1955 was filed as a data not showing bug but was actually a
+symptom of T-1954s 17.9s'
+- timestamp: '2026-05-20T14:22:44Z'
+  task: 'T-1914'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1913'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 bin/fw context focus T-1913 2>&1 | tail -1
+bin/fw task update T-1913 --status work-completed 2>&1 | tail -30'
+- timestamp: '2026-05-20T17:54:51Z'
+  task: 'T-1959'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-05-20T17:58:12Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1958'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-1960-*.md .tasks/active/T-1961-*.md .tasks/active/T-1962-*.md .tasks/active/T-1963-*.md .tasks/active/T-1964-*.md .tasks/active/T-1965-*.md .tasks/completed/T'
+- timestamp: '2026-05-20T18:08:50Z'
+  task: 'T-1965'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1964'
+  command: 'git add web/blueprints/bvp.py web/templates/bvp.html .tasks/active/T-1964-*.md .context/working/focus.yaml .context/working/.reviewed-T-1964 && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1964: B'
+- timestamp: '2026-05-20T18:09:19Z'
+  task: 'T-1965'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1964'
+  command: 'git add web/blueprints/bvp.py web/templates/bvp.html .tasks/active/T-1964-*.md .context/working/focus.yaml .context/working/.reviewed-T-1964 && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1964: B'
+- timestamp: '2026-05-20T18:10:02Z'
+  task: 'T-1965'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1964'
+  command: 'git add web/blueprints/bvp.py web/templates/bvp.html .tasks/active/T-1964-*.md .tasks/active/T-1965-*.md .context/working/focus.yaml .context/working/.reviewed-T-1964 && FW_SWITCH_FOCUS=1 git commit -'
+- timestamp: '2026-05-20T18:10:10Z'
+  task: 'T-1965'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1964'
+  command: 'git add web/blueprints/bvp.py web/templates/bvp.html .tasks/active/T-1964-*.md .tasks/active/T-1965-*.md .context/working/focus.yaml && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1964: BVP drive'
+- timestamp: '2026-05-20T18:14:25Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1965'
+  command: 'git add web/blueprints/bvp.py web/templates/bvp.html .tasks/active/T-1965-*.md .context/working/focus.yaml .context/project/decisions.yaml && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1965: BVP'
+- timestamp: '2026-05-20T18:18:00Z'
+  task: 'T-1934'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1937'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw context focus T-1937 2>&1 | tail -1; bin/fw task update T-1937 --status work-completed 2>&1 | grep -E "Status:|Partial|BLOCKED" | head -5
+FW_SWITCH_FOCUS=1 bin/fw context focu'
+- timestamp: '2026-05-20T18:20:03Z'
+  task: 'T-1937'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: T-1937 commit ed7ef29f only touched lib/bvp.sh + tests (CLI verb parity). The web/blueprints/bvp.py reference in the gate output reflects stale working-tree state from sibling T-1964/T-1965 commits, not T-1937''s actual diff. Verified via git show --stat ed7ef29f.'
+  reason: ''
+- timestamp: '2026-05-20T18:21:02Z'
+  task: 'T-1937'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: T-1937 commit ed7ef29f only touched lib/bvp.sh + tests (CLI verb parity). web/blueprints/bvp.py in gate output reflects stale working-tree from sibling T-1964/T-1965, not T-1937 diff. Verified via git show --stat ed7ef29f.'
+  reason: ''
+- timestamp: '2026-05-20T18:28:21Z'
+  task: 'T-1941'
+  flag: '--skip-acceptance-criteria'
+  caller: 'check_acceptance_criteria'
+  reason: ''
+- timestamp: '2026-05-20T19:09:31Z'
+  task: 'T-1936'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1687'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw work-on T-1687 2>&1 | tail -1 && \
+git add .tasks/active/T-1936-bvp-t-new-7d-arc-level-bvpcost-rollup--r.md && \
+git diff --cached --stat | tail -3 && \
+git commit -m "$(cat <'
+- timestamp: '2026-05-20T19:16:52Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1966'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1966: L-415 sweep — count-agnostic test-count verification (4 task files)
+
+L-415 captured the brittle pattern hit twice this session on T-1922/T-1923'
+- timestamp: '2026-05-20T19:26:57Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1967'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1967: L-414 root-cause fix — AC parser sed-range swallows one-line comments
+
+Root cause: agents/task-create/update-task.sh:check_acceptance_criteria('
+- timestamp: '2026-05-20T21:09:53Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1968'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1968: arc badge dark-on-dark contrast fix
+
+User report mid-review: arc badge labels rendered as dark-blue text on
+dark-slate background in dark mode. S'
+- timestamp: '2026-05-20T21:26:34Z'
+  task: 'T-1970'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1687'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-1969-*.md .tasks/active/T-1970-*.md arc-badge-before.png arc-badge-after.png && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1687: file T-1969 (arc id+slu'
+- timestamp: '2026-05-20T21:26:42Z'
+  task: 'T-1970'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1687'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-1969-*.md .tasks/active/T-1970-*.md && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1687: file T-1969 (arc id+slug unified) + T-1970 (badge contrast sweep'
+- timestamp: '2026-05-21T06:46:19Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1970'
+  command: 'bin/fw context add-learning --switch-focus "Pico CSS variable pairs that look like contrast partners (--pico-X-background + --pico-X) often resolve to the same colour at runtime; the actual partner is'
+- timestamp: '2026-05-21T06:49:00Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1915'
+  command: 'FW_SWITCH_FOCUS=1 git add docs/reports/T-1915-demo-evidence/ 2>&1 && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1915: capture arc-006 (BVP) demo evidence bundle for arc closure
+
+Six-leg headline'
+- timestamp: '2026-05-21T06:49:41Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1915'
+  command: 'FW_SWITCH_FOCUS=1 git add .gitignore docs/reports/T-1915-demo-evidence/03-bvp-scatter.png docs/reports/T-1915-demo-evidence/04-arc-006-detail.png 2>&1 && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF'
+- timestamp: '2026-05-21T07:08:16Z'
+  task: 'T-1973'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: Edit is a pure module-level docstring change (no rendered HTML/CSS/JS impact). No visual surface to review — string is read by humans navigating the source tree.'
+  reason: ''
+- timestamp: '2026-05-21T07:17:37Z'
+  task: 'T-1974'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: Edit is a Playwright test selector update — no template/blueprint/CSS change. No visual surface to review; the test itself IS the verification.'
+  reason: ''
+- timestamp: '2026-05-21T07:21:31Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1915'
+  command: 'FW_SWITCH_FOCUS=1 git add docs/reports/T-1915-demo-evidence/07-value-drivers-policy.txt && FW_SWITCH_FOCUS=1 git commit -m "T-1915: demo bundle — add policy-file evidence for Leg 6 (auto-promote OFF'
+- timestamp: '2026-05-21T07:23:24Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1974'
+  command: 'bin/fw context add-learning --switch-focus "When a slice ships, satellite text/test references to will ship in T-NNNN become stale and contradict reality. T-1971 (template text), T-1972 (CLI empty-s'
+- timestamp: '2026-05-21T07:53:33Z'
+  task: 'T-1975'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: T-1975 changes audit infrastructure only (agents/audit/audit.sh + tests/unit/audit_stale_slice_reference.bats). The render-surface paths flagged (bvp.html/bvp.py/arcs.py) are listed via related_tasks for traceability to the L-417 cluster, NOT modified by this task. No template, blueprint, CSS, or JS change. Live curl /bvp and /arcs unchanged by this commit.'
+  reason: ''
+- timestamp: '2026-05-21T07:54:28Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1975'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1975: L-417 prevention — stale-slice-reference audit check
+
+When a slice ships, satellite text/tests can reference "ship in T-NNNN"
+where T-NNNN has '
+- timestamp: '2026-05-21T08:21:35Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1969'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1969: arc-badge unified dual-form display (arc-NNN · slug)
+
+Origin: User pushback during T-1968 v2 contrast review — arc badges showed
+whichever for'
+- timestamp: '2026-05-21T08:25:19Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1948'
+  command: 'git add .tasks/completed/T-1948-t-1947-prose-iteration--rewrite-claudemd.md .context/episodic/T-1948.yaml 2>&1 | tail -3; FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1948: close — CLAUDE.md REV'
+- timestamp: '2026-05-21T09:01:10Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1949'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/episodic/T-1949.yaml && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1949: close — Playwright MCP screenshot redirect + T-1970 evidence preservation
+
+- Auto-na'
+- timestamp: '2026-05-21T09:07:03Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1953'
+  command: 'FW_SWITCH_FOCUS=1 git add tools/g064-readiness.py tests/unit/test_g064_readiness.py .tasks/active/T-1953-* .tasks/completed/T-1953-* .context/project/learnings.yaml .context/episodic/T-1953.yaml docs/'
+- timestamp: '2026-05-21T09:07:20Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1953'
+  command: 'FW_SWITCH_FOCUS=1 git add tools/g064-readiness.py tests/unit/test_g064_readiness.py .context/project/learnings.yaml .context/episodic/T-1953.yaml docs/generated/components/tools-g064-readiness.md && F'
+- timestamp: '2026-05-21T09:17:19Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1962'
+  command: 'FW_SWITCH_FOCUS=1 git add lib/arc.sh tests/unit/arc_review_verb.bats .tasks/completed/T-1962-* .context/episodic/T-1962.yaml docs/generated/components/lib-arc.md && FW_SWITCH_FOCUS=1 git commit -m "$('
+- timestamp: '2026-05-21T09:19:12Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1962'
+  command: 'FW_SWITCH_FOCUS=1 git add .fabric/components/tests-unit-arc_review_verb.yaml && FW_SWITCH_FOCUS=1 git commit -m "T-1962: register fabric card for arc_review_verb.bats
+
+Co-Authored-By: Claude Opus 4.7 '
+- timestamp: '2026-05-21T14:57:04Z'
+  task: 'T-1980'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1981'
+  command: 'FW_SWITCH_FOCUS=1 git add web/blueprints/tasks.py web/templates/task_detail.html .tasks/active/T-1981-inception-how-should-arc-scoped-drivers-.md
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1980+'
+- timestamp: '2026-05-21T15:13:06Z'
+  task: 'T-1980'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1982'
+  command: 'FW_SWITCH_FOCUS=1 git add web/blueprints/tasks.py web/templates/task_detail.html
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1982: arc membership + scoped drivers on task detail page
+
+Human round'
+- timestamp: '2026-05-21T16:01:47Z'
+  task: 'T-1982'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1977'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-1977 --status work-completed 2>&1 | tail -10'
+- timestamp: '2026-05-21T16:02:22Z'
+  task: 'T-1982'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1977'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-1977 --status work-completed 2>&1 | tail -8'
+- timestamp: '2026-05-21T16:02:57Z'
+  task: 'T-1982'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1977'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-1977 --status work-completed 2>&1 | tail -8'
+- timestamp: '2026-05-21T16:03:31Z'
+  task: 'T-1982'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1977'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-1977 --status work-completed 2>&1 | tail -10'
+- timestamp: '2026-05-21T16:03:57Z'
+  task: 'T-1982'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1977'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-1977 --status work-completed 2>&1 | tail -8'
+- timestamp: '2026-05-21T16:05:46Z'
+  task: 'T-077'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1982'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-1977-arc-scoped-driver-weight-sliders--t-1929.md .tasks/active/T-1982-show-bvp-badge-on-tasks-listing-cards--l.md .context/working/focus.yaml
+FW_SWITCH_FOCUS='
+- timestamp: '2026-05-21T16:06:21Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1982'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-1977-arc-scoped-driver-weight-sliders--t-1929.md .tasks/active/T-1982-show-bvp-badge-on-tasks-listing-cards--l.md .context/working/focus.yaml
+FW_SWITCH_FOCUS='
+- timestamp: '2026-05-21T17:35:01Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1960'
+  command: 'git add .tasks/active/T-1960-arc-recommendation-schema--auto-render-o.md && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1960: status work-completed (partial-complete, [REVIEW] AC pending)
+
+8/8 Ag'
+- timestamp: '2026-05-21T17:45:55Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1961'
+  command: 'git add .tasks/active/T-1961-approvals-ingestion-of-close-ready-arcs-.md
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1961: status work-completed (partial-complete, [REVIEW] AC pending)
+
+8/8 Agent'
+- timestamp: '2026-05-21T17:52:27Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1963'
+  command: 'git add .tasks/active/T-1963-arcsslugreview-route--read-only-review-s.md
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1963: status work-completed (partial-complete, [REVIEW] AC pending)
+
+7/7 Agent'
+- timestamp: '2026-05-21T19:29:36Z'
+  task: 'T-1983'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-05-22T06:52:01Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1985'
+  command: 'git add .tasks/active/T-1985-*.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-1985: file T-1950A — reviewer auto-tick [REVIEWER] Agent ACs v1.0 (dogfood of T-1984 substrate)" 2>&1 | tail -10'
+- timestamp: '2026-05-22T06:55:46Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1985'
+  command: 'git add .tasks/completed/T-1950-*.md .tasks/completed/T-1983-*.md .tasks/active/T-1985-*.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-1985: backfill T-1950 + T-1983 inception_decision'
+- timestamp: '2026-05-22T06:58:56Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1981'
+  command: 'git add .tasks/active/T-1981-*.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-1981: fill inception (BVP arc-scoped drivers contribution model) — Recommendation GO B
+
+Filled Problem St'
+- timestamp: '2026-05-22T07:14:55Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1976'
+  command: 'FW_SAFE_MODE=1 FW_SWITCH_FOCUS=1 bin/fw task update T-1976 --status work-completed 2>&1 | tail -10'
+- timestamp: '2026-05-22T07:16:55Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1980'
+  command: 'FW_SAFE_MODE=1 FW_SWITCH_FOCUS=1 bin/fw task update T-1980 --status work-completed 2>&1 | tail -8'
+- timestamp: '2026-05-22T07:17:13Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1980'
+  command: 'git add .tasks/ && FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-1976 / T-1978 / T-1980: transition to work-completed (partial-complete)
+
+BVP arc HV-LC batch:
+- T-1976: arc-scoped driver add'
+- timestamp: '2026-05-22T07:21:46Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1951'
+  command: 'git add .tasks/active/T-1951-*.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-1951: fill ACs (G-066 prong 3 — reviewer --dispatch mode for TermLink-isolated reviews)" 2>&1 | tail -5'
+- timestamp: '2026-05-22T07:24:12Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1985'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-1985 --status started-work --horizon now 2>&1 | tail -5'
+- timestamp: '2026-05-22T07:28:53Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1624'
+  command: 'FW_SAFE_MODE=1 FW_SWITCH_FOCUS=1 bin/fw task update T-1624 --status work-completed 2>&1 | head -60'
+- timestamp: '2026-05-22T07:45:23Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1985'
+  command: 'git add .tasks/active/T-1985-t-1950a-reviewer-auto-tick-reviewer-agen.md .context/working/feedback-stream.yaml .context/working/.gate-bypass-log.yaml 2>&1; FW_SWITCH_FOCUS=1 git commit -m "T-1985: wor'

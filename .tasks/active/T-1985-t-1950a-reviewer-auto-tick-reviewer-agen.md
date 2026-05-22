@@ -4,9 +4,9 @@ name: "T-1950A reviewer auto-tick [REVIEWER] Agent ACs v1.0 — dogfood of T-198
 description: >
   T-1950A reviewer auto-tick [REVIEWER] Agent ACs v1.0 — dogfood of T-1984 substrate
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [reviewer, auto-tick, g-066, dogfood]
 components: [lib/reviewer/static_scan.py]
@@ -21,8 +21,8 @@ unlocks_inception_decision:
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T06:48:44Z
-last_update: 2026-05-22T07:38:13Z
-date_finished:
+last_update: 2026-05-22T07:44:29Z
+date_finished: 2026-05-22T07:44:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -191,6 +191,20 @@ test -f tests/unit/test_reviewer_auto_tick.py
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 8 Agent ACs are ticked. The implementation delivers the T-1950 GO design in full: `[REVIEWER]` Agent ACs auto-tick on PASS verdict, single atomic write, sovereignty rail prevents re-ticking human-unticked ACs, Human ACs are never touched. The dogfood probe proved end-to-end correctness — the sentinel AC on this very task was auto-ticked by the scanner. No regressions: 126 reviewer tests pass, 29 FAIL tasks in the audit remain unchanged.
+
+**Evidence:**
+- `lib/reviewer/static_scan.py` bumped to v1.5 with `_should_auto_tick`, `_compute_auto_ticks`, `_apply_ac_mutations`, `_parse_agent_acs`, `_compute_ac_text_digest`, `_feedback_stream_has_tick` helpers
+- `tests/unit/test_reviewer_auto_tick.py` — 33 tests covering all 9 sovereignty cases + atomic-write spy + verdict-block format + completed-task guard
+- `bin/fw reviewer T-1985` → `Overall: PASS`, `Auto-ticked: 1 AC(s)` (sentinel ticked on first scan)
+- `.context/working/feedback-stream.yaml` contains `auto_tick:T-1985:9:d08a5f4a7347` sovereignty-rail entry
+- `bin/fw reviewer audit` → FAIL=29 (same as before, no new class)
+- CLAUDE.md §AC Classification Guidance updated with Reviewer auto-tick (v1.5, T-1985) paragraph
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -229,8 +243,8 @@ test -f tests/unit/test_reviewer_auto_tick.py
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7b980240
-- **Timestamp:** 2026-05-22T07:43:18Z
+- **Scan ID:** R-24a7b7dc
+- **Timestamp:** 2026-05-22T07:44:33Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -239,3 +253,6 @@ test -f tests/unit/test_reviewer_auto_tick.py
 - **Suppressed:** 2 (by override)
   - mock-only-integration @ AC vs Verification cross-check
   - AC-verify-mismatch @ AC#4 (Agent)
+
+### 2026-05-22T07:44:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
