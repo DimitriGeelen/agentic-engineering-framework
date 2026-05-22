@@ -1,0 +1,24 @@
+id: arc-007
+slug: watchtower-redesign
+name: "Watchtower redesign \u2014 apply Claude Design exploration"
+description: "Replace ad-hoc PicoCSS scaffolding + 16-item Govern menu with a user-pickable foundation\
+  \ system (6 palettes \xD7 light/dark, 6 type pairings, 3 nav layouts, 3 density\
+  \ tiers) driven by a /settings/appearance screen. Source: Claude Design bundle 'agentic-framework'\
+  \ chat 2026-05-13; design preserved at docs/design/watchtower-redesign-2026-05-13/."
+status: draft
+anchor_task: T-1987
+constituent_tasks: [T-1987]
+headline_mechanic: "User opens /settings/appearance \u2192 picks a preset (Calm/Editorial/Console/Paper/Bone/Midnight)\
+  \ \u2192 Watchtower re-themes instantly across foundation tokens, nav layout, and\
+  \ density \u2192 preference persists to .context/user-preferences/<who>.yaml \u2192\
+  \ user re-loads any other page (Cockpit/Tasks/Approvals/Fabric/Arcs) and observes\
+  \ the same applied theme without manual reapply"
+demo_evidence: null
+created: 2026-05-22T10:03:03Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
