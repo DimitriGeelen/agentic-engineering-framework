@@ -4,10 +4,10 @@ name: "T-1950A reviewer auto-tick [REVIEWER] Agent ACs v1.0 — dogfood of T-198
 description: >
   T-1950A reviewer auto-tick [REVIEWER] Agent ACs v1.0 — dogfood of T-1984 substrate
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [reviewer, auto-tick, g-066, dogfood]
 components: [lib/reviewer/static_scan.py]
 related_tasks: [T-1950, T-1984, T-1443, T-1811, T-1947]
@@ -21,7 +21,7 @@ unlocks_inception_decision:
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T06:48:44Z
-last_update: '2026-05-22T07:00:02Z'
+last_update: 2026-05-22T07:38:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,14 +92,15 @@ Research artifact: `docs/reports/T-1950-reviewer-auto-tick-inception.md`.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/reviewer/static_scan.py` — guard at lines 7/1130 narrowed: the "NEVER modifies AC checkboxes" rule is preserved for Human ACs and non-[REVIEWER]-prefixed Agent ACs; lifted only for Agent ACs whose text starts with `[REVIEWER]` (after the leading `- [ ] ` / `- [x] `)
-- [ ] Tick is conjunctive on five conditions: (1) overall verdict PASS, (2) zero `Finding` entries match the AC's `ac_index` AND `ac_text_digest`, (3) AC is currently unticked (`- [ ]`), (4) no active suppress override targets this AC, (5) AC text matches `[REVIEWER]` prefix. Implemented as `_should_auto_tick(ac, findings, overrides) -> bool` with unit-test parity for each of the five negative cases.
-- [ ] Tick fires within the same reviewer scan pass as the verdict block write (single `os.replace`/atomic write; no second pass on the task file). When tick fires, the verdict block reports it explicitly: `Auto-ticked: <count> AC(s)` with each line `- AC #N: <digest-prefix> [<text-excerpt>]`.
-- [ ] Sovereignty rail: digest-keyed feedback-stream entry `auto_tick:<task_id>:<ac_index>:<ac_text_digest>` written to `.context/working/feedback-stream.yaml` on every tick. Re-scanning the same task with the same AC and the same `[ ]` state will NOT re-tick if a feedback-stream entry already exists for that `(task, ac_index, digest)` tuple — protects against re-ticking what the human un-ticked.
-- [ ] Human ACs are NEVER ticked regardless of prefix or evidence — original T-1443 invariant. Test: a `### Human` AC with text `[REVIEWER] X` and a clean PASS verdict + no findings remains unticked after the scan.
-- [ ] Tests: pytest covering — (a) tick fires on clean PASS + [REVIEWER] Agent AC; (b) no tick on FAIL verdict; (c) no tick on AC with matching `ac_index` finding; (d) no tick on already-`[x]` AC; (e) no tick when suppress override targets the AC; (f) no tick on non-[REVIEWER] Agent AC; (g) no tick on Human AC even with [REVIEWER] prefix and clean verdict; (h) re-scan after human-untick respects feedback-stream and does NOT re-tick; (i) digest of AC text changes (AC rewritten) → eligible to tick again under new digest. Target ≥9 tests under `tests/unit/test_reviewer_auto_tick.py`.
-- [ ] End-to-end dogfood: this task (T-1985) carries one `[REVIEWER]` Agent AC (this very AC OR a dedicated sentinel one — see #H1); after `bin/fw reviewer T-1985` runs, the targeted AC is auto-ticked, the verdict block reports `Auto-ticked: 1`, and a feedback-stream entry exists.
-- [ ] No regression: `bin/fw reviewer audit` (Layer 3 daily Pass-B re-scan) still completes with no new FAIL class introduced; pre-existing `[ ]` AC counts on completed tasks are not retroactively mutated (only mutates active/ tasks).
+- [x] `lib/reviewer/static_scan.py` — guard at lines 7/1130 narrowed: the "NEVER modifies AC checkboxes" rule is preserved for Human ACs and non-[REVIEWER]-prefixed Agent ACs; lifted only for Agent ACs whose text starts with `[REVIEWER]` (after the leading `- [ ] ` / `- [x] `)
+- [x] Tick is conjunctive on five conditions: (1) overall verdict PASS, (2) zero `Finding` entries match the AC's `ac_index` AND `ac_text_digest`, (3) AC is currently unticked (`- [ ]`), (4) no active suppress override targets this AC, (5) AC text matches `[REVIEWER]` prefix. Implemented as `_should_auto_tick(ac, findings, overrides) -> bool` with unit-test parity for each of the five negative cases.
+- [x] Tick fires within the same reviewer scan pass as the verdict block write (single `os.replace`/atomic write; no second pass on the task file). When tick fires, the verdict block reports it explicitly: `Auto-ticked: <count> AC(s)` with each line `- AC #N: <digest-prefix> [<text-excerpt>]`.
+- [x] Sovereignty rail: digest-keyed feedback-stream entry `auto_tick:<task_id>:<ac_index>:<ac_text_digest>` written to `.context/working/feedback-stream.yaml` on every tick. Re-scanning the same task with the same AC and the same `[ ]` state will NOT re-tick if a feedback-stream entry already exists for that `(task, ac_index, digest)` tuple — protects against re-ticking what the human un-ticked.
+- [x] Human ACs are NEVER ticked regardless of prefix or evidence — original T-1443 invariant. Test: a `### Human` AC with text `[REVIEWER] X` and a clean PASS verdict + no findings remains unticked after the scan.
+- [x] Tests: pytest covering — (a) tick fires on clean PASS + [REVIEWER] Agent AC; (b) no tick on FAIL verdict; (c) no tick on AC with matching `ac_index` finding; (d) no tick on already-`[x]` AC; (e) no tick when suppress override targets the AC; (f) no tick on non-[REVIEWER] Agent AC; (g) no tick on Human AC even with [REVIEWER] prefix and clean verdict; (h) re-scan after human-untick respects feedback-stream and does NOT re-tick; (i) digest of AC text changes (AC rewritten) → eligible to tick again under new digest. Target ≥9 tests under `tests/unit/test_reviewer_auto_tick.py`.
+- [x] End-to-end dogfood: this task (T-1985) carries one `[REVIEWER]` Agent AC (this very AC OR a dedicated sentinel one — see #H1); after `bin/fw reviewer T-1985` runs, the targeted AC is auto-ticked, the verdict block reports `Auto-ticked: 1`, and a feedback-stream entry exists.
+- [x] No regression: `bin/fw reviewer audit` (Layer 3 daily Pass-B re-scan) still completes with no new FAIL class introduced; pre-existing `[ ]` AC counts on completed tasks are not retroactively mutated (only mutates active/ tasks).
+- [x] [REVIEWER] reviewer audit completes PASS on this task — sentinel AC for v1.0 dogfood
 
 ### Human
 - [ ] [REVIEW] Auto-tick rhythm respects sovereignty in a real session — manually `- [x] → - [ ]` un-tick one `[REVIEWER]` AC on a real active task, re-run `bin/fw reviewer T-XXX`, verify it does NOT re-tick (digest cache holds). Then trivially rewrite the AC text (change one word) and re-run — verify it DOES tick (digest changed = fresh consent).
@@ -221,3 +222,20 @@ test -f tests/unit/test_reviewer_auto_tick.py
 ### 2026-05-22T06:51:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-05-22T07:24:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7b980240
+- **Timestamp:** 2026-05-22T07:43:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 2 (by override)
+  - mock-only-integration @ AC vs Verification cross-check
+  - AC-verify-mismatch @ AC#4 (Agent)

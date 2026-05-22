@@ -243,3 +243,21 @@ overrides:
   expires_at: '2026-08-16T10:14:30Z'
   added_by: root
   added_at: '2026-05-18T10:14:30Z'
+- id: OV-f3632338
+  task_id: T-1985
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: AC 'end-to-end dogfood' triggers heuristic; integration IS bin/fw reviewer
+    T-1985 (pipeline-level), just not under tests/integration/
+  expires_at: '2026-08-20T07:40:14Z'
+  added_by: unknown
+  added_at: '2026-05-22T07:40:14Z'
+- id: OV-21992fcb
+  task_id: T-1985
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  reason: feedback-stream.yaml in AC text is an explanation of where events land,
+    not a file to be verified directly; pytest tests exercise the write path
+  expires_at: '2026-08-20T07:40:18Z'
+  added_by: unknown
+  added_at: '2026-05-22T07:40:18Z'

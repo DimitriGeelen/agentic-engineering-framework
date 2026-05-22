@@ -165,6 +165,15 @@ def test_should_auto_tick_expired_override_does_not_block():
     assert result is True
 
 
+def test_should_auto_tick_wildcard_override_does_not_block():
+    """(e-wildcard) ac_index=None override suppresses findings but must NOT block ticking a specific AC."""
+    ac = _make_parsed_ac("[REVIEWER] check", ac_index=1)
+    # Wildcard override (None) suppresses a pattern for the whole task, not a specific AC
+    wildcard_override = _make_override("T-0001", ac_index=None, expired=False)
+    result = ss._should_auto_tick(ac, findings=[], task_overrides=[wildcard_override], verdict_overall="PASS")
+    assert result is True, "wildcard override should not block ticking a specific AC"
+
+
 def test_should_auto_tick_no_tick_non_reviewer_prefix():
     """(f) no tick on non-[REVIEWER] Agent AC."""
     ac = _make_parsed_ac("plain AC text without reviewer prefix")

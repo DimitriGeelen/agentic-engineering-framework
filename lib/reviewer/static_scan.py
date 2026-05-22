@@ -201,10 +201,12 @@ def _should_auto_tick(
             f.ac_subhead is None or f.ac_subhead == ac.ac_subhead
         ):
             return False
-    # Condition 4: no active suppress override for this ac_index
+    # Condition 4: no active suppress override specifically targeting this ac_index
+    # Wildcard overrides (ac_index=None) suppress findings for a pattern; they do NOT
+    # block ticking an AC that happens to share the task. Only exact ac_index matches block.
     now = datetime.now(timezone.utc)
     for o in (task_overrides or []):
-        if o.ac_index is not None and o.ac_index != ac.ac_index:
+        if o.ac_index != ac.ac_index:
             continue
         if not o.is_expired(now):
             return False
