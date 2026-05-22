@@ -31,12 +31,22 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
     monkeypatch.setenv("TERMLINK_RUNTIME_DIR", str(runtime))
 
-    # Force fresh imports so PROJECT_ROOT-derived constants reflect tmp_path
-    for mod in ("workflow_coverage", "web.shared", "web.blueprints.orchestrator", "web.app"):
-        if mod in sys.modules:
-            del sys.modules[mod]
-
+    # Refresh PROJECT_ROOT-derived constants. T-1996: use importlib.reload (reuses
+    # the existing module object) instead of `del sys.modules[...]` — the latter
+    # REPLACES web.shared, orphaning every other test module's import-time
+    # `from web.shared import …` bindings. That desynced test_project_root_discovery's
+    # G-069 test from `patch("web.shared.FRAMEWORK_ROOT")` (it patched the new module
+    # while the test called a function bound to the old one). reload keeps identity.
+    import importlib
+    import web.shared
+    import web.blueprints.orchestrator
     import web.app
+    importlib.reload(web.shared)
+    importlib.reload(web.blueprints.orchestrator)
+    importlib.reload(web.app)
+    if "workflow_coverage" in sys.modules:
+        importlib.reload(sys.modules["workflow_coverage"])
+
     app = web.app.create_app()
     app.config["TESTING"] = True
     with app.test_client() as c:

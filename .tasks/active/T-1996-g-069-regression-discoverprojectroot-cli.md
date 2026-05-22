@@ -1,13 +1,20 @@
 ---
 id: T-1996
-name: "G-069 regression: _discover_project_root climbs past FRAMEWORK_ROOT to stray .framework.yaml"
+name: "G-069 regression: _discover_project_root climbs past FRAMEWORK_ROOT to stray
+  .framework.yaml"
 description: >
-  test_project_root_discovery::test_g069_stray_filesystem_root_marker_does_not_capture_framework FAILS on master. _discover_project_root(fake_framework) returns the tmp dir above FRAMEWORK_ROOT when a stray .framework.yaml is planted there, instead of stopping at the FRAMEWORK_ROOT bound. This defeats the G-069 path-isolation safety mechanism (the bound that prevents discovery returning Path('/') or capturing a higher project). Source bug in web/shared.py _discover_project_root walk. Found during T-1995 full-suite triage; pre-existing, source change needed.
+  test_project_root_discovery::test_g069_stray_filesystem_root_marker_does_not_capture_framework
+  FAILS on master. _discover_project_root(fake_framework) returns the tmp dir above
+  FRAMEWORK_ROOT when a stray .framework.yaml is planted there, instead of stopping
+  at the FRAMEWORK_ROOT bound. This defeats the G-069 path-isolation safety mechanism
+  (the bound that prevents discovery returning Path('/') or capturing a higher project).
+  Source bug in web/shared.py _discover_project_root walk. Found during T-1995 full-suite
+  triage; pre-existing, source change needed.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -16,8 +23,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T19:35:47Z
-last_update: 2026-05-22T19:35:47Z
-date_finished: null
+last_update: 2026-05-22T19:37:16Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +35,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-22T19:37:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1996: G-069 regression: _discover_project_root climbs past FRAMEWORK_ROOT to stray .framework.yaml
@@ -38,10 +56,16 @@ date_finished: null
 
 ## Acceptance Criteria
 
+<!-- RE-SCOPED after investigation (see ## RCA): the G-069 bound is NOT broken.
+     _discover_project_root returns None correctly in isolation. The failure is
+     test-isolation pollution — same class as T-1995's render-path fix. -->
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause written to `## RCA`: `test_orchestrator_workflow_coverage.py` does `del sys.modules["web.shared"]` + reimport, REPLACING the module object. The G-069 test's import-time-bound `_discover_project_root` then reads the orphaned old module while `patch("web.shared.FRAMEWORK_ROOT")` targets the new one — they desync, so the bound's `cur == framework_root` never matches and the walk climbs to the stray marker
+- [x] Fix the polluter: `test_orchestrator_workflow_coverage.py` uses `importlib.reload` (reuses the module object, like every sibling reload test) instead of `del sys.modules` (which replaces it)
+- [x] `tests/unit/test_project_root_discovery.py::test_g069_stray_filesystem_root_marker_does_not_capture_framework` passes in the full `bin/fw test unit` run, not just isolation (full suite: 2 failed, 1079 passed — was 3; G-069 now green)
+- [x] No regression: `test_orchestrator_workflow_coverage.py` itself stays green (10 passed), and the rest of `test_project_root_discovery.py` stays green (7 passed)
+- [x] Confirmed this is a test-harness fix, NOT a source change to `web/shared.py` — the G-069 safety bound works correctly (verified in isolation: `_discover_project_root` returns `None`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -75,6 +99,8 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_orchestrator_workflow_coverage.py "tests/unit/test_project_root_discovery.py::test_g069_stray_filesystem_root_marker_does_not_capture_framework" -q 2>&1 | tail -1 | grep -q "11 passed"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -116,6 +142,34 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `test_project_root_discovery.py::test_g069_stray_filesystem_root_marker_does_not_capture_framework`
+red in the full `bin/fw test unit` run; green in isolation. Filed (wrongly) as a
+G-069 *source* regression in `_discover_project_root`.
+
+**Root cause:** NOT a source bug — the G-069 bound is correct (`_discover_project_root`
+returns `None` in isolation; traced live). The failure is test-isolation pollution.
+`test_orchestrator_workflow_coverage.py` (sorts alphabetically before
+`test_project_root_discovery`) refreshed its constants with
+`del sys.modules["web.shared"]` + reimport. Unlike `importlib.reload` (which
+re-executes the module body in the *same* module object), `del`+reimport creates a
+**new** module object. The discovery test binds `_discover_project_root` at its own
+import time (from the *old* module). After the polluter ran, `patch("web.shared.FRAMEWORK_ROOT", …)`
+patched the *new* module in `sys.modules`, but the test called the old function whose
+`__globals__` is the old module dict — so it read the real unpatched `FRAMEWORK_ROOT`,
+`in_framework`/`cur == framework_root` never matched, and the walk climbed to the
+stray marker.
+
+**Why structurally allowed:** `del sys.modules[mod]` is invisible to both pytest's
+fixture teardown and `monkeypatch` restore; nothing flags a test that swaps out a
+widely-imported module object. Victims only surface under full-suite ordering and look
+like flakes. Same family as T-1995's render-path pollution (there: a dangling module
+*global*; here: a swapped module *object*).
+
+**Prevention:** the polluter now uses `importlib.reload` (module identity preserved),
+matching every sibling reload test (`test_arcs_routes`, `test_orchestrator_dispatch_substrate`).
+Broader class — `del sys.modules["web.*"]` in a test fixture — is a candidate for a
+future lint/grep guard ([[L-420]] candidate); deferred, single instance found.
 
 ## Evolution
 
@@ -168,3 +222,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1996-g-069-regression-discoverprojectroot-cli.md
 - **Context:** Initial task creation
+
+### 2026-05-22T19:37:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
