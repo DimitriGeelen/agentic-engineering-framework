@@ -5,16 +5,35 @@ description: >
   Inception: GO-scope traceability — inception decisions machine-readable + close
   gate
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-1984, T-1849, T-1890, T-1442, T-1443, T-1950]
+inception_decisions:
+  - id: schema-frontmatter
+    text: "inception_decisions: lives in inception task frontmatter (single source of truth, reuses T-1849 hook pattern)"
+    ships_in: deferred:T-1984
+  - id: ships-in-five-shapes
+    text: "ships_in: accepts five shapes — file path / module.function / path::test_func / T-XXX / deferred:T-YYYY"
+    ships_in: deferred:T-1984
+  - id: gate-site
+    text: "Close gate fires in update-task.sh --status work-completed on workflow_type: inception (not at inception-decide)"
+    ships_in: deferred:T-1984
+  - id: migration-grandfather
+    text: "Grandfather completed inceptions without the field; gate only fires when inception_decisions: is non-empty"
+    ships_in: deferred:T-1984
+  - id: bypass-parity
+    text: "Override is BOTH --skip-inception-scope-trace flag (direct) AND FW_SKIP_INCEPTION_SCOPE_TRACE=1 env-var (downstream) per L-399"
+    ships_in: deferred:T-1984
+  - id: defer-then-go-sequencing
+    text: "Ship substrate (T-1984) first, then dogfood via T-1950A/T-1951 (validation by use, not by spec)"
+    ships_in: deferred:T-1984
 created: 2026-05-21T18:53:14Z
-last_update: 2026-05-21T18:56:49Z
-date_finished:
+last_update: 2026-05-21T19:29:36Z
+date_finished: 2026-05-21T19:29:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -27,6 +46,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-21T19:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -97,7 +126,7 @@ slice.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -193,7 +222,11 @@ Root cause of G-066 (T-1442/T-1443 closed work-completed with auto-tick GO unshi
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Root cause of G-066 (T-1442/T-1443 closed work-completed with auto-tick GO unshipped 26 days). Symptom-level mitigation is shipping the missing halves (T-1950/T-1951). Structural fix: inception Decisions become machine-readable; build children declare unlocks_inception_decision; update-task.sh refuses inception close until every decision has a shipped child or explicit deferred_to link. Preventive (closes the trap at GO time, not 26 days later). Reuses T-1849 arc_id frontmatter pattern. Cost: schema + parser + one refusal check. Pick A from the A/B/C analysis in T-1950 RCA exchange (S-2026-0521-resume).
+
+**Date**: 2026-05-21T19:29:36Z
 
 ## Updates
 
@@ -202,3 +235,21 @@ Root cause of G-066 (T-1442/T-1443 closed work-completed with auto-tick GO unshi
 
 ### 2026-05-21T18:56:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-21T19:29:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Root cause of G-066 (T-1442/T-1443 closed work-completed with auto-tick GO unshipped 26 days). Symptom-level mitigation is shipping the missing halves (T-1950/T-1951). Structural fix: inception Decisions become machine-readable; build children declare unlocks_inception_decision; update-task.sh refuses inception close until every decision has a shipped child or explicit deferred_to link. Preventive (closes the trap at GO time, not 26 days later). Reuses T-1849 arc_id frontmatter pattern. Cost: schema + parser + one refusal check. Pick A from the A/B/C analysis in T-1950 RCA exchange (S-2026-0521-resume).
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-cef34e82
+- **Timestamp:** 2026-05-21T19:29:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-21T19:29:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

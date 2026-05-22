@@ -11,12 +11,17 @@ horizon: next
 tags: [reviewer, auto-tick, g-066, dogfood]
 components: [lib/reviewer/static_scan.py]
 related_tasks: [T-1950, T-1984, T-1443, T-1811, T-1947]
+unlocks_inception_decision:
+  - T-1950:trigger
+  - T-1950:scope
+  - T-1950:evidence-sufficiency
+  - T-1950:sovereignty-rail
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T06:48:44Z
-last_update: 2026-05-22T06:51:22Z
+last_update: 2026-05-22T06:52:02Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
