@@ -33,6 +33,8 @@ depends_on:
   type: calls
 - target: web/blueprints/bvp.py
   type: registers
+- target: web/templates/arc_review.html
+  type: renders
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -50,6 +52,18 @@ depended_by:
   type: called_by
 - target: tests/unit/check_render_surface_human_ac_sigpipe.bats
   type: tests_by
+- target: tests/unit/audit_stale_slice_reference.bats
+  type: called_by
+- target: tests/unit/audit_stale_slice_reference.bats
+  type: tests_by
+- target: web/app.py
+  type: called_by
+- target: web/app.py
+  type: registered_by
+- target: web/blueprints/approvals.py
+  type: called_by
+- target: web/blueprints/approvals.py
+  type: registered_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-05-22'

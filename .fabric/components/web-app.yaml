@@ -65,9 +65,13 @@ depends_on:
   type: calls
 - target: web/embeddings.py
   type: calls
+- target: web/blueprints/arcs.py
+  type: calls
+- target: web/blueprints/arcs.py
+  type: registers
 last_verified: 2026-02-20
 created_by: T-227
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-22'
 depended_by:
 - target: bin/fw
   type: called_by

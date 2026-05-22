@@ -19,6 +19,10 @@ depended_by:
   type: called_by
 - target: web/blueprints/arcs.py
   type: registered_by
+- target: web/blueprints/tasks.py
+  type: called_by
+- target: web/blueprints/tasks.py
+  type: registered_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-05-22'

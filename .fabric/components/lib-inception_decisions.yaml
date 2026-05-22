@@ -1,0 +1,14 @@
+id: lib/inception_decisions.py
+name: inception_decisions
+type: script
+subsystem: framework-core
+location: lib/inception_decisions.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by:
+- target: agents/task-create/update-task.sh
+  type: called_by
+last_verified: 2026-05-22
+created_by: unknown
+last_enriched: '2026-05-22'

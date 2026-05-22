@@ -1,0 +1,16 @@
+id: lib/reviewer/dispatch_cli.py
+name: dispatch_cli
+type: script
+subsystem: framework-core
+location: lib/reviewer/dispatch_cli.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: lib/termlink_worker.py
+  type: calls
+- target: bin/fw
+  type: calls
+depended_by: []
+last_verified: 2026-05-22
+created_by: unknown
+last_enriched: '2026-05-22'

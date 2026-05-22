@@ -32,9 +32,11 @@ depends_on:
   type: calls
 - target: agents/termlink/bvp-estimator/bvp-estimator.sh
   type: calls
+- target: lib/inception_decisions.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-05-22'
 depended_by:
 - target: C-004
   type: called_by

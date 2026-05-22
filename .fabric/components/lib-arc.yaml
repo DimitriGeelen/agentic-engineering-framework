@@ -39,6 +39,18 @@ depended_by:
   type: called_by
 - target: web/blueprints/arcs.py
   type: called_by
+- target: tests/unit/arc_remove_driver_verb.bats
+  type: called_by
+- target: tests/unit/arc_remove_driver_verb.bats
+  type: tests_by
+- target: tests/unit/arc_review_verb.bats
+  type: called_by
+- target: tests/unit/arc_review_verb.bats
+  type: tests_by
+- target: tests/unit/arc_set_scoped_weight.bats
+  type: called_by
+- target: tests/unit/arc_set_scoped_weight.bats
+  type: tests_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-22'
