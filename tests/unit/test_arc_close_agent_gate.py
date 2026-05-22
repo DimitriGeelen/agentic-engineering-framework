@@ -62,9 +62,11 @@ def project(tmp_path):
 
 def _seed_arc_and_demo(project, arc_id="alpha"):
     """Create an arc + a valid demo file. Returns the demo path."""
+    # T-1852: close requires `in-progress`; --start past the state-machine
+    # check so the CLAUDECODE / demo gate is what's exercised. (Fixed: T-1995.)
     _run(
         [str(FW), "arc", "create", arc_id, "--name", "A",
-         "--headline-mechanic", VALID_HM],
+         "--headline-mechanic", VALID_HM, "--start"],
         cwd=project,
         claudecode=None,  # human creating
     )
@@ -165,7 +167,7 @@ def test_t1668_demo_gate_still_fires_under_human_invocation(project):
     """Even with --i-am-human, --demo absence is rejected (T-1668 layer is below T-1671)."""
     _run(
         [str(FW), "arc", "create", "alpha", "--name", "A",
-         "--headline-mechanic", VALID_HM],
+         "--headline-mechanic", VALID_HM, "--start"],  # T-1852: start before close (T-1995)
         cwd=project,
         claudecode=None,
     )
@@ -184,7 +186,7 @@ def test_refusal_message_includes_anchor_redirect(project):
     _run(
         [str(FW), "arc", "create", "alpha", "--name", "A",
          "--anchor", "T-9999",
-         "--headline-mechanic", VALID_HM],
+         "--headline-mechanic", VALID_HM, "--start"],  # T-1852: start before close (T-1995)
         cwd=project,
         claudecode=None,
     )

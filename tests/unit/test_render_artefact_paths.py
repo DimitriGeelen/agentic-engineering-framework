@@ -25,6 +25,28 @@ _shared.PROJECT_ROOT = _REPO
 from web.shared import PROJECT_ROOT, _auto_link_files, render_markdown_safe  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _pin_project_root_for_linkifier():
+    """T-1995: re-pin web.shared.PROJECT_ROOT before every test in this module.
+
+    Root cause of the cross-file flake: tests that `importlib.reload(web.shared)`
+    after `monkeypatch.setenv("PROJECT_ROOT", tmp)` — test_arcs_routes,
+    test_orchestrator_dispatch_substrate, test_orchestrator_outcome_quality,
+    test_arc_membership_web_surfaces — re-run _resolve_project_root() against the
+    temp env var. monkeypatch restores the *env var* at teardown but not the
+    already-recomputed module global, so web.shared.PROJECT_ROOT is left pointing
+    at a now-deleted tmp dir. _auto_link_files() reads that global at call time,
+    so every (PROJECT_ROOT / path).exists() check fails and no path is linkified.
+    The import-time pin above runs once at collection and cannot recover. Re-pinning
+    per test makes these assertions order-independent (prevention, not reorder).
+    Restores the prior value on teardown so we don't mask the polluter for others.
+    """
+    saved = _shared.PROJECT_ROOT
+    _shared.PROJECT_ROOT = _REPO
+    yield
+    _shared.PROJECT_ROOT = saved
+
+
 def _existing_artefact(prefix_glob: str) -> str:
     """Return a relative path of an existing file matching prefix_glob.
 

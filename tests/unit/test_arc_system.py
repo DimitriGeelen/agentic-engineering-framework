@@ -91,11 +91,16 @@ def test_arc_create_writes_yaml_with_required_fields(project):
     arc_file = project / ".context" / "arcs" / "test-arc.yaml"
     assert arc_file.is_file(), "arc YAML not written"
     data = yaml.safe_load(arc_file.read_text())
-    assert data["id"] == "test-arc"
+    # T-1969 dual-form: canonical immutable id (arc-001 in a fresh project) +
+    # human-given slug. T-1852: plain create yields `draft` (use --start for
+    # in-progress). T-1851: constituent_tasks deprecated — source of truth is
+    # the task's `arc:<slug>` tag, not a duplicated list in the arc YAML.
+    # (Fixed: T-1995.)
+    assert data["id"] == "arc-001"
+    assert data["slug"] == "test-arc"
     assert data["name"] == "Test arc"
-    assert data["status"] == "in-progress"
+    assert data["status"] == "draft"
     assert data["anchor_task"] == "T-1641"
-    assert data["constituent_tasks"] == []
     assert "created" in data
 
 
@@ -139,9 +144,10 @@ def test_arc_focus_writes_arc_focus_yaml(project):
     focus = (project / ".context" / "working" / "arc-focus.yaml").read_text()
     assert "current_arc: alpha" in focus
 
-    # Verify list marks it focused (* in the indicator column)
+    # Verify list marks it focused (* in the indicator column).
+    # T-1969: `arc list` shows the canonical id (arc-001), not the slug. (T-1995.)
     r2 = _run([str(FW), "arc", "list"], cwd=project)
-    assert "alpha" in r2.stdout
+    assert "arc-001" in r2.stdout
     assert "*" in r2.stdout  # focus marker
 
     # Clear focus
@@ -152,15 +158,19 @@ def test_arc_focus_writes_arc_focus_yaml(project):
 
 
 def test_arc_tag_adds_to_task_and_constituents(project):
-    """D4 — tag T-9001 with arc:alpha; tag appears in task file and arc YAML."""
+    """D4 — tag T-9001 with arc:alpha; tag lands on the task and the arc
+    surfaces it. T-1851: source of truth is the task's `arc:<slug>` tag (not a
+    constituent_tasks list); `arc show` computes membership from the tag scan.
+    (Fixed: T-1995.)"""
     _run([str(FW), "arc", "create", "alpha", "--name", "A",
          "--headline-mechanic", "user runs fw work-on and sees the demo arc complete"], cwd=project, check=True)
     r = _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project)
     assert r.returncode == 0, r.stderr + r.stdout
     task_text = (project / ".tasks" / "active" / "T-9001-seed.md").read_text()
     assert "arc:alpha" in task_text, f"tag not added to task:\n{task_text}"
-    arc_text = (project / ".context" / "arcs" / "alpha.yaml").read_text()
-    assert "T-9001" in arc_text, "task not in constituent_tasks"
+    # Membership is computed from the tag, surfaced by `arc show`.
+    show = _run([str(FW), "arc", "show", "alpha"], cwd=project)
+    assert "T-9001" in show.stdout, f"tagged task not surfaced by arc show:\n{show.stdout}"
 
 
 def test_arc_tag_idempotent(project):
@@ -169,8 +179,9 @@ def test_arc_tag_idempotent(project):
          "--headline-mechanic", "user runs fw work-on and sees the demo arc complete"], cwd=project, check=True)
     _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
     _run([str(FW), "arc", "tag", "alpha", "T-9001"], cwd=project, check=True)
-    arc_text = (project / ".context" / "arcs" / "alpha.yaml").read_text()
-    assert arc_text.count("T-9001") == 1, f"duplicate constituent:\n{arc_text}"
+    # T-1851: tag lives on the task; re-tagging must not duplicate it. (T-1995.)
+    task_text = (project / ".tasks" / "active" / "T-9001-seed.md").read_text()
+    assert task_text.count("arc:alpha") == 1, f"duplicate tag:\n{task_text}"
 
 
 def test_arc_close_marks_status_and_clears_focus(project):
@@ -178,6 +189,9 @@ def test_arc_close_marks_status_and_clears_focus(project):
     _run([str(FW), "arc", "create", "alpha", "--name", "A",
          "--headline-mechanic", "user runs fw work-on and sees the demo arc complete"], cwd=project, check=True)
     _run([str(FW), "arc", "focus", "alpha"], cwd=project, check=True)
+    # T-1852: close requires `in-progress`; plain create yields `draft`, so
+    # transition via `arc start` first. (Fixed: T-1995.)
+    _run([str(FW), "arc", "start", "alpha"], cwd=project, check=True)
     # T-1668 §ACD Layer B: close requires --demo. Use the bypass for this
     # test (it's testing close mechanics, not §ACD enforcement).
     r = _run([str(FW), "arc", "close", "alpha", "--decision", "shipped",
@@ -200,7 +214,10 @@ def test_arc_show_renders_metadata_and_tasks(project):
     r = _run([str(FW), "arc", "show", "alpha"], cwd=project)
     assert r.returncode == 0
     out = r.stdout
-    assert "id: alpha" in out
+    # T-1969 dual-form: `id:` is the canonical immutable arc-NNN (arc-001 in a
+    # fresh project), the human-given handle moves to `slug:`. (Fixed: T-1995.)
+    assert "id: arc-001" in out
+    assert "slug: alpha" in out
     assert "T-9001" in out
     assert "Tasks tagged arc:alpha" in out
 

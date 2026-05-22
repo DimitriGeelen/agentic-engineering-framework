@@ -25,6 +25,19 @@ _shared.PROJECT_ROOT = _REPO
 from web.shared import render_page  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _pin_project_root():
+    """T-1995: re-pin web.shared.PROJECT_ROOT per test (same fix as
+    test_render_artefact_paths). Reload-based tests elsewhere leave the module
+    global pointing at a deleted tmp dir; the import-time pin on line 23 runs
+    once at collection and cannot recover. Restores the prior value on teardown.
+    """
+    saved = _shared.PROJECT_ROOT
+    _shared.PROJECT_ROOT = _REPO
+    yield
+    _shared.PROJECT_ROOT = saved
+
+
 def _app_with_templates(templates: dict) -> Flask:
     """Build a minimal Flask app whose jinja loader serves the given dict.
 

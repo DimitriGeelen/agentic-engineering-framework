@@ -103,9 +103,12 @@ def test_create_accepts_valid_user_observable_mechanic(project):
 # ─── Layer B: --demo at close ───────────────────────────────────────────────
 
 def _create_arc(project, arc_id="alpha"):
+    # T-1852: close requires `in-progress`; plain create yields `draft`. These
+    # are close-gate tests, so --start past the state-machine check lets the
+    # demo / §ACD gate be what's exercised. (Fixed: T-1995.)
     _run(
         [str(FW), "arc", "create", arc_id, "--name", "A",
-         "--headline-mechanic", VALID_HM],
+         "--headline-mechanic", VALID_HM, "--start"],
         cwd=project,
     )
 
