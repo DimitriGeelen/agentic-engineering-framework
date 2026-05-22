@@ -976,9 +976,12 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 
 **Reviewer (anti-pattern static scan, T-1443):**
 - `fw reviewer T-XXX` — scan one task; writes verdict to `## Reviewer Verdict` block
+- `fw reviewer T-XXX --dispatch [--timeout N] [--json]` — isolated TermLink worker mode (T-1951, G-066 prong 3)
 - `fw reviewer audit` — Layer 3 daily Pass-B re-scan of all completed tasks
 - `fw reviewer override add T-XXX --pattern X [--ac N] --reason '...' [--ttl 90]` — TTL'd FP suppression
 - `fw reviewer override list|prune|remove OV-XXXX`
+
+**Reviewer dispatch mode (`--dispatch`, T-1951):** Use `fw reviewer T-XXX --dispatch` when reviewing multiple tasks in parallel, when the parent session is budget-pressured, or when you want the reviewer to run in an isolated process with zero context cost to the parent. The worker spawns a TermLink session (`reviewer-{task_id}-{suffix}`, observable via `termlink list`), runs the same `static_scan.py` inline reviewer, and posts the full JSON verdict to the fw bus (`fw bus manifest T-XXX` → `fw bus read T-XXX R-NNN`). Use inline `fw reviewer T-XXX` for single-task quick checks where blocking is fine. Guard: `FW_REVIEWER_IN_DISPATCH=1` is set inside the worker — recursive `--dispatch` is refused (exit 3).
 
 **Knowledge and navigation:**
 - `fw decisions` / `fw learnings` / `fw practices` / `fw timeline`

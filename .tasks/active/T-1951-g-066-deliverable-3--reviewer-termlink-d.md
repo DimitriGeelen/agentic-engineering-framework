@@ -19,7 +19,7 @@ related_tasks: [T-1985, T-1950, T-1984, T-1443, T-1797]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T09:50:23Z
-last_update: 2026-05-22T08:14:40Z
+last_update: 2026-05-22T08:16:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -108,9 +108,9 @@ Research artifact: `docs/reports/T-1443-independent-reviewer-agent.md` decisions
 - [x] Worker writes the full reviewer verdict to `fw bus` via `bin/fw bus post --task T-XXX --agent reviewer-dispatched --summary "<verdict>" --result <blob>`. Auto-size-gated (>=2KB → blob). Parent reads via `fw bus manifest T-XXX` + `fw bus read T-XXX R-NNN`.
 - [x] Sovereignty rail: dispatch mode produces the SAME verdict shape as inline (PASS/CONCERN/FAIL/needs_human + Findings list with ac_index/ac_text_digest). No semantic divergence between inline and dispatched paths — same `static_scan.py` is loaded in the worker.
 - [x] Concurrency safety: parent can dispatch multiple `--dispatch` reviewers for different tasks in parallel without race conditions on `.context/audits/reviewer/` or fw bus channels. Tested by dispatching 3 in parallel and verifying all three verdicts land.
-- [ ] No regression: `bin/fw reviewer T-XXX` (without `--dispatch`) keeps current inline behavior; existing tests in `tests/unit/test_reviewer_*.py` and the daily `fw reviewer audit` continue to pass.
+- [x] No regression: `bin/fw reviewer T-XXX` (without `--dispatch`) keeps current inline behavior; existing tests in `tests/unit/test_reviewer_*.py` and the daily `fw reviewer audit` continue to pass.
 - [x] Tests: pytest covering (a) `--dispatch` spawns a TermLink session and exits without blocking parent; (b) parent gets verdict via `fw bus read` after worker completes; (c) recursive `--dispatch` inside worker is refused (single-hop only); (d) 3-parallel-dispatch produces 3 distinct verdicts; (e) `--dispatch` against a non-existent task surfaces a clean error from the worker, not a parent crash. Target ≥5 tests under `tests/unit/test_reviewer_dispatch.py`.
-- [ ] Docs: CLAUDE.md §Reviewer (or new subsection) adds one paragraph on `--dispatch` mode — when to use it (heavy parallel review, isolated context, parent budget-pressured) vs. inline (single-task, quick check).
+- [x] Docs: CLAUDE.md §Reviewer (or new subsection) adds one paragraph on `--dispatch` mode — when to use it (heavy parallel review, isolated context, parent budget-pressured) vs. inline (single-task, quick check).
 
 ### Human
 - [ ] [REVIEW] Dispatch mode worth the new path — confirm the `--dispatch` ergonomic story holds: open the verdict via `fw bus manifest` reads cleanly, the worker tag is observable in `termlink list`, and the parent-zero-context-cost claim is real (compare a 5-task `--dispatch` batch's parent token cost vs. 5 inline invocations).
