@@ -3224,3 +3224,17 @@ X'` returning empty group."
   date: 2026-05-21
   context: Added via context agent
   application: TBD
+- id: L-419
+  learning: "TermLink worker shipping --status work-completed leaves an uncommitted frontmatter delta (status/owner/date_finished) after exiting. Mitigation: dispatch prompts should include 'commit the post-transition frontmatter as the final action' or the parent should sweep and commit. Origin: T-1951 worker, 4 commits + post-transition diff left to parent. T-1985 had same pattern (slice 7 commit + transition diff). Each worker session ends right after fw bus completion-summary; auto-modifications to frontmatter (last_update, post-status sovereignty flip) go uncommitted."
+  source: P-009
+  task: T-1951
+  date: 2026-05-22
+  context: Added via context agent
+  application: TBD
+- id: L-420
+  learning: "Agent transition of started-work to work-completed (HV-LC sweep) can be blocked by task-author bugs in ## Verification: L-387 brace+pipe pattern (T-1701: 'cmd | grep | wc | grep -q' fails under pipefail), or slow bats tests (T-1707: bats hung update-task.sh 7+ min). Mitigation: when an old task's Verification is buggy, leave the task in started-work and surface as a fix-needed concern rather than force-transitioning. Don't bypass with --skip-verification — the Verification is wrong, not the gate."
+  source: P-011
+  task: T-1707
+  date: 2026-05-22
+  context: Added via context agent
+  application: TBD
