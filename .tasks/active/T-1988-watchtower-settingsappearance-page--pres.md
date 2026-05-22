@@ -12,21 +12,21 @@ description: >
   Read on every page render via web/shared.py helper. Depends on S0 (foundation tokens).
   Parent inception: T-1987.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, redesign, ui, settings]
 arc_id: watchtower-redesign
-components: []
+components: [tests/unit/test_appearance_validation.py, web/blueprints/settings.py, web/templates/appearance.html, web/templates/base.html]
 related_tasks: [T-1987]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-22T18:48:59Z
-date_finished:
+last_update: 2026-05-22T19:04:11Z
+date_finished: 2026-05-22T19:04:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -169,9 +169,9 @@ Depends on S0 (T-1991). Parent inception: T-1987 (GO).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# Page renders with 6 presets + axes
-url=$(bin/fw watchtower url 2>/dev/null); out=$(curl -sf "$url/settings/appearance"); echo "$out" | grep -qi "Calm" && echo "$out" | grep -qi "Midnight"
-for p in slate linen stone paper bone console; do echo "$out" | grep -q "$p" || { echo "missing palette $p on page"; exit 1; }; done
+# Page renders with 6 presets + axes (each line self-contained — gate runs lines independently)
+out=$(curl -sf "$(bin/fw watchtower url 2>/dev/null)/settings/appearance"); echo "$out" | grep -qi "Calm" && echo "$out" | grep -qi "Midnight"
+out=$(curl -sf "$(bin/fw watchtower url 2>/dev/null)/settings/appearance"); for p in slate linen stone paper bone console; do echo "$out" | grep -q "data-value=\"$p\"" || { echo "missing palette $p"; exit 1; }; done
 # base.html emits the data attrs from wt_appearance
 grep -q 'data-wt-palette=' web/templates/base.html
 grep -q 'wt_appearance' web/templates/base.html
@@ -273,3 +273,15 @@ python3 -m pytest tests/unit/test_render_artefact_paths.py -q
 ### 2026-05-22T18:48:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-babd4c7b
+- **Timestamp:** 2026-05-22T19:04:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-22T19:04:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

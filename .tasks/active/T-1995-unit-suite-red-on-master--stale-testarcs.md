@@ -1,13 +1,20 @@
 ---
 id: T-1995
-name: "Unit suite red on master — stale test_arc_system + test_render_artefact_paths ordering pollution"
+name: "Unit suite red on master — stale test_arc_system + test_render_artefact_paths
+  ordering pollution"
 description: >
-  bin/fw test unit is red on master, pre-existing & independent of any single feature (found during T-1988 arc-007 S1). (1) tests/unit/test_arc_system.py::test_arc_show_renders_metadata_and_tasks expects 'id: alpha' but arc system now emits 'id: arc-001' + 'slug: alpha' (T-1969 dual-form drift — stale test). (2) tests/unit/test_render_artefact_paths.py passes in isolation (12/12) but 9 fail under cross-file ordering pollution in the web/render subset (a prior test mutates shared global state). Fix: update stale arc assertion; reset the module-level cache between render-path tests. Does NOT block S0/S1.
+  bin/fw test unit is red on master, pre-existing & independent of any single feature
+  (found during T-1988 arc-007 S1). (1) tests/unit/test_arc_system.py::test_arc_show_renders_metadata_and_tasks
+  expects 'id: alpha' but arc system now emits 'id: arc-001' + 'slug: alpha' (T-1969
+  dual-form drift — stale test). (2) tests/unit/test_render_artefact_paths.py passes
+  in isolation (12/12) but 9 fail under cross-file ordering pollution in the web/render
+  subset (a prior test mutates shared global state). Fix: update stale arc assertion;
+  reset the module-level cache between render-path tests. Does NOT block S0/S1.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -16,8 +23,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T19:02:48Z
-last_update: 2026-05-22T19:02:48Z
-date_finished: null
+last_update: 2026-05-22T19:05:39Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +35,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-22T19:05:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1995: Unit suite red on master — stale test_arc_system + test_render_artefact_paths ordering pollution
@@ -40,8 +58,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `tests/unit/test_arc_system.py::test_arc_show_renders_metadata_and_tasks` updated to expect the current arc-display output (`id: arc-001` + `slug: alpha`, per T-1969 dual-form) and passes
+- [ ] `tests/unit/test_render_artefact_paths.py` passes inside the full `bin/fw test unit` run, not only in isolation — the cross-file ordering pollution is fixed (reset the module-level cache / PROJECT_ROOT state between tests, e.g. an autouse fixture)
+- [ ] Root-cause identified for the render-path pollution: which prior test mutates shared global state, and the fix prevents recurrence (not just reorders tests)
+- [ ] `bin/fw test unit` exits 0 (green) end-to-end
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,3 +188,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1995-unit-suite-red-on-master--stale-testarcs.md
 - **Context:** Initial task creation
+
+### 2026-05-22T19:05:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
