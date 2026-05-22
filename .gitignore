@@ -18,6 +18,7 @@ __pycache__/
 .context/working/.reviewed-*
 .context/bus/
 .context/locks/
+.context/user-preferences/
 # Orchestrator v1 runtime telemetry (T-1696 dispatches, T-1697 outcomes):
 .context/dispatches.jsonl
 .context/dispatches-*.jsonl

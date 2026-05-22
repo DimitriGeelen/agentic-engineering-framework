@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en"
+      data-theme="{{ wt_appearance.mode | default('light') }}"
+      data-wt-palette="{{ wt_appearance.palette | default('stone') }}"
+      data-wt-type="{{ wt_appearance.type | default('inter') }}"
+      data-wt-density="{{ wt_appearance.density | default('compact') }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">

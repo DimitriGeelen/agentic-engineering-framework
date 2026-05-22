@@ -4,9 +4,11 @@ T-379: Settings page with engine selector and config persistence.
 """
 
 import logging
+import re
+import uuid
 
 import yaml
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, Response, jsonify, request, session
 
 from web.config import Config
 from web.shared import PROJECT_ROOT, render_page
@@ -14,6 +16,99 @@ from web.shared import PROJECT_ROOT, render_page
 log = logging.getLogger(__name__)
 
 bp = Blueprint("settings", __name__)
+
+# ── arc-007 S1 (T-1988): appearance presets + per-user persistence ──────────
+# The 6 named presets from the arc headline mechanic. Each is a curated combo
+# over the S0 foundation axes (T-1991). Axis values MUST match foundations.css.
+PALETTES = ("slate", "linen", "stone", "paper", "bone", "console")
+TYPES = ("inter", "geist", "plex", "manrope", "newsreader", "system")
+DENSITIES = ("compact", "cozy", "comfortable")
+MODES = ("light", "dark")
+
+PRESETS = {
+    "calm":      {"label": "Calm",      "palette": "stone",   "type": "inter",      "density": "compact", "mode": "light"},
+    "editorial": {"label": "Editorial", "palette": "linen",   "type": "newsreader", "density": "compact", "mode": "light"},
+    "console":   {"label": "Console",   "palette": "console", "type": "plex",       "density": "compact", "mode": "dark"},
+    "paper":     {"label": "Paper",     "palette": "paper",   "type": "geist",      "density": "compact", "mode": "light"},
+    "bone":      {"label": "Bone",      "palette": "bone",    "type": "manrope",    "density": "compact", "mode": "light"},
+    "midnight":  {"label": "Midnight",  "palette": "slate",   "type": "inter",      "density": "compact", "mode": "dark"},
+}
+DEFAULT_APPEARANCE = {"preset": "calm", "palette": "stone", "type": "inter", "density": "compact", "mode": "light"}
+
+PREFS_DIR = PROJECT_ROOT / ".context" / "user-preferences"
+_UID_RE = re.compile(r"^[0-9a-f]{32}$")
+
+
+def _wt_uid() -> str:
+    """Stable per-browser UID from the signed session cookie (tamper-proof via
+    app.secret_key). Created lazily; constrained to 32 hex chars."""
+    uid = session.get("wt_uid")
+    if not uid or not _UID_RE.match(str(uid)):
+        uid = uuid.uuid4().hex
+        session["wt_uid"] = uid
+    return uid
+
+
+def _prefs_path(uid: str):
+    """Path to a user's prefs file. uid MUST already match _UID_RE — guard here
+    too so a forged/legacy session value can never escape PREFS_DIR (T-1988 sec)."""
+    if not _UID_RE.match(str(uid)):
+        raise ValueError("invalid uid")
+    return PREFS_DIR / f"{uid}.yaml"
+
+
+def _sanitise_appearance(raw: dict) -> dict:
+    """Whitelist every field against the known axis sets. Unknown values fall
+    back to the default — nothing untrusted reaches the YAML or an HTML attr."""
+    out = dict(DEFAULT_APPEARANCE)
+    preset = raw.get("preset")
+    if preset in PRESETS:
+        out.update({k: PRESETS[preset][k] for k in ("palette", "type", "density", "mode")})
+        out["preset"] = preset
+    else:
+        out["preset"] = "custom"
+    if raw.get("palette") in PALETTES:
+        out["palette"] = raw["palette"]
+    if raw.get("type") in TYPES:
+        out["type"] = raw["type"]
+    if raw.get("density") in DENSITIES:
+        out["density"] = raw["density"]
+    if raw.get("mode") in MODES:
+        out["mode"] = raw["mode"]
+    return out
+
+
+def _load_appearance() -> dict:
+    """Read the current user's appearance, defaulting cleanly. Never raises."""
+    try:
+        path = _prefs_path(_wt_uid())
+    except Exception:
+        return dict(DEFAULT_APPEARANCE)
+    if path.exists():
+        try:
+            data = yaml.safe_load(path.read_text()) or {}
+            return _sanitise_appearance({**DEFAULT_APPEARANCE, **(data.get("appearance") or {})})
+        except Exception:
+            return dict(DEFAULT_APPEARANCE)
+    return dict(DEFAULT_APPEARANCE)
+
+
+def _save_appearance(appearance: dict) -> dict:
+    """Persist a sanitised appearance for the current user. Returns what was saved."""
+    clean = _sanitise_appearance(appearance)
+    path = _prefs_path(_wt_uid())
+    PREFS_DIR.mkdir(parents=True, exist_ok=True)
+    path.write_text(yaml.dump({"appearance": clean}, default_flow_style=False))
+    return clean
+
+
+@bp.app_context_processor
+def inject_appearance():
+    """Make wt_appearance available to every template (base.html <html> tag)."""
+    try:
+        return {"wt_appearance": _load_appearance()}
+    except Exception:
+        return {"wt_appearance": dict(DEFAULT_APPEARANCE)}
 
 SETTINGS_FILE = PROJECT_ROOT / ".context" / "settings.yaml"
 
@@ -217,3 +312,34 @@ def list_models():
     for m in models:
         options.append(f'<option value="{m.id}">{m.id}</option>')
     return Response("\n".join(options))
+
+
+# ── arc-007 S1 (T-1988): /settings/appearance ───────────────────────────────
+@bp.route("/settings/appearance")
+def appearance_page():
+    """Render the appearance picker — 6 presets + per-axis foundation controls."""
+    return render_page(
+        "appearance.html",
+        page_title="Appearance",
+        active_endpoint="settings.appearance_page",
+        presets=PRESETS,
+        palettes=PALETTES,
+        types=TYPES,
+        densities=DENSITIES,
+        modes=MODES,
+        appearance=_load_appearance(),
+    )
+
+
+@bp.route("/settings/appearance/save", methods=["POST"])
+def save_appearance():
+    """Persist the chosen appearance for this browser (signed-cookie UID)."""
+    raw = {
+        "preset": request.form.get("preset", "").strip(),
+        "palette": request.form.get("palette", "").strip(),
+        "type": request.form.get("type", "").strip(),
+        "density": request.form.get("density", "").strip(),
+        "mode": request.form.get("mode", "").strip(),
+    }
+    saved = _save_appearance(raw)
+    return jsonify({"ok": True, "appearance": saved})
