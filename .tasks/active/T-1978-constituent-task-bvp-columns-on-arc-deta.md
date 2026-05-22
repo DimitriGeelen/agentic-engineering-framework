@@ -8,12 +8,12 @@ description: >
   tasks pull the average up/down' is unanswerable from the page. Tag arc:value-prioritisation.
   Related: T-1956, T-1939, T-1976 (surfaced the gap).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:value-prioritisation, bvp, watchtower, web-ui]
-components: [web/blueprints/arcs.py, web/templates/arc_detail.html]
+components: [tests/playwright/test_arc_detail_bvp.py, tests/playwright/test_task_detail_bvp.py, web/blueprints/arcs.py, web/blueprints/tasks.py, web/templates/arc_detail.html, web/templates/task_detail.html]
 related_tasks: [T-1956, T-1939, T-1976]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -21,8 +21,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T12:47:55Z
-last_update: 2026-05-21T12:50:31Z
-date_finished:
+last_update: 2026-05-22T07:11:23Z
+date_finished: 2026-05-22T07:11:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -43,6 +43,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-21T13:00:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -237,3 +247,20 @@ bin/fw test playwright tests/playwright/test_arc_detail_bvp.py
 ### 2026-05-21T12:50:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-88ac1ba6
+- **Timestamp:** 2026-05-22T07:12:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `web/templates/arc_detail.html` Constituent tasks table renders three new columns after Horizon: `BVP_norm`, `BVP_raw`, `Cost`. Missing values render as muted `—`. Proposed-mode rows render `BVP_norm`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arc_detail.html in: `web/templates/arc_detail.html` Constituent tasks table renders three new columns after Horizon: `BVP_norm`, `BVP_raw`, `Cost`. Missing values render `
+
+### 2026-05-22T07:11:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

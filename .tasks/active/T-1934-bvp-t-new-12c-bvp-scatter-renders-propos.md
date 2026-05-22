@@ -7,18 +7,18 @@ description: >
   (proposed remain advisory; only confirmed are filled). Unblocks the visual
   half of T-1928/T-1929/T-1930 reviews without requiring per-task
   fw bvp confirm runs.
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bvp, build, slice-12c, web, render-surface]
-components: [web/blueprints/bvp.py, web/templates/bvp.html, 
+components: [agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, tests/unit/test_bvp_scatter_arc_mode.py, web/blueprints/bvp.py, web/templates/bvp.html]
       tests/playwright/test_bvp_scatter.py]
 related_tasks: [T-1915, T-1916, T-1922, T-1923, T-1928]
 arc_id: value-prioritisation
 created: 2026-05-19T18:36:52Z
-last_update: '2026-05-19T19:08:39Z'
-date_finished:
+last_update: 2026-05-20T18:17:34Z
+date_finished: 2026-05-20T18:17:34Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -175,3 +175,15 @@ The curl+JSON parse is sufficient to detect the regression class T-1934
 fixes (proposed dots missing from payload).
 
 ## Updates
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a3ddfec3
+- **Timestamp:** 2026-05-20T18:17:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-20T18:17:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

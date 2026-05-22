@@ -16,7 +16,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T17:18:57Z
-last_update: 2026-05-18T17:25:40Z
+last_update: 2026-05-20T10:40:56Z
 date_finished: 2026-05-18T17:25:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -67,7 +67,7 @@ date_finished: 2026-05-18T17:25:40Z
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] Error message reads actionably — a fresh developer who hits the new guard understands what the convention is and where to look without re-reading T-1898 or T-1899
+- [x] [REVIEW] Error message reads actionably — a fresh developer who hits the new guard understands what the convention is and where to look without re-reading T-1898 or T-1899
   **Steps:**
   1. Read the RuntimeError message rendered when the guard fires (test output or live curl with deliberate extends restored)
   2. Ask: does it name the template? does it state the convention? does it point at a sibling fragment example?

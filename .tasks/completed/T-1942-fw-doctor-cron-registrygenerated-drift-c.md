@@ -5,12 +5,12 @@ name: "fw doctor cron registry→generated drift check (close L-364 cousin that 
 description: >
   fw doctor cron registry→generated drift check (close L-364 cousin that bit T-1935/T-1941)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:value-prioritisation, future-prevention, drift, cron]
-components: [bin-fw]
+components: [C-004, bin/fw, tests/unit/test_audit_cron_registry_generated_drift.bats, tests/unit/test_cron_registry_generated_drift.bats]
 related_tasks: [T-1935, T-1941, T-1771, T-1112, T-1114, T-1558]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -18,8 +18,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-19T22:11:54Z
-last_update: '2026-05-19T22:15:02Z'
-date_finished:
+last_update: 2026-05-19T23:11:45Z
+date_finished: 2026-05-19T23:11:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -169,27 +169,17 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -qE "Cron registry (in sync|edited
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-05-19 — Three-leg sync taxonomy
+- **What changed:** Cron sync is THREE transitions, not two. L-364 originally framed it
+  as "wired ≠ deployed" (a two-state contract); T-1771 wired audit-side coverage for
+  one of the three classes; T-1942 surfaces the missed leg (registry → generated).
+- **Plan impact:** The mental model "registry/generated/deployed" was already in
+  L-364's text, but the enforcement only covered two of three pairings. This task
+  upgrades the model from "two state, one check" to "three states, three drift
+  classes, three checks".
+- **Triggered:** L-364 strengthening with explicit three-class taxonomy; T-1943
+  sibling task (audit-side parity); L-408 (separate but discovered during this
+  segment: bin/fw heredoc edit lockup class — 3rd incident).
 
 ## Recommendation
 
@@ -213,20 +203,6 @@ and content-diffs against the on-disk source, catching add/remove/modify drift u
   transitions has N drift classes; auditing only the endpoints misses middle-link drift"
 - Same Python generate logic shared between `fw cron generate` and doctor's dry-run —
   no duplicate maintenance surface
-
-## Evolution
-
-### 2026-05-19 — Three-leg sync taxonomy
-- **What changed:** Cron sync is THREE transitions, not two. L-364 originally framed it
-  as "wired ≠ deployed" (a two-state contract); T-1771 wired audit-side coverage for
-  one of the three classes; T-1942 surfaces the missed leg (registry → generated).
-- **Plan impact:** The mental model "registry/generated/deployed" was already in
-  L-364's text, but the enforcement only covered two of three pairings. This task
-  upgrades the model from "two state, one check" to "three states, three drift
-  classes, three checks".
-- **Triggered:** L-364 strengthening with explicit three-class taxonomy; L-407 sweep
-  pattern reused (when storage/state format has multiple consumers/propagators, every
-  transition needs its own gate, not just the endpoints).
 
 ## Decisions
 
@@ -278,3 +254,20 @@ and content-diffs against the on-disk source, catching add/remove/modify drift u
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1942-fw-doctor-cron-registrygenerated-drift-c.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-90436723
+- **Timestamp:** 2026-05-19T23:16:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Test runs in tmp dir via `FW_CRON_INSTALL_DIR` env-var override (no /etc/cron.d
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: Test runs in tmp dir via `FW_CRON_INSTALL_DIR` env-var override (no /etc/cron.d`
+
+### 2026-05-19T23:11:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -304,8 +304,8 @@ hard-coded truth. Same logic for cost_estimate.
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-b4e2e185
-- **Timestamp:** 2026-05-20T19:09:15Z
+- **Scan ID:** R-757bc940
+- **Timestamp:** 2026-05-21T07:20:20Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -315,6 +315,5 @@ hard-coded truth. Same logic for cost_estimate.
 
 - **AC#1 (Human)** — [REVIEW] Arc dots distribute meaningfully on the scatter — they sit at reasonable BVP-norm and cost-composite positions relative to their member tasks, AND it's visually clear they're arcs (larger cir
   - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows `' in Expected: Arc dots are visible, distinct from task dots, and sit at reasonable rolled-up positions. Tooltip shows `derived` provenance for cost.`
-
 ### 2026-05-20T19:09:14Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

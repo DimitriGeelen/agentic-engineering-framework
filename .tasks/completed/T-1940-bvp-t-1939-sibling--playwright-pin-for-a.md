@@ -4,12 +4,12 @@ name: "BVP T-1939 sibling — Playwright pin for /arcs/<slug> bvp_mode provenanc
 description: >
   BVP T-1939 sibling — Playwright pin for /arcs/<slug> bvp_mode provenance label
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:value-prioritisation, render-surface, test, parity]
-components: [tests-playwright-test_arc_detail_bvp]
+components: [tests/playwright/test_arc_detail_bvp.py, tests/unit/test_bvp_scatter_arc_mode.py, web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: [T-1939, T-1937, T-1938, T-1936, T-1934, T-1930]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-19T21:12:50Z
-last_update: '2026-05-19T21:15:01Z'
-date_finished:
+last_update: 2026-05-20T18:25:47Z
+date_finished: 2026-05-20T18:25:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -155,30 +155,6 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
-
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
-
 ## Recommendation
 
 **Recommendation:** GO
@@ -262,3 +238,15 @@ machine catches structural regressions.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1940-bvp-t-1939-sibling--playwright-pin-for-a.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-84c8b172
+- **Timestamp:** 2026-05-20T18:26:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-20T18:25:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

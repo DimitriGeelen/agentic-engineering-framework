@@ -4,12 +4,12 @@ name: "BVP T-1936/T-1937 sibling — /arcs/<slug> BVP signals use constituent ro
 description: >
   BVP T-1936/T-1937 sibling — /arcs/<slug> BVP signals use constituent rollup
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:value-prioritisation, parity, render-surface]
-components: [web-blueprints-arcs]
+components: [tests/playwright/test_arc_detail_bvp.py, tests/unit/test_bvp_scatter_arc_mode.py, web/blueprints/arcs.py, web/blueprints/bvp.py, web/templates/arc_detail.html, web/templates/bvp.html]
 related_tasks: [T-1936, T-1937, T-1938, T-1934]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-19T20:10:10Z
-last_update: '2026-05-19T20:15:01Z'
-date_finished:
+last_update: 2026-05-20T18:24:23Z
+date_finished: 2026-05-20T18:24:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,6 +39,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -149,8 +159,8 @@ requires `[REVIEW]` Human AC for visual verification.
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 cd /opt/999-Agentic-Engineering-Framework/tests && python3 -m pytest unit/test_bvp_signals_rollup.py unit/test_bvp_blueprint_cost.py unit/test_bvp_cli_arcs_rollup.py unit/test_bvp_cli_rank_proposed.py -q
-out=$(curl -sf "$(cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url)/arcs/value-prioritisation" 2>&1); echo "$out" | grep -q "derived"
-out=$(curl -sf "$(cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url)/arcs/value-prioritisation" 2>&1); ! echo "$out" | grep -q "Arc has no .bvp_scores: set"
+out=$(curl -sf "$(cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url)/arcs/value-prioritisation" 2>&1); grep -q "derived" <<<"$out"
+out=$(curl -sf "$(cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url)/arcs/value-prioritisation" 2>&1); ! grep -q "Arc has no .bvp_scores: set" <<<"$out"
 
 ## RCA
 
@@ -260,8 +270,8 @@ field and rendered in the template's stats strip.
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-4ac226b1
-- **Timestamp:** 2026-05-19T20:26:43Z
+- **Scan ID:** R-04946b69
+- **Timestamp:** 2026-05-20T18:24:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -273,3 +283,6 @@ field and rendered in the template's stats strip.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_bvp_signals_rollup.py in: Unit tests in `tests/unit/test_bvp_signals_rollup.py` cover: direct-confirmed bypass, derived-confirmed via task rollup, mixed-mode degrades to derive`
 - **AC#1 (Human)** — [REVIEW] `/arcs/value-prioritisation` BVP signals block renders coherently with the new rollup data
   - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows a' in Expected: BVP block shows arc-006 at BVP_norm≈0.31, per-driver scores visible, provenance labelled as derived`
+
+### 2026-05-20T18:24:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

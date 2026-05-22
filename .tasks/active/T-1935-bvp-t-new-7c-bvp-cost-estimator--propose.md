@@ -319,8 +319,8 @@ class of "where did this number come from?" surprises.
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-354c3134
-- **Timestamp:** 2026-05-20T19:06:15Z
+- **Scan ID:** R-6f497ba5
+- **Timestamp:** 2026-05-21T07:20:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -330,6 +330,5 @@ class of "where did this number come from?" surprises.
 
 - **AC#7 (Agent)** — `web/blueprints/bvp.py:_compute_cost` reads `cost_estimate_proposed:` (latest entry) when `cost_estimate:` is absent and `default_when_absent=True` is set; the default-medium fallback then becomes a l
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/bvp.py in: `web/blueprints/bvp.py:_compute_cost` reads `cost_estimate_proposed:` (latest entry) when `cost_estimate:` is absent and `default_when_absent=True` is`
-
 ### 2026-05-20T19:04:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

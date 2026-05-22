@@ -4,12 +4,12 @@ name: "arc-scoped driver add/remove parity with global /bvp"
 description: >
   arc-scoped driver add/remove parity with global /bvp
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:value-prioritisation, bvp, watchtower, web-ui]
-components: [lib/arc.sh, web/blueprints/arcs.py, web/templates/arc_detail.html]
+components: [lib/arc.sh, tests/playwright/test_arc_detail_bvp.py, tests/unit/arc_remove_driver_verb.bats, web/blueprints/arcs.py, web/templates/arc_detail.html]
 related_tasks: [T-1958, T-1964, T-1965, T-1926, T-1929]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T10:03:43Z
-last_update: '2026-05-21T10:15:02Z'
-date_finished:
+last_update: 2026-05-22T07:14:55Z
+date_finished: 2026-05-22T07:14:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -94,8 +94,9 @@ bats tests/unit/arc_remove_driver_verb.bats
 # Verb routing & help
 out=$(bash -c 'source lib/arc.sh; arc_help' 2>&1); echo "$out" | grep -q "remove-driver"
 # Render: arc detail returns 200 + Add form action present
-curl -sf "$(bin/fw watchtower url)/arcs/value-prioritisation" > /tmp/.t1976-arc.html
-grep -q 'action="/api/arc/value-prioritisation/add-driver"' /tmp/.t1976-arc.html
+# Use arc-grooming (0 scoped drivers) — value-prioritisation hits the M2 cap of 3, hiding the form
+curl -sf "$(bin/fw watchtower url)/arcs/arc-grooming" > /tmp/.t1976-arc.html
+grep -q 'action="/api/arc/arc-grooming/add-driver"' /tmp/.t1976-arc.html
 # Playwright pins for arc detail BVP (includes T-1976 add/remove route + form rendering)
 bin/fw test playwright tests/playwright/test_arc_detail_bvp.py
 # Python syntax of touched module
@@ -164,3 +165,22 @@ python3 -c "import ast; ast.parse(open('web/blueprints/arcs.py').read())"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1976-arc-scoped-driver-addremove-parity-with-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-782e0d59
+- **Timestamp:** 2026-05-22T07:16:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `web/templates/arc_detail.html` renders an "Add custom scoped driver" form (name + weight 1-6 + rationale + CSRF) below the Proposed section, gated by `scoped_drivers|length < 3`.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arc_detail.html in: `web/templates/arc_detail.html` renders an "Add custom scoped driver" form (name + weight 1-6 + rationale + CSRF) below the Proposed section, gated by`
+- **AC#6 (Agent)** — `web/templates/arc_detail.html` renders a per-row Remove button on the Scoped drivers table (rationale prompt via inline form), CSRF-protected.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arc_detail.html in: `web/templates/arc_detail.html` renders a per-row Remove button on the Scoped drivers table (rationale prompt via inline form), CSRF-protected.`
+
+### 2026-05-22T07:14:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

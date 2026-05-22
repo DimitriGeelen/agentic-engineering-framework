@@ -1,8 +1,10 @@
 ---
 id: T-1905
-name: "Watchtower /arcs kanban — feature parity with /tasks (more fields, inline editing, filters)"
+name: "Watchtower /arcs kanban — feature parity with /tasks (more fields, inline editing,
+  filters)"
 description: >
-  Inception: Watchtower /arcs kanban — feature parity with /tasks (more fields, inline editing, filters)
+  Inception: Watchtower /arcs kanban — feature parity with /tasks (more fields, inline
+  editing, filters)
 
 status: started-work
 workflow_type: inception
@@ -12,10 +14,20 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-18T19:42:03Z
-last_update: 2026-05-18T19:43:03Z
-date_finished: null
+last_update: '2026-05-19T21:45:04Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1905: Watchtower /arcs kanban — feature parity with /tasks (more fields, inline editing, filters)

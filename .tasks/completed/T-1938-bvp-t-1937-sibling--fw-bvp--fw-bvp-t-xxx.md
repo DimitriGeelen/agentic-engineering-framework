@@ -4,12 +4,12 @@ name: "BVP T-1937 sibling — fw bvp / fw bvp T-XXX cost include proposed fallba
 description: >
   BVP T-1937 sibling — fw bvp / fw bvp T-XXX cost include proposed fallback
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:value-prioritisation, parity]
-components: [lib-bvp]
+components: [lib/bvp.sh, tests/playwright/test_arc_detail_bvp.py, tests/unit/test_bvp_scatter_arc_mode.py, web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: [T-1937, T-1936, T-1934, T-1935, T-1919]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-19T19:59:47Z
-last_update: '2026-05-19T20:00:01Z'
-date_finished:
+last_update: 2026-05-20T18:22:40Z
+date_finished: 2026-05-20T18:22:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -171,30 +171,6 @@ out=$(cd /opt/999-Agentic-Engineering-Framework && bin/fw bvp T-1937 2>&1); echo
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
-
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
-
 ## Recommendation
 
 **Recommendation:** GO
@@ -271,8 +247,8 @@ confirmed scores exist yet. 8/8 new tests + 75 sibling tests PASS.
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-b924c79f
-- **Timestamp:** 2026-05-19T20:26:42Z
+- **Scan ID:** R-6c6c965a
+- **Timestamp:** 2026-05-20T18:22:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -282,3 +258,6 @@ confirmed scores exist yet. 8/8 new tests + 75 sibling tests PASS.
 
 - **AC#7 (Agent)** — Unit tests in `tests/unit/test_bvp_cli_rank_proposed.py` cover: confirmed-only default, --include-proposed opt-in, source column distinction, cost detail proposed fallback
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_bvp_cli_rank_proposed.py in: Unit tests in `tests/unit/test_bvp_cli_rank_proposed.py` cover: confirmed-only default, --include-proposed opt-in, source column distinction, cost det`
+
+### 2026-05-20T18:22:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

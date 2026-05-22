@@ -1,8 +1,12 @@
 ---
 id: T-1901
-name: "render-surface gate review-state regex matches only FIRST '### Human' header — duplicate Human blocks (template-comment + actual ACs) silently captured wrong block, gate returns 'empty' and never sees real [REVIEW] ACs"
+name: "render-surface gate review-state regex matches only FIRST '### Human' header
+  — duplicate Human blocks (template-comment + actual ACs) silently captured wrong
+  block, gate returns 'empty' and never sees real [REVIEW] ACs"
 description: >
-  render-surface gate review-state regex matches only FIRST '### Human' header — duplicate Human blocks (template-comment + actual ACs) silently captured wrong block, gate returns 'empty' and never sees real [REVIEW] ACs
+  render-surface gate review-state regex matches only FIRST '### Human' header — duplicate
+  Human blocks (template-comment + actual ACs) silently captured wrong block, gate
+  returns 'empty' and never sees real [REVIEW] ACs
 
 status: started-work
 workflow_type: build
@@ -16,10 +20,20 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T17:40:49Z
-last_update: 2026-05-18T17:40:49Z
-date_finished: null
+last_update: '2026-05-19T21:45:04Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1901: render-surface gate review-state regex matches only FIRST '### Human' header — duplicate Human blocks (template-comment + actual ACs) silently captured wrong block, gate returns 'empty' and never sees real [REVIEW] ACs

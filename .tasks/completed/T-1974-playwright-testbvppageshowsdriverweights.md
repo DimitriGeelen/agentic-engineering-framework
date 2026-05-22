@@ -6,20 +6,20 @@ description: >
   Playwright test_bvp_page_shows_driver_weights_section stale — expects details/summary
   but T-1929 made sliders always-visible
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_bvp_scatter.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T07:14:16Z
-last_update: '2026-05-21T07:15:03Z'
-date_finished:
+last_update: 2026-05-21T07:17:09Z
+date_finished: 2026-05-21T07:17:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -223,3 +223,15 @@ grep -q "7 passed" /tmp/.t1974-pytest.out
 - `tests/playwright/test_bvp_scatter.py:32-46` rewritten: asserts `section#bvp-sliders`, h3 text, ≥4 range inputs
 - 7/7 tests pass in the module (was 1 failed / 6 passed)
 - No template changes — pure test alignment
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-e41a0615
+- **Timestamp:** 2026-05-21T07:17:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-21T07:17:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

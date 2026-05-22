@@ -14,7 +14,7 @@ tags: [pickup, bug-report, fw-upgrade-incident-2026-05-14, termlink-relay]
 components: [agents-termlink-termlink, lib-mirror]
 related_tasks: [T-1826, T-1828, T-1829]
 created: 2026-05-14T14:26:01Z
-last_update: '2026-05-19T18:27:45Z'
+last_update: '2026-05-19T21:45:02Z'
 date_finished:
 source_task_id_in_origin: T-1826
 source_project_in_origin: "999-Agentic-Engineering-Framework"
@@ -28,6 +28,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

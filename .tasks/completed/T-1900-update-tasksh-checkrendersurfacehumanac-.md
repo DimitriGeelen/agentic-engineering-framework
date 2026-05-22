@@ -16,7 +16,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T17:29:32Z
-last_update: 2026-05-18T17:35:06Z
+last_update: 2026-05-20T10:41:07Z
 date_finished: 2026-05-18T17:35:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,7 +74,7 @@ This is L-387's silent-halt class. Fix: use the safe pattern documented in L-387
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] The render-surface gate error message (now actually reachable post-fix) reads as an actionable contract violation report — a fresh agent / developer hitting it understands (a) what failed, (b) what to add, (c) where in their file
+- [x] [REVIEW] The render-surface gate error message (now actually reachable post-fix) reads as an actionable contract violation report — a fresh agent / developer hitting it understands (a) what failed, (b) what to add, (c) where in their file
   **Steps:**
   1. Re-trigger the error path: temporarily run `bin/fw task update T-1900 --status work-completed` BEFORE ticking this AC; observe the error block printed to stderr (was silent pre-fix; visible post-fix)
   2. Read the message — does it state the rule, name the file to edit, show an example AC?

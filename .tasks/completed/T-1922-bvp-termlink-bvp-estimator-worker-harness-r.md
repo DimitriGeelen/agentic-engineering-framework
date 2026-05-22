@@ -204,8 +204,8 @@ harmless when it doesn't.
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-f36ecffd
-- **Timestamp:** 2026-05-20T18:55:01Z
+- **Scan ID:** R-0a529159
+- **Timestamp:** 2026-05-21T07:20:24Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -215,6 +215,5 @@ harmless when it doesn't.
 
 - **AC#3 (Agent)** — On task transition to `started-work` ("ready"), worker scores task within SLA — trigger wired in `agents/task-create/update-task.sh` (backgrounded, failures silent — advisory side-effect, does not blo
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/task-create/update-task.sh in: On task transition to `started-work` ("ready"), worker scores task within SLA — trigger wired in `agents/task-create/update-task.sh` (backgrounded, fa`
-
 ### 2026-05-20T18:54:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

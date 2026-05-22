@@ -19,7 +19,7 @@ tags: [watchtower, performance, wsgi, from-saturation-incident]
 components: []
 related_tasks: [T-1122, T-1309]
 created: 2026-04-30T07:25:07Z
-last_update: '2026-05-19T18:27:45Z'
+last_update: '2026-05-19T21:45:02Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -31,6 +31,16 @@ bvp_scores_proposed:
       D4: 0
     rationale: D1=1 (body:fix-without-learning); D2=5 
       (body:silent-class-removed); D3=0 (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

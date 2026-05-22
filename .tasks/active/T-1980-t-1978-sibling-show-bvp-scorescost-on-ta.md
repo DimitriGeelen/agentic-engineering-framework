@@ -4,12 +4,12 @@ name: "T-1978 sibling: show BVP scores/cost on task detail page (/tasks/T-XXX)"
 description: >
   T-1978 sibling: show BVP scores/cost on task detail page (/tasks/T-XXX)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:value-prioritisation, bvp, watchtower, web-ui]
-components: [web-blueprints-tasks, web-templates-task_detail]
+components: [tests/playwright/test_arc_detail_bvp.py, tests/playwright/test_task_detail_bvp.py, tests/playwright/test_tasks_listing_bvp.py, web/blueprints/tasks.py, web/templates/base.html, web/templates/_partials/bvp_badge.html, web/templates/task_detail.html, web/templates/tasks.html]
 related_tasks: [T-1978, T-1956, T-1929]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T13:46:27Z
-last_update: 2026-05-21T13:46:27Z
-date_finished: null
+last_update: 2026-05-22T07:16:56Z
+date_finished: 2026-05-22T07:16:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,6 +29,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-21T14:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-21T14:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1980: T-1978 sibling: show BVP scores/cost on task detail page (/tasks/T-XXX)
@@ -137,27 +158,10 @@ Smallest deliverable: a BVP block on `/tasks/T-XXX` reusing the same `web.bluepr
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-05-21 — Per-task BVP block surfaces the arc-scoped driver gap
+- **What changed:** Shipping per-task BVP on `/tasks/T-XXX` made the asymmetry between arc-rollup (scoped drivers contribute) and per-task (D1-D4 only) visible. The block correctly renders what's in `bvp_scores:` and `_compute_bvp` output, but the missing scoped-driver contribution wasn't a defect — it surfaced an unanswered design question.
+- **Plan impact:** T-1980's own scope stays as-shipped (display per-task BVP). The asymmetry question is out of scope here.
+- **Triggered:** T-1981 inception ("how should arc-scoped drivers contribute to per-task BVP?") filed 2026-05-21; T-1982 (BVP chip on /tasks listing) carried the parity forward to kanban + list view.
 
 ## Decisions
 
@@ -200,3 +204,26 @@ Smallest deliverable: a BVP block on `/tasks/T-XXX` reusing the same `web.bluepr
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1980-t-1978-sibling-show-bvp-scorescost-on-ta.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-a263ed42
+- **Timestamp:** 2026-05-22T07:16:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/blueprints/tasks.py` exposes a `_task_bvp_data(task_data)` helper returning `{mode, scores, bvp_raw, bvp_norm, cost, cost_source, weights}`. Mode is `confirmed` when `bvp_scores:` is present, `pr
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: `web/blueprints/tasks.py` exposes a `_task_bvp_data(task_data)` helper returning `{mode, scores, bvp_raw, bvp_norm, cost, cost_source, weights}`. Mode`
+- **AC#3 (Agent)** — `web/templates/task_detail.html` renders a `<section class="bvp-block">` showing per-driver scores (D1-D4 + any free drivers), BVP_norm (3dp), BVP_raw (int), Cost (3dp), Cost source (composite/tshirt/
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/task_detail.html in: `web/templates/task_detail.html` renders a `<section class="bvp-block">` showing per-driver scores (D1-D4 + any free drivers), BVP_norm (3dp), BVP_raw`
+- **AC#6 (Agent)** — Playwright pin: `tests/playwright/test_task_detail_bvp.py` opens a task with confirmed scores → BVP block visible → `BVP_norm` row present with `\d+\.\d{3}` number.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_task_detail_bvp.py in: Playwright pin: `tests/playwright/test_task_detail_bvp.py` opens a task with confirmed scores → BVP block visible → `BVP_norm` row present with `\d+\.`
+- **AC#7 (Agent)** — All existing Playwright still green: `pytest tests/playwright/test_arc_detail_bvp.py` → 22 passed, 1 skipped (arc-at-cap defensive skip added).
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_arc_detail_bvp.py in: All existing Playwright still green: `pytest tests/playwright/test_arc_detail_bvp.py` → 22 passed, 1 skipped (arc-at-cap defensive skip added).`
+
+### 2026-05-22T07:16:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

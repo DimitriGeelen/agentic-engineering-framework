@@ -4,12 +4,12 @@ name: "BVP T-1940 sibling — emit bvp_mode in /bvp scatter arc payload + toolti
 description: >
   BVP T-1940 sibling — emit bvp_mode in /bvp scatter arc payload + tooltip
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:value-prioritisation, render-surface, parity, drift]
-components: [web-blueprints-bvp, web-templates-bvp]
+components: [bin/fw, tests/playwright/test_bvp_scatter.py, tests/unit/test_bvp_scatter_arc_mode.py, tests/unit/test_cron_registry_generated_drift.bats, web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: [T-1940, T-1939, T-1937, T-1938, T-1936, T-1934, T-1928]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-19T21:17:25Z
-last_update: 2026-05-19T21:17:25Z
-date_finished: null
+last_update: 2026-05-20T18:28:21Z
+date_finished: 2026-05-20T18:28:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,6 +29,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1941: BVP T-1940 sibling — emit bvp_mode in /bvp scatter arc payload + tooltip
@@ -151,30 +172,6 @@ to a payload).
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
-
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
-
 ## Recommendation
 
 **Recommendation:** GO
@@ -256,3 +253,20 @@ vs proposed" — not "direct vs derived". This slice closes the gap:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1941-bvp-t-1940-sibling--emit-bvpmode-in-bvp-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-b71f78c6
+- **Timestamp:** 2026-05-20T18:28:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — tooltip in `web/templates/bvp.html` surfaces mode for arc dots (visible to user)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/bvp.html in: tooltip in `web/templates/bvp.html` surfaces mode for arc dots (visible to user)`
+
+### 2026-05-20T18:28:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

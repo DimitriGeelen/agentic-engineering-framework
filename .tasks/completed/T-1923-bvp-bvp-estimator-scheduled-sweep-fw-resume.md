@@ -173,8 +173,8 @@ given that proposed scores are advisory and the trigger in
 
 ## Reviewer Verdict (v1.4)
 
-- **Scan ID:** R-7d632156
-- **Timestamp:** 2026-05-20T18:59:31Z
+- **Scan ID:** R-c243db59
+- **Timestamp:** 2026-05-21T07:20:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -186,6 +186,5 @@ given that proposed scores are advisory and the trigger in
   - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: Periodic sweep cron-registered runs every 15 min — `bvp-estimator-sweep-15m` entry in `.context/cron-registry.yaml`, deployed to `/etc/cron.d/agentic-`
 - **AC#6 (Agent)** — Cron entry registered and `fw doctor` reports cron-registry-in-sync — verified via `bin/fw doctor 2>&1 | grep -q "Cron registry in sync"` (OK status). Entry deployed: `*/15 * * * * root cd "/opt/.../"
   - **AC-verify-mismatch** (narrow, heuristic) — `path=var/lock/agentic-cron-bvp-estimator-sweep.lock in: Cron entry registered and `fw doctor` reports cron-registry-in-sync — verified via `bin/fw doctor 2>&1 | grep -q "Cron registry in sync"` (OK status).`
-
 ### 2026-05-20T18:57:41Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

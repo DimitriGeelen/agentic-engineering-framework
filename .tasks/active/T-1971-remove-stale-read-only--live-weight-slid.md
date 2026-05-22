@@ -4,20 +4,20 @@ name: "Remove stale 'Read-only — live weight sliders ship in T-1929' text on /
 description: >
   Remove stale 'Read-only — live weight sliders ship in T-1929' text on /bvp — sliders have shipped
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/templates/bvp.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-21T06:52:30Z
-last_update: 2026-05-21T06:52:30Z
-date_finished: null
+last_update: 2026-05-21T06:55:50Z
+date_finished: 2026-05-21T06:55:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -198,3 +198,20 @@ out=$(curl -s http://localhost:3000/bvp 2>&1); grep -q "Drag a slider below to p
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1971-remove-stale-read-only--live-weight-slid.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-98e03e98
+- **Timestamp:** 2026-05-21T06:55:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `Read-only — live weight sliders ship in T-1929` removed from `web/templates/bvp.html:8`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/bvp.html in: `Read-only — live weight sliders ship in T-1929` removed from `web/templates/bvp.html:8``
+
+### 2026-05-21T06:55:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

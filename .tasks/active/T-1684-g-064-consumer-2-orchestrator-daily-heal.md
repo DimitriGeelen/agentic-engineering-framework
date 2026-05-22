@@ -24,7 +24,7 @@ tags: [orchestrator-rethink, gap-consumer, cron]
 components: []
 related_tasks: []
 created: 2026-05-02T17:38:49Z
-last_update: '2026-05-19T18:27:45Z'
+last_update: '2026-05-19T21:45:02Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -36,6 +36,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 4
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=4 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

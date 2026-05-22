@@ -11,20 +11,20 @@ description: >
   via env. Tests need TZ-portability fix too. Surfaced during T-1952 (v0.5 LATEST
   fallback) which masked but didn't fix the underlying TZ bug.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_g064_readiness.py, tools/g064-readiness.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T10:23:14Z
-last_update: 2026-05-20T10:28:44Z
-date_finished:
+last_update: 2026-05-21T09:06:08Z
+date_finished: 2026-05-21T09:06:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -46,6 +46,16 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-20T10:30:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1953: G-064 gauge timezone fix — CRON_HOUR_UTC mismatches actual cron fire (crontab uses LOCAL time)
@@ -61,12 +71,12 @@ Related: L-411 (idempotent-cron observability blindspot) + L-364 (cron registry/
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_is_cron_firing()` converts dt to LOCAL time and compares against local-time-based constants (matching crontab semantics), OR accepts the cron schedule as injected parameter
-- [ ] Constants renamed/redocumented to reflect LOCAL interpretation (e.g. `CRON_HOUR_LOCAL`)
-- [ ] Existing tests refactored to be TZ-portable (use timestamps that translate to local cron window regardless of test runner TZ; OR force `TZ=UTC` in pytest fixture)
-- [ ] New test asserts that a dt at UTC 03:33 is recognized as cron-firing when the system TZ is +02:00 (covers the T-1952-discovered bug case)
-- [ ] `python3 tools/g064-readiness.py` on this host shows `cron_firings: >0` once any real dispatch happens (currently 0 even after idempotency clears, until this fix lands)
-- [ ] T-1952's KNOWN BUG docstring note removed once fix lands
+- [x] `_is_cron_firing()` converts dt to LOCAL time via `dt.astimezone()` (no-arg = system local TZ) and compares against `CRON_HOUR_LOCAL:CRON_MIN_LOCAL` — `tools/g064-readiness.py:81-89`
+- [x] Constants renamed `CRON_HOUR_UTC`/`CRON_MIN_UTC` → `CRON_HOUR_LOCAL`/`CRON_MIN_LOCAL` (line 61-62); `cron_window` output string says `LOCAL` (line 207)
+- [x] Existing tests pinned to TZ=UTC via `enforce_utc_tz` autouse fixture (lines 32-49) — all 21 pre-existing tests still pass under the rename
+- [x] New test `test_non_utc_tz_recognises_utc_offset_dispatch` (line 391): pins TZ=Europe/Amsterdam, asserts UTC 03:33 dispatch → cron_firings=1. Plus `test_utc_05_33_does_not_fire_when_local_offset` (inverse case) and `test_cron_window_label_says_local` (operator-facing string)
+- [x] `python3 tools/g064-readiness.py --json` on this host now shows `cron_firings=107 manual_runs=191 verdict=READY` (was structurally 0 before fix; G-064 closure-readiness signal restored)
+- [x] T-1952's KNOWN BUG docstring note (lines 34-40 pre-fix) replaced with affirmative "Cron TZ semantics" doc — search confirms no residual `KNOWN BUG` mentions in tools/ tests/
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -126,7 +136,39 @@ Related: L-411 (idempotent-cron observability blindspot) + L-364 (cron registry/
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_g064_readiness.py -q
+out=$(python3 tools/g064-readiness.py --json); python3 -c "import json,sys; d=json.loads('''$out'''); assert d['cron_firings']>0 and 'LOCAL' in d['cron_window'], d"
+grep -q CRON_HOUR_LOCAL tools/g064-readiness.py
+! grep -q "KNOWN BUG" tools/g064-readiness.py
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Fixes a structural observability lie. Pre-fix on any non-UTC host (this one runs Europe/Amsterdam +02), `_is_cron_firing` compared dispatch.UTC timestamps against UTC-labelled constants while real cron fires landed in dispatches.jsonl at UTC 03:33 (= local 05:33 = crontab `33 5 * * *`). Window was 152 min off the target — zero cron rows ever matched. The gauge therefore could not detect cron-source dispatches even when the substrate was healthy. With the fix, `python3 tools/g064-readiness.py` on this host reports `cron_firings=107 verdict=READY` — closure signal restored.
+
+The fix is local in scope (3 constants + 1 function + 1 cron_window output string in `tools/g064-readiness.py`; TZ-pinning autouse fixture + 3 new regression tests in `tests/unit/test_g064_readiness.py`). No public-API changes; tool exit codes and JSON shape preserved.
+
+**Evidence:**
+- `python3 -m pytest tests/unit/test_g064_readiness.py -v` → 24/24 PASS (21 pre-existing + 3 new T-1953 regressions)
+- `python3 tools/g064-readiness.py --json` (this host, TZ=+02) → `cron_firings=107 manual_runs=191 cron_window='05:33 LOCAL +/- 5 min' verdict=READY`
+- New tests pin both directions: UTC 03:33 on TZ=+02 → cron-firing=1 ✓; UTC 05:33 on TZ=+02 → manual=1 (NOT cron) ✓
+- `! grep -q "KNOWN BUG" tools/g064-readiness.py` — affirmative "Cron TZ semantics" doc replaces the bug note
+- L-411 (idempotent-cron observability blindspot) + L-364 (registry/generated/deployed three-stage drift): both referenced; this task closes the **interpretation** leg (LOCAL vs UTC) that was orthogonal to deploy/registry drift
+
+**Forward note:** Cron schedule is still hard-coded as `5:33`. A future enhancement could parameterise from `.context/cron-registry.yaml` (the canonical source) so the gauge auto-adapts when the schedule changes. Not in scope here; the structural blindness was the bug, the constant-rename is the fix.
+
 ## RCA
+
+**Symptom:** `tools/g064-readiness.py` on Europe/Amsterdam host showed `cron_firings=0` for the entire post-T-1727 history despite hundreds of real cron-sourced rows in `.context/dispatches.jsonl`. T-1952's `v0.5 LATEST` fallback restored partial visibility for the most recent fire but still computed the window against the wrong TZ basis. G-064 closure could not be assessed mechanically on this host.
+
+**Root cause:** `_is_cron_firing(dt)` converted dt to UTC and compared against `CRON_HOUR_UTC=5, CRON_MIN_UTC=33`. The crontab schedule `33 5 * * *` is interpreted by cron in **system local time**, not UTC. On TZ=+02 the actual UTC fire is 03:33 — 152 min away from 05:33 — outside the ±5 min window. The constant names and docstring asserted UTC semantics that did not match cron's actual behaviour.
+
+**Why structurally allowed:** The bug was invisible on UTC hosts (where LOCAL==UTC and the comparison happened to be correct), and the tool emitted no signal that distinguished "no cron fires happened" from "we can't recognise the cron fires that did happen". The existing test suite used UTC-offset timestamps that always matched UTC-constants regardless of runner TZ, masking the bug class. No test asserted the LOCAL-vs-UTC directionality of `_is_cron_firing`.
+
+**Prevention:** Three new regression tests pin the contract — (a) UTC 03:33 on TZ=+02 must be cron-firing; (b) UTC 05:33 on TZ=+02 must NOT be cron-firing; (c) `cron_window` output string must contain "LOCAL". The `enforce_utc_tz` autouse fixture pins the test runner TZ so the suite stays portable. A future test runner on a non-UTC host will see test (a) fail loudly if anyone tries to revert the fix.
+
+## RCA-end
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -196,3 +238,15 @@ Related: L-411 (idempotent-cron observability blindspot) + L-364 (cron registry/
 
 ### 2026-05-20T10:28:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-2f743aff
+- **Timestamp:** 2026-05-21T09:06:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-21T09:06:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

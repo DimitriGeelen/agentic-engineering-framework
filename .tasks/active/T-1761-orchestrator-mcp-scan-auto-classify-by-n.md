@@ -15,7 +15,7 @@ components: ["agents/audit/orchestrator-mcp-scan.sh"]
 related_tasks: ["T-1755", "T-1760", "T-1646"]
 arc_id: orchestrator-rethink
 created: 2026-05-06T06:08:25Z
-last_update: '2026-05-19T18:27:45Z'
+last_update: '2026-05-19T21:45:02Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -27,6 +27,16 @@ bvp_scores_proposed:
       D4: 3
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=3 (body:portability-abstraction)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-19T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 4
+      effort: 4
+    rationale: blast_radius=1 (no-signal); tier=4 (no-signal); effort=4 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

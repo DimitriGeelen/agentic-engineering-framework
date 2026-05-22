@@ -6,12 +6,12 @@ description: >
   fw audit registry→generated cron drift FAIL (T-1942 audit-side sibling for daily
   cron detection)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc:value-prioritisation, future-prevention, drift, cron, audit]
-components: [agents-audit-audit]
+components: [C-004, tests/unit/test_audit_cron_registry_generated_drift.bats]
 related_tasks: [T-1942, T-1771, T-1935, T-1941, T-1767]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-19T22:28:18Z
-last_update: '2026-05-19T22:30:01Z'
-date_finished:
+last_update: 2026-05-19T23:17:58Z
+date_finished: 2026-05-19T23:17:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -40,6 +40,17 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=1 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-19T23:15:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=2 (body:env-class-handled)
     rubric_sha: e4a00f38e801
 ---
 
@@ -141,7 +152,15 @@ out=$(bin/fw audit --section structure 2>&1); echo "$out" | grep -qE "Cron"
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+**Symptom:** A registry edit to `.context/cron-registry.yaml` (e.g., T-1935 bvp-cost-estimator-sweep entry) sat 3+ days drifted from the generated `.context/cron/agentic-audit.crontab` while `fw doctor` reported "Cron registry in sync". The new cron entry never reached the OS scheduler — silent execution failure. T-1771 had wired audit-side FAIL for generated→deployed drift, but registry→generated stayed uncovered at both doctor and audit surfaces.
+
+**Root cause:** `fw audit`'s T-1771 cron-drift block compared only `cron_source` (generated file) against `cron_target` (deployed file). When the registry was ahead of the generated file but the generated file matched the deployed file (both stale-matching), the diff returned 0, the PASS line emitted, and no autonomous monitoring fired.
+
+**Why structurally allowed:** Three-step sync chains (registry → generated → deployed) have THREE drift classes, not two. T-1771 covered ONE (generated→deployed). Auditing only the chain's endpoints misses middle-link drift. L-364 documented the chain in text but the enforcement only covered two of three pairings.
+
+**Prevention:** T-1942 wired doctor WARN for registry→generated drift. T-1943 (this task) wires the same drift class into `fw audit` as FAIL — daily-cron detection without requiring operator-triggered `fw doctor`. Both surfaces use the same dry-run-and-diff approach against the on-disk generated file. L-364 strengthened with explicit three-class taxonomy and the rule "a sync-chain with N transitions has N drift classes; auditing only the endpoints misses middle-link drift". CLAUDE.md §Verification Gate updated with dual-clause cron-touching task verification command.
+
+<!-- REQUIRED-original-template-below: REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
 
@@ -157,17 +176,17 @@ out=$(bin/fw audit --section structure 2>&1); echo "$out" | grep -qE "Cron"
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-19 — Two-surface coverage for the same drift class
+- **What changed:** T-1942 alone wasn't enough — doctor is operator-triggered, audit is
+  cron-triggered. The same drift class needs to surface at both cadences (immediate
+  feedback for the operator + autonomous detection for the daily monitor) or
+  drift goes unnoticed when nobody runs doctor.
+- **Plan impact:** Future drift checks must be added at BOTH surfaces simultaneously,
+  not just doctor. The two-surface pattern is the contract.
+- **Triggered:** Adjacent extension; no new sub-tasks. Audit→doctor symmetry should be
+  audited as a general rule, possibly via a structural lint — captured as future work.
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
+<!-- REQUIRED-removed: template followed by real content above. Original template:
      Format (one entry per slice boundary or significant insight):
        ### YYYY-MM-DD — [topic]
        - **What changed:** [what we learned that we didn't know at filing]
@@ -201,18 +220,6 @@ fix to the generate logic propagates to all three (no triple-maintenance trap).
   - registry → generated → audit FAIL (T-1943) + doctor WARN (T-1942)
   - generated → deployed → audit FAIL (T-1771) + doctor WARN
   - deployed → executable → exec-time check (L-365, advisory)
-
-## Evolution
-
-### 2026-05-19 — Two-surface coverage for the same drift class
-- **What changed:** T-1942 alone wasn't enough — doctor is operator-triggered, audit is
-  cron-triggered. The same drift class needs to surface at both cadences (immediate
-  feedback for the operator + autonomous detection for the daily monitor) or
-  drift goes unnoticed when nobody runs doctor.
-- **Plan impact:** Future drift checks must be added at BOTH surfaces simultaneously,
-  not just doctor. The two-surface pattern is the contract.
-- **Triggered:** Adjacent extension; no new sub-tasks. (Audit→doctor symmetry should be
-  audited as a general rule, possibly via a structural lint — captured as future work.)
 
 ## Decisions
 
@@ -259,3 +266,15 @@ fix to the generate logic propagates to all three (no triple-maintenance trap).
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1943-fw-audit-registrygenerated-cron-drift-fa.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.4)
+
+- **Scan ID:** R-4b6a1e8c
+- **Timestamp:** 2026-05-19T23:19:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-19T23:17:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
