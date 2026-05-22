@@ -86,6 +86,26 @@ When done, your final message should be ≤ 5 lines:
   One-sentence summary
 ```
 
+### Commit the post-transition diff (L-419, T-1985 + T-1951 origin)
+
+If your worker's final action is `bin/fw task update T-XXX --status work-completed`,
+that transition rewrites task frontmatter (status, owner, date_finished, last_update)
+— and the worker exits before committing it. The parent then has to sweep stranded
+deltas across `.tasks/active/T-XXX-*.md`.
+
+**Worker exit protocol:** after the transition succeeds, the very next action MUST be:
+
+```bash
+bin/fw task update T-XXX --status work-completed && \
+  git add .tasks/active/T-XXX-*.md && \
+  FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-XXX: work-completed transition"
+```
+
+Origin: T-1985 (G-066 prong 2 worker) and T-1951 (G-066 prong 3 worker) both shipped
+clean slice commits, ran the transition, then exited — leaving the frontmatter
+delta uncommitted. The pattern will recur across every TermLink-dispatched worker
+that completes a task in its own session.
+
 ## TermLink Dispatch — Orchestrator-Aware Workers (T-1643)
 
 When you dispatch via `fw termlink dispatch`, the framework now understands
