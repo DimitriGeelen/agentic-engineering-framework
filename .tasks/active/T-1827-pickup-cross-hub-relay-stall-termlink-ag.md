@@ -6,16 +6,16 @@ description: >
   Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task
   T-1826. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report, fw-upgrade-incident-2026-05-14, termlink-relay]
 components: [agents-termlink-termlink, lib-mirror]
 related_tasks: [T-1826, T-1828, T-1829]
 created: 2026-05-14T14:26:01Z
-last_update: '2026-05-19T21:45:02Z'
-date_finished:
+last_update: 2026-05-22T08:26:18Z
+date_finished: 2026-05-22T08:26:18Z
 source_task_id_in_origin: T-1826
 source_project_in_origin: "999-Agentic-Engineering-Framework"
 bvp_scores_proposed:
@@ -150,3 +150,15 @@ OPS-1 from fw-upgrade-incident-2026-05-14. Sibling of T-1828 (OPS-2 outbound mir
 ### 2026-05-14T18:27:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0d722587
+- **Timestamp:** 2026-05-22T08:26:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-22T08:26:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
