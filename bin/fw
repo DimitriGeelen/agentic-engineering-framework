@@ -2946,7 +2946,8 @@ case "$cmd" in
         # T-1443 v1.0–v1.4: machine-reviewer (anti-pattern static-scan + audit + overrides)
         if [ "${1:-}" = "" ] || [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
             echo "Usage:"
-            echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task"
+            echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task (inline)"
+            echo "  fw reviewer T-XXX --dispatch [--timeout N] [--json]         Scan via isolated TermLink worker (T-1951)"
             echo "  fw reviewer audit [--pass-a [--baseline [--force]] | --pass-b]"
             echo "                    [--limit N] [--quiet] [--timeout N]"
             echo "                                                               Layer 3 daily corpus re-scan"
@@ -2978,6 +2979,22 @@ case "$cmd" in
         # in vendored consumer projects where lib/ lives at .agentic-framework/lib/
         # rather than at the project root. Framework-repo-self is unaffected
         # (PROJECT_ROOT == FRAMEWORK_ROOT there, no behaviour change).
+        # T-1951: dispatch mode — forward to dispatch_cli if --dispatch is in any arg
+        _has_dispatch=0
+        for _rarg in "$@"; do
+            if [ "$_rarg" = "--dispatch" ]; then _has_dispatch=1; break; fi
+        done
+        if [ "$_has_dispatch" = "1" ]; then
+            # Strip --dispatch from args before forwarding (dispatch_cli argparse
+            # does not know about --dispatch; bin/fw owns the routing decision).
+            _dispatch_args=()
+            for _rarg in "$@"; do
+                [ "$_rarg" != "--dispatch" ] && _dispatch_args+=("$_rarg")
+            done
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                python3 -m lib.reviewer.dispatch_cli "${_dispatch_args[@]}"
+        fi
         if [ "${1:-}" = "audit" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \

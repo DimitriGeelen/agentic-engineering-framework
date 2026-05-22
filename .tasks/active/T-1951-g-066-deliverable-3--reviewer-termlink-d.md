@@ -7,10 +7,10 @@ description: >
   isolated process (not in-process under parent session). Pairs with deliverable #2
   (auto-tick). Closes G-066 prong 3 of 3.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [reviewer, termlink, dispatch, g-066]
 components: [bin/fw, lib/reviewer/static_scan.py, lib/termlink_worker.py]
 related_tasks: [T-1985, T-1950, T-1984, T-1443, T-1797]
@@ -19,7 +19,7 @@ related_tasks: [T-1985, T-1950, T-1984, T-1443, T-1797]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T09:50:23Z
-last_update: '2026-05-20T10:15:02Z'
+last_update: 2026-05-22T08:06:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -42,6 +42,17 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
     rubric_sha: e4a00f38e801
+  - ts: '2026-05-22T07:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-20T10:15:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -50,6 +61,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-22T07:30:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---
@@ -83,8 +103,8 @@ Research artifact: `docs/reports/T-1443-independent-reviewer-agent.md` decisions
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `bin/fw reviewer T-XXX --dispatch` flag added; routes to a TermLink-dispatched worker (uses `lib/termlink_worker.py` primitive from T-1797) instead of inline subprocess. Without `--dispatch`, behavior is unchanged (v1.4 path).
-- [ ] Worker session is tagged `task:T-XXX, kind:reviewer`; `cd`s into the framework repo (or vendored consumer); runs `bin/fw reviewer T-XXX` (the inline path, NOT recursive — must check and refuse `--dispatch` inside a worker context).
+- [x] `bin/fw reviewer T-XXX --dispatch` flag added; routes to a TermLink-dispatched worker (uses `lib/termlink_worker.py` primitive from T-1797) instead of inline subprocess. Without `--dispatch`, behavior is unchanged (v1.4 path).
+- [x] Worker session is tagged `task:T-XXX, kind:reviewer`; `cd`s into the framework repo (or vendored consumer); runs `bin/fw reviewer T-XXX` (the inline path, NOT recursive — must check and refuse `--dispatch` inside a worker context).
 - [ ] Worker writes the full reviewer verdict to `fw bus` via `bin/fw bus post --task T-XXX --agent reviewer-dispatched --summary "<verdict>" --result <blob>`. Auto-size-gated (>=2KB → blob). Parent reads via `fw bus manifest T-XXX` + `fw bus read T-XXX R-NNN`.
 - [ ] Sovereignty rail: dispatch mode produces the SAME verdict shape as inline (PASS/CONCERN/FAIL/needs_human + Findings list with ac_index/ac_text_digest). No semantic divergence between inline and dispatched paths — same `static_scan.py` is loaded in the worker.
 - [ ] Concurrency safety: parent can dispatch multiple `--dispatch` reviewers for different tasks in parallel without race conditions on `.context/audits/reviewer/` or fw bus channels. Tested by dispatching 3 in parallel and verifying all three verdicts land.
@@ -228,3 +248,9 @@ Research artifact: `docs/reports/T-1443-independent-reviewer-agent.md` decisions
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1951-g-066-deliverable-3--reviewer-termlink-d.md
 - **Context:** Initial task creation
+
+### 2026-05-22T08:03:42Z — status-update [task-update-agent]
+- **Change:** horizon: next → now
+
+### 2026-05-22T08:06:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
