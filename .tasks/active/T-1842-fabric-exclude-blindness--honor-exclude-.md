@@ -6,17 +6,17 @@ description: >
   fabric exclude: blindness — honor exclude in do_scan + do_drift (consumer Penelope
   T-1458 pickup)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [consumer-pickup, fabric, bug]
-components: []
+components: [agents/fabric/lib/drift.sh, agents/fabric/lib/register.sh]
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-05-14T22:30:42Z
-last_update: '2026-05-19T21:45:02Z'
-date_finished:
+last_update: 2026-05-22T08:10:03Z
+date_finished: 2026-05-22T08:10:03Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -166,3 +166,15 @@ What the prevention does **not** cover (out of scope for this task):
 
 ### 2026-05-14T22:38:34Z — status-update [task-update-agent]
 - **Change:** tags: +arc:project-shape-resilience
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c5e215c9
+- **Timestamp:** 2026-05-22T08:10:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-22T08:10:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

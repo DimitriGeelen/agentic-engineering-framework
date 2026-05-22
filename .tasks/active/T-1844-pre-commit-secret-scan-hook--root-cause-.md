@@ -4,17 +4,17 @@ name: "pre-commit secret scan hook — root-cause prevention for T-1828/T-1834 c
 description: >
   pre-commit secret scan hook — root-cause prevention for T-1828/T-1834 class
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, security]
-components: []
+components: [C-004, agents/git/lib/hooks.sh, agents/git/lib/large-file-scan.sh, agents/git/lib/secret-scan.sh, bin/fw, tests/unit/test_secret_scan.bats]
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-05-15T07:04:44Z
-last_update: '2026-05-19T21:45:02Z'
-date_finished:
+last_update: 2026-05-22T08:10:25Z
+date_finished: 2026-05-22T08:10:25Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -227,3 +227,15 @@ This does NOT unstick the current GitHub mirror — the secret at `79e3361d` is 
 
 ### 2026-05-15T07:07:18Z — status-update [task-update-agent]
 - **Change:** tags: +security
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-377dd694
+- **Timestamp:** 2026-05-22T08:10:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-22T08:10:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1101,3 +1101,192 @@ decisions:
     date: 2026-05-20
     task: T-1965
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-160
+    decision: "Duplicate the rollup helpers structurally in `lib/bvp.sh`'s python body."
+    scope: project
+    date: 2026-05-20
+    task: T-1937
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-161
+    decision: "Inline column between NORM and NAME, name `SOURCE`."
+    scope: project
+    date: 2026-05-20
+    task: T-1937
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-162
+    decision: "New test file `test_bvp_cli_arcs_rollup.py` rather than extending `test_bvp_estimator.py`."
+    scope: project
+    date: 2026-05-20
+    task: T-1937
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-163
+    decision: "Opt-in flag."
+    scope: project
+    date: 2026-05-20
+    task: T-1938
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-164
+    decision: "Conditional column."
+    scope: project
+    date: 2026-05-20
+    task: T-1938
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-165
+    decision: "Same label shape as the existing `PROPOSED (advisory)` score block label."
+    scope: project
+    date: 2026-05-20
+    task: T-1938
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-166
+    decision: "Return `bvp_mode` as a field on the existing signal dict."
+    scope: project
+    date: 2026-05-20
+    task: T-1939
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-167
+    decision: "Place provenance line under the stats strip (one extra `<p class=\"muted\">` line, only when `bvp_mode != 'direct-confirmed'`)."
+    scope: project
+    date: 2026-05-20
+    task: T-1939
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-168
+    decision: "extend `tests/playwright/test_arc_detail_bvp.py` with 3 new tests"
+    scope: project
+    date: 2026-05-20
+    task: T-1940
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-169
+    decision: "`.text_content()` substring assertion via `assert \"Source:\" in ...`"
+    scope: project
+    date: 2026-05-20
+    task: T-1940
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-170
+    decision: "three separate tests pinning label visibility, explanation"
+    scope: project
+    date: 2026-05-20
+    task: T-1940
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-171
+    decision: "extend the existing scatter tooltip with a `<small>source:</small>` line"
+    scope: project
+    date: 2026-05-20
+    task: T-1941
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-172
+    decision: "tooltip's `provenance` substring guards on `d.kind === \"arc\"`"
+    scope: project
+    date: 2026-05-20
+    task: T-1941
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-173
+    decision: "defensive empty-string fallback even though the `continue`"
+    scope: project
+    date: 2026-05-20
+    task: T-1941
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-174
+    decision: "`.badge-info` uses `--pico-primary-inverse` (Pico contrast partner). `.badge-ok` uses hard-coded `#1e6a2a` (darker green, ≥AA against white). `.badge-muted` uses `--pico-color` (page text colour, always contrasts with `*-background`)."
+    scope: project
+    date: 2026-05-21
+    task: T-1970
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-175
+    decision: "New optional frontmatter field `inception_decisions:` on `workflow_type: inception` task files. List of `{id, text, ships_in}` entries. Build children gain optional `unlocks_inception_decision:` (list of `T-XXX:DYY` references). Both fields validated by a PreToolUse hook on Write|Edit (same shape as T-1849 `check-arc-id`)."
+    scope: project
+    date: 2026-05-21
+    task: T-1983
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-176
+    decision: "`ships_in:` is a string; validator accepts five shapes — (1) `path/to/file.py`, (2) `module.function_name`, (3) `tests/.../test_name.py::test_func`, (4) `T-XXX` (task ID — points at a build child), (5) literal `deferred:T-YYYY` (explicit defer with target). At gate time: shapes 1-3 are verified by file/symbol existence; shape 4 by the target task being `work-completed`; shape 5 by the target task existing in `.tasks/{active,completed}/`."
+    scope: project
+    date: 2026-05-21
+    task: T-1983
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-177
+    decision: "When an inception task transitions to `work-completed`, `update-task.sh` parses `inception_decisions:` and validates every entry's `ships_in:`. If any entry's referent is unreachable (file missing, function not defined, task not work-completed, deferred-to target absent), refuse the transition with a block message naming the failing entry and the override flag. Override: `--skip-inception-scope-trace \"rationale\"` (Tier-2, logged in `.gate-bypass-log.yaml`)."
+    scope: project
+    date: 2026-05-21
+    task: T-1983
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-178
+    decision: "The new frontmatter field is **optional**. Completed inceptions without it (200+ in `.tasks/completed/`) are grandfathered — gate does not retroact. New inceptions filed from the next agent session forward are encouraged (CLAUDE.md text) to populate the field. The gate only fires when the field is **non-empty** — empty/missing = \"opt out\", logged on close as an info-level note in feedback-stream."
+    scope: project
+    date: 2026-05-21
+    task: T-1983
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-179
+    decision: "Override mechanism is **both** (a) `--skip-inception-scope-trace \"rationale\"` for direct invocations of `update-task.sh` (or `fw task update`) and (b) `FW_SKIP_INCEPTION_SCOPE_TRACE=1` env-var prefix for indirect invocations (commit hooks, git via `git commit`, etc). Refusal block message lists both with one-line guidance per L-399 (T-1890)."
+    scope: project
+    date: 2026-05-21
+    task: T-1983
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-180
+    decision: "Reclassify T-1950 to `workflow_type: inception` before any source edit"
+    scope: project
+    date: 2026-05-21
+    task: T-1950
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-181
+    decision: "Auto-tick fires only for Agent ACs whose text starts with `[REVIEWER]` (T-1811 prefix)"
+    scope: project
+    date: 2026-05-21
+    task: T-1950
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-182
+    decision: "Auto-tick at most once per `(task_id, ac_index, evidence_digest)` tuple; human un-ticks observed via scan-time diff + feedback-stream `human_untick_observed`; never re-tick same tuple"
+    scope: project
+    date: 2026-05-21
+    task: T-1950
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-183
+    decision: "Single Python helper at `agents/fabric/lib/expand_patterns.py`, called from both register.sh and drift.sh."
+    scope: project
+    date: 2026-05-22
+    task: T-1842
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-184
+    decision: "Update `pre_push_version_monotonicity.bats` to convert 2 \"forward-downgrade blocked\" tests to \"forward-downgrade allowed (T-1829)\", keep the others. Add new `test_pre_push_monotonic_ancestor.bats` covering all the new C-semantics cases including the actual cc38e98f5 HEAD-reset shape."
+    scope: project
+    date: 2026-05-22
+    task: T-1843
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-185
+    decision: "Pure-bash regex catalogue as baseline, optional `gitleaks` escalation if installed."
+    scope: project
+    date: 2026-05-22
+    task: T-1844
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-186
+    decision: "Azure DevOps PAT pattern `[a-z2-7]{52}` (base32 lowercase) instead of `[A-Za-z0-9]{52}`."
+    scope: project
+    date: 2026-05-22
+    task: T-1844
+    rationale: "Auto-captured from task file on completion"
