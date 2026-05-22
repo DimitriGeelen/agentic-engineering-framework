@@ -1,13 +1,22 @@
 ---
 id: T-1991
-name: "Watchtower foundation tokens — 6 palettes × light/dark + 6 type pairings + 3 density tiers as CSS custom properties (arc-007 S0)"
+name: "Watchtower foundation tokens — 6 palettes × light/dark + 6 type pairings +
+  3 density tiers as CSS custom properties (arc-007 S0)"
 description: >
-  Define the foundation token layer for the watchtower-redesign arc. Add CSS custom properties (--wt-bg, --wt-surface, --wt-border, --wt-text, --wt-muted, --wt-accent, --wt-accent-ink, --wt-success, --wt-warn, --wt-danger, --wt-info, plus dark-mode variants) for all 6 palettes from docs/design/watchtower-redesign-2026-05-13/project/foundations.jsx (Slate, Linen, Stone, Paper, Bone, Console). Define 6 type pairings (Inter+JBM, Geist, IBM Plex, Manrope, Newsreader-serif-heads, system). Define 3 density tiers (compact/cozy/comfortable) as font-size + spacing scale multipliers. No page-level edits in this slice — just web/static/css/foundations.css + import. Parent inception: T-1987.
+  Define the foundation token layer for the watchtower-redesign arc. Add CSS custom
+  properties (--wt-bg, --wt-surface, --wt-border, --wt-text, --wt-muted, --wt-accent,
+  --wt-accent-ink, --wt-success, --wt-warn, --wt-danger, --wt-info, plus dark-mode
+  variants) for all 6 palettes from docs/design/watchtower-redesign-2026-05-13/project/foundations.jsx
+  (Slate, Linen, Stone, Paper, Bone, Console). Define 6 type pairings (Inter+JBM,
+  Geist, IBM Plex, Manrope, Newsreader-serif-heads, system). Define 3 density tiers
+  (compact/cozy/comfortable) as font-size + spacing scale multipliers. No page-level
+  edits in this slice — just web/static/css/foundations.css + import. Parent inception:
+  T-1987.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [watchtower, redesign, ui, foundations]
 arc_id: watchtower-redesign
 components: []
@@ -17,8 +26,8 @@ related_tasks: [T-1987]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-22T10:06:08Z
-date_finished: null
+last_update: 2026-05-22T18:40:00Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,20 +38,65 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-22T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-22T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1991: Watchtower foundation tokens — 6 palettes × light/dark + 6 type pairings + 3 density tiers as CSS custom properties (arc-007 S0)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Keystone slice (S0) of arc-007 (watchtower-redesign). Defines a self-contained
+foundation token layer — `web/static/css/foundations.css` — with all 6 palettes
+(light + dark), 6 type-pairing font sets, and density scale tokens, sourced from
+`docs/design/watchtower-redesign-2026-05-13/project/foundations.jsx`.
+
+**The single highest-leverage decision (review-A1, A7):** the **Pico-bridge** — a
+`:root` block, loaded *after* `pico.min.css`, that re-points core `--pico-*` vars
+at the `--wt-*` tokens. This makes the 400+ existing Pico-var usages across 30+
+templates follow the active palette *for free*, without touching any page. Pure
+side-by-side coexistence (no bridge) FAILS the headline mechanic — Pico-styled
+controls keep reading `--pico-*` and ignore the palette.
+
+**Scope fence:** NO page-level edits in this slice. Only `foundations.css` + the
+`<link>` wiring in `base.html` (after pico). Palette/mode switching is driven by
+`data-wt-palette` / `data-wt-mode` attributes on `<html>`; the picker that sets
+them ships in S1 (T-1988). Default palette = slate, mode = light, density = compact
+(the design dialogue's chosen density). Webfont @font-face loading is explicitly
+DEFERRED (font-family tokens fall back to system fonts) — avoids the
+network-at-theme-pick risk and keeps S0 lean. Parent inception: T-1987 (GO).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `web/static/css/foundations.css` exists and defines `--wt-*` token sets (bg, surface, border, text, muted, accent, accent-ink, success, warn, danger, info) for all 6 palettes (slate, linen, stone, paper, bone, console), keyed by `[data-wt-palette="<id>"]` with `:root` defaulting to slate
+- [x] Every palette has a dark variant under `[data-wt-mode="dark"][data-wt-palette="<id>"]` — 6 dark blocks present
+- [x] **Pico-bridge present:** a `:root` block re-points the core Pico vars at `--wt-*` — at minimum `--pico-background-color: var(--wt-bg)`, `--pico-card-background-color: var(--wt-surface)`, `--pico-color: var(--wt-text)`, `--pico-muted-color: var(--wt-muted)`, `--pico-primary: var(--wt-accent)`, `--pico-primary-inverse: var(--wt-accent-ink)`, `--pico-border-color: var(--wt-border)`
+- [x] 6 type-pairing font token sets defined (`--wt-font-sans` / `--wt-font-mono` / `--wt-font-head`), keyed by `[data-wt-type="<id>"]` (inter, geist, plex, manrope, newsreader, system), each with a system-font fallback in the stack
+- [x] Density tokens defined (`--wt-density-scale` + spacing/font-size derivations) for compact/cozy/comfortable, default = compact
+- [x] `foundations.css` is `<link>`ed in `base.html` **after** `pico.min.css` (bridge must cascade over Pico) — verified by source order
+- [x] CSS is structurally valid: brace count balanced, no `var(--wt-undefined)` dangling references for the default (slate/light) path
+- [x] Watchtower still returns HTTP 200 with `foundations.css` referenced in the rendered `<head>`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -75,7 +129,13 @@ date_finished: null
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-## Verification
+- [ ] [REVIEW] Each of the 6 palettes re-themes the page coherently (the headline mechanic at token level)
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve` (or use the running instance at the URL from `bin/fw watchtower url`)
+  2. Open the Watchtower home page, open browser devtools, and on the `<html>` element set `data-wt-palette="slate"` then cycle through `linen`, `stone`, `paper`, `bone`, `console`
+  3. For each, also toggle `data-wt-mode="dark"`
+  **Expected:** Background, surfaces, text, borders, and accent all shift together to the new palette with legible contrast in both light and dark — Pico-styled controls (buttons, cards, inputs) follow the palette, not stuck on indigo/grey. No element stays the old colour.
+  **If not:** Note which element ignored the palette (likely a hardcoded hex literal, not a `--pico-*`/`--wt-*` var) — that is S3-S5 debt, catalogue it; but the bridged Pico controls MUST follow.
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -101,6 +161,27 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# File exists
+test -f web/static/css/foundations.css
+# All 6 palettes defined
+for p in slate linen stone paper bone console; do grep -q "data-wt-palette=\"$p\"" web/static/css/foundations.css || { echo "missing palette $p"; exit 1; }; done
+# 6 dark variants
+test "$(grep -c 'data-wt-mode="dark"' web/static/css/foundations.css)" -ge 6
+# Pico-bridge present (core re-points)
+grep -q -- '--pico-background-color: *var(--wt-bg)' web/static/css/foundations.css
+grep -q -- '--pico-color: *var(--wt-text)' web/static/css/foundations.css
+grep -q -- '--pico-primary: *var(--wt-accent)' web/static/css/foundations.css
+# 6 type pairings
+for t in inter geist plex manrope newsreader system; do grep -q "data-wt-type=\"$t\"" web/static/css/foundations.css || { echo "missing type $t"; exit 1; }; done
+# Density default compact
+grep -q -- '--wt-density-scale' web/static/css/foundations.css
+# Brace balance
+python3 -c "c=open('web/static/css/foundations.css').read(); assert c.count('{')==c.count('}'), 'unbalanced braces'"
+# Linked after pico in base.html
+python3 -c "import re,sys; h=open('web/templates/base.html').read(); pi=h.find('pico'); fi=h.find('foundations.css'); sys.exit(0 if (pi!=-1 and fi!=-1 and fi>pi) else 1)"
+# Watchtower serves it (200 + referenced in head)
+url=$(bin/fw watchtower url 2>/dev/null); curl -sf "$url/" | grep -q "foundations.css"
 
 ## RCA
 
@@ -142,6 +223,11 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-22 — S0 build vs. inception plan
+- **What changed:** The existing dark mode is Pico's `data-theme="dark"` toggle (base.html `wtToggleTheme` + `wt-theme` localStorage), not a custom mechanism. The bridge must drive `--wt-*` dark values off `[data-theme="dark"]` (not only the planned `[data-wt-mode="dark"]`) or the existing toggle would break — both selectors are now supported.
+- **Plan impact:** S0 stays a pure token layer as planned (no page edits). Confirmed the Pico-bridge is sufficient: dark toggle, accent, surfaces all flow through `var(--pico-*) → var(--wt-*)` without per-page work.
+- **Triggered:** No new sub-task. Note for S1 (T-1988): the picker should set palette via `data-wt-palette` and reuse the *existing* `data-theme` for light/dark rather than introducing `data-wt-mode`, to avoid a parallel toggle. The 704 hardcoded hex literals (review-A1) remain theme-blind — they are S3-S5 scope, not S0.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -169,3 +255,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1991-watchtower-foundation-tokens--6-palettes.md
 - **Context:** Initial task creation
+
+### 2026-05-22T18:40:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

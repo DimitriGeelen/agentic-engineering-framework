@@ -9,6 +9,8 @@
         (function(){var t=localStorage.getItem('wt-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
+    <!-- arc-007 S0 (T-1991): foundation tokens + Pico-bridge. MUST load after pico. -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/foundations.css') }}">
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
     <script src="{{ url_for('static', filename='htmx-ext-sse.js') }}"></script>
     <script src="{{ url_for('static', filename='csrf-htmx.js') }}"></script>
