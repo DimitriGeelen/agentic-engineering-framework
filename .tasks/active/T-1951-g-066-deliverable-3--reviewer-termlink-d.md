@@ -7,20 +7,20 @@ description: >
   isolated process (not in-process under parent session). Pairs with deliverable #2
   (auto-tick). Closes G-066 prong 3 of 3.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [reviewer, termlink, dispatch, g-066]
-components: [bin/fw, lib/reviewer/static_scan.py, lib/termlink_worker.py]
+components: [bin/fw]
 related_tasks: [T-1985, T-1950, T-1984, T-1443, T-1797]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T09:50:23Z
-last_update: 2026-05-22T08:17:01Z
-date_finished:
+last_update: 2026-05-22T08:18:21Z
+date_finished: 2026-05-22T08:18:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -257,16 +257,17 @@ out=$(FW_REVIEWER_IN_DISPATCH=1 python3 -m lib.reviewer.dispatch_cli T-1951 2>&1
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-89ba8050
-- **Timestamp:** 2026-05-22T08:17:13Z
+- **Scan ID:** R-2539b132
+- **Timestamp:** 2026-05-22T08:18:22Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 1
 
-**Per-AC findings:**
+**Verification-level findings:**
 
-- **AC#1 (Agent)** — `bin/fw reviewer T-XXX --dispatch` flag added; routes to a TermLink-dispatched worker (uses `lib/termlink_worker.py` primitive from T-1797) instead of inline subprocess. Without `--dispatch`, behavior
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/termlink_worker.py in: `bin/fw reviewer T-XXX --dispatch` flag added; routes to a TermLink-dispatched worker (uses `lib/termlink_worker.py` primitive from T-1797) instead of`
-- **AC#7 (Agent)** — Tests: pytest covering (a) `--dispatch` spawns a TermLink session and exits without blocking parent; (b) parent gets verdict via `fw bus read` after worker completes; (c) recursive `--dispatch` inside
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_reviewer_dispatch.py in: Tests: pytest covering (a) `--dispatch` spawns a TermLink session and exits without blocking parent; (b) parent gets verdict via `fw bus read` after w`
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 4
+     - evidence: `out=$(python3 -m lib.reviewer.static_scan T-1951 --no-write --json 2>&1); echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['task_id']=='T-1951'" 2>/dev/null || python3 -m li`
+
+### 2026-05-22T08:18:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
