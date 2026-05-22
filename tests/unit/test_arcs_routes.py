@@ -71,8 +71,11 @@ def _write_task(p, tid, status="started-work", workflow="build", tags=None):
 
 
 def test_arcs_index_empty(client):
+    # T-1904 made kanban the default /arcs view; the "No arcs registered"
+    # empty-state guidance lives in the flat-list view (?view=list). Hit that
+    # view to assert the create-your-first-arc guidance still renders. (T-1997.)
     c, p = client
-    resp = c.get("/arcs")
+    resp = c.get("/arcs?view=list")
     assert resp.status_code == 200
     body = resp.get_data(as_text=True)
     assert "No arcs registered" in body

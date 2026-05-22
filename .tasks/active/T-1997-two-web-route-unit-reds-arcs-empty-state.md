@@ -2,12 +2,19 @@
 id: T-1997
 name: "Two web-route unit reds: /arcs empty-state not rendering + /file md route 404"
 description: >
-  Triage task (one root cause TBD). Both fail on master with env-var PROJECT_ROOT + importlib.reload fixtures: (1) test_arcs_routes::test_arcs_index_empty — /arcs page does not render 'No arcs registered' empty-state for an empty PROJECT_ROOT (all_arcs_count appears non-zero despite empty tmp .context/arcs). (2) test_file_route_extensions::test_route_serves_md_file — /file route returns 404 instead of 200 for an md file in the tmp project. Hypothesis: shared PROJECT_ROOT-after-reload binding issue in web blueprints (route reads a stale/wrong root). Investigate; if the two diverge in root cause, split into one task each (one bug = one task). Found during T-1995 full-suite triage; pre-existing.
+  Triage task (one root cause TBD). Both fail on master with env-var PROJECT_ROOT
+  + importlib.reload fixtures: (1) test_arcs_routes::test_arcs_index_empty — /arcs
+  page does not render 'No arcs registered' empty-state for an empty PROJECT_ROOT
+  (all_arcs_count appears non-zero despite empty tmp .context/arcs). (2) test_file_route_extensions::test_route_serves_md_file
+  — /file route returns 404 instead of 200 for an md file in the tmp project. Hypothesis:
+  shared PROJECT_ROOT-after-reload binding issue in web blueprints (route reads a
+  stale/wrong root). Investigate; if the two diverge in root cause, split into one
+  task each (one bug = one task). Found during T-1995 full-suite triage; pre-existing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -16,8 +23,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T19:35:59Z
-last_update: 2026-05-22T19:35:59Z
-date_finished: null
+last_update: 2026-05-22T19:45:33Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +35,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-22T19:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-22T19:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1997: Two web-route unit reds: /arcs empty-state not rendering + /file md route 404
@@ -40,8 +68,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of each red identified and written to `## RCA`; determine whether they share one cause or are independent — INDEPENDENT (arcs-empty: T-1904 kanban default; file-404: T-1762 active→completed move + reload pollution). Both trivial stale-test fixes; kept under this task (scoped "the two web-route reds") rather than splitting two one-line test updates
+- [x] `tests/unit/test_arcs_routes.py::test_arcs_index_empty` passes — the empty-state guidance lives in flat-list view (`?view=list`) since T-1904 made kanban default; test updated to hit that view
+- [x] `tests/unit/test_file_route_extensions.py::test_route_serves_md_file` passes — globs an existing active task md from the stable real-repo path (robust to task churn AND reload pollution); passes in isolation and under the pollution pair (no silent skip)
+- [x] Full `bin/fw test unit` exits 0 green end-to-end (0 failed) — **1081 passed, 1 skipped, 0 failed**. The last 2 reds cleared; whole suite green
+- [x] Fix is test-only — NO source change to any route/template. No render-surface `[REVIEW]` AC needed (verified: only `tests/unit/*.py` edited)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -75,6 +106,8 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_arcs_routes.py "tests/unit/test_file_route_extensions.py::test_route_serves_md_file" -q 2>&1 | tail -1 | grep -qE "passed" && ! (python3 -m pytest tests/unit/test_arcs_routes.py "tests/unit/test_file_route_extensions.py::test_route_serves_md_file" -q 2>&1 | tail -1 | grep -q "failed")
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -116,6 +149,33 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** two unit reds — `test_arcs_index_empty` (no "No arcs registered" in
+body) and `test_route_serves_md_file` (404 instead of 200). Both test-only;
+no user-facing product bug.
+
+**Root cause (independent, both stale tests):**
+- *arcs-empty:* T-1904 made the **kanban** layout the default `/arcs` view. The
+  "No arcs registered" + `fw arc create` empty-state guidance moved into the
+  flat-list view (`?view=list`); the test still hit the default and asserted the
+  old message. Fix: hit `?view=list`.
+- *file-404:* two stacked causes. (a) The test hardcoded
+  `.tasks/active/T-1762-…md`, which moved to `completed/` (task churn). (b) The
+  route serves via core.py's import-bound `PROJECT_ROOT` (real repo), but the
+  test read the *live* `web.shared.PROJECT_ROOT`, which prior reload-based tests
+  (`test_arcs_routes`) leave dangling at a tmp dir — so even after fixing (a) by
+  globbing, it found no tasks and silently skipped. Fix: glob from the stable
+  real-repo path (`parents[2]`) that matches the route's actual serving root.
+
+**Why structurally allowed:** task files move active→completed with no test-side
+indirection, so any hardcoded `.tasks/active/T-XXX` path is a time-bomb; and the
+reload-pollution class (see [[L-421]]) makes "read PROJECT_ROOT in a test" unsafe
+across files. Default-view redesigns (T-1904) silently relocate assertable text.
+
+**Prevention:** tests now glob existing artefacts (no pinned task filenames) and
+reference the stable repo path rather than the mutable module global. The broader
+"hardcoded `.tasks/active/T-XXX` in a test" smell is a candidate lint, deferred
+(only this one instance found). [[L-421]] covers the reload-pollution class.
 
 ## Evolution
 
@@ -168,3 +228,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1997-two-web-route-unit-reds-arcs-empty-state.md
 - **Context:** Initial task creation
+
+### 2026-05-22T19:45:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

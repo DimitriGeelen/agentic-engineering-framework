@@ -72,9 +72,23 @@ def test_is_viewable_path_rejects_empty():
 # ---- Live route (integration) --------------------------------------------
 
 def test_route_serves_md_file(client):
-    """The original capability — must still work post-T-1764."""
-    r = client.get("/file/.tasks/active/T-1762-task-pair-acd-gate-p-012-wire-g-066-pron.md")
-    assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+    """The original capability — must still work post-T-1764.
+
+    T-1997: glob an existing active task md instead of a hardcoded filename.
+    Task files move active→completed, so a pinned path goes stale — the original
+    T-1762-… file moved to completed/ and 404'd this test. Glob from the stable
+    real-repo path (parents[2]) NOT web.shared.PROJECT_ROOT: the route serves via
+    core.py's import-bound PROJECT_ROOT (= real repo, core isn't reloaded), while
+    the live web.shared.PROJECT_ROOT can be left dangling at a tmp dir by prior
+    reload-based tests (would make this glob find nothing → silent skip).
+    """
+    from pathlib import Path
+    repo = Path(__file__).resolve().parents[2]
+    md = next(iter(sorted((repo / ".tasks" / "active").glob("T-*.md"))), None)
+    assert md is not None, "no active task md available to serve"
+    rel = md.relative_to(repo)
+    r = client.get(f"/file/{rel}")
+    assert r.status_code == 200, f"Expected 200 for {rel}, got {r.status_code}"
 
 
 def test_route_serves_shell_file(client):
