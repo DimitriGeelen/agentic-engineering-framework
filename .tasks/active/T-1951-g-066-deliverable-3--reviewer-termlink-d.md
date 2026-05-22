@@ -11,9 +11,9 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: []
-components: []
-related_tasks: []
+tags: [reviewer, termlink, dispatch, g-066]
+components: [bin/fw, lib/reviewer/static_scan.py, lib/termlink_worker.py]
+related_tasks: [T-1985, T-1950, T-1984, T-1443, T-1797]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -58,14 +58,50 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Third (and final) G-066 deliverable. T-1442/T-1443 GO sanctioned a reviewer
+agent that runs in a **dispatched** mode — isolated process, zero parent
+context cost, evidence-gated against the same per-AC `Finding` substrate
+shipped in v1.3. v1.4 reviewer still runs inline (subprocess call inside the
+orchestrator session). This task ships the TermLink-dispatched mode.
+
+Pairs with T-1985 (auto-tick) as the two halves of G-066 prong 2+3. T-1985
+ships *what* the reviewer ticks; T-1951 ships *where* the reviewer runs.
+
+Substrate already in place:
+- `lib/reviewer/static_scan.py` v1.4 — produces JSON verdict + per-AC findings
+- `fw bus` result ledger — typed envelope for worker → parent communication
+- `lib/termlink_worker.py` (T-1797) — primitive that wraps `fw termlink dispatch` for `claude -p` workers
+- `bin/fw reviewer T-XXX` — the inline invocation surface
+
+Design intent: `bin/fw reviewer T-XXX --dispatch` spawns a TermLink session,
+runs `bin/fw reviewer T-XXX` inside it (NOT recursively — uses the inline
+path), captures the verdict block + findings to `fw bus`, and the parent
+reads the result via `fw bus manifest T-XXX`. Parent context cost: zero.
+
+Research artifact: `docs/reports/T-1443-independent-reviewer-agent.md` decisions 36 (auto-tick), 113 (Human-AC sovereignty), 213 (sovereignty preservation).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `bin/fw reviewer T-XXX --dispatch` flag added; routes to a TermLink-dispatched worker (uses `lib/termlink_worker.py` primitive from T-1797) instead of inline subprocess. Without `--dispatch`, behavior is unchanged (v1.4 path).
+- [ ] Worker session is tagged `task:T-XXX, kind:reviewer`; `cd`s into the framework repo (or vendored consumer); runs `bin/fw reviewer T-XXX` (the inline path, NOT recursive — must check and refuse `--dispatch` inside a worker context).
+- [ ] Worker writes the full reviewer verdict to `fw bus` via `bin/fw bus post --task T-XXX --agent reviewer-dispatched --summary "<verdict>" --result <blob>`. Auto-size-gated (>=2KB → blob). Parent reads via `fw bus manifest T-XXX` + `fw bus read T-XXX R-NNN`.
+- [ ] Sovereignty rail: dispatch mode produces the SAME verdict shape as inline (PASS/CONCERN/FAIL/needs_human + Findings list with ac_index/ac_text_digest). No semantic divergence between inline and dispatched paths — same `static_scan.py` is loaded in the worker.
+- [ ] Concurrency safety: parent can dispatch multiple `--dispatch` reviewers for different tasks in parallel without race conditions on `.context/audits/reviewer/` or fw bus channels. Tested by dispatching 3 in parallel and verifying all three verdicts land.
+- [ ] No regression: `bin/fw reviewer T-XXX` (without `--dispatch`) keeps current inline behavior; existing tests in `tests/unit/test_reviewer_*.py` and the daily `fw reviewer audit` continue to pass.
+- [ ] Tests: pytest covering (a) `--dispatch` spawns a TermLink session and exits without blocking parent; (b) parent gets verdict via `fw bus read` after worker completes; (c) recursive `--dispatch` inside worker is refused (single-hop only); (d) 3-parallel-dispatch produces 3 distinct verdicts; (e) `--dispatch` against a non-existent task surfaces a clean error from the worker, not a parent crash. Target ≥5 tests under `tests/unit/test_reviewer_dispatch.py`.
+- [ ] Docs: CLAUDE.md §Reviewer (or new subsection) adds one paragraph on `--dispatch` mode — when to use it (heavy parallel review, isolated context, parent budget-pressured) vs. inline (single-task, quick check).
+
+### Human
+- [ ] [REVIEW] Dispatch mode worth the new path — confirm the `--dispatch` ergonomic story holds: open the verdict via `fw bus manifest` reads cleanly, the worker tag is observable in `termlink list`, and the parent-zero-context-cost claim is real (compare a 5-task `--dispatch` batch's parent token cost vs. 5 inline invocations).
+  **Steps:**
+  1. Pick 3 active tasks with substantive content (e.g. T-1985, T-1976, T-1980)
+  2. Run `for t in $TASKS; do bin/fw reviewer $t --dispatch; done`
+  3. Run `termlink list` — see 3 dispatched reviewer sessions
+  4. Wait for them to finish (`termlink wait` or check status)
+  5. Run `for t in $TASKS; do bin/fw bus manifest $t; done` and verify each has a reviewer-dispatched envelope
+  **Expected:** 3 verdicts land independently; parent context cost stays near-flat across the batch; observable from `termlink list` while in flight.
+  **If not:** Note where the ergonomic breaks — verbose CLI, missing observability, or unclear verdict surface.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
