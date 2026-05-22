@@ -1,10 +1,14 @@
-"""Static-scan reviewer (T-1443 v1.0).
+"""Static-scan reviewer (T-1443 v1.0 → v1.5).
 
 Detects anti-patterns in completed task files. v1.0 scope:
 - 4 seed patterns: tautology, empty-body, swallowed-errors, output-spoofing
-- Verdict written to task body under `#{2,}Reviewer Verdict (v1.0)`
+- Verdict written to task body under `#{2,}Reviewer Verdict (v1.x)`
 - Append-only feedback stream at `.context/working/feedback-stream.yaml`
-- Sovereignty: NEVER modifies AC checkboxes (##{2,}Human or ### Agent)
+- Sovereignty: NEVER modifies AC checkboxes for Human ACs or non-[REVIEWER] Agent ACs.
+  v1.5 (T-1985): [REVIEWER]-prefixed Agent ACs in active/ tasks ARE auto-ticked
+  when all five evidence conditions hold (PASS verdict + zero per-AC findings +
+  AC unticked + no suppress override + [REVIEWER] prefix). Sovereignty rail:
+  digest-keyed feedback-stream prevents re-ticking human-unticked ACs.
 
 Wired in v1.0:
 - `bin/fw reviewer T-XXX` (manual)
@@ -19,6 +23,7 @@ NOT in v1.0 (deferred):
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -30,7 +35,7 @@ from pathlib import Path
 
 import yaml
 
-VERSION = "v1.4"
+VERSION = "v1.5"
 SCHEMA_VERSION = 3
 
 
@@ -99,6 +104,8 @@ class Verdict:
     # v1.4 additions:
     suppressed: list[Finding] = field(default_factory=list)  # findings dropped by override
     expired_overrides: list[dict] = field(default_factory=list)  # surfaced for action
+    # v1.5: [REVIEWER] Agent ACs auto-ticked in this scan (T-1985)
+    auto_ticked: list[dict] = field(default_factory=list)  # {ac_index, digest, text_excerpt}
 
     def to_dict(self) -> dict:
         return {
@@ -114,6 +121,7 @@ class Verdict:
             "human_signoff_declared": self.human_signoff_declared,
             "suppressed": [f.to_dict() for f in self.suppressed],
             "expired_overrides": self.expired_overrides,
+            "auto_ticked": self.auto_ticked,
         }
 
 
@@ -128,6 +136,190 @@ def load_catalogue(catalogue_path: Path) -> dict:
 # ───────────────────────── Section extractors ─────────────────────────
 
 _SECTION_RE = re.compile(r"^## ", re.MULTILINE)
+
+
+# ───────────────────────── Auto-tick helpers (v1.5, T-1985) ─────────────────────────
+
+
+@dataclass
+class ParsedAC:
+    """An AC entry parsed from the ## Acceptance Criteria section."""
+    ac_index: int       # 1-based counter within the subhead
+    ac_subhead: str     # e.g. "Agent" or "Human"
+    ac_text: str        # body after `- [ ] ` or `- [x] `
+    ticked: bool        # True when `[x]`
+    raw_line: str       # exact line as it appears in the file
+
+
+def _compute_ac_text_digest(ac_text: str) -> str:
+    """SHA-256 of the AC text, first 12 hex characters."""
+    return hashlib.sha256(ac_text.encode()).hexdigest()[:12]
+
+
+def _feedback_stream_has_tick(
+    task_id: str,
+    ac_index: int,
+    digest: str,
+    fs_path: Path,
+) -> bool:
+    """True if the feedback stream already has an auto_tick entry for (task_id, ac_index, digest)."""
+    if not fs_path.exists():
+        return False
+    target_key = f"auto_tick:{task_id}:{ac_index}:{digest}"
+    return target_key in fs_path.read_text()
+
+
+def _should_auto_tick(
+    ac: ParsedAC,
+    findings: list[Finding],
+    task_overrides: list,
+    verdict_overall: str,
+) -> bool:
+    """Conjunctive 5-condition gate for auto-ticking a [REVIEWER] Agent AC.
+
+    Conditions (ALL must hold):
+      1. overall verdict is PASS
+      2. zero Finding entries reference this AC's ac_index (within same subhead)
+      3. AC is currently unticked (- [ ])
+      4. no active suppress override targets this ac_index
+      5. AC text starts with [REVIEWER] prefix
+    """
+    # Condition 1
+    if verdict_overall != "PASS":
+        return False
+    # Condition 3
+    if ac.ticked:
+        return False
+    # Condition 5
+    if not re.match(r"^\[REVIEWER\]", ac.ac_text.strip(), re.IGNORECASE):
+        return False
+    # Condition 2: no findings targeting this (ac_index, ac_subhead)
+    for f in findings:
+        if f.ac_index is None:
+            continue
+        if f.ac_index == ac.ac_index and (
+            f.ac_subhead is None or f.ac_subhead == ac.ac_subhead
+        ):
+            return False
+    # Condition 4: no active suppress override for this ac_index
+    now = datetime.now(timezone.utc)
+    for o in (task_overrides or []):
+        if o.ac_index is not None and o.ac_index != ac.ac_index:
+            continue
+        if not o.is_expired(now):
+            return False
+    return True
+
+
+def _parse_agent_acs(ac_section: str) -> list[ParsedAC]:
+    """Return ParsedAC entries from the `### Agent` subhead only.
+
+    Tasks without an explicit `### Agent` subhead yield no results — sovereign
+    default: no implicit Agent section means nothing gets auto-ticked.
+    """
+    results: list[ParsedAC] = []
+    current_subhead = ""
+    counter = 0
+    in_agent = False
+    for raw_line in ac_section.splitlines():
+        stripped = raw_line.strip()
+        if re.match(r"^#{2,}\s+\S", stripped):
+            current_subhead = stripped.lstrip("# ").strip()
+            in_agent = current_subhead.lower() == "agent"
+            counter = 0
+            continue
+        m = _AC_LINE_RE.match(raw_line)
+        if m:
+            counter += 1
+            if in_agent:
+                results.append(
+                    ParsedAC(
+                        ac_index=counter,
+                        ac_subhead=current_subhead,
+                        ac_text=m.group("body"),
+                        ticked=m.group("state").lower() == "x",
+                        raw_line=raw_line,
+                    )
+                )
+    return results
+
+
+# ─────────────── Auto-tick orchestration (v1.5, T-1985) ───────────────
+
+
+def _apply_ac_mutations(text: str, mutations: list[tuple[str, str]]) -> str:
+    """Apply AC checkbox mutations line-by-line. Each entry is (old_raw_line, new_raw_line).
+
+    Uses a queue per old-line to handle duplicate AC texts without double-replacing.
+    """
+    if not mutations:
+        return text
+    pending: dict[str, list[str]] = {}
+    for old, new in mutations:
+        key = old.rstrip("\n")
+        pending.setdefault(key, []).append(new.rstrip("\n"))
+    result_lines = []
+    for line in text.splitlines(keepends=True):
+        key = line.rstrip("\n")
+        if key in pending and pending[key]:
+            replacement = pending[key].pop(0)
+            result_lines.append(replacement + ("\n" if line.endswith("\n") else ""))
+        else:
+            result_lines.append(line)
+    return "".join(result_lines)
+
+
+def _compute_auto_ticks(
+    task_path: Path,
+    task_id: str,
+    verdict: Verdict,
+    overrides: list,
+    stream_path: Path,
+) -> tuple[list[dict], list[tuple[str, str]]]:
+    """Determine which [REVIEWER] Agent ACs to auto-tick.
+
+    Only runs on active/ tasks (completed/ files are never mutated).
+
+    Returns (ticked_acs_info, ac_mutations):
+    - ticked_acs_info: [{ac_index, digest, text_excerpt}] for verdict block reporting
+    - ac_mutations:    [(old_raw_line, new_raw_line)] pairs for _apply_ac_mutations
+    """
+    if verdict.overall != "PASS":
+        return [], []
+    if ".tasks/active/" not in str(task_path):
+        return [], []
+
+    _, body = parse_task_file(task_path)
+    ac_section = extract_section(body, "Acceptance Criteria") or ""
+    agent_acs = _parse_agent_acs(ac_section)
+
+    # Pre-filter overrides for this task (non-expired)
+    now = datetime.now(timezone.utc)
+    task_overrides = [
+        o for o in (overrides or [])
+        if getattr(o, "task_id", None) == task_id and not o.is_expired(now)
+    ]
+
+    ticked_info: list[dict] = []
+    mutations: list[tuple[str, str]] = []
+
+    for ac in agent_acs:
+        if not _should_auto_tick(ac, verdict.findings, task_overrides, verdict.overall):
+            continue
+        digest = _compute_ac_text_digest(ac.ac_text)
+        if _feedback_stream_has_tick(task_id, ac.ac_index, digest, stream_path):
+            continue  # sovereignty rail: respect human un-tick
+        new_raw_line = ac.raw_line.replace("- [ ]", "- [x]", 1)
+        mutations.append((ac.raw_line, new_raw_line))
+        ticked_info.append(
+            {
+                "ac_index": ac.ac_index,
+                "digest": digest,
+                "text_excerpt": ac.ac_text[:80].replace("\n", " "),
+            }
+        )
+
+    return ticked_info, mutations
 
 
 def extract_section(body: str, name: str) -> str | None:
@@ -1119,27 +1311,51 @@ def render_verdict_md(verdict: Verdict) -> str:
         lines.append(f"- **Expired overrides:** {len(verdict.expired_overrides)}")
         for e in verdict.expired_overrides:
             lines.append(f"  - {e['id']} pattern={e['pattern_id']} expired_at={e['expired_at']}")
+    # v1.5: auto-ticked [REVIEWER] Agent ACs (T-1985)
+    if verdict.auto_ticked:
+        lines.append("")
+        lines.append(f"- **Auto-ticked:** {len(verdict.auto_ticked)} AC(s)")
+        for entry in verdict.auto_ticked:
+            excerpt = entry.get("text_excerpt", "")[:80]
+            lines.append(f"  - AC #{entry['ac_index']}: {entry['digest']} [{excerpt}]")
     lines.append("")
     return "\n".join(lines)
 
 
-def write_verdict_to_task(task_path: Path, verdict: Verdict) -> None:
-    """Replace existing `#{2,}Reviewer Verdict (v1.0)` section, or append.
+def write_verdict_to_task(
+    task_path: Path,
+    verdict: Verdict,
+    ac_mutations: list[tuple[str, str]] | None = None,
+) -> None:
+    """Replace Reviewer Verdict section and apply AC checkbox mutations atomically.
 
-    Sovereignty invariant: this function ONLY touches the verdict section.
-    It must not modify AC checkboxes or any other section.
+    v1.5 narrowed sovereignty invariant: Human ACs and non-[REVIEWER]-prefixed Agent
+    ACs are NEVER modified. [REVIEWER]-prefixed Agent ACs in active/ tasks MAY be
+    ticked when all five evidence conditions hold (see _should_auto_tick).
+    Writes via os.replace for atomicity.
     """
     text = task_path.read_text()
-    new_section = render_verdict_md(verdict)
 
+    # Apply AC checkbox mutations first (before verdict replacement)
+    if ac_mutations:
+        text = _apply_ac_mutations(text, ac_mutations)
+
+    new_section = render_verdict_md(verdict)
     if _VERDICT_SECTION_RE.search(text):
         new_text = _VERDICT_SECTION_RE.sub(new_section, text)
     else:
-        # append before final newline
         sep = "" if text.endswith("\n") else "\n"
         new_text = text + sep + "\n" + new_section
 
-    task_path.write_text(new_text)
+    # Atomic write
+    tmp_path = task_path.with_suffix(".tmp")
+    try:
+        tmp_path.write_text(new_text)
+        os.replace(tmp_path, task_path)
+    except Exception:
+        if tmp_path.exists():
+            tmp_path.unlink(missing_ok=True)
+        raise
 
 
 # ───────────────────────── Feedback stream ─────────────────────────
@@ -1221,10 +1437,18 @@ def main(argv: list[str] | None = None) -> int:
     overrides = load_overrides()
 
     verdict = scan_task(task_file, catalogue, escalation_catalogue, overrides=overrides)
+    stream = project_root / ".context" / "working" / "feedback-stream.yaml"
 
     if not no_write:
-        write_verdict_to_task(task_file, verdict)
-        stream = project_root / ".context" / "working" / "feedback-stream.yaml"
+        # v1.5: compute auto-ticks for [REVIEWER] Agent ACs (active/ tasks only)
+        ticked_info, ac_mutations = _compute_auto_ticks(
+            task_file, verdict.task_id, verdict, overrides, stream
+        )
+        verdict.auto_ticked = ticked_info
+
+        write_verdict_to_task(task_file, verdict, ac_mutations=ac_mutations or None)
+
+        # Feedback-stream events
         append_feedback_event(
             stream,
             {
@@ -1236,6 +1460,7 @@ def main(argv: list[str] | None = None) -> int:
                     "overall": verdict.overall,
                     "finding_count": len(verdict.findings),
                     "suppressed_count": len(verdict.suppressed),
+                    "auto_ticked_count": len(ticked_info),
                     "catalogue_version": verdict.catalogue_version,
                 },
             },
@@ -1274,6 +1499,25 @@ def main(argv: list[str] | None = None) -> int:
                     "scan_id": verdict.scan_id,
                     "task_id": verdict.task_id,
                     "payload": e,
+                },
+            )
+        # v1.5: sovereignty-rail entries for each ticked AC
+        for entry in ticked_info:
+            digest = entry["digest"]
+            ac_index = entry["ac_index"]
+            append_feedback_event(
+                stream,
+                {
+                    "kind": "auto_tick",
+                    "timestamp": verdict.timestamp,
+                    "scan_id": verdict.scan_id,
+                    "task_id": verdict.task_id,
+                    "payload": {
+                        "key": f"auto_tick:{verdict.task_id}:{ac_index}:{digest}",
+                        "ac_index": ac_index,
+                        "digest": digest,
+                        "text_excerpt": entry.get("text_excerpt", ""),
+                    },
                 },
             )
 
