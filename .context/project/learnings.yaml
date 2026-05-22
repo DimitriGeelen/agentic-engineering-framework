@@ -3238,3 +3238,17 @@ X'` returning empty group."
   date: 2026-05-22
   context: Added via context agent
   application: TBD
+- id: L-421
+  learning: "Test-isolation pollution has two module-state causes, both presenting as 'passes in isolation, fails in full suite' (origin T-1995/T-1996): (1) reload+monkeypatch leaves a module GLOBAL dangling — importlib.reload(web.shared) after monkeypatch.setenv re-resolves a global from temp env, but monkeypatch restores only the env var not the recomputed global (T-1995 render: web.shared.PROJECT_ROOT left at a deleted tmp dir). (2) del sys.modules[mod]+reimport REPLACES the module OBJECT, orphaning other tests' import-time 'from mod import fn' bindings; patch(mod.X) then targets the new object while orphaned fn reads the old (T-1996 G-069). Fixes: re-pin globals via autouse fixture (victim) OR use importlib.reload not del sys.modules (polluter, preserves identity). Debug tip: test passes alone but fails in-suite -> suspect a prior test mutating shared module state."
+  source: P-001
+  task: T-1997
+  date: 2026-05-22
+  context: Added via context agent
+  application: TBD
+- id: L-422
+  learning: "Post-compaction resume can surface a stale /tmp test-output artifact (e.g. /tmp/full_suite.txt) showing PRE-fix failures as if current. A /tmp file carries no provenance. Before treating it as current state, check its mtime against recent fix-commit timestamps (git log --format='%h %cd' --date=iso); if mtime predates the fixes, it is stale. Always re-run the suite from the committed tree as source of truth. Also confirm deterministic ordering (pip list | grep -i randomly) so a green run is reproducible, not luck."
+  source: P-001
+  task: T-1998
+  date: 2026-05-22
+  context: Added via context agent
+  application: TBD
