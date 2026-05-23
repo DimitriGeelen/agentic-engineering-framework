@@ -47,13 +47,12 @@ accent design intent) to reach ≥4.5:1. The exact shade is a [REVIEW] call for 
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `--wt-accent` in the `[data-wt-palette="linen"]` block (foundations.css ~line 32) is
-      darkened to a terracotta shade where `accent-ink (#fbf8f1) on accent` ≥ 4.5:1 (WCAG AA
-      normal text). Verified by the contrast formula (relative-luminance ratio)
-- [ ] `bin/fw ux-review` re-run: Editorial moves from ⚠️ concern → ✅ ok, and the **overall
-      verdict is PASS** (no remaining automated findings). Verified: `grep -q 'Overall verdict.*PASS\|verdict: PASS'` in run output/report
-- [ ] No other palette regresses: all 6 presets still `applied=True`, console clean (the
-      ux-review run reports this)
+- [x] `--wt-accent` in the `[data-wt-palette="linen"]` block (foundations.css line 32) darkened
+      `#c4623f → #b35636` (terracotta preserved); `accent-ink (#fbf8f1) on accent` = **4.60:1**
+      ≥ AA 4.5:1. Verified by the contrast formula (Verification block, exit 0)
+- [x] `bin/fw ux-review --sweep` re-run: Editorial moved ⚠️ concern → ✅ ok; **overall verdict
+      PASS** — zero automated findings across the whole arc-007 foundation
+- [x] No other palette regressed: all 6 presets `applied=True`, console clean in the run
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -169,7 +168,28 @@ Level-C guard; deferred — the ux-review gate covers the arc's review loop for 
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-23 — the review tool found the defect its own arc shipped
+- **What changed:** This is the first defect in the S0 token set caught by the arc's own
+  review tool (T-2002), not by a human eye. It validates the inception T-2000 thesis
+  (executed-browser review beats the blank `/review` checkbox) on a *non-obvious*
+  accessibility issue a casual look would miss.
+- **Plan impact:** S0 (T-1991) is now genuinely clean (PASS), not just "looks done". The
+  arc's foundation layer can be considered closed at the automated level; remaining work is
+  the S2-S6 layout slices.
+- **Triggered:** Noted in RCA that a pre-commit token-contrast lint would be the stronger
+  Level-C guard (the ux-review gate only fires in the review loop, not at authoring). Not
+  filed as a task yet — the ux-review check covers the arc's loop adequately; revisit if a
+  second sub-AA pair ever ships.
+
 ## Decisions
+
+### 2026-05-23 — darken the accent, not the ink
+- **Chose:** Darken `--wt-accent` `#c4623f → #b35636` (closest-hue shade clearing AA at 4.60:1).
+- **Why:** The Editorial design intent is *light text on a terracotta button*. Darkening the
+  accent preserves that relationship and the hue family; the contrast gain comes for free.
+- **Rejected:** Darkening `--wt-accent-ink` instead — would mean dark text on terracotta,
+  inverting the design intent. Also rejected deeper shades (`#b05234`/`#ad5032`, 4.83-4.99)
+  as further from the original than necessary; #b35636 is the minimal change that passes.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -189,6 +209,22 @@ Level-C guard; deferred — the ux-review gate covers the arc's review loop for 
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** A one-token accessibility fix that clears the only remaining automated defect
+in the arc-007 foundation. The terracotta hue and the light-text-on-accent design intent are
+preserved; only the human taste call on the exact shade remains (overridable via the [REVIEW]).
+
+**Evidence:**
+- `--wt-accent` `#c4623f → #b35636`; `accent-ink/accent` 3.83:1 → **4.60:1** (≥ AA 4.5:1)
+- `bin/fw ux-review --sweep` → **overall verdict PASS**; Editorial now ✅ ok, all 6 presets
+  applied, console clean; 5/5 pages still carry the theme
+- Single line changed (foundations.css:32); dark linen inherits the same accent, so both
+  modes are fixed at once
+- Gallery: http://192.168.10.107:3000/static/ux-review/index.html
 
 ## Updates
 

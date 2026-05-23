@@ -29,7 +29,7 @@
 [data-wt-palette="linen"] {
   --wt-bg: #f7f4ec; --wt-surface: #fbf8f1; --wt-border: #e8e1d2;
   --wt-text: #1f1b16; --wt-muted: #7a7163;
-  --wt-accent: #c4623f; --wt-accent-ink: #fbf8f1;
+  --wt-accent: #b35636; --wt-accent-ink: #fbf8f1; /* T-2006: darkened terracotta #c4623f→#b35636 for WCAG AA (ink/accent 3.83→4.60) */
   --wt-success: #5b8a5a; --wt-warn: #c98a2b; --wt-danger: #b1503e; --wt-info: #3a7088;
 }
 [data-wt-palette="stone"] {
