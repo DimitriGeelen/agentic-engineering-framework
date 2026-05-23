@@ -3252,3 +3252,10 @@ X'` returning empty group."
   date: 2026-05-22
   context: Added via context agent
   application: TBD
+- id: L-423
+  learning: "Interactive render surfaces (pages with inline <script> click handlers) require an EXECUTED-browser AC, not markup-presence. A JS SyntaxError leaves the DOM fully rendered — HTTP 200, all elements present — so curl/grep verification passes on a functionally DEAD page. Origin T-1999/T-1988: a malformed ternary in appearance.html (missing ':' branch) threw SyntaxError, aborting the whole IIFE, so every preset/axis button was inert; the page looked perfect to curl. Only Playwright (click preset -> assert <html> re-themes + assert zero console errors) caught it. Rule: any UI AC involving a click/JS behaviour must be verified by executing the JS in a real browser and pinned with a Playwright test (T-971). This is the purest form of T-1575 (UI verification needs eyes)."
+  source: P-001
+  task: T-1999
+  date: 2026-05-23
+  context: Added via context agent
+  application: TBD
