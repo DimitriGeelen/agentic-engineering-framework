@@ -234,6 +234,18 @@ def inject_pins():
     except Exception:
         return {"wt_pins": []}
 
+
+@bp.app_context_processor
+def inject_palette():
+    """Make wt_palette_items (T-2012, arc-007 S6a) available to every template —
+    base.html emits them as a JSON script tag the ⌘K palette reads for fuzzy jump."""
+    from web.shared import palette_destinations
+
+    try:
+        return {"wt_palette_items": palette_destinations()}
+    except Exception:
+        return {"wt_palette_items": []}
+
 SETTINGS_FILE = PROJECT_ROOT / ".context" / "settings.yaml"
 
 

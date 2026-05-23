@@ -249,6 +249,29 @@ def nav_breadcrumb(endpoint, path=""):
 
 
 # ---------------------------------------------------------------------------
+# Command palette (T-2012, arc-007 S6a) — jump destinations
+# ---------------------------------------------------------------------------
+def palette_destinations():
+    """Jump destinations for the ⌘K command palette: NAV_ITEMS resolved to URLs.
+
+    One source of truth — the same nav whitelist S2c pins use (T-2010). Returns a
+    list of {label, url, group} dicts, url_for resolved server-side (try/except so a
+    parametrised endpoint never breaks the page). Requires an app/request context.
+    """
+    from flask import url_for
+
+    out = []
+    for gname, items in NAV_GROUPS:
+        for label, ep, _icon in _nav_flatten(items):
+            try:
+                url = url_for(ep)
+            except Exception:
+                continue
+            out.append({"label": label, "url": url, "group": gname})
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Ambient status strip — data gathered once per request
 # ---------------------------------------------------------------------------
 

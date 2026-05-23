@@ -530,9 +530,9 @@
             </li>
 
             <li class="nav-search">
-                <a href="{{ url_for('discovery.search_view') }}" title="Search"
-                   {% if active_endpoint == 'discovery.search_view' %}aria-current="page"{% endif %}
-                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                <a href="{{ url_for('discovery.search_view') }}" title="Search or jump  (⌘K)"
+                   data-palette-open
+                   {% if active_endpoint == 'discovery.search_view' %}aria-current="page"{% endif %}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="11" cy="11" r="7"></circle>
                         <line x1="16.5" y1="16.5" x2="22" y2="22"></line>
@@ -588,6 +588,19 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- ⌘K Command Palette (T-2012, arc-007 S6a) — lives in the shell so the
+         document-level keydown listener survives htmx #content swaps. -->
+    <script type="application/json" id="wt-nav-items">{{ wt_palette_items | default([]) | tojson }}</script>
+    <div id="wt-command-palette" class="wt-palette" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Command palette">
+        <div class="wt-palette-backdrop" data-palette-close></div>
+        <div class="wt-palette-box" role="document">
+            <input id="wt-palette-input" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="Search or jump to…  (Esc to close)" aria-label="Search or jump to a page" />
+            <ul id="wt-palette-results" class="wt-palette-results" role="listbox"></ul>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='command-palette.js') }}" defer></script>
+
     <!-- Footer -->
     <footer class="site-footer container">
         Watchtower {{ fw_version }} &mdash; {{ project_name | default("Agentic Engineering Framework") }}
@@ -617,6 +630,48 @@
             animation: blink 1s steps(3, end) infinite;
         }
         @keyframes blink { to { opacity: 0.3; } }
+        /* ── ⌘K Command Palette (T-2012, arc-007 S6a) ─────────── */
+        .wt-palette[hidden] { display: none; }
+        .wt-palette {
+            position: fixed; inset: 0; z-index: 1000;
+            display: flex; align-items: flex-start; justify-content: center;
+            padding-top: 12vh;
+        }
+        .wt-palette-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.45);
+            animation: wt-palette-fade 0.12s ease-out;
+        }
+        .wt-palette-box {
+            position: relative; width: min(92vw, 580px);
+            background: var(--pico-card-background-color, var(--pico-background-color));
+            border: 1px solid var(--pico-card-border-color, var(--pico-muted-border-color));
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+            overflow: hidden;
+            animation: wt-palette-pop 0.12s ease-out;
+        }
+        #wt-palette-input {
+            width: 100%; margin: 0; border: 0; border-radius: 0;
+            padding: 1rem 1.1rem; font-size: 1.05rem; line-height: 1.3;
+            background: transparent; color: var(--pico-color);
+            border-bottom: 1px solid var(--pico-muted-border-color);
+        }
+        #wt-palette-input:focus { outline: none; box-shadow: none; }
+        .wt-palette-results { list-style: none; margin: 0; padding: 0.35rem; max-height: 52vh; overflow-y: auto; }
+        .wt-palette-results li {
+            display: flex; align-items: baseline; gap: 0.6rem;
+            padding: 0.55rem 0.75rem; border-radius: 8px; cursor: pointer;
+            font-size: 0.92rem; color: var(--pico-color);
+        }
+        .wt-palette-results li[aria-selected="true"],
+        .wt-palette-results li:hover { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+        .wt-palette-results li .wt-palette-group { margin-left: auto; font-size: 0.72rem; opacity: 0.6; }
+        .wt-palette-results li[aria-selected="true"] .wt-palette-group { opacity: 0.85; }
+        .wt-palette-results li.wt-palette-search { font-style: italic; opacity: 0.95; }
+        .wt-palette-empty { padding: 0.75rem; font-size: 0.85rem; opacity: 0.6; text-align: center; }
+        @keyframes wt-palette-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes wt-palette-pop  { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
     </style>
 
     <script>
