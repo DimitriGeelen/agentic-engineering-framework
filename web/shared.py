@@ -186,6 +186,69 @@ for _group_name, _items in NAV_GROUPS:
 
 
 # ---------------------------------------------------------------------------
+# Breadcrumbs (T-2009, arc-007 S2b)
+# ---------------------------------------------------------------------------
+_BREADCRUMB_INDEX = None  # lazily built: first-path-segment -> (group, label, leaf_endpoint)
+
+
+def _breadcrumb_index():
+    """Map a URL's first path segment -> (group, label, leaf_endpoint), built from
+    the *actual* URLs of nav leaves. Path-based (not blueprint-name) so mixed
+    blueprints resolve correctly (e.g. `discovery` serves both Knowledge and Govern).
+    Cached after first build; requires an app/request context for url_for."""
+    global _BREADCRUMB_INDEX
+    if _BREADCRUMB_INDEX is not None:
+        return _BREADCRUMB_INDEX
+    from flask import url_for
+
+    idx = {}
+    for gname, items in NAV_GROUPS:
+        for label, ep, _icon in _nav_flatten(items):
+            try:
+                url = url_for(ep)
+            except Exception:
+                continue
+            seg = url.strip("/").split("/", 1)[0]
+            if seg:
+                idx.setdefault(seg, (gname, label, ep))
+    _BREADCRUMB_INDEX = idx
+    return idx
+
+
+def nav_breadcrumb(endpoint, path=""):
+    """Build a breadcrumb trail [(label, url|None), ...] for the current page.
+
+    Derived from the request URL's first path segment matched against nav-leaf URLs.
+    The final crumb is always the current page (url=None). Returns [] for home and
+    for pages under no nav section (better silent than a misleading crumb).
+        /tasks          -> [(Work, None), (Tasks, None)]
+        /tasks/T-2008   -> [(Work, None), (Tasks, /tasks), (T-2008, None)]
+        /arcs/arc-007   -> [(Architecture, None), (Arcs, /arcs), (arc-007, None)]
+        /               -> []
+    """
+    segs = [s for s in (path or "").split("/") if s]
+    if not segs:
+        return []
+    idx = _breadcrumb_index()
+    first = segs[0]
+    if first not in idx:
+        return []
+    group, label, leaf_ep = idx[first]
+    crumbs = [(group, None)]
+    if len(segs) == 1:
+        crumbs.append((label, None))  # the section list is the current page
+    else:
+        from flask import url_for
+
+        try:
+            crumbs.append((label, url_for(leaf_ep)))  # section, linked to its list
+        except Exception:
+            crumbs.append((label, None))
+        crumbs.append((segs[-1], None))  # detail token = current page
+    return crumbs
+
+
+# ---------------------------------------------------------------------------
 # Ambient status strip — data gathered once per request
 # ---------------------------------------------------------------------------
 
@@ -827,9 +890,14 @@ def render_page(template_name, **context):
     context.setdefault("project_root", str(PROJECT_ROOT))
     context.setdefault("ambient", build_ambient())
     context.setdefault("yaml_errors", get_yaml_errors())
+    # Breadcrumb (T-2009, arc-007 S2b): path-derived, rendered inside #content so
+    # it survives htmx swaps (the chrome outside #content goes stale on htmx nav).
+    context.setdefault("breadcrumb", nav_breadcrumb(context["active_endpoint"], request.path))
 
     if request.headers.get("HX-Request"):
-        return render_template(template_name, **context)
+        # Prepend the breadcrumb partial so an htmx #content swap also refreshes it.
+        crumb = render_template("_breadcrumb.html", **context)
+        return crumb + render_template(template_name, **context)
     else:
         _check_render_page_fragment_convention(template_name)
         context["_content_template"] = template_name
