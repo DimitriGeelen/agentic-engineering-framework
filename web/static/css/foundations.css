@@ -186,8 +186,25 @@
   --wt-font-head: var(--wt-font-sans);
 }
 
+/* ---- 4b. Headings + mono follow the type pairing (T-2004) ---------------- */
+/* Pico headings inherit --pico-font-family (the sans bridge), so the serif     */
+/* pairings (newsreader → --wt-font-head) never reached h1-h6. Element selector */
+/* + source order (foundations loads after pico) makes these win.               */
+h1, h2, h3, h4, h5, h6,
+hgroup > :first-child {
+  font-family: var(--wt-font-head);
+}
+code, kbd, samp, pre, .mono, [class*="mono"] {
+  font-family: var(--wt-font-mono);
+}
+
 /* ---- 5. Density scale tokens. :root = compact default -------------------- */
+/* T-2004: each density also drives --pico-font-size (the root font-size Pico   */
+/* applies). Because Pico sizes everything in rem, scaling the root font-size   */
+/* scales BOTH text and spacing across all pages — one lever, global effect.    */
+/* This overrides Pico's viewport-responsive --pico-font-size (foundations      */
+/* loads after pico), trading responsive sizing for explicit user density.      */
 :root,
-[data-wt-density="compact"]    { --wt-density-scale: 0.875; --wt-space: 0.5rem;  --wt-font-size: 0.875rem; --wt-row-pad: 0.35rem; }
-[data-wt-density="cozy"]        { --wt-density-scale: 1;     --wt-space: 0.75rem; --wt-font-size: 1rem;     --wt-row-pad: 0.6rem; }
-[data-wt-density="comfortable"] { --wt-density-scale: 1.125; --wt-space: 1rem;   --wt-font-size: 1.0625rem; --wt-row-pad: 0.85rem; }
+[data-wt-density="compact"]    { --wt-density-scale: 0.875; --wt-space: 0.5rem;  --wt-font-size: 0.875rem; --wt-row-pad: 0.35rem; --pico-font-size: 100%; }
+[data-wt-density="cozy"]        { --wt-density-scale: 1;     --wt-space: 0.75rem; --wt-font-size: 1rem;     --wt-row-pad: 0.6rem; --pico-font-size: 112.5%; }
+[data-wt-density="comfortable"] { --wt-density-scale: 1.125; --wt-space: 1rem;   --wt-font-size: 1.0625rem; --wt-row-pad: 0.85rem; --pico-font-size: 125%; }
