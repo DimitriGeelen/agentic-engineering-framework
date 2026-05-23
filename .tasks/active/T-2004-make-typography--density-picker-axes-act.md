@@ -22,7 +22,7 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T14:48:39Z
-last_update: 2026-05-23T14:49:39Z
+last_update: '2026-05-23T15:00:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -44,6 +44,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-23T15:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -74,8 +84,8 @@ for the picker axes.
 - [x] Webfonts self-hosted under `web/static/fonts/` (11 woff2, OFL — Inter/Geist/IBM Plex Sans/Manrope/Newsreader 400+600, JetBrains Mono 400) with `@font-face` in foundations.css §4; no external CDN. Verified: all serve 200, `document.fonts.check`=True, distinct rendered widths (Inter 620/Geist 609/Plex 603/Manrope 596/Newsreader 572/system 617)
 - [x] Headings consume the type pairing: `h1..h6, hgroup>:first-child { font-family: var(--wt-font-head); }` added (foundations.css §4b). Verified: newsreader h1 → `Newsreader, Georgia, serif`
 - [x] Density applies globally: each density block sets `--pico-font-size` (compact 100% / cozy 112.5% / comfortable 125%); rem-based Pico scales text+spacing. Verified: body 16/18/20px across the three
-- [ ] `fw ux-review --axes` smoke-tests the Type and Density axes individually — CODE LANDED (check_axes + --axes flag, agents/ux-review/ux-review.py) but the run was blocked by session budget before verification; **next session: run `bin/fw ux-review --axes` and confirm PASS**
-- [ ] No console/page errors introduced (font 404s included); re-run full `fw ux-review` and confirm verdict has no new font findings — **pending next session** (fonts serve 200, but full re-run not yet done)
+- [x] `fw ux-review --axes` smoke-tests the Type and Density axes individually (check_axes + --axes flag, agents/ux-review/ux-review.py). Verified: `bin/fw ux-review --axes` → **PASS** — Typography widths distinct {inter 620, geist 609, plex 603, manrope 596, newsreader 572, system 617}, Density body sizes distinct {compact 16px, cozy 18px, comfortable 20px}
+- [x] No console/page errors introduced (font 404s included); full `fw ux-review` re-run → verdict CONCERN(1), the lone finding is the **pre-existing** Editorial/linen contrast (`accent-ink on accent 3.83:1 < AA 4.5:1`, predates T-2004) — **no new font findings**, console clean on all 6 presets, fonts serve 200
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -183,6 +193,24 @@ for the picker axes.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-23 — webfont deferral masked a whole class of inert axes
+- **What changed:** At S0 filing, `@font-face` loading was deferred as a cosmetic
+  "load later" item. In practice the deferral made *three* axes silently inert at
+  once (no webfonts → system fallback identical; headings never mapped to the serif
+  token; density tokens unconsumed). The picker looked complete (data-wt-* flipped,
+  Saved fired) while nothing rendered differently — the same false-success class as
+  the T-2003 pico-bridge bug.
+- **Plan impact:** S0's "defer webfonts" and S3-S5's "density application" had to be
+  pulled forward into the picker slice (S1) the moment the picker shipped — a picker
+  whose options don't change anything is worse than no picker. The arc's slice
+  boundaries assumed token-plumbing and rendering could land separately; for
+  user-visible axes they can't.
+- **Triggered:** `fw ux-review --axes` (this task) — an axis-level smoke test that
+  asserts each Typography option renders a *distinct width* and each Density option a
+  *distinct body size*. This closes the detection gap that let the inertness ship:
+  the palette-level ux-review (T-2002) checks contrast/tokens but not whether the
+  type/density *levers move*.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -203,6 +231,25 @@ for the picker axes.
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 5 Agent ACs pass with executed-browser evidence. The three reported
+gaps (webfonts inert, headings ignore serif token, density unconsumed) are each fixed
+and verified live; the new `--axes` smoke test mechanically proves the levers move so
+this class can't silently regress. Only the human taste call remains — does it *read*
+right across pages.
+
+**Evidence:**
+- `bin/fw ux-review --axes` → PASS: Typography widths distinct (inter 620 / geist 609 /
+  plex 603 / manrope 596 / newsreader 572 / system 617); Density body sizes distinct
+  (compact 16px / cozy 18px / comfortable 20px)
+- Full `bin/fw ux-review` → CONCERN(1), console clean on all 6 presets, fonts serve 200,
+  **no new font findings** (lone finding = pre-existing Editorial/linen 3.83:1 contrast)
+- 11 self-hosted OFL woff2 under `web/static/fonts/`, no external CDN (portability intact)
+- foundations.css §4 @font-face + §4b heading/mono mapping + §5 density `--pico-font-size`
 
 ## Updates
 
