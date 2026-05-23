@@ -99,10 +99,14 @@ def task_id_sort_key(value):
 # Navigation — grouped for Watchtower command center
 # ---------------------------------------------------------------------------
 
+# NAV_GROUPS: top-level nav groups, each a (group_name, items) pair.
+# An item is EITHER a leaf  ("Label", "blueprint.endpoint", icon|None)  — a 3-tuple,
+# OR a subsection  ("Subsection Label", [leaf, leaf, ...])  — a 2-tuple whose second
+# element is a list. Subsections let an oversized group (Govern) render as labelled
+# blocks instead of one flat list (T-2008, arc-007 S2a). NAV_ITEMS flattens recursively.
 NAV_GROUPS = [
     ("Work", [
         ("Tasks",       "tasks.tasks",              None),
-        ("Arcs",        "arcs.arcs_index",          None),
         ("BVP",         "bvp.bvp_scatter",          None),
         ("Inception",   "inception.inception_list",  None),
         ("Assumptions", "inception.assumptions_list", None),
@@ -118,33 +122,67 @@ NAV_GROUPS = [
     ("Architecture", [
         ("Fabric",      "fabric.fabric_overview",   None),
         ("Explorer",    "fabric.fabric_graph",      None),
+        ("Arcs",        "arcs.arcs_index",          None),
         ("Terminal",    "terminal.terminal_page",    None),
         ("Sessions",    "sessions_page.sessions_page", None),
     ]),
+    # Govern is subsectioned (T-2008): 16 items → 4 function-based blocks so the
+    # dropdown is scannable rather than a flat wall.
     ("Govern", [
-        ("Approvals",     "approvals.approvals",                   None),
-        ("Directives",    "core.directives",                       None),
-        ("Enforcement",   "enforcement.enforcement_dashboard",     None),
-        ("Discoveries",   "discoveries_bp.discoveries_dashboard",  None),
-        ("Hooks",         "hooks.hooks_page",                      None),
-        ("Risks",         "risks.risk_register",                   None),
-        ("Gaps",          "discovery.gaps",                        None),
-        ("Quality",       "quality.quality_gate",                  None),
-        ("Reviewer Audit", "reviewer.reviewer_audit",              None),
-        ("Reviewer Overrides", "reviewer.reviewer_overrides",      None),
-        ("Escalation Drift", "escalation.escalation_drift",        None),
-        ("Metrics",       "metrics.project_metrics",               None),
-        ("Costs",         "costs.costs_dashboard",                 None),
-        ("Config",        "config.config_page",                    None),
-        ("Cron",          "cron.cron_registry",                    None),
-        ("Pending",       "pending.pending_page",                  None),
+        ("Approvals & Decisions", [
+            ("Approvals",     "approvals.approvals",                   None),
+            ("Directives",    "core.directives",                       None),
+            ("Pending",       "pending.pending_page",                  None),
+        ]),
+        ("Enforcement", [
+            ("Enforcement",   "enforcement.enforcement_dashboard",     None),
+            ("Hooks",         "hooks.hooks_page",                      None),
+            ("Reviewer Audit", "reviewer.reviewer_audit",              None),
+            ("Reviewer Overrides", "reviewer.reviewer_overrides",      None),
+        ]),
+        ("Health", [
+            ("Risks",         "risks.risk_register",                   None),
+            ("Gaps",          "discovery.gaps",                        None),
+            ("Quality",       "quality.quality_gate",                  None),
+            ("Discoveries",   "discoveries_bp.discoveries_dashboard",  None),
+            ("Escalation Drift", "escalation.escalation_drift",        None),
+        ]),
+        ("Operations", [
+            ("Metrics",       "metrics.project_metrics",               None),
+            ("Costs",         "costs.costs_dashboard",                 None),
+            ("Config",        "config.config_page",                    None),
+            ("Cron",          "cron.cron_registry",                    None),
+        ]),
     ]),
 ]
 
-# Flat list for backward compat (used in error handlers, etc.)
+
+def _nav_flatten(items):
+    """Yield leaf (label, endpoint, icon) tuples from a group's items, recursing
+    into any (subsection_label, [items]) subsections. A subsection is a 2-tuple
+    whose second element is a list; a leaf is a 3-tuple."""
+    out = []
+    for it in items:
+        if len(it) == 2 and isinstance(it[1], list):  # subsection
+            out.extend(_nav_flatten(it[1]))
+        else:  # leaf
+            out.append(it)
+    return out
+
+
+def nav_group_labels(group_name):
+    """Flat list of leaf labels under a top-level nav group (recursing into
+    subsections). Returns [] if the group is absent. Used by verification + tests."""
+    for name, items in NAV_GROUPS:
+        if name == group_name:
+            return [leaf[0] for leaf in _nav_flatten(items)]
+    return []
+
+
+# Flat list for backward compat (used in error handlers, search/jump, etc.)
 NAV_ITEMS = []
 for _group_name, _items in NAV_GROUPS:
-    NAV_ITEMS.extend(_items)
+    NAV_ITEMS.extend(_nav_flatten(_items))
 
 
 # ---------------------------------------------------------------------------

@@ -90,6 +90,18 @@
             color: var(--pico-primary);
             font-weight: 600;
         }
+        /* Subsection label inside a grouped dropdown (T-2008, arc-007 S2a) */
+        nav.site-nav details.dropdown ul li.nav-subsection-label {
+            font-family: var(--wt-font-mono, monospace);
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--pico-muted-color);
+            padding: 0.55rem 0.75rem 0.2rem;
+            pointer-events: none;
+            user-select: none;
+        }
+        nav.site-nav details.dropdown ul li.nav-subsection-label:first-child { padding-top: 0.25rem; }
 
         /* Search link */
         nav.site-nav .nav-search a {
@@ -345,25 +357,40 @@
                 </button>
             </li>
 
+            {#- Nav items may be leaves (label, endpoint, icon) or subsections
+                (label, [items]). These macros render + active-detect both shapes.
+                Discriminator: a leaf's 2nd element is the endpoint string; a
+                subsection's 2nd element is a list. (T-2008, arc-007 S2a) -#}
+            {%- macro nav_render(items) -%}
+                {%- for item in items -%}
+                    {%- if item[1] is string -%}
+                        <li>
+                            <a href="{{ url_for(item[1]) }}"
+                               {% if item[1] == active_endpoint %}aria-current="page"{% endif %}
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ item[0] }}</a>
+                        </li>
+                    {%- else -%}
+                        <li class="nav-subsection-label">{{ item[0] }}</li>
+                        {{ nav_render(item[1]) }}
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- endmacro -%}
+            {%- macro nav_active(items) -%}
+                {%- for item in items -%}
+                    {%- if item[1] is string -%}
+                        {%- if item[1] == active_endpoint -%}x{%- endif -%}
+                    {%- else -%}
+                        {{- nav_active(item[1]) -}}
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- endmacro -%}
             <span class="nav-items">
             {% for group_name, items in nav_groups %}
             <li>
-                {%- set ns = namespace(active=false) -%}
-                {%- for label, endpoint, icon in items -%}
-                    {%- if endpoint == active_endpoint -%}{%- set ns.active = true -%}{%- endif -%}
-                {%- endfor -%}
-                <details class="dropdown{% if ns.active %} active-group{% endif %}">
+                <details class="dropdown{% if 'x' in nav_active(items) %} active-group{% endif %}">
                     <summary>{{ group_name }}</summary>
                     <ul dir="ltr">
-                        {% for label, endpoint, icon in items %}
-                        <li>
-                            <a href="{{ url_for(endpoint) }}"
-                               {% if endpoint == active_endpoint %}aria-current="page"{% endif %}
-                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-                                {{ label }}
-                            </a>
-                        </li>
-                        {% endfor %}
+                        {{ nav_render(items) }}
                     </ul>
                 </details>
             </li>
