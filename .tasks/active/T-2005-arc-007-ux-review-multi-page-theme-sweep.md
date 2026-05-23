@@ -77,18 +77,18 @@ Routes verified live (200): `/` (Cockpit), `/tasks`, `/approvals`, `/fabric`, `/
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `ux-review.py` accepts `--content-pages` (comma-separated list); when set, the capture
+- [x] `ux-review.py` accepts `--content-pages` (comma-separated list); when set, the capture
       loops every page and runs the pico-bridge check (`--pico-primary` vs `--wt-accent`) on
-      each. Back-compat: `--content-page` (singular) still works; default sweep is the 5 arc
-      pages `/,/tasks,/approvals,/fabric,/arcs`. Verified: `bin/fw ux-review --content-pages "/,/tasks,/approvals,/fabric,/arcs"` runs without error
-- [ ] The report (`docs/reports/T-2002-ux-review-arc-007-s0-s1.md` or a T-2005 report) gains
-      a **per-page theme-fidelity table**: one row per page with bridge PASS/CONCERN and the
-      observed `--pico-primary`/`--wt-accent` values under a non-default palette. Verified:
-      `grep -qE '/approvals|/fabric|/arcs' <report>` after the run
-- [ ] Each swept page is screenshotted under the non-default palette into the gallery so the
-      human can eyeball theme fidelity. Verified: gallery dir contains a frame file per page
-- [ ] `python3 -m py_compile agents/ux-review/ux-review.py` passes and `bash -n bin/fw` is OK
-      (no bin/fw heredoc breakage if bin/fw touched)
+      each. Back-compat: `--content-page` (singular) still works; default sweep (`--sweep`) is
+      the 5 arc pages `/,/tasks,/approvals,/fabric,/arcs`. Verified: `bin/fw ux-review --content-pages "/,/arcs"` parsed the list and swept both; `--sweep` swept all 5
+- [x] The report (`docs/reports/T-2002-ux-review-arc-007-s0-s1.md`) gained a **per-page
+      theme-fidelity table** (one row per page, bridge ✅/⚠️ + observed `--pico-primary`/
+      `--wt-accent`/`--wt-bg`). Verified: `grep -qE '/approvals|/fabric|/arcs'` matches; table
+      shows **5/5 pages carry the theme** (all `#b87a17` under Bone)
+- [x] Each swept page screenshotted under the Bone palette into the gallery. Verified: 5 frames
+      `sweep-root.png / sweep-tasks.png / sweep-approvals.png / sweep-fabric.png / sweep-arcs.png`
+- [x] `python3 -m py_compile agents/ux-review/ux-review.py` passes; `bash -n bin/fw` OK (bin/fw
+      not touched — the `ux-review)` case already passes `"$@"` through)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -202,6 +202,24 @@ grep -qE '/approvals|/fabric|/arcs' docs/reports/T-2002-ux-review-arc-007-s0-s1.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-23 — the sweep confirmed the fix instead of finding new breakage
+- **What changed:** I filed this expecting the sweep to *find* pages where the theme
+  breaks (the prioritization signal for S2-S6). Instead it found the opposite: the
+  T-2003 pico-bridge fix is global in foundations.css, so all 5 pages already carry the
+  palette (`--pico-primary == --wt-accent == #b87a17` everywhere). The headline mechanic
+  at the *token/bridge* level already holds.
+- **Plan impact:** "which page is most broken" is no longer the question for the redesign
+  slices — chrome theming is solved app-wide. The remaining S2-S6 work is *layout/structure*
+  (nav flatten, cockpit, board, fabric/arcs, command palette), not theme plumbing. The
+  sweep's lasting value flips from "find broken pages now" to "regression guard" — it will
+  catch the first time a slice introduces page-local CSS that overrides a foundation token.
+- **Triggered:** Noted a latent dual-source-of-truth: base.html injects server-side
+  `data-theme` from the persisted pref, but an inline `localStorage('wt-theme')` script can
+  override it — a stale localStorage value could fight the saved preset for a real user
+  (the sweep's fresh browser context has empty localStorage, so it passed). Candidate
+  follow-up if the human hits theme flicker/mismatch on their own browser; not filed yet
+  (one-bug-one-task — needs a reproduced symptom first).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -222,6 +240,27 @@ grep -qE '/approvals|/fabric|/arcs' docs/reports/T-2002-ux-review-arc-007-s0-s1.
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 4 Agent ACs pass with executed-browser evidence. The sweep extends the
+arc's first-pass review tool to cover the whole headline mechanic and now stands as a
+regression guard for the S2-S6 redesign slices. Net finding is reassuring: the T-2003
+bridge fix holds app-wide — every page already carries the picked palette. Only the human
+taste call (does each page *look* consistently themed) remains.
+
+**Evidence:**
+- `bin/fw ux-review --sweep` → **5/5 pages carry the theme**: `/`, `/tasks`, `/approvals`,
+  `/fabric`, `/arcs` all show `--pico-primary == --wt-accent == #b87a17` under Bone
+- Per-page table in `docs/reports/T-2002-ux-review-arc-007-s0-s1.md`; 5 gallery frames
+  `sweep-*.png` for visual review
+- `--content-pages "/,/arcs"` proves the custom-list parse path; `--axes` and the preset
+  capture unaffected (back-compat)
+- Overall verdict CONCERN(1) = the **pre-existing** Editorial/linen contrast only; sweep
+  contributed zero broken pages
+- Gallery: http://192.168.10.107:3000/static/ux-review/index.html
 
 ## Updates
 
