@@ -3,7 +3,8 @@
       data-theme="{{ wt_appearance.mode | default('light') }}"
       data-wt-palette="{{ wt_appearance.palette | default('stone') }}"
       data-wt-type="{{ wt_appearance.type | default('inter') }}"
-      data-wt-density="{{ wt_appearance.density | default('compact') }}">
+      data-wt-density="{{ wt_appearance.density | default('compact') }}"
+      data-wt-nav="{{ wt_appearance.nav | default('topbar') }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -214,6 +215,72 @@
         }
         nav.site-nav .nav-pin:hover { opacity: 0.82; text-decoration: none; }
         nav.site-nav .nav-pin .nav-pin-star { color: var(--pico-primary); font-size: 0.78rem; line-height: 1; }
+
+        /* ── Nav layouts (T-2011, arc-007 S2d) ──────────────────
+           Three layouts share ONE DOM, switched via the html[data-wt-nav]
+           attribute (mirrors the S0 data-wt-* axes). Default = topbar (the
+           horizontal bar above). Sidebar + rail are desktop affordances —
+           below 769px every layout falls back to the hamburger (mobile rules
+           further down still apply). Group icons render only in the rail. */
+        nav.site-nav details.dropdown > summary { display: inline-flex; align-items: center; gap: 0.35rem; }
+        nav.site-nav .nav-group-icon { display: none; width: 1.1rem; height: 1.1rem; stroke: currentColor; stroke-width: 2; fill: none; }
+
+        @media (min-width: 769px) {
+            /* ── Layout B: persistent left sidebar ──────────────── */
+            html[data-wt-nav="sidebar"] nav.site-nav {
+                position: fixed; top: 0; left: 0; bottom: 0; width: 232px;
+                z-index: 100; overflow-y: auto; overflow-x: hidden;
+                border-right: 1px solid var(--pico-muted-border-color); border-bottom: none;
+                padding: 0.75rem 0.6rem;
+            }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul { flex-direction: column; align-items: stretch; gap: 0.1rem; }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li { width: 100%; }
+            html[data-wt-nav="sidebar"] nav.site-nav .brand { margin: 0 0 0.6rem; }
+            html[data-wt-nav="sidebar"] nav.site-nav .spacer { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown { width: 100%; }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown > summary { width: 100%; }
+            /* groups render as in-place accordions (collapsed until clicked) —
+               this is why the 16-item Govern list is no longer a flat wall */
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown ul {
+                position: static; box-shadow: none; border: none; min-width: 0;
+                margin: 0; padding: 0.1rem 0 0.2rem 0.7rem; background: transparent;
+            }
+            html[data-wt-nav="sidebar"] nav.site-nav .nav-pins { flex-direction: column; align-items: stretch; gap: 0.1rem; }
+            html[data-wt-nav="sidebar"] nav.site-nav .nav-pin { width: 100%; }
+            /* shift page content clear of the fixed sidebar (no occlusion) */
+            html[data-wt-nav="sidebar"] .ambient-strip,
+            html[data-wt-nav="sidebar"] main.container,
+            html[data-wt-nav="sidebar"] footer.site-footer { margin-left: 232px; }
+
+            /* ── Layout C: slim icon rail + group flyouts ───────── */
+            html[data-wt-nav="rail"] nav.site-nav {
+                position: fixed; top: 0; left: 0; bottom: 0; width: 60px;
+                z-index: 100; overflow-y: auto; overflow-x: visible;
+                border-right: 1px solid var(--pico-muted-border-color); border-bottom: none;
+                padding: 0.6rem 0;
+            }
+            html[data-wt-nav="rail"] nav.site-nav > ul { flex-direction: column; align-items: center; gap: 0.2rem; }
+            html[data-wt-nav="rail"] nav.site-nav .brand { margin: 0 0 0.6rem; font-size: 0; }  /* hide brand text, keep logo img */
+            html[data-wt-nav="rail"] nav.site-nav .spacer { display: none; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-group-label { display: none; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-group-icon { display: inline-block; }
+            html[data-wt-nav="rail"] nav.site-nav details.dropdown > summary {
+                justify-content: center; width: 40px; height: 40px; padding: 0;
+            }
+            html[data-wt-nav="rail"] nav.site-nav details.dropdown > summary::after { display: none; }  /* drop the ▾ marker */
+            /* groups open as flyout menus to the right of the rail */
+            html[data-wt-nav="rail"] nav.site-nav details.dropdown ul {
+                position: absolute; left: 56px; top: auto; min-width: 12rem;
+                box-shadow: 0 4px 14px rgba(0,0,0,.16);
+            }
+            html[data-wt-nav="rail"] nav.site-nav .nav-docs a { padding: 0.4rem 0.3rem; font-size: 0.78rem; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-pins { flex-direction: column; align-items: center; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-pin { padding: 0.3rem; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-pin .nav-pin-star ~ * { display: none; }  /* star only, drop label in rail */
+            html[data-wt-nav="rail"] .ambient-strip,
+            html[data-wt-nav="rail"] main.container,
+            html[data-wt-nav="rail"] footer.site-footer { margin-left: 60px; }
+        }
         footer.site-footer {
             text-align: center; padding: 1.5rem 0;
             color: var(--pico-muted-color); font-size: 0.875rem;
@@ -430,11 +497,23 @@
                     {%- endif -%}
                 {%- endfor -%}
             {%- endmacro -%}
+            {#- Group icons (T-2011, arc-007 S2d): shown only in the icon-rail
+                layout, where group labels are hidden. Keyed by group name; an
+                unknown group falls back to a generic dot. -#}
+            {%- set nav_group_icons = {
+                'Work': '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+                'Knowledge': '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+                'Architecture': '<line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+                'Govern': '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'
+            } -%}
             <span class="nav-items">
             {% for group_name, items in nav_groups %}
             <li>
                 <details class="dropdown{% if 'x' in nav_active(items) %} active-group{% endif %}">
-                    <summary>{{ group_name }}</summary>
+                    <summary title="{{ group_name }}">
+                        <svg class="nav-group-icon" viewBox="0 0 24 24" aria-hidden="true">{{ nav_group_icons.get(group_name, '<circle cx="12" cy="12" r="3"/>') | safe }}</svg>
+                        <span class="nav-group-label">{{ group_name }}</span>
+                    </summary>
                     <ul dir="ltr">
                         {{ nav_render(items) }}
                     </ul>

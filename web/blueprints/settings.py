@@ -24,16 +24,23 @@ PALETTES = ("slate", "linen", "stone", "paper", "bone", "console")
 TYPES = ("inter", "geist", "plex", "manrope", "newsreader", "system")
 DENSITIES = ("compact", "cozy", "comfortable")
 MODES = ("light", "dark")
+# arc-007 S2d (T-2011): nav-layout axis — the 3 patterns from
+# docs/design/watchtower-redesign-2026-05-13/project/nav-patterns.jsx.
+#   topbar  — (A) horizontal primary bar + grouped dropdowns (today's nav)
+#   sidebar — (B) persistent left column, pinned + collapsible groups
+#   rail    — (C) slim icon rail, groups as flyouts (⌘K is the escape hatch, S6)
+# Rendered by base.html via the data-wt-nav attribute (mirrors the S0 data-wt-* pattern).
+NAV_LAYOUTS = ("topbar", "sidebar", "rail")
 
 PRESETS = {
-    "calm":      {"label": "Calm",      "palette": "stone",   "type": "inter",      "density": "compact", "mode": "light"},
-    "editorial": {"label": "Editorial", "palette": "linen",   "type": "newsreader", "density": "compact", "mode": "light"},
-    "console":   {"label": "Console",   "palette": "console", "type": "plex",       "density": "compact", "mode": "dark"},
-    "paper":     {"label": "Paper",     "palette": "paper",   "type": "geist",      "density": "compact", "mode": "light"},
-    "bone":      {"label": "Bone",      "palette": "bone",    "type": "manrope",    "density": "compact", "mode": "light"},
-    "midnight":  {"label": "Midnight",  "palette": "slate",   "type": "inter",      "density": "compact", "mode": "dark"},
+    "calm":      {"label": "Calm",      "palette": "stone",   "type": "inter",      "density": "compact", "mode": "light", "nav": "topbar"},
+    "editorial": {"label": "Editorial", "palette": "linen",   "type": "newsreader", "density": "compact", "mode": "light", "nav": "topbar"},
+    "console":   {"label": "Console",   "palette": "console", "type": "plex",       "density": "compact", "mode": "dark",  "nav": "sidebar"},
+    "paper":     {"label": "Paper",     "palette": "paper",   "type": "geist",      "density": "compact", "mode": "light", "nav": "topbar"},
+    "bone":      {"label": "Bone",      "palette": "bone",    "type": "manrope",    "density": "compact", "mode": "light", "nav": "topbar"},
+    "midnight":  {"label": "Midnight",  "palette": "slate",   "type": "inter",      "density": "compact", "mode": "dark",  "nav": "rail"},
 }
-DEFAULT_APPEARANCE = {"preset": "calm", "palette": "stone", "type": "inter", "density": "compact", "mode": "light"}
+DEFAULT_APPEARANCE = {"preset": "calm", "palette": "stone", "type": "inter", "density": "compact", "mode": "light", "nav": "topbar"}
 
 PREFS_DIR = PROJECT_ROOT / ".context" / "user-preferences"
 _UID_RE = re.compile(r"^[0-9a-f]{32}$")
@@ -63,7 +70,7 @@ def _sanitise_appearance(raw: dict) -> dict:
     out = dict(DEFAULT_APPEARANCE)
     preset = raw.get("preset")
     if preset in PRESETS:
-        out.update({k: PRESETS[preset][k] for k in ("palette", "type", "density", "mode")})
+        out.update({k: PRESETS[preset][k] for k in ("palette", "type", "density", "mode", "nav")})
         out["preset"] = preset
     else:
         out["preset"] = "custom"
@@ -75,6 +82,8 @@ def _sanitise_appearance(raw: dict) -> dict:
         out["density"] = raw["density"]
     if raw.get("mode") in MODES:
         out["mode"] = raw["mode"]
+    if raw.get("nav") in NAV_LAYOUTS:
+        out["nav"] = raw["nav"]
     return out
 
 
@@ -442,6 +451,7 @@ def appearance_page():
         types=TYPES,
         densities=DENSITIES,
         modes=MODES,
+        nav_layouts=NAV_LAYOUTS,
         appearance=_load_appearance(),
     )
 
@@ -455,6 +465,7 @@ def save_appearance():
         "type": request.form.get("type", "").strip(),
         "density": request.form.get("density", "").strip(),
         "mode": request.form.get("mode", "").strip(),
+        "nav": request.form.get("nav", "").strip(),
     }
     saved = _save_appearance(raw)
     return jsonify({"ok": True, "appearance": saved})
