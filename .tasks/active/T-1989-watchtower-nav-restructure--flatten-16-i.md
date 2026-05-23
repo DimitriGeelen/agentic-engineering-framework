@@ -113,11 +113,16 @@ model, S2d sidebar + rail layouts. Start fresh-session (budget) with S2a.
   model — star a nav destination from the breadcrumb bar, surfaces as a quick-link in the top bar,
   persists per-browser across nav + reload, oob-refresh on toggle (no full reload). Covers T-1989
   AC #4. Fixed a latent S1 clobber (`_save_appearance` now read-modify-writes the full prefs dict).
-- **S2d — sidebar + icon-rail layouts + `data-wt-nav` selector** (not started): T-1989 AC #1 (the
-  layout-selection half) + #2. The `data-wt-nav` attribute + /settings/appearance selector belong
-  here, where there are multiple layouts to switch between. Largest remaining sub-slice.
+- **S2d — [T-2011] ✅ shipped + presented** (Recommendation GO, awaiting human [REVIEW]): the
+  `nav` appearance axis (topbar/sidebar/rail) + the /settings/appearance Layout selector +
+  `data-wt-nav` render on `<html>`. Three layouts share one DOM via attribute-keyed CSS reflow
+  (sidebar/rail are desktop affordances); the 16-item Govern group stays a collapsible `<details>`
+  in sidebar/rail (pain point resolved); breadcrumbs (S2b) + pins (S2c) survive every layout.
+  Covers T-1989 AC #1 (layout-selection half) + AC #2. 12 unit + 6 Playwright pass; all 3 layouts
+  eyes-on verified. **All four S2 sub-slices (S2a–S2d) now shipped.**
 
-This umbrella (T-1989) stays open until S2d lands and the human confirms the S2a/S2b/S2c reviews.
+This umbrella (T-1989) stays open until the human confirms the S2a/S2b/S2c/S2d reviews — all
+five Agent ACs are now covered by the shipped sub-slices; only the two [REVIEW] Human ACs remain.
 
 ## Acceptance Criteria
 
