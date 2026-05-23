@@ -154,6 +154,22 @@
 }
 
 /* ---- 4. Type-pairing font tokens. :root = inter default ------------------ */
+/* T-2004: webfonts SELF-HOSTED under /static/fonts (OFL, fetched from          */
+/* fontsource) — no external CDN, no runtime dependency. Without these the type */
+/* options all fell back to identical system-ui. 400 + 600 per sans family;     */
+/* 700 synthesises from 600. font-display:swap avoids invisible-text on load.   */
+@font-face { font-family:"Inter";        font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/inter-400.woff2") format("woff2"); }
+@font-face { font-family:"Inter";        font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/inter-600.woff2") format("woff2"); }
+@font-face { font-family:"Geist";        font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/geist-400.woff2") format("woff2"); }
+@font-face { font-family:"Geist";        font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/geist-600.woff2") format("woff2"); }
+@font-face { font-family:"IBM Plex Sans"; font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/plex-400.woff2") format("woff2"); }
+@font-face { font-family:"IBM Plex Sans"; font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/plex-600.woff2") format("woff2"); }
+@font-face { font-family:"Manrope";      font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/manrope-400.woff2") format("woff2"); }
+@font-face { font-family:"Manrope";      font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/manrope-600.woff2") format("woff2"); }
+@font-face { font-family:"Newsreader";   font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/newsreader-400.woff2") format("woff2"); }
+@font-face { font-family:"Newsreader";   font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/newsreader-600.woff2") format("woff2"); }
+@font-face { font-family:"JetBrains Mono"; font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/jetbrainsmono-400.woff2") format("woff2"); }
+
 :root,
 [data-wt-type="inter"] {
   --wt-font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
