@@ -1,0 +1,13 @@
+{#- Pinned-pages strip in the top nav (T-2010, arc-007 S2c). Rendered in
+    base.html (#wt-pins) on full loads from the wt_pins context-processor var;
+    re-rendered with hx-swap-oob="true" from /settings/pins/toggle so a pin/unpin
+    updates the strip without a full reload (L-425). `oob` flips the swap attribute
+    on for the toggle response only. Empty pins → empty (invisible) span. -#}
+<span id="wt-pins" class="nav-pins"{% if oob %} hx-swap-oob="true"{% endif %}>
+  {%- for p in wt_pins %}
+  <a href="{{ p.url }}" class="nav-pin" title="Pinned: {{ p.label }}"
+     hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+    <span class="nav-pin-star" aria-hidden="true">★</span>{{ p.label }}
+  </a>
+  {%- endfor %}
+</span>

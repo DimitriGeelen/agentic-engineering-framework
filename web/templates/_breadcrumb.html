@@ -9,5 +9,7 @@
     {%- if url %}<a href="{{ url }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ label }}</a>
     {%- else %}<span{% if loop.last %} aria-current="page"{% endif %}>{{ label }}</span>{% endif -%}
   {%- endfor -%}
+  {#- Pin toggle (T-2010, arc-007 S2c) — pushed to the right on pinnable nav pages. -#}
+  {%- if wt_pinnable %}<span class="wt-breadcrumb-spacer"></span>{% include "_star.html" %}{% endif -%}
 </nav>
 {%- endif %}

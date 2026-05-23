@@ -1,0 +1,19 @@
+{#- Pin/unpin toggle for the current page (T-2010, arc-007 S2c). Rendered in the
+    breadcrumb bar (_breadcrumb.html) only when the page is a pinnable nav
+    destination (wt_pinnable set; None on home/detail/off-nav pages → no toggle).
+    Posts to /settings/pins/toggle; the response replaces THIS button (hx-target
+    this + outerHTML) with the new-state button and oob-refreshes #wt-pins.
+    hx-target="this" is required: body sets a default hx-target="#content", so
+    without it the swap would replace the whole content area. -#}
+{%- if wt_pinnable %}
+<button type="button"
+        class="wt-pin-toggle{% if wt_pinnable.pinned %} pinned{% endif %}"
+        hx-post="{{ url_for('settings.toggle_pin') }}"
+        hx-vals='{"endpoint": "{{ wt_pinnable.endpoint }}"}'
+        hx-target="this" hx-swap="outerHTML"
+        aria-pressed="{{ 'true' if wt_pinnable.pinned else 'false' }}"
+        title="{{ 'Unpin this page from the nav bar' if wt_pinnable.pinned else 'Pin this page to the nav bar' }}">
+  <span aria-hidden="true">{{ '★' if wt_pinnable.pinned else '☆' }}</span>
+  <span class="wt-pin-label">{{ 'Pinned' if wt_pinnable.pinned else 'Pin' }}</span>
+</button>
+{%- endif %}

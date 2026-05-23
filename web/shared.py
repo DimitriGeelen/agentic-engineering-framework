@@ -893,6 +893,16 @@ def render_page(template_name, **context):
     # Breadcrumb (T-2009, arc-007 S2b): path-derived, rendered inside #content so
     # it survives htmx swaps (the chrome outside #content goes stale on htmx nav).
     context.setdefault("breadcrumb", nav_breadcrumb(context["active_endpoint"], request.path))
+    # Pin toggle state (T-2010, arc-007 S2c): the current page's pin metadata for
+    # the breadcrumb-bar star (None on non-nav pages → no toggle). Function-level
+    # import avoids a settings↔shared circular at module load.
+    if "wt_pinnable" not in context:
+        try:
+            from web.blueprints.settings import pin_state_for
+
+            context["wt_pinnable"] = pin_state_for(context["active_endpoint"])
+        except Exception:
+            context["wt_pinnable"] = None
 
     if request.headers.get("HX-Request"):
         # Prepend the breadcrumb partial so an htmx #content swap also refreshes it.

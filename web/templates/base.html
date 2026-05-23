@@ -188,6 +188,32 @@
         nav.wt-breadcrumb a:hover { color: var(--pico-primary); text-decoration: underline; }
         nav.wt-breadcrumb [aria-current="page"] { color: var(--pico-color); font-weight: 600; }
         nav.wt-breadcrumb .wt-breadcrumb-sep { color: var(--pico-muted-border-color); }
+        /* ── Pinned pages (T-2010, arc-007 S2c) ─────────────── */
+        /* Star toggle in the breadcrumb bar */
+        nav.wt-breadcrumb .wt-breadcrumb-spacer { flex: 1; }
+        .wt-pin-toggle {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            background: none; border: 1px solid var(--pico-muted-border-color);
+            border-radius: 999px; padding: 0.1rem 0.5rem; margin: 0;
+            font-family: var(--wt-font-mono, monospace); font-size: 0.7rem;
+            color: var(--pico-muted-color); cursor: pointer; width: auto; line-height: 1.5;
+        }
+        .wt-pin-toggle:hover {
+            color: var(--pico-primary); border-color: var(--pico-primary);
+            background: var(--pico-primary-focus);
+        }
+        .wt-pin-toggle.pinned { color: var(--pico-primary); border-color: var(--pico-primary); }
+        /* Pinned strip in the top nav */
+        nav.site-nav .nav-pins { display: inline-flex; align-items: center; gap: 0.2rem; }
+        nav.site-nav .nav-pins:not(:empty) { margin-right: 0.4rem; }
+        nav.site-nav .nav-pin {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            padding: 0.3rem 0.55rem; font-size: 0.82rem; text-decoration: none;
+            color: var(--pico-color); border-radius: var(--pico-border-radius);
+            background: var(--pico-primary-focus); white-space: nowrap;
+        }
+        nav.site-nav .nav-pin:hover { opacity: 0.82; text-decoration: none; }
+        nav.site-nav .nav-pin .nav-pin-star { color: var(--pico-primary); font-size: 0.78rem; line-height: 1; }
         footer.site-footer {
             text-align: center; padding: 1.5rem 0;
             color: var(--pico-muted-color); font-size: 0.875rem;
@@ -371,6 +397,11 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
             </li>
+
+            {#- Pinned-pages strip (T-2010, arc-007 S2c): user-starred nav
+                destinations as quick-links. Outside .nav-items so pins stay
+                visible on mobile. #wt-pins is oob-refreshed on pin toggle. -#}
+            <li>{% include "_pins.html" %}</li>
 
             {#- Nav items may be leaves (label, endpoint, icon) or subsections
                 (label, [items]). These macros render + active-detect both shapes.

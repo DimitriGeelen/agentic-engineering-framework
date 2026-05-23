@@ -8,7 +8,7 @@ import re
 import uuid
 
 import yaml
-from flask import Blueprint, Response, jsonify, request, session
+from flask import Blueprint, Response, jsonify, render_template, request, session
 
 from web.config import Config
 from web.shared import PROJECT_ROOT, render_page
@@ -78,28 +78,133 @@ def _sanitise_appearance(raw: dict) -> dict:
     return out
 
 
+def _load_prefs(uid: str) -> dict:
+    """Read a user's full prefs dict (every top-level key). Never raises.
+
+    The prefs file holds multiple independent keys — `appearance:` (S1, T-1988)
+    and `pins:` (S2c, T-2010). Both must read-modify-write *this* dict so neither
+    clobbers the other (the pre-T-2010 bug: `_save_appearance` dumped only
+    `{"appearance": …}`, which would wipe `pins:` on every appearance save)."""
+    try:
+        path = _prefs_path(uid)
+    except Exception:
+        return {}
+    if path.exists():
+        try:
+            return yaml.safe_load(path.read_text()) or {}
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_prefs(uid: str, data: dict) -> None:
+    """Persist a user's full prefs dict, preserving every top-level key."""
+    path = _prefs_path(uid)
+    PREFS_DIR.mkdir(parents=True, exist_ok=True)
+    path.write_text(yaml.dump(data, default_flow_style=False))
+
+
 def _load_appearance() -> dict:
     """Read the current user's appearance, defaulting cleanly. Never raises."""
     try:
-        path = _prefs_path(_wt_uid())
+        uid = _wt_uid()
     except Exception:
         return dict(DEFAULT_APPEARANCE)
-    if path.exists():
-        try:
-            data = yaml.safe_load(path.read_text()) or {}
-            return _sanitise_appearance({**DEFAULT_APPEARANCE, **(data.get("appearance") or {})})
-        except Exception:
-            return dict(DEFAULT_APPEARANCE)
-    return dict(DEFAULT_APPEARANCE)
+    data = _load_prefs(uid)
+    try:
+        return _sanitise_appearance({**DEFAULT_APPEARANCE, **(data.get("appearance") or {})})
+    except Exception:
+        return dict(DEFAULT_APPEARANCE)
 
 
 def _save_appearance(appearance: dict) -> dict:
-    """Persist a sanitised appearance for the current user. Returns what was saved."""
+    """Persist a sanitised appearance for the current user. Returns what was saved.
+
+    Read-modify-write of the full prefs dict so `pins:` (T-2010) survives."""
     clean = _sanitise_appearance(appearance)
-    path = _prefs_path(_wt_uid())
-    PREFS_DIR.mkdir(parents=True, exist_ok=True)
-    path.write_text(yaml.dump({"appearance": clean}, default_flow_style=False))
+    uid = _wt_uid()
+    data = _load_prefs(uid)
+    data["appearance"] = clean
+    _save_prefs(uid, data)
     return clean
+
+
+# ── arc-007 S2c (T-2010): pinned-pages model ────────────────────────────────
+# A user can star nav destinations; pinned pages surface as quick-links in the
+# top bar. Pinnable set = nav-leaf endpoints (web.shared.NAV_ITEMS) — the same
+# whitelist-everything pattern as _sanitise_appearance: nothing untrusted ever
+# reaches the YAML or a url_for() call. Persisted in the S1 per-browser prefs
+# file under a `pins:` key (list of endpoint strings, pin order preserved).
+def _valid_pin_endpoints() -> dict:
+    """Map pinnable endpoint -> label, derived from the nav leaves. The
+    membership test here IS the security whitelist for everything pin-related."""
+    from web.shared import NAV_ITEMS
+
+    return {ep: label for (label, ep, _icon) in NAV_ITEMS}
+
+
+def _load_pins() -> list:
+    """Current user's pinned endpoints, filtered to the valid set, de-duped,
+    order preserved. Never raises."""
+    try:
+        uid = _wt_uid()
+    except Exception:
+        return []
+    valid = _valid_pin_endpoints()
+    seen, out = set(), []
+    for ep in _load_prefs(uid).get("pins") or []:
+        if ep in valid and ep not in seen:
+            seen.add(ep)
+            out.append(ep)
+    return out
+
+
+def _toggle_pin(endpoint: str) -> bool:
+    """Add/remove `endpoint` from the current user's pins. Returns the new
+    pinned state. Raises ValueError if `endpoint` is not a pinnable nav leaf."""
+    valid = _valid_pin_endpoints()
+    if endpoint not in valid:
+        raise ValueError("not a pinnable page")
+    uid = _wt_uid()
+    data = _load_prefs(uid)
+    pins = [ep for ep in (data.get("pins") or []) if ep in valid]
+    if endpoint in pins:
+        pins.remove(endpoint)
+        pinned = False
+    else:
+        pins.append(endpoint)
+        pinned = True
+    data["pins"] = pins
+    _save_prefs(uid, data)
+    return pinned
+
+
+def _pinned_items() -> list:
+    """Resolve pinned endpoints to renderable {label, url, endpoint} dicts,
+    dropping any that no longer route. Requires a request context (url_for)."""
+    from flask import url_for
+
+    valid = _valid_pin_endpoints()
+    out = []
+    for ep in _load_pins():
+        try:
+            url = url_for(ep)
+        except Exception:
+            continue
+        out.append({"label": valid[ep], "url": url, "endpoint": ep})
+    return out
+
+
+def pin_state_for(endpoint) -> dict | None:
+    """Pin metadata for the current page, for the breadcrumb-bar toggle:
+    {endpoint, label, pinned} when `endpoint` is a pinnable nav leaf, else None
+    (non-nav pages render no toggle). Public — render_page (web.shared) calls it."""
+    if not endpoint:
+        return None
+    valid = _valid_pin_endpoints()
+    if endpoint not in valid:
+        return None
+    return {"endpoint": endpoint, "label": valid[endpoint], "pinned": endpoint in _load_pins()}
 
 
 @bp.app_context_processor
@@ -109,6 +214,16 @@ def inject_appearance():
         return {"wt_appearance": _load_appearance()}
     except Exception:
         return {"wt_appearance": dict(DEFAULT_APPEARANCE)}
+
+
+@bp.app_context_processor
+def inject_pins():
+    """Make wt_pins (T-2010) available to every template — base.html renders the
+    top-bar pinned strip (#wt-pins) from it."""
+    try:
+        return {"wt_pins": _pinned_items()}
+    except Exception:
+        return {"wt_pins": []}
 
 SETTINGS_FILE = PROJECT_ROOT / ".context" / "settings.yaml"
 
@@ -343,3 +458,24 @@ def save_appearance():
     }
     saved = _save_appearance(raw)
     return jsonify({"ok": True, "appearance": saved})
+
+
+# ── arc-007 S2c (T-2010): pin toggle ─────────────────────────────────────────
+@bp.route("/settings/pins/toggle", methods=["POST"])
+def toggle_pin():
+    """Toggle the pinned state of a nav destination for this browser.
+
+    Returns the re-rendered star button (new state) for the current page PLUS an
+    `hx-swap-oob` refresh of the top-bar #wt-pins strip — so a pin/unpin updates
+    both the toggle and the nav without a full page reload (L-425 freshness)."""
+    endpoint = request.form.get("endpoint", "").strip()
+    try:
+        pinned = _toggle_pin(endpoint)
+    except ValueError:
+        return Response("not a pinnable page", status=400)
+    valid = _valid_pin_endpoints()
+    state = {"endpoint": endpoint, "label": valid[endpoint], "pinned": pinned}
+    return (
+        render_template("_star.html", wt_pinnable=state)
+        + render_template("_pins.html", wt_pins=_pinned_items(), oob=True)
+    )
