@@ -103,6 +103,20 @@ regroup × apply-across-pages). Recommend decomposing into sub-slices at build s
 S2a top-bar layout + IA regroup (the default, highest-leverage), S2b breadcrumbs, S2c pinned
 model, S2d sidebar + rail layouts. Start fresh-session (budget) with S2a.
 
+**Sub-slice progress (2026-05-23):**
+- **S2a — [T-2008] ✅ shipped + presented** (Recommendation GO, awaiting human [REVIEW]): Arcs moved
+  Work→Architecture; the 16-item Govern dropdown now renders 4 function subsections. Covers
+  T-1989 AC #5 + the IA half of AC #1.
+- **S2b — [T-2009] ✅ shipped + presented** (Recommendation GO, awaiting human [REVIEW]): path-derived
+  breadcrumb trail, htmx-fresh (rendered inside #content). Covers T-1989 AC #3.
+- **S2c — pinned-pages model** (not started): T-1989 AC #4. Star/unstar pages; pinned surface in
+  primary nav; persist via the S1 appearance-prefs mechanism.
+- **S2d — sidebar + icon-rail layouts + `data-wt-nav` selector** (not started): T-1989 AC #1 (the
+  layout-selection half) + #2. The `data-wt-nav` attribute + /settings/appearance selector belong
+  here, where there are multiple layouts to switch between. Largest remaining sub-slice.
+
+This umbrella (T-1989) stays open until S2c + S2d land and the human confirms the S2a/S2b reviews.
+
 ## Acceptance Criteria
 
 <!-- READY (was parked pending S0/S1). 2026-05-23: S0 (T-1991) + S1 (T-1988) are built and the
