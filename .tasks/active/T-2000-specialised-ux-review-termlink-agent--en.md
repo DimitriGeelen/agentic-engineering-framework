@@ -1,8 +1,13 @@
 ---
 id: T-2000
-name: "Specialised UX-review TermLink agent + enforce executed-browser review on render surfaces — go/no-go"
+name: "Specialised UX-review TermLink agent + enforce executed-browser review on render
+  surfaces — go/no-go"
 description: >
-  Explore whether the framework should add a specialised UX/visual-review agent (browser-driving, executes JS, assesses interactive render surfaces) via TermLink, and enforce executed-browser review on render-surface tasks before completion. Origin: T-1988/T-1999 — S1 shipped functionally broken (dead preset JS) despite existing static reviewers; verification was server-side/markup only.
+  Explore whether the framework should add a specialised UX/visual-review agent (browser-driving,
+  executes JS, assesses interactive render surfaces) via TermLink, and enforce executed-browser
+  review on render-surface tasks before completion. Origin: T-1988/T-1999 — S1 shipped
+  functionally broken (dead preset JS) despite existing static reviewers; verification
+  was server-side/markup only.
 
 status: started-work
 workflow_type: inception
@@ -12,10 +17,31 @@ tags: [watchtower, review, inception, ux]
 components: []
 related_tasks: [T-1988, T-1999, T-1443]
 created: 2026-05-23T11:36:05Z
-last_update: 2026-05-23T11:36:05Z
-date_finished: null
+last_update: '2026-05-23T11:45:02Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+cost_estimate_proposed:
+  - ts: '2026-05-23T11:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-23T11:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2000: Specialised UX-review TermLink agent + enforce executed-browser review on render surfaces — go/no-go
@@ -136,26 +162,35 @@ existing static `fw reviewer` behaviour beyond an additive mode.
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — scope **A + C** (B dropped per human direction, 2026-05-23)
+
+**Rationale:** Two complementary layers, chosen by the human after the T-1988 incident:
+- **A (enforcement)** is the structural floor — a render-surface build task whose page carries inline
+  `<script>`/interactive handlers must ship a Playwright test. Cheap, deterministic, and would have
+  *blocked* T-1988 outright. This is prevention; it can't be skipped or forgotten.
+- **C (dedicated UX-review TermLink agent)** is the qualitative layer — runs the page in a real
+  browser, scans console errors, smoke-tests interactions, and assesses against **our own design
+  style guides preloaded into the agent** (the key insight): it judges palette/contrast/spacing/
+  typography coherence against `docs/design/watchtower-redesign-2026-05-13/` + `foundations.css` +
+  `settings.PRESETS`, not generic heuristics. This is what makes it *specialised* rather than a
+  generic linter.
+- **B dropped:** a `fw reviewer --ux` mode would entangle the static scanner with browser-driving;
+  A+C keep prevention (a gate) and assessment (an agent) cleanly separated.
+
+The taste call stays the human's `[REVIEW]` (T-1811) — C *informs* it (flags console errors, off-guide
+contrast) but does not replace it.
+
+**Evidence:**
+- T-1988/T-1999: interactive surface shipped dead despite static reviewers; verification never executed page JS (RCA in T-1999, L-423)
+- Existing substrate to build on: `fw reviewer` (T-1443), TermLink reviewer dispatch (T-1951), Playwright harness (`tests/playwright/conftest.py`), design system (`docs/design/watchtower-redesign-2026-05-13/`, `foundations.css`)
+- Render-surface gate (T-1766) is the natural attach point for A
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-23 — approach selection (human-directed)
+- **Chose:** Build **A** (enforcement gate) **and C** (dedicated UX-review TermLink agent), with C **preloaded with our design style guides** so it assesses against our system.
+- **Why:** A is the can't-skip structural floor that would have blocked T-1988; C adds specialised, guide-aware qualitative review that a generic linter can't. Preloading the style guides is what makes C worth building over plain "no console errors" checks.
+- **Rejected:** B (`fw reviewer --ux` mode) — keeps the static scanner and browser-driving entangled; A+C separate prevention from assessment more cleanly.
 
 ## Decision
 
