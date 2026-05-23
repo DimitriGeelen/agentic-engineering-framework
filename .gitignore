@@ -66,6 +66,11 @@ datetime
 # The pre-commit large-file gate (agents/git/lib/large-file-scan.sh) prevents
 # new instances; these entries cover the cleanup of existing tracked files.
 /os
+# 2nd instance (2026-05-23 session): `sys` = 14MB ImageMagick PostScript export
+# with literal filename "sys", created 2026-05-16. Same class as `/os` — some
+# `convert/magick` call writes a bare extensionless output name into repo root.
+# Gate blocks the COMMIT; CREATION is still un-prevented (root-cause task pending).
+/sys
 .context/working/*.db
 .context/working/*.db-shm
 .context/working/*.db-wal
