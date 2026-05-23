@@ -1,8 +1,14 @@
 ---
 id: T-1993
-name: "Watchtower interactions — ⌘K command palette + ?-shortcuts overlay + bulk actions + live activity ticker (arc-007 S6)"
+name: "Watchtower interactions — ⌘K command palette + ?-shortcuts overlay + bulk actions
+  + live activity ticker (arc-007 S6)"
 description: >
-  Cross-cutting interaction layer: (1) ⌘K command palette spanning all entities (tasks, arcs, learnings, files, pages, fw commands) — fuzzy match, recent-first, keyboard-only flow. (2) ?-press shortcuts overlay listing every keybinding. (3) Bulk-action contract — pages opt in via data-bulk-target on tables. (4) Live activity ticker — subtle animations on filesystem changes (e.g., task transitions, commits) via SSE or polling. Depends on S0+S2+S4 (board/list patterns inform palette UX). Parent inception: T-1987.
+  Cross-cutting interaction layer: (1) ⌘K command palette spanning all entities (tasks,
+  arcs, learnings, files, pages, fw commands) — fuzzy match, recent-first, keyboard-only
+  flow. (2) ?-press shortcuts overlay listing every keybinding. (3) Bulk-action contract
+  — pages opt in via data-bulk-target on tables. (4) Live activity ticker — subtle
+  animations on filesystem changes (e.g., task transitions, commits) via SSE or polling.
+  Depends on S0+S2+S4 (board/list patterns inform palette UX). Parent inception: T-1987.
 
 status: captured
 workflow_type: build
@@ -17,8 +23,8 @@ related_tasks: [T-1987]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-22T10:06:08Z
-date_finished: null
+last_update: '2026-05-22T10:15:02Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,20 +35,74 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-22T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-22T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1993: Watchtower interactions — ⌘K command palette + ?-shortcuts overlay + bulk actions + live activity ticker (arc-007 S6)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+arc-007 S6 — the interaction layer. The redesigned nav (S2, T-1989) deliberately
+defers "everything not pinned" to ⌘K: the **icon-rail layout (S2d, T-2011) is only
+fully usable once ⌘K exists** — the rail shows 4 group flyouts + pins, and ⌘K is the
+escape hatch for the other ~30 destinations. Design reference: the ⌘K bar appears in
+all three patterns in `docs/design/watchtower-redesign-2026-05-13/project/nav-patterns.jsx`
+("Search or jump to…  ⌘K"). The existing search surface (`web/blueprints/discovery.py`
+`search_view`/`search_ask`) is the semantic-search backend ⌘K should reuse, not replace.
+
+**Scoping note (2026-05-23, T-2011 follow-on):** This task as filed bundles FOUR independent
+deliverables — that violates "one task = one deliverable" (CLAUDE.md §Task Sizing). It must be
+decomposed at build start into sub-slices, highest-leverage first:
+
+- **S6a — ⌘K command palette (core):** a modal overlay opened by ⌘K / Ctrl-K (and a click on
+  the existing nav search affordance), with a single input that does two things — (1) fuzzy
+  **jump** to any nav destination (`web.shared.NAV_ITEMS` — the same whitelist S2c pins use)
+  and (2) **search** content via the existing `discovery.search` backend. Arrow-key + Enter
+  navigation, Esc to close, htmx-friendly (works after `#content` swaps). This is the keystone
+  that unblocks the rail layout — build this first, ship alone.
+- **S6b — `?` keyboard-shortcuts overlay:** a read-only modal listing the keyboard shortcuts
+  (⌘K, `?`, `g`-then-key jumps if added), opened by `?`. Small, self-contained, depends on S6a
+  existing (so the shortcut list is non-empty).
+- **S6c — bulk actions:** multi-select on the Tasks board/list (S5/T-1992 territory) + a bulk
+  action bar. Depends on the Tasks redesign (T-1992) landing first — **sequence after T-1992.**
+- **S6d — live activity ticker:** an SSE-fed strip of recent framework events. Independent of
+  the others; lowest priority (nice-to-have, not on the nav critical path).
+
+Recommend build order: **S6a → S6b**, then S6c after T-1992, S6d last. Start a fresh session
+with budget for S6a (modal + keyboard handling + search wiring ≈ a slice the size of S2d).
 
 ## Acceptance Criteria
 
+<!-- These are the FULL-SCOPE ACs for the S6 umbrella. Decompose into S6a–S6d sub-slice
+     tasks at build start (see Scoping note); each sub-slice carries the subset it ships,
+     mirroring how T-1989 (S2) decomposed into T-2008/T-2009/T-2010/T-2011. -->
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] ⌘K / Ctrl-K (and a click on the nav search affordance) opens a command-palette modal; Esc closes it; it works on a fresh load AND after an htmx `#content` swap (Playwright) — **[S6a]**
+- [ ] The palette input fuzzy-jumps to any nav destination in `web.shared.NAV_ITEMS` (arrow keys move selection, Enter navigates) AND falls through to the existing `discovery.search` backend for content queries — no second search implementation (Playwright + unit) — **[S6a]**
+- [ ] `?` opens a keyboard-shortcuts overlay listing the live shortcuts; Esc closes it (Playwright) — **[S6b]**
+- [ ] Tasks board/list supports multi-select with a bulk-action bar (depends on T-1992); each bulk action routes through the existing per-task endpoint (no new ungated mutation path) — **[S6c]**
+- [ ] A live activity ticker renders recent framework events via SSE and updates without reload (Playwright) — **[S6d]**
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
