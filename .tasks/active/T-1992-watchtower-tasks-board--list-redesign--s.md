@@ -1,8 +1,14 @@
 ---
 id: T-1992
-name: "Watchtower Tasks board + list redesign — side-panel detail with dock controls, drag-reorder, inline edit, filter chips (arc-007 S4)"
+name: "Watchtower Tasks board + list redesign — side-panel detail with dock controls,
+  drag-reorder, inline edit, filter chips (arc-007 S4)"
 description: >
-  Redesign /tasks (board + list) — highest user-interaction surface. Click-row → slide-in side panel (dockable: left/bottom/fullscreen/close), no full-page navigation. Inline edit on status/owner/horizon cells. Drag-to-reorder kanban columns and within. Saved-view filter chips at top. Bulk-action floating bar for multi-select. Reference: docs/design/.../direction-calm.jsx (board+side-panel mockup) + direction-cockpit.jsx (dense list mockup). Depends on S0+S1+S2. Parent inception: T-1987.
+  Redesign /tasks (board + list) — highest user-interaction surface. Click-row → slide-in
+  side panel (dockable: left/bottom/fullscreen/close), no full-page navigation. Inline
+  edit on status/owner/horizon cells. Drag-to-reorder kanban columns and within. Saved-view
+  filter chips at top. Bulk-action floating bar for multi-select. Reference: docs/design/.../direction-calm.jsx
+  (board+side-panel mockup) + direction-cockpit.jsx (dense list mockup). Depends on
+  S0+S1+S2. Parent inception: T-1987.
 
 status: captured
 workflow_type: build
@@ -17,8 +23,8 @@ related_tasks: [T-1987]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-22T10:06:08Z
-date_finished: null
+last_update: '2026-05-22T10:15:02Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,20 +35,83 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-22T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-22T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1992: Watchtower Tasks board + list redesign — side-panel detail with dock controls, drag-reorder, inline edit, filter chips (arc-007 S4)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+arc-007 S4 — redesign `/tasks`, the highest-interaction surface in Watchtower. Design
+reference: `docs/design/watchtower-redesign-2026-05-13/project/direction-calm.jsx`
+(board + side-panel mockup) and `direction-cockpit.jsx` (dense list). Parent inception:
+T-1987. Existing surfaces (surveyed 2026-05-23): `web/blueprints/tasks.py` serves
+`/tasks` (kanban board, `tasks.html`) and `/tasks/<id>` (full-page `task_detail.html`);
+a horizon inline-edit endpoint (`/api/task/<id>/horizon`) and an AC-toggle endpoint
+already exist — the redesign extends these patterns, it doesn't start from zero.
+
+**Scoping note (2026-05-23, T-2013 follow-on):** This task as filed bundles FIVE+
+independent deliverables (side panel, inline edit, drag-reorder, filter chips, bulk
+multi-select) — that violates "one task = one deliverable" (CLAUDE.md §Task Sizing). It
+must be decomposed at build start, highest-leverage first. Proposed sub-slices:
+
+- **S4a — slide-in side-panel detail (dockable):** click a card/row → htmx-load the
+  task detail into a slide-in side panel instead of a full-page nav to `/tasks/<id>`.
+  Dock controls (left / bottom / fullscreen / close), choice persisted per-browser like
+  the S1 appearance prefs (T-1988). The keystone — it changes the core read interaction.
+  Reuses the existing `task_detail` content as an htmx fragment. **Build first, ship alone.**
+- **S4b — inline edit on status/owner/horizon cells:** click a cell → inline control that
+  POSTs to a per-field endpoint (horizon endpoint already exists; add status + owner
+  mirroring it — each must route through the existing task-update path, no new ungated
+  mutation). Depends on S4a's panel only loosely; can follow independently.
+- **S4c — saved-view filter chips:** a chip bar atop the board/list filtering by
+  owner / horizon / status / tag (query-param driven so a filtered view is shareable).
+  Independent, low-risk — good second slice.
+- **S4d — drag-to-reorder kanban:** drag a card between columns (→ status change via the
+  existing update path) and within a column. Highest complexity (drag library +
+  persistence + a11y fallback) — sequence last.
+- **S4e — bulk-action floating bar (multi-select):** = the S6c deliverable in T-1993.
+  Multi-select checkboxes on cards/rows + a floating action bar; each bulk action fans
+  out to the existing per-task endpoint (no new bulk mutation path). **This is where S6c
+  lands** — T-1993's S6c "depends on T-1992" specifically depends on this multi-select
+  infrastructure. Build after S4a (needs the row model) and the per-field endpoints (S4b).
+
+Recommend build order: **S4a → S4c → S4b → S4e/S6c → S4d**. Each sub-slice is a fresh
+build task carved at start (mirroring T-2008–T-2011 from T-1989, and T-2012/T-2013 from
+T-1993). Start S4a in a fresh session with budget (side panel + dock + htmx fragment +
+tests ≈ a slice the size of S2d/S6a).
 
 ## Acceptance Criteria
 
+<!-- FULL-SCOPE ACs for the S4 umbrella. Decompose into S4a–S4e sub-slice tasks at
+     build start (see Scoping note); each sub-slice carries the subset it ships. -->
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Clicking a task card/row opens a slide-in side panel with the task detail (htmx fragment, no full-page nav); dock controls switch left/bottom/fullscreen/close; the dock choice persists per-browser; works after an htmx board refresh (Playwright + unit) — **[S4a]**
+- [ ] Status, owner, and horizon cells are inline-editable; each edit POSTs through the existing per-task update path (no new ungated mutation endpoint) and reflects without full reload (Playwright + unit) — **[S4b]**
+- [ ] A filter-chip bar filters the board/list by owner/horizon/status/tag via query params (a filtered view is shareable by URL); clearing chips restores the full set (Playwright) — **[S4c]**
+- [ ] Cards can be dragged between kanban columns (status change persisted via the existing update path) and reordered within a column, with a keyboard-accessible fallback (Playwright) — **[S4d]**
+- [ ] Multi-select on cards/rows shows a floating bulk-action bar; each bulk action fans out to the existing per-task endpoint (no new bulk mutation path) — this is the T-1993 S6c deliverable (Playwright + unit) — **[S4e / S6c]**
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
