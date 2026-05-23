@@ -98,7 +98,13 @@
 /* ---- 3. Pico-bridge: re-point Pico vars at --wt-* (load AFTER pico) ------ */
 /* This is the keystone (review-A1/A7): every existing var(--pico-*) usage     */
 /* now follows the active palette without touching any page.                   */
-:root {
+/* T-2003 fix: declared at :root:not([data-theme=dark]),[data-theme=dark] so it  */
+/* matches/beats Pico v2's light selector :root:not([data-theme=dark]) (0,2,0).  */
+/* A bare :root (0,1,0) lost in light mode, leaving content-page chrome on Pico   */
+/* defaults (--pico-primary #0172ad) regardless of palette. Both arms keep the    */
+/* bridge winning in light AND dark (dark already worked via source order).       */
+:root:not([data-theme="dark"]),
+[data-theme="dark"] {
   --pico-background-color: var(--wt-bg);
   --pico-card-background-color: var(--wt-surface);
   --pico-card-sectioning-background-color: var(--wt-surface);

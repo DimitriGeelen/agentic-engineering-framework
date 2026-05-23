@@ -2,9 +2,13 @@
 id: T-2003
 name: "pico-bridge defeated in light mode — content-page chrome ignores palette accent"
 description: >
-  arc-007 S0 bug found by the T-2002 UX-review agent: foundations.css --pico-primary:var(--wt-accent) bridge uses :root (0,1,0) which Pico v2 :root:not([data-theme=dark]) (0,2,0) overrides in light mode, so all light palettes render Pico-default azure chrome instead of the selected accent. Dark mode works by source-order luck. Proven fix: raise bridge selector specificity.
+  arc-007 S0 bug found by the T-2002 UX-review agent: foundations.css --pico-primary:var(--wt-accent)
+  bridge uses :root (0,1,0) which Pico v2 :root:not([data-theme=dark]) (0,2,0) overrides
+  in light mode, so all light palettes render Pico-default azure chrome instead of
+  the selected accent. Dark mode works by source-order luck. Proven fix: raise bridge
+  selector specificity.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -17,8 +21,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T12:34:14Z
-last_update: 2026-05-23T12:34:14Z
-date_finished: null
+last_update: 2026-05-23T12:52:29Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,6 +33,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-23T12:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2003: pico-bridge defeated in light mode — content-page chrome ignores palette accent
@@ -55,9 +70,9 @@ the exact change.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] foundations.css pico-bridge re-declared so it wins over Pico v2's light-scheme selector (e.g. move the `--pico-*: var(--wt-*)` bridge block to `:root:not([data-theme=dark]), [data-theme=dark]` or equivalent specificity)
-- [ ] `fw ux-review` reports zero "pico-bridge defeated" findings across all 6 presets (was: 4 light palettes flagged)
-- [ ] Playwright/DOM check: on `/tasks`, computed `--pico-primary` equals computed `--wt-accent` for at least one light palette (e.g. bone → `#b87a17`)
+- [x] foundations.css pico-bridge re-declared so it wins over Pico v2's light-scheme selector (`:root:not([data-theme="dark"]), [data-theme="dark"]`, foundations.css §3)
+- [x] `fw ux-review` reports zero "pico-bridge defeated" findings across all 6 presets (was: 4 light palettes flagged → now 0; verdict CONCERN 4 → 1)
+- [x] Playwright/DOM check: on `/tasks`, computed `--pico-primary` equals computed `--wt-accent` for light palettes (verified bone `#b87a17`, paper `#1f4ed8`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -192,6 +207,27 @@ unit test pinning the invariant for at least one light palette.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-23 — bridge bug found by the new review agent, not a human
+- **What changed:** S0's "keystone" pico-bridge was assumed working (and looked fine on the picker page, which uses inline `--wt-*`). The T-2002 UX-review agent's content-page bridge check proved it was defeated in light mode — a class no existing gate covered. The fix is one specificity bump, confirmed live.
+- **Plan impact:** S0 (T-1991) cannot be GO'd as-was; this fix is a prerequisite. S1 (T-1988) picker is sound but sat on the broken bridge.
+- **Triggered:** the bridge check is now permanent in `fw ux-review`, so any regression re-flags. Separately surfaced: Editorial/linen button-label contrast 3.83:1 (design-token call, left for human).
+
+## Recommendation
+
+**Recommendation:** GO (apply the fix) — pending human `[REVIEW]` of the visual result.
+
+**Rationale:** The bridge was functionally broken — the entire app chrome ignored the
+selected palette in light mode (4 of 6 presets). The fix is minimal (one selector,
+no template changes — the whole point of the bridge), reversible, and confirmed live:
+`fw ux-review` bridge-defeated findings 4 → 0, verdict CONCERN 4 → 1, all 6 app frames
+now visually distinct, bone/paper `--pico-primary` now equals `--wt-accent`.
+
+**Evidence:**
+- DOM: bone `/tasks` `--pico-primary` `#0172ad` → `#b87a17`; paper → `#1f4ed8`
+- Gallery refreshed (all palettes re-theme): http://192.168.10.107:3000/static/ux-review/index.html
+- Visual confirm: bone app frame now shows amber chrome (was Pico-default blue)
+- Remaining (separate, your call): Editorial/linen button labels 3.83:1 < AA 4.5:1 — a palette-token aesthetic decision, not fixed unilaterally
+
 ## Decisions
 
 ### 2026-05-23 — proven fix (raise bridge specificity)
@@ -227,3 +263,6 @@ unit test pinning the invariant for at least one light palette.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2003-pico-bridge-defeated-in-light-mode--cont.md
 - **Context:** Initial task creation
+
+### 2026-05-23T12:52:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
