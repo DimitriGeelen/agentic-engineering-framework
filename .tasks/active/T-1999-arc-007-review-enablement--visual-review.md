@@ -6,12 +6,12 @@ description: >
   arc-007 review enablement — visual review surface for S0/S1 presets (palette/theme
   contact sheet + live preview)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_appearance_presets.py, web/templates/appearance.html]
 related_tasks: [T-1988, T-1991, T-1989]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T22:11:08Z
-last_update: '2026-05-22T22:15:02Z'
-date_finished:
+last_update: 2026-05-23T08:53:33Z
+date_finished: 2026-05-23T08:53:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -188,6 +188,23 @@ executed-browser AC, not markup-presence). Fix commit: `d1cb717a`.
 - **Plan impact:** Deliverable expanded from URL-handoff to a one-line code fix in `appearance.html` plus a Playwright regression guard. The "contact sheet" framing in the task name proved unnecessary — once the page works, live interactive review beats static screenshots and lets the human exercise nav/persistence/hard-reload directly.
 - **Triggered:** Fix `d1cb717a`; `tests/playwright/test_appearance_presets.py`; learning on executed-browser verification for interactive render surfaces; open question for the human — does T-1988 (S1) need its review verdict re-opened, given it shipped functionally broken?
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The decent review surface you asked for is live and working. The blocker — S1's
+preset JS was dead (a `SyntaxError` killed every click handler) — is fixed (`d1cb717a`) and
+verified by *executing* the JS in a real browser, not just checking markup. All 5 Agent ACs pass
+and a Playwright guard now prevents recurrence. The one open item is your taste call: are the 6
+presets visually coherent and is the surface genuinely decent? That is the `[REVIEW]` AC.
+
+**Evidence:**
+- Live URL **http://192.168.10.107:3000/settings/appearance** — HTTP 200, all 6 presets present, firewall open
+- Fix `d1cb717a`: click Console → `<html>` `theme=dark, palette=console, type=plex`, bg paints `rgb(10,12,14)`, status "Saved · console"; persists across nav to `/tasks`
+- `tests/playwright/test_appearance_presets.py` 2/2 (executes the JS); curl gate PASS
+- RCA + L-423 (executed-browser verification mandatory for interactive surfaces)
+- Open question: T-1988 (S1) shipped functionally broken — does its review verdict need re-opening?
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -215,3 +232,20 @@ executed-browser AC, not markup-presence). Fix commit: `d1cb717a`.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1999-arc-007-review-enablement--visual-review.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b5bd984a
+- **Timestamp:** 2026-05-23T08:53:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 30
+     - evidence: `curl -sf "$(bin/fw watchtower url)/settings/appearance" >/dev/null`
+
+### 2026-05-23T08:53:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
