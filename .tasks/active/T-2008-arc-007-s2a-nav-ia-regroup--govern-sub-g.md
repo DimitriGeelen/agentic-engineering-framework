@@ -246,6 +246,27 @@ out=$(curl -sf "$(bin/fw watchtower url)/" 2>&1); echo "$out" | grep -q "Govern"
 - **Rejected:** A separate `NAV_SUBGROUPS` constant — would duplicate the source of truth and break
   the single `NAV_ITEMS` derivation that search/jump relies on.
 
+## Recommendation
+
+- **Recommendation:** GO
+- **Rationale:** All 6 Agent ACs pass. The named pain point — the 16-item flat Govern dropdown — is
+  resolved: it now renders four function-based subsections. Arcs moved to Architecture per the design
+  IA. No leaf was lost (NAV_ITEMS still 31 via recursive flatten), every endpoint resolves, and both
+  flat and subsectioned groups render. Two [REVIEW] ACs remain — the *taste* of the subsection
+  taxonomy and the Arcs move — which only the human can settle.
+- **Evidence:**
+  - `tests/unit/test_nav_subsections.py` — 4 tests pass (model flatten, Arcs-moved, Govern
+    subsectioned, rendered DOM carries escaped subsection labels + `nav-subsection-label` class).
+  - `tests/playwright/test_nav_subsections.py` — 3 tests pass (Govern + Architecture dropdowns
+    open, subsections visible, Arcs reachable).
+  - Screenshot of the opened Govern dropdown: `web/static/ux-review/T-2008-govern-subsections.png`
+    (web: `<watchtower-url>/static/ux-review/T-2008-govern-subsections.png`) — shows all four
+    subsections.
+  - All task `## Verification` commands green; `web/test_app.py` nav tests still pass (top-level
+    group names unchanged).
+- **Note (deploy):** the live Watchtower at `:3000` caches templates — it will show the new nav only
+  after the service restarts. The screenshot + isolated-port Playwright run prove the new render.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
