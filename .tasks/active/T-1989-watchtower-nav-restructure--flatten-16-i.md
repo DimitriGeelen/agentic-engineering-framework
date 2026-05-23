@@ -23,7 +23,7 @@ related_tasks: [T-1987]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-22T19:53:24Z
+last_update: 2026-05-23T15:43:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -45,6 +45,15 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-05-23T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-05-22T10:15:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -56,21 +65,53 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
     rubric_sha: e4a00f38e801
+  - ts: '2026-05-23T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1989: Watchtower nav restructure — flatten 16-item Govern group, top-bar + contextual sub-nav + pinned favourites + breadcrumbs (arc-007 S2)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+arc-007 S2. Restructure Watchtower nav per `docs/design/watchtower-redesign-2026-05-13/project/nav-patterns.jsx`
++ the design chat (`chats/chat1.md` lines 52, 180, 232-237): nav layout is a **per-user
+selectable axis** (top-bar / sidebar / icon-rail), chosen in /settings/appearance alongside
+palette/type/density — the presets already bind it (Console=sidebar, Midnight=icon-rail,
+others=top-bar). The design also specifies a concrete information-architecture regroup —
+**NAV_GROUPS** (nav-patterns.jsx:4-9):
+- **Work:** Tasks, Inception, Assumptions, Timeline, Prompts
+- **Knowledge:** Learnings, Graduation, Patterns, Decisions
+- **Architecture:** Fabric, Explorer, Arcs, Terminal, Sessions
+- **Govern:** Approvals, Directives, Enforcement, Hooks, Risks, Gaps, Quality, Metrics, Costs, Config, Cron
+
+The 16-item Govern flat list is the named pain point; in the sidebar/rail layouts it collapses,
+in top-bar it becomes a grouped dropdown. ⌘K is the escape hatch (S6, T-1993) for everything not pinned.
+
+**Scoping note (2026-05-23, S2 scoping pass):** Read the design + chat. The ACs below already
+match the design's full intent (3 selectable layouts, not just top-bar). Scope is confirmed —
+this is a **build slice, not an inception** (the design exists and is concrete). It is, however,
+a **multi-session slice** (3 layouts × picker integration × breadcrumbs × pinned model × IA
+regroup × apply-across-pages). Recommend decomposing into sub-slices at build start, e.g.
+S2a top-bar layout + IA regroup (the default, highest-leverage), S2b breadcrumbs, S2c pinned
+model, S2d sidebar + rail layouts. Start fresh-session (budget) with S2a.
 
 ## Acceptance Criteria
 
-<!-- PARKED pending human review of S0 (T-1991) + S1 (T-1988): this slice depends on
-     S0+S1 and is a render redesign — building before the foundation mechanic is verified
-     risks rework (thin-slice discipline). ACs below are the known scope; detailed
-     decomposition (which of the 3 nav layouts to ship first, breadcrumb depth) should
-     incorporate the human's S0/S1 feedback per the Evolution principle (T-1717). -->
+<!-- READY (was parked pending S0/S1). 2026-05-23: S0 (T-1991) + S1 (T-1988) are built and the
+     foundation verified clean — ux-review --sweep verdict PASS, theme applies across all 5
+     pages (T-2005), contrast AA across all 6 palettes (T-2006/T-2007). The dependency is met
+     at the build level; the only remaining gate is the human [REVIEW] of the foundation work
+     (T-2003/T-2004/T-2005/T-2006, all queued in the review queue). Per the Evolution principle
+     (T-1717), fold any S0/S1 review feedback in at build start. ACs below are the known full
+     scope; decompose into S2a-S2d sub-slices when building (see Scoping note above). -->
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] Nav-layout selector added to /settings/appearance offering the 3 layouts from `docs/design/watchtower-redesign-2026-05-13/project/nav-patterns.jsx` (A: top-bar + contextual sub-nav, B: sidebar + pinned + groups, C: icon rail + ⌘K), persisted per-user via the existing appearance prefs (S1 mechanism)
@@ -188,3 +229,11 @@ bvp_scores_proposed:
 ### 2026-05-22T19:53:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-05-22T20:00:05Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-05-23T15:43:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
