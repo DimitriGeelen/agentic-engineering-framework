@@ -1,0 +1,478 @@
+#!/usr/bin/env python3
+"""UX-review capture engine — T-2002 (approach C of inception T-2000).
+
+Drives a Watchtower render surface in a real headless browser, applies every
+appearance preset, and produces a *visual* review artifact a human can actually
+look at — the thing the text `/review/<task>` page cannot give for a redesign.
+
+What it does per theme state:
+  1. clicks the preset, waits for it to apply + persist (catches dead-JS — the
+     exact T-1988 class, where every preset button was inert behind a SyntaxError)
+  2. scans the browser console for errors AND uncaught page errors
+  3. screenshots the whole re-themed app (a content page) + the picker page
+  4. reads the *computed* --wt-* tokens and checks them against OUR design guide
+     (foundations.css, parsed at runtime) for both fidelity and WCAG AA contrast
+
+It then writes a side-by-side gallery (index.html) + a findings report with an
+overall PASS / CONCERN verdict. It INFORMS the human [REVIEW]; it never replaces
+the taste call (T-1811).
+
+Usage:
+  python3 agents/ux-review/ux-review.py [--base URL] [--page /settings/appearance]
+                                        [--out web/static/ux-review]
+                                        [--content-page /tasks]
+
+--base defaults to `bin/fw watchtower url`. Exit 0 if the engine ran end-to-end
+(a CONCERN verdict is still a successful run — the findings are the product).
+"""
+from __future__ import annotations
+
+import argparse
+import datetime as _dt
+import html
+import os
+import re
+import subprocess
+import sys
+
+# Tokens we assess. text/muted are read against bg + surface; accent-ink against accent.
+PALETTE_TOKENS = [
+    "--wt-bg", "--wt-surface", "--wt-border",
+    "--wt-text", "--wt-muted",
+    "--wt-accent", "--wt-accent-ink",
+]
+AA_NORMAL = 4.5   # WCAG 2.1 AA for normal text
+AA_LARGE = 3.0    # WCAG 2.1 AA for large text / UI components
+
+
+# --------------------------------------------------------------------------- #
+# colour + contrast (the "is it readable" half of the guide check)
+# --------------------------------------------------------------------------- #
+def _parse_hex(value: str):
+    """Parse #rgb / #rrggbb (and rgb()/rgba()) into an (r,g,b) 0-255 tuple."""
+    v = (value or "").strip()
+    m = re.match(r"#([0-9a-fA-F]{3})$", v)
+    if m:
+        h = m.group(1)
+        return tuple(int(c * 2, 16) for c in h)
+    m = re.match(r"#([0-9a-fA-F]{6})$", v)
+    if m:
+        h = m.group(1)
+        return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    m = re.match(r"rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)", v)
+    if m:
+        return tuple(int(m.group(i)) for i in (1, 2, 3))
+    return None
+
+
+def _rel_luminance(rgb):
+    def chan(c):
+        c = c / 255.0
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (chan(x) for x in rgb)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def contrast_ratio(fg: str, bg: str):
+    """WCAG contrast ratio between two colour strings; None if unparseable."""
+    a, b = _parse_hex(fg), _parse_hex(bg)
+    if a is None or b is None:
+        return None
+    la, lb = _rel_luminance(a), _rel_luminance(b)
+    hi, lo = max(la, lb), min(la, lb)
+    return round((hi + 0.05) / (lo + 0.05), 2)
+
+
+# --------------------------------------------------------------------------- #
+# design guide (foundations.css) — the "preload" that makes this specialised
+# --------------------------------------------------------------------------- #
+def parse_foundations(css_path: str):
+    """Parse declared --wt-* palette tokens from foundations.css.
+
+    Returns {("palette", "light"|"dark"): {token: hex}}. The dark blocks in
+    foundations.css only override bg/surface/border/text/muted; the accent set
+    carries over from light, so we layer dark on top of light per palette.
+    """
+    try:
+        css = open(css_path, encoding="utf-8").read()
+    except OSError:
+        return {}
+    # strip comments so selectors inside /* */ don't match
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    guide: dict = {}
+
+    def _tokens(block: str):
+        out = {}
+        for name, val in re.findall(r"(--wt-[\w-]+)\s*:\s*([^;]+);", block):
+            out[name.strip()] = val.strip()
+        return out
+
+    # light: [data-wt-palette="X"] { ... }  (also the :root,[...slate] combo)
+    for sel, block in re.findall(r"([^{}]+)\{([^{}]+)\}", css):
+        sels = [s.strip() for s in sel.split(",")]
+        toks = _tokens(block)
+        if not toks:
+            continue
+        for s in sels:
+            m_dark = re.match(
+                r'\[data-theme="dark"\]\[data-wt-palette="(\w+)"\]', s
+            ) or re.match(r'\[data-wt-mode="dark"\]\[data-wt-palette="(\w+)"\]', s)
+            m_light = re.fullmatch(r'\[data-wt-palette="(\w+)"\]', s)
+            if m_dark:
+                guide.setdefault((m_dark.group(1), "dark"), {}).update(toks)
+            elif m_light:
+                guide.setdefault((m_light.group(1), "light"), {}).update(toks)
+            elif s in (":root", '[data-wt-palette="slate"]'):
+                guide.setdefault(("slate", "light"), {}).update(toks)
+    # layer: dark inherits light's accent set
+    for (pal, mode) in list(guide.keys()):
+        if mode == "dark":
+            base = dict(guide.get((pal, "light"), {}))
+            base.update(guide[(pal, "dark")])
+            guide[(pal, "dark")] = base
+    return guide
+
+
+def _norm_hex(v: str):
+    rgb = _parse_hex(v)
+    return "#%02x%02x%02x" % rgb if rgb else (v or "").strip().lower()
+
+
+# --------------------------------------------------------------------------- #
+# per-state assessment
+# --------------------------------------------------------------------------- #
+def assess_state(computed: dict, guide_tokens: dict):
+    """Return (findings:list[str], status:'ok'|'concern', contrasts:dict)."""
+    findings, status = [], "ok"
+
+    # 1. contrast (readability)
+    contrasts = {
+        "text/bg": contrast_ratio(computed.get("--wt-text"), computed.get("--wt-bg")),
+        "text/surface": contrast_ratio(computed.get("--wt-text"), computed.get("--wt-surface")),
+        "muted/bg": contrast_ratio(computed.get("--wt-muted"), computed.get("--wt-bg")),
+        "accent-ink/accent": contrast_ratio(computed.get("--wt-accent-ink"), computed.get("--wt-accent")),
+    }
+    if (contrasts["text/bg"] or 99) < AA_NORMAL:
+        findings.append(f"body text contrast {contrasts['text/bg']}:1 < AA {AA_NORMAL}:1")
+        status = "concern"
+    if (contrasts["accent-ink/accent"] or 99) < AA_NORMAL:
+        findings.append(
+            f"button label (accent-ink on accent) {contrasts['accent-ink/accent']}:1 < AA {AA_NORMAL}:1"
+        )
+        status = "concern"
+    if (contrasts["muted/bg"] or 99) < AA_LARGE:
+        findings.append(f"muted text contrast {contrasts['muted/bg']}:1 < {AA_LARGE}:1 (large-text floor)")
+        status = "concern"
+
+    # 2. fidelity (computed tokens == declared design tokens)
+    if guide_tokens:
+        for tok in PALETTE_TOKENS:
+            want, got = guide_tokens.get(tok), computed.get(tok)
+            if want and got and _norm_hex(want) != _norm_hex(got):
+                findings.append(f"{tok} rendered {_norm_hex(got)} ≠ guide {_norm_hex(want)}")
+                status = "concern"
+    return findings, status, contrasts
+
+
+# --------------------------------------------------------------------------- #
+# capture (the browser-driving half)
+# --------------------------------------------------------------------------- #
+def _settle_paint(page, expected_accent=None):
+    """Block until the palette CSS has actually painted, not just landed in the DOM.
+
+    The DOM attribute (data-wt-palette) is set server-side before paint, but a
+    full_page screenshot can fire before the new --wt-* values repaint — capturing
+    the previous/default palette. This caused linen/bone/paper to come out as
+    byte-identical default-indigo frames (nondeterministic between runs). We wait
+    for the computed accent to equal the expected token, then force two animation
+    frames (= a guaranteed paint) plus a short settle.
+    """
+    if expected_accent:
+        try:
+            page.wait_for_function(
+                "(a) => getComputedStyle(document.documentElement)"
+                ".getPropertyValue('--wt-accent').trim() === a",
+                arg=expected_accent, timeout=5000,
+            )
+        except Exception:
+            pass
+    try:
+        page.evaluate(
+            "() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"
+        )
+    except Exception:
+        pass
+    page.wait_for_timeout(150)
+
+
+def capture(base: str, page_path: str, content_page: str, out_dir: str, guide: dict):
+    from playwright.sync_api import sync_playwright
+
+    os.makedirs(out_dir, exist_ok=True)
+    results = []
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        ctx = browser.new_context(viewport={"width": 1440, "height": 1000})
+        page = ctx.new_page()
+        page.set_default_timeout(15000)
+
+        # prime CSRF/session so the page's save() POST persists the choice
+        page.goto(base + "/", wait_until="domcontentloaded")
+
+        # discover presets straight from the picker (no hard-coded list)
+        page.goto(base + page_path, wait_until="domcontentloaded")
+        presets = page.evaluate(
+            "() => Array.from(document.querySelectorAll('#wt-presets .wt-preset'))"
+            ".map(b => ({id:b.dataset.preset, label:b.querySelector('.nm')?.textContent?.trim()||b.dataset.preset,"
+            " palette:b.dataset.palette, type:b.dataset.type, density:b.dataset.density, mode:b.dataset.mode}))"
+        )
+        if not presets:
+            raise RuntimeError(
+                f"No presets found at {base}{page_path} — page may be broken or selector changed"
+            )
+
+        # register error listeners ONCE; clear the shared buffer per state
+        state_errors: list[str] = []
+        page.on("console", lambda m: state_errors.append(f"console.{m.type}: {m.text}")
+                if m.type == "error" else None)
+        page.on("pageerror", lambda exc: state_errors.append(f"pageerror: {exc}"))
+
+        for ps in presets:
+            pid = ps["id"]
+            state_errors.clear()
+            errors = state_errors
+
+            page.goto(base + page_path, wait_until="domcontentloaded")
+            page.click(f'button[data-preset="{pid}"]')
+            # if the JS is dead (T-1988), this wait times out → recorded as a finding
+            applied = True
+            try:
+                page.wait_for_function(
+                    "(p) => document.documentElement.getAttribute('data-wt-palette') === p",
+                    arg=ps["palette"], timeout=6000,
+                )
+                page.wait_for_function(
+                    "() => { const s=document.getElementById('wt-status');"
+                    " return s && s.textContent.indexOf('Saved') === 0; }",
+                    timeout=6000,
+                )
+            except Exception:
+                applied = False
+                errors.append("preset did NOT apply within 6s — click handler likely dead (T-1988 class)")
+
+            computed = page.evaluate(
+                "(toks) => { const s=getComputedStyle(document.documentElement); const o={};"
+                " toks.forEach(t => o[t]=s.getPropertyValue(t).trim());"
+                " o['font']=s.getPropertyValue('--wt-font-head').trim(); return o; }",
+                PALETTE_TOKENS,
+            )
+            mode = ps.get("mode") or "light"
+            expected_accent = guide.get((ps["palette"], mode), {}).get("--wt-accent")
+            _settle_paint(page, expected_accent)
+            page.screenshot(path=os.path.join(out_dir, f"picker-{pid}.png"), full_page=True)
+
+            # the whole app re-themed (content-rich page). full_page so accent
+            # links/badges are in frame — warm palettes (linen vs bone) differ
+            # mainly in accent, which a clipped viewport can miss entirely.
+            # Cache-buster query → unique URL per palette so the browser never
+            # serves a stale /tasks render from a prior palette (the cause of
+            # byte-identical warm-light frames; DOM tokens were always correct).
+            sep = "&" if "?" in content_page else "?"
+            page.goto(base + content_page + f"{sep}_uxr={pid}", wait_until="load")
+            _settle_paint(page, expected_accent)
+            page.screenshot(path=os.path.join(out_dir, f"app-{pid}.png"), full_page=True)
+
+            # Bridge check: on a content page the chrome is Pico-styled, so the
+            # palette only reaches it via the foundations.css pico-bridge
+            # (--pico-primary: var(--wt-accent)). If --pico-primary on the content
+            # page does NOT equal --wt-accent, the bridge is defeated and the app
+            # chrome ignores the palette (CSS-specificity bug, light mode).
+            bridge = page.evaluate(
+                "() => { const s=getComputedStyle(document.documentElement);"
+                " return {pico:s.getPropertyValue('--pico-primary').trim(),"
+                " wt:s.getPropertyValue('--wt-accent').trim()}; }"
+            )
+
+            findings, status, contrasts = assess_state(computed, guide.get((ps["palette"], mode), {}))
+            if bridge["pico"] and bridge["wt"] and _norm_hex(bridge["pico"]) != _norm_hex(bridge["wt"]):
+                findings.append(
+                    f"content-page chrome does NOT follow palette: --pico-primary "
+                    f"{_norm_hex(bridge['pico'])} ≠ --wt-accent {_norm_hex(bridge['wt'])} "
+                    "(pico-bridge defeated — app chrome stuck on Pico default)"
+                )
+                status = "concern"
+            js_errors = [e for e in errors if "favicon" not in e.lower()]
+            if js_errors:
+                status = "concern"
+            results.append({
+                **ps, "applied": applied, "computed": computed,
+                "errors": list(js_errors), "findings": findings, "status": status,
+                "contrasts": contrasts,
+            })
+        browser.close()
+
+    # integrity self-check: two distinct palettes must not produce a byte-identical
+    # app frame. If they do, the capture didn't reflect the palette — flag it as a
+    # CONCERN rather than presenting misleading "distinct" screenshots (antifragile:
+    # the tool surfaces its own capture failure instead of lying).
+    import hashlib
+    by_hash: dict = {}
+    for r in results:
+        png = os.path.join(out_dir, f"app-{r['id']}.png")
+        if os.path.exists(png):
+            h = hashlib.md5(open(png, "rb").read()).hexdigest()
+            by_hash.setdefault(h, []).append(r["label"])
+    for h, labels in by_hash.items():
+        if len(labels) > 1:
+            for r in results:
+                if r["label"] in labels:
+                    r["findings"].append(
+                        f"app screenshot byte-identical to {', '.join(l for l in labels if l != r['label'])}"
+                        " — capture may not reflect this palette (review picker frame instead)"
+                    )
+                    r["status"] = "concern"
+    return results
+
+
+# --------------------------------------------------------------------------- #
+# artifacts
+# --------------------------------------------------------------------------- #
+def _badge(ok: bool, label: str):
+    color = "#10b981" if ok else "#ef4444"
+    return f'<span style="background:{color};color:#fff;border-radius:6px;padding:2px 8px;font-size:.75rem">{html.escape(label)}</span>'
+
+
+def write_gallery(results, out_dir, base, page_path):
+    concerns = sum(1 for r in results if r["status"] == "concern")
+    verdict = "PASS" if concerns == 0 else f"CONCERN ({concerns})"
+    vcolor = "#10b981" if concerns == 0 else "#f59e0b"
+    cards = []
+    for r in results:
+        ok = r["status"] == "ok"
+        con = r["contrasts"]
+        con_line = " · ".join(f"{k} {v}:1" for k, v in con.items() if v is not None)
+        find = "".join(f"<li>{html.escape(f)}</li>" for f in r["findings"]) or "<li>none</li>"
+        cards.append(f"""
+<section style="border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:0 0 20px">
+  <h2 style="margin:0 0 4px">{html.escape(r['label'])}
+    <span style="font-weight:400;color:#64748b;font-size:.85rem">
+      {html.escape(r['palette'])} · {html.escape(r['type'])} · {html.escape(r['density'])} · {html.escape(r['mode'])}</span></h2>
+  <p style="margin:0 0 10px">{_badge(ok, 'OK' if ok else 'CONCERN')}
+     {_badge(not r['errors'], 'console clean' if not r['errors'] else f"{len(r['errors'])} JS error(s)")}
+     {_badge(r['applied'], 'preset applied' if r['applied'] else 'PRESET DEAD')}</p>
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;align-items:start">
+    <a href="app-{r['id']}.png" target="_blank"><img src="app-{r['id']}.png" style="width:100%;border:1px solid #e5e7eb;border-radius:8px"></a>
+    <a href="picker-{r['id']}.png" target="_blank"><img src="picker-{r['id']}.png" style="width:100%;border:1px solid #e5e7eb;border-radius:8px"></a>
+  </div>
+  <p style="margin:10px 0 2px;color:#64748b;font-size:.8rem">contrast: {html.escape(con_line)}</p>
+  <ul style="margin:4px 0 0;color:#334155;font-size:.85rem">{find}</ul>
+</section>""")
+    ts = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    doc = f"""<!doctype html><html><head><meta charset="utf-8">
+<title>UX Review — arc-007 S0/S1</title>
+<style>body{{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:1100px;margin:0 auto;padding:24px;color:#0f172a}}
+img{{display:block}} a{{color:#4f46e5}}</style></head><body>
+<h1>UX Review — arc-007 watchtower-redesign (S0 tokens · S1 appearance)</h1>
+<p style="color:#64748b">First-pass review by the T-2002 UX-review engine (approach C of inception T-2000).
+Drives a real browser, scans console + page errors, checks computed tokens against
+<code>foundations.css</code> and WCAG AA contrast. <b>Informs</b> your <code>[REVIEW]</code> — it does
+not replace the taste call.</p>
+<p>Overall: <span style="background:{vcolor};color:#fff;border-radius:8px;padding:4px 12px;font-weight:600">{verdict}</span>
+&nbsp;·&nbsp; {len(results)} presets &nbsp;·&nbsp; captured {ts}
+&nbsp;·&nbsp; live page: <a href="{html.escape(base + page_path)}" target="_blank">{html.escape(page_path)}</a></p>
+<p style="color:#64748b;font-size:.85rem">Left image = whole app re-themed · right image = the picker. Click to enlarge.</p>
+{''.join(cards)}
+</body></html>"""
+    path = os.path.join(out_dir, "index.html")
+    open(path, "w", encoding="utf-8").write(doc)
+    return path, verdict
+
+
+def write_report(results, report_path, base, gallery_url, verdict):
+    os.makedirs(os.path.dirname(report_path), exist_ok=True)
+    lines = [
+        "# T-2002 — UX-review first pass: arc-007 S0/S1\n",
+        f"_Generated by the T-2002 UX-review engine (approach C, inception T-2000)._\n",
+        f"**Overall verdict:** {verdict}\n",
+        f"**Gallery:** {gallery_url}\n",
+        f"**Live page:** {base}/settings/appearance\n",
+        "\nThis is the executed-browser first pass the static reviewers can't do: it clicks every "
+        "preset, scans console + uncaught page errors (the T-1988 dead-JS class), and checks computed "
+        "tokens against `foundations.css` + WCAG AA contrast. It informs the human `[REVIEW]`; the "
+        "taste call (does the redesign *feel* right) stays human (T-1811).\n",
+        "\n| Preset | Palette/Mode | Applied | Console | text/bg | accent-ink/accent | Status |",
+        "|--------|-------------|---------|---------|---------|-------------------|--------|",
+    ]
+    for r in results:
+        c = r["contrasts"]
+        applied_cell = "yes" if r["applied"] else "**NO**"
+        console_cell = "clean" if not r["errors"] else f"**{len(r['errors'])} err**"
+        status_cell = "✅ ok" if r["status"] == "ok" else "⚠️ concern"
+        lines.append(
+            f"| {r['label']} | {r['palette']}/{r['mode']} | {applied_cell} | "
+            f"{console_cell} | {c['text/bg']} | {c['accent-ink/accent']} | {status_cell} |"
+        )
+    detail = [l for r in results if r["findings"] for l in
+              [f"\n### {r['label']} ({r['palette']}/{r['mode']})"] + [f"- {f}" for f in r["findings"]]]
+    if detail:
+        lines += ["\n## Findings detail"] + detail
+    else:
+        lines += ["\n## Findings detail\n\nNo automated findings — every preset applied, console clean, "
+                  "all checked contrasts ≥ AA, tokens match the guide."]
+    open(report_path, "w", encoding="utf-8").write("\n".join(lines) + "\n")
+
+
+# --------------------------------------------------------------------------- #
+def _default_base():
+    try:
+        root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        out = subprocess.run(["bin/fw", "watchtower", "url"], cwd=root,
+                             capture_output=True, text=True, timeout=10)
+        url = out.stdout.strip().splitlines()[-1] if out.stdout.strip() else ""
+        return url or "http://localhost:3000"
+    except Exception:
+        return "http://localhost:3000"
+
+
+def main(argv=None):
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    ap = argparse.ArgumentParser(description="UX-review capture engine (T-2002)")
+    ap.add_argument("target", nargs="?", default=None,
+                    help="convenience: a /path sets --page, a full URL sets --base")
+    ap.add_argument("--base", default=None, help="base URL (default: bin/fw watchtower url)")
+    ap.add_argument("--page", default="/settings/appearance", help="picker page path")
+    ap.add_argument("--content-page", default="/tasks", help="content page to screenshot re-themed")
+    ap.add_argument("--out", default="web/static/ux-review", help="output dir (under web/static to serve)")
+    ap.add_argument("--report", default="docs/reports/T-2002-ux-review-arc-007-s0-s1.md")
+    args = ap.parse_args(argv)
+
+    if args.target:  # positional convenience
+        if args.target.startswith("/"):
+            args.page = args.target
+        elif args.target.startswith("http"):
+            args.base = args.target
+
+    base = (args.base or _default_base()).rstrip("/")
+    out_dir = args.out if os.path.isabs(args.out) else os.path.join(root, args.out)
+    report = args.report if os.path.isabs(args.report) else os.path.join(root, args.report)
+    css = os.path.join(root, "web/static/css/foundations.css")
+
+    print(f"[ux-review] base={base} page={args.page} out={out_dir}")
+    guide = parse_foundations(css)
+    print(f"[ux-review] loaded {len(guide)} palette/mode token sets from foundations.css")
+    results = capture(base, args.page, args.content_page, out_dir, guide)
+    gallery_path, verdict = write_gallery(results, out_dir, base, args.page)
+    gallery_url = f"{base}/static/{os.path.relpath(gallery_path, os.path.join(root, 'web/static'))}"
+    write_report(results, report, base, gallery_url, verdict)
+
+    print(f"[ux-review] verdict: {verdict}")
+    for r in results:
+        flag = "ok " if r["status"] == "ok" else "!! "
+        print(f"  {flag}{r['label']:<10} applied={r['applied']} console={'clean' if not r['errors'] else len(r['errors'])} findings={len(r['findings'])}")
+    print(f"[ux-review] gallery: {gallery_url}")
+    print(f"[ux-review] report:  {report}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

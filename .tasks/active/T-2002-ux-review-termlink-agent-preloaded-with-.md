@@ -1,13 +1,19 @@
 ---
 id: T-2002
-name: "UX-review TermLink agent preloaded with design style guides (T-2000 approach C) — browser-driving console+interaction+guide-coherence review"
+name: "UX-review TermLink agent preloaded with design style guides (T-2000 approach
+  C) — browser-driving console+interaction+guide-coherence review"
 description: >
-  T-2000 approach C (qualitative layer). A specialised UX-review agent dispatched via TermLink that loads a render surface in a real browser, scans console errors, smoke-tests interactions, and assesses palette/contrast/spacing/typography coherence against OUR preloaded design style guides (docs/design/watchtower-redesign-2026-05-13/, foundations.css, settings.PRESETS) — not generic heuristics. Informs but does not replace the human [REVIEW]. BLOCKED until human records GO on inception T-2000.
+  T-2000 approach C (qualitative layer). A specialised UX-review agent dispatched
+  via TermLink that loads a render surface in a real browser, scans console errors,
+  smoke-tests interactions, and assesses palette/contrast/spacing/typography coherence
+  against OUR preloaded design style guides (docs/design/watchtower-redesign-2026-05-13/,
+  foundations.css, settings.PRESETS) — not generic heuristics. Informs but does not
+  replace the human [REVIEW]. BLOCKED until human records GO on inception T-2000.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [review, ux, termlink]
 components: []
 related_tasks: [T-2000, T-1443, T-1951]
@@ -16,8 +22,8 @@ related_tasks: [T-2000, T-1443, T-1951]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T11:51:54Z
-last_update: 2026-05-23T11:51:54Z
-date_finished: null
+last_update: 2026-05-23T12:17:17Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +34,58 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-23T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-23T12:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2002: UX-review TermLink agent preloaded with design style guides (T-2000 approach C) — browser-driving console+interaction+guide-coherence review
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2000 approach C, GO recorded by human 2026-05-23 (D-187). This first increment builds the
+**capture engine** — the core capability of the UX-review agent — and uses it to produce the
+first-pass review artifact for arc-007 S0 (T-1991) / S1 (T-1988). Origin: human feedback that the
+text `/review/T-1991` and `/review/T-1988` pages "have nothing to see" for a *visual* redesign — the
+machine should drive the page, screenshot every themed state, scan the console, and check contrast
+against OUR tokens, landing images + findings on the human's desk instead of a blank checkbox.
+
+Preloaded design guides (the differentiator vs a generic linter):
+- `web/static/css/foundations.css` — palette/type/density CSS custom-property tokens
+- `web/blueprints/settings.py` — `PALETTES`, `TYPES`, `DENSITIES`, `PRESETS` (the canonical axis sets)
+- `docs/design/watchtower-redesign-2026-05-13/` — the redesign design docs
+
+TermLink-dispatch execution mode (context-isolated, observable — like `fw reviewer --dispatch`) is a
+follow-up increment; this task delivers the runnable engine + the S0/S1 artifact. Informs but never
+replaces the human `[REVIEW]` (T-1811 — taste stays the human's).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Capture engine (`agents/ux-review/ux-review.py` + `agents/ux-review/AGENT.md`) drives a render surface in headless Chromium, applying each theme state (the 6 presets) and screenshotting the whole re-themed app to `web/static/ux-review/` (servable over LAN)
+- [x] Per state it scans the browser console for errors and records pass/fail — this is the exact coverage that would have caught the T-1988 dead-JS class
+- [x] It loads our design tokens (`foundations.css` palette vars) and computes text-on-background contrast per palette, flagging any pair below WCAG AA 4.5:1 — conformance against OUR system, not generic heuristics
+- [x] It emits a gallery `web/static/ux-review/index.html` (all states side-by-side, each annotated with console + contrast status) and a findings report `docs/reports/T-2002-ux-review-arc-007-s0-s1.md` with an overall PASS/CONCERN verdict
+- [x] `fw ux-review <url-or-page>` runs the engine end-to-end and exits 0 on success; the S0/S1 artifact is generated and committed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -73,6 +117,13 @@ date_finished: null
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The generated gallery gives you enough to actually judge arc-007 S0/S1 visually — it replaces the blank `/review/` checkbox page
+  **Steps:**
+  1. Open the gallery: `http://192.168.10.107:3000/static/ux-review/index.html`
+  2. Scan each of the 6 presets (Calm / Editorial / Console / Paper / Bone / Midnight) — the whole app re-themed
+  3. Check the console + contrast badges on each, then judge whether the redesign reads cohesively against our design system
+  **Expected:** You can form a GO / NO-GO on S0/S1 from the gallery alone (no guessing, no blank page)
+  **If not:** Tell me which states need different framing or which extra pages to capture
 
 ## Verification
 
@@ -100,6 +151,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m py_compile agents/ux-review/ux-review.py
+test -f web/static/ux-review/index.html
+test -f docs/reports/T-2002-ux-review-arc-007-s0-s1.md
+out=$(curl -sf -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/static/ux-review/index.html" 2>&1); echo "$out" | grep -q "200"
 
 ## RCA
 
@@ -168,3 +223,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2002-ux-review-termlink-agent-preloaded-with-.md
 - **Context:** Initial task creation
+
+### 2026-05-23T12:17:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

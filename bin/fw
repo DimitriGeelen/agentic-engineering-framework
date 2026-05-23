@@ -3023,6 +3023,13 @@ case "$cmd" in
             PYTHONPATH="$FRAMEWORK_ROOT" \
             python3 -m lib.reviewer.static_scan "$@"
         ;;
+    ux-review)
+        # T-2002: UX-review capture engine (approach C of inception T-2000) —
+        # browser-driving console + interaction + guide-coherence review of an
+        # interactive render surface. Executes page JS; informs the human [REVIEW].
+        exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            python3 "$AGENTS_DIR/ux-review/ux-review.py" "$@"
+        ;;
     self-audit)
         exec "$AGENTS_DIR/audit/self-audit.sh" "$@"
         ;;
