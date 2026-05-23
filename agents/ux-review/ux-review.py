@@ -423,6 +423,71 @@ def write_report(results, report_path, base, gallery_url, verdict):
 
 
 # --------------------------------------------------------------------------- #
+def check_axes(base: str, page_path: str):
+    """Smoke-test the Type and Density axes INDIVIDUALLY (not via presets).
+
+    The preset-only capture (the main mode) masked T-2004: presets that vary
+    type/density also vary palette, so a type/density that did nothing was hidden
+    by the palette change. This clicks each Type and each Density option on its
+    own and asserts a measurable visible effect:
+      - Typography: rendered width of a fixed string in var(--wt-font-head) must
+        differ across options (a font that doesn't load collapses to system-ui →
+        identical width). Heading font is probed so serif pairings (newsreader,
+        whose body stays sans) are still distinguished.
+      - Density: computed body font-size must differ across compact/cozy/comfortable.
+    """
+    from playwright.sync_api import sync_playwright
+
+    findings = []
+    with sync_playwright() as p:
+        b = p.chromium.launch(headless=True)
+        pg = b.new_context(viewport={"width": 1440, "height": 1000}).new_page()
+        pg.set_default_timeout(15000)
+        pg.goto(base + "/")
+        pg.goto(base + page_path, wait_until="load")
+        types = pg.evaluate("() => Array.from(document.querySelectorAll('#wt-type button')).map(b=>b.dataset.value)")
+        densities = pg.evaluate("() => Array.from(document.querySelectorAll('#wt-density button')).map(b=>b.dataset.value)")
+
+        type_w = {}
+        for t in types:
+            pg.click(f'#wt-type button[data-value="{t}"]')
+            try:
+                pg.wait_for_function("(t)=>document.documentElement.getAttribute('data-wt-type')===t", arg=t, timeout=5000)
+            except Exception:
+                findings.append(f"Typography: clicking '{t}' did not set data-wt-type (dead control)")
+            type_w[t] = pg.evaluate(
+                "async()=>{await document.fonts.ready;"
+                " const s=document.createElement('span');"
+                " s.style.cssText='position:absolute;font-size:48px;white-space:nowrap;font-family:var(--wt-font-head)';"
+                " s.textContent='Watchtower Handoff 12345'; document.body.appendChild(s);"
+                " const w=s.offsetWidth; s.remove(); return w;}"
+            )
+        distinct = len(set(type_w.values()))
+        if distinct < len(types):
+            dupes = [t for t in type_w if list(type_w.values()).count(type_w[t]) > 1]
+            findings.append(
+                f"Typography: only {distinct}/{len(types)} options render a distinct typeface "
+                f"(identical width: {dupes}) {type_w} — font(s) not loading, collapsing to fallback"
+            )
+
+        dens_sz = {}
+        for d in densities:
+            pg.click(f'#wt-density button[data-value="{d}"]')
+            try:
+                pg.wait_for_function("(d)=>document.documentElement.getAttribute('data-wt-density')===d", arg=d, timeout=5000)
+            except Exception:
+                findings.append(f"Density: clicking '{d}' did not set data-wt-density (dead control)")
+            dens_sz[d] = pg.evaluate("()=>getComputedStyle(document.body).fontSize")
+        if len(set(dens_sz.values())) < len(densities):
+            findings.append(
+                f"Density: options do not all change body size {dens_sz} — density tokens unconsumed"
+            )
+        b.close()
+
+    status = "PASS" if not findings else "CONCERN"
+    return status, findings, type_w, dens_sz
+
+
 def _default_base():
     try:
         root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -444,6 +509,8 @@ def main(argv=None):
     ap.add_argument("--content-page", default="/tasks", help="content page to screenshot re-themed")
     ap.add_argument("--out", default="web/static/ux-review", help="output dir (under web/static to serve)")
     ap.add_argument("--report", default="docs/reports/T-2002-ux-review-arc-007-s0-s1.md")
+    ap.add_argument("--axes", action="store_true",
+                    help="smoke-test the Type and Density axes individually (not via presets)")
     args = ap.parse_args(argv)
 
     if args.target:  # positional convenience
@@ -453,6 +520,16 @@ def main(argv=None):
             args.base = args.target
 
     base = (args.base or _default_base()).rstrip("/")
+
+    if args.axes:
+        status, findings, type_w, dens_sz = check_axes(base, args.page)
+        print(f"[ux-review --axes] base={base} page={args.page}")
+        print(f"[ux-review --axes] Typography widths: {type_w}")
+        print(f"[ux-review --axes] Density body sizes: {dens_sz}")
+        print(f"[ux-review --axes] verdict: {status}")
+        for f in findings:
+            print(f"  !! {f}")
+        return 0 if status == "PASS" else 1
     out_dir = args.out if os.path.isabs(args.out) else os.path.join(root, args.out)
     report = args.report if os.path.isabs(args.report) else os.path.join(root, args.report)
     css = os.path.join(root, "web/static/css/foundations.css")

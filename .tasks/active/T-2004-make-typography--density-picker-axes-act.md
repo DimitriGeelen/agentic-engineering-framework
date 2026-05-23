@@ -71,11 +71,11 @@ for the picker axes.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Webfonts self-hosted under `web/static/fonts/` (woff2, OFL) with `@font-face` rules in foundations.css for each family used by the 6 type options (Inter, Geist, IBM Plex Sans+Mono, Manrope, Newsreader, JetBrains Mono); no external CDN reference
-- [ ] Headings consume the type pairing: a rule maps `h1..h6` (and Pico heading vars) to `var(--wt-font-head)` so newsreader renders serif headings
-- [ ] Density applies globally: picking compact/cozy/comfortable changes rendered text size (and base spacing) on content pages — verified by computed body font-size differing across the three densities
-- [ ] `fw ux-review --axes` (or equivalent) smoke-tests the Type and Density axes individually (not just presets) and reports each as having a visible effect — closes the T-2002 gap that masked this
-- [ ] No console/page errors introduced (font 404s included); `fw ux-review` verdict has no new findings attributable to fonts
+- [x] Webfonts self-hosted under `web/static/fonts/` (11 woff2, OFL — Inter/Geist/IBM Plex Sans/Manrope/Newsreader 400+600, JetBrains Mono 400) with `@font-face` in foundations.css §4; no external CDN. Verified: all serve 200, `document.fonts.check`=True, distinct rendered widths (Inter 620/Geist 609/Plex 603/Manrope 596/Newsreader 572/system 617)
+- [x] Headings consume the type pairing: `h1..h6, hgroup>:first-child { font-family: var(--wt-font-head); }` added (foundations.css §4b). Verified: newsreader h1 → `Newsreader, Georgia, serif`
+- [x] Density applies globally: each density block sets `--pico-font-size` (compact 100% / cozy 112.5% / comfortable 125%); rem-based Pico scales text+spacing. Verified: body 16/18/20px across the three
+- [ ] `fw ux-review --axes` smoke-tests the Type and Density axes individually — CODE LANDED (check_axes + --axes flag, agents/ux-review/ux-review.py) but the run was blocked by session budget before verification; **next session: run `bin/fw ux-review --axes` and confirm PASS**
+- [ ] No console/page errors introduced (font 404s included); re-run full `fw ux-review` and confirm verdict has no new font findings — **pending next session** (fonts serve 200, but full re-run not yet done)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
