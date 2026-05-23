@@ -17,7 +17,7 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T19:32:08Z
-last_update: 2026-05-23T19:32:08Z
+last_update: 2026-05-23T19:41:01Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -196,6 +196,17 @@ out=$(grep -c "wt-command-palette" web/templates/base.html); test "$out" -ge 1
 - **Chose:** Render `web.shared.NAV_ITEMS` (already in render_page context as `nav_items`) into a `<script type="application/json" id="wt-nav-items">` as `[{label, url, group}]`, resolving `url_for` server-side. The palette JS reads + fuzzy-matches it client-side.
 - **Why:** Reuses the exact whitelist S2c pins use (one source of truth for "jumpable destinations"); URLs resolved server-side avoid a client-side url_for. Client-side fuzzy match = zero round-trips, instant keyboard feel.
 - **Rejected:** A `/api/palette/destinations` endpoint (unnecessary round-trip; the list is small and already in context).
+
+## Recommendation
+
+- **Recommendation:** GO
+- **Rationale:** S6a ships the keystone the icon-rail nav (S2d/T-2011) explicitly defers to — ⌘K now provides keyboard-first access to every nav destination plus a doorway into the existing search backend. All 6 Agent ACs pass with test evidence; the modal lives in the shell so it survives htmx swaps (proven E2E); the jump list is provably the same `NAV_ITEMS` whitelist pins use (no new attack surface, no second search impl). One [REVIEW] remains: confirm the palette *feels* fast and reads cleanly across all six palettes/themes (taste, not correctness).
+- **Evidence:**
+  - 5 unit tests (`tests/unit/test_command_palette.py`) — jump list == NAV_ITEMS whitelist, JSON payload parses + matches, palette present on arbitrary page, nav-search affordance marked as opener. All pass.
+  - 7 Playwright tests (`tests/playwright/test_command_palette.py`) — open/close fresh + after htmx swap, nav-search click opens (no /search nav), fuzzy jump with arrow+Enter, whitelisted jump targets, search fall-through routes to `/search?q=`, screenshot capture. All pass.
+  - Eyes-on screenshot `web/static/ux-review/T-2012-palette-open.png` — "lear" ranks Learnings top with its Knowledge group tag; italic search fall-through row beneath; modal centered + legible over the dimmed page.
+  - Verification block (3 commands) green: pytest, NAV_ITEMS count (31), palette markup present in base.html.
+  - Implementation: `palette_destinations()` (web/shared.py), `inject_palette` context processor (web/blueprints/settings.py), shell modal + CSS + JSON tag (web/templates/base.html), logic (web/static/command-palette.js).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
