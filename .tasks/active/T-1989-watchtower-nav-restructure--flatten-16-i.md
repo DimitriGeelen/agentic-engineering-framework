@@ -109,13 +109,15 @@ model, S2d sidebar + rail layouts. Start fresh-session (budget) with S2a.
   T-1989 AC #5 + the IA half of AC #1.
 - **S2b — [T-2009] ✅ shipped + presented** (Recommendation GO, awaiting human [REVIEW]): path-derived
   breadcrumb trail, htmx-fresh (rendered inside #content). Covers T-1989 AC #3.
-- **S2c — pinned-pages model** (not started): T-1989 AC #4. Star/unstar pages; pinned surface in
-  primary nav; persist via the S1 appearance-prefs mechanism.
+- **S2c — [T-2010] ✅ shipped + presented** (Recommendation GO, awaiting human [REVIEW]): pinned-pages
+  model — star a nav destination from the breadcrumb bar, surfaces as a quick-link in the top bar,
+  persists per-browser across nav + reload, oob-refresh on toggle (no full reload). Covers T-1989
+  AC #4. Fixed a latent S1 clobber (`_save_appearance` now read-modify-writes the full prefs dict).
 - **S2d — sidebar + icon-rail layouts + `data-wt-nav` selector** (not started): T-1989 AC #1 (the
   layout-selection half) + #2. The `data-wt-nav` attribute + /settings/appearance selector belong
   here, where there are multiple layouts to switch between. Largest remaining sub-slice.
 
-This umbrella (T-1989) stays open until S2c + S2d land and the human confirms the S2a/S2b reviews.
+This umbrella (T-1989) stays open until S2d lands and the human confirms the S2a/S2b/S2c reviews.
 
 ## Acceptance Criteria
 
