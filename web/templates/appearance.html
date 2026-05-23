@@ -161,7 +161,7 @@
       headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRF-Token':csrf()},
       body: body.toString()
     }).then(function(r){ return r.json(); })
-      .then(function(d){ status.textContent = d && d.ok ? 'Saved · ' + (state.preset === 'custom' ? 'custom' : state.preset); })
+      .then(function(d){ status.textContent = d && d.ok ? 'Saved · ' + (state.preset === 'custom' ? 'custom' : state.preset) : 'Save failed'; })
       .catch(function(){ status.textContent = 'Could not save — theme applied for this session only.'; });
   }
 
