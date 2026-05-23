@@ -25,7 +25,7 @@ related_tasks: [T-1987]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-22T19:04:11Z
+last_update: 2026-05-22T19:06:20Z
 date_finished: 2026-05-22T19:04:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -228,6 +228,11 @@ python3 -m pytest tests/unit/test_render_artefact_paths.py -q
 - **Plan impact:** S1 now delivers exactly the headline mechanic (preset → instant re-theme → persist → survives navigation) with no extra surface. The 6 presets are defined as curated combos over S0 axes in `settings.PRESETS` (single source of truth, pinned by `test_appearance_validation.py`).
 - **Triggered:** No new sub-task. Note for S2 (T-1989): the picker deliberately omits a nav-layout control — wire it there. Note for S3-S5: density `data-wt-density` is set but visual density application across pages is still pending (token defined in S0, applied later).
 
+### 2026-05-23 — RE-OPENED: slice shipped functionally broken (client-side JS dead)
+- **What changed:** When the human went to review S1, every preset button was inert. `appearance.html`'s inline `<script>` had a malformed ternary (`status.textContent = d && d.ok ? '…' ;` — no `:` branch) → `SyntaxError: Unexpected token ';'` → the whole IIFE aborted → no click handlers attached. The original GO "verified the round-trip server-side" (curl save → render) but **never executed a browser click**, so the dead client half passed. The `[REVIEW]` AC (line ~136: "picking a preset re-themes Watchtower instantly") was the only check that could have caught it, and it was never exercised before close.
+- **Plan impact:** The earlier GO was premature — the headline mechanic did NOT fire for a real user. Fixed under **T-1999** (`d1cb717a`) + Playwright regression guard (`tests/playwright/test_appearance_presets.py`, executes the JS). Review re-opened: `.reviewed-T-1988` marker cleared and the GO flagged premature, so the slice sits in partial-complete with the `[REVIEW]` AC pending re-review on the fixed page. (Status stays `work-completed` — the state machine has no work-completed→started-work transition; the `[REVIEW]` AC, not the status field, is the real gate, and it remains unchecked.)
+- **Triggered:** T-1999 (fix + guard); L-423 (executed-browser verification mandatory for interactive surfaces); inception **T-2000** (specialised UX-review agent + enforce executed-browser review on render surfaces — the systemic gap that let this ship despite static reviewers existing).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -251,9 +256,11 @@ python3 -m pytest tests/unit/test_render_artefact_paths.py -q
 
 ## Recommendation
 
-**Recommendation:** GO (agent ACs complete; one `[REVIEW]` headline-mechanic check pending)
+**Recommendation:** RE-OPENED → GO pending re-review on the fixed page (was: premature GO)
 
-**Rationale:** S1 makes the arc's headline mechanic real and reviewable. The full round-trip is proven server-side: pick a preset → POST persists to a signed-cookie-keyed YAML → any other page reflects the choice on reload. Security is closed at the unit level (whitelist validation rejects out-of-set values; UID constrained to 32-hex before path use; CSRF on save). The pending `[REVIEW]` is the visual confirmation that the 6 presets feel distinct and legible and that the live re-theme is smooth — genuine human taste, not automatable.
+> ⚠️ **2026-05-23 — the earlier GO below was premature.** S1 shipped functionally broken: a JS `SyntaxError` in `appearance.html` left every preset button inert (see Evolution). The headline mechanic did **not** fire for a real user. Fixed under T-1999 (`d1cb717a`) and now verified by executing the JS in a real browser (Playwright 2/2). The slice is re-opened so the `[REVIEW]` AC is exercised against the **working** page. Lesson baked in: the original Evidence proved the *server* round-trip via curl but never a browser *click* — exactly the blind spot.
+
+**Rationale (updated):** With the JS fixed, the headline mechanic now genuinely fires — click a preset → `<html>` re-themes instantly (Console → dark/console/plex, paints `rgb(10,12,14)`) → persists across navigation. Server-side round-trip and security (whitelist, 32-hex UID, CSRF) were always sound. The pending `[REVIEW]` is the visual confirmation that the 6 presets feel distinct and legible — genuine human taste — now reviewable because the page actually works.
 
 **Evidence:**
 - `web/blueprints/settings.py` — presets, sanitiser, signed-cookie UID, `@app_context_processor`, `/settings/appearance` + `/save`
