@@ -25,3 +25,17 @@ This is the executed-browser first pass the static reviewers can't do: it clicks
 
 ### Editorial (linen/light)
 - button label (accent-ink on accent) 3.83:1 < AA 4.5:1
+
+## Cross-page theme fidelity (T-2005) — preset Bone (bone/light)
+
+Headline mechanic: pick the theme once, re-load every page, observe it applied. `--pico-primary` must equal `--wt-accent` (pico-bridge) or that page's chrome ignores the palette.
+
+| Page | Bridge | --pico-primary | --wt-accent | --wt-bg |
+|------|--------|----------------|-------------|---------|
+| `/` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| `/tasks` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| `/approvals` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| `/fabric` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| `/arcs` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
+
+**5/5 pages carry the theme.** The headline mechanic holds across all swept pages.

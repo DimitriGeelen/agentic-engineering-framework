@@ -17,10 +17,24 @@ It then writes a side-by-side gallery (index.html) + a findings report with an
 overall PASS / CONCERN verdict. It INFORMS the human [REVIEW]; it never replaces
 the taste call (T-1811).
 
+Cross-page theme sweep (T-2005, --sweep / --content-pages):
+  verifies the arc-007 headline mechanic — pick one theme on the appearance screen,
+  then re-load every page (Cockpit/Tasks/Approvals/Fabric/Arcs) and confirm it stays
+  applied. Per page it captures a screenshot + the pico-bridge state (--pico-primary
+  must equal --wt-accent, the T-2003 class). Tests the real persist→navigate→
+  server-inject path, and prioritizes which redesign slice has the most broken theme.
+
+Axis smoke-test (--axes, T-2004):
+  clicks each Typography and Density option individually and asserts a measurable
+  visible effect (distinct rendered width / body font-size) — catches inert axes that
+  the preset capture masks.
+
 Usage:
   python3 agents/ux-review/ux-review.py [--base URL] [--page /settings/appearance]
                                         [--out web/static/ux-review]
                                         [--content-page /tasks]
+                                        [--sweep | --content-pages "/,/tasks,/arcs"]
+                                        [--axes]
 
 --base defaults to `bin/fw watchtower url`. Exit 0 if the engine ran end-to-end
 (a CONCERN verdict is still a successful run — the findings are the product).
@@ -335,6 +349,87 @@ def capture(base: str, page_path: str, content_page: str, out_dir: str, guide: d
 
 
 # --------------------------------------------------------------------------- #
+# cross-page theme sweep (T-2005) — verify the arc-007 headline mechanic
+# --------------------------------------------------------------------------- #
+# The headline mechanic promises: pick a theme once, then re-load ANY page
+# (Cockpit/Tasks/Approvals/Fabric/Arcs) and observe the same applied theme
+# without manual reapply. capture() only ever checks ONE content page per preset;
+# this exercises the real persist→navigate→server-inject path across every page.
+DEFAULT_SWEEP_PAGES = ["/", "/tasks", "/approvals", "/fabric", "/arcs"]
+SWEEP_PRESET = "bone"  # light-mode, distinctive amber accent → bridge defects most visible
+
+
+def _page_slug(path: str) -> str:
+    return path.strip("/").replace("/", "-") or "root"
+
+
+def sweep_pages(base: str, page_path: str, content_pages, out_dir: str, guide: dict,
+                preset_id: str = SWEEP_PRESET):
+    """Apply ONE non-default preset on the picker (persists to the per-user pref),
+    then navigate to each page and verify the theme survived. Per page we capture a
+    screenshot and the pico-bridge state (--pico-primary must equal --wt-accent — if
+    not, that page's chrome ignores the palette, T-2003 class). Tests the persist→
+    reload→server-inject path, not a client-side reapply.
+
+    Returns (preset_label, palette, mode, rows) where each row is
+    {page, slug, bridge_ok, pico, wt, bg, text}.
+    """
+    from playwright.sync_api import sync_playwright
+
+    os.makedirs(out_dir, exist_ok=True)
+    rows = []
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        ctx = browser.new_context(viewport={"width": 1440, "height": 1000})
+        page = ctx.new_page()
+        page.set_default_timeout(15000)
+
+        # prime session cookie, then apply the preset on the picker so save() POSTs
+        page.goto(base + "/", wait_until="domcontentloaded")
+        page.goto(base + page_path, wait_until="domcontentloaded")
+        meta = page.evaluate(
+            "(pid) => { const b=document.querySelector('button[data-preset=\"'+pid+'\"]');"
+            " return b ? {palette:b.dataset.palette, type:b.dataset.type,"
+            " density:b.dataset.density, mode:b.dataset.mode,"
+            " label:(b.querySelector('.nm')?.textContent||pid).trim()} : null; }",
+            preset_id,
+        )
+        if not meta:
+            raise RuntimeError(f"sweep preset '{preset_id}' not found on {base}{page_path}")
+        page.click(f'button[data-preset="{preset_id}"]')
+        page.wait_for_function(
+            "(p) => document.documentElement.getAttribute('data-wt-palette') === p",
+            arg=meta["palette"], timeout=6000,
+        )
+        page.wait_for_function(
+            "() => { const s=document.getElementById('wt-status');"
+            " return s && s.textContent.indexOf('Saved') === 0; }",
+            timeout=6000,
+        )
+        mode = meta.get("mode") or "light"
+        expected_accent = guide.get((meta["palette"], mode), {}).get("--wt-accent")
+
+        for cp in content_pages:
+            slug = _page_slug(cp)
+            sep = "&" if "?" in cp else "?"
+            page.goto(base + cp + f"{sep}_uxr=sweep", wait_until="load")
+            _settle_paint(page, expected_accent)
+            page.screenshot(path=os.path.join(out_dir, f"sweep-{slug}.png"), full_page=True)
+            vals = page.evaluate(
+                "() => { const s=getComputedStyle(document.documentElement);"
+                " return {pico:s.getPropertyValue('--pico-primary').trim(),"
+                " wt:s.getPropertyValue('--wt-accent').trim(),"
+                " bg:s.getPropertyValue('--wt-bg').trim(),"
+                " text:s.getPropertyValue('--wt-text').trim()}; }"
+            )
+            bridge_ok = bool(vals["pico"] and vals["wt"]
+                             and _norm_hex(vals["pico"]) == _norm_hex(vals["wt"]))
+            rows.append({"page": cp, "slug": slug, "bridge_ok": bridge_ok, **vals})
+        browser.close()
+    return meta["label"], meta["palette"], mode, rows
+
+
+# --------------------------------------------------------------------------- #
 # artifacts
 # --------------------------------------------------------------------------- #
 def _badge(ok: bool, label: str):
@@ -342,8 +437,36 @@ def _badge(ok: bool, label: str):
     return f'<span style="background:{color};color:#fff;border-radius:6px;padding:2px 8px;font-size:.75rem">{html.escape(label)}</span>'
 
 
-def write_gallery(results, out_dir, base, page_path):
-    concerns = sum(1 for r in results if r["status"] == "concern")
+def _sweep_section(sweep, base):
+    """HTML block for the cross-page theme sweep (T-2005 headline-mechanic check)."""
+    label, palette, mode, rows = sweep
+    cards = []
+    for r in rows:
+        ok = r["bridge_ok"]
+        cards.append(f"""
+  <section style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:0 0 16px">
+    <h3 style="margin:0 0 6px">{html.escape(r['page'])}
+      {_badge(ok, 'theme applied' if ok else 'THEME BROKEN')}</h3>
+    <a href="sweep-{html.escape(r['slug'])}.png" target="_blank">
+      <img src="sweep-{html.escape(r['slug'])}.png" style="width:100%;border:1px solid #e5e7eb;border-radius:8px"></a>
+    <p style="margin:8px 0 0;color:#64748b;font-size:.8rem">
+      --pico-primary <code>{html.escape(r['pico'])}</code> ·
+      --wt-accent <code>{html.escape(r['wt'])}</code> ·
+      --wt-bg <code>{html.escape(r['bg'])}</code></p>
+  </section>""")
+    return f"""
+<h2 style="margin:28px 0 6px">Cross-page theme fidelity (T-2005)</h2>
+<p style="color:#64748b;font-size:.9rem">Headline mechanic: one preset
+(<b>{html.escape(label)}</b> — {html.escape(palette)}/{html.escape(mode)}) picked once on
+the appearance screen, then every page re-loaded. Each frame must carry the same palette;
+<code>--pico-primary</code> must equal <code>--wt-accent</code> (the pico-bridge) or that
+page's chrome ignores the theme.</p>
+{''.join(cards)}"""
+
+
+def write_gallery(results, out_dir, base, page_path, sweep=None):
+    sweep_concerns = sum(1 for r in (sweep[3] if sweep else []) if not r["bridge_ok"])
+    concerns = sum(1 for r in results if r["status"] == "concern") + sweep_concerns
     verdict = "PASS" if concerns == 0 else f"CONCERN ({concerns})"
     vcolor = "#10b981" if concerns == 0 else "#f59e0b"
     cards = []
@@ -382,13 +505,14 @@ not replace the taste call.</p>
 &nbsp;·&nbsp; live page: <a href="{html.escape(base + page_path)}" target="_blank">{html.escape(page_path)}</a></p>
 <p style="color:#64748b;font-size:.85rem">Left image = whole app re-themed · right image = the picker. Click to enlarge.</p>
 {''.join(cards)}
+{_sweep_section(sweep, base) if sweep else ''}
 </body></html>"""
     path = os.path.join(out_dir, "index.html")
     open(path, "w", encoding="utf-8").write(doc)
     return path, verdict
 
 
-def write_report(results, report_path, base, gallery_url, verdict):
+def write_report(results, report_path, base, gallery_url, verdict, sweep=None):
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     lines = [
         "# T-2002 — UX-review first pass: arc-007 S0/S1\n",
@@ -419,6 +543,28 @@ def write_report(results, report_path, base, gallery_url, verdict):
     else:
         lines += ["\n## Findings detail\n\nNo automated findings — every preset applied, console clean, "
                   "all checked contrasts ≥ AA, tokens match the guide."]
+    if sweep:
+        label, palette, mode, rows = sweep
+        broken = [r["page"] for r in rows if not r["bridge_ok"]]
+        lines += [
+            f"\n## Cross-page theme fidelity (T-2005) — preset {label} ({palette}/{mode})\n",
+            "Headline mechanic: pick the theme once, re-load every page, observe it applied. "
+            "`--pico-primary` must equal `--wt-accent` (pico-bridge) or that page's chrome ignores "
+            "the palette.\n",
+            "| Page | Bridge | --pico-primary | --wt-accent | --wt-bg |",
+            "|------|--------|----------------|-------------|---------|",
+        ]
+        for r in rows:
+            lines.append(
+                f"| `{r['page']}` | {'✅ applied' if r['bridge_ok'] else '⚠️ **BROKEN**'} | "
+                f"`{r['pico']}` | `{r['wt']}` | `{r['bg']}` |"
+            )
+        lines.append(
+            f"\n**{len(rows) - len(broken)}/{len(rows)} pages carry the theme.**"
+            + (f" Broken: {', '.join('`'+b+'`' for b in broken)} — those pages' redesign "
+               "slices (S2-S6) are the priority." if broken
+               else " The headline mechanic holds across all swept pages.")
+        )
     open(report_path, "w", encoding="utf-8").write("\n".join(lines) + "\n")
 
 
@@ -511,6 +657,13 @@ def main(argv=None):
     ap.add_argument("--report", default="docs/reports/T-2002-ux-review-arc-007-s0-s1.md")
     ap.add_argument("--axes", action="store_true",
                     help="smoke-test the Type and Density axes individually (not via presets)")
+    ap.add_argument("--content-pages", default="",
+                    help="comma-separated pages for the cross-page theme sweep "
+                         "(headline mechanic); implies the sweep")
+    ap.add_argument("--sweep", action="store_true",
+                    help=f"run the cross-page theme sweep over {','.join(DEFAULT_SWEEP_PAGES)}")
+    ap.add_argument("--sweep-preset", default=SWEEP_PRESET,
+                    help="preset to apply for the cross-page sweep")
     args = ap.parse_args(argv)
 
     if args.target:  # positional convenience
@@ -537,15 +690,31 @@ def main(argv=None):
     print(f"[ux-review] base={base} page={args.page} out={out_dir}")
     guide = parse_foundations(css)
     print(f"[ux-review] loaded {len(guide)} palette/mode token sets from foundations.css")
+    sweep_list = None
+    if args.content_pages:
+        sweep_list = [s.strip() for s in args.content_pages.split(",") if s.strip()]
+    elif args.sweep:
+        sweep_list = list(DEFAULT_SWEEP_PAGES)
+
     results = capture(base, args.page, args.content_page, out_dir, guide)
-    gallery_path, verdict = write_gallery(results, out_dir, base, args.page)
+    sweep_data = None
+    if sweep_list:
+        print(f"[ux-review] cross-page sweep: preset={args.sweep_preset} pages={sweep_list}")
+        sweep_data = sweep_pages(base, args.page, sweep_list, out_dir, guide, args.sweep_preset)
+    gallery_path, verdict = write_gallery(results, out_dir, base, args.page, sweep_data)
     gallery_url = f"{base}/static/{os.path.relpath(gallery_path, os.path.join(root, 'web/static'))}"
-    write_report(results, report, base, gallery_url, verdict)
+    write_report(results, report, base, gallery_url, verdict, sweep_data)
 
     print(f"[ux-review] verdict: {verdict}")
     for r in results:
         flag = "ok " if r["status"] == "ok" else "!! "
         print(f"  {flag}{r['label']:<10} applied={r['applied']} console={'clean' if not r['errors'] else len(r['errors'])} findings={len(r['findings'])}")
+    if sweep_data:
+        label, palette, mode, rows = sweep_data
+        print(f"[ux-review] cross-page sweep (preset {label}, {palette}/{mode}):")
+        for r in rows:
+            print(f"  {'ok ' if r['bridge_ok'] else '!! '}{r['page']:<12} "
+                  f"pico={r['pico']} wt={r['wt']}")
     print(f"[ux-review] gallery: {gallery_url}")
     print(f"[ux-review] report:  {report}")
     return 0

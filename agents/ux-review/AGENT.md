@@ -44,13 +44,27 @@ themed state, scans the console, and checks the result against OUR design system
 fw ux-review                       # review /settings/appearance (default), all presets
 fw ux-review /cockpit              # review a different page
 fw ux-review --content-page /tasks # page screenshotted under each palette
+fw ux-review --sweep               # cross-page theme sweep (T-2005): one preset, all 5 arc pages
+fw ux-review --content-pages "/,/tasks,/arcs"   # sweep a custom page set
+fw ux-review --axes                # T-2004: smoke-test Type/Density axes individually
 fw ux-review --base http://host:port
 ```
 
+**Cross-page theme sweep (`--sweep`, T-2005):** verifies the arc-007 headline
+mechanic — pick one preset on the appearance screen, then re-load every page
+(Cockpit/Tasks/Approvals/Fabric/Arcs) and confirm the theme stays applied. Per page
+it checks the pico-bridge (`--pico-primary` must equal `--wt-accent`, the T-2003
+class) and screenshots the page. A broken page tells you which redesign slice
+(S2-S6) to prioritize. Tests the real persist→navigate→server-inject path, not a
+client-side reapply.
+
 Outputs (under `web/static/ux-review/`, so the gallery is servable over LAN):
-- `index.html` — side-by-side gallery, each state annotated with console + contrast
+- `index.html` — side-by-side gallery, each state annotated with console + contrast;
+  a "Cross-page theme fidelity" section when `--sweep`/`--content-pages` is used
 - `app-<preset>.png` / `picker-<preset>.png` — the re-themed app + the picker
-- `docs/reports/T-2002-ux-review-*.md` — findings report + PASS/CONCERN verdict
+- `sweep-<page>.png` — each swept page under the sweep preset (`--sweep`)
+- `docs/reports/T-2002-ux-review-*.md` — findings report + PASS/CONCERN verdict +
+  per-page theme-fidelity table
 
 Exit 0 if the engine ran end-to-end. A CONCERN verdict is still a successful run —
 the findings are the product.
