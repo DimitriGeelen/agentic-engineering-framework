@@ -39,6 +39,12 @@
 
   function open() {
     if (!modal) return;
+    // mutual exclusion with the ? shortcuts overlay (S6b) — one modal at a time
+    var ov = document.getElementById("wt-shortcuts-overlay");
+    if (ov && !ov.hasAttribute("hidden")) {
+      ov.setAttribute("hidden", "");
+      ov.setAttribute("aria-hidden", "true");
+    }
     modal.removeAttribute("hidden");
     modal.setAttribute("aria-hidden", "false");
     input.value = "";

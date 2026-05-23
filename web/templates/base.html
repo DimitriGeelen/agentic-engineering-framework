@@ -601,6 +601,24 @@
     </div>
     <script src="{{ url_for('static', filename='command-palette.js') }}" defer></script>
 
+    <!-- ? Keyboard-shortcuts overlay (T-2013, arc-007 S6b) — shell-level, like the
+         palette, so its listener survives htmx swaps. Static cheat-sheet (no backend). -->
+    <div id="wt-shortcuts-overlay" class="wt-shortcuts" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+        <div class="wt-shortcuts-backdrop" data-shortcuts-close></div>
+        <div class="wt-shortcuts-box" role="document">
+            <h3 class="wt-shortcuts-title">Keyboard shortcuts</h3>
+            <dl class="wt-shortcuts-list">
+                <div><dt><kbd>⌘</kbd><kbd>K</kbd> <span class="wt-kbd-alt">/ <kbd>Ctrl</kbd><kbd>K</kbd></span></dt><dd>Open command palette — search or jump to any page</dd></div>
+                <div><dt><kbd>?</kbd></dt><dd>Show this shortcuts overlay</dd></div>
+                <div><dt><kbd>Esc</kbd></dt><dd>Close the palette or this overlay</dd></div>
+                <div><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>Move the highlighted result in the palette</dd></div>
+                <div><dt><kbd>Enter</kbd></dt><dd>Jump to / open the highlighted result</dd></div>
+            </dl>
+            <p class="wt-shortcuts-hint">Press <kbd>Esc</kbd> to close</p>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='shortcuts-overlay.js') }}" defer></script>
+
     <!-- Footer -->
     <footer class="site-footer container">
         Watchtower {{ fw_version }} &mdash; {{ project_name | default("Agentic Engineering Framework") }}
@@ -672,6 +690,41 @@
         .wt-palette-empty { padding: 0.75rem; font-size: 0.85rem; opacity: 0.6; text-align: center; }
         @keyframes wt-palette-fade { from { opacity: 0; } to { opacity: 1; } }
         @keyframes wt-palette-pop  { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        /* ── ? Keyboard-shortcuts overlay (T-2013, arc-007 S6b) ─── */
+        .wt-shortcuts[hidden] { display: none; }
+        .wt-shortcuts {
+            position: fixed; inset: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .wt-shortcuts-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.45);
+            animation: wt-palette-fade 0.12s ease-out;
+        }
+        .wt-shortcuts-box {
+            position: relative; width: min(92vw, 460px);
+            background: var(--pico-card-background-color, var(--pico-background-color));
+            border: 1px solid var(--pico-card-border-color, var(--pico-muted-border-color));
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+            padding: 1.1rem 1.3rem 1rem;
+            animation: wt-palette-pop 0.12s ease-out;
+        }
+        .wt-shortcuts-title { margin: 0 0 0.8rem; font-size: 1.05rem; }
+        .wt-shortcuts-list { margin: 0; display: grid; gap: 0.55rem; }
+        .wt-shortcuts-list > div { display: flex; align-items: baseline; gap: 1rem; }
+        .wt-shortcuts-list dt { flex: 0 0 auto; min-width: 6.5rem; }
+        .wt-shortcuts-list dd { margin: 0; font-size: 0.9rem; opacity: 0.9; }
+        .wt-shortcuts kbd {
+            display: inline-block; padding: 0.1rem 0.4rem; margin: 0 0.1rem;
+            font-size: 0.78rem; font-family: var(--pico-font-family, monospace);
+            line-height: 1.4; color: var(--pico-color);
+            background: var(--pico-code-background-color, rgba(127,127,127,0.15));
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: 5px; box-shadow: 0 1px 0 var(--pico-muted-border-color);
+        }
+        .wt-shortcuts .wt-kbd-alt { font-size: 0.78rem; opacity: 0.6; }
+        .wt-shortcuts-hint { margin: 0.9rem 0 0; font-size: 0.78rem; opacity: 0.55; text-align: right; }
     </style>
 
     <script>

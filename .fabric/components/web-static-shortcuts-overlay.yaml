@@ -1,0 +1,20 @@
+id: web/static/shortcuts-overlay.js
+name: shortcuts-overlay
+type: script
+subsystem: watchtower
+location: web/static/shortcuts-overlay.js
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-23
+created_by: unknown
