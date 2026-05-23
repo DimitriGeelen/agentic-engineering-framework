@@ -71,15 +71,16 @@ deterministic than the browser-driven ux-review check, which only fires in the r
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] New unit test (`tests/unit/test_palette_contrast.py`) parses every `[data-wt-palette="X"]`
+- [x] New unit test (`tests/unit/test_palette_contrast.py`) parses every `[data-wt-palette="X"]`
       block in `web/static/css/foundations.css`, resolves each palette's `--wt-accent` +
       `--wt-accent-ink` (honouring dark-variant inheritance of accent from the light block),
-      and asserts `accent-ink/accent` ≥ 4.5:1 (WCAG AA normal text) for all 6 palettes
-- [ ] The test FAILS on a known-bad pair (regression proof): a parametrized/in-test assertion
-      confirms the contrast helper returns < 4.5 for the old `#fbf8f1` on `#c4623f` (3.83) — so
-      the guard genuinely catches the T-2006 class, not just passes vacuously
-- [ ] `python3 -m pytest tests/unit/test_palette_contrast.py -q` passes (all current palettes
-      clear AA after T-2006); `bin/fw test unit` picks it up (no import/collection error)
+      and asserts `accent-ink/accent` ≥ 4.5:1 (WCAG AA) for all 6 palettes. Verified: 6
+      parametrized cases + a parser-sanity case pass
+- [x] The test FAILS on a known-bad pair (regression proof): `test_guard_catches_the_t2006_regression`
+      asserts the helper returns ~3.83 (<4.5) for `#fbf8f1` on `#c4623f` — the guard genuinely
+      catches the T-2006 class, not passing vacuously
+- [x] `python3 -m pytest tests/unit/test_palette_contrast.py -q` → **8 passed**; full
+      `pytest tests/unit/ --collect-only` collects it with no import/collection error
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -179,6 +180,20 @@ python3 -m pytest tests/unit/test_palette_contrast.py -q
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-05-23 — unit lint over browser check, and the regression-proof case
+- **What changed:** The ux-review engine already checks contrast, but only in the browser-
+  driven review loop (manual, slow, not in CI). Pulling the same WCAG formula into a
+  pure-CSS-value unit test makes it a *deterministic CI gate* — the real prevention the
+  T-2006 RCA called for, runnable at authoring time with zero browser.
+- **Plan impact:** None — scope held. The test is self-contained (own contrast helper +
+  foundations.css parser), no dependency on the ux-review agent, so the guard survives even
+  if that tool changes.
+- **Triggered:** Added `test_guard_catches_the_t2006_regression` after recognising a
+  pass-only contrast test could pass vacuously (assert against current values that already
+  pass proves nothing about whether the guard *catches* a bad pair). The regression-proof
+  case pins the helper against the exact pre-T-2006 pair (3.83) — same antifragility class as
+  T-1970/T-1968 (a "fix" that reads like a fix but guards nothing).
 
 ## Decisions
 
