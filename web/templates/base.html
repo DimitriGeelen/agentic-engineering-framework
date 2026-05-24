@@ -643,6 +643,19 @@
     </div>
     <script src="{{ url_for('static', filename='task-panel.js') }}" defer></script>
 
+    {# arc-007 S4e/S6c (T-2018): bulk-action floating bar. Shell-level (outside
+       #content) so its delegated listeners survive every htmx swap. Hidden until a
+       task checkbox is ticked; fans out to /api/task/<id>/horizon per selection. #}
+    <div id="wt-bulk-bar" class="wt-bulk-bar" hidden aria-hidden="true" role="region" aria-label="Bulk actions">
+        <span id="wt-bulk-count" class="wt-bulk-count">0 selected</span>
+        <span class="wt-bulk-label">Set horizon:</span>
+        <button type="button" class="wt-bulk-btn" data-bulk-horizon="now">Now</button>
+        <button type="button" class="wt-bulk-btn" data-bulk-horizon="next">Next</button>
+        <button type="button" class="wt-bulk-btn" data-bulk-horizon="later">Later</button>
+        <button type="button" class="wt-bulk-clear" data-bulk-clear title="Clear selection">Clear</button>
+    </div>
+    <script src="{{ url_for('static', filename='bulk-actions.js') }}" defer></script>
+
     <!-- Footer -->
     <footer class="site-footer container">
         Watchtower {{ fw_version }} &mdash; {{ project_name | default("Agentic Engineering Framework") }}
@@ -832,6 +845,27 @@
         }
         .wt-ac-box-checked { background: #10b981; border-color: #10b981; color: #fff; }
         .wt-task-panel-acs .ac-checked { text-decoration: line-through; color: var(--pico-muted-color); }
+
+        /* arc-007 S4e/S6c (T-2018): bulk multi-select + floating action bar */
+        .wt-bulk-select { flex: 0 0 auto; margin: 0; cursor: pointer; }
+        .wt-bulk-bar {
+            position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
+            z-index: 1000; display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 0.85rem; border-radius: 999px;
+            background: var(--pico-card-background-color, #1f2430);
+            border: 1px solid var(--pico-muted-border-color);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35); font-size: 0.85rem;
+            animation: wt-bulk-rise 0.18s ease-out;
+        }
+        .wt-bulk-bar[hidden] { display: none; }
+        @keyframes wt-bulk-rise { from { opacity: 0; transform: translate(-50%, 0.5rem); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .wt-bulk-count { font-weight: 600; }
+        .wt-bulk-label { color: var(--pico-muted-color); }
+        .wt-bulk-btn, .wt-bulk-clear {
+            margin: 0; padding: 0.2rem 0.7rem; font-size: 0.82rem; line-height: 1.3;
+            border-radius: 999px; width: auto; height: auto; cursor: pointer;
+        }
+        .wt-bulk-clear { background: transparent; border: 1px solid var(--pico-muted-border-color); color: var(--pico-muted-color); }
     </style>
 
     <script>

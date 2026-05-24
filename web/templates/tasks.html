@@ -488,6 +488,9 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
     {% macro kanban_card(task) %}
     <article class="kanban-card">
         <div class="kanban-card-header">
+            {# S4e (T-2018): bulk multi-select checkbox — bulk-actions.js owns it. #}
+            <input type="checkbox" class="wt-bulk-select" data-bulk-select="{{ task.id }}"
+                   title="Select for bulk action" aria-label="Select {{ task.id }}">
             {# S4a (T-2015): data-task-panel opens the slide-in panel; hx-boost=false
                keeps the href as the no-JS full-page fallback (task-panel.js owns the click). #}
             <a href="/tasks/{{ task.id }}" class="kanban-card-id"
@@ -654,6 +657,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
 <table>
     <thead>
         <tr>
+            <th></th>
             <th>ID</th>
             <th>Name</th>
             <th>Status</th>
@@ -668,6 +672,9 @@ document.addEventListener('htmx:afterRequest', function(event) {
     <tbody>
         {% for task in tasks %}
         <tr>
+            {# S4e (T-2018): bulk multi-select checkbox #}
+            <td><input type="checkbox" class="wt-bulk-select" data-bulk-select="{{ task.id }}"
+                       title="Select for bulk action" aria-label="Select {{ task.id }}"></td>
             <td><a href="/tasks/{{ task.id }}"
                    data-task-panel="{{ task.id }}" hx-boost="false">{{ task.id }}</a></td>
             <td><span class="editable-kanban-name" style="white-space:normal;"

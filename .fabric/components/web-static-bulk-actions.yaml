@@ -1,0 +1,20 @@
+id: web/static/bulk-actions.js
+name: bulk-actions
+type: script
+subsystem: watchtower
+location: web/static/bulk-actions.js
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-24
+created_by: unknown
