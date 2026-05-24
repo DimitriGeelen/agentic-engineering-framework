@@ -20,17 +20,32 @@ On `fw task review T-2027` / `T-2028` the Human AC rendered as:
 
 Human verdict: *"is useless for me i need concrete links."*
 
-Three distinct failures in that one AC:
+Failures in that one AC (all curl-verified, not asserted):
 
 | # | Failure | Why it's useless |
 |---|---------|------------------|
 | F1 | `base from \`bin/fw watchtower url\`` | A **command to run**, not a link to click. The human has to open a terminal, run it, copy the base, then hand-build the URL. |
-| F2 | `/settings/appearance` | **Wrong path** — the real route is `/appearance`. A link that 404s. |
-| F3 | "open an arc with a NO-GO anchor recommendation" | **A state that does not exist.** Zero current arcs have a NO-GO anchor verdict, so the `verdict-NO-GO` pill renders nowhere. The step is unverifiable by construction. |
+| F3 | "open an arc with a NO-GO anchor recommendation" | **A state that does not exist.** Curl-verified: all six arc anchors are GO / GO-with-adjustments, so the `verdict-NO-GO` pill renders nowhere. The step is unverifiable by construction. |
+| F4 | screenshots never linked | The slice captured `web/static/ux-review/T-2027-arcs-pages-tokens.png` (served HTTP 200) — the single most concrete "here is the rendered result" artefact — and the hand-off never referenced it. |
 
-And a fourth, silent: **F4 — the screenshots were never linked.** The slice captured
-`web/static/ux-review/T-2027-arcs-pages-tokens.png` (served HTTP 200) — the single most
-concrete "here is the rendered result" artefact — and the hand-off never referenced it.
+### F2 — the route failure that proves the thesis (self-demonstrated)
+
+This one is worth its own section because the *agent caused it twice, in opposite
+directions, while trying to fix the problem*:
+
+1. The original AC said cycle palettes at **`/settings/appearance`**. In a follow-up I
+   asserted that was a 404 and "corrected" it to **`/appearance`**. **Both claims were made
+   without checking.**
+2. Curl ground truth: `/settings/appearance` → **200** (the original AC was *correct*);
+   `/appearance` → **404** (my "fix" was the broken one). The human hit the 404 *I*
+   introduced.
+
+So F2 is not "the agent wrote a wrong path once" — it's "the agent cannot reliably author
+or verify routes from memory, and is confidently wrong in both directions." That is the
+single strongest argument in this document for **candidate C (validate every referenced
+path against `app.url_map`)**: an agent explicitly trying to produce a correct link still
+shipped a 404, because nothing mechanically checks the route. Discipline demonstrably
+cannot fix this; only tooling can.
 
 ## 2. Root cause (why the framework allowed it)
 
@@ -133,3 +148,11 @@ B+C), T-c (palette query override + per-palette links, E). Not built under this 
   improve this in the framework so the correct links always get generated and incorporated."
 - **Outcome:** this inception. Direction: tooling **generates** resolved page+screenshot
   links (A/D/E) and the reviewer **detects** unresolved/404/missing-screenshot links (B/C).
+
+### 2026-05-24 — F2 correction (the inception caught itself)
+- **Human:** "http://192.168.10.107:3000/appearance gives 404".
+- **Agent:** investigated `app.url_map` + curl. Ground truth: `/settings/appearance` → 200,
+  `/appearance` → 404. The *original* AC route was correct; my follow-up "correction" to
+  `/appearance` was the actual 404, asserted without checking. Retracted the false F2 claim
+  and rewrote §1 to mark this as the self-demonstration of candidate C (route validation):
+  an agent fixing the link problem still shipped a 404. Strengthens GO.
