@@ -39,12 +39,13 @@
 
   function open() {
     if (!modal) return;
-    // mutual exclusion with the ? shortcuts overlay (S6b) — one modal at a time
+    // mutual exclusion (S6b overlay + S4a task panel) — one shell modal at a time
     var ov = document.getElementById("wt-shortcuts-overlay");
     if (ov && !ov.hasAttribute("hidden")) {
       ov.setAttribute("hidden", "");
       ov.setAttribute("aria-hidden", "true");
     }
+    if (window.wtTaskPanelClose) window.wtTaskPanelClose();
     modal.removeAttribute("hidden");
     modal.setAttribute("aria-hidden", "false");
     input.value = "";

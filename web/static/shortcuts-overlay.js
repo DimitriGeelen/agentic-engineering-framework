@@ -25,12 +25,13 @@
 
   function open() {
     if (!overlay) return;
-    // mutual exclusion: never stack on top of the command palette
+    // mutual exclusion: never stack on top of the command palette or task panel
     var pal = document.getElementById("wt-command-palette");
     if (pal && !pal.hasAttribute("hidden")) {
       pal.setAttribute("hidden", "");
       pal.setAttribute("aria-hidden", "true");
     }
+    if (window.wtTaskPanelClose) window.wtTaskPanelClose();
     overlay.removeAttribute("hidden");
     overlay.setAttribute("aria-hidden", "false");
   }

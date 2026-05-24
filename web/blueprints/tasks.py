@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 import markdown2
 import yaml
-from flask import Blueprint, abort, request
+from flask import Blueprint, abort, request, render_template
 
 from lib.arc_membership import task_dict_in_arc
 from web.shared import (
@@ -800,6 +800,68 @@ def task_detail(task_id):
         bvp=bvp,
         arc_name=arc_name,
         arc_scoped_drivers=arc_scoped_drivers,
+    )
+
+
+@bp.route("/tasks/<task_id>/panel")
+def task_panel(task_id):
+    """arc-007 S4a (T-2015): lean read-only fragment for the slide-in side panel.
+
+    Deliberately NOT `task_detail.html`: that template's inline scripts add a
+    document-level `htmx:afterRequest` listener (would accumulate per panel load)
+    and reload `#content` on desc-save (the board, not the panel). The panel is a
+    read surface — inline editing is S4b. Rendered via `render_template` (not
+    `render_page`) so no breadcrumb/shell chrome wraps the fragment.
+    """
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
+        abort(404)
+
+    task_data = None
+    task_content = ""
+    for location in ["active", "completed"]:
+        task_dir = PROJECT_ROOT / ".tasks" / location
+        if task_dir.exists():
+            for f in task_dir.glob(f"{task_id}-*.md"):
+                task_data, task_content = parse_frontmatter(f.read_text())
+                if not task_data:
+                    task_data = None
+                break
+        if task_data:
+            break
+
+    if not task_data:
+        abort(404)
+
+    ac_items = _parse_acceptance_criteria(task_content)
+
+    artifacts = []
+    reports_dir = PROJECT_ROOT / "docs" / "reports"
+    if reports_dir.exists():
+        tid_lower = task_id.lower().replace("-", "")
+        for f in sorted(reports_dir.glob("*.md")):
+            if tid_lower in f.name.lower().replace("-", ""):
+                artifacts.append({"name": f.name, "path": f"docs/reports/{f.name}"})
+
+    rec = extract_recommendation(task_content)
+    rec_complete = rec["verdict"] != "?" and bool(rec["rationale"].strip())
+
+    bvp = _task_bvp_data(task_data)
+    arc_data = _task_arc_data(task_data)
+    arc_name = arc_data["arc_name"] if arc_data else None
+
+    return render_template(
+        "_task_panel.html",
+        task=task_data,
+        task_id=task_id,
+        ac_items=ac_items,
+        artifacts=artifacts,
+        verdict=rec["verdict"],
+        rec_complete=rec_complete,
+        rec_rationale_html=render_markdown_safe(rec["rationale"]),
+        rec_evidence_html=render_markdown_safe(rec["evidence"]),
+        description_html=render_markdown_safe(task_data.get("description", "") or ""),
+        bvp=bvp,
+        arc_name=arc_name,
     )
 
 

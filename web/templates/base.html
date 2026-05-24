@@ -619,6 +619,30 @@
     </div>
     <script src="{{ url_for('static', filename='shortcuts-overlay.js') }}" defer></script>
 
+    <!-- Slide-in task side panel (T-2015, arc-007 S4a) — shell-level, like the
+         palette/overlay, so its open/dock/Esc listeners survive htmx #content
+         swaps. Clicking a task card/row on /tasks loads the lean read fragment
+         (/tasks/<id>/panel) into #wt-task-panel-body. Initial dock from prefs
+         (wt_panel_dock) is applied server-side so it never flashes the wrong dock. -->
+    <div id="wt-task-panel" class="wt-task-panel dock-{{ wt_panel_dock | default('right') }}" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Task detail">
+        <div class="wt-task-panel-backdrop" data-task-panel-close></div>
+        <div class="wt-task-panel-box" role="document">
+            <div class="wt-task-panel-dockbar">
+                <div class="wt-task-panel-docks" role="group" aria-label="Dock position">
+                    <button type="button" class="wt-dock-btn" data-dock="left"   title="Dock left"        aria-label="Dock left">&#9612;</button>
+                    <button type="button" class="wt-dock-btn" data-dock="right"  title="Dock right"       aria-label="Dock right">&#9616;</button>
+                    <button type="button" class="wt-dock-btn" data-dock="bottom" title="Dock bottom"      aria-label="Dock bottom">&#9620;</button>
+                    <button type="button" class="wt-dock-btn" data-dock="full"   title="Fullscreen"       aria-label="Fullscreen">&#9633;</button>
+                </div>
+                <button type="button" class="wt-task-panel-x" data-task-panel-close title="Close (Esc)" aria-label="Close panel">&times;</button>
+            </div>
+            <div id="wt-task-panel-body" class="wt-task-panel-body" aria-live="polite">
+                <p class="muted" style="padding:1rem;">Loading…</p>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='task-panel.js') }}" defer></script>
+
     <!-- Footer -->
     <footer class="site-footer container">
         Watchtower {{ fw_version }} &mdash; {{ project_name | default("Agentic Engineering Framework") }}
@@ -725,6 +749,84 @@
         }
         .wt-shortcuts .wt-kbd-alt { font-size: 0.78rem; opacity: 0.6; }
         .wt-shortcuts-hint { margin: 0.9rem 0 0; font-size: 0.78rem; opacity: 0.55; text-align: right; }
+
+        /* ── Slide-in task side panel (T-2015, arc-007 S4a) ───── */
+        .wt-task-panel[hidden] { display: none; }
+        .wt-task-panel { position: fixed; inset: 0; z-index: 1090; }
+        .wt-task-panel-backdrop {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.32);
+            animation: wt-panel-fade 0.15s ease-out;
+        }
+        @keyframes wt-panel-fade { from { opacity: 0; } to { opacity: 1; } }
+        .wt-task-panel-box {
+            position: absolute; display: flex; flex-direction: column;
+            background: var(--pico-card-background-color, var(--pico-background-color));
+            box-shadow: 0 0 40px rgba(0,0,0,0.28);
+            border: 1px solid var(--pico-muted-border-color);
+        }
+        /* Dock positions — class on the container, box positioned per dock. */
+        .wt-task-panel.dock-right .wt-task-panel-box {
+            top: 0; bottom: 0; right: 0; width: min(46rem, 92vw);
+            border-right: none; animation: wt-panel-in-right 0.2s ease-out;
+        }
+        .wt-task-panel.dock-left .wt-task-panel-box {
+            top: 0; bottom: 0; left: 0; width: min(46rem, 92vw);
+            border-left: none; animation: wt-panel-in-left 0.2s ease-out;
+        }
+        .wt-task-panel.dock-bottom .wt-task-panel-box {
+            left: 0; right: 0; bottom: 0; height: min(70vh, 44rem);
+            border-bottom: none; animation: wt-panel-in-bottom 0.2s ease-out;
+        }
+        .wt-task-panel.dock-full .wt-task-panel-box {
+            inset: 2.5vh 2.5vw; width: auto; height: auto; border-radius: 0.6rem;
+            animation: wt-panel-fade 0.15s ease-out;
+        }
+        @keyframes wt-panel-in-right  { from { transform: translateX(100%); } to { transform: none; } }
+        @keyframes wt-panel-in-left   { from { transform: translateX(-100%); } to { transform: none; } }
+        @keyframes wt-panel-in-bottom { from { transform: translateY(100%); } to { transform: none; } }
+        .wt-task-panel-dockbar {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--pico-muted-border-color);
+            background: var(--pico-background-color); flex: 0 0 auto;
+        }
+        .wt-task-panel-docks { display: flex; gap: 0.15rem; }
+        .wt-dock-btn, .wt-task-panel-x {
+            background: transparent; border: 1px solid transparent; cursor: pointer;
+            color: var(--pico-muted-color); padding: 0.15rem 0.45rem; margin: 0;
+            font-size: 0.95rem; line-height: 1.2; border-radius: 5px; width: auto;
+        }
+        .wt-dock-btn:hover, .wt-task-panel-x:hover {
+            background: var(--pico-code-background-color, rgba(127,127,127,0.15));
+            color: var(--pico-color);
+        }
+        .wt-task-panel.dock-left  .wt-dock-btn[data-dock="left"],
+        .wt-task-panel.dock-right .wt-dock-btn[data-dock="right"],
+        .wt-task-panel.dock-bottom .wt-dock-btn[data-dock="bottom"],
+        .wt-task-panel.dock-full  .wt-dock-btn[data-dock="full"] {
+            background: var(--pico-primary); color: var(--pico-primary-inverse);
+            border-color: var(--pico-primary);
+        }
+        .wt-task-panel-x { margin-left: auto; font-size: 1.3rem; }
+        .wt-task-panel-body { flex: 1 1 auto; overflow-y: auto; padding: 1.1rem 1.4rem; }
+        .wt-task-panel-titlebar { display: flex; align-items: baseline; gap: 0.75rem; }
+        .wt-task-panel-id { font-family: monospace; font-weight: 600; color: var(--pico-primary); }
+        .wt-task-panel-fullpage { margin-left: auto; font-size: 0.8rem; white-space: nowrap; }
+        .wt-task-panel-name { margin: 0.2rem 0 0.9rem; font-size: 1.25rem; line-height: 1.3; }
+        .wt-task-panel-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 1rem; margin: 0 0 1rem; }
+        .wt-task-panel-meta > div { display: flex; gap: 0.5rem; align-items: baseline; }
+        .wt-task-panel-meta dt { flex: 0 0 4.5rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--pico-muted-color); margin: 0; }
+        .wt-task-panel-meta dd { margin: 0; font-size: 0.9rem; }
+        .wt-task-panel-detail section { margin: 1.1rem 0; }
+        .wt-task-panel-detail h3 { font-size: 0.95rem; margin: 0 0 0.5rem; }
+        .wt-task-panel-acs .ac-list { list-style: none; padding-left: 0; margin: 0; }
+        .wt-task-panel-acs .ac-list li { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.2rem 0; font-size: 0.88rem; }
+        .wt-ac-box {
+            flex: 0 0 auto; width: 1.05rem; height: 1.05rem; margin-top: 0.1rem;
+            border: 1px solid var(--pico-muted-border-color); border-radius: 3px;
+            text-align: center; line-height: 1rem; font-size: 0.8rem;
+        }
+        .wt-ac-box-checked { background: #10b981; border-color: #10b981; color: #fff; }
+        .wt-task-panel-acs .ac-checked { text-decoration: line-through; color: var(--pico-muted-color); }
     </style>
 
     <script>

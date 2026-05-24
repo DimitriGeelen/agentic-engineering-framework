@@ -204,6 +204,41 @@ def _pinned_items() -> list:
     return out
 
 
+# ── arc-007 S4a (T-2015): slide-in task panel dock preference ────────────────
+# The Tasks-board side panel can dock right / left / bottom / fullscreen. The
+# choice is a per-browser UI preference applied server-side (as the panel's
+# initial class in base.html) so the panel never flashes in the wrong dock on
+# load — same render-time rationale as `appearance:` (T-1988). Stored under a
+# `panel:` key in the S1 prefs file via the same read-modify-write helpers, so it
+# never clobbers `appearance:` / `pins:`.
+PANEL_DOCKS = ("right", "left", "bottom", "full")
+DEFAULT_PANEL_DOCK = "right"
+
+
+def _load_panel_dock() -> str:
+    """Current user's panel dock, defaulting cleanly. Never raises."""
+    try:
+        uid = _wt_uid()
+    except Exception:
+        return DEFAULT_PANEL_DOCK
+    dock = (_load_prefs(uid).get("panel") or {}).get("dock")
+    return dock if dock in PANEL_DOCKS else DEFAULT_PANEL_DOCK
+
+
+def _save_panel_dock(dock: str) -> str:
+    """Persist a whitelisted panel dock for the current user. Returns what was
+    saved (falls back to the default for an unknown value — never trusts input).
+    Read-modify-write of the full prefs dict so appearance:/pins: survive."""
+    clean = dock if dock in PANEL_DOCKS else DEFAULT_PANEL_DOCK
+    uid = _wt_uid()
+    data = _load_prefs(uid)
+    panel = data.get("panel") or {}
+    panel["dock"] = clean
+    data["panel"] = panel
+    _save_prefs(uid, data)
+    return clean
+
+
 def pin_state_for(endpoint) -> dict | None:
     """Pin metadata for the current page, for the breadcrumb-bar toggle:
     {endpoint, label, pinned} when `endpoint` is a pinnable nav leaf, else None
@@ -245,6 +280,17 @@ def inject_palette():
         return {"wt_palette_items": palette_destinations()}
     except Exception:
         return {"wt_palette_items": []}
+
+
+@bp.app_context_processor
+def inject_panel():
+    """Make wt_panel_dock (T-2015, arc-007 S4a) available to every template —
+    base.html applies it as the slide-in task panel's initial dock class so the
+    panel never flashes in the wrong position on load (render-time, like S1)."""
+    try:
+        return {"wt_panel_dock": _load_panel_dock()}
+    except Exception:
+        return {"wt_panel_dock": DEFAULT_PANEL_DOCK}
 
 SETTINGS_FILE = PROJECT_ROOT / ".context" / "settings.yaml"
 
@@ -481,6 +527,17 @@ def save_appearance():
     }
     saved = _save_appearance(raw)
     return jsonify({"ok": True, "appearance": saved})
+
+
+# ── arc-007 S4a (T-2015): task-panel dock save ───────────────────────────────
+@bp.route("/settings/panel-dock/save", methods=["POST"])
+def save_panel_dock():
+    """Persist the slide-in task panel's dock (right/left/bottom/full) for this
+    browser. CSRF is enforced globally (app.csrf_protect); the panel JS posts via
+    window.fetchWithCsrf which sets the X-CSRF-Token header."""
+    dock = request.form.get("dock", "").strip()
+    saved = _save_panel_dock(dock)
+    return jsonify({"ok": True, "dock": saved})
 
 
 # ── arc-007 S2c (T-2010): pin toggle ─────────────────────────────────────────
