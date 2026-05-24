@@ -3259,3 +3259,24 @@ X'` returning empty group."
   date: 2026-05-23
   context: Added via context agent
   application: TBD
+- id: L-424
+  learning: "render-surface gate (P-013, lib/render_surface.sh task_touches_render_surface) detects via task-body path *references*, not git diff — so a test/doc task that merely READS a render-surface file (e.g. a unit test asserting foundations.css contrast) trips it and demands a [REVIEW] AC despite making zero visual change. Correct response is --skip-render-review with a read-only rationale, NOT a sham [REVIEW] AC. A diff-based detector would be the stronger fix."
+  source: P-013
+  task: T-2007
+  date: 2026-05-23
+  context: Added via context agent
+  application: TBD
+- id: L-425
+  learning: "Watchtower contextual chrome that must update on navigation (breadcrumbs, pinned-page indicators, section sub-nav) MUST render inside #content, not in base.html. The nav swaps only #content via htmx (hx-target=#content); anything in base.html outside #content (e.g. the ambient strip) goes stale until a full reload. Pattern: a partial included by _wrapper.html for full loads AND prepended in render_page's htmx branch for htmx loads — replaced on every swap, always fresh. Avoids needing htmx hx-swap-oob. Origin: T-2009 (arc-007 S2b breadcrumbs)."
+  source: P-001
+  task: T-2009
+  date: 2026-05-23
+  context: Added via context agent
+  application: TBD
+- id: L-426
+  learning: "Two templates rendering the 'same' panel (cockpit.html primary dashboard vs index.html fallback) silently diverged on data sourcing, producing grep-invisible render bugs: T-2021 (traceability rendered as raw dict — scan shape changed under a scalar-era template) and T-2022 (Knowledge always 0L/0P/0D — cockpit read health.knowledge, a key fw scan never writes, while index.html sourced the real helpers). Both passed element-presence greps (the <span>s render — just with wrong/zero data); only eyes-on caught them. Fix: when two templates render the same conceptual panel, source from shared helpers and pin the RENDERED values in a unit test (assert the percentage/non-zero count, not the element). Element-presence checks are forbidden as the sole UI check (T-1575) precisely for this class."
+  source: P-001
+  task: T-2022
+  date: 2026-05-24
+  context: Added via context agent
+  application: TBD
