@@ -608,6 +608,35 @@ def _toggle_ac_line(file_path, line_idx):
     return True, new_state, None
 
 
+def _build_active_filter_chips(active: dict, view: str) -> list[dict]:
+    """arc-007 S4c (T-2016): one removable chip per active filter.
+
+    `active` maps filter-key -> value (only non-empty entries). Each chip's
+    `clear_url` is the current filter set minus that one key (plus `view`), so
+    clicking × drops just that filter and keeps the rest — and the URL stays
+    shareable. Per-chip clear-URL logic lives here (testable), not in Jinja.
+    """
+    from urllib.parse import urlencode
+
+    labels = {
+        "q": "search", "owner": "owner", "horizon": "horizon", "tag": "tag",
+        "status": "status", "type": "type", "component": "component", "arc": "arc",
+    }
+    chips = []
+    for key in labels:  # stable, deterministic order
+        val = active.get(key)
+        if not val:
+            continue
+        rest = {k: v for k, v in active.items() if k != key and v}
+        rest["view"] = view
+        chips.append({
+            "key": key,
+            "label": f"{labels[key]}: {val}",
+            "clear_url": "/tasks?" + urlencode(rest),
+        })
+    return chips
+
+
 @bp.route("/tasks")
 def tasks():
     # T-1233: Use cached task metadata (avoids re-reading 1200+ files per request)
@@ -687,9 +716,17 @@ def tasks():
     if view not in ("board", "list"):
         view = "board"
 
+    # arc-007 S4c (T-2016): removable chip per active filter.
+    active_filter_chips = _build_active_filter_chips({
+        "q": search_query, "owner": owner_filter, "horizon": horizon_filter,
+        "tag": tag_filter, "status": status_filter, "type": type_filter,
+        "component": component_filter, "arc": arc_filter,
+    }, view)
+
     enums = _load_enums()
     return render_page(
         "tasks.html",
+        active_filter_chips=active_filter_chips,
         page_title="Tasks",
         tasks=all_tasks,
         statuses=statuses,
