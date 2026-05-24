@@ -16,7 +16,7 @@ tags: [arc:watchtower-redesign, ui, watchtower, cockpit, density]
 components: []
 related_tasks: [T-1990, T-1987, T-2024, T-1991]
 created: 2026-05-24T12:58:23Z
-last_update: 2026-05-24T13:00:15Z
+last_update: 2026-05-24T15:01:21Z
 date_finished:
 cost_estimate_proposed:
   - ts: '2026-05-24T13:00:02Z'
@@ -76,11 +76,11 @@ DO NOT WRAP:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Every rem/px `padding`/`margin`/`gap` in cockpit.html (`<style>` block + inline) wrapped in `calc(<value> * var(--wt-density-scale))`
-- [ ] No `em`-based spacing, `border-radius`, `border-*`, `font-size`, or `letter-spacing` was wrapped (exclusion rules honoured)
-- [ ] cockpit.html still compiles (jinja `get_template`)
-- [ ] Unit test `tests/unit/test_cockpit_density_spacing.py` passes (sample of spacing rules use `calc(… * var(--wt-density-scale))`; border-radius/font-size untouched)
-- [ ] Playwright test `tests/playwright/test_cockpit_density_spacing.py` passes: at `data-wt-density="cozy"` a sampled element's computed padding equals the pre-change baseline; at `compact` it is ~×0.875 (spacing axis now responds)
+- [x] Every rem/px `padding`/`margin`/`gap` in cockpit.html (`<style>` block + inline) wrapped in `calc(<value> * var(--wt-density-scale))`
+- [x] No `em`-based spacing, `border-radius`, `border-*`, `font-size`, or `letter-spacing` was wrapped (exclusion rules honoured)
+- [x] cockpit.html still compiles (jinja `get_template`)
+- [x] Unit test `tests/unit/test_cockpit_density_spacing.py` passes (sample of spacing rules use `calc(… * var(--wt-density-scale))`; border-radius/font-size untouched)
+- [x] Playwright test `tests/playwright/test_cockpit_density_spacing.py` passes: at `data-wt-density="cozy"` a sampled element's computed padding equals the pre-change baseline; at `compact` it is ~×0.875 (spacing axis now responds)
 
 ### Human
 - [ ] [REVIEW] Cockpit looks identical at Cozy and visibly tightens at Compact / loosens at Comfortable, with the rhythm staying coherent
@@ -103,6 +103,30 @@ python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; app.jin
 - **Plan impact:** S3b is an *atomic* render slice (the whole cockpit must scale together or density looks janky) with rhythm-preservation as the correctness bar — deserves a full budget window, not a tail-end start. Filed human-approved + fully-scoped rather than started at 53% budget.
 - **Triggered:** Consider a follow-up to roll the same scale-multiply to other high-density pages (tasks board, approvals) once the cockpit pilot is validated — would make the density control global, not cockpit-only.
 
+### 2026-05-24 — build: actual count 37 spacing values; font-size compounding measured
+- **What changed:** The "54 sites" filing estimate over-counted — it folded in font-size (37
+  sites, excluded) and em-spacing (6, excluded). The authoritative count is **37 rem/px
+  padding/margin/gap values** wrapped; every remaining unwrapped rem/px value is a legitimate
+  exclusion (37 font-size, 9 border-radius, 7 border, 1 media-query max-width — verified by a
+  classify-all-rem/px grep). Diff is a clean 37-insert/37-delete 1:1 line swap.
+- **Measured (T-2031 lesson — don't reason, measure):** the density control ALSO shifts the
+  root font-size (`--pico-font-size` 100/112.5/125%), so a `calc(1rem * scale)` value moves for
+  *two* reasons at once — the rem-anchor (font axis) AND the density-scale (spacing axis). Net
+  effect: compact/comfortable change *more* in raw px than the bare 0.875/1.125, while **cozy
+  stays pixel-identical** (scale=1, and cozy is today's default). The Playwright test isolates
+  the pure density-scale by normalising margin ÷ root-font-size, proving 0.875 / 1 / 1.125
+  cleanly regardless of the rem shift. Eyes-on (3 screenshots) confirms coherent rhythm — nothing
+  collides or overflows at any density.
+- **Plan impact:** none — the human-approved scale-multiply is implemented as specified; the
+  compounding is a property of the existing token system (font + spacing both keyed to
+  `data-wt-density`), not introduced here. Noted so a reviewer isn't surprised that Compact is
+  visibly *quite* a bit tighter than a pure ×0.875 would suggest.
+- **Triggered:** none new. The "roll to other pages" follow-up still stands (now with the
+  font-compounding caveat documented for whoever picks it up).
+- **Verification artefacts:** unit `tests/unit/test_cockpit_density_spacing.py` (5 tests);
+  Playwright `tests/playwright/test_cockpit_density_spacing.py` (3 tests, normalised ratio);
+  screenshots `web/static/ux-review/T-2029-cockpit-density-{compact,cozy,comfortable}.png`.
+
 ## Decisions
 
 ### 2026-05-24 — scale-multiply, em-spacing excluded
@@ -112,11 +136,25 @@ python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; app.jin
 
 ## Recommendation
 
-**Recommendation:** GO (ready to build — execute next session with full budget)
-**Rationale:** Approach is human-approved; scope and exclusion rules are pinned; the only open work is the mechanical (but voluminous, atomic) edit + rigorous 3-density verification. Best executed in a fresh budget window so the rhythm-preservation check isn't rushed.
+**Recommendation:** GO (built — all 5 Agent ACs pass)
+**Rationale:** The human-approved scale-multiply is implemented: all 37 cockpit rem/px
+padding/margin/gap values are now `calc(<value> * var(--wt-density-scale))`; every excluded
+property (em-spacing, border-radius, border, font-size, letter-spacing, sizing) is verified
+untouched. Cozy is pixel-identical to before (scale=1); Compact tightens and Comfortable
+loosens. One [REVIEW] AC remains — the human's eyes-on judgement that the rhythm stays
+coherent across all three densities — which only the human can settle.
 **Evidence:**
-- 54 rem/px spacing sites identified; em(6)/border-radius(9)/font excluded
-- Density tokens exist (foundations.css:224-226); cockpit will be the first spacing consumer
+- 37 spacing values wrapped (clean 37-insert/37-delete 1:1 diff); classify-all-rem/px grep
+  confirms every unwrapped rem/px is a legitimate exclusion (font-size/border-radius/border/max-width).
+- Unit `tests/unit/test_cockpit_density_spacing.py` — 5 tests pass (wrapped, exclusions-not-wrapped,
+  no-bare-spacing-left, compiles).
+- Playwright `tests/playwright/test_cockpit_density_spacing.py` — 3 tests pass; density-scale
+  isolated via margin÷root-font normalisation → 0.875 / 1 / 1.125 confirmed.
+- Eyes-on (3 screenshots, web `/static/ux-review/T-2029-cockpit-density-{compact,cozy,comfortable}.png`):
+  coherent rhythm, no collisions/overflow at any density.
+- Reviewer PASS (needs_human=no).
+**Note (deploy):** the live `:3000` caches templates — the density behaviour shows after a restart.
+The isolated-port Playwright run + screenshots prove the new render.
 
 ## Updates
 
@@ -127,3 +165,12 @@ python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; app.jin
 ### 2026-05-24T13:00:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-de1119a0
+- **Timestamp:** 2026-05-24T15:07:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
