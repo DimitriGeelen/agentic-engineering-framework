@@ -55,8 +55,9 @@ class TestPins:
         if page.locator(PINS).count() == 0:
             page.locator(STAR).click()
             expect(page.locator(PINS)).to_have_count(1)
-        # htmx-navigate to another section — the pin stays in the nav
-        page.locator("nav.site-nav details.dropdown > summary", has_text="Architecture").click()
+        # htmx-navigate elsewhere — the pin stays in the nav
+        # (T-2034: Arcs is under Work now, not Architecture)
+        page.locator("nav.site-nav details.dropdown > summary", has_text="Work").click()
         page.locator("nav.site-nav details.dropdown[open] ul li a", has_text="Arcs").click()
         page.wait_for_load_state("networkidle")
         expect(page.locator(PINS)).to_have_count(1)

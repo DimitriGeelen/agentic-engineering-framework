@@ -37,13 +37,14 @@ class TestGovernSubsections:
             loc = page.locator("nav.site-nav li.nav-subsection-label", has_text=label)
             expect(loc).to_be_visible()
 
-    def test_arcs_moved_to_architecture(self, page: Page):
-        """Arcs is reachable from the Architecture group, not Work (design IA move)."""
+    def test_arcs_lives_under_work(self, page: Page):
+        """T-2034: Arcs is reachable from the Work group, not Architecture (human IA
+        override of the T-2008 design-spec move)."""
         page.goto(f"{TEST_URL}/", timeout=60000)
         page.wait_for_load_state("domcontentloaded")
-        arch = page.locator("nav.site-nav details.dropdown > summary", has_text="Architecture")
-        arch.click()
-        # the Architecture dropdown that is now open contains an Arcs link
+        work = page.locator("nav.site-nav details.dropdown > summary", has_text="Work")
+        work.click()
+        # the Work dropdown that is now open contains an Arcs link
         arcs = page.locator("nav.site-nav details.dropdown[open] ul li a", has_text="Arcs")
         expect(arcs.first).to_be_visible()
 

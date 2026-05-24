@@ -34,12 +34,12 @@ class TestBreadcrumb:
         expect(page.locator("#content nav.wt-breadcrumb")).to_contain_text("Tasks")
         # marker that only survives if there is NO full page reload
         page.evaluate("window.__wt_no_reload = true")
-        # htmx-navigate to Architecture › Arcs
-        page.locator("nav.site-nav details.dropdown > summary", has_text="Architecture").click()
+        # htmx-navigate to Work › Arcs (T-2034: Arcs moved Architecture → Work)
+        page.locator("nav.site-nav details.dropdown > summary", has_text="Work").click()
         page.locator("nav.site-nav details.dropdown[open] ul li a", has_text="Arcs").click()
         page.wait_for_load_state("networkidle")
         # breadcrumb refreshed to the new section…
-        expect(page.locator("#content nav.wt-breadcrumb")).to_contain_text("Architecture")
+        expect(page.locator("#content nav.wt-breadcrumb")).to_contain_text("Work")
         expect(page.locator("#content nav.wt-breadcrumb")).to_contain_text("Arcs")
         # …and the marker survived → it was an htmx swap, not a full reload
         assert page.evaluate("window.__wt_no_reload") is True

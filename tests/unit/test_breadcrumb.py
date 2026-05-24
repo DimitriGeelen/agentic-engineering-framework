@@ -48,8 +48,9 @@ def test_detail_page_three_levels_with_linked_section(ctx):
 
 
 def test_nested_arc_detail(ctx):
+    # T-2034: Arcs lives under Work (was Architecture under T-2008).
     crumbs = nav_breadcrumb(None, "/arcs/arc-007")
-    assert _labels(crumbs) == ["Architecture", "Arcs", "arc-007"]
+    assert _labels(crumbs) == ["Work", "Arcs", "arc-007"]
     assert crumbs[1][1] == "/arcs"
 
 

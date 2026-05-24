@@ -107,6 +107,7 @@ def task_id_sort_key(value):
 NAV_GROUPS = [
     ("Work", [
         ("Tasks",       "tasks.tasks",              None),
+        ("Arcs",        "arcs.arcs_index",          None),
         ("BVP",         "bvp.bvp_scatter",          None),
         ("Inception",   "inception.inception_list",  None),
         ("Assumptions", "inception.assumptions_list", None),
@@ -122,7 +123,6 @@ NAV_GROUPS = [
     ("Architecture", [
         ("Fabric",      "fabric.fabric_overview",   None),
         ("Explorer",    "fabric.fabric_graph",      None),
-        ("Arcs",        "arcs.arcs_index",          None),
         ("Terminal",    "terminal.terminal_page",    None),
         ("Sessions",    "sessions_page.sessions_page", None),
     ]),
@@ -223,7 +223,7 @@ def nav_breadcrumb(endpoint, path=""):
     for pages under no nav section (better silent than a misleading crumb).
         /tasks          -> [(Work, None), (Tasks, None)]
         /tasks/T-2008   -> [(Work, None), (Tasks, /tasks), (T-2008, None)]
-        /arcs/arc-007   -> [(Architecture, None), (Arcs, /arcs), (arc-007, None)]
+        /arcs/arc-007   -> [(Work, None), (Arcs, /arcs), (arc-007, None)]
         /               -> []
     """
     segs = [s for s in (path or "").split("/") if s]

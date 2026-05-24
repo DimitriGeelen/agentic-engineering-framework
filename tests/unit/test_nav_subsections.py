@@ -4,7 +4,8 @@ Pins three things the S2a slice established:
   1. The polymorphic NAV_GROUPS model — a group's items may be leaves
      (label, endpoint, icon) OR subsections (label, [leaves]) — and NAV_ITEMS
      still flattens to *every* leaf (no item lost when a group gains subsections).
-  2. The design IA move: Arcs lives under Architecture, not Work (BVP stays in Work).
+  2. Arcs lives under Work next to Tasks/BVP (T-2034 reversed the T-2008 design-spec
+     move to Architecture — human IA override; arcs are groupings of tasks).
   3. The named pain point is gone: the Govern group renders as labelled
      subsections in the page DOM, not a flat 16-item list.
 
@@ -36,10 +37,13 @@ def test_nav_items_flattens_every_leaf():
         assert isinstance(leaf[1], str) and leaf[1], f"empty/non-str endpoint: {leaf}"
 
 
-def test_arcs_moved_to_architecture():
-    """Design IA (nav-patterns.jsx): Arcs belongs under Architecture, not Work."""
-    assert "Arcs" in nav_group_labels("Architecture")
-    assert "Arcs" not in nav_group_labels("Work")
+def test_arcs_lives_under_work():
+    """T-2034: Arcs belongs under Work (next to Tasks/BVP), not Architecture.
+
+    T-2008 moved Arcs → Architecture per the design bundle; the human overrode that
+    (arcs are groupings of tasks, a work-planning artifact). This pins the reversal."""
+    assert "Arcs" in nav_group_labels("Work")
+    assert "Arcs" not in nav_group_labels("Architecture")
     assert "BVP" in nav_group_labels("Work"), "BVP should stay in Work"
 
 
