@@ -42,7 +42,7 @@
     /* Left-border accent per lifecycle state — preserve the legacy colour map */
     .kanban-column[data-state="draft"]       { border-left: 4px solid var(--pico-secondary, #888); }
     .kanban-column[data-state="in-progress"] { border-left: 4px solid var(--pico-primary); }
-    .kanban-column[data-state="closed"]      { border-left: 4px solid var(--pico-form-element-valid-active-border-color, #2e7d32); }
+    .kanban-column[data-state="closed"]      { border-left: 4px solid var(--wt-success); }
     .kanban-column[data-state="abandoned"]   { border-left: 4px solid var(--pico-muted-color); }
 
     .arc-card {
@@ -96,11 +96,11 @@
     .focus-dot.on { background: var(--pico-primary); }
     .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
     .badge { display: inline-block; padding: 0.05em 0.4em; border-radius: 3px; font-size: 0.7em; }
-    .badge-warn { background: #c97a00; color: white; }
+    .badge-warn { background: var(--wt-warn); color: white; }
     /* T-1910: status badge variants (match arc_detail.html) */
     /* T-1970: contrast fix — see arc_detail.html comment for rationale. */
     .badge-info { background: var(--pico-primary-background); color: var(--pico-primary-inverse); }
-    .badge-ok { background: #1e6a2a; color: white; }
+    .badge-ok { background: var(--wt-success); color: white; }
     .badge-draft { background: var(--pico-card-sectioning-background-color, #444); color: var(--pico-muted-color); border: 1px solid var(--pico-muted-border-color); }
     .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-color); }
     /* T-1910: inline-editable arc name affordance */
@@ -164,7 +164,7 @@
     .arc-meta { font-size: 0.85rem; color: var(--pico-muted-color); margin-top: 0.25rem; }
     /* T-1970: contrast fix — duplicated for HTMX swap-context list mode. */
     .badge-info { background: var(--pico-primary-background); color: var(--pico-primary-inverse); }
-    .badge-ok { background: #1e6a2a; color: white; }
+    .badge-ok { background: var(--wt-success); color: white; }
     .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-color); }
     .badge-draft { background: var(--pico-card-sectioning-background-color, #444); color: var(--pico-muted-color); border: 1px solid var(--pico-muted-border-color); }
 </style>
