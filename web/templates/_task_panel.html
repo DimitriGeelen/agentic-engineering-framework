@@ -1,8 +1,13 @@
-{# arc-007 S4a (T-2015): lean read-only task fragment for the slide-in side panel.
-   Loaded via htmx GET /tasks/<id>/panel into #wt-task-panel-body. Deliberately
-   carries NO inline-edit scripts or document-level listeners (those belong to the
-   full-page task_detail.html / S4b). Pure read surface: header, meta, recommendation,
-   AC checklist (read-only), description, artifacts, and an "open full page" escape. #}
+{# arc-007 S4a/S4b (T-2015, T-2017): task fragment for the slide-in side panel.
+   Loaded via htmx GET /tasks/<id>/panel into #wt-task-panel-body.
+
+   S4b: the meta cells (status/owner/horizon/type) are inline-editable for *active*
+   tasks via the shared `inline_select` macro + the existing /api/task/<id>/<field>
+   endpoints. No inline <script> / document-level listener — htmx processes the
+   swapped fragment and the macro's onchange submits, so nothing accumulates.
+   Completed tasks render read-only. AC checklist, recommendation, description and
+   artifacts remain read-only (full editing stays on task_detail.html). #}
+{% from '_partials/inline_select.html' import inline_select %}
 <div class="wt-task-panel-detail">
     <div class="wt-task-panel-titlebar">
         <span class="wt-task-panel-id">{{ task.id }}</span>
@@ -13,10 +18,29 @@
     <h2 class="wt-task-panel-name">{{ task.name }}</h2>
 
     <dl class="wt-task-panel-meta">
+        {% if editable %}
+        <div><dt>Status</dt><dd class="wt-panel-edit-cell">
+            {{ inline_select(task_id, 'status', status_options, task.status, hx_target='#wt-panel-status-result') }}
+            <span id="wt-panel-status-result" class="wt-panel-edit-result"></span>
+        </dd></div>
+        <div><dt>Owner</dt><dd class="wt-panel-edit-cell">
+            {{ inline_select(task_id, 'owner', enum_owners, task.owner, hx_target='#wt-panel-owner-result') }}
+            <span id="wt-panel-owner-result" class="wt-panel-edit-result"></span>
+        </dd></div>
+        <div><dt>Horizon</dt><dd class="wt-panel-edit-cell">
+            {{ inline_select(task_id, 'horizon', enum_horizons, task.horizon, hx_target='#wt-panel-horizon-result') }}
+            <span id="wt-panel-horizon-result" class="wt-panel-edit-result"></span>
+        </dd></div>
+        <div><dt>Type</dt><dd class="wt-panel-edit-cell">
+            {{ inline_select(task_id, 'type', enum_types, task.workflow_type, hx_target='#wt-panel-type-result') }}
+            <span id="wt-panel-type-result" class="wt-panel-edit-result"></span>
+        </dd></div>
+        {% else %}
         <div><dt>Status</dt><dd><span class="wt-chip" data-status="{{ task.status }}">{{ task.status }}</span></dd></div>
         <div><dt>Owner</dt><dd>{{ task.owner or '—' }}</dd></div>
         <div><dt>Horizon</dt><dd>{{ task.horizon or '—' }}</dd></div>
         <div><dt>Type</dt><dd>{{ task.workflow_type or '—' }}</dd></div>
+        {% endif %}
         {% if task.arc_id %}
         <div><dt>Arc</dt><dd><a href="/arcs/{{ task.arc_id }}"><code>{{ task.arc_id }}</code></a>{% if arc_name %} <span class="muted">{{ arc_name }}</span>{% endif %}</dd></div>
         {% endif %}

@@ -842,19 +842,24 @@ def task_detail(task_id):
 
 @bp.route("/tasks/<task_id>/panel")
 def task_panel(task_id):
-    """arc-007 S4a (T-2015): lean read-only fragment for the slide-in side panel.
+    """arc-007 S4a/S4b (T-2015, T-2017): fragment for the slide-in side panel.
 
     Deliberately NOT `task_detail.html`: that template's inline scripts add a
     document-level `htmx:afterRequest` listener (would accumulate per panel load)
-    and reload `#content` on desc-save (the board, not the panel). The panel is a
-    read surface — inline editing is S4b. Rendered via `render_template` (not
-    `render_page`) so no breadcrumb/shell chrome wraps the fragment.
+    and reload `#content` on desc-save (the board, not the panel).
+
+    S4b (T-2017) makes the meta cells (status/owner/horizon/type) inline-editable
+    for *active* tasks via the shared `inline_select` macro + the existing
+    `/api/task/<id>/<field>` endpoints — zero new JS, so nothing accumulates.
+    Completed tasks render read-only (their status falls outside the active enum).
+    Rendered via `render_template` (not `render_page`) so no shell chrome wraps it.
     """
     if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     task_data = None
     task_content = ""
+    task_active = False
     for location in ["active", "completed"]:
         task_dir = PROJECT_ROOT / ".tasks" / location
         if task_dir.exists():
@@ -862,6 +867,8 @@ def task_panel(task_id):
                 task_data, task_content = parse_frontmatter(f.read_text())
                 if not task_data:
                     task_data = None
+                else:
+                    task_active = location == "active"
                 break
         if task_data:
             break
@@ -886,10 +893,13 @@ def task_panel(task_id):
     arc_data = _task_arc_data(task_data)
     arc_name = arc_data["arc_name"] if arc_data else None
 
+    enums = _load_enums()
+
     return render_template(
         "_task_panel.html",
         task=task_data,
         task_id=task_id,
+        editable=task_active,
         ac_items=ac_items,
         artifacts=artifacts,
         verdict=rec["verdict"],
@@ -899,6 +909,10 @@ def task_panel(task_id):
         description_html=render_markdown_safe(task_data.get("description", "") or ""),
         bvp=bvp,
         arc_name=arc_name,
+        status_options=enums["statuses"],
+        enum_owners=enums["owners"],
+        enum_horizons=enums["horizons"],
+        enum_types=enums["workflow_types"],
     )
 
 

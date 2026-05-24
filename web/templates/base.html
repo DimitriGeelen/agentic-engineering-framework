@@ -816,6 +816,11 @@
         .wt-task-panel-meta > div { display: flex; gap: 0.5rem; align-items: baseline; }
         .wt-task-panel-meta dt { flex: 0 0 4.5rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--pico-muted-color); margin: 0; }
         .wt-task-panel-meta dd { margin: 0; font-size: 0.9rem; }
+        /* S4b (T-2017): inline-edit cells in the panel meta grid */
+        .wt-task-panel-meta dd.wt-panel-edit-cell { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .wt-task-panel-meta .wt-panel-edit-cell form { margin: 0; }
+        .wt-task-panel-meta .wt-panel-edit-cell select { margin: 0; padding: 0.1rem 1.4rem 0.1rem 0.4rem; font-size: 0.85rem; height: auto; min-height: 0; width: auto; }
+        .wt-panel-edit-result { font-size: 0.75rem; color: var(--pico-muted-color); }
         .wt-task-panel-detail section { margin: 1.1rem 0; }
         .wt-task-panel-detail h3 { font-size: 0.95rem; margin: 0 0 0.5rem; }
         .wt-task-panel-acs .ac-list { list-style: none; padding-left: 0; margin: 0; }
