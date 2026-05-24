@@ -406,6 +406,10 @@ def index():
         ctx["qr_approvals_url"] = qr_url
         # T-803: Token usage widget
         ctx["token_usage"] = _get_token_usage()
+        # T-2022: knowledge counts for System Health (scan omits project_health.knowledge;
+        # source from helpers like the index.html fallback does)
+        ctx["knowledge_counts"] = _get_knowledge_counts()
+        ctx["pattern_summary"] = _get_pattern_summary()
         return render_page("cockpit.html", page_title="Watchtower", **ctx)
 
     # Fallback: existing dashboard (no scan data)

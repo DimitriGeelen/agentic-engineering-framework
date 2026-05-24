@@ -343,10 +343,12 @@
         <ul class="wt-pulse">
             {% set _trace = health.get('traceability') %}
             <li>Traceability: <span class="wt-pulse-value">{% if _trace is mapping %}{{ (_trace.get('score', 0) * 100) | round | int }}%{% elif _trace is not none %}{{ _trace }}{% else %}?{% endif %}</span></li>
+            {# T-2022: source from helpers (knowledge_counts / pattern_summary), matching index.html;
+               the scan does not write project_health.knowledge so the old health.get(...) was always 0 #}
             <li>Knowledge:
-                <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('learnings', 0) }}</span>L,
-                <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('patterns', 0) }}</span>P,
-                <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('decisions', 0) }}</span>D
+                <span class="wt-pulse-value">{{ knowledge_counts.get('learnings', 0) if knowledge_counts else 0 }}</span>L,
+                <span class="wt-pulse-value">{{ (pattern_summary.get('failure', 0) + pattern_summary.get('success', 0) + pattern_summary.get('antifragile', 0) + pattern_summary.get('workflow', 0)) if pattern_summary else 0 }}</span>P,
+                <span class="wt-pulse-value">{{ knowledge_counts.get('decisions', 0) if knowledge_counts else 0 }}</span>D
             </li>
             {% if antifragility.get('patterns_added_since_last_scan', 0) > 0 %}
             <li>Strength: <span class="wt-pulse-value" style="color:#2e7d32;">+{{ antifragility.patterns_added_since_last_scan }}</span> patterns</li>
