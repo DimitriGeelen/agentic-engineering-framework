@@ -1,0 +1,20 @@
+id: tests/unit/test_cockpit_traceability.py
+name: test_cockpit_traceability
+type: script
+subsystem: unknown
+location: tests/unit/test_cockpit_traceability.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-24
+created_by: unknown

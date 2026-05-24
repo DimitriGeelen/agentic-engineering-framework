@@ -341,7 +341,8 @@
     <article>
         <h4 class="wt-section-title">System Health</h4>
         <ul class="wt-pulse">
-            <li>Traceability: <span class="wt-pulse-value">{{ health.get('traceability', '?') }}</span></li>
+            {% set _trace = health.get('traceability') %}
+            <li>Traceability: <span class="wt-pulse-value">{% if _trace is mapping %}{{ (_trace.get('score', 0) * 100) | round | int }}%{% elif _trace is not none %}{{ _trace }}{% else %}?{% endif %}</span></li>
             <li>Knowledge:
                 <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('learnings', 0) }}</span>L,
                 <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('patterns', 0) }}</span>P,
