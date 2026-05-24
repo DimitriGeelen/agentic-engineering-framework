@@ -655,6 +655,8 @@
         <button type="button" class="wt-bulk-clear" data-bulk-clear title="Clear selection">Clear</button>
     </div>
     <script src="{{ url_for('static', filename='bulk-actions.js') }}" defer></script>
+    {# S4d (T-2019): kanban drag-to-reorder — shell-level, document-delegated, survives swaps. #}
+    <script src="{{ url_for('static', filename='kanban-drag.js') }}" defer></script>
 
     <!-- Footer -->
     <footer class="site-footer container">
@@ -866,6 +868,15 @@
             border-radius: 999px; width: auto; height: auto; cursor: pointer;
         }
         .wt-bulk-clear { background: transparent; border: 1px solid var(--pico-muted-border-color); color: var(--pico-muted-color); }
+
+        /* arc-007 S4d (T-2019): kanban drag-to-reorder (cross-column status change) */
+        .kanban-card[draggable="true"] { cursor: grab; }
+        .kanban-card.kanban-dragging { opacity: 0.45; cursor: grabbing; }
+        .kanban-column.kanban-drop-target {
+            outline: 2px dashed var(--pico-primary, #7aa2f7);
+            outline-offset: -4px;
+            background: color-mix(in srgb, var(--pico-primary, #7aa2f7) 8%, transparent);
+        }
     </style>
 
     <script>

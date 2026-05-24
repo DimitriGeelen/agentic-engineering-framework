@@ -486,7 +486,9 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
 <div class="kanban-board">
     {# ── Kanban card macro ─────────────────────────────────── #}
     {% macro kanban_card(task) %}
-    <article class="kanban-card">
+    {# S4d (T-2019): draggable + data-task-id → kanban-drag.js drags the card onto another
+       .kanban-column and POSTs the target column's status to /api/task/<id>/status. #}
+    <article class="kanban-card" draggable="true" data-task-id="{{ task.id }}">
         <div class="kanban-card-header">
             {# S4e (T-2018): bulk multi-select checkbox — bulk-actions.js owns it. #}
             <input type="checkbox" class="wt-bulk-select" data-bulk-select="{{ task.id }}"
