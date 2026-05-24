@@ -97,6 +97,19 @@ def test_f3_filler_rows_hidden_in_column():
     assert ":has(> .nav-pins:not(:has(" not in txt, "nested :has() inside :has() (invalid, drops rule)"
 
 
+# ── F5: sidebar accordion honours [open] + lifts open list above the summary ─
+def test_f5_sidebar_accordion_open_state_and_stacking():
+    txt = BASE.read_text()
+    assert "details.dropdown:not([open]) > ul { display: none; }" in txt, \
+        "closed sidebar group not collapsed off [open] (F5)"
+    # the open list must be lifted into its own stacking context above the summary
+    m = re.search(r'details\.dropdown\[open\] > ul \{[^}]*\}', txt)
+    assert m, "open sidebar group ul rule not found (F5)"
+    assert "z-index: 2" in m.group(0), "open sidebar list not lifted above summary (F5)"
+    assert re.search(r'details\.dropdown > summary \{[^}]*z-index: 1', txt), \
+        "summary not given a lower stacking index (F5)"
+
+
 # ── F4b: all type-pairing webfonts preloaded ───────────────────────────────
 def test_f4b_webfonts_preloaded():
     txt = BASE.read_text()

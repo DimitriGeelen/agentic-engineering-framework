@@ -83,6 +83,34 @@ class TestNavLayoutPolish:
         # was 158px (two empty 56px filler rows); now just the brand's bottom spacing.
         assert gap < 60, f"sidebar brand→first-group gap still large: {gap}px (F3 regression)"
 
+    def test_f5_sidebar_subitems_are_clickable_and_route(self, page: Page, base_url):
+        """End-to-end: a real pointer click on a sidebar accordion sub-item navigates.
+
+        This is the test that would have caught the bug — the sub-links rendered but the
+        summary's oversized hit area intercepted clicks (toggled the group instead of
+        routing), and closed groups stayed in a display:flex/0-height limbo.
+        """
+        page.goto(f"{base_url}/", timeout=60000)
+        page.wait_for_load_state("domcontentloaded")
+        page.set_viewport_size({"width": 1440, "height": 900})
+        page.evaluate("()=>document.documentElement.setAttribute('data-wt-nav','sidebar')")
+        # a CLOSED group's sub-list must be truly hidden (real accordion collapse)
+        closed_display = page.evaluate(
+            """()=>{
+              const g = document.querySelectorAll('nav.site-nav .nav-items details.dropdown');
+              return getComputedStyle(g[1].querySelector('ul')).display;
+            }"""
+        )
+        assert closed_display == "none", f"closed sidebar group ul not hidden: {closed_display}"
+        # open the first group via a REAL click on its summary
+        page.click("nav.site-nav .nav-items details.dropdown summary")
+        link = page.locator("nav.site-nav .nav-items details.dropdown[open] ul li a").first
+        href = link.get_attribute("href")
+        # REAL pointer click — fails if the summary intercepts (the original bug)
+        link.click()
+        page.wait_for_url(f"**{href}", timeout=10000)
+        assert page.url.endswith(href), f"sub-item did not route: at {page.url}, expected {href}"
+
     def test_capture_review_artefacts(self, page: Page, base_url):
         os.makedirs(ARTEFACT_DIR, exist_ok=True)
         page.goto(f"{base_url}/", timeout=60000)

@@ -282,6 +282,22 @@
             html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(> .nav-pins) { display: none; }
             html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(.nav-pin),
             html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(.nav-pin) { display: block; }
+            /* T-2033 F5: make the sidebar accordion sub-items reliably clickable.
+               Two pre-existing faults compounded: (1) Pico's `nav ul{display:flex}`
+               overrides the native <details> collapse, so a CLOSED group's <ul> stayed
+               displayed (in a 0-height/content-hidden limbo) instead of cleanly hidden;
+               (2) the <summary>'s hit area extends ~50px past its 40px box (a Pico
+               dropdown artifact), so it swallowed clicks on the OPEN sub-links beneath
+               it — clicks toggled the group instead of routing. Fix: drive display off
+               [open] explicitly, and lift the open list into its own stacking context
+               above the summary so the <a> is the hit target. Proven: a real pointer
+               click on a sub-item now navigates (was intercepted by the summary). */
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown:not([open]) > ul { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown[open] > ul {
+                display: flex; flex-direction: column;
+                position: relative; z-index: 2;
+            }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown > summary { position: relative; z-index: 1; }
 
             /* ── Layout C: slim icon rail + group flyouts ───────── */
             html[data-wt-nav="rail"] nav.site-nav {
