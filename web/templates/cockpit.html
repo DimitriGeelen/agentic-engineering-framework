@@ -6,10 +6,11 @@
     .wt-section { margin-bottom:1rem; }
     .wt-section-title { margin:0 0 0.75rem 0; font-size:1rem; letter-spacing:0.04em; text-transform:uppercase; color:var(--pico-muted-color); }
     .wt-card { border-left:4px solid var(--pico-muted-border-color); padding:0.75rem 1rem; margin-bottom:0.5rem; background:var(--pico-card-background-color); border-radius:0 4px 4px 0; }
-    .wt-card-amber { border-left-color:#f9a825; }
-    .wt-card-blue { border-left-color:#1565c0; }
-    .wt-card-green { border-left-color:#2e7d32; }
-    .wt-card-red { border-left-color:#c62828; }
+    /* arc-007 S3a2 (T-2024): card accent borders via semantic tokens so they re-theme */
+    .wt-card-amber { border-left-color:var(--wt-warn); }
+    .wt-card-blue { border-left-color:var(--wt-info); }
+    .wt-card-green { border-left-color:var(--wt-success); }
+    .wt-card-red { border-left-color:var(--wt-danger); }
     .wt-card-summary { font-weight:600; margin-bottom:0.25rem; }
     .wt-card-detail { font-size:0.85rem; color:var(--pico-muted-color); margin-bottom:0.5rem; }
     .wt-card-actions { display:flex; gap:0.5rem; flex-wrap:wrap; }
@@ -116,7 +117,7 @@
 {% endif %}
 
 {% if scan_status == 'partial' %}
-<article style="border-left:4px solid #f9a825; padding:0.5rem 1rem; margin-bottom:1rem;">
+<article style="border-left:4px solid var(--wt-warn); padding:0.5rem 1rem; margin-bottom:1rem;">
     <small>Scan partially completed — some data sources were unavailable.</small>
 </article>
 {% endif %}
@@ -166,34 +167,34 @@
         Action Required
         <a href="/approvals" class="wt-show-all" style="text-decoration:none;">View all in Approvals &rarr;</a>
     </h4>
-    <div class="wt-card" style="border-left: 3px solid #f59e0b;">
+    <div class="wt-card" style="border-left: 3px solid var(--wt-warn);">
         <div style="display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.5rem;">
             {% if action_summary.tier0_count %}
-            <span><strong style="color:#f59e0b;">{{ action_summary.tier0_count }}</strong> Tier 0</span>
+            <span><strong style="color:var(--wt-warn);">{{ action_summary.tier0_count }}</strong> Tier 0</span>
             {% endif %}
             {% if action_summary.go_count %}
-            <span><strong style="color:#1565c0;">{{ action_summary.go_count }}</strong> GO Decisions</span>
+            <span><strong style="color:var(--wt-info);">{{ action_summary.go_count }}</strong> GO Decisions</span>
             {% endif %}
             {% if action_summary.human_ac_count %}
-            <span><strong style="color:#7c3aed;">{{ action_summary.human_ac_count }}</strong> Human ACs
+            <span><strong style="color:var(--wt-accent);">{{ action_summary.human_ac_count }}</strong> Human ACs
                 <small style="color:var(--pico-muted-color);">({{ action_summary.human_ac_task_count }} tasks)</small>
                 {# T-1533: per-verdict count pills next to the AC count #}
                 {% if action_summary.go_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="GO"
                        style="margin-left:0.4rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#1b5e20; color:#fff; font-size:0.65rem; font-weight:600;"
+                              background:var(--wt-success); color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks the agent recommends GO — likely rubber-stamp">{{ action_summary.go_ac_count }} GO</small>
                 {% endif %}
                 {% if action_summary.defer_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="DEFER"
                        style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#e65100; color:#fff; font-size:0.65rem; font-weight:600;"
+                              background:var(--wt-warn); color:#1a1a1a; font-size:0.65rem; font-weight:600;"
                        title="Tasks the agent recommends DEFER — needs strategic decision">{{ action_summary.defer_ac_count }} DEFER</small>
                 {% endif %}
                 {% if action_summary.nogo_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="NO-GO"
                        style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#b71c1c; color:#fff; font-size:0.65rem; font-weight:600;"
+                              background:var(--wt-danger); color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks the agent recommends NO-GO">{{ action_summary.nogo_ac_count }} NO-GO</small>
                 {% endif %}
                 {# T-1577: NO-REC distinguishes 'agent owes a recommendation' (no Recommendation
@@ -202,7 +203,7 @@
                 {% if action_summary.no_rec_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="NO-REC"
                        style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#0e7490; color:#fff; font-size:0.65rem; font-weight:600;"
+                              background:var(--wt-info); color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks where the agent has not written a Recommendation block — not yet ready for review (T-1576/T-1577)">{{ action_summary.no_rec_ac_count }} NO-REC</small>
                 {% endif %}
                 {# T-1540 iter1: ? verdict was unaccounted for in pill sum (count vs pill mismatch). Surface it.
@@ -210,7 +211,7 @@
                 {% if action_summary.unknown_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="?"
                        style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#616161; color:#fff; font-size:0.65rem; font-weight:600;"
+                              background:var(--wt-muted); color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks with a Recommendation block whose verdict line is missing or unparseable">{{ action_summary.unknown_ac_count }} ?</small>
                 {% endif %}
             </span>
@@ -355,7 +356,7 @@
                 <span class="wt-pulse-value">{{ knowledge_counts.get('decisions', 0) if knowledge_counts else 0 }}</span>D
             </li>
             {% if antifragility.get('patterns_added_since_last_scan', 0) > 0 %}
-            <li>Strength: <span class="wt-pulse-value" style="color:#2e7d32;">+{{ antifragility.patterns_added_since_last_scan }}</span> patterns</li>
+            <li>Strength: <span class="wt-pulse-value" style="color:var(--wt-success);">+{{ antifragility.patterns_added_since_last_scan }}</span> patterns</li>
             {% endif %}
             {% if test_counts %}
             <li>Tests:
@@ -372,23 +373,23 @@
                 <div class="text-muted text-xs">Concerns</div>
             </div>
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #1565c0;">{{ concerns_summary.gaps }}</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--wt-info);">{{ concerns_summary.gaps }}</div>
                 <div class="text-muted text-xs">Gaps</div>
             </div>
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #e65100;">{{ concerns_summary.risks }}</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--wt-warn);">{{ concerns_summary.risks }}</div>
                 <div class="text-muted text-xs">Risks</div>
             </div>
             {% if concerns_summary.high > 0 %}
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #c62828;">{{ concerns_summary.high }}</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--wt-danger);">{{ concerns_summary.high }}</div>
                 <div class="text-muted text-xs">High</div>
             </div>
             {% endif %}
         </div>
         {% endif %}
         {% if stale_tasks %}
-        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #e65100;">
+        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--wt-warn);">
             {{ stale_tasks | length }} stale task{{ 's' if stale_tasks | length != 1 }}:
             {% for t in stale_tasks[:3] %}{{ t.id }}{% if not loop.last %}, {% endif %}{% endfor %}
         </div>
@@ -404,7 +405,7 @@
         <h4 class="wt-section-title">Scan Summary</h4>
         <p style="font-size:0.9rem; white-space:pre-line;">{{ summary }}</p>
         {% if risks %}
-        <h5 style="color:#c62828; font-size:0.85rem; margin-top:0.75rem;">Risks</h5>
+        <h5 style="color:var(--wt-danger); font-size:0.85rem; margin-top:0.75rem;">Risks</h5>
         {% for risk in risks %}
         <div class="wt-card wt-card-red" style="padding:0.5rem 0.75rem;">
             <div class="text-sm">{{ risk.summary }}</div>
