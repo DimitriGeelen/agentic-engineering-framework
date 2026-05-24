@@ -94,10 +94,10 @@
             {% set _v = t.verdict %}
             <span class="verdict-badge" data-verdict="{{ _v }}"
                   style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em;
-                  {% if _v == 'GO' %}background:#1b5e20; color:#fff;
-                  {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
-                  {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
-                  {% else %}background:#616161; color:#fff;
+                  {% if _v == 'GO' %}background:var(--wt-success); color:#fff;
+                  {% elif _v == 'DEFER' %}background:var(--wt-warn); color:#1a1a1a;
+                  {% elif _v == 'NO-GO' %}background:var(--wt-danger); color:#fff;
+                  {% else %}background:var(--wt-muted); color:#fff;
                   {% endif %}"
                   title="Agent recommendation: {{ _v }}">{{ _v }}</span>
             {% endif %}
@@ -107,7 +107,7 @@
             {% set _bad = (_r.findings and _r.findings > 0) or _r.needs_human or _r.overall in ('FAIL', 'WARN') %}
             <span class="reviewer-badge" data-overall="{{ _r.overall }}"
                   style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.65rem; font-weight:600;
-                  {% if _bad %}background:#7f1d1d; color:#fff;{% else %}background:#14532d; color:#fff;{% endif %}"
+                  {% if _bad %}background:var(--wt-danger); color:#fff;{% else %}background:var(--wt-success); color:#fff;{% endif %}"
                   title="Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }} findings{% endif %}{% if _r.needs_human %} · needs human{% endif %}">
                 Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }}{% endif %}{% if _r.needs_human %} ⚠{% endif %}
             </span>
@@ -137,11 +137,11 @@
         <summary style="font-weight:600; cursor:pointer;">
             Agent Recommendation:
             {% if t.rec_decision == 'GO' %}
-            <span style="color:#10b981;">GO</span>
+            <span style="color:var(--wt-success);">GO</span>
             {% elif t.rec_decision == 'NO-GO' %}
-            <span style="color:#ef4444;">NO-GO</span>
+            <span style="color:var(--wt-danger);">NO-GO</span>
             {% elif t.rec_decision == 'DEFER' %}
-            <span style="color:#6b7280;">DEFER</span>
+            <span style="color:var(--wt-muted);">DEFER</span>
             {% else %}
             {{ t.rec_decision }}
             {% endif %}
@@ -150,8 +150,8 @@
     </details>
     {% else %}
     {# T-1214: Fallback context when agent recommendation is missing #}
-    <div style="margin-top:0.5rem; background:#f59e0b11; border:1px solid #f59e0b44; padding:0.5rem 0.75rem; border-radius:4px;">
-        <div style="font-size:0.8rem; font-weight:600; color:#b45309; margin-bottom:0.3rem;">
+    <div style="margin-top:0.5rem; background:color-mix(in srgb, var(--wt-warn) 7%, transparent); border:1px solid color-mix(in srgb, var(--wt-warn) 27%, transparent); padding:0.5rem 0.75rem; border-radius:4px;">
+        <div style="font-size:0.8rem; font-weight:600; color:var(--wt-warn); margin-bottom:0.3rem;">
             No agent recommendation written yet
         </div>
         {% if t.problem_full %}
@@ -165,7 +165,7 @@
             <div style="font-size:0.85rem; margin-top:0.3rem; white-space:pre-wrap; line-height:1.4;">{{ t.go_nogo_criteria }}</div>
         </details>
         {% endif %}
-        <div style="font-size:0.75rem; color:#b45309; margin-top:0.4rem;">
+        <div style="font-size:0.75rem; color:var(--wt-warn); margin-top:0.4rem;">
             Review the <a href="/inception/{{ t.task_id }}">full task</a> for research findings,
             or ask the agent to write a recommendation.
         </div>
@@ -208,12 +208,12 @@
             {% set _v = a.verdict %}
             <span class="verdict-badge" data-verdict="{{ _v }}"
                   style="display:inline-block; padding:0.15rem 0.55rem; border-radius:3px; font-size:0.72rem; font-weight:700; letter-spacing:0.05em;
-                  {% if _v == 'CLOSE' %}background:#1b5e20; color:#fff;
-                  {% elif _v == 'GO' %}background:#1b5e20; color:#fff;
-                  {% elif _v == 'KEEP-OPEN' %}background:#616161; color:#fff;
-                  {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
-                  {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
-                  {% else %}background:#616161; color:#fff;
+                  {% if _v == 'CLOSE' %}background:var(--wt-success); color:#fff;
+                  {% elif _v == 'GO' %}background:var(--wt-success); color:#fff;
+                  {% elif _v == 'KEEP-OPEN' %}background:var(--wt-muted); color:#fff;
+                  {% elif _v == 'NO-GO' %}background:var(--wt-danger); color:#fff;
+                  {% elif _v == 'DEFER' %}background:var(--wt-warn); color:#1a1a1a;
+                  {% else %}background:var(--wt-muted); color:#fff;
                   {% endif %}"
                   title="Anchor-task agent recommendation: {{ _v }}">{{ _v }}</span>
             <a href="/arcs/{{ a.slug }}"><strong>{{ a.name }}</strong></a>
@@ -248,10 +248,10 @@
 {% for pd in paused_dispatches %}
 <div class="approval-card pending">
     <div class="approval-risk">
-        {% if pd.severity == 'high' %}<span style="color:#ef4444;">[HIGH]</span>
-        {% elif pd.severity == 'medium' %}<span style="color:#f59e0b;">[MED]</span>
-        {% elif pd.severity == 'low' %}<span style="color:#6b7280;">[LOW]</span>
-        {% else %}<span style="color:#6b7280;">[?]</span>{% endif %}
+        {% if pd.severity == 'high' %}<span style="color:var(--wt-danger);">[HIGH]</span>
+        {% elif pd.severity == 'medium' %}<span style="color:var(--wt-warn);">[MED]</span>
+        {% elif pd.severity == 'low' %}<span style="color:var(--wt-muted);">[LOW]</span>
+        {% else %}<span style="color:var(--wt-muted);">[?]</span>{% endif %}
         <a href="/review/{{ pd.task_id }}" style="text-decoration:none;">{{ pd.task_id }}</a>
         <span style="color:var(--pico-muted-color); font-weight:normal; font-size:0.85rem;">— {{ pd.question_short or '(no question)' }}</span>
     </div>
@@ -286,7 +286,7 @@
     <form hx-post="/api/approvals/complete-batch" hx-target="#batch-complete-result" hx-swap="innerHTML"
           hx-confirm="Complete {{ ready_count }} task(s) with all Human ACs checked?" style="display:inline;">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;">
+        <button type="submit" style="background:var(--wt-success); border-color:var(--wt-success); color:white; padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;">
             Complete {{ ready_count }} Ready Task{{ 's' if ready_count != 1 }}
         </button>
     </form>
@@ -312,7 +312,7 @@
     </button>
     {% if go_count %}
     <button class="ac-filter-btn outline" data-filter="go"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#1b5e20; color:#1b5e20;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-success); color:var(--wt-success);"
             onclick="filterACs('go')"
             title="Tasks the agent recommends GO — likely rubber-stamp">
         GO ({{ go_count }})
@@ -320,7 +320,7 @@
     {% endif %}
     {% if defer_count %}
     <button class="ac-filter-btn outline" data-filter="defer"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#e65100; color:#e65100;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-warn); color:var(--wt-warn);"
             onclick="filterACs('defer')"
             title="Tasks the agent recommends DEFER — needs strategic decision">
         DEFER ({{ defer_count }})
@@ -328,7 +328,7 @@
     {% endif %}
     {% if nogo_count %}
     <button class="ac-filter-btn outline" data-filter="nogo"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#b71c1c; color:#b71c1c;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-danger); color:var(--wt-danger);"
             onclick="filterACs('nogo')"
             title="Tasks the agent recommends NO-GO">
         NO-GO ({{ nogo_count }})
@@ -337,7 +337,7 @@
     {% if norec_count %}
     {# T-1576: NO-REC = agent owes a recommendation (no `## Recommendation` section). #}
     <button class="ac-filter-btn outline" data-filter="norec"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#0e7490; color:#0e7490;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-info); color:var(--wt-info);"
             onclick="filterACs('norec')"
             title="Agent has not written a Recommendation block — task not ready for review yet (T-679/T-1576).">
         NO-REC ({{ norec_count }})
@@ -345,25 +345,25 @@
     {% endif %}
     {% if unknown_count %}
     <button class="ac-filter-btn outline" data-filter="unknown"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#616161; color:#616161;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-muted); color:var(--wt-muted);"
             onclick="filterACs('unknown')"
             title="Recommendation section exists but verdict line is missing/unparseable.">
         ? ({{ unknown_count }})
     </button>
     {% endif %}
     <button class="ac-filter-btn outline" data-filter="review"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#b45309; color:#b45309;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-warn); color:var(--wt-warn);"
             onclick="filterACs('review')">
         Review ({{ review_count }})
     </button>
     <button class="ac-filter-btn outline" data-filter="rubber-stamp"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#047857; color:#047857;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-success); color:var(--wt-success);"
             onclick="filterACs('rubber-stamp')">
         Rubber-stamp ({{ rubber_stamp_count }})
     </button>
     {% if stale_count %}
     <button class="ac-filter-btn outline" data-filter="stale"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#e65100; color:#e65100;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-warn); color:var(--wt-warn);"
             onclick="filterACs('stale')">
         Stale >7d ({{ stale_count }})
     </button>
@@ -406,10 +406,10 @@ function filterACs(filter) {
             {% set _v = t.state if (t.state is defined and t.state == 'NO-REC') else (t.verdict if t.verdict is defined else '?') %}
             <span class="verdict-badge" data-verdict="{{ _v }}"
                   style="font-size:0.65rem; font-weight:600; padding:0.1rem 0.35rem; border-radius:3px; white-space:nowrap;
-                         {% if _v == 'GO' %}background:#1b5e20; color:#fff;
-                         {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
-                         {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
-                         {% elif _v == 'NO-REC' %}background:#0e7490; color:#fff;
+                         {% if _v == 'GO' %}background:var(--wt-success); color:#fff;
+                         {% elif _v == 'DEFER' %}background:var(--wt-warn); color:#1a1a1a;
+                         {% elif _v == 'NO-GO' %}background:var(--wt-danger); color:#fff;
+                         {% elif _v == 'NO-REC' %}background:var(--wt-info); color:#fff;
                          {% else %}background:var(--pico-muted-border-color); color:var(--pico-muted-color);{% endif %}"
                   title="{% if _v == 'NO-REC' %}Agent has not written a Recommendation block — task not ready for review yet (T-1576).{% else %}Agent recommendation: {{ _v }}{% endif %}">{{ _v }}</span>
             {# T-1569 / F3: reviewer mechanical verdict — parity with inception cards #}
@@ -418,13 +418,13 @@ function filterACs(filter) {
             {% set _bad = (_r.findings and _r.findings > 0) or _r.needs_human or _r.overall in ('FAIL', 'WARN') %}
             <span class="reviewer-badge" data-overall="{{ _r.overall }}"
                   style="font-size:0.6rem; font-weight:600; padding:0.1rem 0.3rem; border-radius:3px; white-space:nowrap;
-                         {% if _bad %}background:#7f1d1d; color:#fff;{% else %}background:#14532d; color:#fff;{% endif %}"
+                         {% if _bad %}background:var(--wt-danger); color:#fff;{% else %}background:var(--wt-success); color:#fff;{% endif %}"
                   title="Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }} findings{% endif %}{% if _r.needs_human %} · needs human{% endif %}">
                 R:{{ _r.overall }}{% if _r.findings %}·{{ _r.findings }}{% endif %}{% if _r.needs_human %}⚠{% endif %}
             </span>
             {% endif %}
             {% if t.age_days is defined %}
-            <span style="font-size:0.65rem; color:{% if t.is_stale %}#e65100{% else %}var(--pico-muted-color){% endif %}; white-space:nowrap;"
+            <span style="font-size:0.65rem; color:{% if t.is_stale %}var(--wt-warn){% else %}var(--pico-muted-color){% endif %}; white-space:nowrap;"
                   {% if t.is_stale %}title="Stale: waiting >7 days"{% endif %}>
                 {{ t.age_days }}d{% if t.is_stale %} &#9888;{% endif %}
             </span>
@@ -478,7 +478,7 @@ function filterACs(filter) {
     <div style="margin-top:0.5rem;">
         <form hx-post="/api/task/{{ t.task_id }}/complete" hx-target="closest .human-ac-group" hx-swap="outerHTML">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 1rem; font-size:0.8rem;">
+            <button type="submit" style="background:var(--wt-success); border-color:var(--wt-success); color:white; padding:0.3rem 1rem; font-size:0.8rem;">
                 Complete Task
             </button>
         </form>
