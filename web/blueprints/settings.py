@@ -32,13 +32,17 @@ MODES = ("light", "dark")
 # Rendered by base.html via the data-wt-nav attribute (mirrors the S0 data-wt-* pattern).
 NAV_LAYOUTS = ("topbar", "sidebar", "rail")
 
+# T-2033 F4a: presets carry palette/type/density/mode ONLY — nav is an independent
+# axis (human decision 2026-05-24: a preset is a look-switch; the sidebar/rail layout
+# is a structural preference the user sets once, not part of a visual theme). Decoupling
+# also removes the horizontal page jump that picking Console/Midnight used to cause.
 PRESETS = {
-    "calm":      {"label": "Calm",      "palette": "stone",   "type": "inter",      "density": "compact", "mode": "light", "nav": "topbar"},
-    "editorial": {"label": "Editorial", "palette": "linen",   "type": "newsreader", "density": "compact", "mode": "light", "nav": "topbar"},
-    "console":   {"label": "Console",   "palette": "console", "type": "plex",       "density": "compact", "mode": "dark",  "nav": "sidebar"},
-    "paper":     {"label": "Paper",     "palette": "paper",   "type": "geist",      "density": "compact", "mode": "light", "nav": "topbar"},
-    "bone":      {"label": "Bone",      "palette": "bone",    "type": "manrope",    "density": "compact", "mode": "light", "nav": "topbar"},
-    "midnight":  {"label": "Midnight",  "palette": "slate",   "type": "inter",      "density": "compact", "mode": "dark",  "nav": "rail"},
+    "calm":      {"label": "Calm",      "palette": "stone",   "type": "inter",      "density": "compact", "mode": "light"},
+    "editorial": {"label": "Editorial", "palette": "linen",   "type": "newsreader", "density": "compact", "mode": "light"},
+    "console":   {"label": "Console",   "palette": "console", "type": "plex",       "density": "compact", "mode": "dark"},
+    "paper":     {"label": "Paper",     "palette": "paper",   "type": "geist",      "density": "compact", "mode": "light"},
+    "bone":      {"label": "Bone",      "palette": "bone",    "type": "manrope",    "density": "compact", "mode": "light"},
+    "midnight":  {"label": "Midnight",  "palette": "slate",   "type": "inter",      "density": "compact", "mode": "dark"},
 }
 DEFAULT_APPEARANCE = {"preset": "calm", "palette": "stone", "type": "inter", "density": "compact", "mode": "light", "nav": "topbar"}
 
@@ -70,7 +74,9 @@ def _sanitise_appearance(raw: dict) -> dict:
     out = dict(DEFAULT_APPEARANCE)
     preset = raw.get("preset")
     if preset in PRESETS:
-        out.update({k: PRESETS[preset][k] for k in ("palette", "type", "density", "mode", "nav")})
+        # T-2033 F4a: nav deliberately excluded — it stays whatever the user posted
+        # (resolved independently below), so a preset never moves the layout.
+        out.update({k: PRESETS[preset][k] for k in ("palette", "type", "density", "mode")})
         out["preset"] = preset
     else:
         out["preset"] = "custom"

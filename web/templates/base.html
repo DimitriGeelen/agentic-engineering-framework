@@ -16,6 +16,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
     <!-- arc-007 S0 (T-1991): foundation tokens + Pico-bridge. MUST load after pico. -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/foundations.css') }}">
+    {#- T-2033 F4b: preload all type-pairing webfonts so switching a preset/type does
+        NOT trigger a font-swap reflow (font-display:swap renders fallback first, then
+        re-lays-out when the woff2 arrives — the "layout switches several times" the
+        appearance picker showed). Self-hosted on LAN, woff2-subset (~20KB each). -#}
+    {%- for f in ['inter-400','inter-600','geist-400','geist-600','plex-400','plex-600','manrope-400','manrope-600','newsreader-400','newsreader-600','jetbrainsmono-400'] %}
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/' + f + '.woff2') }}">
+    {%- endfor %}
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
     <script src="{{ url_for('static', filename='htmx-ext-sse.js') }}"></script>
     <script src="{{ url_for('static', filename='csrf-htmx.js') }}"></script>
@@ -250,15 +257,44 @@
             }
             html[data-wt-nav="sidebar"] nav.site-nav .nav-pins { flex-direction: column; align-items: stretch; gap: 0.1rem; }
             html[data-wt-nav="sidebar"] nav.site-nav .nav-pin { width: 100%; }
-            /* shift page content clear of the fixed sidebar (no occlusion) */
-            html[data-wt-nav="sidebar"] .ambient-strip,
-            html[data-wt-nav="sidebar"] main.container,
-            html[data-wt-nav="sidebar"] footer.site-footer { margin-left: 232px; }
+            /* T-2033 F2: offset content via body padding (not margin-left on full-width
+               children). margin-left on a width:100% block pushes it off-screen by the
+               margin width → a permanent horizontal scrollbar. padding-left on the
+               (border-box) body shrinks the content area instead, so no overflow. The
+               fixed nav sits in the padding gutter, unaffected. */
+            html[data-wt-nav="sidebar"] body { padding-left: 232px; }
+            /* T-2033 F2 residual: percentage-width content can round 1-2px past the
+               padded box, leaving a hair-line horizontal scroll. Clip on the ROOT
+               (not body — body clip leaves the document scroller free) removes it with
+               no visible scrollbar. Vertical scroll is untouched; intentional wide
+               content (tables) scrolls in its own .table-responsive wrapper. */
+            html[data-wt-nav="sidebar"],
+            html[data-wt-nav="rail"] { overflow-x: clip; }
+            /* T-2033 F3: drop the mobile-only hamburger row and the empty pins row —
+               on desktop they reserve ~56px each in the column (158px of dead space
+               under the logo). NOTE: split into single-level :has rules — :has() may
+               NOT be nested inside :has(), and one invalid selector drops the whole
+               grouped rule. Pins are hidden by default in the column, then re-shown
+               only when an actual pin exists. */
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(> .nav-toggle),
+            html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(> .nav-toggle) { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(> .nav-pins),
+            html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(> .nav-pins) { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(.nav-pin),
+            html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(.nav-pin) { display: block; }
 
             /* ── Layout C: slim icon rail + group flyouts ───────── */
             html[data-wt-nav="rail"] nav.site-nav {
                 position: fixed; top: 0; left: 0; bottom: 0; width: 60px;
-                z-index: 100; overflow-y: auto; overflow-x: visible;
+                z-index: 100;
+                /* T-2033 F1: must be `overflow: visible` so the group flyouts (absolute,
+                   left:56px) escape the 60px rail. The previous `overflow-y:auto;
+                   overflow-x:visible` was a no-op: per CSS spec overflow-x is FORCED to
+                   compute as `auto` when overflow-y is non-visible — so every flyout was
+                   clipped to nothing (the "subitems not wired" bug). The rail holds only
+                   ~9 icons (≤400px), well within any desktop height, so dropping the
+                   scroll container is safe. */
+                overflow: visible;
                 border-right: 1px solid var(--pico-muted-border-color); border-bottom: none;
                 padding: 0.6rem 0;
             }
@@ -280,9 +316,8 @@
             html[data-wt-nav="rail"] nav.site-nav .nav-pins { flex-direction: column; align-items: center; }
             html[data-wt-nav="rail"] nav.site-nav .nav-pin { padding: 0.3rem; }
             html[data-wt-nav="rail"] nav.site-nav .nav-pin .nav-pin-star ~ * { display: none; }  /* star only, drop label in rail */
-            html[data-wt-nav="rail"] .ambient-strip,
-            html[data-wt-nav="rail"] main.container,
-            html[data-wt-nav="rail"] footer.site-footer { margin-left: 60px; }
+            /* T-2033 F2: offset via body padding, not margin-left (see sidebar note). */
+            html[data-wt-nav="rail"] body { padding-left: 60px; }
         }
         footer.site-footer {
             text-align: center; padding: 1.5rem 0;

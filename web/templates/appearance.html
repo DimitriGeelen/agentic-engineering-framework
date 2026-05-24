@@ -41,9 +41,11 @@
   <header><strong>Presets</strong></header>
   <div class="wt-presets" id="wt-presets">
     {% for pid, p in presets.items() %}
+    {# T-2033 F4a: presets no longer carry a nav layout — nav is an independent axis
+       (human decision 2026-05-24). Picking a preset must not move the sidebar/rail. #}
     <button class="wt-preset" data-preset="{{ pid }}"
             data-palette="{{ p.palette }}" data-type="{{ p.type }}"
-            data-density="{{ p.density }}" data-mode="{{ p.mode }}" data-nav="{{ p.nav }}"
+            data-density="{{ p.density }}" data-mode="{{ p.mode }}"
             aria-pressed="{{ 'true' if appearance.preset == pid else 'false' }}">
       <span class="pv" data-wt-palette="{{ p.palette }}" {% if p.mode == 'dark' %}data-theme="dark"{% endif %}
             style="background:var(--wt-bg)">
@@ -187,7 +189,7 @@
       state.type    = btn.dataset.type;
       state.density = btn.dataset.density;
       state.mode    = btn.dataset.mode;
-      state.nav     = btn.dataset.nav;
+      // T-2033 F4a: nav is independent — a preset must NOT change the layout.
       apply(); save();
     });
   });
