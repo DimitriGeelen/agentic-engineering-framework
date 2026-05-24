@@ -1,0 +1,19 @@
+{# arc-007 S6d (T-2020): recent-activity fragment — polled by the cockpit card.
+   Read-only; reuses the existing wt-queue-item tokens so it restyles with T-1990. #}
+{% if events %}
+<ul class="wt-activity-list">
+    {% for ev in events %}
+    <li class="wt-queue-item wt-activity-item">
+        {% if ev.task_id %}
+        <a class="wt-activity-task" href="/tasks/{{ ev.task_id }}">{{ ev.task_id }}</a>
+        {% else %}
+        <span class="wt-activity-task wt-activity-untraced" title="no task reference">{{ ev.hash }}</span>
+        {% endif %}
+        <span class="wt-activity-msg" title="{{ ev.message }}">{{ ev.message }}</span>
+        <span class="wt-activity-when">{{ ev.when }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="wt-allclear">No recent activity.</p>
+{% endif %}

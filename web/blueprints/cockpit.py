@@ -22,7 +22,7 @@ from flask import Blueprint, request, render_template
 logger = logging.getLogger(__name__)
 
 from web.shared import PROJECT_ROOT, render_page, load_scan, extract_recommendation_verdict, extract_recommendation_state
-from web.subprocess_utils import run_fw_command
+from web.subprocess_utils import run_fw_command, run_git_command
 
 bp = Blueprint("cockpit", __name__)
 
@@ -331,3 +331,44 @@ def scan_focus(task_id):
     if ok:
         return f'<p style="color:var(--pico-ins-color)">Focus set to {_escape(task_id)}</p>'
     return f'<p style="color:var(--pico-del-color)">Failed: {_escape(stderr[:200])}</p>', 500
+
+
+# ---------------------------------------------------------------------------
+# arc-007 S6d (T-2020): live activity feed — recent commits via htmx polling
+# ---------------------------------------------------------------------------
+
+def _get_recent_commits(limit: int = 10) -> list:
+    """Recent commits as activity events: {hash, when, message, task_id}.
+
+    Git commits are the canonical framework activity record (P-002: every commit
+    references a T-XXX), so the log is the activity feed. Read-only; degrades to an
+    empty list when git returns nothing.
+    """
+    # \x1f (unit separator) is safe inside commit subjects, unlike a literal char.
+    output, ok = run_git_command(
+        ["log", f"-{int(limit)}", "--pretty=format:%h\x1f%ar\x1f%s"]
+    )
+    if not ok or not output:
+        return []
+    events = []
+    for line in output.split("\n"):
+        if not line.strip():
+            continue
+        parts = line.split("\x1f")
+        if len(parts) < 3:
+            continue
+        h, when, msg = parts[0], parts[1], parts[2]
+        m = re_mod.search(r"T-\d{3,}", msg)
+        events.append({
+            "hash": h,
+            "when": when,
+            "message": msg,
+            "task_id": m.group(0) if m else None,
+        })
+    return events
+
+
+@bp.route("/cockpit/activity")
+def cockpit_activity():
+    """htmx polling fragment — recent framework activity (read-only, no page chrome)."""
+    return render_template("_cockpit_activity.html", events=_get_recent_commits(10))

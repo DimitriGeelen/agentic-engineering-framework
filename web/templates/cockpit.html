@@ -31,6 +31,13 @@
     .wt-queue-status { font-size:0.8rem; margin-left:0.5rem; }
     .wt-queue-status.issues { color:#c62828; }
     .wt-queue-status.started-work { color:#1565c0; }
+    /* arc-007 S6d (T-2020): recent-activity feed */
+    .wt-activity-list { list-style:none; margin:0; padding:0; font-size:0.85rem; }
+    .wt-activity-item { gap:0.75rem; }
+    .wt-activity-task { font-weight:700; min-width:5em; font-variant-numeric:tabular-nums; }
+    .wt-activity-untraced { color:var(--pico-muted-color); font-family:monospace; font-weight:400; }
+    .wt-activity-msg { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .wt-activity-when { color:var(--pico-muted-color); font-size:0.78rem; white-space:nowrap; }
 </style>
 
 {# --- Header ------------------------------------------------ #}
@@ -314,6 +321,20 @@
     </div>
 </article>
 {% endif %}
+
+{# --- Recent activity (arc-007 S6d, T-2020) ----------------- #}
+{# Polled htmx fragment — recent commits as the framework activity feed. Read-only;
+   refreshes every 15s without a page reload. #}
+<div class="wt-section">
+    <h4 class="wt-section-title">Recent Activity</h4>
+    <div id="wt-activity"
+         hx-get="/cockpit/activity"
+         hx-trigger="load, every 15s"
+         hx-target="this"
+         hx-swap="innerHTML">
+        <p class="wt-allclear">Loading activity…</p>
+    </div>
+</div>
 
 {# --- System Health + Concerns (T-398) ---------------------- #}
 <div class="wt-columns">
