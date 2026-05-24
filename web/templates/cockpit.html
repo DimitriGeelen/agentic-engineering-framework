@@ -19,18 +19,22 @@
     .wt-pulse { display:flex; flex-wrap:wrap; gap:1.5rem; padding:0; margin:0; list-style:none; font-size:0.9rem; }
     .wt-pulse-value { font-weight:700; }
     .wt-badge { display:inline-block; padding:0.25em 0.75em; border-radius:4px; font-size:0.8rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; }
-    .wt-badge-pass { background:#2e7d32; color:#fff; }
-    .wt-badge-warn { background:#f9a825; color:#000; }
-    .wt-badge-fail { background:#c62828; color:#fff; }
+    /* T-2023: status colours via per-palette semantic tokens so the badge re-themes */
+    .wt-badge-pass { background:var(--wt-success); color:#fff; }
+    .wt-badge-warn { background:var(--wt-warn); color:#1a1a1a; }
+    .wt-badge-fail { background:var(--wt-danger); color:#fff; }
     .wt-allclear { text-align:center; padding:2rem; color:var(--pico-muted-color); font-style:italic; }
     .wt-show-all { font-size:0.8rem; float:right; }
     .wt-queue-item { display:flex; justify-content:space-between; align-items:center; padding:0.5em 0; border-bottom:1px solid var(--pico-muted-border-color); }
     .wt-queue-item:last-child { border-bottom:none; }
     .wt-queue-rank { font-weight:700; margin-right:0.75rem; color:var(--pico-muted-color); min-width:1.5em; }
     .wt-queue-name { flex:1; }
-    .wt-queue-status { font-size:0.8rem; margin-left:0.5rem; }
-    .wt-queue-status.issues { color:#c62828; }
-    .wt-queue-status.started-work { color:#1565c0; }
+    /* T-2023: work-queue status as theme-respecting pills (per-palette semantic tokens) */
+    .wt-queue-status { display:inline-block; font-size:0.72rem; font-weight:600; margin-left:0.5rem; padding:0.12em 0.6em; border-radius:999px; background:color-mix(in srgb, var(--wt-muted) 16%, transparent); color:var(--wt-muted); }
+    .wt-queue-status.issues { background:color-mix(in srgb, var(--wt-danger) 16%, transparent); color:var(--wt-danger); }
+    .wt-queue-status.started-work { background:color-mix(in srgb, var(--wt-info) 16%, transparent); color:var(--wt-info); }
+    .wt-queue-status.captured { background:color-mix(in srgb, var(--wt-muted) 16%, transparent); color:var(--wt-muted); }
+    .wt-queue-status.work-completed { background:color-mix(in srgb, var(--wt-success) 16%, transparent); color:var(--wt-success); }
     /* arc-007 S6d (T-2020): recent-activity feed */
     .wt-activity-list { list-style:none; margin:0; padding:0; font-size:0.85rem; }
     .wt-activity-item { gap:0.75rem; }
