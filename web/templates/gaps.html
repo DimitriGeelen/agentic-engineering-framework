@@ -5,7 +5,17 @@
 </div>
 
 {% if gaps %}
-{% for g in gaps %}
+{# T-2043: bound rendered height — order active (non-closed) gaps first so they're always
+   inline, then render the first _gaps_cap and wrap the overflow (mostly closed/resolved)
+   in a collapsed <details> (display:none → excluded from scrollHeight and full_page
+   screenshots, every gap still in the DOM one click away). Same card-list class as T-2040. #}
+{% set _gaps_ordered = (gaps|rejectattr('status','equalto','closed')|list) + (gaps|selectattr('status','equalto','closed')|list) %}
+{% set _gaps_cap = 20 %}
+{% for g in _gaps_ordered %}
+{% if loop.index == _gaps_cap + 1 %}
+<details class="gaps-overflow" style="margin:0.75rem 0;">
+<summary style="cursor:pointer; font-weight:600; padding:0.5rem 0.6rem; color:var(--wt-accent); border:1px dashed var(--pico-muted-border-color); border-radius:6px;">Show {{ _gaps_ordered|length - _gaps_cap }} more gap{{ 's' if (_gaps_ordered|length - _gaps_cap) != 1 }} — mostly closed / resolved</summary>
+{% endif %}
 <article>
     <header>
         <div class="flex-between">
@@ -74,6 +84,7 @@
     </footer>
 </article>
 {% endfor %}
+{% if _gaps_ordered|length > _gaps_cap %}</details><!-- /gaps-overflow (T-2043) -->{% endif %}
 {% else %}
 <div class="coming-soon">
     <h3>No Gaps Found</h3>
