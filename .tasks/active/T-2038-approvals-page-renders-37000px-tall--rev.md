@@ -9,7 +9,7 @@ description: >
   / collapse. Sibling to T-2035 (cockpit perf). Render surface — needs [REVIEW] Human
   AC.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,7 +22,7 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T09:59:50Z
-last_update: '2026-05-25T10:00:03Z'
+last_update: 2026-05-25T10:02:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,14 +61,25 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Watchtower `/approvals` renders the entire review backlog (~120 items in one
+ungated DIV) as a **37,247px-tall page** (`document.documentElement.scrollHeight`,
+measured 2026-05-25). This is unusable endless-scroll for a human triaging the
+queue, and it grows unbounded as the backlog accumulates. It also wedged the
+`fw ux-review --sweep` full_page screenshot until T-2005 added height-clipping
+(see `feedback_playwright_fullpage_wedge`). Sibling to T-2035 (cockpit perf):
+a Watchtower page that scales pathologically with data volume. The fix should
+bound the rendered height (pagination, virtualization, grouping/collapse, or a
+"show N more" affordance) WITHOUT hiding items — every approval must remain
+reachable. The mechanism is open; the outcome (bounded height + nothing lost)
+is the contract.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `/approvals` renders with bounded height under a representative backlog: a Playwright/`scrollHeight` measurement of the loaded page stays below the `_safe_shot` cap (8000px), via pagination / virtualization / collapse — the chosen mechanism stated in `## Decisions`
+- [ ] No items silently dropped: the count of approval/review items rendered-or-reachable on `/approvals` equals the backend's pending count (assert in a unit/integration test, or a curl+parse check)
+- [ ] After the fix, `fw ux-review --sweep` captures `/approvals` as `full` (not `clipped`) — the sweep report's Capture column shows `full` for `/approvals`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -195,3 +206,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2038-approvals-page-renders-37000px-tall--rev.md
 - **Context:** Initial task creation
+
+### 2026-05-25T10:02:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
