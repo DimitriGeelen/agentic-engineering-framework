@@ -22,7 +22,7 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T09:59:50Z
-last_update: 2026-05-25T10:02:02Z
+last_update: 2026-05-25T10:06:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -111,6 +111,13 @@ is the contract.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] /approvals is usable after the height fix — the review queue reads cleanly and nothing important is hidden
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/approvals` in a browser
+  2. Confirm the page is a sane length (no endless scroll); paging/collapse is obvious and intuitive
+  3. Confirm every pending item is still reachable (page through / expand groups) — cross-check the count against the cockpit's pending-approval number
+  **Expected:** The queue is triage-able at a glance; the bounding mechanism (pages/collapse) is clear; no approval is silently dropped
+  **If not:** Note where items feel hidden or the paging is confusing
 
 ## Verification
 
@@ -209,3 +216,11 @@ is the contract.
 
 ### 2026-05-25T10:02:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-25T10:05:36Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-05-25T10:06:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
