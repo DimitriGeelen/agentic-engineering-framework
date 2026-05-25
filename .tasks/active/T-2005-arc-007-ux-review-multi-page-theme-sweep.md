@@ -19,7 +19,7 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T15:14:04Z
-last_update: '2026-05-23T15:15:02Z'
+last_update: 2026-05-25T09:28:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -219,6 +219,28 @@ grep -qE '/approvals|/fabric|/arcs' docs/reports/T-2002-ux-review-arc-007-s0-s1.
   (the sweep's fresh browser context has empty localStorage, so it passed). Candidate
   follow-up if the human hits theme flicker/mismatch on their own browser; not filed yet
   (one-bug-one-task — needs a reproduced symptom first).
+
+### 2026-05-25 — the guard caught a data-growth regression; the sweep itself needed hardening
+- **What changed:** Re-running the sweep this session (after the T-2035 cockpit perf
+  fix unblocked it) hard-failed with `Page.screenshot: Timeout 15000ms exceeded`. I
+  first assumed the cockpit (`/`, first page) or the Cytoscape `/fabric` page; both were
+  fine. Localising with per-page progress prints (`python3 -u`, no pipe) showed the hang
+  was on **`/approvals`** — `scrollHeight = 37,247px` (a single DIV with 120 children:
+  the review backlog rendered with no pagination). A `full_page=True` capture of a ~53-
+  megapixel image does NOT honour its timeout — it WEDGES the browser until the OS kills
+  the process (EPIPE). One tall page took down the whole sweep.
+- **Plan impact:** This was NOT a code regression — it's **data growth** (the review
+  backlog piled up to ~120 items, pushing /approvals past the un-screenshottable
+  threshold). The sweep's stated job as a regression guard worked; the tool just wasn't
+  antifragile to it. Fixed in-scope with `_safe_shot()`: measure scrollHeight, clip
+  pages > 8000px to the top 8000px (`clip=`), fall back to viewport on any error, and
+  record the capture mode per row so the report/gallery flag the tall page instead of
+  aborting. Applied to the sweep AND the `capture()` content-page shots (same wedge
+  risk). Verified: sweep now completes (verdict PASS, 5/5 carry theme); report shows
+  `/approvals → ⚠️ clipped @36938px`; all 5 frames present.
+- **Triggered:** Filed **T-2038** — /approvals renders 37k px because the review queue
+  has no pagination/virtualization (the real page bug; sibling to T-2035 cockpit perf).
+  Captured `feedback_playwright_fullpage_wedge` to memory (reusable Playwright gotcha).
 
 ## Decisions
 

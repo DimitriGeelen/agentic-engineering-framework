@@ -219,6 +219,50 @@ def _settle_paint(page, expected_accent=None):
     page.wait_for_timeout(150)
 
 
+# Above this rendered height (px) a `full_page=True` screenshot can WEDGE the
+# browser — Chromium cannot reliably rasterize a single image this tall, and the
+# Playwright `timeout` does not cancel it cleanly (the call hangs past the
+# deadline until the OS kills the process, EPIPE). One such page therefore takes
+# down the ENTIRE sweep. Pages taller than this get a height-clipped capture
+# instead, and the height is surfaced as a signal rather than a hard failure.
+# Origin (T-2005): /approvals grew to 37,247px as the review backlog piled up
+# (no pagination) and killed every sweep. Data growth, not a code regression —
+# the sweep's job as a regression guard worked; the tool just wasn't antifragile
+# to it. The unbounded-height page itself is filed separately as a page bug.
+TALL_PAGE_CAP_PX = 8000
+
+
+def _safe_shot(page, path, viewport_w=1440):
+    """Capture a page without letting one pathologically tall page wedge the
+    browser. Returns (mode, height_px) where mode is one of:
+      'full'     — sane height, captured full_page
+      'clipped'  — too tall, captured the top TALL_PAGE_CAP_PX px only
+      'viewport' — full/clip failed, fell back to a viewport grab
+      'failed'   — every strategy failed (row still recorded, sweep continues)
+    The bridge / computed-token check is independent of the screenshot, so a
+    clipped or failed capture never invalidates the headline-mechanic verdict."""
+    try:
+        h = int(page.evaluate("document.documentElement.scrollHeight") or 0)
+    except Exception:
+        h = 0
+    try:
+        if h and h > TALL_PAGE_CAP_PX:
+            page.screenshot(
+                path=path,
+                clip={"x": 0, "y": 0, "width": viewport_w, "height": TALL_PAGE_CAP_PX},
+                timeout=20000,
+            )
+            return "clipped", h
+        page.screenshot(path=path, full_page=True, timeout=20000, animations="disabled")
+        return "full", h
+    except Exception:
+        try:
+            page.screenshot(path=path, full_page=False, timeout=15000)
+            return "viewport", h
+        except Exception:
+            return "failed", h
+
+
 def capture(base: str, page_path: str, content_page: str, out_dir: str, guide: dict):
     from playwright.sync_api import sync_playwright
 
@@ -283,7 +327,7 @@ def capture(base: str, page_path: str, content_page: str, out_dir: str, guide: d
             mode = ps.get("mode") or "light"
             expected_accent = guide.get((ps["palette"], mode), {}).get("--wt-accent")
             _settle_paint(page, expected_accent)
-            page.screenshot(path=os.path.join(out_dir, f"picker-{pid}.png"), full_page=True)
+            _safe_shot(page, os.path.join(out_dir, f"picker-{pid}.png"))
 
             # the whole app re-themed (content-rich page). full_page so accent
             # links/badges are in frame — warm palettes (linen vs bone) differ
@@ -294,7 +338,7 @@ def capture(base: str, page_path: str, content_page: str, out_dir: str, guide: d
             sep = "&" if "?" in content_page else "?"
             page.goto(base + content_page + f"{sep}_uxr={pid}", wait_until="load")
             _settle_paint(page, expected_accent)
-            page.screenshot(path=os.path.join(out_dir, f"app-{pid}.png"), full_page=True)
+            _safe_shot(page, os.path.join(out_dir, f"app-{pid}.png"))
 
             # Bridge check: on a content page the chrome is Pico-styled, so the
             # palette only reaches it via the foundations.css pico-bridge
@@ -414,7 +458,7 @@ def sweep_pages(base: str, page_path: str, content_pages, out_dir: str, guide: d
             sep = "&" if "?" in cp else "?"
             page.goto(base + cp + f"{sep}_uxr=sweep", wait_until="load")
             _settle_paint(page, expected_accent)
-            page.screenshot(path=os.path.join(out_dir, f"sweep-{slug}.png"), full_page=True)
+            shot_mode, shot_h = _safe_shot(page, os.path.join(out_dir, f"sweep-{slug}.png"))
             vals = page.evaluate(
                 "() => { const s=getComputedStyle(document.documentElement);"
                 " return {pico:s.getPropertyValue('--pico-primary').trim(),"
@@ -424,7 +468,8 @@ def sweep_pages(base: str, page_path: str, content_pages, out_dir: str, guide: d
             )
             bridge_ok = bool(vals["pico"] and vals["wt"]
                              and _norm_hex(vals["pico"]) == _norm_hex(vals["wt"]))
-            rows.append({"page": cp, "slug": slug, "bridge_ok": bridge_ok, **vals})
+            rows.append({"page": cp, "slug": slug, "bridge_ok": bridge_ok,
+                         "shot_mode": shot_mode, "shot_h": shot_h, **vals})
         browser.close()
     return meta["label"], meta["palette"], mode, rows
 
@@ -443,6 +488,17 @@ def _sweep_section(sweep, base):
     cards = []
     for r in rows:
         ok = r["bridge_ok"]
+        mode = r.get("shot_mode", "full")
+        h = r.get("shot_h", 0)
+        if mode == "clipped":
+            shot_note = (f' · <span style="color:#b45309">⚠ clipped @{h}px '
+                         f'(too tall for full-page capture)</span>')
+        elif mode == "viewport":
+            shot_note = ' · <span style="color:#b45309">⚠ viewport-only (full capture failed)</span>'
+        elif mode == "failed":
+            shot_note = ' · <span style="color:#ef4444">⚠ capture failed</span>'
+        else:
+            shot_note = ""
         cards.append(f"""
   <section style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:0 0 16px">
     <h3 style="margin:0 0 6px">{html.escape(r['page'])}
@@ -452,7 +508,7 @@ def _sweep_section(sweep, base):
     <p style="margin:8px 0 0;color:#64748b;font-size:.8rem">
       --pico-primary <code>{html.escape(r['pico'])}</code> ·
       --wt-accent <code>{html.escape(r['wt'])}</code> ·
-      --wt-bg <code>{html.escape(r['bg'])}</code></p>
+      --wt-bg <code>{html.escape(r['bg'])}</code>{shot_note}</p>
   </section>""")
     return f"""
 <h2 style="margin:28px 0 6px">Cross-page theme fidelity (T-2005)</h2>
@@ -551,13 +607,21 @@ def write_report(results, report_path, base, gallery_url, verdict, sweep=None):
             "Headline mechanic: pick the theme once, re-load every page, observe it applied. "
             "`--pico-primary` must equal `--wt-accent` (pico-bridge) or that page's chrome ignores "
             "the palette.\n",
-            "| Page | Bridge | --pico-primary | --wt-accent | --wt-bg |",
-            "|------|--------|----------------|-------------|---------|",
+            "| Page | Bridge | Capture | --pico-primary | --wt-accent | --wt-bg |",
+            "|------|--------|---------|----------------|-------------|---------|",
         ]
         for r in rows:
+            mode = r.get("shot_mode", "full")
+            h = r.get("shot_h", 0)
+            cap = {
+                "full": "full",
+                "clipped": f"⚠️ clipped @{h}px",
+                "viewport": "⚠️ viewport-only",
+                "failed": "⚠️ **FAILED**",
+            }.get(mode, mode)
             lines.append(
                 f"| `{r['page']}` | {'✅ applied' if r['bridge_ok'] else '⚠️ **BROKEN**'} | "
-                f"`{r['pico']}` | `{r['wt']}` | `{r['bg']}` |"
+                f"{cap} | `{r['pico']}` | `{r['wt']}` | `{r['bg']}` |"
             )
         lines.append(
             f"\n**{len(rows) - len(broken)}/{len(rows)} pages carry the theme.**"

@@ -29,12 +29,12 @@ No automated findings — every preset applied, console clean, all checked contr
 
 Headline mechanic: pick the theme once, re-load every page, observe it applied. `--pico-primary` must equal `--wt-accent` (pico-bridge) or that page's chrome ignores the palette.
 
-| Page | Bridge | --pico-primary | --wt-accent | --wt-bg |
-|------|--------|----------------|-------------|---------|
-| `/` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
-| `/tasks` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
-| `/approvals` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
-| `/fabric` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
-| `/arcs` | ✅ applied | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| Page | Bridge | Capture | --pico-primary | --wt-accent | --wt-bg |
+|------|--------|---------|----------------|-------------|---------|
+| `/` | ✅ applied | full | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| `/tasks` | ✅ applied | full | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| `/approvals` | ✅ applied | ⚠️ clipped @36938px | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| `/fabric` | ✅ applied | ⚠️ clipped @33109px | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| `/arcs` | ✅ applied | full | `#b87a17` | `#b87a17` | `#f6f2eb` |
 
 **5/5 pages carry the theme.** The headline mechanic holds across all swept pages.
