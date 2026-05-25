@@ -436,6 +436,35 @@ if command -v git >/dev/null 2>&1 && git rev-parse --git-dir >/dev/null 2>&1; th
 fi
 
 # ============================================================
+# LAYER 6: BUS BRIDGE INTEGRITY (T-1815 / G-019 prevention)
+# ============================================================
+
+echo ""
+echo "=== LAYER 6: BUS BRIDGE INTEGRITY ==="
+echo ""
+
+# T-1814/T-1815: the framework's bus bridges must post via channel.* only. A
+# fallback to a termlink primitive being retired (event.broadcast / inbox.* /
+# file.send|receive — T-1166) turns the bridge into a live emitter that resets
+# a decommission's clean-window gate — the failure that stalled T-1166 for
+# weeks while the framework stayed blind. Guard against regression: flag any
+# real invocation of those verbs in the bridge scripts (comment lines stripped
+# so documentation mentioning the retired names doesn't false-positive).
+_bridge_offenders=0
+for _bf in lib/pickup-channel-bridge.sh lib/publish-learning-to-bus.sh; do
+    _bfp="$FRAMEWORK_ROOT/$_bf"
+    [ -f "$_bfp" ] || continue
+    if grep -vE '^[[:space:]]*#' "$_bfp" 2>/dev/null \
+         | grep -qE 'termlink[[:space:]]+(event[[:space:]]+broadcast|inbox[[:space:]]+(push|list|status|clear)|file[[:space:]]+(send|receive))'; then
+        warn "$_bf invokes a retired termlink primitive (T-1166) — bridges must use channel.* only (T-1814/T-1815)"
+        _bridge_offenders=$((_bridge_offenders + 1))
+    fi
+done
+if [ "$_bridge_offenders" -eq 0 ]; then
+    pass "Bus bridges use channel.* only (no retired-primitive fallback, T-1814/T-1815)"
+fi
+
+# ============================================================
 # SUMMARY
 # ============================================================
 
