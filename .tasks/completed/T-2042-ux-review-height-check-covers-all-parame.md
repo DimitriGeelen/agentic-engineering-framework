@@ -6,12 +6,12 @@ description: >
   ux-review height-check covers all parameterless Watchtower routes — close the 5-page
   detector gap (T-2041 follow-up)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [arc-007, perf, watchtower, ux-review, tooling, prevention]
-components: []
+components: [agents/ux-review/ux-review.py, tests/unit/test_ux_review_routes.py]
 related_tasks: [T-2038, T-2039, T-2040, T-2041, T-2005]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T14:44:18Z
-last_update: '2026-05-25T14:45:02Z'
-date_finished:
+last_update: 2026-05-25T14:48:02Z
+date_finished: 2026-05-25T14:48:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -243,3 +243,20 @@ agent-verifiable.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2042-ux-review-height-check-covers-all-parame.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2bf302cb
+- **Timestamp:** 2026-05-25T14:48:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-unit-test_ux_review_routes.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/tests-unit-test_ux_review_routes.yaml in: New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-unit-test_ux_review_routes.yaml``
+
+### 2026-05-25T14:48:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

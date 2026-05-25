@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2042: ux-review height-check covers all parameterless Watchtower routes — close the
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-25T14:48:09Z
+# ============================================================================
+
+task_id: T-2042
+task_name: "ux-review height-check covers all parameterless Watchtower routes — close the"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-25T14:44:18Z
+completed: 2026-05-25T14:48:02Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-25T16:47:57+02:00
+last_commit: 2026-05-25T16:47:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ux-review height detector covers all routes — close the 5-page gap
+
+# Key outcomes
+outcomes:
+  - '`discover_get_routes()` added to `agents/ux-review/ux-review.py` — enumerates `web.app.app.url_map`, returns sorted parameterless GET paths, excludes rules with arguments, `/api/*`, `/static/*`, and non-GET endpoints'
+  - '`--all-routes` CLI flag sets the sweep page list to the discovered routes (existing sweep machinery then records `shot_h`/Capture for every page); falls back to `DEFAULT_SWEEP_PAGES` when discovery fails (import error), with a stderr note — confirmed in `--help`'
+  - 'Discovery includes the two pages this class previously missed (`/inception`, `/timeline`) and excludes parameterized routes (`/tasks/<id>`, `/review/<id>`) and `/api/*` — **47 routes** discovered (up from 5)'
+  - 'Unit test `tests/unit/test_ux_review_routes.py` pins the discovery contract (includes known growing pages, excludes param/api/static), passes — **3 passed**'
+  - 'New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-unit-test_ux_review_routes.yaml`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-25 — url_map-derived page set vs. widened static list'
+    chose: 'Derive the sweep page set from `web.app.app.url_map` (`discover_get_routes()`),'
+    rationale: 'A static list is exactly what caused the blindness — it drifts behind the route'
+    alternatives_rejected: ['(a) *Widen the static list to 7 (+inception,+timeline)* — defers the next']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/ux-review/ux-review.py'
+  - '.fabric/components/tests-unit-test_ux_review_routes.yaml'
+  - '.tasks/active/T-2042-ux-review-height-check-covers-all-parame.md'
+  - 'tests/unit/test_ux_review_routes.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-25T16:47:57"
+    action: "T-2042: ux-review height detector covers all routes — close the 5-page gap"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-007, perf, watchtower, ux-review, tooling, prevention]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 4
+  lines_added: 357
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2042-ux-review-height-check-covers-all-parame.md
+generated_by: context-agent-hybrid
