@@ -33,7 +33,7 @@ Headline mechanic: pick the theme once, re-load every page, observe it applied. 
 |------|--------|---------|----------------|-------------|---------|
 | `/` | ✅ applied | full | `#b87a17` | `#b87a17` | `#f6f2eb` |
 | `/tasks` | ✅ applied | full | `#b87a17` | `#b87a17` | `#f6f2eb` |
-| `/approvals` | ✅ applied | ⚠️ clipped @36938px | `#b87a17` | `#b87a17` | `#f6f2eb` |
+| `/approvals` | ✅ applied | full | `#b87a17` | `#b87a17` | `#f6f2eb` |
 | `/fabric` | ✅ applied | ⚠️ clipped @33109px | `#b87a17` | `#b87a17` | `#f6f2eb` |
 | `/arcs` | ✅ applied | full | `#b87a17` | `#b87a17` | `#f6f2eb` |
 

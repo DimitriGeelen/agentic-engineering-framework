@@ -77,9 +77,9 @@ is the contract.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `/approvals` renders with bounded height under a representative backlog: a Playwright/`scrollHeight` measurement of the loaded page stays below the `_safe_shot` cap (8000px), via pagination / virtualization / collapse — the chosen mechanism stated in `## Decisions`
-- [ ] No items silently dropped: the count of approval/review items rendered-or-reachable on `/approvals` equals the backend's pending count (assert in a unit/integration test, or a curl+parse check)
-- [ ] After the fix, `fw ux-review --sweep` captures `/approvals` as `full` (not `clipped`) — the sweep report's Capture column shows `full` for `/approvals`
+- [x] `/approvals` renders with bounded height under a representative backlog: a Playwright/`scrollHeight` measurement of the loaded page stays below the `_safe_shot` cap (8000px), via pagination / virtualization / collapse — the chosen mechanism stated in `## Decisions`. Measured **6221px** with the live 108-card backlog (was 37,247px). Guarded by `tests/playwright/test_approvals_height.py::test_approvals_height_bounded`.
+- [x] No items silently dropped: the count of approval/review items rendered-or-reachable on `/approvals` equals the backend's pending count (assert in a unit/integration test, or a curl+parse check). All **108** `.human-ac-group` cards present in DOM (15 visible + 93 in the collapsed overflow, all one click away). Guarded by `tests/playwright/test_approvals_height.py::test_approvals_items_reachable`.
+- [x] After the fix, `fw ux-review --sweep` captures `/approvals` as `full` (not `clipped`) — the sweep report's Capture column shows `full` for `/approvals`. Confirmed in `docs/reports/T-2002-ux-review-arc-007-s0-s1.md` (`/approvals` row: `full`, was `⚠️ clipped @36938px`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,6 +145,8 @@ is the contract.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+curl -sf "$(bin/fw watchtower url)/approvals" >/dev/null
+python3 -m pytest tests/playwright/test_approvals_height.py -q >/tmp/.t2038_pt.out 2>&1; tail -3 /tmp/.t2038_pt.out; grep -q "2 passed" /tmp/.t2038_pt.out
 
 ## RCA
 
@@ -162,7 +164,13 @@ is the contract.
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
+**Symptom:** `/approvals` rendered 37,247px tall (`document.documentElement.scrollHeight`) — endless-scroll for the human triaging the queue, and a 53-megapixel page that wedged the ux-review sweep's `full_page` screenshot (T-2005).
+
+**Root cause:** The Verifications section renders every pending human-AC task — `{% for t in pending_acs %}` over ~108 cards — and each unchecked AC uses `<details ... open>`, so every card's Steps/Expected/If-not panel is expanded by default. Height grew linearly and unboundedly with the review backlog; there was no cap, pagination, or collapse.
+
+**Why structurally allowed:** the page predates any backlog-size pressure (it was authored when ≤10 items were ever pending). Nothing measured rendered page height, so the page degraded silently as the backlog accumulated to ~120. It was data growth, not a code regression — which is exactly the class no existing gate watched. The latent brittleness only surfaced when the tall page broke a *tool* (the sweep), not because anyone noticed the page itself.
+
+**Prevention:** `tests/playwright/test_approvals_height.py` now asserts `/approvals` scrollHeight stays under the 8000px `_safe_shot` cap regardless of backlog size, and that no card leaves the DOM when the overflow collapses. The ux-review sweep's Capture column (T-2005) is the second line of defence — any page that breaches the cap is flagged `⚠️ clipped @Npx` in `docs/reports/T-2002-*.md`, which is how `/fabric` (a sibling instance) was caught here.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -186,7 +194,17 @@ is the contract.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-25 — chose collapse over pagination; discovered /fabric is a sibling
+- **What changed:** The fix shipped as a collapsed-overflow `<details>` (render first 15, wrap the rest), not server-side pagination. Reason: the page polls itself every 10s (`hx-get /approvals/content`, replacing innerHTML), so any client-side page state would be wiped each cycle; a server-rendered `<details>` is poll-safe and keeps every item in the DOM. Empirically the cap had to drop from 25 → 15 to clear 8000px (25 open cards measured 9993px; 15 → 6221px) because each card's expanded AC steps are ~377px.
+- **Plan impact:** Original task left the mechanism open ("pagination / virtualization / collapse"). Collapse won on poll-safety + minimal blast radius (template-only change, no new route).
+- **Triggered:** The verification sweep flagged `/fabric` as `⚠️ clipped @33109px` — a second pathologically-tall page (same data-growth class, different surface). Out of scope for T-2038 (one bug = one task); filed as a sibling task for the /fabric height bound.
+
 ## Decisions
+
+### 2026-05-25 — bounding mechanism
+- **Chose:** Render the first 15 most-actionable verification cards (list is server-sorted by `(sort_priority, age)`), wrap cards 16..N in a collapsed `<details class="ac-overflow">`. Collapsed `<details>` content is `display:none` → excluded from `scrollHeight` and from `full_page` screenshots, yet stays in the DOM (reachable in one click). `filterACs()` auto-opens the overflow when a filter is active so a filtered match in the overflow still shows.
+- **Why:** Poll-safe (survives the 10s htmx innerHTML swap, unlike client-side pagination state), zero new routes/endpoints, nothing dropped (every card reachable), and it directly bounds the metric the ACs measure (`scrollHeight`).
+- **Rejected:** (1) *Server-side pagination* — page state wiped by the 10s poll; needs the poll URL to carry page params, more code, more review surface. (2) *Collapsing the per-AC step `<details>` to closed* — would shrink cards but defeats triage (the human reads steps inline) and 108 collapsed cards still ≈ 13k px. (3) *Virtualization (JS windowing)* — heavyweight for a polled fragment; overkill.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
