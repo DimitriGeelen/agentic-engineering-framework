@@ -234,6 +234,27 @@ can't silently re-close the deadlock or silently open the `--no-verify` hole.
 - **Why:** `--no-verify` skips the commit-msg hook, which is the gate that preserves P-002 traceability. Allowing it with no task would let an untraceable commit land silently. It remains a Tier-2 emergency action requiring explicit authorisation.
 - **Rejected:** Allowing all `git commit` forms — opens an untraceable-commit hole exactly when there's no task to anchor it.
 
+## Recommendation
+
+**Recommendation:** GO (with human sign-off on the security-gate loosening)
+
+**Rationale:** The post-completion commit deadlock is closed for the common case
+(direct `git add` / `git commit` with null focus) without weakening governance.
+The fix is deliberately narrower and safer than the filed proposal: `git commit`
+is *not* blanket-allowlisted (that would have silently bypassed the focus-drift
+gate T-1730 — proven by two red bats tests), only allowed when focus is null,
+and `--no-verify`/`-n` is excluded so the commit-msg hook keeps enforcing P-002.
+This is a security-gate change, so it carries a `[REVIEW]` Human AC rather than
+agent self-completion.
+
+**Evidence:**
+- `agents/context/check-active-task.sh` — null-focus `git commit` allow (excl. `--no-verify`/`-n`), placed before the "no active task" block; focus-drift gate untouched.
+- `agents/context/lib/safe-commands.sh` — `git add` allowlisted; `git commit` intentionally not.
+- `tests/unit/test_safe_commands_git_commit.bats` — 9 gate-end-to-end tests (deadlock closed; `--no-verify` blocked; focus-drift preserved).
+- Regression: 97 ok / 0 fail across `test_safe_commands_git_commit` + `context_safe_commands` + `safe_commands_env_prefix` + `focus_drift_gate` + `check_active_task_*`. The two focus-drift tests the naive approach broke are green.
+- P-002 unchanged: commit-msg hook still refuses any message lacking `T-XXX`; no `Write`/`Edit` is enabled by this change (no new work can be done without a task).
+- Known scope limit: `cd X && git commit …` exits early via `cd` being safe (pre-existing T-1730 limitation, not introduced here); direct `git commit` (the recovery form) is covered.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
