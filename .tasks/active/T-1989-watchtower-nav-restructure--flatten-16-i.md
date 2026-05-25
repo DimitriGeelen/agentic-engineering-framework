@@ -164,18 +164,19 @@ five Agent ACs are now covered by the shipped sub-slices; only the two [REVIEW] 
 
 ## Verification
 
-# L-387-safe (capture-then-grep; no slow upstream piped into grep -q).
+# L-387-safe: grep a tempFILE, never `echo "$out" | grep -q` — large curl HTML
+# makes grep close the pipe early and echo takes SIGPIPE (exit 141) under pipefail.
 # AC1: /settings/appearance exposes all 3 nav layouts (T-2011)
-out=$(curl -s "$(bin/fw watchtower url)/settings/appearance" 2>&1); echo "$out" | grep -q "Icon rail" && echo "$out" | grep -q "Sidebar" && echo "$out" | grep -q "Top bar"
+curl -s "$(bin/fw watchtower url)/settings/appearance" > /tmp/t1989_ac1.html 2>&1; grep -q "Icon rail" /tmp/t1989_ac1.html && grep -q "Sidebar" /tmp/t1989_ac1.html && grep -q "Top bar" /tmp/t1989_ac1.html
 # AC2: base.html renders data-wt-nav; home returns 200 (curl -f)
-out=$(curl -sf "$(bin/fw watchtower url)/" 2>&1); echo "$out" | grep -q 'data-wt-nav'
+curl -sf "$(bin/fw watchtower url)/" > /tmp/t1989_home.html 2>&1; grep -q 'data-wt-nav' /tmp/t1989_home.html
 # AC3: breadcrumb renders on a nested page (/arcs)
-out=$(curl -sf "$(bin/fw watchtower url)/arcs" 2>&1); echo "$out" | grep -q 'wt-breadcrumb'
-# AC4: pinned-pages toggle renders in nav
-out=$(curl -sf "$(bin/fw watchtower url)/" 2>&1); echo "$out" | grep -q 'wt-pin-toggle'
+curl -sf "$(bin/fw watchtower url)/arcs" > /tmp/t1989_arcs.html 2>&1; grep -q 'wt-breadcrumb' /tmp/t1989_arcs.html
+# AC4: pinned-pages toggle renders in nav (reuse AC2 capture)
+grep -q 'wt-pin-toggle' /tmp/t1989_home.html
 # AC5: Govern subsectioned into 4 function-blocks, not a flat 16-item list (T-2008)
 grep -q "Govern is subsectioned" web/shared.py && grep -q "Approvals & Decisions" web/shared.py && grep -q "Enforcement" web/shared.py
-# Regression guard: the nav-height/all-routes guard still passes the contract (no broken route)
+# Regression guard: the nav-height/all-routes guard still ships (no broken route)
 test -f tests/playwright/test_all_routes_height.py
 
 
