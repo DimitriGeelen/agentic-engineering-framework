@@ -3315,3 +3315,10 @@ X'` returning empty group."
   date: 2026-05-25
   context: Added via context agent
   application: TBD
+- id: L-432
+  learning: "Gate/safe-command allowlists that identify a command by its FIRST word (awk '{print $1}') silently fail for the agent's normal 'cd <dir> && bin/fw …' and multi-line command shapes — the base resolves to 'cd'/garbage and the real verb is never inspected. For verbs that MUST always pass a gate (task-bootstrap: work-on/task create/context focus), match the WHOLE command with a regex anchored on (^|space|/) before the verb, not first-word base extraction. Origin: T-2052 — no-active-task gate deadlocked its own unblock commands after focus cleared."
+  source: P-002
+  task: T-2052
+  date: 2026-05-25
+  context: Added via context agent
+  application: TBD
