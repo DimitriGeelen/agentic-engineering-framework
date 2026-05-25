@@ -108,6 +108,9 @@
     background: var(--pico-card-background-color);
     z-index: 2;
 }
+/* T-2046 review feedback: keep the learning ID (e.g. L-001) on one line — the narrow
+   first column was breaking it at the hyphen into multiple rows. Single line, like a task ID. */
+.graduation-table-scroll tbody td:first-child { white-space: nowrap; }
 </style>
 
 <div class="page-header">
