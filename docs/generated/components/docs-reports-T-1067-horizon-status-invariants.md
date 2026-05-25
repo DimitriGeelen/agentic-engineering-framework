@@ -12,15 +12,15 @@ T-1067: Horizon-Status Invariant Enforcement
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/task-create/update-task.sh` | references |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | references | Task Update Agent - Status transitions with auto-triggers |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/update-task.bats` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `tests/unit/update-task.bats` | tests | — |
 
 ---
 *Auto-generated from Component Fabric. Card: `docs-reports-T-1067-horizon-status-invariants.yaml`*

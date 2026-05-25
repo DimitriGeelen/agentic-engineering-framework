@@ -22,11 +22,12 @@ stubs. Result: every task whose `### Human` section was only the template
 example fired D10 falsely. Origin: T-1455.
 Pattern matches the canonical strip in lib/inception.sh:517 (sed /<!--/,/-->/d).
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/audit/audit.sh` | tests |
+| `lib/inception.sh` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_d10_html_comment_blindness.yaml`*

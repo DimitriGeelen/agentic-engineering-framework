@@ -19,9 +19,9 @@ Exit codes:
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/test_termlink_list_contract.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [test_termlink_list_contract](/docs/generated/tests-unit-test_termlink_list_contract) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-audit-orchestrator-mcp-scan.yaml`*

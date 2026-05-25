@@ -18,7 +18,7 @@ When building a web application:
 3. **Report access options** — localhost, LAN IP (for other devices), internet (if applicable)
 4. Never leave a built web app unstarted without informing the user
 
-## Dependencies (28)
+## Dependencies (30)
 
 | Target | Relationship |
 |--------|-------------|
@@ -50,8 +50,10 @@ When building a web application:
 | `web/search_utils.py` | calls |
 | `web/blueprints/__init__.py` | calls |
 | `web/embeddings.py` | calls |
+| `web/blueprints/arcs.py` | calls |
+| `web/blueprints/arcs.py` | registers |
 
-## Used By (10)
+## Used By (12)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -63,6 +65,8 @@ When building a web application:
 | `tests/web/test_inception_decide_hardening.py` | called_by |
 | `tests/unit/test_file_route_extensions.py` | called_by |
 | `tests/unit/test_review_paused_resolve.py` | called_by |
+| `tests/unit/test_arc_membership_web_surfaces.py` | called_by |
+| `tests/unit/test_render_surface_gate.bats` | tests_by |
 
 ## Related
 

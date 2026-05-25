@@ -21,17 +21,17 @@ create a task to summarize this conversation so far? (y/n)"
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `.context/working/stop-guard.log` | writes |
-| `.context/working/focus.yaml` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `.context/working/stop-guard.log` | writes | — |
+| `.context/working/focus.yaml` | reads | — |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | invoked_via_fw_hook |
-| `agents/context/tests/stop-guard-stub-test.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | invoked_via_fw_hook | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| `agents/context/tests/stop-guard-stub-test.sh` | called_by | — |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-stop-guard.yaml`*

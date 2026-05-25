@@ -31,31 +31,31 @@ When fixing a bug discovered through real-world usage (user testing, production 
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `F-003` | reads |
-| `F-003` | writes |
-| `agents/handover/handover.sh` | calls |
-| `lib/paths.sh` | calls |
-| `lib/config.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [budget-status](/docs/generated/budget-status) | reads | Cached budget level for fast PreToolUse decisions. Avoids re-reading JSONL transcript on every tool call. |
+| [budget-status](/docs/generated/budget-status) | writes | Cached budget level for fast PreToolUse decisions. Avoids re-reading JSONL transcript on every tool call. |
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ## Used By (13)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-009` | triggers |
-| `agents/handover/handover.sh` | called_by |
-| `C-004` | called_by |
-| `agents/audit/self-audit.sh` | read_by |
-| `bin/claude-fw` | read_by |
-| `C-009` | triggers_by |
-| `agents/context/session-metrics.sh` | called-by |
-| `tests/unit/checkpoint.bats` | called-by |
-| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
-| `tests/unit/checkpoint.bats` | called_by |
-| `tests/unit/checkpoint.bats` | tests_by |
-| `tests/unit/handover_push_timeout.bats` | called_by |
-| `tests/unit/handover_push_timeout.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-config](/docs/generated/hook-config) | triggers | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [self-audit](/docs/generated/agents-audit-self-audit) | read_by | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. |
+| [claude-fw](/docs/generated/bin-claude-fw) | read_by | Claude Code wrapper with auto-restart support. Runs claude normally, then checks for a restart signal file written by checkpoint.sh when auto-handover fires at critical budget. If found and fresh, auto-restarts with claude -c to continue seamlessly. |
+| [hook-config](/docs/generated/hook-config) | triggers_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [session-metrics](/docs/generated/agents-context-session-metrics) | called-by | Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript |
+| [checkpoint](/docs/generated/tests-unit-checkpoint) | called-by | TODO: describe what this component does |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
+| [checkpoint](/docs/generated/tests-unit-checkpoint) | called_by | TODO: describe what this component does |
+| [checkpoint](/docs/generated/tests-unit-checkpoint) | tests_by | TODO: describe what this component does |
+| [handover_push_timeout](/docs/generated/tests-unit-handover_push_timeout) | called_by | Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT. |
+| [handover_push_timeout](/docs/generated/tests-unit-handover_push_timeout) | tests_by | Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT. |
 
 ## Documentation
 

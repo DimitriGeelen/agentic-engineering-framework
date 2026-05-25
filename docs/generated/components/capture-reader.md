@@ -13,15 +13,15 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `.claude/commands/capture.md` | invoked-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [/capture Skill](/docs/generated/capture-skill) | invoked-by | Emergency ejector seat for untracked conversations. When invoked, reads the JSONL transcript, extracts the current topic's conversation, writes a structured research artifact to docs/reports/, and commits it. Closes the governance gap where pure conversation sessions bypass all framework enforcement. |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `.claude/commands/capture.md` | called-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [/capture Skill](/docs/generated/capture-skill) | called-by | Emergency ejector seat for untracked conversations. When invoked, reads the JSONL transcript, extracts the current topic's conversation, writes a structured research artifact to docs/reports/, and commits it. Closes the governance gap where pure conversation sessions bypass all framework enforcement. |
 
 ---
 *Auto-generated from Component Fabric. Card: `capture-reader.yaml`*

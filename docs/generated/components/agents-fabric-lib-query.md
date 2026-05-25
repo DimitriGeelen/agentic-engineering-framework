@@ -11,9 +11,9 @@ Implements: fw fabric search, fw fabric get, fw fabric deps
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/fabric/fabric.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fabric](/docs/generated/agents-fabric-fabric) | called_by | Fabric Agent - Component topology system for codebase self-awareness |
 
 ## Documentation
 

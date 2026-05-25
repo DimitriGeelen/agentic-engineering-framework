@@ -8,15 +8,15 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/test_peer_subscribe.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [test_peer_subscribe](/docs/generated/tests-unit-test_peer_subscribe) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-peer.yaml`*

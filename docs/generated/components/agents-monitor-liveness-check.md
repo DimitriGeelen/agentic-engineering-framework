@@ -12,9 +12,9 @@ Outputs: .context/monitors/liveness.jsonl (append-only), liveness-latest.yaml (s
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/config.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-monitor-liveness-check.yaml`*

@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/termlink/termlink.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ollama_loop.yaml`*

@@ -23,19 +23,19 @@ The result ledger formalizes the "write to disk, return path + summary" conventi
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/dispatch.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [dispatch](/docs/generated/lib-dispatch) | calls | fw dispatch subcommand: cross-machine SSH-based result dispatch. Serializes bus envelopes and pipes via SSH to remote fw bus receive. |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `agents/context/bus-handler.sh` | read_by |
-| `tests/unit/lib_bus.bats` | called-by |
-| `tests/unit/lib_bus.bats` | called_by |
-| `tests/unit/lib_bus.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [bus-handler](/docs/generated/agents-context-bus-handler) | read_by | Processes incoming bus messages from the inbox directory. Triggered by systemd.path when files appear in .context/bus/inbox/. Routes typed YAML envelopes to appropriate handlers for sub-agent result management. |
+| [lib_bus](/docs/generated/tests-unit-lib_bus) | called-by | Unit tests for bus (24 tests) |
+| [lib_bus](/docs/generated/tests-unit-lib_bus) | called_by | Unit tests for bus (24 tests) |
+| [lib_bus](/docs/generated/tests-unit-lib_bus) | tests_by | Unit tests for bus (24 tests) |
 
 ## Related
 

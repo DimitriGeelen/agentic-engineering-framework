@@ -17,6 +17,13 @@ IMMEDIATELY after the `related_tasks:` line.
 → clear the tag, do NOT set arc_id (would fail T-1849 hook); log WARN.
 - If a task has >1 arc tags → halt unless --resolve T-XXXX=ARC_ID supplied
 
+## Used By (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | called_by | TODO: describe what this component does |
+| [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | tests_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-migrations-arc-id-migration.yaml`*
 *Last verified: 2026-05-16*

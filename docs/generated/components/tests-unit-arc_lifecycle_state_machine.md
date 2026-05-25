@@ -16,6 +16,13 @@ arc_close   → in-progress → closed
 arc_abandon → draft|in-progress → abandoned (T-1854, not in this slice)
 Refusals exit non-zero with actionable error citing the allowed transitions.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/arc.sh` | calls |
+| `lib/arc.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_lifecycle_state_machine.yaml`*
 *Last verified: 2026-05-16*

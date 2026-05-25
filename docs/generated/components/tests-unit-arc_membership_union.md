@@ -13,6 +13,12 @@ the canonical `arc_id:` frontmatter (T-1849), not only legacy `arc:<slug>`
 tags. Both forms coexist during the transition; this test pins the union
 semantics.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/arc.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_membership_union.yaml`*
 *Last verified: 2026-05-16*

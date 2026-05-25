@@ -14,11 +14,11 @@ Auto-appended by audit.sh on each run
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/audit/audit.sh` | read_by |
-| `metrics.sh` | read_by |
-| `tests/unit/audit_null_timestamp.bats` | read_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | read_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| `metrics.sh` | read_by | — |
+| [audit_null_timestamp](/docs/generated/tests-unit-audit_null_timestamp) | read_by | Regression test — audit.sh METRICS_EOF heredoc must not crash when .context/project/metrics-history.yaml contains a null timestamp. Origin: handover S-2026-0423-1623 AttributeError: 'NoneType' at <stdin>:108. |
 
 ## Related
 

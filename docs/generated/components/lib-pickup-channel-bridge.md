@@ -21,15 +21,15 @@ Silent no-op if neither is available (old termlink, no termlink, etc.).
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/pickup.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pickup](/docs/generated/lib-pickup) | called_by | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/pickup.sh` | invokes_at_process_one |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pickup](/docs/generated/lib-pickup) | invokes_at_process_one | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-pickup-channel-bridge.yaml`*

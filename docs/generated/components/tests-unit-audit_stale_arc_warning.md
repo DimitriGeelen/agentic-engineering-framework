@@ -13,6 +13,13 @@ arc_id: (slug or arc-NNN form). Silent on draft/closed/abandoned arcs and
 on zero-population arcs. WARN-only, never blocks (T-1846 §4 D4, audit exit
 ≤ 1). Symmetric to T-1856 anchor existence check.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `C-004` | calls |
+| `C-004` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_stale_arc_warning.yaml`*
 *Last verified: 2026-05-16*

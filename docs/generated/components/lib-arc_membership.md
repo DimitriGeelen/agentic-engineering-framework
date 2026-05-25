@@ -26,20 +26,25 @@ leaking through nine sites again.
 
 Frontmatter regexes — same patterns previously inline in arcs.py.
 
-## Dependencies (2)
+## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `.tasks/active/` | reads |
-| `.tasks/completed/` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `.tasks/active/` | reads | — |
+| `.tasks/completed/` | reads | — |
+| [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 
-## Used By (3)
+## Used By (7)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/arcs.py` | calls |
-| `web/blueprints/core.py` | calls |
-| `web/blueprints/tasks.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [core](/docs/generated/web-blueprints-core) | calls | Flask blueprint: Core |
+| [tasks](/docs/generated/web-blueprints-tasks) | calls | Flask blueprint: Tasks |
+| [test_arc_membership_shared](/docs/generated/tests-unit-test_arc_membership_shared) | called_by | TODO: describe what this component does |
+| [arcs](/docs/generated/web-blueprints-arcs) | called_by | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [core](/docs/generated/web-blueprints-core) | called_by | Flask blueprint: Core |
+| [tasks](/docs/generated/web-blueprints-tasks) | called_by | Flask blueprint: Tasks |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-arc_membership.yaml`*

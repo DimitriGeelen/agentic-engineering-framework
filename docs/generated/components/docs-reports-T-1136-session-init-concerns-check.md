@@ -10,9 +10,9 @@ T-1136: Upstream Session-Init Concerns Check
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/inception.sh` | produced-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [inception](/docs/generated/lib-inception) | produced-by | fw inception - Inception phase workflow |
 
 ---
 *Auto-generated from Component Fabric. Card: `docs-reports-T-1136-session-init-concerns-check.yaml`*

@@ -30,20 +30,20 @@ Resolution order (T-885, T-1287, T-1376):
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `?` | uses |
-| `lib/paths.sh` | calls |
-| `lib/config.sh` | calls |
-| `lib/firewall.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `?` | uses | — |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [firewall](/docs/generated/lib-firewall) | calls | Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive |
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/watchtower_url_refresh.bats` | called_by |
-| `tests/unit/watchtower_url_refresh.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [watchtower_url_refresh](/docs/generated/tests-unit-watchtower_url_refresh) | called_by | TODO: describe what this component does |
+| [watchtower_url_refresh](/docs/generated/tests-unit-watchtower_url_refresh) | tests_by | TODO: describe what this component does |
 
 ## Related
 

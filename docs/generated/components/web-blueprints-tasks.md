@@ -6,7 +6,8 @@
 
 ## What It Does
 
-Enum loading from status-transitions.yaml (T-1179, G-038)
+T-1980: per-task BVP/Cost computation reused from /bvp and /arcs/<id> helpers.
+Same math path → numbers cannot drift between surfaces.
 
 ### Framework Reference
 
@@ -20,7 +21,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (4)
+## Dependencies (7)
 
 | Target | Relationship |
 |--------|-------------|
@@ -28,8 +29,11 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `web/templates/tasks.html` | renders |
 | `web/templates/task_detail.html` | renders |
 | `web/subprocess_utils.py` | calls |
+| `lib/arc_membership.py` | calls |
+| `web/blueprints/bvp.py` | calls |
+| `web/blueprints/bvp.py` | registers |
 
-## Used By (17)
+## Used By (22)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -49,6 +53,11 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `tests/unit/test_ac_body_html_comment.py` | called_by |
 | `tests/unit/test_ac_body_html_comment.py` | registered_by |
 | `tests/unit/test_file_route_extensions.py` | called_by |
+| `tests/playwright/test_landing_arc_cards.py` | called_by |
+| `tests/unit/test_arc_membership_web_surfaces.py` | called_by |
+| `tests/unit/test_render_surface_gate.bats` | tests_by |
+| `tests/playwright/test_landing_arc_cards.py` | rendered_by |
+| `web/blueprints/arcs.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-tasks.yaml`*

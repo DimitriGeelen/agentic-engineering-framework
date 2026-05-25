@@ -11,20 +11,20 @@ Set or show current task focus
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/ask.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [ask-py](/docs/generated/lib-ask-py) | calls | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
 
 ## Used By (6)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-001` | called_by |
-| `capture-skill` | read_by |
-| `agents/context/context.sh` | called-by |
-| `.claude/commands/capture.md` | used-by |
-| `tests/unit/context_focus.bats` | called_by |
-| `tests/unit/context_focus.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [context-dispatcher](/docs/generated/context-dispatcher) | called_by | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [/capture Skill](/docs/generated/capture-skill) | read_by | Emergency ejector seat for untracked conversations. When invoked, reads the JSONL transcript, extracts the current topic's conversation, writes a structured research artifact to docs/reports/, and commits it. Closes the governance gap where pure conversation sessions bypass all framework enforcement. |
+| [context-dispatcher](/docs/generated/context-dispatcher) | called-by | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [/capture Skill](/docs/generated/capture-skill) | used-by | Emergency ejector seat for untracked conversations. When invoked, reads the JSONL transcript, extracts the current topic's conversation, writes a structured research artifact to docs/reports/, and commits it. Closes the governance gap where pure conversation sessions bypass all framework enforcement. |
+| [context_focus](/docs/generated/tests-unit-context_focus) | called_by | Unit tests for context focus (15 tests) |
+| [context_focus](/docs/generated/tests-unit-context_focus) | tests_by | Unit tests for context focus (15 tests) |
 
 ## Documentation
 

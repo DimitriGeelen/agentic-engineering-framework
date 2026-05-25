@@ -14,6 +14,13 @@ Appends JSON row to .context/audits/arc-abandon.jsonl.
 Mutates arc YAML: status: abandoned, abandoned_at: <iso>, abandonment_reason: <text>.
 D-Immutability: arc YAML stays in .context/arcs/ (no move, no delete).
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/arc.sh` | calls |
+| `lib/arc.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_abandon.yaml`*
 *Last verified: 2026-05-16*

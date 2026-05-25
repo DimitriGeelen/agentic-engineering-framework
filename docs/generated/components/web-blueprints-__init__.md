@@ -10,7 +10,7 @@ Flask blueprints for the Agentic Engineering Framework web UI
 Centralizes blueprint registration (T-431/A2).
 Adding a new blueprint: import it here and append to _BLUEPRINTS.
 
-## Dependencies (64)
+## Dependencies (66)
 
 | Target | Relationship |
 |--------|-------------|
@@ -78,13 +78,18 @@ Adding a new blueprint: import it here and append to _BLUEPRINTS.
 | `web/blueprints/hooks.py` | registers |
 | `web/blueprints/orchestrator.py` | registers |
 | `web/blueprints/arcs.py` | registers |
+| `web/blueprints/bvp.py` | calls |
+| `web/blueprints/bvp.py` | registers |
 
-## Used By (2)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | imported_by |
 | `web/app.py` | called_by |
+| `tests/unit/test_bvp_blueprint_cost.py` | called_by |
+| `tests/unit/test_bvp_scatter_arc_mode.py` | called_by |
+| `tests/unit/test_arc_display_helper.py` | called_by |
 
 ## Related
 

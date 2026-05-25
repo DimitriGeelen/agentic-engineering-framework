@@ -11,12 +11,12 @@ Shows current context state across all memory types
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-001` | called_by |
-| `agents/context/context.sh` | called-by |
-| `tests/unit/context_status.bats` | called_by |
-| `tests/unit/context_status.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [context-dispatcher](/docs/generated/context-dispatcher) | called_by | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [context-dispatcher](/docs/generated/context-dispatcher) | called-by | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [context_status](/docs/generated/tests-unit-context_status) | called_by | Unit tests for context status (7 tests) |
+| [context_status](/docs/generated/tests-unit-context_status) | tests_by | Unit tests for context status (7 tests) |
 
 ## Documentation
 

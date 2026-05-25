@@ -11,17 +11,17 @@ Analyze task issues and suggest recovery actions
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/ask.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [ask-py](/docs/generated/lib-ask-py) | calls | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/healing/healing.sh` | called_by |
-| `tests/unit/healing_diagnose.bats` | called_by |
-| `tests/unit/healing_diagnose.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [healing](/docs/generated/agents-healing-healing) | called_by | Healing Agent - Antifragile error recovery and pattern learning |
+| [healing_diagnose](/docs/generated/tests-unit-healing_diagnose) | called_by | Unit tests for healing diagnose (26 tests) |
+| [healing_diagnose](/docs/generated/tests-unit-healing_diagnose) | tests_by | Unit tests for healing diagnose (26 tests) |
 
 ## Documentation
 

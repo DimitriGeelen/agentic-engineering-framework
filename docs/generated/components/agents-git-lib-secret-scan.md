@@ -19,12 +19,12 @@ Configuration:
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/git/lib/hooks.sh` | called_by |
-| `C-004` | called_by |
-| `tests/unit/test_secret_scan.bats` | called_by |
-| `tests/unit/test_secret_scan.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [test_secret_scan](/docs/generated/tests-unit-test_secret_scan) | called_by | TODO: describe what this component does |
+| [test_secret_scan](/docs/generated/tests-unit-test_secret_scan) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-secret-scan.yaml`*

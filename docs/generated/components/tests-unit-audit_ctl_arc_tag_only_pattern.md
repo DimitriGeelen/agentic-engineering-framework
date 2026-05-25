@@ -15,6 +15,18 @@ are exempt (allowlist works)
 Strategy: exercise only the check block — extract the AWK-pattern logic
 directly. Running the full audit.sh per-test would be slow + flaky.
 
+## Dependencies (7)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/arc_membership.sh` | calls |
+| `lib/arc.sh` | calls |
+| `lib/migrations/arc-id-migration.sh` | calls |
+| `lib/arc.sh` | tests |
+| `lib/arc_membership.sh` | tests |
+| `lib/migrations/arc-id-migration.sh` | tests |
+| `C-004` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_ctl_arc_tag_only_pattern.yaml`*
 *Last verified: 2026-05-17*

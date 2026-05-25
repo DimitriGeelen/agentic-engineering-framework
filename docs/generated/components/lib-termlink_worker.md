@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `tests/unit/test_termlink_worker.py` | called_by |
+| `lib/reviewer/dispatch_cli.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-termlink_worker.yaml`*

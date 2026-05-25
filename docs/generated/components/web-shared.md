@@ -17,7 +17,7 @@ Path resolution
 | `web/blueprints/docs.py` | calls |
 | `bin/fw` | calls |
 
-## Used By (52)
+## Used By (57)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -73,6 +73,11 @@ Path resolution
 | `web/blueprints/hooks.py` | called_by |
 | `web/blueprints/orchestrator.py` | called_by |
 | `tests/unit/test_file_route_extensions.py` | called_by |
+| `tests/unit/episodic_yaml_decision_escape.bats` | tests_by |
+| `tests/unit/test_render_surface_gate.bats` | tests_by |
+| `tests/unit/check_render_surface_human_ac_sigpipe.bats` | tests_by |
+| `tests/unit/test_render_page_guard.py` | called_by |
+| `web/blueprints/bvp.py` | called_by |
 
 ## Related
 

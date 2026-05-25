@@ -13,11 +13,11 @@ Added via: fw context add-learning "description" --task T-XXX
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-002` | writes_by |
-| `C-004` | read_by |
-| `C-003` | read_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [add-learning](/docs/generated/add-learning) | writes_by | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | read_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [learnings-route](/docs/generated/learnings-route) | read_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
 
 ## Related
 

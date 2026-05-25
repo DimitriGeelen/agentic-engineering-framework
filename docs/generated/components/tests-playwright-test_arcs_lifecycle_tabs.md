@@ -6,7 +6,11 @@
 
 ## What It Does
 
-Order MUST match _LIFECYCLE_STATES + ("all",) in web/blueprints/arcs.py
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/blueprints/arcs.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_arcs_lifecycle_tabs.yaml`*

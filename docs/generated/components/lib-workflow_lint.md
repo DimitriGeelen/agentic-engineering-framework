@@ -13,6 +13,13 @@
 | `lib/resolver.py` | calls |
 | `bin/fw` | calls |
 
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `lib/worker_kinds_parity.py` | called_by |
+| `lib/worker_kinds_parity.py` | uses_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-workflow_lint.yaml`*
 *Last verified: 2026-05-13*

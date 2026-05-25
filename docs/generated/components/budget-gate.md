@@ -21,22 +21,22 @@ Performance target: <100ms per invocation
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `F-003` | reads |
-| `budget-gate-counter` | reads |
-| `lib/paths.sh` | calls |
-| `lib/config.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [budget-status](/docs/generated/budget-status) | reads | Cached budget level for fast PreToolUse decisions. Avoids re-reading JSONL transcript on every tool call. |
+| `budget-gate-counter` | reads | — |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-009` | triggers |
-| `agents/onboarding-test/test-onboarding.sh` | called_by |
-| `agents/audit/self-audit.sh` | read_by |
-| `C-009` | triggers_by |
-| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-config](/docs/generated/hook-config) | triggers | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [test-onboarding](/docs/generated/agents-onboarding-test-test-onboarding) | called_by | End-to-end onboarding flow test with 8 checkpoints: scaffold, hooks, first task, task gate, first commit, audit, self-audit, handover. Validates that fw init produces a working project. |
+| [self-audit](/docs/generated/agents-audit-self-audit) | read_by | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. |
+| [hook-config](/docs/generated/hook-config) | triggers_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

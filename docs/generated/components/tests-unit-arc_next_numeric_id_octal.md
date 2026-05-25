@@ -13,6 +13,12 @@ great for base" because bash arithmetic expansion interprets `008`/`009` as
 invalid octal. POSIX `[ -gt ]` is leading-zero tolerant; `$(( ))` is not. The
 fix normalizes via `10#` prefix.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/arc.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_next_numeric_id_octal.yaml`*
 *Last verified: 2026-05-17*

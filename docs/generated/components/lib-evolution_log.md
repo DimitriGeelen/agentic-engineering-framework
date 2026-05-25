@@ -17,13 +17,14 @@ Used by:
 - (future) lib/evolution_log.sh sweep mode
 Public functions:
 
-## Used By (3)
+## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/task-create/update-task.sh` | called_by |
-| `tests/unit/evolution_log_gate.bats` | called_by |
-| `tests/unit/evolution_log_gate.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [evolution_log_gate](/docs/generated/tests-unit-evolution_log_gate) | called_by | TODO: describe what this component does |
+| [evolution_log_gate](/docs/generated/tests-unit-evolution_log_gate) | tests_by | TODO: describe what this component does |
+| [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-evolution_log.yaml`*

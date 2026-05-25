@@ -12,7 +12,7 @@ Active tasks with no recent update — use shared cache
 
 **Nothing gets done without a task.** This is enforced structurally by the framework, not by agent discipline.
 
-## Dependencies (14)
+## Dependencies (15)
 
 | Target | Relationship |
 |--------|-------------|
@@ -30,8 +30,9 @@ Active tasks with no recent update — use shared cache
 | `web/blueprints/approvals.py` | registers |
 | `web/blueprints/costs.py` | calls |
 | `web/blueprints/costs.py` | registers |
+| `lib/arc_membership.py` | calls |
 
-## Used By (9)
+## Used By (13)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -39,6 +40,10 @@ Active tasks with no recent update — use shared cache
 | `web/app.py` | registered_by |
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `tests/playwright/test_landing_arc_cards.py` | called_by |
+| `tests/unit/test_arc_membership_web_surfaces.py` | called_by |
+| `tests/unit/test_arc_membership_web_surfaces.py` | registered_by |
+| `tests/playwright/test_landing_arc_cards.py` | rendered_by |
 
 ## Related
 

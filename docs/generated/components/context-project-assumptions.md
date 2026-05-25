@@ -10,11 +10,11 @@
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/audit/audit.sh` | read_by |
-| `lib/assumption.sh` | read_by |
-| `web/blueprints/inception.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | read_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [assumption](/docs/generated/lib-assumption) | read_by | fw assumption - Assumption tracking |
+| [inception](/docs/generated/web-blueprints-inception) | called_by | Blueprint 'inception' — routes: /inception |
 
 ## Related
 

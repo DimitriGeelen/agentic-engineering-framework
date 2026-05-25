@@ -28,16 +28,18 @@ left the baseline in FAIL across multiple sessions).
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
-## Used By (2)
+## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `.claude/settings.json` | triggers |
-| `tests/unit/hook_check_settings_edit.bats` | tested_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-config](/docs/generated/hook-config) | triggers | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [hook_check_settings_edit](/docs/generated/tests-unit-hook_check_settings_edit) | tested_by | Bats unit tests for agents/context/check-settings-edit.sh (T-1888). 6 cases covering: positive Edit match, positive Write match (absolute path), negative non-match (unrelated file), defence-in-depth (Bash tool ignored), malformed JSON tolerance, and wrong-directory look-alike rejection.  Pinned at T-1888 close; baseline for regression detection if the hook's match logic changes. |
+| [hook_check_settings_edit](/docs/generated/tests-unit-hook_check_settings_edit) | called_by | Bats unit tests for agents/context/check-settings-edit.sh (T-1888). 6 cases covering: positive Edit match, positive Write match (absolute path), negative non-match (unrelated file), defence-in-depth (Bash tool ignored), malformed JSON tolerance, and wrong-directory look-alike rejection.  Pinned at T-1888 close; baseline for regression detection if the hook's match logic changes. |
+| [hook_check_settings_edit](/docs/generated/tests-unit-hook_check_settings_edit) | tests_by | Bats unit tests for agents/context/check-settings-edit.sh (T-1888). 6 cases covering: positive Edit match, positive Write match (absolute path), negative non-match (unrelated file), defence-in-depth (Bash tool ignored), malformed JSON tolerance, and wrong-directory look-alike rejection.  Pinned at T-1888 close; baseline for regression detection if the hook's match logic changes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-settings-edit.yaml`*

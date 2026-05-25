@@ -16,6 +16,12 @@ Strategy: this test exercises a self-contained python block whose regex +
 scan logic mirrors the production block, against a synthetic .tasks/ tree.
 That pins the regex/union behavior independent of the full audit run.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `C-004` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_arc_progress_arc_id.yaml`*
 *Last verified: 2026-05-17*

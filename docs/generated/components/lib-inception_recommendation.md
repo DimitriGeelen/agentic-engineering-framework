@@ -19,10 +19,10 @@ find_inceptions_without_recommendation <active_dir>
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-004` | called_by |
-| `lib/inception.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [inception](/docs/generated/lib-inception) | called_by | fw inception - Inception phase workflow |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-inception_recommendation.yaml`*

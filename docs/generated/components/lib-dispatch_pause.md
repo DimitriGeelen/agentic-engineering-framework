@@ -8,10 +8,10 @@
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/pause_cli.py` | uses_by |
-| `tests/unit/test_dispatch_pause.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pause_cli](/docs/generated/lib-pause_cli) | uses_by | TODO: describe what this component does |
+| [test_dispatch_pause](/docs/generated/tests-unit-test_dispatch_pause) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-dispatch_pause.yaml`*

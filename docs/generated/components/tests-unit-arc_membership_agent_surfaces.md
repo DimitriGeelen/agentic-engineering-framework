@@ -16,6 +16,14 @@ Sites under test:
 - agents/handover/handover.sh current-arc task count — via integration
 Sibling to T-1874/T-1875/T-1876/T-1877 (web + CLI + audit).
 
+## Dependencies (3)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/evolution_log.sh` | tests |
+| `agents/task-create/update-task.sh` | tests |
+| `agents/handover/handover.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_membership_agent_surfaces.yaml`*
 *Last verified: 2026-05-17*

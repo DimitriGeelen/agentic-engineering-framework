@@ -10,9 +10,9 @@ T-1125: TermLink send-file — Hub Acceptance vs Delivery
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/inception.sh` | produced-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [inception](/docs/generated/lib-inception) | produced-by | fw inception - Inception phase workflow |
 
 ---
 *Auto-generated from Component Fabric. Card: `docs-reports-T-1125-termlink-send-file-delivery-semantics.yaml`*

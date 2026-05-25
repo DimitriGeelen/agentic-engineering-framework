@@ -21,21 +21,21 @@ Allowed exceptions (Bash + Write):
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/check-tier0.sh` | related |
-| `agents/context/check-active-task.sh` | related |
-| `lib/paths.sh` | calls |
-| `lib/config.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-tier0](/docs/generated/agents-context-check-tier0) | related | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
+| [check-active-task](/docs/generated/agents-context-check-active-task) | related | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `.claude/settings.json` | triggers |
-| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
-| `tests/unit/test_boundary_hook_arguments.bats` | called_by |
-| `tests/unit/test_boundary_hook_arguments.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-config](/docs/generated/hook-config) | triggers | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
+| [test_boundary_hook_arguments](/docs/generated/tests-unit-test_boundary_hook_arguments) | called_by | TODO: describe what this component does |
+| [test_boundary_hook_arguments](/docs/generated/tests-unit-test_boundary_hook_arguments) | tests_by | TODO: describe what this component does |
 
 ## Related
 

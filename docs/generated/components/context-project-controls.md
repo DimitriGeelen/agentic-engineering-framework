@@ -21,10 +21,10 @@ status:       active|partial|planned|disabled
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/audit/audit.sh` | read_by |
-| `web/blueprints/risks.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | read_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [risks](/docs/generated/web-blueprints-risks) | called_by | Flask blueprint 'risks' serving routes: /risks |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-controls.yaml`*

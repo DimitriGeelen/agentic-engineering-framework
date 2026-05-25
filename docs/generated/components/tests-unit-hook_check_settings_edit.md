@@ -20,11 +20,12 @@ when .claude/settings.json is written/edited. Strictly advisory (exit 0).
 Pattern matches existing check-fabric-new-file.sh tests: stdin JSON, stdout
 either empty (no match) or a JSON envelope with additionalContext.
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/check-settings-edit.sh` | tests |
+| `agents/context/check-settings-edit.sh` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_check_settings_edit.yaml`*

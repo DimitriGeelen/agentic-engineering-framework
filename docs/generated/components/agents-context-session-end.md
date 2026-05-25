@@ -21,18 +21,18 @@ S2: if no handover exists for the current session_id
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/handover/handover.sh` | calls |
-| `.context/handovers/LATEST.md` | reads |
-| `.context/working/.session-end-log` | writes |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| `.context/handovers/LATEST.md` | reads | — |
+| `.context/working/.session-end-log` | writes | — |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | invoked_via_fw_hook |
-| `agents/context/tests/session-end-stub-test.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | invoked_via_fw_hook | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| `agents/context/tests/session-end-stub-test.sh` | called_by | — |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-session-end.yaml`*

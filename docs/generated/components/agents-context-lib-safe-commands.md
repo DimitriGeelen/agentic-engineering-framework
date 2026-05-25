@@ -17,13 +17,15 @@ Categories (27 patterns):
 2. File reading (7 patterns)
 3. Searching (4 patterns)
 
-## Used By (3)
+## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/context/check-active-task.sh` | called_by |
-| `tests/unit/context_safe_commands.bats` | called_by |
-| `tests/unit/context_safe_commands.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-active-task](/docs/generated/agents-context-check-active-task) | called_by | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [context_safe_commands](/docs/generated/tests-unit-context_safe_commands) | called_by | Unit tests for context safe_commands (35 tests) |
+| [context_safe_commands](/docs/generated/tests-unit-context_safe_commands) | tests_by | Unit tests for context safe_commands (35 tests) |
+| [safe_commands_env_prefix](/docs/generated/tests-unit-safe_commands_env_prefix) | called_by | TODO: describe what this component does |
+| [safe_commands_env_prefix](/docs/generated/tests-unit-safe_commands_env_prefix) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-safe-commands.yaml`*

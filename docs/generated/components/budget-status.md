@@ -10,11 +10,11 @@
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-007` | read_by |
-| `C-008` | read_by |
-| `C-008` | writes_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [budget-gate](/docs/generated/budget-gate) | read_by | Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement for P-009. |
+| [checkpoint](/docs/generated/checkpoint) | read_by | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [checkpoint](/docs/generated/checkpoint) | writes_by | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
 ## Related
 

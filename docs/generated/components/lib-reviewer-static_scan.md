@@ -6,8 +6,6 @@
 
 ## What It Does
 
-───────────────────────── Data classes ─────────────────────────
-
 ## Dependencies (2)
 
 | Target | Relationship |

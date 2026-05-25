@@ -10,16 +10,16 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `cross-repo:termlink/crates/termlink-protocol/src/governance.rs` | emits |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink-governance-frame](/docs/generated/cross-repo-termlink-governance-frame) | emits | Data plane Governance frame (frame type 0x8) — informational audit-trail emitted by governance subscribers when pattern matches fire on Output frames. T-1066 wire format. T-1641 reconsideration flagged that frame 0x8 has zero non-test emit callers — T-1648 will pin the protocol so accidental rename breaks loud. |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/orchestrator.py` | surfaced_by |
-| `agents/audit/orchestrator-mcp-scan.sh` | tracked_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | surfaced_by | TODO: describe what this component does |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | tracked_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `cross-repo-termlink-governance-subscriber.yaml`*

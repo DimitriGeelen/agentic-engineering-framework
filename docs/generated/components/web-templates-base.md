@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Used By (9)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -19,6 +19,7 @@
 | `web/templates/arc_detail.html` | extended_by |
 | `web/templates/arcs_index.html` | extended_by |
 | `web/templates/orchestrator.html` | extended_by |
+| `web/templates/bvp.html` | extended_by |
 
 ## Related
 

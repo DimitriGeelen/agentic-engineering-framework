@@ -19,19 +19,19 @@ Output: JSON with additionalContext when oversized results detected
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/dispatch/preamble.md` | references |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [preamble](/docs/generated/agents-dispatch-preamble) | references | Mandatory dispatch preamble — output rules for sub-agents to prevent context explosion (T-073). Requires disk writes, <=5 line responses. — _Warning messages direct agents to include the dispatch preamble_ |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-009` | triggered_by |
-| `agents/audit/self-audit.sh` | verified_by |
-| `agents/audit/self-audit.sh` | read_by |
-| `C-009` | triggers_by |
-| `.claude/settings.json` | used-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-config](/docs/generated/hook-config) | triggered_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. — _PostToolUse hook on Task\|TaskOutput (.claude/settings.json)_ |
+| [self-audit](/docs/generated/agents-audit-self-audit) | verified_by | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. — _self-audit checks existence and executable bit_ |
+| [self-audit](/docs/generated/agents-audit-self-audit) | read_by | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. |
+| [hook-config](/docs/generated/hook-config) | triggers_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [hook-config](/docs/generated/hook-config) | used-by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-dispatch.yaml`*

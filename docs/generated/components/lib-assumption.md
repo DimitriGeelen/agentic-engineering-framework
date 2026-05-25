@@ -11,12 +11,12 @@ Manages project assumptions: register, validate, invalidate, list
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/lib_assumption.bats` | called-by |
-| `tests/unit/lib_assumption.bats` | called_by |
-| `tests/unit/lib_assumption.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [lib_assumption](/docs/generated/tests-unit-lib_assumption) | called-by | Unit tests for assumption (11 tests) |
+| [lib_assumption](/docs/generated/tests-unit-lib_assumption) | called_by | Unit tests for assumption (11 tests) |
+| [lib_assumption](/docs/generated/tests-unit-lib_assumption) | tests_by | Unit tests for assumption (11 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-assumption.yaml`*

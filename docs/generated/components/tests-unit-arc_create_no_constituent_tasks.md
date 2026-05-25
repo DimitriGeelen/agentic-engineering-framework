@@ -14,6 +14,14 @@ appends — D-Immutability preserves legacy data. Read-surfaces
 constituent_tasks with the task-side arc_id: scan, so the two
 populations co-exist.
 
+## Dependencies (3)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/arc.sh` | calls |
+| `C-004` | tests |
+| `lib/arc.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_create_no_constituent_tasks.yaml`*
 *Last verified: 2026-05-16*

@@ -8,10 +8,10 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/reviewer/drift.py` | calls |
-| `lib/reviewer/static_scan.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [drift](/docs/generated/lib-reviewer-drift) | calls | TODO: describe what this component does |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-drift_cli.yaml`*

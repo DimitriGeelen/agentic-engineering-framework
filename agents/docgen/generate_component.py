@@ -123,8 +123,67 @@ def find_related_learnings(learnings_file, tags, name, limit=5):
     return related[:limit]
 
 
-def generate_doc(card_path, framework_root, output_dir):
+def build_card_index(framework_root):
+    """Index every fabric card by BOTH its id (C-NNN) and its location (path).
+
+    Returns {key: {"name", "slug", "purpose"}} where slug is the card filename
+    stem (the `/docs/generated/<slug>` route). Used to resolve dependency
+    targets — which may be either a fabric id or a path — to a human name +
+    description + cross-link. (T-2049; mirrors the fabric detail page, T-251.)
+    """
+    index = {}
+    components_dir = os.path.join(framework_root, ".fabric", "components")
+    for card_path in sorted(glob.glob(os.path.join(components_dir, "*.yaml"))):
+        try:
+            with open(card_path) as f:
+                card = yaml.safe_load(f)
+        except Exception:
+            continue
+        if not card:
+            continue
+        slug = os.path.basename(card_path).replace(".yaml", "")
+        entry = {
+            "name": card.get("name", slug),
+            "slug": slug,
+            "purpose": card.get("purpose", ""),
+        }
+        cid = card.get("id")
+        loc = card.get("location")
+        if cid:
+            index[str(cid)] = entry
+        if loc:
+            index[str(loc)] = entry
+    return index
+
+
+def _esc_cell(text):
+    """Escape a value for a Markdown table cell: pipes break the table; newlines
+    collapse rows. (T-2049 — notes like `Write|Edit|Bash` would otherwise split
+    a cell into phantom columns.)"""
+    return str(text).replace("|", "\\|").replace("\n", " ").strip()
+
+
+def _resolve_target(target, card_index):
+    """Resolve a dependency target (fabric id OR path) to (display, description).
+
+    display: a Markdown cross-link `[name](/docs/generated/<slug>)` when the
+    target is in the index, else the raw target as inline code (graceful
+    fallback — unknown targets never crash the generator).
+    description: the resolved card's purpose, else "".
+    """
+    entry = card_index.get(str(target)) if card_index else None
+    if entry:
+        return (
+            f"[{_esc_cell(entry['name'])}](/docs/generated/{entry['slug']})",
+            _esc_cell(entry["purpose"]),
+        )
+    return f"`{_esc_cell(target)}`", ""
+
+
+def generate_doc(card_path, framework_root, output_dir, card_index=None):
     """Generate a reference doc for a single component card."""
+    if card_index is None:
+        card_index = build_card_index(framework_root)
     with open(card_path) as f:
         card = yaml.safe_load(f)
 
@@ -177,29 +236,40 @@ def generate_doc(card_path, framework_root, output_dir):
         out.append(claude_section)
         out.append("")
 
-    # Dependencies
+    # Dependencies — resolve each target to a cross-link + description (T-2049)
     if depends_on:
         out.append(f"## Dependencies ({len(depends_on)})")
         out.append("")
-        out.append("| Target | Relationship |")
-        out.append("|--------|-------------|")
+        out.append("| Component | Relationship | Description |")
+        out.append("|-----------|--------------|-------------|")
         for dep in depends_on:
             if isinstance(dep, dict):
                 target = dep.get("target", "?")
                 dtype = dep.get("type", "uses")
-                out.append(f"| `{target}` | {dtype} |")
+                note = dep.get("note", "")
+                display, desc = _resolve_target(target, card_index)
+                # Prefer the resolved card purpose; fall back to the edge note.
+                detail = desc or _esc_cell(note)
+                if desc and note:
+                    detail = f"{desc} — _{_esc_cell(note)}_"
+                out.append(f"| {display} | {_esc_cell(dtype)} | {detail or '—'} |")
         out.append("")
 
     if depended_by:
         out.append(f"## Used By ({len(depended_by)})")
         out.append("")
-        out.append("| Component | Relationship |")
-        out.append("|-----------|-------------|")
+        out.append("| Component | Relationship | Description |")
+        out.append("|-----------|--------------|-------------|")
         for dep in depended_by:
             if isinstance(dep, dict):
                 target = dep.get("target", "?")
                 dtype = dep.get("type", "used_by")
-                out.append(f"| `{target}` | {dtype} |")
+                note = dep.get("note", "")
+                display, desc = _resolve_target(target, card_index)
+                detail = desc or _esc_cell(note)
+                if desc and note:
+                    detail = f"{desc} — _{_esc_cell(note)}_"
+                out.append(f"| {display} | {_esc_cell(dtype)} | {detail or '—'} |")
         out.append("")
 
     # Documentation
@@ -243,8 +313,23 @@ def generate_doc(card_path, framework_root, output_dir):
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
-        print("Usage: generate_component.py <card_path> <framework_root> <output_dir>")
+        print("Usage: generate_component.py <card_path|--all> <framework_root> <output_dir>")
         sys.exit(1)
+
+    # Batch mode: build the card index ONCE, then loop over every card (T-2049 —
+    # the per-card subprocess loop in generate-component.sh would otherwise
+    # rebuild the 768-card index 768 times, O(n²)).
+    if sys.argv[1] == "--all":
+        framework_root = sys.argv[2]
+        output_dir = sys.argv[3]
+        index = build_card_index(framework_root)
+        components_dir = os.path.join(framework_root, ".fabric", "components")
+        count = 0
+        for card_path in sorted(glob.glob(os.path.join(components_dir, "*.yaml"))):
+            if generate_doc(card_path, framework_root, output_dir, index):
+                count += 1
+        print(f"  {count} component docs generated")
+        sys.exit(0)
 
     card_path = sys.argv[1]
     framework_root = sys.argv[2]

@@ -17,6 +17,14 @@ generated artefact. Fix: emit decision fields as single-quoted YAML scalars
 Witness: T-1764 close 2026-05-16 → .context/episodic/T-1764.yaml line 47
 rejected with "found unknown escape character `\``".
 
+## Dependencies (3)
+
+| Target | Relationship |
+|--------|-------------|
+| `agents/context/lib/episodic.sh` | calls |
+| `agents/context/lib/episodic.sh` | tests |
+| `web/shared.py` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-episodic_yaml_decision_escape.yaml`*
 *Last verified: 2026-05-16*

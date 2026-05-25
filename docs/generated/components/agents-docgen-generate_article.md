@@ -10,10 +10,10 @@
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/docgen/generate-article.sh` | calls |
-| `agents/docgen/generate-article.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [generate-article](/docs/generated/agents-docgen-generate-article) | calls | Generates AI-assisted subsystem articles from component fabric cards |
+| [generate-article](/docs/generated/agents-docgen-generate-article) | called_by | Generates AI-assisted subsystem articles from component fabric cards |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-docgen-generate_article.yaml`*

@@ -26,13 +26,15 @@ The arc id form is arc-NNN; the count word is "task" or "tasks".
 Order in the body text places the id near its count, but a robust scan
 finds all (arc-NNN, count) pairs in sequence and joins by adjacency.
 
-## Dependencies (3)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/blueprints/core.py` | renders |
 | `web/blueprints/tasks.py` | renders |
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/core.py` | calls |
+| `web/blueprints/tasks.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_landing_arc_cards.yaml`*

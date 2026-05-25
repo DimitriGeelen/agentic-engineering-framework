@@ -15,15 +15,15 @@ Usage: source "$FRAMEWORK_ROOT/lib/enums.sh"
 
 ## Used By (7)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/task-create/create-task.sh` | calls |
-| `agents/task-create/update-task.sh` | calls |
-| `agents/task-create/create-task.sh` | called_by |
-| `agents/task-create/update-task.sh` | called_by |
-| `tests/unit/lib_enums.bats` | called-by |
-| `tests/unit/lib_enums.bats` | called_by |
-| `tests/unit/lib_enums.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [create-task](/docs/generated/agents-task-create-create-task) | calls | Task Creation Agent - Mechanical Operations |
+| [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
+| [create-task](/docs/generated/agents-task-create-create-task) | called_by | Task Creation Agent - Mechanical Operations |
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [lib_enums](/docs/generated/tests-unit-lib_enums) | called-by | Unit tests for enums (23 tests) |
+| [lib_enums](/docs/generated/tests-unit-lib_enums) | called_by | Unit tests for enums (23 tests) |
+| [lib_enums](/docs/generated/tests-unit-lib_enums) | tests_by | Unit tests for enums (23 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-enums.yaml`*

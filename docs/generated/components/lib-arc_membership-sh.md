@@ -35,18 +35,23 @@ arc_tasks_with_arc_id <slug>     → T-IDs whose `arc_id:` matches slug
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `.tasks/active/` | reads |
-| `.tasks/completed/` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `.tasks/active/` | reads | — |
+| `.tasks/completed/` | reads | — |
 
-## Used By (3)
+## Used By (8)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/arc.sh` | calls |
-| `agents/handover/handover.sh` | calls |
-| `lib/evolution_log.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [evolution_log](/docs/generated/lib-evolution_log) | calls | TODO: describe what this component does |
+| [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
+| [arc_membership_shared](/docs/generated/tests-unit-arc_membership_shared) | tests_by | TODO: describe what this component does |
+| [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | called_by | TODO: describe what this component does |
+| [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | tests_by | TODO: describe what this component does |
+| [arc_membership_dual_id](/docs/generated/tests-unit-arc_membership_dual_id) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-arc_membership-sh.yaml`*

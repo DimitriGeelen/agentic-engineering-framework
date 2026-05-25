@@ -11,14 +11,16 @@ Generate rich episodic summary for a completed task
 Hybrid approach (D-023): Git owns timeline/metrics/artifacts,
 task file owns AC + decisions, episodic merges both automatically.
 
-## Used By (4)
+## Used By (6)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-001` | called_by |
-| `agents/context/context.sh` | called-by |
-| `tests/unit/context_episodic.bats` | called_by |
-| `tests/unit/context_episodic.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [context-dispatcher](/docs/generated/context-dispatcher) | called_by | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [context-dispatcher](/docs/generated/context-dispatcher) | called-by | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [context_episodic](/docs/generated/tests-unit-context_episodic) | called_by | Unit tests for context episodic (11 tests) |
+| [context_episodic](/docs/generated/tests-unit-context_episodic) | tests_by | Unit tests for context episodic (11 tests) |
+| [episodic_yaml_decision_escape](/docs/generated/tests-unit-episodic_yaml_decision_escape) | called_by | TODO: describe what this component does |
+| [episodic_yaml_decision_escape](/docs/generated/tests-unit-episodic_yaml_decision_escape) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

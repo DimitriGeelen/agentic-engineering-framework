@@ -14,6 +14,13 @@ but verb-side normalisation was deferred to a sequel — this is that sequel.
 Pattern: scaffold a throwaway ARCS_DIR under BATS_TEST_TMPDIR, source the
 library, run each verb with both forms, assert success + correct routing.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/arc.sh` | calls |
+| `lib/arc.sh` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_dual_identity_verbs.yaml`*
 *Last verified: 2026-05-16*

@@ -17,9 +17,9 @@ invocation)").
 
 | Target | Relationship |
 |--------|-------------|
+| `bin/fw` | tests |
 | `C-004` | calls |
 | `C-004` | tests |
-| `bin/fw` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_ctl013_skip_nested_audit.yaml`*

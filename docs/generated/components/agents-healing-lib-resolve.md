@@ -11,9 +11,9 @@ Mark issue resolved and log pattern for future learning
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/healing/healing.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [healing](/docs/generated/agents-healing-healing) | called_by | Healing Agent - Antifragile error recovery and pattern learning |
 
 ## Documentation
 

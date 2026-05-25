@@ -1,10 +1,23 @@
 ---
 id: T-2049
-name: "docs/generated detail pages — linkify dependency targets + resolve C-NNN fabric IDs to human names"
+name: "docs/generated detail pages — linkify dependency targets + resolve C-NNN fabric
+  IDs to human names"
 description: >
-  Review feedback on T-2047 (/docs/generated detail pages). TWO issues, both in the doc generator agents/docgen/generate_component.py (Dependencies/Used By table rendering, lines 186-203): (1) targets render as plain backtick-code, NOT clickable links — deeper component pages don't cross-link (e.g. /docs/generated/agents-task-create-create-task deps aren't links); (2) some targets are raw fabric IDs like C-007/C-008 (see /docs/generated/hook-config Dependencies) shown as bare codes with no human-readable name/description. FIX: build a card index (fabric id AND location -> {name, slug=card filename stem, purpose}) once, pass into generate_doc; render each depends_on/depended_by target as a Markdown link [human name](/docs/generated/<slug>) with the purpose/description shown alongside; resolve C-NNN ids and path targets through the index (fall back to raw target if unresolved). Then regenerate all 763 component docs (fw docs / agents/docgen) and eyes-on verify the two example URLs. Distinct deliverable from T-2047 height fix (one-bug-one-task).
+  Review feedback on T-2047 (/docs/generated detail pages). TWO issues, both in the
+  doc generator agents/docgen/generate_component.py (Dependencies/Used By table rendering,
+  lines 186-203): (1) targets render as plain backtick-code, NOT clickable links —
+  deeper component pages don't cross-link (e.g. /docs/generated/agents-task-create-create-task
+  deps aren't links); (2) some targets are raw fabric IDs like C-007/C-008 (see /docs/generated/hook-config
+  Dependencies) shown as bare codes with no human-readable name/description. FIX:
+  build a card index (fabric id AND location -> {name, slug=card filename stem, purpose})
+  once, pass into generate_doc; render each depends_on/depended_by target as a Markdown
+  link [human name](/docs/generated/<slug>) with the purpose/description shown alongside;
+  resolve C-NNN ids and path targets through the index (fall back to raw target if
+  unresolved). Then regenerate all 763 component docs (fw docs / agents/docgen) and
+  eyes-on verify the two example URLs. Distinct deliverable from T-2047 height fix
+  (one-bug-one-task).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,8 +26,8 @@ components: []
 related_tasks: [T-2047]
 arc_id: watchtower-redesign
 created: 2026-05-25T17:06:46Z
-last_update: 2026-05-25T17:06:46Z
-date_finished: null
+last_update: 2026-05-25T17:27:16Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -25,20 +38,57 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-25T17:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-25T17:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2049: docs/generated detail pages — linkify dependency targets + resolve C-NNN fabric IDs to human names
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Review feedback on T-2047 (/docs/generated detail pages): dependency/used-by targets render
+as plain backtick-code (not clickable links), and some targets are raw fabric IDs like
+`C-007`/`C-008` shown without a human name. Fix is in the doc generator
+`agents/docgen/generate_component.py` (Dependencies/Used By tables). Prior art: T-251 did the
+same resolution for the live fabric detail page. Slug = card filename stem (the route is
+`/docs/generated/<slug>`).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `build_card_index(framework_root)` builds an index from every `.fabric/components/*.yaml`
+      card mapping BOTH the fabric `id` (C-NNN) AND the `location` (path) to
+      `{name, slug, purpose}`; built once and passed into `generate_doc`.
+- [x] Dependency and Used-By targets render as Markdown links
+      `[human name](/docs/generated/<slug>)` when the target resolves through the index (by id
+      or by path); unresolved targets fall back to raw `` `target` `` code (no crash).
+- [x] A human-readable description (purpose) column is shown alongside resolved targets in both
+      the Dependencies and Used By tables.
+- [x] All component docs regenerated; `docs/generated/components/hook-config.md` no longer shows
+      a bare `C-007`/`C-008` token (resolved to a name+link), and
+      `agents-task-create-create-task.md` dependency targets are Markdown links.
+- [x] Regression test `tests/unit/test_docgen_dep_resolution.py` pins: a C-NNN target resolves
+      to a `/docs/generated/<slug>` link, a path target resolves to a link, an unknown target
+      falls back to raw code.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -70,8 +120,24 @@ date_finished: null
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] Dependency links are clickable and descriptions readable on the example pages
+      **Steps:**
+      1. Open http://192.168.10.107:3000/docs/generated/hook-config
+      2. Open http://192.168.10.107:3000/docs/generated/agents-task-create-create-task
+      3. Look at the Dependencies / Used By tables on each page
+      **Expected:** every target is a clickable link to its component page, with a
+      human-readable name and a short description alongside — no bare `C-007`/`C-008` codes.
+      **If not:** note which target still renders as raw code or has no description.
 
 ## Verification
+
+# Resolution logic + regression test (deterministic; agent-verifiable)
+python3 -c "import ast; ast.parse(open('agents/docgen/generate_component.py').read())"
+python3 -m pytest tests/unit/test_docgen_dep_resolution.py -q
+# Regenerated docs no longer carry bare C-NNN tokens for the example page
+! grep -Eq '`C-0[0-9][0-9]`' docs/generated/components/hook-config.md
+# Resolved dependency links are present on the example page
+grep -q '(/docs/generated/' docs/generated/components/hook-config.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -165,3 +231,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2049-docsgenerated-detail-pages--linkify-depe.md
 - **Context:** Initial task creation
+
+### 2026-05-25T17:26:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

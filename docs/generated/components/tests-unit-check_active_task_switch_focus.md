@@ -39,7 +39,7 @@ and any external tool that rejects unknown flags).
 This test pins the contract end-to-end: the hook recognises both
 mechanisms, logs each with its own `flag:` field, and the downstream
 
-## Dependencies (5)
+## Dependencies (12)
 
 | Target | Relationship |
 |--------|-------------|
@@ -48,6 +48,13 @@ mechanisms, logs each with its own `flag:` field, and the downstream
 | `agents/context/lib/learning.sh` | calls |
 | `agents/context/lib/pattern.sh` | calls |
 | `agents/context/lib/decision.sh` | calls |
+| `agents/task-create/update-task.sh` | tests |
+| `agents/context/lib/pattern.sh` | tests |
+| `agents/context/lib/decision.sh` | tests |
+| `agents/context/check-active-task.sh` | tests |
+| `bin/fw` | tests |
+| `C-002` | calls |
+| `C-002` | tests |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-check_active_task_switch_focus.yaml`*

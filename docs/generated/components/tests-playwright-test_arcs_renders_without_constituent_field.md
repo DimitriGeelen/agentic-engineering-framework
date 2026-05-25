@@ -26,12 +26,13 @@ doc tone is genuinely subjective.
 
 NOTE: deliberately no `constituent_tasks:` field — that's the contract.
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/blueprints/arcs.py` | renders |
 | `tests/playwright/conftest.py` | calls |
+| `web/blueprints/arcs.py` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_arcs_renders_without_constituent_field.yaml`*

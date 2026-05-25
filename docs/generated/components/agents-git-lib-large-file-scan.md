@@ -19,11 +19,11 @@ large-file-scan.sh scan-tree         Scan the entire tracked tree (audit mode)
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/git/lib/hooks.sh` | called_by |
-| `C-004` | called_by |
-| `bin/fw` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-large-file-scan.yaml`*

@@ -10,22 +10,22 @@ Git Agent - Hook installation subcommand
 
 ## Dependencies (7)
 
-| Target | Relationship |
-|--------|-------------|
-| `C-004` | calls |
-| `lib/tasks.sh` | calls |
-| `lib/config.sh` | calls |
-| `lib/paths.sh` | calls |
-| `agents/git/lib/secret-scan.sh` | calls |
-| `agents/git/lib/dup-task-scan.sh` | calls |
-| `agents/git/lib/large-file-scan.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [tasks](/docs/generated/lib-tasks) | calls | fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | calls | TODO: describe what this component does |
+| [dup-task-scan](/docs/generated/agents-git-lib-dup-task-scan) | calls | TODO: describe what this component does |
+| [large-file-scan](/docs/generated/agents-git-lib-large-file-scan) | calls | TODO: describe what this component does |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/git/git.sh` | called_by |
-| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [git](/docs/generated/agents-git-git) | called_by | Git Agent - Structural Enforcement for Git Operations |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
 
 ## Related
 

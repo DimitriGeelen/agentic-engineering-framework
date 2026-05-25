@@ -16,12 +16,12 @@ Graduation pipeline:
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/lib_harvest.bats` | called-by |
-| `tests/unit/lib_harvest.bats` | called_by |
-| `tests/unit/lib_harvest.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [lib_harvest](/docs/generated/tests-unit-lib_harvest) | called-by | TODO: describe what this component does |
+| [lib_harvest](/docs/generated/tests-unit-lib_harvest) | called_by | TODO: describe what this component does |
+| [lib_harvest](/docs/generated/tests-unit-lib_harvest) | tests_by | TODO: describe what this component does |
 
 ## Related
 

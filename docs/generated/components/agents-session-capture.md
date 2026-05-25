@@ -12,15 +12,15 @@ Session Capture Agent
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/handover/handover.sh` | triggers |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | triggers | Handover Agent - Mechanical Operations |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `CLAUDE.md` | references |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `CLAUDE.md` | references | — |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-session-capture.yaml`*

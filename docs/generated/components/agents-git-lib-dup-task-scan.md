@@ -19,11 +19,11 @@ Exit:
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/git/lib/hooks.sh` | called_by |
-| `tests/unit/update_task_orphan_guard.bats` | called_by |
-| `tests/unit/update_task_orphan_guard.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
+| [update_task_orphan_guard](/docs/generated/tests-unit-update_task_orphan_guard) | called_by | TODO: describe what this component does |
+| [update_task_orphan_guard](/docs/generated/tests-unit-update_task_orphan_guard) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-dup-task-scan.yaml`*

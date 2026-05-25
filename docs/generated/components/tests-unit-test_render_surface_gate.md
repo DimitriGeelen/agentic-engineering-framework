@@ -13,6 +13,19 @@ blueprints, CSS/JS, web/shared.py, web/app.py) must carry at least one
 Origin: T-1763, T-1764, T-1765 shipped render-surface fixes with zero
 Human ACs — user caught the omission and asked for RCA + structural fix.
 
+## Dependencies (8)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/render_surface.sh` | calls |
+| `agents/task-create/update-task.sh` | calls |
+| `web/shared.py` | tests |
+| `web/app.py` | tests |
+| `lib/render_surface.sh` | tests |
+| `agents/task-create/update-task.sh` | tests |
+| `web/blueprints/tasks.py` | tests |
+| `bin/fw` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_render_surface_gate.yaml`*
 *Last verified: 2026-05-16*

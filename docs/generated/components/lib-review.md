@@ -27,15 +27,15 @@ When agent ACs are complete and human ACs remain:
 
 ## Used By (7)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/task-create/update-task.sh` | called_by |
-| `bin/fw` | called_by |
-| `lib/inception.sh` | called_by |
-| `tests/unit/lib_review.bats` | called-by |
-| `tests/unit/lib_review.bats` | called_by |
-| `tests/unit/lib_review.bats` | tests_by |
-| `tests/unit/test_arc_parent_review_gate.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [inception](/docs/generated/lib-inception) | called_by | fw inception - Inception phase workflow |
+| [lib_review](/docs/generated/tests-unit-lib_review) | called-by | Unit tests for review (10 tests) |
+| [lib_review](/docs/generated/tests-unit-lib_review) | called_by | Unit tests for review (10 tests) |
+| [lib_review](/docs/generated/tests-unit-lib_review) | tests_by | Unit tests for review (10 tests) |
+| [test_arc_parent_review_gate](/docs/generated/tests-unit-test_arc_parent_review_gate) | called_by | TODO: describe what this component does |
 
 ## Related
 

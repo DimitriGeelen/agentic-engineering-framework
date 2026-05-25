@@ -12,6 +12,13 @@ in .tasks/{active,completed}/, audit emits a WARN — never FAIL.
 Symmetric to T-1849's arc_id validation (which guards task→arc); this
 guards arc→task. Matches T-1846 §4 D4 (warn not block).
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `C-004` | calls |
+| `C-004` | tests |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_anchor_task_existence.yaml`*
 *Last verified: 2026-05-16*

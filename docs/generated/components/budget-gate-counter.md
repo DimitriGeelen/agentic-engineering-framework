@@ -10,9 +10,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `budget-gate` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `budget-gate` | reads | Checked every invocation to decide recheck interval |
 
 ## Related
 

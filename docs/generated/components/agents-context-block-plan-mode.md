@@ -13,9 +13,9 @@ Use /plan skill instead (requires active task, writes to docs/plans/)
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `?` | uses |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `?` | uses | — |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-block-plan-mode.yaml`*
