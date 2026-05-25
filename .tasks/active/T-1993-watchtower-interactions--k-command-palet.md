@@ -10,10 +10,10 @@ description: >
   animations on filesystem changes (e.g., task transitions, commits) via SSE or polling.
   Depends on S0+S2+S4 (board/list patterns inform palette UX). Parent inception: T-1987.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [watchtower, redesign, ui, interactions]
 arc_id: watchtower-redesign
 components: []
@@ -23,7 +23,7 @@ related_tasks: [T-1987]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: '2026-05-22T10:15:02Z'
+last_update: 2026-05-25T22:09:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,6 +43,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-23T18:00:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -98,11 +107,11 @@ with budget for S6a (modal + keyboard handling + search wiring ≈ a slice the s
      mirroring how T-1989 (S2) decomposed into T-2008/T-2009/T-2010/T-2011. -->
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] ⌘K / Ctrl-K (and a click on the nav search affordance) opens a command-palette modal; Esc closes it; it works on a fresh load AND after an htmx `#content` swap (Playwright) — **[S6a]**
-- [ ] The palette input fuzzy-jumps to any nav destination in `web.shared.NAV_ITEMS` (arrow keys move selection, Enter navigates) AND falls through to the existing `discovery.search` backend for content queries — no second search implementation (Playwright + unit) — **[S6a]**
-- [ ] `?` opens a keyboard-shortcuts overlay listing the live shortcuts; Esc closes it (Playwright) — **[S6b]**
-- [ ] Tasks board/list supports multi-select with a bulk-action bar (depends on T-1992); each bulk action routes through the existing per-task endpoint (no new ungated mutation path) — **[S6c]**
-- [ ] A live activity ticker renders recent framework events via SSE and updates without reload (Playwright) — **[S6d]**
+- [x] ⌘K / Ctrl-K (and a click on the nav search affordance) opens a command-palette modal; Esc closes it; it works on a fresh load AND after an htmx `#content` swap (Playwright) — **[S6a]**
+- [x] The palette input fuzzy-jumps to any nav destination in `web.shared.NAV_ITEMS` (arrow keys move selection, Enter navigates) AND falls through to the existing `discovery.search` backend for content queries — no second search implementation (Playwright + unit) — **[S6a]**
+- [x] `?` opens a keyboard-shortcuts overlay listing the live shortcuts; Esc closes it (Playwright) — **[S6b]**
+- [x] Tasks board/list supports multi-select with a bulk-action bar (depends on T-1992); each bulk action routes through the existing per-task endpoint (no new ungated mutation path) — **[S6c]**
+- [x] A live activity ticker renders recent framework events via htmx poll (every 15s) and updates without reload (Playwright) — **[S6d]** *(design allowed "SSE or polling"; shipped as poll — see Evolution)*
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -134,33 +143,30 @@ with budget for S6a (modal + keyboard handling + search wiring ≈ a slice the s
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The S6 interactions feel cohesive and keyboard-first — ⌘K palette, ?-overlay, bulk-actions and the live activity ticker work together without shortcut collisions or focus traps
+  **Steps:**
+  1. Open http://192.168.10.107:3000/
+  2. Press ⌘K (or Ctrl-K) → type a few letters → arrow to a destination → Enter; reopen and type a content query → confirm it falls through to search
+  3. Press `?` → confirm the shortcuts overlay lists the live shortcuts; Esc closes it
+  4. Watch the cockpit activity ticker update on its own (~15s) without a reload; on /tasks multi-select two cards and apply a bulk action
+  **Expected:** Shortcuts don't collide, Esc always escapes (no focus trap), the ticker refreshes silently, and the whole thing feels keyboard-first — one coherent interaction layer, not four separate widgets
+  **If not:** Note which two interactions collide or where focus gets stuck
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# L-387-safe (grep a tempfile). L-291: Playwright line scoped to hosts with it installed.
+# Behavioural proof = S6 Playwright suite (16 passed + bulk in T-1992's 33-pass run, 2026-05-26).
+# S6a: command palette renders + JS loads on every page (base.html)
+curl -sf "$(bin/fw watchtower url)/" > /tmp/t1993_home.html 2>&1; grep -q 'command-palette' /tmp/t1993_home.html && grep -q 'data-palette' /tmp/t1993_home.html
+# S6b: shortcuts overlay scaffolding renders
+grep -q 'shortcuts-overlay' /tmp/t1993_home.html && grep -q 'data-shortcuts' /tmp/t1993_home.html
+# S6d: activity feed renders + is wired to the 15s htmx poll (not SSE — see Evolution)
+grep -q 'recent-activity' /tmp/t1993_home.html && grep -q 'every 15s' /tmp/t1993_home.html
+# Behavioural regression guards ship (S6a/S6b/S6c/S6d)
+test -f tests/playwright/test_command_palette.py && test -f tests/playwright/test_shortcuts_overlay.py && test -f tests/playwright/test_cockpit_activity.py && test -f tests/playwright/test_bulk_actions.py
+# Behavioural verify — scoped (L-291): runs only where playwright is installed
+if python3 -c "import playwright" 2>/dev/null; then timeout 200 python3 -m pytest -q -p no:cacheprovider tests/playwright/test_command_palette.py tests/playwright/test_shortcuts_overlay.py tests/playwright/test_cockpit_activity.py > /tmp/t1993_pw.log 2>&1; else echo "playwright not installed on gate host — behavioural subset skipped (L-291)"; fi
+
 
 ## RCA
 
@@ -202,6 +208,26 @@ with budget for S6a (modal + keyboard handling + search wiring ≈ a slice the s
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-26 — S6d shipped as htmx poll, not SSE; umbrella rolled up after slices
+- **What changed:** The S6d AC was narrowed to "via SSE", but the task *description* (line 10) had specified "via SSE **or polling**". T-2020 shipped the activity feed as an htmx poll (`hx-trigger="load, every 15s"`), which is within the original intent and simpler (no long-lived connection, no SSE infra). The AC text was corrected to match the shipped mechanism; `test_cockpit_activity.py::test_card_is_wired_to_poll` pins it.
+- **Plan impact:** No SSE endpoint is needed for S6d. The umbrella's Agent ACs became roll-up checks for the shipped slices; an integrated keyboard-cohesion `[REVIEW]` AC was added at roll-up (the original filing had none).
+- **Triggered:** T-2012 (S6a ⌘K palette), T-2013 (S6b ?-overlay), T-2018 (S6c bulk-actions, shared with T-1992 S4e), T-2020 (S6d activity poll) — all shipped, in the review queue. Behavioural proof: S6 Playwright suite (16 passed) + bulk in T-1992's 33-pass run.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 5 Agent ACs verified by running the S6 Playwright suite (**16 passed**) plus the bulk-action tests (in T-1992's 33-pass run) — not grep alone (T-1575). One AC was *corrected* during roll-up: S6d shipped as htmx poll, not SSE — within the description's "SSE or polling" intent, logged in Evolution. One integrated keyboard-cohesion `[REVIEW]` Human AC remains.
+
+**Evidence:**
+- S6a — `test_command_palette.py`: `test_open_close_fresh`, `test_open_close_after_htmx_swap`, `test_search_fallthrough_routes_to_discovery`, `test_jump_targets_are_whitelisted_nav_destinations` pass; `/` renders `command-palette` + `data-palette` + loads `command-palette.js`
+- S6b — `test_shortcuts_overlay.py` passes; `/` renders `shortcuts-overlay` + `data-shortcuts`
+- S6c — `test_bulk_actions.py` passes (T-1992 run); routes through existing per-task endpoint
+- S6d — `test_cockpit_activity.py`: `test_card_loads_activity_entries`, `test_card_is_wired_to_poll` pass; `/` renders `recent-activity` + the `every 15s` poll
+- Runs: `16 passed in 100.57s` (S6) + `33 passed in 159.17s` (S4/bulk), 2026-05-26
+
+**Review:** http://192.168.10.107:3000/review/T-1993
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -229,3 +255,7 @@ with budget for S6a (modal + keyboard handling + search wiring ≈ a slice the s
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1993-watchtower-interactions--k-command-palet.md
 - **Context:** Initial task creation
+
+### 2026-05-25T22:09:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
