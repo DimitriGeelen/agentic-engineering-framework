@@ -6,21 +6,21 @@ description: >
   arc-007 S2c pinned-pages model — star nav destinations, surface in top bar, persist
   per-user
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, redesign, ui, nav, arc:watchtower-redesign]
 arc_id: watchtower-redesign
-components: []
+components: [tests/playwright/test_pins.py, tests/unit/test_pins.py, web/blueprints/settings.py, web/shared.py, web/templates/base.html, web/templates/_breadcrumb.html, web/templates/_pins.html, web/templates/_star.html]
 related_tasks: [T-1989, T-1987, T-1988]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T17:08:45Z
-last_update: '2026-05-23T17:15:02Z'
-date_finished:
+last_update: 2026-05-25T22:48:25Z
+date_finished: 2026-05-25T22:48:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -284,3 +284,24 @@ out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -c "from web.app impo
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2010-arc-007-s2c-pinned-pages-model--star-nav.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5f18d7f0
+- **Timestamp:** 2026-05-25T22:48:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Unit test (`tests/unit/test_pins.py`, 10 tests) covers toggle add/remove, whitelist rejection, and appearance/pins coexistence; Playwright test (`tests/playwright/test_pins.py`, 5 tests) covers star→a
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/static/ux-review/T-2010-pins.png in: Unit test (`tests/unit/test_pins.py`, 10 tests) covers toggle add/remove, whitelist rejection, and appearance/pins coexistence; Playwright test (`test`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `wipe`
+
+### 2026-05-25T22:48:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
