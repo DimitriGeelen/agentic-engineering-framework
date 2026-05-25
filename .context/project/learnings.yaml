@@ -3336,3 +3336,10 @@ X'` returning empty group."
   date: 2026-05-25
   context: Added via context agent
   application: TBD
+- id: L-435
+  learning: "P-013 render-surface gate false-positives on body-text mentions: task_touches_render_surface (lib/render_surface.sh:97) greps the task BODY for any path token matching web/lib/etc paths — it cannot distinguish 'modifies web/blueprints/settings.py' from 'mentions settings.py in prose/RCA/AC'. A task whose whole point is 'settings.py is untouched' (git diff --quiet confirms) still trips the gate and demands a [REVIEW] Human AC. Adding a fake [REVIEW] is dishonest (nothing rendered changed); the sanctioned escape is --skip-render-review with a logged rationale, which is human-gated under autonomy. Recognise this class: if your task only DISCUSSES a render surface (no git diff to web/), it's a false positive, not a missing review. Candidate fix: cross-check the gate against the task's actual commit diffs (git log --grep TASK_ID --name-only) rather than body-text path tokens."
+  source: unknown
+  task: T-2056
+  date: 2026-05-25
+  context: Added via context agent
+  application: TBD
