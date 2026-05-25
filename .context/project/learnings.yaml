@@ -3329,3 +3329,10 @@ X'` returning empty group."
   date: 2026-05-25
   context: Added via context agent
   application: TBD
+- id: L-434
+  learning: "Shipped-but-unclosed slice leak: 35 arc-007 child slices sat in status=started-work with 100% of Agent ACs ticked and code rendering live, but were never run through 'fw task update --status work-completed' — so none entered the human review queue (invisible to /approvals, handover 'Awaiting Review', and audit). Root cause: the framework has no detector for 'all Agent ACs ticked AND status still started-work' (fw task stale is date-based only). Likely driver: the post-completion P-002 commit deadlock makes closure friction-heavy, so agents tick ACs, ship, and skip the completion step across sessions. Prevention candidate: audit/doctor check flagging completable-but-not-completed tasks (Agent ACs all [x] but status != work-completed)."
+  source: unknown
+  task: T-2023
+  date: 2026-05-25
+  context: Added via context agent
+  application: TBD
