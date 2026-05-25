@@ -215,6 +215,20 @@ python3 -m pytest tests/playwright/test_approvals_height.py -q >/tmp/.t2038_pt.o
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** GO (ship the height bound)
+
+**Rationale:** The one open AC is a `[REVIEW]` judgment call — whether the bounded `/approvals` reads cleanly and hides nothing important. All three Agent ACs are verified with evidence: height dropped 37,247px → 6,221px (under the 8000px cap), all 108 cards remain reachable, and the ux-review sweep now captures the page as `full`. The change is template-only (one file), poll-safe, and guarded by a new Playwright regression test. Nothing is dropped — the 93 lower-priority cards sit in a one-click "Show 93 more" disclosure, sorted so the most-actionable (review-priority, oldest) stay visible.
+
+**Evidence:**
+- `scrollHeight` 37,247px → **6,221px** (Playwright measurement, live 108-card backlog)
+- **108/108** verification cards in the DOM (15 visible + 93 in collapsed overflow)
+- `docs/reports/T-2002-ux-review-arc-007-s0-s1.md`: `/approvals` Capture column = `full` (was `⚠️ clipped @36938px`)
+- `tests/playwright/test_approvals_height.py` — 2 passed (height-bounded + items-reachable)
+- Screenshot: `web/static/ux-review/T-2038-approvals-bounded.png` (served live)
+- Commits: `8cfb777e` (fix) + `69cc6f5d` (fabric card), pushed to origin
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
