@@ -7,20 +7,20 @@ description: >
   not the int core.py _get_traceability returns. Discovered during T-2020 eyes-on.
   Pre-existing, unrelated to S6d. One bug = one task.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_cockpit_traceability.py, tests/unit/test_cockpit_traceability.py, web/templates/cockpit.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-24T10:08:37Z
-last_update: 2026-05-24T10:29:46Z
-date_finished:
+last_update: 2026-05-25T22:44:13Z
+date_finished: 2026-05-25T22:44:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -41,6 +41,15 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-05-25T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-05-24T10:15:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -51,6 +60,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-25T10:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
     rubric_sha: e4a00f38e801
 ---
 
@@ -230,9 +249,12 @@ the single Human AC is a real eyes-on taste check on the rendered percentage.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-680af3fd
-- **Timestamp:** 2026-05-24T10:33:01Z
+- **Scan ID:** R-97d6ccc8
+- **Timestamp:** 2026-05-25T22:44:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-25T22:44:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
