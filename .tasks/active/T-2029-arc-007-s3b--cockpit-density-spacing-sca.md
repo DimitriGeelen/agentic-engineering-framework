@@ -7,17 +7,17 @@ description: >
   Compact/Cozy/Comfortable control visibly tightens/loosens layout (not just font).
   Human-approved approach (scale-multiply); ready to build with a full budget window.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 arc_id: watchtower-redesign
 tags: [arc:watchtower-redesign, ui, watchtower, cockpit, density]
-components: []
+components: [tests/playwright/test_cockpit_density_spacing.py, tests/unit/test_cockpit_density_spacing.py, web/templates/cockpit.html]
 related_tasks: [T-1990, T-1987, T-2024, T-1991]
 created: 2026-05-24T12:58:23Z
-last_update: 2026-05-24T15:01:21Z
-date_finished:
+last_update: 2026-05-25T22:43:25Z
+date_finished: 2026-05-25T22:43:25Z
 cost_estimate_proposed:
   - ts: '2026-05-24T13:00:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -26,6 +26,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 7
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-25T13:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -168,9 +177,12 @@ The isolated-port Playwright run + screenshots prove the new render.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-de1119a0
-- **Timestamp:** 2026-05-24T15:07:04Z
+- **Scan ID:** R-050b0d49
+- **Timestamp:** 2026-05-25T22:43:28Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-25T22:43:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
