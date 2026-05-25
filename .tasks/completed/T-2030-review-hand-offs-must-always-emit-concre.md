@@ -5,7 +5,7 @@ description: >
   Structural fix so review/Human-AC hand-offs always carry concrete resolved clickable
   links + screenshot links, not agent-authored commands or vague navigation
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -13,8 +13,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-24T14:27:04Z
-last_update: '2026-05-24T14:30:02Z'
-date_finished:
+last_update: 2026-05-25T19:43:46Z
+date_finished: 2026-05-25T19:43:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -36,6 +36,15 @@ cost_estimate_proposed:
       tier: 4
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-25T19:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---
@@ -101,15 +110,15 @@ Three candidate fixes, evaluated against the recurrence evidence:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -183,7 +192,16 @@ checks out of scope (separate tasks if wanted).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The root cause is structural, not behavioural: there is no mechanical check
+of review links at the hand-off chokepoint, so guessed/typo'd routes reach the human. The
+advisory rule already failed 3× — only a mechanical gate at `fw task review` prevents
+recurrence. The fix is bounded and low-risk because the route-derivation machinery already
+exists (T-2042 `discover_get_routes()` over `web.app.app.url_map`); this task reuses it
+rather than building new infrastructure. WARN-first keeps it reversible.
+
+**Date**: 2026-05-25T19:43:46Z
 
 ## Updates
 
@@ -192,3 +210,26 @@ checks out of scope (separate tasks if wanted).
 
 ### 2026-05-24T14:27:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-25T19:43:46Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The root cause is structural, not behavioural: there is no mechanical check
+of review links at the hand-off chokepoint, so guessed/typo'd routes reach the human. The
+advisory rule already failed 3× — only a mechanical gate at `fw task review` prevents
+recurrence. The fix is bounded and low-risk because the route-derivation machinery already
+exists (T-2042 `discover_get_routes()` over `web.app.app.url_map`); this task reuses it
+rather than building new infrastructure. WARN-first keeps it reversible.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-44fc2b42
+- **Timestamp:** 2026-05-25T19:43:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-25T19:43:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
