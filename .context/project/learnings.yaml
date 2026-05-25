@@ -3308,3 +3308,10 @@ X'` returning empty group."
   date: 2026-05-25
   context: Added via context agent
   application: TBD
+- id: L-431
+  learning: "Two surfaces rendering the same data drift silently: the live fabric detail page resolved C-NNN/path dependency targets to names+links (T-251), but the generated component docs (docs/generated, agents/docgen) never got the same resolution — shipped bare C-007 codes for months. When a render/resolution helper is added to one surface, mirror it to every other surface that renders the same underlying data (live page + generated/exported doc + API). Also: any text placed in a Markdown table cell must escape '|' or it splits the row into phantom columns."
+  source: P-001
+  task: T-2049
+  date: 2026-05-25
+  context: Added via context agent
+  application: TBD
