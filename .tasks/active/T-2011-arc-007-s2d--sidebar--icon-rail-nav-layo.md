@@ -4,21 +4,21 @@ name: "arc-007 S2d — sidebar + icon-rail nav layouts + data-wt-nav selector"
 description: >
   arc-007 S2d — sidebar + icon-rail nav layouts + data-wt-nav selector
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, redesign, ui, nav, arc:watchtower-redesign]
 arc_id: watchtower-redesign
-components: []
+components: [tests/playwright/test_command_palette.py, tests/playwright/test_nav_layouts.py, tests/unit/test_command_palette.py, tests/unit/test_nav_layouts.py, web/blueprints/settings.py, web/shared.py, web/static/command-palette.js, web/templates/appearance.html, web/templates/base.html]
 related_tasks: [T-1989, T-1987, T-1988, T-2010]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T17:39:57Z
-last_update: '2026-05-23T17:45:02Z'
-date_finished:
+last_update: 2026-05-25T22:54:31Z
+date_finished: 2026-05-25T22:54:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -257,3 +257,15 @@ out=$(python3 -c "from web.blueprints.settings import _sanitise_appearance as f;
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2011-arc-007-s2d--sidebar--icon-rail-nav-layo.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0314a792
+- **Timestamp:** 2026-05-25T22:54:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-25T22:54:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
