@@ -1,15 +1,17 @@
 ---
 id: T-2023
-name: "arc-007 S3a — cockpit theme-respecting status pills (token-ize hardcoded status hexes)"
+name: "arc-007 S3a — cockpit theme-respecting status pills (token-ize hardcoded status
+  hexes)"
 description: >
-  arc-007 S3a — cockpit theme-respecting status pills (token-ize hardcoded status hexes)
+  arc-007 S3a — cockpit theme-respecting status pills (token-ize hardcoded status
+  hexes)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:watchtower-redesign, ui, watchtower, cockpit]
-components: []
+components: [tests/playwright/test_cockpit_status_pills.py, tests/unit/test_cockpit_status_pills.py, web/templates/cockpit.html]
 related_tasks: [T-1990, T-1987, T-2021, T-2022]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +19,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-24T10:53:17Z
-last_update: 2026-05-24T10:53:17Z
-date_finished: null
+last_update: 2026-05-25T22:40:55Z
+date_finished: 2026-05-25T22:40:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,6 +31,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-24T11:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-24T11:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2023: arc-007 S3a — cockpit theme-respecting status pills (token-ize hardcoded status hexes)
@@ -197,9 +220,12 @@ an eyes-on taste/contrast check across palettes.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-14debca6
-- **Timestamp:** 2026-05-24T10:57:17Z
+- **Scan ID:** R-15a4d111
+- **Timestamp:** 2026-05-25T22:40:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-25T22:40:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
