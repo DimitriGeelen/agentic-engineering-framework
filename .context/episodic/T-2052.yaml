@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2052: no-active-task gate deadlock: blocks fw context focus / task create / work-on
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-25T20:12:01Z
+# ============================================================================
+
+task_id: T-2052
+task_name: "no-active-task gate deadlock: blocks fw context focus / task create / work-on"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-25T19:51:20Z
+completed: 2026-05-25T20:11:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-25T21:51:37+02:00
+last_commit: 2026-05-25T22:10:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2050/T-2051/T-2052: file T-2030 GO follow-on (link validator) + 2 framework bugs found during GO recovery. fix no-active-task gate deadlocking its own unblock commands. capture learning (first-word base extraction breaks on cd-prefix/multiline)
+
+# Key outcomes
+outcomes:
+  - '`check-active-task.sh` allows task-bootstrap commands (`fw work-on`, `fw task create`,'
+  - '`fw task create` is added to the fw safe-command allowlist in `safe-commands.sh`'
+  - 'Simulating the hook with `current_task: null` and a `cd … && bin/fw context focus …`'
+  - 'A non-bootstrap write command (e.g. `bin/fw task update T-X --status ...`) with'
+  - 'bats regression test pins both: bootstrap allowed + non-bootstrap still blocked, with'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'capture learning (first-word base extraction breaks on cd-prefix/multiline)'
+    source: git-mined
+  - description: 'fix no-active-task gate deadlocking its own unblock commands'
+    source: git-mined
+  - description: 'T-2050/T-2051/T-2052: file T-2030 GO follow-on (link validator) + 2 framework bugs found during GO recovery'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-2050-validate-watchtower-review-links-against.md'
+  - '.tasks/active/T-2051-watchtower-post-inceptioniddecide-return.md'
+  - '.tasks/active/T-2052-no-active-task-gate-deadlock-blocks-fw-c.md'
+  - 'tests/unit/test_check_active_task_bootstrap.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-25T21:51:37"
+    action: "T-2050/T-2051/T-2052: file T-2030 GO follow-on (link validator) + 2 framework bugs found during GO recovery"
+  - time: "2026-05-25T22:07:05"
+    action: "T-2052: fix no-active-task gate deadlocking its own unblock commands"
+  - time: "2026-05-25T22:10:28"
+    action: "T-2052: capture learning (first-word base extraction breaks on cd-prefix/multiline)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 3
+  files_changed: 7
+  lines_added: 716
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2052-no-active-task-gate-deadlock-blocks-fw-c.md
+generated_by: context-agent-hybrid
