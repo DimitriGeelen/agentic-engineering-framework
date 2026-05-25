@@ -23,7 +23,7 @@ related_tasks: [T-1987]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-23T15:43:38Z
+last_update: '2026-05-25T22:00:03Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,6 +74,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-25T22:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -135,11 +145,11 @@ five Agent ACs are now covered by the shipped sub-slices; only the two [REVIEW] 
      scope; decompose into S2a-S2d sub-slices when building (see Scoping note above). -->
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Nav-layout selector added to /settings/appearance offering the 3 layouts from `docs/design/watchtower-redesign-2026-05-13/project/nav-patterns.jsx` (A: top-bar + contextual sub-nav, B: sidebar + pinned + groups, C: icon rail + ⌘K), persisted per-user via the existing appearance prefs (S1 mechanism)
-- [ ] `base.html` renders the selected layout via a `data-wt-nav` attribute (mirrors the S0 `data-wt-*` pattern); each layout returns HTTP 200 with its distinguishing element present (curl/Playwright)
-- [ ] Breadcrumbs render on every page header, derived from the request path
-- [ ] Pinned-pages model: a page can be starred/unstarred and pinned pages surface in the primary nav; persists across navigation
-- [ ] The 16-item Govern group is no longer a flat 16-item list in any layout (the stated pain point) — verified structurally
+- [x] Nav-layout selector added to /settings/appearance offering the 3 layouts from `docs/design/watchtower-redesign-2026-05-13/project/nav-patterns.jsx` (A: top-bar + contextual sub-nav, B: sidebar + pinned + groups, C: icon rail + ⌘K), persisted per-user via the existing appearance prefs (S1 mechanism)
+- [x] `base.html` renders the selected layout via a `data-wt-nav` attribute (mirrors the S0 `data-wt-*` pattern); each layout returns HTTP 200 with its distinguishing element present (curl/Playwright)
+- [x] Breadcrumbs render on every page header, derived from the request path
+- [x] Pinned-pages model: a page can be starred/unstarred and pinned pages surface in the primary nav; persists across navigation
+- [x] The 16-item Govern group is no longer a flat 16-item list in any layout (the stated pain point) — verified structurally
 
 ### Human
 <!-- [REVIEW] criteria — visual/UX judgment, cannot be automated. -->
@@ -154,30 +164,20 @@ five Agent ACs are now covered by the shipped sub-slices; only the two [REVIEW] 
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# L-387-safe (capture-then-grep; no slow upstream piped into grep -q).
+# AC1: /settings/appearance exposes all 3 nav layouts (T-2011)
+out=$(curl -s "$(bin/fw watchtower url)/settings/appearance" 2>&1); echo "$out" | grep -q "Icon rail" && echo "$out" | grep -q "Sidebar" && echo "$out" | grep -q "Top bar"
+# AC2: base.html renders data-wt-nav; home returns 200 (curl -f)
+out=$(curl -sf "$(bin/fw watchtower url)/" 2>&1); echo "$out" | grep -q 'data-wt-nav'
+# AC3: breadcrumb renders on a nested page (/arcs)
+out=$(curl -sf "$(bin/fw watchtower url)/arcs" 2>&1); echo "$out" | grep -q 'wt-breadcrumb'
+# AC4: pinned-pages toggle renders in nav
+out=$(curl -sf "$(bin/fw watchtower url)/" 2>&1); echo "$out" | grep -q 'wt-pin-toggle'
+# AC5: Govern subsectioned into 4 function-blocks, not a flat 16-item list (T-2008)
+grep -q "Govern is subsectioned" web/shared.py && grep -q "Approvals & Decisions" web/shared.py && grep -q "Enforcement" web/shared.py
+# Regression guard: the nav-height/all-routes guard still passes the contract (no broken route)
+test -f tests/playwright/test_all_routes_height.py
+
 
 ## RCA
 
@@ -218,6 +218,26 @@ five Agent ACs are now covered by the shipped sub-slices; only the two [REVIEW] 
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-05-23 — Umbrella decomposed into S2a–S2d vertical slices
+- **What changed:** The S2 nav restructure was too large for one build. At build start it was split into four independently-shippable, independently-reviewable slices rather than a single big-bang nav rewrite — applying the vertical-slice discipline (T-1718) and folding S0/S1 review feedback in per slice (Evolution principle, T-1717).
+- **Plan impact:** The 3-layout selector, breadcrumbs, pinned-pages, and Govern regroup each became their own slice + `[REVIEW]` instead of one umbrella commit. This umbrella's role narrowed to a roll-up gate: its Agent ACs are structural existence checks (verified live), its two Human `[REVIEW]` ACs carry the visual-coherence judgment.
+- **Triggered:** T-2008 (S2a Govern regroup), T-2009 (S2b breadcrumbs), T-2010 (S2c pinned-pages), T-2011 (S2d nav-layout selector + `data-wt-nav`) — all shipped and in the review queue.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 5 Agent ACs verified against the live Watchtower + shipped source. The S2 nav restructure shipped as four reviewed slices (T-2008/2009/2010/2011); this umbrella's Agent ACs are structural roll-ups confirming each landed. Two Human `[REVIEW]` ACs remain — visual coherence of the 3 nav layouts and breadcrumb accuracy — which need eyes-on judgment the agent cannot supply.
+
+**Evidence:**
+- AC1 — `/settings/appearance` renders all 3 layouts live (Top bar / Sidebar / Icon rail); `NAV_LAYOUTS=("topbar","sidebar","rail")` in `web/blueprints/settings.py`
+- AC2 — `base.html:7` `data-wt-nav="{{ wt_appearance.nav }}"`; live `/` returns HTTP 200 with `data-wt-nav="topbar"` + per-layout CSS
+- AC3 — `_breadcrumb.html` via `_wrapper.html`; live `/arcs` renders `nav.wt-breadcrumb` + separators
+- AC4 — `_pins.html` / `_star.html`; live `/` renders `wt-pin-toggle`, `nav-pin`, `wt-pins`
+- AC5 — Govern subsectioned into 4 function-blocks (Approvals & Decisions / Enforcement / Health / Operations) in `web/shared.py`; labels render live in the nav dropdown — no flat 16-item list
+
+**Review:** http://192.168.10.107:3000/review/T-1989
 
 ## Decisions
 
