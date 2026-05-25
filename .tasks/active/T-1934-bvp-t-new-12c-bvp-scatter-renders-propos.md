@@ -12,8 +12,7 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [bvp, build, slice-12c, web, render-surface]
-components: [agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, tests/unit/test_bvp_scatter_arc_mode.py, web/blueprints/bvp.py, web/templates/bvp.html]
-      tests/playwright/test_bvp_scatter.py]
+components: [agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, tests/unit/test_bvp_scatter_arc_mode.py, web/blueprints/bvp.py, web/templates/bvp.html, tests/playwright/test_bvp_scatter.py]
 related_tasks: [T-1915, T-1916, T-1922, T-1923, T-1928]
 arc_id: value-prioritisation
 created: 2026-05-19T18:36:52Z
