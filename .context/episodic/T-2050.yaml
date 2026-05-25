@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2050: validate Watchtower review links against app.url_map at fw task review (T-2030
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-25T21:38:00Z
+# ============================================================================
+
+task_id: T-2050
+task_name: "validate Watchtower review links against app.url_map at fw task review (T-2030"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-25T19:50:47Z
+completed: 2026-05-25T21:37:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-25T21:51:37+02:00
+last_commit: 2026-05-25T23:37:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2050/T-2051/T-2052: file T-2030 GO follow-on (link validator) + 2 framework bugs found during GO recovery. validate Watchtower review links against app.url_map at fw task review. register fabric cards for review_link_validator + its test
+
+# Key outcomes
+outcomes:
+  - '`lib/review_link_validator.py` extracts internal Watchtower paths from a task''s `## Recommendation` + `### Human` AC Steps; external (non-base_url) URLs are ignored — unit test'
+  - 'A path in the parameterless route set (`discover_get_routes()`) validates OK; an unresolvable path (e.g. `/appearance`) emits WARN — unit test (bad fails, good passes) + live: `/appearance`→404 WARN, `/settings/appearance`→OK'
+  - 'Parameterised paths (e.g. `/review/T-XXX`) are HTTP-probed: 404 → WARN, non-404 → OK; server/Flask unavailable → non-blocking advisory (curl-before-paste backstop) — unit test with injected probe'
+  - '`lib/review.sh emit_review()` invokes the validator and prints WARN lines before the review URL; validation never blocks `fw task review` (always exit 0) — verified live (`fw task review T-2050` clean, exit 0)'
+  - 'Out-of-scope honored: external URLs, screenshot existence, and prose quality are NOT checked — unit test asserts external URL skipped'
+  - '`python3 -m py_compile lib/review_link_validator.py` passes, new pytest green (10 passed), `bash -n lib/review.sh` passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'T-2050/T-2051/T-2052: file T-2030 GO follow-on (link validator) + 2 framework bugs found during GO recovery'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/lib-review_link_validator.yaml'
+  - '.fabric/components/tests-unit-test_review_link_validator.yaml'
+  - 'lib/review_link_validator.py'
+  - 'lib/review.sh'
+  - '.tasks/active/T-2050-validate-watchtower-review-links-against.md'
+  - '.tasks/active/T-2051-watchtower-post-inceptioniddecide-return.md'
+  - '.tasks/active/T-2052-no-active-task-gate-deadlock-blocks-fw-c.md'
+  - 'tests/unit/test_review_link_validator.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-25T21:51:37"
+    action: "T-2050/T-2051/T-2052: file T-2030 GO follow-on (link validator) + 2 framework bugs found during GO recovery"
+  - time: "2026-05-25T23:37:36"
+    action: "T-2050: validate Watchtower review links against app.url_map at fw task review"
+  - time: "2026-05-25T23:37:47"
+    action: "T-2050: register fabric cards for review_link_validator + its test"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 107 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, review]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 107
+  commits: 3
+  files_changed: 8
+  lines_added: 957
+  lines_removed: 43
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2050-validate-watchtower-review-links-against.md
+generated_by: context-agent-hybrid
