@@ -2,22 +2,32 @@
 id: T-2053
 name: "Watchtower decide handler leaves recorded decision uncommitted (no git commit)"
 description: >
-  Found during T-2030 GO (sibling of T-2051). On the successful decide path, record_decision (web/blueprints/inception.py) runs fw inception decide which writes the Decision, ticks ACs, moves active->completed and generates episodic, but NEVER git commits — Watchtower mutation handlers (decide, complete-batch, toggle-ac) rely on the CLI/agent to commit, which does not exist in the Flask path. Result: the decision is left as uncommitted working-tree changes with no P-002-traceable commit. Distinct root cause from T-2051 (which fixes the 500/no-inline-error). Fix candidate: decide handler scoped-commits the decision (task file rename + episodic) with T-XXX: inception decision <GO> after success; handle commit failure as a warning not a 500. Watch the commit-msg inception-commit-limit hook interaction and scoped staging (never git add -A).
+  Found during T-2030 GO (sibling of T-2051). On the successful decide path, record_decision
+  (web/blueprints/inception.py) runs fw inception decide which writes the Decision,
+  ticks ACs, moves active->completed and generates episodic, but NEVER git commits
+  — Watchtower mutation handlers (decide, complete-batch, toggle-ac) rely on the CLI/agent
+  to commit, which does not exist in the Flask path. Result: the decision is left
+  as uncommitted working-tree changes with no P-002-traceable commit. Distinct root
+  cause from T-2051 (which fixes the 500/no-inline-error). Fix candidate: decide handler
+  scoped-commits the decision (task file rename + episodic) with T-XXX: inception
+  decision <GO> after success; handle commit failure as a warning not a 500. Watch
+  the commit-msg inception-commit-limit hook interaction and scoped staging (never
+  git add -A).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
-components: []
-related_tasks: []
+tags: [bug]
+components: [web/blueprints/inception.py]
+related_tasks: [T-2030, T-2051]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T20:36:05Z
-last_update: 2026-05-25T20:36:05Z
-date_finished: null
+last_update: '2026-05-25T20:45:02Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +38,57 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-25T20:43:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 3
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=3 
+      (body:component-silent-failure); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-25T20:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2053: Watchtower decide handler leaves recorded decision uncommitted (no git commit)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Sibling of T-2051 (same T-2030 incident, distinct root cause). `record_decision`
+(`web/blueprints/inception.py`) runs `fw inception decide`, which writes the `## Decision`
+block, ticks ACs, moves `active/`→`completed/` and generates the episodic — but the CLI
+deliberately does **not** `git commit` (it relies on the agent's commit-cadence). The Flask
+path has no agent follow-up, so a Watchtower decision is **always** left as uncommitted
+working-tree changes with no P-002-traceable commit (T-2030: agent had to commit by hand).
+
+Fix: the decide handler commits its own decision (scoped staging, never `git add -A`) with
+**graceful degradation** — a commit failure is non-fatal (warn, never 500; decision stays
+on disk). Commit-msg gate interactions are safe: GO/NO-GO move the task to `completed/`, so
+the hook's `find_task_file …active` returns empty and both inception gates skip; DEFER stays
+in `active/` and could be blocked by the C-001 research gate, which the graceful-degradation
+path tolerates.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A helper `_commit_decision(task_id, decision)` in `web/blueprints/inception.py` stages **only** `.tasks/active/T-XXX-*.md`, `.tasks/completed/T-XXX-*.md`, and `.context/episodic/T-XXX*.yaml` (whichever exist) — never `git add -A` — and runs `git commit -m "T-XXX: inception decision <DECISION> (via Watchtower)"`
+- [x] `_commit_decision` returns `(committed: bool, message: str)`; on commit failure (e.g. a hook rejects) it returns `committed=False` without raising
+- [x] On a successful decide, `record_decision` calls `_commit_decision`; commit failure is **non-fatal** — the handler still returns 200 with the decision card and surfaces the failure via the existing warning slot + a server-side log (no 500, no silent failure)
+- [x] After a successful Watchtower GO/NO-GO, no uncommitted `T-XXX` task/episodic files remain (decision is committed and P-002-traceable)
+- [x] `tests/unit/test_decide_commit.py` pins `_commit_decision` against a tmp git repo: success → a single scoped commit referencing `T-XXX` containing only the decision files; simulated commit-failure → `committed=False`, no exception
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -100,8 +147,31 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m py_compile web/blueprints/inception.py
+python3 -m pytest tests/unit/test_decide_commit.py tests/unit/test_inception_decide_htmx_error.py -q
 
 ## RCA
+
+**Symptom:** After clicking GO on T-2030 in Watchtower (the 200 at 21:43), the decision —
+`## Decision: GO` written to the body, task moved `active/`→`completed/`, episodic generated —
+was left as **uncommitted** working-tree changes. The agent had to `git add`/`git commit` by hand.
+
+**Root cause:** `record_decision` (`web/blueprints/inception.py`) shells out to
+`fw inception decide`, which writes the decision and moves the file but deliberately does
+**not** `git commit` — the CLI relies on the agent's commit-cadence + check-in to commit.
+The Flask path has no agent follow-up, so nothing ever commits; every Watchtower decision is
+left uncommitted.
+
+**Why structurally allowed:** Watchtower mutation handlers (decide, complete-batch,
+toggle-ac) were all written to mutate via `fw`/subprocess and rely on an out-of-band commit
+that exists only in an interactive agent session. No test asserted the working tree is clean
+after a Watchtower decision, so the gap is invisible until someone inspects `git status`.
+
+**Prevention:** the decide handler now commits its own decision (scoped staging, graceful
+degradation); `tests/unit/test_decide_commit.py` pins that `_commit_decision` produces a
+scoped `T-XXX` commit and tolerates commit failure. Broader sweep of the other Watchtower
+mutation handlers (complete-batch, toggle-ac) is left for a follow-up only if recurrence
+shows — decide is the one with a sovereign, traceable artefact (the go/no-go decision).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -143,14 +213,20 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-25 — Commit in the Watchtower handler, not in lib/inception.sh
+- **Chose:** `_commit_decision` lives in the Flask handler and only the Watchtower path commits.
+- **Why:** The CLI `fw inception decide` intentionally leaves the commit to the agent (commit-cadence + check-in rule). Auto-committing inside `lib/inception.sh` would change CLI behaviour and could fight the agent's own commit flow. The Watchtower path is the only one with no agent follow-up.
+- **Rejected:** Committing in `lib/inception.sh` (changes CLI semantics for everyone).
+
+### 2026-05-25 — Whole-index commit with a foreign-staged guard, not `git commit -- pathspec`
+- **Chose:** Stage the scoped paths, verify nothing unrelated is pre-staged, then `git commit` the index.
+- **Why:** `git commit -- pathspec` cannot record the active→completed **deletion** once the path is gone from the working tree (pathspec matches the working tree, where the file no longer exists) — the deletion silently drops. Staging + whole-index commit captures the rename correctly. The pre-commit foreign-staged check keeps it scoped: if an agent session staged an unrelated commit concurrently, we skip (graceful) rather than bundle their work.
+- **Rejected:** `git commit -- pathspec` (drops the deletion); a temporary `GIT_INDEX_FILE` + `commit-tree` (bypasses the commit-msg hook → loses P-002 traceability gates).
+
+### 2026-05-25 — Complete with `--skip-render-review` (no new render surface)
+- **Chose:** This is a backend git-commit change; complete with `--skip-render-review` (logged Tier-2).
+- **Why:** The only user-visible delta is an additional failure-warning string reusing the existing T-1470 warning slot — no new layout/typography/visual element. P-013's `[REVIEW]` requirement is for genuine visual judgment, which this change does not introduce. A `[REVIEW]` AC the human can only exercise by forcing a commit failure would be noise.
+- **Rejected:** A fake `[REVIEW]` AC for a path the human can't easily trigger.
 
 ## Decision
 
@@ -168,3 +244,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2053-watchtower-decide-handler-leaves-recorde.md
 - **Context:** Initial task creation
+
+### 2026-05-25T20:43:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

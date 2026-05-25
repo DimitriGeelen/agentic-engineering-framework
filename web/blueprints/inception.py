@@ -516,6 +516,20 @@ def record_decision(task_id):
             task_id, primary_landed, stdout[:500], stderr[:500]
         )
 
+    # T-2053: commit the decision so it is P-002-traceable. fw inception decide
+    # writes + moves the file but does not git-commit; the Watchtower path has no
+    # agent follow-up, so without this every Watchtower decision is left
+    # uncommitted (T-2030). Graceful: a commit failure is non-fatal — surfaced as
+    # a warning, never a 500, and the decision stays on disk.
+    commit_ok, commit_msg = True, ""
+    if ok or primary_landed:
+        commit_ok, commit_msg = _commit_decision(task_id, decision)
+        if not commit_ok:
+            import logging
+            logging.getLogger(__name__).warning(
+                "decision %s recorded but not committed: %s", task_id, commit_msg
+            )
+
     # If called via htmx (e.g., from /approvals page), return inline fragment (T-643)
     if request.headers.get("HX-Request"):
         if ok or primary_landed:
@@ -527,6 +541,15 @@ def record_decision(task_id):
                 warning_html = (
                     f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px;">'
                     f'⚠ Decision recorded; side-effect warning: {(stderr or stdout)[:150]}'
+                    f'</div>'
+                )
+            if not commit_ok:
+                # T-2053: decision recorded but the auto-commit failed — surface it
+                # (no silent failure); the decision is still on disk for a later commit.
+                import html as _html
+                warning_html += (
+                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px;">'
+                    f'⚠ Decision recorded but not committed: {_html.escape(commit_msg[:150])}'
                     f'</div>'
                 )
             return (
@@ -567,6 +590,12 @@ def record_decision(task_id):
         err = (stderr or stdout or "Unknown error from fw inception decide")[:300]
         return redirect(url_for("inception.inception_detail", task_id=task_id, error=err))
 
+    # T-2053: success — surface a commit failure as a warning (no silent failure).
+    if not commit_ok:
+        return redirect(url_for(
+            "inception.inception_detail", task_id=task_id,
+            warning=f"Decision recorded but not committed: {commit_msg[:200]}",
+        ))
     return redirect(url_for("inception.inception_detail", task_id=task_id))
 
 
@@ -631,6 +660,100 @@ def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
             if verdict_match.group(1).upper() == decision.upper():
                 return True
     return False
+
+
+def _is_decision_file(task_id: str, path: str) -> bool:
+    """T-2053: is `path` one of the decision's OWN files (task md + episodic)?
+
+    Used to scope the post-decision commit to exactly the files the decision
+    touched — the task file (in active/ for DEFER, completed/ for GO/NO-GO) and
+    the generated episodic — and nothing else (no unrelated working-tree churn).
+    """
+    import re as _re
+    return bool(
+        _re.match(rf"^\.tasks/(active|completed)/{_re.escape(task_id)}-.*\.md$", path)
+        or _re.match(rf"^\.context/episodic/{_re.escape(task_id)}(-.*)?\.yaml$", path)
+    )
+
+
+def _commit_decision(task_id: str, decision: str):
+    """T-2053: commit the recorded inception decision so it is P-002-traceable.
+
+    `fw inception decide` writes the `## Decision` block, moves the task file
+    (active→completed for GO/NO-GO) and generates the episodic, but it does NOT
+    git-commit — the CLI relies on the agent's commit-cadence to commit. The
+    Watchtower path has no agent follow-up, so without this the decision is left
+    as uncommitted working-tree changes (T-2030).
+
+    Stages ONLY the decision's own files (matched by `_is_decision_file`) — never
+    `git add -A`, which would sweep unrelated churn — and commits with an explicit
+    pathspec so any pre-staged churn is left out. Graceful: returns
+    `(committed: bool, message: str)`; a commit failure (e.g. a commit-msg hook
+    rejecting a DEFER without a research artifact) is non-fatal.
+
+    The active→completed move is a filesystem `mv` (not `git mv`), so git sees a
+    delete + an untracked add (two porcelain lines, no rename arrow).
+    """
+    import subprocess
+    try:
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        if status.returncode != 0:
+            return False, (status.stderr or status.stdout or "git status failed").strip()[:200]
+
+        wanted = []
+        for line in status.stdout.splitlines():
+            if not line.strip():
+                continue
+            path = line[3:]  # strip the 2-char XY status + the separating space
+            if " -> " in path:  # defensive: handle rename form if ever produced
+                path = path.split(" -> ", 1)[1]
+            path = path.strip().strip('"')
+            if _is_decision_file(task_id, path):
+                wanted.append(path)
+
+        if not wanted:
+            # Nothing of ours to commit (already committed, or no files found).
+            return True, "nothing to commit"
+
+        # Guard against bundling unrelated work: if the index already has staged
+        # changes that aren't this decision's files (e.g. an agent session staged
+        # a commit concurrently), skip rather than sweep them into the decision
+        # commit. Graceful — the decision stays on disk for a later commit.
+        pre = subprocess.run(
+            ["git", "diff", "--cached", "--name-only"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        foreign = [
+            p for p in pre.stdout.splitlines()
+            if p.strip() and not _is_decision_file(task_id, p.strip())
+        ]
+        if foreign:
+            return False, f"index has {len(foreign)} unrelated staged file(s); skipped to avoid bundling"
+
+        add = subprocess.run(
+            ["git", "add", "--"] + wanted,
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        if add.returncode != 0:
+            return False, (add.stderr or add.stdout or "git add failed").strip()[:200]
+
+        # Commit the index — now exactly this decision's files, including the
+        # active→completed deletion (a `git commit -- pathspec` cannot capture a
+        # deletion once the path is gone from the working tree; the foreign-staged
+        # guard above keeps a whole-index commit scoped).
+        msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
+        commit = subprocess.run(
+            ["git", "commit", "-m", msg],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        if commit.returncode != 0:
+            return False, (commit.stderr or commit.stdout or "git commit failed").strip()[:200]
+        return True, msg
+    except Exception as e:  # never let a commit problem break the decision response
+        return False, str(e)[:200]
 
 
 @bp.route("/assumptions")
