@@ -10,21 +10,21 @@ description: >
   (board+side-panel mockup) + direction-cockpit.jsx (dense list mockup). Depends on
   S0+S1+S2. Parent inception: T-1987.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, redesign, ui, tasks]
 arc_id: watchtower-redesign
-components: []
+components: [tests/playwright/test_kanban_drag.py, tests/playwright/test_task_panel.py, tests/unit/test_kanban_drag.py, tests/unit/test_task_panel.py, web/blueprints/settings.py, web/blueprints/tasks.py, web/static/command-palette.js, web/static/kanban-drag.js, web/static/shortcuts-overlay.js, web/static/task-panel.js, web/templates/base.html, web/templates/_task_panel.html, web/templates/tasks.html]
 related_tasks: [T-1987]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-25T22:01:46Z
-date_finished:
+last_update: 2026-05-25T22:08:04Z
+date_finished: 2026-05-25T22:08:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -273,3 +273,15 @@ if python3 -c "import playwright" 2>/dev/null; then timeout 200 python3 -m pytes
 ### 2026-05-25T22:01:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-63076512
+- **Timestamp:** 2026-05-25T22:09:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-25T22:08:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
