@@ -4,21 +4,45 @@ name: "arc-007 S6d — cockpit live activity feed (recent commits, htmx poll)"
 description: >
   arc-007 S6d (last T-1993 slice) — a live "Recent activity" feed on the Cockpit that
   surfaces recent framework events (git commits, each referencing a T-XXX) and refreshes
-  without a reload via htmx polling. The umbrella allows "SSE or polling"; polling is the
-  low-cost choice (no streaming infra). Read-only fragment route, reuses existing git
-  helpers. Contained to the Cockpit (not a shell-wide strip) to keep blast radius low.
+  without a reload via htmx polling. The umbrella allows "SSE or polling"; polling
+  is the
+  low-cost choice (no streaming infra). Read-only fragment route, reuses existing
+  git
+  helpers. Contained to the Cockpit (not a shell-wide strip) to keep blast radius
+  low.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:watchtower-redesign, ui, watchtower, cockpit]
-components: []
+components: [tests/playwright/test_cockpit_activity.py, tests/unit/test_cockpit_activity.py, web/blueprints/cockpit.py, web/templates/_cockpit_activity.html, web/templates/cockpit.html]
 related_tasks: [T-1993, T-1987, T-2012, T-2013]
 arc_id: watchtower-redesign
 created: 2026-05-24T10:02:00Z
-last_update: 2026-05-24T10:02:00Z
-date_finished: null
+last_update: 2026-05-25T22:43:40Z
+date_finished: 2026-05-25T22:43:40Z
+cost_estimate_proposed:
+  - ts: '2026-05-24T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-24T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 3
+      D4: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2020: arc-007 S6d — cockpit live activity feed (recent commits, htmx poll)
@@ -118,9 +142,12 @@ and live-refresh feel.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-12e7d18a
-- **Timestamp:** 2026-05-24T10:05:53Z
+- **Scan ID:** R-d2099a3d
+- **Timestamp:** 2026-05-25T22:44:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-25T22:43:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
