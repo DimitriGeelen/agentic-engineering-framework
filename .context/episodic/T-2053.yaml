@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2053: Watchtower decide handler leaves recorded decision uncommitted (no git commit)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-25T20:48:17Z
+# ============================================================================
+
+task_id: T-2053
+task_name: "Watchtower decide handler leaves recorded decision uncommitted (no git commit)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-25T20:36:05Z
+completed: 2026-05-25T20:48:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-25T22:48:02+02:00
+last_commit: 2026-05-25T22:48:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower decide handler commits the recorded decision
+
+# Key outcomes
+outcomes:
+  - 'A helper `_commit_decision(task_id, decision)` in `web/blueprints/inception.py` stages **only** `.tasks/active/T-XXX-*.md`, `.tasks/completed/T-XXX-*.md`, and `.context/episodic/T-XXX*.yaml` (whichever exist) — never `git add -A` — and runs `git commit -m "T-XXX: inception decision <DECISION> (via Watchtower)"`'
+  - '`_commit_decision` returns `(committed: bool, message: str)`; on commit failure (e.g. a hook rejects) it returns `committed=False` without raising'
+  - 'On a successful decide, `record_decision` calls `_commit_decision`; commit failure is **non-fatal** — the handler still returns 200 with the decision card and surfaces the failure via the existing warning slot + a server-side log (no 500, no silent failure)'
+  - 'After a successful Watchtower GO/NO-GO, no uncommitted `T-XXX` task/episodic files remain (decision is committed and P-002-traceable)'
+  - '`tests/unit/test_decide_commit.py` pins `_commit_decision` against a tmp git repo: success → a single scoped commit referencing `T-XXX` containing only the decision files; simulated commit-failure → `committed=False`, no exception'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-25 — Commit in the Watchtower handler, not in lib/inception.sh'
+    chose: '`_commit_decision` lives in the Flask handler and only the Watchtower path commits.'
+    rationale: 'The CLI `fw inception decide` intentionally leaves the commit to the agent (commit-cadence + check-in rule). Auto-committing inside `lib/inception.sh` would change CLI behaviour and could fight the agent''s own commit flow. The Watchtower path is the only one with no agent follow-up.'
+    alternatives_rejected: ['Committing in `lib/inception.sh` (changes CLI semantics for everyone).']
+  - decision: '2026-05-25 — Whole-index commit with a foreign-staged guard, not `git commit -- pathspec`'
+    chose: 'Stage the scoped paths, verify nothing unrelated is pre-staged, then `git commit` the index.'
+    rationale: '`git commit -- pathspec` cannot record the active→completed **deletion** once the path is gone from the working tree (pathspec matches the working tree, where the file no longer exists) — the deletion silently drops. Staging + whole-index commit captures the rename correctly. The pre-commit foreign-staged check keeps it scoped: if an agent session staged an unrelated commit concurrently, we skip (graceful) rather than bundle their work.'
+    alternatives_rejected: ['`git commit -- pathspec` (drops the deletion); a temporary `GIT_INDEX_FILE` + `commit-tree` (bypasses the commit-msg hook → loses P-002 traceability gates).']
+  - decision: '2026-05-25 — Complete with `--skip-render-review` (no new render surface)'
+    chose: 'This is a backend git-commit change; complete with `--skip-render-review` (logged Tier-2).'
+    rationale: 'The only user-visible delta is an additional failure-warning string reusing the existing T-1470 warning slot — no new layout/typography/visual element. P-013''s `[REVIEW]` requirement is for genuine visual judgment, which this change does not introduce. A `[REVIEW]` AC the human can only exercise by forcing a commit failure would be noise.'
+    alternatives_rejected: ['A fake `[REVIEW]` AC for a path the human can''t easily trigger.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2053-watchtower-decide-handler-leaves-recorde.md'
+  - 'tests/unit/test_decide_commit.py'
+  - 'web/blueprints/inception.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-25T22:48:02"
+    action: "T-2053: Watchtower decide handler commits the recorded decision"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 3
+  lines_added: 344
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2053-watchtower-decide-handler-leaves-recorde.md
+generated_by: context-agent-hybrid
