@@ -3280,3 +3280,31 @@ X'` returning empty group."
   date: 2026-05-24
   context: Added via context agent
   application: TBD
+- id: L-427
+  learning: "Watchtower palette tokenisation: categorical/identity colours (component-type chips, cytoscape graph node/edge kinds) stay palette-INDEPENDENT and fixed; only semantic STATUS colours (success/warn/danger/info) follow the --wt-* palette. Categorical colour carries meaning by being distinct and stable, not by matching the palette mood — do not mechanically tokenise it. Test the boundary both ways (semantic site converted AND categorical hues intact). Origin: T-2028 arc-007 S5b, human decision via AskUserQuestion."
+  source: P-001
+  task: T-2028
+  date: 2026-05-24
+  context: Added via context agent
+  application: TBD
+- id: L-428
+  learning: "arc-007 design-bundle IA (nav-patterns.jsx) is an input, not an authority — placement/grouping calls are human taste decisions gated by a [REVIEW] AC, not mechanical 'follow the design'. T-2008 moved Arcs to Architecture 'per design'; the human overrode it (T-2034: arcs are groupings of tasks → Work). When a slice implements a design-spec IA choice, the [REVIEW] AC must actually land before treating the placement as settled."
+  source: P-001
+  task: T-2034
+  date: 2026-05-24
+  context: Added via context agent
+  application: TBD
+- id: L-429
+  learning: "Unbounded Watchtower pages are a recurring class: any page that loops over a growing collection (cards or table rows) with no height bound degrades silently into a 30k-90k px page as data accumulates — usable only until the data grows. Found 4 instances in one session (/approvals 37k, /fabric 33k, /inception 83k, /timeline 90k). Fix by shape: card-list → collapsed <details> overflow (first N inline, rest one click away); table → max-height + overflow-y:auto scroll container with sticky header. Both keep every item in the DOM (reachable) while bounding scrollHeight below the 8000px _safe_shot cap, so full_page screenshots stop wedging. The ux-review sweep (T-2005) is the detector but only covers 5 pages — widen its PAGES list so the recurring detector catches new instances instead of manual probes."
+  source: P-001
+  task: T-2040
+  date: 2026-05-25
+  context: Added via context agent
+  application: TBD
+- id: L-430
+  learning: "Capability without invocation is not prevention: T-2042 built an exhaustive height-sweep detector (discover_get_routes) but left it as an opt-in --all-routes flag with no scheduled invocation, so the next unbounded page would still grow undetected. Closing a defect class requires THREE legs: fix the instances (T-2041/43-47), build the detector (T-2042), AND wire the detector to run automatically (T-2048 parametrized test in the suite). Ask after any 'I built a detector' fix: what invokes it, and when? An unrun detector is the same blind spot it was meant to close."
+  source: G-019
+  task: T-2048
+  date: 2026-05-25
+  context: Added via context agent
+  application: TBD

@@ -1290,3 +1290,24 @@ decisions:
     date: 2026-05-22
     task: T-1844
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-187
+    decision: "Build **A** (enforcement gate) **and C** (dedicated UX-review TermLink agent), with C **preloaded with our design style guides** so it assesses against our system."
+    scope: project
+    date: 2026-05-23
+    task: T-2000
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-188
+    decision: "Derive the sweep page set from `web.app.app.url_map` (`discover_get_routes()`),"
+    scope: project
+    date: 2026-05-25
+    task: T-2042
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-189
+    decision: "A parametrized Playwright test (`test_all_routes_height.py`) that iterates `discover_get_routes()` and asserts each route < cap, run by the existing suite."
+    scope: project
+    date: 2026-05-25
+    task: T-2048
+    rationale: "Auto-captured from task file on completion"
