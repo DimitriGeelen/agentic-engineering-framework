@@ -2,22 +2,21 @@
 id: T-2047
 name: "/docs/generated renders 34000px tall — unbounded list (T-2038 class)"
 description: >
-  /docs/generated renders 34,671px. Instance of the unbounded-page class (T-2042 probe). Shape TBC — inspect web/templates for the docs-generated index loop; fix by shape (cap+collapse or scroll-container).
+  /docs/generated renders 34,671px. Instance of the unbounded-page class (T-2042 probe).
+  Shape TBC — inspect web/templates for the docs-generated index loop; fix by shape
+  (cap+collapse or scroll-container).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc-007, perf, watchtower, docs, ui, render-surface]
 components: []
-related_tasks: []
-# arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
-#                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
-#                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
-#                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
+related_tasks: [T-2042, T-2045, T-2043]
+arc_id: watchtower-redesign
 created: 2026-05-25T14:53:15Z
-last_update: 2026-05-25T14:53:15Z
-date_finished: null
+last_update: 2026-05-25T15:30:07Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,22 +27,52 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-25T15:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-25T15:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2047: /docs/generated renders 34000px tall — unbounded list (T-2038 class)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+9th instance of the unbounded-page class ([[project_unbounded_watchtower_pages]], T-2042 exhaustive probe). `/docs/generated` renders ~34,671px because it loops `{% for subsystem %}` over **31 subsystems**, each an **`<details open>`** wrapping a per-subsystem `<table>` (765 component rows total). All-expanded-by-default = the whole 35k px renders at once. Distinct shape from the single-table pages: a *list of collapsible sections*. The largest subsystem alone is 246 rows (~9,840px) — over the 8000px cap — so collapsing the sections by default is necessary AND each section's table needs a scroll container so an expanded giant section stays bounded.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `/docs/generated` default rendered `scrollHeight` < 8000px (TALL_PAGE_CAP_PX) measured via Playwright after restart — **34,671px → 1,281px**
+- [x] All 31 subsystem `<details>` are collapsed by default (no `open`); every subsystem + its component rows remain in the DOM (765 rows), reachable by expanding the section — **31 sections, 765 rows retained in DOM**
+- [x] Each subsystem table is wrapped in a `.docs-subsystem-scroll` max-height container with sticky `thead`, so even the largest expanded section (246 rows) stays bounded — **largest: 246 rows, container clientHeight 628px < scrollHeight 10,129px → scrolls**
+- [x] `tests/playwright/test_docs_generated_height.py` added and passing (default-height bound + all-rows-present + scroll-container guards) — **3 passed**
 
 ### Human
+- [ ] [REVIEW] Collapse-by-default is the right UX trade for the docs index
+  **Steps:**
+  1. Open http://192.168.10.107:3000/docs/generated in a browser
+  2. Note the page now shows 31 collapsed subsystem rows (each with its component count) instead of one 35k px wall of expanded tables
+  3. Expand a subsystem (click) — confirm its component table appears and, for a large subsystem, scrolls within its own container with a pinned header
+  **Expected:** A compact, scannable index; expanding a section reveals its components; no endless page-level scroll. The trade is: you now click to expand a subsystem rather than seeing everything at once.
+  **If not:** If you'd prefer the first subsystem (or all) open by default, say so — that's a one-line `open` toggle. Screenshot anything that looks off.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -100,6 +129,8 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -c "s=open('web/templates/docs_index.html').read(); assert 'docs-subsystem-scroll' in s, 'scroll container class missing'; assert 'details open' not in s and '<details open>' not in s, 'subsystems still open by default'; assert 'position: sticky' in s or 'position:sticky' in s, 'sticky thead missing'; print('docs_index.html collapsed-default + scroll-container + sticky present')"
+cd tests/playwright && python3 -m pytest test_docs_generated_height.py -q 2>&1 | tail -3; cd "$OLDPWD"
 
 ## RCA
 
@@ -117,7 +148,20 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `/docs/generated` rendered 34,671px tall — 31 subsystems each `<details open>` with a full component table (765 rows), all expanded at once.
+
+**Root cause:** Every subsystem section defaulted to `open`, so the whole corpus rendered on load with no height bound. 9th confirmed instance of the unbounded-page class ([[project_unbounded_watchtower_pages]]) — and a distinct *list-of-collapsible-sections* shape, not a single table.
+
+**Why structurally allowed:** The ux-review height detector swept only 5 hard-coded pages, so /docs/generated grew undetected. **This root is already closed** by T-2042 (exhaustive `discover_get_routes()` over `app.url_map`), which is what surfaced this instance.
+
+**Prevention:** `tests/playwright/test_docs_generated_height.py` (default-height bound + all-rows-present + collapsed-with-scroll guards) catches a regression of this page; the T-2042 exhaustive sweep catches the next new page automatically.
+
 ## Evolution
+
+### 2026-05-25 — distinct shape required a two-part fix
+- **What changed:** Unlike the single-table siblings (T-2044/T-2045) and card-list siblings (T-2043), this page is a *list of 31 collapsible sections*. Collapse-by-default alone bounds the default render, BUT the largest subsystem is 246 rows (~10,129px) — over the 8000px cap — so an expanded section would itself be unbounded.
+- **Plan impact:** Applied BOTH fixes: (1) remove `open` so sections collapse by default, (2) wrap each table in a `.docs-subsystem-scroll` max-height container so even a fully-expanded giant section scrolls internally.
+- **Triggered:** Collapse-by-default is a deliberate UX change (all-expanded → click-to-expand) — flagged as a `[REVIEW]` AC so the human can confirm the trade or ask for first-section-open.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -152,6 +196,24 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-05-25 — collapse-by-default + per-section scroll container
+- **Chose:** Remove `open` from the subsystem `<details>` (collapse by default) AND wrap each table in a `max-height: 70vh` scroll container with sticky `thead`.
+- **Why:** With 31 sections, keeping them all open and only adding scroll containers still sums to >8000px (31 × min-height). Collapsing bounds the default state to a 31-row index; the scroll container handles the one oversized section (246 rows) when a user expands it. Together they keep all 765 rows reachable while bounding both the default and any single expanded section.
+- **Rejected:** Collapse-only (no scroll container) — leaves the 246-row section unbounded once expanded (10,129px). Keep-open + scroll-only — 31 min-height containers still overflow the page. Pagination — adds round-trips/state, overkill for a static index. Keeping first section open — slightly friendlier first impression, but inconsistent and the largest section happens to be `framework-core` (130) / `context-fabric` (45); left as a one-line toggle the human can request via the [REVIEW] AC.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The unbounded height is fixed; all rows stay reachable; the largest expandable section is now bounded by its own scroll container. The one judgment call — collapse-by-default changes the index from all-expanded to click-to-expand — is surfaced as a `[REVIEW]` AC with a one-line revert offered. Agent-side everything passes.
+
+**Evidence:**
+- Default height: 34,671px → **1,281px** (Playwright, post-restart) — well under the 8000px cap
+- 31 subsystems, **765 rows retained** in the DOM (collapsed, not dropped)
+- Largest expanded section bounded: 246 rows, container clientHeight **628px** < scrollHeight **10,129px** → scrolls internally
+- `tests/playwright/test_docs_generated_height.py` — **3 passed**
+- Eyes-on screenshot (collapsed index): http://192.168.10.107:3000/static/ux-review/T-2047-docsgen-collapsed.png
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -168,3 +230,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2047-docsgenerated-renders-34000px-tall--unbo.md
 - **Context:** Initial task creation
+
+### 2026-05-25T15:30:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

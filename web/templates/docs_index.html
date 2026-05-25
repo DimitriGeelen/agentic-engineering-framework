@@ -3,12 +3,35 @@
     <p class="text-muted">{{ total }} component reference docs, auto-generated from Component Fabric</p>
 </div>
 
+<style>
+    /* T-2047: bound rendered height — each of the 31 subsystem sections defaulted to the
+       expanded state, so all 765 component rows rendered at once (34,671px). Collapse
+       subsystems by default (page = a scannable index of 31 sections) and wrap each table in
+       a max-height scroll container with a sticky header, so even the largest expanded
+       section (246 rows) stays bounded. Every row stays in the DOM, reached by expanding. */
+    .docs-subsystem-scroll {
+        max-height: 70vh;
+        overflow-y: auto;
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+        margin-top: 0.5rem;
+    }
+    .docs-subsystem-scroll table { margin-bottom: 0; }
+    .docs-subsystem-scroll thead th {
+        position: sticky;
+        top: 0;
+        background: var(--pico-card-background-color);
+        z-index: 2;
+    }
+</style>
+
 {% for subsystem, components in subsystems | dictsort %}
-<details open>
+<details>
     <summary>
         <strong>{{ subsystem }}</strong>
         <small style="color: var(--pico-muted-color); margin-left: 0.5rem;">{{ components | length }} components</small>
     </summary>
+    <div class="docs-subsystem-scroll">
     <table role="grid">
         <thead>
             <tr>
@@ -44,5 +67,6 @@
             {% endfor %}
         </tbody>
     </table>
+    </div><!-- /docs-subsystem-scroll (T-2047) -->
 </details>
 {% endfor %}
