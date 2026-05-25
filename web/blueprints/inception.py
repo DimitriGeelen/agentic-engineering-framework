@@ -536,7 +536,25 @@ def record_decision(task_id):
                 f'{warning_html}'
                 f'</div>'
             )
-        return f'<p style="color:var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+        # T-2051: the htmx failure path previously returned the reason with HTTP 500.
+        # htmx (hx-swap="outerHTML") does not swap non-2xx responses, so .go-decision
+        # was never replaced — the human saw the unchanged GO button and re-clicked
+        # (T-2030: 2× 500 before a 200). A pre-decision validation rejection (e.g.
+        # "## Recommendation section required") is an expected outcome, not a server
+        # fault. Return 200 with a swappable error fragment so htmx replaces the block
+        # and the reason is visible inline. The logging.error above preserves
+        # server-side observability regardless of the client-facing status.
+        import html as _html
+        reason = _html.escape((stderr or stdout or "Unknown error from fw inception decide")[:300])
+        return (
+            f'<div class="go-decision" style="border:1px solid #ef4444; border-radius:6px; padding:0.6rem;">'
+            f'<strong>{task_id}</strong>: '
+            f'<span style="color:#ef4444; font-weight:700;">Decision not recorded</span>'
+            f'<div style="color:#ef4444; font-size:0.85rem; margin-top:4px; white-space:pre-wrap;">{reason}</div>'
+            f'<div style="color:var(--pico-muted-color); font-size:0.8rem; margin-top:4px;">'
+            f'Resolve the issue above, then reload to retry.</div>'
+            f'</div>'
+        )
 
     # T-1454 (OBS-017): non-htmx form path — surface failure via ?error= query param
     # so the rendered inception_detail page can show a banner. Without this,
