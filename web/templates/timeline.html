@@ -3,7 +3,16 @@
     <p>Chronological project narrative across {{ sessions|length }} sessions</p>
 </div>
 
+{# T-2041: bound rendered height — render the newest _tl_cap sessions inline, wrap the
+   older overflow in a collapsed <details> (display:none → excluded from scrollHeight and
+   full_page screenshots, yet still in the DOM and one click away; nothing dropped).
+   Same unbounded-card-list class as T-2038/T-2039/T-2040; sessions list is newest-first. #}
+{% set _tl_cap = 40 %}
 {% for session in sessions %}
+{% if loop.index == _tl_cap + 1 %}
+<details class="timeline-overflow" style="margin:0.75rem 0;">
+<summary style="cursor:pointer; font-weight:600; padding:0.5rem 0.6rem; color:var(--wt-accent); border:1px dashed var(--pico-muted-border-color); border-radius:6px;">Show {{ sessions|length - _tl_cap }} older session{{ 's' if (sessions|length - _tl_cap) != 1 }} — earlier history</summary>
+{% endif %}
 <article{% if session.is_emergency %} style="opacity: 0.6; border-left: 3px solid var(--pico-del-color); padding-left: 0.75rem;"{% endif %}>
     <details>
         <summary>
@@ -65,6 +74,7 @@
     </details>
 </article>
 {% endfor %}
+{% if sessions|length > _tl_cap %}</details><!-- /timeline-overflow (T-2041) -->{% endif %}
 
 {% if not sessions %}
 <div class="coming-soon">

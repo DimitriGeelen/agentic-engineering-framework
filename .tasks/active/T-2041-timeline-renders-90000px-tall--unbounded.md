@@ -2,9 +2,13 @@
 id: T-2041
 name: "timeline renders 90000px tall — unbounded grouped event lists (T-2038 class)"
 description: >
-  Height-bomb class found by the T-2039 page-height sweep: /timeline renders 90,283px — the tallest instance (1001 nodes; several UL event-lists of ~175 items each, grouped by period). Same class as T-2038/T-2039/T-2040. Grouped-list shape → bound via per-group collapse or a scroll container, keeping all events reachable. Render surface — needs [REVIEW]. Verify via tests/playwright (scrollHeight<8000) + sweep Capture full.
+  Height-bomb class found by the T-2039 page-height sweep: /timeline renders 90,283px
+  — the tallest instance (1001 nodes; several UL event-lists of ~175 items each, grouped
+  by period). Same class as T-2038/T-2039/T-2040. Grouped-list shape → bound via per-group
+  collapse or a scroll container, keeping all events reachable. Render surface — needs
+  [REVIEW]. Verify via tests/playwright (scrollHeight<8000) + sweep Capture full.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -17,8 +21,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T13:52:08Z
-last_update: 2026-05-25T13:52:08Z
-date_finished: null
+last_update: 2026-05-25T14:38:01Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,20 +33,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-25T14:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-25T14:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2041: timeline renders 90000px tall — unbounded grouped event lists (T-2038 class)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+4th and last instance of the unbounded-page class (T-2038 /approvals, T-2039 /fabric,
+T-2040 /inception). `/timeline` loops `{% for session in sessions %}` over **all ~580
+handover files** (newest-first), each a collapsed-`<details>` `<article>`. Inner content
+is already collapsed (excluded from scrollHeight); the 90,283px comes purely from the
+*count* of summary rows. Card-list shape → same fix as T-2040: render the first N sessions
+inline, wrap older ones in a collapsed outer `<details class="timeline-overflow">`
+(nesting `<details>` is legal; collapsed content is excluded from scrollHeight AND
+full_page screenshots, yet stays in the DOM, one click away — nothing dropped).
+See [[project_unbounded_watchtower_pages]].
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] /timeline rendered scrollHeight drops below the 8000px `_safe_shot` cap (from 90,283px), verified by a live playwright probe of the running Watchtower — measured **90,477px → 4,351px**
+- [x] Every session `<article>` stays in the DOM: opening `.timeline-overflow` leaves the article count unchanged (collapsed, never truncated) — **1001 → 1001** after expand
+- [x] `tests/playwright/test_timeline_height.py` added with two tests (height-bounded + items-reachable), both pass — **2 passed in 33s**
+- [x] New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-playwright-test_timeline_height.yaml`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -74,6 +109,13 @@ date_finished: null
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] /timeline reads cleanly after the height fix
+  **Steps:**
+  1. Open http://192.168.10.107:3000/timeline
+  2. Confirm the newest sessions render inline and the page no longer endless-scrolls
+  3. Find the "Show N older sessions" affordance; click it and confirm older history expands in place
+  **Expected:** Newest sessions visible at a glance; the collapse affordance is discoverable and labelled; clicking it restores the full chronological history without a reload
+  **If not:** Note which sessions feel like they should be inline vs collapsed, and whether the affordance label reads clearly
 
 ## Verification
 
@@ -94,6 +136,9 @@ date_finished: null
 # Or:
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
+
+curl -sf "$(bin/fw watchtower url)/timeline" >/dev/null
+python3 -m pytest tests/playwright/test_timeline_height.py -q 2>&1 | tail -3
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -118,7 +163,26 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
+**Symptom:** `/timeline` rendered 90,477px tall (1001 `<article>` cards). Endless-scroll
+for humans; the ux-review `full_page` capture wedges past the 8000px cap.
+
+**Root cause:** The template loops `{% for session in sessions %}` over **every** handover
+file in `.context/handovers/` with no height bound. The corpus grows by one card every
+session (handovers are append-only), so the page degrades monotonically — it was usable at
+100 sessions, unusable at 1001. Same data-growth class as T-2038/T-2039/T-2040.
+
+**Why structurally allowed:** The ux-review sweep is the detector for this class, but its
+PAGES list covers only 5 routes (`/`, `/tasks`, `/approvals`, `/fabric`, `/arcs`).
+`/timeline` (and `/inception`) were never in scope, so the height regression was invisible
+to automated tooling — found only by a manual all-routes probe. This is the same coverage
+hole flagged in T-2040's Evolution (G-019 root: the detector exists but its scope is too
+narrow to catch new instances).
+
+**Prevention:** (1) `tests/playwright/test_timeline_height.py` pins scrollHeight < 8000 and
+no-card-dropped — guards *this* page forever. (2) The systemic prevention — widening the
+ux-review sweep PAGES list so the class detector catches the *next* unbounded page
+automatically — remains the open follow-up (see Evolution). This task fixes the symptom and
+adds a per-page guard; it does not close the detector-coverage gap.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -142,16 +206,20 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-## Decisions
+### 2026-05-25 — closing the 4-instance class, but not the detector gap
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+- **What changed:** The /timeline shape turned out *simpler* than the filing note guessed.
+  The note said "several UL event-lists of ~175 items each, grouped by period" (read from a
+  DOM probe of nested content). The actual template is a flat loop of 1001 `<article>`s,
+  each already a collapsed `<details>` — the inner ULs were never the height driver; the
+  *count of summary rows* was. So the fix was the plain T-2040 card-list pattern (cap +
+  collapse outer `<details>`), not a per-group collapse. avg article ≈ 97px → cap 40 ≈ 4.0k px.
+- **Plan impact:** No per-group/period grouping needed. One `_tl_cap` + one nested
+  `<details>` wrapper — ~10 template lines, mirroring T-2040 exactly.
+- **Triggered:** This is instance 4/4 of the unbounded-page class — the class is now fully
+  swept on the pages found. The remaining systemic work is **widening the ux-review sweep
+  PAGES list** so the *detector* covers all routes (currently 5/N). That is a separate
+  tooling task (small) and is NOT done here — filing/doing it is the genuine next step.
 
 ## Decision
 
@@ -163,9 +231,30 @@ date_finished: null
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** 4th and final instance of the unbounded-page class is fixed with the
+established T-2040 pattern. /timeline drops from 90,477px to 4,351px while keeping all
+1001 session cards in the DOM (collapsed, one click away — verified count unchanged after
+expand). A playwright regression test pins both invariants and the test is registered in
+the fabric. Only the visual-rhythm judgment (does the inline/collapsed split read well?)
+remains for human taste.
+
+**Evidence:**
+- scrollHeight: **90,477px → 4,351px** (live playwright probe, `< 8000px` cap)
+- DOM cards: **1001 → 1001** after opening `.timeline-overflow` (nothing dropped)
+- `tests/playwright/test_timeline_height.py`: **2 passed in 33s**
+- Eyes-on screenshot: http://192.168.10.107:3000/static/ux-review/T-2041-timeline-bounded.png
+- Template: `web/templates/timeline.html` — `_tl_cap = 40`, nested `<details class="timeline-overflow">`
+
 ## Updates
 
 ### 2026-05-25T13:52:08Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2041-timeline-renders-90000px-tall--unbounded.md
 - **Context:** Initial task creation
+
+### 2026-05-25T14:38:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
