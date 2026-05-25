@@ -4,21 +4,21 @@ name: "arc-007 S2b breadcrumbs on every page header (path-derived, htmx-fresh)"
 description: >
   arc-007 S2b breadcrumbs on every page header (path-derived, htmx-fresh)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, redesign, ui, nav]
 arc_id: watchtower-redesign
-components: []
+components: [tests/playwright/test_breadcrumb.py, tests/unit/test_breadcrumb.py, web/shared.py, web/templates/base.html, web/templates/_breadcrumb.html, web/templates/_wrapper.html]
 related_tasks: [T-1989, T-1987, T-2008]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T16:12:02Z
-last_update: '2026-05-23T16:15:02Z'
-date_finished:
+last_update: 2026-05-25T22:46:44Z
+date_finished: 2026-05-25T22:46:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -268,3 +268,20 @@ curl -sf "$(bin/fw watchtower url)/" >/dev/null && echo "live ok"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2009-arc-007-s2b-breadcrumbs-on-every-page-he.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-03cc4364
+- **Timestamp:** 2026-05-25T22:48:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `nav_breadcrumb(endpoint, path)` in `web/shared.py` derives crumbs from the URL's first path
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: `nav_breadcrumb(endpoint, path)` in `web/shared.py` derives crumbs from the URL's first path`
+
+### 2026-05-25T22:46:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
