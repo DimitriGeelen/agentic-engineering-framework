@@ -74,6 +74,15 @@ except:
     elif type is_bash_safe_command &>/dev/null && is_bash_safe_command "$BASH_CMD"; then
         # Safe command with no write patterns — allow without task
         exit 0
+    elif [[ "$BASH_CMD" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception)([[:space:]]|$) ]]; then
+        # Task-bootstrap commands always allowed (T-2052) — they ESTABLISH the
+        # active task, so gating them on one is a deadlock; the "No active task"
+        # block message below even lists them as the unblock path. Whole-command
+        # match survives a `cd … && bin/fw …` prefix and multi-line forms, which
+        # is_bash_safe_command's first-word base extraction misses (that fragility
+        # is what caused the deadlock). Reached only when no write pattern is
+        # present — the if-branch above already caught those.
+        exit 0
     fi
 
     # Non-safe or write-pattern Bash commands: fall through to active-task check.

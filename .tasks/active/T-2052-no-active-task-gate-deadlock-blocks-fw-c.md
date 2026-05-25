@@ -1,10 +1,19 @@
 ---
 id: T-2052
-name: "no-active-task gate deadlock: blocks fw context focus / task create / work-on (its own unblock commands) when focus cleared"
+name: "no-active-task gate deadlock: blocks fw context focus / task create / work-on
+  (its own unblock commands) when focus cleared"
 description: >
-  Found during T-2030 GO. After a Watchtower inception decision cleared focus (current_task: null), the check-active-task PreToolUse hook blocked ALL non-safe Bash — including fw context focus, fw task create, and fw work-on, which are the exact commands the hook's own block message lists as the unblock path. Deadlock: cannot create/focus a task because there is no active task. Only escape was hand-editing the exempt .context/working/focus.yaml. Fix: check-active-task.sh must allow fw context focus / fw task create / fw work-on (and fw work-on T-XXX) on the Bash fast-path even when current_task is empty — they are the task-bootstrap commands. Bug-class: needs RCA + bats test.
+  Found during T-2030 GO. After a Watchtower inception decision cleared focus (current_task:
+  null), the check-active-task PreToolUse hook blocked ALL non-safe Bash — including
+  fw context focus, fw task create, and fw work-on, which are the exact commands the
+  hook's own block message lists as the unblock path. Deadlock: cannot create/focus
+  a task because there is no active task. Only escape was hand-editing the exempt
+  .context/working/focus.yaml. Fix: check-active-task.sh must allow fw context focus
+  / fw task create / fw work-on (and fw work-on T-XXX) on the Bash fast-path even
+  when current_task is empty — they are the task-bootstrap commands. Bug-class: needs
+  RCA + bats test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +25,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T19:51:20Z
-last_update: 2026-05-25T19:51:20Z
-date_finished: null
+last_update: 2026-05-25T20:01:17Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +37,56 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-25T20:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-25T20:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2052: no-active-task gate deadlock: blocks fw context focus / task create / work-on (its own unblock commands) when focus cleared
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+When focus is cleared (`current_task: null`, e.g. after a Watchtower inception decision),
+`check-active-task.sh` blocks every non-safe Bash command — including `fw context focus`,
+`fw task create`, and `fw work-on`, the exact commands its own block message lists as the
+unblock path. Root cause: `is_bash_safe_command` (safe-commands.sh) extracts the base via
+`awk '{print $1}'` (first word), so `cd … && bin/fw work-on` and multi-line `cd`↵`bin/fw …`
+forms resolve base to `cd`/garbage and never inspect the fw subcommand; additionally
+`fw task create` is absent from the fw allowlist entirely (only `list|verify|review`).
+Found during T-2030 GO recovery (related: T-2051).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `check-active-task.sh` allows task-bootstrap commands (`fw work-on`, `fw task create`,
+      `fw context focus`, `fw inception`) regardless of active-task state, robust to a
+      `cd … &&` prefix and multi-line forms (whole-command match, not first-word base).
+- [x] `fw task create` is added to the fw safe-command allowlist in `safe-commands.sh`
+      (sibling gap — single-word `bin/fw task create` was also blocked with no active task).
+- [x] Simulating the hook with `current_task: null` and a `cd … && bin/fw context focus …`
+      command returns exit 0 (allow), not exit 2 (block).
+- [x] A non-bootstrap write command (e.g. `bin/fw task update T-X --status ...`) with
+      `current_task: null` still exits 2 (the gate is not weakened for non-bootstrap ops).
+- [x] bats regression test pins both: bootstrap allowed + non-bootstrap still blocked, with
+      `cd`-prefix and multi-line variants.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -75,6 +120,10 @@ date_finished: null
 -->
 
 ## Verification
+
+bash -n agents/context/check-active-task.sh
+bash -n agents/context/lib/safe-commands.sh
+bats tests/unit/test_check_active_task_bootstrap.bats
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -116,6 +165,28 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** After a Watchtower inception decision cleared focus (`current_task: null`),
+every non-safe Bash was blocked — including `fw context focus`, `fw task create`, and
+`fw work-on`, the exact commands the block message lists as the unblock path. Only escape
+was hand-editing the exempt `.context/working/focus.yaml`.
+
+**Root cause:** `is_bash_safe_command` (safe-commands.sh) derives the base command from
+`awk '{print $1}'` — the FIRST word. Agent commands are routinely `cd <dir> && bin/fw …`
+or multi-line `cd`↵`bin/fw …`, so the base resolved to `cd` (single-line) or multi-word
+garbage (multi-line), and the `fw` subcommand was never inspected → not recognised as safe
+→ fell through to the no-active-task block. Compounded by `fw task create` being absent
+from the fw allowlist (only `list|verify|review`), so even the single-word form was blocked.
+
+**Why structurally allowed:** the safe-command fast-path was designed around simple
+single-token commands; no test exercised the bootstrap verbs in `cd …&&` / multi-line form
+with focus cleared — the precise state that occurs after every task completion.
+
+**Prevention:** `tests/unit/test_check_active_task_bootstrap.bats` pins bootstrap-allowed
+(incl. cd-prefix + multi-line) AND non-bootstrap-still-blocked AND write-pattern-wins. The
+fix itself uses a whole-command regex (not first-word base) so it is immune to the prefix
+class. Sibling bug T-2051 (Watchtower decide 500 + uncommitted) is what *cleared* focus,
+exposing this.
 
 ## Evolution
 
@@ -168,3 +239,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2052-no-active-task-gate-deadlock-blocks-fw-c.md
 - **Context:** Initial task creation
+
+### 2026-05-25T20:01:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

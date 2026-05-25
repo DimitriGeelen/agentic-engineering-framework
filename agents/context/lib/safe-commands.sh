@@ -78,7 +78,10 @@ is_bash_safe_command() {
                     local task_sub
                     task_sub=$(echo "$cmd" | awk '{print $3}')
                     case "$task_sub" in
-                        list|verify|review)
+                        # T-2052: `create` is task-bootstrap (writes only to the
+                        # exempt .tasks/ dir) — must be allowed with no active task,
+                        # else the gate deadlocks its own "create a task" advice.
+                        list|verify|review|create)
                             return 0
                             ;;
                     esac
