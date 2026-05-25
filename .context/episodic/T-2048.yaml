@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2048: Parametrized all-routes height guard — wire the exhaustive sweep into the test
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-25T15:52:58Z
+# ============================================================================
+
+task_id: T-2048
+task_name: "Parametrized all-routes height guard — wire the exhaustive sweep into the test"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-25T15:43:02Z
+completed: 2026-05-25T15:49:55Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-25T17:47:59+02:00
+last_commit: 2026-05-25T17:47:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  all-routes height guard — wire exhaustive sweep into the test suite
+
+# Key outcomes
+outcomes:
+  - '`tests/playwright/test_all_routes_height.py` added — parametrizes over `discover_get_routes()` (loaded from `agents/ux-review/ux-review.py`) and asserts each route''s rendered `scrollHeight` < 8000px (TALL_PAGE_CAP_PX)'
+  - 'The test discovers > 5 routes (proves it uses the exhaustive list, not the 5-page hard-code) and skips gracefully if the route map can''t be imported — **`test_routes_discovered_exhaustively` passed (47 routes)**'
+  - 'All discovered routes pass (regression baseline green now that the class is closed) — **49 passed (47 route checks + 2 contract tests) in 178s**'
+  - '`HEIGHT_CAP_PX` mirrors `agents/ux-review/ux-review.py:TALL_PAGE_CAP_PX` so the guard and the detector stay in lockstep — **`test_height_cap_matches_detector` passed**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-05-25 — test suite over cron for the automation leg'
+    chose: 'A parametrized Playwright test (`test_all_routes_height.py`) that iterates `discover_get_routes()` and asserts each route < cap, run by the existing suite.'
+    rationale: 'Fails fast at CI/pre-merge (the moment a new unbounded page is added), needs no cron-registry→generate→install cycle (and its drift gates), no screenshots (cheap), and keeps the guard co-located with the per-page guards. A `test_height_cap_matches_detector` contract test prevents the guard and the detector silently diverging.'
+    alternatives_rejected: ['A daily `fw ux-review --all-routes` cron — catches regressions a day late, costs screenshot time, and adds cron-drift surface (L-364). Making `--all-routes` the *default* sweep — would change existing ux-review behaviour and still needs something to invoke it. Both remain viable as a *belt-and-suspenders* daily check if the human wants defence-in-depth (noted as a possible follow-up).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-playwright-test_all_routes_height.yaml'
+  - '.tasks/active/T-2048-parametrized-all-routes-height-guard--wi.md'
+  - 'tests/playwright/test_all_routes_height.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-25T17:47:59"
+    action: "T-2048: all-routes height guard — wire exhaustive sweep into the test suite"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-007, perf, watchtower, testing, prevention]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 3
+  lines_added: 290
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2048-parametrized-all-routes-height-guard--wi.md
+generated_by: context-agent-hybrid
