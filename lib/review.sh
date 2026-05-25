@@ -161,6 +161,14 @@ emit_review() {
         fi
     fi
 
+    # T-2050: validate Watchtower links the agent wrote in this task body against
+    # app.url_map (advisory). WARNs to stderr on unresolvable paths (e.g. the
+    # /appearance vs /settings/appearance class) so a dead link is surfaced before
+    # the human opens it. Never blocks — the validator always exits 0.
+    if [ -f "${FRAMEWORK_ROOT:-.}/lib/review_link_validator.py" ]; then
+        python3 "${FRAMEWORK_ROOT:-.}/lib/review_link_validator.py" "$task_file" "$base_url" || true
+    fi
+
     echo ""
     echo -e "══════════════════════════════════════════"
     echo -e "  ${BOLD}${review_label}: $task_id${NC}"

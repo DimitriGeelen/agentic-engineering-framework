@@ -1,23 +1,29 @@
 ---
 id: T-2050
-name: "validate Watchtower review links against app.url_map at fw task review (T-2030 GO)"
+name: "validate Watchtower review links against app.url_map at fw task review (T-2030
+  GO)"
 description: >
-  T-2030 GO follow-on. At fw task review time, extract Watchtower URLs from the task's ## Recommendation Evidence and Human-AC Steps, validate each path against web.app.app.url_map (parameterless resolved directly; parameterised HTTP-probed). WARN on unresolvable path (e.g. /appearance 404 vs real /settings/appearance). Reuse T-2042 discover_get_routes(). Keep curl-before-paste as advisory backstop. OUT: external URLs, screenshot-existence, prose quality. Unit test: bad path fails, good path passes.
+  T-2030 GO follow-on. At fw task review time, extract Watchtower URLs from the task's
+  ## Recommendation Evidence and Human-AC Steps, validate each path against web.app.app.url_map
+  (parameterless resolved directly; parameterised HTTP-probed). WARN on unresolvable
+  path (e.g. /appearance 404 vs real /settings/appearance). Reuse T-2042 discover_get_routes().
+  Keep curl-before-paste as advisory backstop. OUT: external URLs, screenshot-existence,
+  prose quality. Unit test: bad path fails, good path passes.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
-components: []
-related_tasks: []
+tags: [watchtower, review]
+components: [lib/review.sh, lib/review_link_validator.py]
+related_tasks: [T-2030, T-2042]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T19:50:47Z
-last_update: 2026-05-25T19:50:47Z
-date_finished: null
+last_update: 2026-05-25T21:31:34Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,51 +34,52 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-25T20:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-25T20:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2050: validate Watchtower review links against app.url_map at fw task review (T-2030 GO)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2030 GO follow-on (candidate C: app.url_map validation). Agents have pasted
+review links to non-existent routes (`/appearance` 404 vs the real
+`/settings/appearance`), so the human gets a dead link at review time — the
+recurring "useless for me i need concrete links" pain. Fix: at `fw task review`
+time, extract Watchtower URLs from the task's `## Recommendation` and `### Human`
+AC Steps, validate each path against `web.app.app.url_map`, and WARN on any path
+that resolves to nothing. Advisory only (never blocks the review). Reuses T-2042's
+`discover_get_routes()` for the parameterless set; HTTP-probes parameterised paths.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] `lib/review_link_validator.py` extracts internal Watchtower paths from a task's `## Recommendation` + `### Human` AC Steps; external (non-base_url) URLs are ignored — unit test
+- [x] A path in the parameterless route set (`discover_get_routes()`) validates OK; an unresolvable path (e.g. `/appearance`) emits WARN — unit test (bad fails, good passes) + live: `/appearance`→404 WARN, `/settings/appearance`→OK
+- [x] Parameterised paths (e.g. `/review/T-XXX`) are HTTP-probed: 404 → WARN, non-404 → OK; server/Flask unavailable → non-blocking advisory (curl-before-paste backstop) — unit test with injected probe
+- [x] `lib/review.sh emit_review()` invokes the validator and prints WARN lines before the review URL; validation never blocks `fw task review` (always exit 0) — verified live (`fw task review T-2050` clean, exit 0)
+- [x] Out-of-scope honored: external URLs, screenshot existence, and prose quality are NOT checked — unit test asserts external URL skipped
+- [x] `python3 -m py_compile lib/review_link_validator.py` passes, new pytest green (10 passed), `bash -n lib/review.sh` passes
 
 ## Verification
 
@@ -100,8 +107,30 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m py_compile lib/review_link_validator.py
+bash -n lib/review.sh
+python3 -m pytest tests/unit/test_review_link_validator.py -q
 
 ## RCA
+
+**Symptom:** Agents paste Watchtower review links to routes that don't exist
+(`/appearance` → 404; the real page is `/settings/appearance`), so the human
+clicks a dead link at review time ("useless for me i need concrete links").
+
+**Root cause:** `fw task review` emits whatever URL the agent wrote in the task,
+with no check that the path actually resolves against the app's route table. The
+only guard was the agent's own discipline ("curl before paste"), which is exactly
+the thing that fails under autonomy.
+
+**Why structurally allowed:** the review-emission path (`lib/review.sh:emit_review`)
+treated review URLs as opaque strings. The app already knows every valid route
+(`app.url_map`), but that knowledge was never consulted at emission time.
+
+**Prevention:** `lib/review_link_validator.py` consults `app.url_map` (via T-2042's
+`discover_get_routes()` + an HTTP probe for parameterised routes) at `fw task review`
+time and WARNs on unresolvable paths, so a wrong path is surfaced before the human
+ever sees it. Pinned by `tests/unit/test_review_link_validator.py` (bad path WARNs,
+good path passes).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -168,3 +197,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2050-validate-watchtower-review-links-against.md
 - **Context:** Initial task creation
+
+### 2026-05-25T21:31:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
