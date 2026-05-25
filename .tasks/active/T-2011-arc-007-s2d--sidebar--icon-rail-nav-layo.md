@@ -148,7 +148,8 @@ it usable until then.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 python3 -m pytest tests/unit/test_nav_layouts.py -q
-python3 -c "import yaml,sys; from web.blueprints import settings as s; assert set(s.NAV_LAYOUTS)=={'topbar','sidebar','rail'}; assert all('nav' in p for p in s.PRESETS.values()); assert s.DEFAULT_APPEARANCE['nav']=='topbar'; print('nav axis OK')"
+# nav is an independent axis: presets do NOT carry nav (T-2033 decouple, human decision; reconciled in T-2056)
+python3 -c "import yaml,sys; from web.blueprints import settings as s; assert set(s.NAV_LAYOUTS)=={'topbar','sidebar','rail'}; assert all('nav' not in p for p in s.PRESETS.values()); assert s.DEFAULT_APPEARANCE['nav']=='topbar'; print('nav axis OK')"
 out=$(python3 -c "from web.blueprints.settings import _sanitise_appearance as f; print(f({'nav':'bogus'})['nav'], f({'nav':'sidebar'})['nav'])"); echo "$out" | grep -q "topbar sidebar"
 
 ## RCA

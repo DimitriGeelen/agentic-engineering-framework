@@ -6,8 +6,10 @@ persisted per-browser in the same prefs file as `appearance:` (S1, T-1988) and
   1. Whitelist — `_sanitise_appearance` accepts only the 3 known layouts; an
      arbitrary string falls back to the default (`topbar`). Same security shape
      as the other axes — nothing untrusted reaches an HTML attribute.
-  2. Presets bind it — every preset carries a `nav` value, and selecting a
-     preset applies that preset's layout.
+  2. Presets do NOT bind it — nav is an independent axis (T-2033 decouple,
+     a human AskUserQuestion decision). Presets set palette/type/density/mode
+     only; selecting a preset leaves the nav layout untouched. Nav is a
+     structural preference set once, not part of a visual theme.
   3. Coexistence — saving the nav axis (an appearance save) must NOT clobber
      `pins:`, and toggling a pin must NOT clobber the nav layout. Both share one
      file via read-modify-write (the T-2010 refactor).
@@ -55,16 +57,12 @@ def test_default_appearance_nav_is_topbar():
     assert S.DEFAULT_APPEARANCE["nav"] == "topbar"
 
 
-def test_every_preset_carries_a_valid_nav():
+def test_no_preset_carries_a_nav_value():
+    # T-2033 decouple (human decision): nav is independent of presets.
+    # A preset must NOT set the nav layout — picking a look-switch never moves
+    # the user's structural nav preference.
     for pid, preset in S.PRESETS.items():
-        assert "nav" in preset, f"preset {pid} missing nav"
-        assert preset["nav"] in S.NAV_LAYOUTS, f"preset {pid} has invalid nav {preset['nav']}"
-
-
-def test_console_is_sidebar_midnight_is_rail():
-    # the two non-default bindings called out in the design chat
-    assert S.PRESETS["console"]["nav"] == "sidebar"
-    assert S.PRESETS["midnight"]["nav"] == "rail"
+        assert "nav" not in preset, f"preset {pid} still binds nav (T-2033 decouple regressed)"
 
 
 # ── 2. Sanitise / whitelist ─────────────────────────────────────────────────
@@ -78,10 +76,11 @@ def test_sanitise_keeps_valid_nav():
     assert S._sanitise_appearance({"nav": "rail"})["nav"] == "rail"
 
 
-def test_sanitise_preset_sets_its_nav():
-    # selecting Console (no explicit nav) should adopt the preset's sidebar layout
-    assert S._sanitise_appearance({"preset": "console"})["nav"] == "sidebar"
-    assert S._sanitise_appearance({"preset": "midnight"})["nav"] == "rail"
+def test_sanitise_preset_leaves_nav_at_default():
+    # T-2033 decouple: selecting a preset with no explicit nav must NOT change
+    # the nav layout — it stays at the default (topbar), regardless of preset.
+    assert S._sanitise_appearance({"preset": "console"})["nav"] == "topbar"
+    assert S._sanitise_appearance({"preset": "midnight"})["nav"] == "topbar"
     assert S._sanitise_appearance({"preset": "calm"})["nav"] == "topbar"
 
 
