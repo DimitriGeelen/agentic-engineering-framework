@@ -109,7 +109,15 @@
 </div>
 
 {% if inception_tasks %}
+{# T-2040: bound rendered height — render the first _inc_cap cards, wrap the overflow in
+   a collapsed <details> (display:none → excluded from scrollHeight and full_page
+   screenshots, yet still in the DOM and one click away; nothing dropped). #}
+{% set _inc_cap = 20 %}
 {% for t in inception_tasks %}
+{% if loop.index == _inc_cap + 1 %}
+<details class="inc-overflow" style="margin:0.75rem 0;">
+<summary style="cursor:pointer; font-weight:600; padding:0.5rem 0.6rem; color:var(--wt-accent); border:1px dashed var(--pico-muted-border-color); border-radius:6px;">Show {{ inception_tasks|length - _inc_cap }} more inception{{ 's' if (inception_tasks|length - _inc_cap) != 1 }} — older / already decided</summary>
+{% endif %}
 <article>
     <header>
         <div class="flex-between">
@@ -178,6 +186,7 @@
     </footer>
 </article>
 {% endfor %}
+{% if inception_tasks|length > _inc_cap %}</details>{% endif %}
 {% else %}
 <div class="coming-soon">
     <h3>No Inception Tasks</h3>

@@ -2,9 +2,13 @@
 id: T-2040
 name: "inception board renders 83000px tall — unbounded card list (T-2038 class)"
 description: >
-  Height-bomb class found by the T-2039 page-height sweep: /inception renders 83,146px (354 inception cards in one container, no bound). Same class as T-2038 (/approvals) / T-2039 (/fabric). Card-list shape → bound via collapse-overflow <details> (the T-2038 mechanism), keeping all cards reachable. Render surface — needs [REVIEW]. Verify via tests/playwright (scrollHeight<8000) + sweep Capture full.
+  Height-bomb class found by the T-2039 page-height sweep: /inception renders 83,146px
+  (354 inception cards in one container, no bound). Same class as T-2038 (/approvals)
+  / T-2039 (/fabric). Card-list shape → bound via collapse-overflow <details> (the
+  T-2038 mechanism), keeping all cards reachable. Render surface — needs [REVIEW].
+  Verify via tests/playwright (scrollHeight<8000) + sweep Capture full.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -17,8 +21,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T13:51:59Z
-last_update: 2026-05-25T13:51:59Z
-date_finished: null
+last_update: 2026-05-25T13:54:41Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,20 +33,38 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-25T13:54:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2040: inception board renders 83000px tall — unbounded card list (T-2038 class)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Third instance of the unbounded-page class (after T-2038 `/approvals`, T-2039 `/fabric`),
+found by a page-height sweep across all major Watchtower pages. `/inception` rendered
+83,146px — `web/templates/inception.html` loops `{% raw %}{% for t in inception_tasks %}{% endraw %}`
+over **349 `<article>` cards** with no bound. Card-list shape (same as `/approvals`), so
+the fix is the collapsed-`<details>` overflow: render the first N, wrap the rest in a
+collapsed `<details>` (display:none → excluded from scrollHeight + full_page shots, still
+in the DOM). The page already has All/Active/Pending/GO/NO-GO filters for narrowing.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `/inception` renders with bounded height regardless of inception count: a Playwright/`scrollHeight` measurement of the loaded page stays below the `_safe_shot` cap (8000px), via a collapsed-`<details>` overflow (the T-2038 mechanism; stated in `## Decisions`). Measured **5,194px** (was 83,146px). Guarded by `tests/playwright/test_inception_height.py::test_inception_height_bounded`.
+- [x] No inceptions dropped: all `<article>` inception cards remain in the DOM and reachable (the overflow is one click away) — DOM card count is unchanged when the overflow opens. All **349** cards present (20 visible + 329 in the collapsed overflow). Guarded by `tests/playwright/test_inception_height.py::test_inception_items_reachable`.
+- [x] After the fix, `fw ux-review --sweep` (extended to include `/inception`) or a direct scrollHeight check confirms `/inception` is no longer clipped (< 8000px). Direct Playwright scrollHeight check: **5,194px < 8,000px**.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -74,6 +96,13 @@ date_finished: null
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] /inception is usable after the height fix — the board reads cleanly and no inception is hidden
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/inception` in a browser
+  2. Confirm the page is a sane length (no 83k-px endless scroll); the "Show N more" disclosure is obvious
+  3. Confirm every inception is reachable (expand the overflow); spot-check the All/Active/Pending/GO/NO-GO filters still work
+  **Expected:** The board is scannable at a glance; the bounding mechanism is clear; no inception is silently dropped; filters work
+  **If not:** Note where inceptions feel hidden or the disclosure is confusing
 
 ## Verification
 
@@ -101,6 +130,8 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+curl -sf "$(bin/fw watchtower url)/inception" >/dev/null
+python3 -m pytest tests/playwright/test_inception_height.py -q >/tmp/.t2040_pt.out 2>&1; tail -3 /tmp/.t2040_pt.out; grep -q "2 passed" /tmp/.t2040_pt.out
 
 ## RCA
 
@@ -117,6 +148,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `/inception` rendered 83,146px tall — the inception board scrolled endlessly with 349 cards stacked in one container.
+
+**Root cause:** `web/templates/inception.html` renders every inception as an `<article>` — `{% raw %}{% for t in inception_tasks %}{% endraw %}` over all 349, no bound. Height grew linearly and unboundedly as inceptions accumulated (many are decided GO/NO-GO and never pruned).
+
+**Why structurally allowed:** identical class to T-2038/T-2039 — page authored when there were few inceptions, nothing measured rendered height, silent degradation with data growth. **Compounding cause specific to this instance:** the ux-review sweep (T-2005, the class detector) only covers 5 pages (`/`, `/tasks`, `/approvals`, `/fabric`, `/arcs`) — `/inception` was never in its page list, so the detector was blind to it. It took a manual all-pages height sweep (this session) to find it.
+
+**Prevention:** `tests/playwright/test_inception_height.py` asserts `/inception` scrollHeight < 8000px and that no card leaves the DOM. **Broader prevention (the G-019 root):** the ux-review sweep's page list should be widened to all major routes so the recurring detector covers them — captured in `## Evolution` as a follow-up so the next instance is caught automatically, not by manual probe.
 
 ## Evolution
 
@@ -142,16 +181,29 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-25 — the detector had a coverage hole
+- **What changed:** This is the 3rd instance of the unbounded-page class in one session. The first two (`/approvals`, `/fabric`) were caught by the ux-review sweep because they are in its 5-page list. `/inception` (and `/timeline`, T-2041) were NOT — they surfaced only via a manual all-pages height probe. The detector's value is bounded by its page list.
+- **Plan impact:** The collapse mechanism transferred cleanly from T-2038 (card-list shape). No surprises in the fix.
+- **Triggered:** Identified a prevention follow-up — widen the ux-review sweep's `PAGES` list (or add a dedicated all-routes height check) so the recurring detector covers every major route. Not done in this task (scope: fix `/inception`); noted here and worth a small tooling task so the next instance is caught automatically. Sibling T-2041 (`/timeline`, 90k px) filed and pending.
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-25 — bounding mechanism
+- **Chose:** Render the first 20 inception `<article>` cards, wrap the rest in a collapsed `<details class="inc-overflow">` ("Show N more inceptions"). Collapsed content is display:none → excluded from scrollHeight and full_page screenshots, still in the DOM and one click away.
+- **Why:** Same card-list shape as `/approvals`, so the T-2038 mechanism transfers directly; zero JS; nothing dropped; bounds the measured metric (33,153→… measured 83,146→5,194px). The existing All/Active/Pending/GO/NO-GO filters complement it for narrowing.
+- **Rejected:** (1) *Scroll container (the T-2039 table fix)* — works, but the collapse-overflow keeps the most-recent cards inline without an inner scrollbar, which reads better for a card board. (2) *Server-side pagination* — more code, no benefit over collapse here.
+
+## Recommendation
+
+**Recommendation:** GO (ship the height bound)
+
+**Rationale:** The one open AC is a `[REVIEW]` judgment call. All three Agent ACs verified: height 83,146px → 5,194px (under cap), all 349 cards reachable, direct scrollHeight check passes. Template-only change, zero JS, guarded by a new Playwright regression test. Third instance of the class fixed; the detector-coverage gap is captured for follow-up.
+
+**Evidence:**
+- `scrollHeight` 83,146px → **5,194px** (Playwright)
+- **349/349** inception cards in DOM (20 visible + 329 in collapsed overflow)
+- `tests/playwright/test_inception_height.py` — 2 passed
+- Screenshot: `web/static/ux-review/T-2040-inception-bounded.png` (served live)
 
 ## Decision
 
@@ -169,3 +221,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2040-inception-board-renders-83000px-tall--un.md
 - **Context:** Initial task creation
+
+### 2026-05-25T13:54:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
