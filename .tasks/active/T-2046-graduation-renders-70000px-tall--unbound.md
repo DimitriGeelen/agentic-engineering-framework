@@ -2,22 +2,22 @@
 id: T-2046
 name: "/graduation renders 70000px tall — unbounded pipeline lists (T-2038 class)"
 description: >
-  /graduation renders 70,201px (tallest; pipeline-stage layout with multiple loops over learnings/patterns/practices/decisions). 9th instance of the unbounded-page class (T-2042 probe). Shape needs investigation — likely per-stage collapse or scroll containers.
+  /graduation renders 70,201px (tallest; pipeline-stage layout with multiple loops
+  over learnings/patterns/practices/decisions). 9th instance of the unbounded-page
+  class (T-2042 probe). Shape needs investigation — likely per-stage collapse or scroll
+  containers.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc-007, perf, watchtower, graduation, ui, render-surface]
 components: []
-related_tasks: []
-# arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
-#                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
-#                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
-#                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
+related_tasks: [T-2042, T-2044, T-2045]
+arc_id: watchtower-redesign
 created: 2026-05-25T14:53:07Z
-last_update: 2026-05-25T14:53:07Z
-date_finished: null
+last_update: 2026-05-25T15:36:05Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,22 +28,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-25T15:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-25T15:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2046: /graduation renders 70000px tall — unbounded pipeline lists (T-2038 class)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Final instance of the unbounded-page class ([[project_unbounded_watchtower_pages]], T-2042 exhaustive probe). `/graduation` renders ~70,201px — the tallest of the 9. Despite the task title ("unbounded pipeline lists"), inspection shows the page has ONE height driver: the pipeline `<table>` (`{% for l in pipeline %}`) over the full learnings list. The other elements (pipeline-flow viz, summary stats, filter row) are fixed-size, and the "How to promote" `<details>` is already collapsed. Same shape as /learnings (T-2044) & /decisions (T-2045): wrap the pipeline table in a `max-height` scroll container with sticky `thead`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `/graduation` rendered `scrollHeight` < 8000px (TALL_PAGE_CAP_PX) measured via Playwright after restart — **70,201px → 1,272px**
+- [x] All pipeline rows remain in the DOM (count unchanged) inside a bounded `.graduation-table-scroll` container that scrolls (clientHeight < scrollHeight when rows > 30) — **462 rows retained, container scrolls**
+- [x] Sticky `thead` so column headers stay visible while scrolling the container — `position: sticky; top: 0; z-index: 2`
+- [x] The `?status=` filter still works (filtered subset renders inside the same bounded container) — **?status=ready → 62 rows, 1,272px bounded**
+- [x] `tests/playwright/test_graduation_height.py` added and passing (height bound + rows-in-scroll-container guards) — **3 passed (incl. filtered-view guard)**
 
 ### Human
+- [ ] [REVIEW] /graduation reads clean and the pipeline is comfortable to scan
+  **Steps:**
+  1. Open http://192.168.10.107:3000/graduation in a browser
+  2. Confirm the pipeline-flow visualization and summary stats sit above a bounded, scrollable pipeline table with a pinned header
+  3. Click a filter (e.g. "Ready") — confirm the filtered list renders inside the same bounded container, page stays short
+  **Expected:** Pipeline viz + stats visible at top; table scrolls within its container with sticky headers; page is screen-sized, not 70k px
+  **If not:** Screenshot the issue and note whether the container is mis-sized or the filter broke the layout
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -100,6 +131,8 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -c "s=open('web/templates/graduation.html').read(); assert 'graduation-table-scroll' in s, 'scroll container class missing'; assert 'position: sticky' in s or 'position:sticky' in s, 'sticky thead missing'; print('graduation.html scroll-container + sticky present')"
+cd tests/playwright && python3 -m pytest test_graduation_height.py -q 2>&1 | tail -3; cd "$OLDPWD"
 
 ## RCA
 
@@ -117,7 +150,20 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `/graduation` rendered 70,201px tall (462 rows) — the tallest page of the class; endless page-level scroll and a wedged ux-review `full_page` screenshot.
+
+**Root cause:** The pipeline `<table>` looped `{% for l in pipeline %}` over the full learnings list with no height bound. Final (9th) confirmed instance of the unbounded-page class ([[project_unbounded_watchtower_pages]]).
+
+**Why structurally allowed:** The ux-review height detector swept only 5 hard-coded pages, so /graduation grew undetected. **This root is already closed** by T-2042 (exhaustive `discover_get_routes()` over `app.url_map`), which is what surfaced this instance.
+
+**Prevention:** `tests/playwright/test_graduation_height.py` (height-bound + filtered-view + rows-in-scroll-container guards) catches a regression of this page; the T-2042 exhaustive sweep catches the next new page automatically.
+
 ## Evolution
+
+### 2026-05-25 — title over-stated the shape
+- **What changed:** Task title said "unbounded pipeline lists" (plural), implying multiple loops. Inspection found a single height driver: the pipeline table. The pipeline-flow viz, summary stats, and filter row are fixed-size; the "How to promote" section is already a collapsed `<details>`.
+- **Plan impact:** No multi-section work needed — single table-scroll-container (identical to T-2044/T-2045). This was the 3rd of 3 remaining pages where the filed shape was more complex than reality; all three reduced to the proven scroll-container or collapse pattern.
+- **Triggered:** Added a filtered-view (`?status=ready`) test case since this page (unlike its siblings) has a query-param filter that must also stay bounded.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -152,6 +198,25 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-05-25 — table scroll-container (max-height accounts for the tall header block)
+- **Chose:** Wrap the pipeline table in `.graduation-table-scroll` (`max-height: calc(100vh - 380px)`, sticky `thead`). The 380px subtrahend (vs 220-280px on sibling pages) accounts for /graduation's taller header block (pipeline-flow viz + 6-stat summary + filter row).
+- **Why:** Same proven pattern as /learnings (T-2044) & /decisions (T-2045); `<details>` can't wrap `<tr>`. The larger max-height offset keeps the container from spilling below the fold given this page's bigger header.
+- **Rejected:** A fixed pixel max-height — wouldn't adapt to viewport. Collapsing the table behind a `<details>` — the pipeline IS the page's primary content, should be visible by default, not hidden.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Tallest page of the class (70k px) brought to screen-size by the same proven scroll-container pattern, with the filter path verified to stay bounded too. Regression test (incl. filtered view) guards it. Only the `[REVIEW]` human-taste check remains; agent-side everything passes. **This is the final instance — the unbounded-page class is fully closed (9/9 fixed; detector exhaustive via T-2042).**
+
+**Evidence:**
+- Height: 70,201px → **1,272px** (Playwright, post-restart) — well under the 8000px cap
+- Filtered: `?status=ready` → 62 rows, **1,272px** (bounded)
+- Rows: **462 retained** inside `.graduation-table-scroll`; container scrolls (clientHeight < scrollHeight)
+- Sticky `thead` (`position: sticky; top: 0; z-index: 2`)
+- `tests/playwright/test_graduation_height.py` — **3 passed**
+- Eyes-on screenshot: http://192.168.10.107:3000/static/ux-review/T-2046-graduation-bounded.png
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -168,3 +233,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2046-graduation-renders-70000px-tall--unbound.md
 - **Context:** Initial task creation
+
+### 2026-05-25T15:36:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
