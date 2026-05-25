@@ -3322,3 +3322,10 @@ X'` returning empty group."
   date: 2026-05-25
   context: Added via context agent
   application: TBD
+- id: L-433
+  learning: "When closing the no-active-task gate by allowlisting a command in is_bash_safe_command, first check whether that command is ALSO gated by the focus-drift detector (T-1730) in check-active-task.sh. The safe-command allowlist runs an early 'exit 0' BEFORE focus-drift detection, so a context-free allowlist entry silently short-circuits focus-drift. git commit is such a command: it must reach focus-drift when a focus exists. The fix belongs in check-active-task.sh (focus-aware), not is_bash_safe_command. git add is task-agnostic (no T-XXX, no drift) so it can stay in the allowlist."
+  source: P-001
+  task: T-2054
+  date: 2026-05-25
+  context: Added via context agent
+  application: TBD
