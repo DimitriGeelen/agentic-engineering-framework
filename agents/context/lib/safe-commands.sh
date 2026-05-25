@@ -44,6 +44,16 @@ is_bash_safe_command() {
                 status|log|diff|show|branch|remote|describe|rev-parse|tag|stash|shortlog|blame|ls-files|ls-tree|cat-file|name-rev|reflog)
                     return 0
                     ;;
+                # T-2054: `git add` is task-agnostic — it stages already-produced
+                # content (the Write/Edit gate ensured that content was created
+                # under a task) and carries no T-XXX reference, so it cannot drift.
+                # Safe with no active task. `git commit` is deliberately NOT here:
+                # it must reach the focus-drift gate (T-1730) in check-active-task.sh
+                # when a focus exists, so its post-completion (null-focus) allow is
+                # handled there instead — see the T-2054 block in check-active-task.sh.
+                add)
+                    return 0
+                    ;;
             esac
             ;;
 

@@ -188,6 +188,27 @@ if [ -f "$SESSION_FILE" ]; then
     CURRENT_SESSION=$({ grep "^session_id:" "$SESSION_FILE" 2>/dev/null || true; } | head -1 | awk '{print $2}')
 fi
 
+# T-2054: post-completion commit deadlock. `--status work-completed` nulls
+# focus.yaml current_task AND moves the task active/→completed/, so it can no
+# longer be re-focused (G-013 requires the focused task in active/), yet its own
+# completion file-move + episodic must still be committed (P-009 commit cadence).
+# When focus is null, allow `git commit` so that checkpoint can land. Committing
+# persists work already produced under the Write/Edit task gate — it is not new
+# work — and the commit-msg hook still enforces P-002 (refuses a message lacking
+# T-XXX). `--no-verify`/`-n` is excluded: it would skip that hook, so it falls
+# through to the block below (a Tier-2 emergency needing explicit authorisation).
+# This lives here, NOT in is_bash_safe_command, on purpose: when focus is NON-null
+# git commit must still reach the focus-drift gate (T-1730) — a context-free
+# allowlist entry would short-circuit that. `git add` (task-agnostic, no drift)
+# stays in is_bash_safe_command.
+if [ -z "$CURRENT_TASK" ] && [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ]; then
+    if [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit($|[[:space:]]) ]] && \
+       ! [[ "$BASH_CMD" =~ (^|[[:space:]])(--no-verify|-n)([[:space:]]|$) ]]; then
+        echo "NOTE: no active task — allowing 'git commit' to checkpoint completed work (T-2054). commit-msg hook still enforces T-XXX." >&2
+        exit 0
+    fi
+fi
+
 if [ -z "$CURRENT_TASK" ]; then
     echo "" >&2
     echo "BLOCKED: No active task. Framework rule: nothing gets done without a task." >&2

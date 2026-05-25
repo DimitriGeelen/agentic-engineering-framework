@@ -38,9 +38,19 @@ setup() {
     [ "$status" -eq 1 ]
 }
 
-@test "safe-commands: git commit is NOT safe" {
+# git commit is intentionally NOT in the context-free allowlist: it must reach
+# the focus-drift gate (T-1730) when a focus exists. Its post-completion
+# (null-focus) allow is handled in check-active-task.sh (T-2054) — pinned by
+# tests/unit/test_safe_commands_git_commit.bats. git add IS allowlisted (T-2054,
+# task-agnostic staging).
+@test "safe-commands: git commit is NOT safe (context-free; gate-handled)" {
     run is_bash_safe_command "git commit -m 'test'"
     [ "$status" -eq 1 ]
+}
+
+@test "safe-commands: git add is safe (T-2054)" {
+    run is_bash_safe_command "git add -- file.txt"
+    [ "$status" -eq 0 ]
 }
 
 # --- is_bash_safe_command: file reading ---
