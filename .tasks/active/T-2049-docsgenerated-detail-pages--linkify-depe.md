@@ -125,6 +125,8 @@ same resolution for the live fabric detail page. Slug = card filename stem (the 
       1. Open http://192.168.10.107:3000/docs/generated/hook-config
       2. Open http://192.168.10.107:3000/docs/generated/agents-task-create-create-task
       3. Look at the Dependencies / Used By tables on each page
+      (screenshots: http://192.168.10.107:3000/static/ux-review/T-2049-hookconfig-deps.png
+      and http://192.168.10.107:3000/static/ux-review/T-2049-createtask-deps.png)
       **Expected:** every target is a clickable link to its component page, with a
       human-readable name and a short description alongside — no bare `C-007`/`C-008` codes.
       **If not:** note which target still renders as raw code or has no description.
@@ -203,6 +205,35 @@ grep -q '(/docs/generated/' docs/generated/components/hook-config.md
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-05-25 — dep targets carry a `note`, and the batch loop was O(n²)
+- **What changed:** the filing assumed targets were just id/path. In practice each
+  `depends_on` entry also carries a `note` (e.g. "PreToolUse hook on Write|Edit") —
+  surfaced it in the Description column alongside the resolved card purpose. Also
+  discovered the `note`/`purpose` text contains literal `|`, which silently splits
+  Markdown table cells — added `_esc_cell()` to escape pipes/newlines.
+- **Plan impact:** the generate-component.sh `--all` branch spawned one Python
+  process per card; building the 768-card index inside each would be O(n²). Added a
+  Python-side `--all` batch entry point that builds the index once and loops.
+- **Triggered:** no new tasks; both handled inline within scope.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Both T-2047 review-feedback issues are fixed at the generator (root, not
+symptom): dependency/used-by targets now render as clickable cross-links with a
+human-readable name + description, and `C-NNN` fabric IDs resolve to their component
+(C-007→budget-gate, C-008→checkpoint) instead of bare codes. Unknown targets fall back
+to raw code (no crash). 316 docs with dep tables regenerated; 5-test regression guard
+pins the contract.
+
+**Evidence:**
+- Rendered DOM (live): [/docs/generated/hook-config](http://192.168.10.107:3000/docs/generated/hook-config) — Dependencies table emits `<a href="/docs/generated/budget-gate">budget-gate</a>`; zero `C-007` text on page.
+- Rendered DOM (live): [/docs/generated/agents-task-create-create-task](http://192.168.10.107:3000/docs/generated/agents-task-create-create-task) — 3 deps + 11 used-by all clickable with descriptions.
+- Screenshots: [hook-config deps](http://192.168.10.107:3000/static/ux-review/T-2049-hookconfig-deps.png) · [create-task deps](http://192.168.10.107:3000/static/ux-review/T-2049-createtask-deps.png) (both HTTP 200).
+- Tests: `tests/unit/test_docgen_dep_resolution.py` — 5 passed (id-resolve, path-resolve, unknown-fallback, pipe-escape, end-to-end).
+- Commit: fb55cd81.
 
 ## Decisions
 
