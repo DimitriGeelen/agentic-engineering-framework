@@ -407,6 +407,37 @@ def _page_slug(path: str) -> str:
     return path.strip("/").replace("/", "-") or "root"
 
 
+def discover_get_routes():
+    """Enumerate every parameterless GET route from the app's url_map.
+
+    The unbounded-page class (T-2038..T-2041) slipped past the sweep because the page
+    list was hard-coded to 5 routes — /inception (83k px) and /timeline (90k px) were
+    never checked, so they grew unbounded undetected. Deriving the set from
+    web.app.app.url_map makes the height detector exhaustive: a page can no longer be
+    blind-spotted by omission (T-2042, G-019 root). Excludes rules with URL arguments
+    (can't load without params), /api/* and /static (not human render surfaces), and
+    non-GET endpoints. Returns a sorted list of path strings; raises on import failure
+    so the caller can fall back to DEFAULT_SWEEP_PAGES.
+    """
+    import sys as _sys
+    _root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if _root not in _sys.path:
+        _sys.path.insert(0, _root)
+    from web.app import app  # imported here so a missing app never breaks plain --sweep
+
+    paths = set()
+    for rule in app.url_map.iter_rules():
+        if rule.arguments:                      # parameterized — can't load blind
+            continue
+        if "GET" not in (rule.methods or set()):
+            continue
+        path = str(rule.rule)
+        if path.startswith("/api/") or path.startswith("/static"):
+            continue
+        paths.add(path)
+    return sorted(paths)
+
+
 def sweep_pages(base: str, page_path: str, content_pages, out_dir: str, guide: dict,
                 preset_id: str = SWEEP_PRESET):
     """Apply ONE non-default preset on the picker (persists to the per-user pref),
@@ -726,6 +757,9 @@ def main(argv=None):
                          "(headline mechanic); implies the sweep")
     ap.add_argument("--sweep", action="store_true",
                     help=f"run the cross-page theme sweep over {','.join(DEFAULT_SWEEP_PAGES)}")
+    ap.add_argument("--all-routes", action="store_true",
+                    help="height-check EVERY parameterless GET route from the app url_map "
+                         "(exhaustive sweep — closes the 5-page detector gap, T-2042)")
     ap.add_argument("--sweep-preset", default=SWEEP_PRESET,
                     help="preset to apply for the cross-page sweep")
     args = ap.parse_args(argv)
@@ -757,6 +791,14 @@ def main(argv=None):
     sweep_list = None
     if args.content_pages:
         sweep_list = [s.strip() for s in args.content_pages.split(",") if s.strip()]
+    elif args.all_routes:
+        try:
+            sweep_list = discover_get_routes()
+            print(f"[ux-review] --all-routes: discovered {len(sweep_list)} GET routes from url_map")
+        except Exception as e:
+            sweep_list = list(DEFAULT_SWEEP_PAGES)
+            print(f"[ux-review] --all-routes discovery failed ({e}); "
+                  f"falling back to {len(sweep_list)} default pages", file=sys.stderr)
     elif args.sweep:
         sweep_list = list(DEFAULT_SWEEP_PAGES)
 
