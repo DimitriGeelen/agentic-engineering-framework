@@ -1,15 +1,17 @@
 ---
 id: T-2034
-name: "Move Arcs nav item from Architecture back to Work — human IA override of T-2008 design-spec placement"
+name: "Move Arcs nav item from Architecture back to Work — human IA override of T-2008
+  design-spec placement"
 description: >
-  Move Arcs nav item from Architecture back to Work — human IA override of T-2008 design-spec placement
+  Move Arcs nav item from Architecture back to Work — human IA override of T-2008
+  design-spec placement
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:watchtower-redesign, ui, watchtower, nav, ia]
-components: []
+components: [tests/playwright/test_breadcrumb.py, tests/playwright/test_nav_subsections.py, tests/playwright/test_pins.py, tests/unit/test_breadcrumb.py, tests/unit/test_nav_subsections.py, web/shared.py]
 related_tasks: [T-2008, T-1989, T-1987]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,8 +19,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-24T16:21:51Z
-last_update: 2026-05-24T16:21:51Z
-date_finished: null
+last_update: 2026-05-26T06:52:05Z
+date_finished: 2026-05-26T06:52:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,6 +31,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-24T16:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-24T16:30:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2034: Move Arcs nav item from Architecture back to Work — human IA override of T-2008 design-spec placement
@@ -229,9 +252,12 @@ python3 -m pytest tests/unit/test_nav_subsections.py tests/unit/test_breadcrumb.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0b319170
-- **Timestamp:** 2026-05-24T16:27:09Z
+- **Scan ID:** R-4f89acf6
+- **Timestamp:** 2026-05-26T06:52:25Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-26T06:52:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
