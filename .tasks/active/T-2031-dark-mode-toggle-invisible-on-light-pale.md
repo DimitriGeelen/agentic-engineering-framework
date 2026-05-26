@@ -2,22 +2,44 @@
 id: T-2031
 name: "dark-mode toggle invisible on light palettes (button --pico-color = accent-ink)"
 description: >
-  The .theme-toggle button icon is invisible on light palettes (white-on-white in paper
+  The .theme-toggle button icon is invisible on light palettes (white-on-white in
+  paper
   light) because Pico styles buttons by setting --pico-color to the button text colour
   (accent-ink/inverse=white); with background:none the white icon lands on the page
   surface. Fix: use var(--wt-text) which always contrasts the surface.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 arc_id: watchtower-redesign
 tags: [arc:watchtower-redesign, ui, watchtower, bug, nav]
-components: []
+components: [tests/playwright/test_settings_nav_link.py, tests/playwright/test_theme_toggle_contrast.py, tests/unit/test_settings_nav_link.py, tests/unit/test_theme_toggle_contrast.py, web/templates/base.html]
 related_tasks: [T-1987, T-2003, T-1991]
 created: 2026-05-24T14:40:20Z
-last_update: 2026-05-24T14:40:20Z
-date_finished: null
+last_update: 2026-05-26T06:51:03Z
+date_finished: 2026-05-26T06:51:03Z
+cost_estimate_proposed:
+  - ts: '2026-05-24T14:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-24T14:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2031: dark-mode toggle invisible on light palettes
@@ -104,9 +126,12 @@ elements where the bridge maps correctly).
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e142f770
-- **Timestamp:** 2026-05-24T14:42:32Z
+- **Scan ID:** R-3c2c4bae
+- **Timestamp:** 2026-05-26T06:51:05Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-26T06:51:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
