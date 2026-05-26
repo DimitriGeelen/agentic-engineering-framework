@@ -8,17 +8,38 @@ description: >
   that survive htmx #content swaps. Keyboard-accessible fallback = the per-card inline
   status select (same endpoint). Within-column reorder is descoped (see Decisions).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:watchtower-redesign, ui, watchtower]
-components: []
+components: [tests/playwright/test_kanban_drag.py, tests/unit/test_kanban_drag.py, web/static/kanban-drag.js, web/templates/base.html, web/templates/tasks.html]
 related_tasks: [T-1992, T-1987, T-2015, T-2018]
 arc_id: watchtower-redesign
 created: 2026-05-24T09:46:14Z
-last_update: 2026-05-24T09:46:14Z
-date_finished: null
+last_update: 2026-05-26T06:49:38Z
+date_finished: 2026-05-26T06:49:38Z
+cost_estimate_proposed:
+  - ts: '2026-05-24T10:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-24T10:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 3
+      D3: 0
+      D4: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=3 
+      (body:component-silent-failure); D3=0 (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2019: arc-007 S4d — drag-to-reorder kanban (cross-column status change)
@@ -126,9 +147,12 @@ unit + Playwright tests; the single Human AC is a genuine taste check on drag fe
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0a53ba49
-- **Timestamp:** 2026-05-24T09:54:01Z
+- **Scan ID:** R-26ccaf0f
+- **Timestamp:** 2026-05-26T06:49:49Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-26T06:49:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
