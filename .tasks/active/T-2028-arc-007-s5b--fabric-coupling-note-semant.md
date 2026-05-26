@@ -7,17 +7,38 @@ description: >
   the 8-type categorical colour map and the graph's dark canvas stay fixed
   (palette-independent identity encoding). Final T-1994 colour slice.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 arc_id: watchtower-redesign
 tags: [arc:watchtower-redesign, ui, watchtower, fabric]
-components: []
+components: [tests/playwright/test_fabric_coupling_token.py, tests/unit/test_fabric_coupling_token.py, web/templates/fabric_detail.html]
 related_tasks: [T-1994, T-1987, T-2027, T-2023]
 created: 2026-05-24T12:00:21Z
-last_update: 2026-05-24T12:00:21Z
-date_finished: null
+last_update: 2026-05-26T06:50:52Z
+date_finished: 2026-05-26T06:50:52Z
+cost_estimate_proposed:
+  - ts: '2026-05-24T12:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-24T12:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2028: arc-007 S5b — fabric coupling-note semantic colour (categorical-fixed)
@@ -93,9 +114,12 @@ python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; app.jin
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d2b67350
-- **Timestamp:** 2026-05-24T12:02:42Z
+- **Scan ID:** R-c44d7305
+- **Timestamp:** 2026-05-26T06:50:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-26T06:50:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
