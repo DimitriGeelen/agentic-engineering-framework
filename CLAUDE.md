@@ -994,7 +994,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 
 **Auto-restart wrapper:** `claude-fw [args...]` (auto-restarts on handover signal) / `claude-fw --no-restart` to opt out.
 
-For rarely-used commands (harvest, promote, consolidate, release, self-test, validate-init, plugin-audit, upstream, enforcement, deploy, prompt, note, scan, mcp, build, fix-learned, onboarding, self-audit, test-onboarding, traceability, hook, hook-enable, patterns, preflight, setup, gpu), run `fw help` or `fw <cmd>`.
+For rarely-used commands (harvest, promote, consolidate, release, self-test, validate-init, plugin-audit, upstream, enforcement, deploy, prompt, note, scan, mcp, build, fix-learned, onboarding, self-audit, test-onboarding, traceability, hook, hook-enable, patterns, preflight, setup, gpu, ux-review), run `fw help` or `fw <cmd>`.
 
 ## TermLink Integration (T-503)
 
