@@ -1109,6 +1109,63 @@ if [ -f "$_cron_registry" ]; then
     fi
 fi
 
+# T-1722: cron-misload lint — detect dormant USER-field crontab files.
+# PL-173 case (2): a source-of-truth crontab at .context/cron/*.crontab uses
+# /etc/cron.d/ USER-field syntax ('m h dom mon dow USER cmd') but no matching
+# /etc/cron.d/ counterpart exists -> the crontab is dormant (jobs don't run).
+# This is the silent-failure mode that ran G-058 for 16 days. The standard
+# registry check above only covers the framework's auto-generated
+# agentic-audit.crontab; this loop covers every other .context/cron/*.crontab
+# (release-mirror-canary, heartbeat, project-specific ad-hoc files, ...).
+_cron_lint_dir="$PROJECT_ROOT/.context/cron"
+if [ -d "$_cron_lint_dir" ]; then
+    _cron_lint_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
+    _cron_lint_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
+    for _cf in "$_cron_lint_dir"/*.crontab; do
+        [ -f "$_cf" ] || continue
+        _cf_base=$(basename "$_cf" .crontab)
+        # Skip the framework's own crontab -- handled by the registry check above.
+        [ "$_cf_base" = "agentic-audit" ] && continue
+        # USER-field syntax detection: any non-comment / non-VAR= line whose
+        # first field is cron-numeric (digits/*/-/,) AND whose 6th field looks
+        # like a Unix username (starts with [a-z_] then [a-z0-9_-]*).
+        _cf_userlike=$(awk '
+            /^[[:space:]]*#/ { next }
+            /^[[:space:]]*$/ { next }
+            /^[A-Z_][A-Z0-9_]*=/ { next }
+            NF >= 7 && $1 ~ /^[0-9*,/-]+$/ && $6 ~ /^[a-z_][a-z0-9_-]*$/ { print "yes"; exit }
+        ' "$_cf" 2>/dev/null)
+        [ "$_cf_userlike" = "yes" ] || continue
+        # Find a matching install. Try canonical names first, then content match.
+        _cf_install=""
+        for _cand in \
+            "$_cron_lint_target_dir/$_cf_base" \
+            "$_cron_lint_target_dir/termlink-$_cf_base" \
+            "$_cron_lint_target_dir/${_cron_lint_slug}-$_cf_base"; do
+            if [ -f "$_cand" ]; then
+                _cf_install="$_cand"
+                break
+            fi
+        done
+        if [ -z "$_cf_install" ]; then
+            # Content fallback: pick the first command in the crontab and search
+            # /etc/cron.d/ for any file containing it.
+            _cf_sig=$(awk '/^[0-9*]/ { for (i=7; i<=NF; i++) printf "%s ", $i; print ""; exit }' "$_cf" 2>/dev/null \
+                | head -c 80)
+            if [ -n "$_cf_sig" ] && [ -d "$_cron_lint_target_dir" ]; then
+                _cf_install=$(grep -lF "$_cf_sig" "$_cron_lint_target_dir"/* 2>/dev/null | head -n1)
+            fi
+        fi
+        if [ -n "$_cf_install" ]; then
+            pass "cron(${_cf_base}): USER-field syntax installed at $_cf_install"
+        else
+            fail "cron(${_cf_base}): USER-field syntax but no install in $_cron_lint_target_dir" \
+                 "Source: $_cf. Dormant -- scheduled jobs are not running (PL-173 / G-058 prevention)." \
+                 "Install: sudo cp $_cf $_cron_lint_target_dir/${_cron_lint_slug}-$_cf_base && sudo systemctl reload cron"
+        fi
+    done
+fi
+
 # T-1631 (B-3b of T-1626): Hook-failure threshold check.
 # Reads .hook-counter + .hook-failure-counter (T-1628 telemetry) and
 # warns if any hook is failing in production over threshold. Does NOT
