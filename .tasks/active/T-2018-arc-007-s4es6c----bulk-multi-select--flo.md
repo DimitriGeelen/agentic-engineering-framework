@@ -4,18 +4,18 @@ name: "arc-007 S4e/S6c -- bulk multi-select + floating action bar on the tasks b
 description: >
   arc-007 S4e/S6c -- bulk multi-select + floating action bar on the tasks board
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:watchtower-redesign, ui, watchtower]
-components: [web/static/bulk-actions.js, web/templates/tasks.html, 
+components: [tests/playwright/test_bulk_actions.py, tests/unit/test_bulk_actions.py, web/static/bulk-actions.js, web/templates/base.html, web/templates/tasks.html]
       web/templates/base.html]
 related_tasks: [T-1992, T-1993, T-1987, T-2015]
 arc_id: watchtower-redesign
 created: 2026-05-24T09:22:27Z
-last_update: '2026-05-24T09:30:02Z'
-date_finished:
+last_update: 2026-05-26T06:49:20Z
+date_finished: 2026-05-26T06:49:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -267,9 +267,12 @@ sovereignty-reserved.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b28c6afd
-- **Timestamp:** 2026-05-24T09:31:09Z
+- **Scan ID:** R-ab0c103c
+- **Timestamp:** 2026-05-26T06:49:33Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-26T06:49:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
