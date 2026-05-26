@@ -6,17 +6,17 @@ description: >
   arc-007 nav-layout polish — rail flyout clip, content overflow, sidebar gap, decouple
   preset-nav, font preload
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 arc_id: watchtower-redesign
 tags: [arc:watchtower-redesign, ui, watchtower, nav, layout, bug]
-components: []
+components: [tests/playwright/test_nav_layout_polish.py, tests/unit/test_nav_layout_polish.py, tests/unit/test_nav_layouts.py, web/blueprints/settings.py, web/templates/appearance.html, web/templates/base.html]
 related_tasks: [T-2011, T-1987, T-1988, T-2029, T-2032]
 created: 2026-05-24T15:38:42Z
-last_update: '2026-05-24T15:45:02Z'
-date_finished:
+last_update: 2026-05-26T06:51:11Z
+date_finished: 2026-05-26T06:51:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -284,14 +284,12 @@ screenshots prove the new render.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-de7940fe
-- **Timestamp:** 2026-05-24T16:05:26Z
+- **Scan ID:** R-48ce393e
+- **Timestamp:** 2026-05-26T06:52:00Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** none
 
-**Verification-level findings:**
-
-  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
-     - evidence: `out=$(cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/unit/test_nav_layout_polish.py -q 2>&1); echo "$out" | tail -3; echo "$out" | grep -q "passed"`
+### 2026-05-26T06:51:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
