@@ -6,12 +6,12 @@ description: >
   6th instance of the unbounded-page class found by the T-2042 exhaustive height probe.
   Fix: cap inline + collapse overflow <details>, like T-2040 /inception.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, perf, watchtower, gaps, ui, render-surface]
-components: []
+components: [tests/playwright/test_gaps_height.py, web/templates/gaps.html]
 related_tasks: [T-2040, T-2042, T-2041]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T14:52:39Z
-last_update: 2026-05-25T14:55:01Z
-date_finished:
+last_update: 2026-05-26T06:55:32Z
+date_finished: 2026-05-26T06:55:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -245,3 +245,25 @@ remains for human taste.
 
 ### 2026-05-25T14:55:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ba6656d6
+- **Timestamp:** 2026-05-26T06:55:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-playwright-test_gaps_height.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/tests-playwright-test_gaps_height.yaml in: New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-playwright-test_gaps_height.yaml``
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 19
+     - evidence: `curl -sf "$(bin/fw watchtower url)/gaps" >/dev/null`
+
+### 2026-05-26T06:55:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
