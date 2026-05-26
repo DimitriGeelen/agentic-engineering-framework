@@ -9,12 +9,12 @@ description: >
   Render surface — needs [REVIEW]. Verify via tests/playwright (scrollHeight < 8000)
   and the sweep Capture column going full.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, perf, watchtower, fabric, ui, render-surface]
-components: []
+components: [tests/playwright/test_decisions_height.py, tests/playwright/test_fabric_height.py, tests/playwright/test_inception_height.py, tests/playwright/test_learnings_height.py, tests/playwright/test_timeline_height.py, web/templates/decisions.html, web/templates/fabric.html, web/templates/inception.html, C-006, web/templates/timeline.html]
 related_tasks: [T-2038, T-2005]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -22,8 +22,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T13:41:27Z
-last_update: 2026-05-25T13:45:02Z
-date_finished:
+last_update: 2026-05-26T06:53:12Z
+date_finished: 2026-05-26T06:53:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -240,3 +240,20 @@ python3 -m pytest tests/playwright/test_fabric_height.py -q >/tmp/.t2039_pt.out 
 
 ### 2026-05-25T13:45:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-86380c4a
+- **Timestamp:** 2026-05-26T06:53:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 25
+     - evidence: `curl -sf "$(bin/fw watchtower url)/fabric" >/dev/null`
+
+### 2026-05-26T06:53:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
