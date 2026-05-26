@@ -8,12 +8,12 @@ description: >
   T-2038 mechanism), keeping all cards reachable. Render surface — needs [REVIEW].
   Verify via tests/playwright (scrollHeight<8000) + sweep Capture full.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, perf, watchtower, inception, ui, render-surface]
-components: []
+components: [tests/playwright/test_inception_height.py, tests/playwright/test_timeline_height.py, web/templates/inception.html, web/templates/timeline.html]
 related_tasks: [T-2038, T-2039, T-2005]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -21,8 +21,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T13:51:59Z
-last_update: 2026-05-25T13:54:41Z
-date_finished:
+last_update: 2026-05-26T06:53:44Z
+date_finished: 2026-05-26T06:53:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -43,6 +43,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-25T14:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -224,3 +234,20 @@ python3 -m pytest tests/playwright/test_inception_height.py -q >/tmp/.t2040_pt.o
 
 ### 2026-05-25T13:54:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-87ca6d50
+- **Timestamp:** 2026-05-26T06:54:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 25
+     - evidence: `curl -sf "$(bin/fw watchtower url)/inception" >/dev/null`
+
+### 2026-05-26T06:53:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
