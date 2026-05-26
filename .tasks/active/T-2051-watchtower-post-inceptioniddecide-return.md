@@ -13,9 +13,9 @@ description: >
   decide handler must (a) not 500 on commit failure, (b) ensure the decision is committed
   or report clearly that it wasn't.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug]
 components: [web/blueprints/inception.py]
@@ -25,8 +25,8 @@ related_tasks: [T-2030, T-2053]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T19:51:15Z
-last_update: 2026-05-25T20:34:02Z
-date_finished:
+last_update: 2026-05-26T22:09:33Z
+date_finished: 2026-05-26T22:09:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -45,6 +45,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-26T20:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -68,6 +77,17 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=2 
       (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
       (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-26T20:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled)
     rubric_sha: e4a00f38e801
 ---
 
@@ -238,3 +258,15 @@ visual legibility of the error card in the browser — which only a human can ju
 
 ### 2026-05-25T20:34:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a4c6e34e
+- **Timestamp:** 2026-05-26T22:09:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-26T22:09:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
