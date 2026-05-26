@@ -6,17 +6,38 @@ description: >
   templates (arcs_index, arc_detail, arc_close, arc_review) to --wt-* foundation
   tokens so they honour the live /settings/appearance palette. First T-1994 slice.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 arc_id: watchtower-redesign
 tags: [arc:watchtower-redesign, ui, watchtower, arcs]
-components: []
+components: [tests/playwright/test_arcs_pages_tokens.py, tests/unit/test_arcs_pages_tokens.py, web/templates/arc_close.html, web/templates/arc_detail.html, web/templates/arc_review.html, web/templates/arcs_index.html]
 related_tasks: [T-1994, T-1987, T-2023, T-2025, T-2026]
 created: 2026-05-24T11:49:08Z
-last_update: 2026-05-24T11:49:08Z
-date_finished: null
+last_update: 2026-05-26T06:50:45Z
+date_finished: 2026-05-26T06:50:45Z
+cost_estimate_proposed:
+  - ts: '2026-05-24T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-24T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2027: arc-007 S5a — arcs pages semantic colour tokenisation
@@ -104,9 +125,12 @@ python3 -c "import sys; sys.path.insert(0,'.'); from web.app import app; [app.ji
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0e616017
-- **Timestamp:** 2026-05-24T11:52:24Z
+- **Scan ID:** R-c4ba96ef
+- **Timestamp:** 2026-05-26T06:50:47Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-26T06:50:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
