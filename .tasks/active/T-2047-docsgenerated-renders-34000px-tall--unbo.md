@@ -6,17 +6,17 @@ description: >
   Shape TBC — inspect web/templates for the docs-generated index loop; fix by shape
   (cap+collapse or scroll-container).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, perf, watchtower, docs, ui, render-surface]
-components: []
+components: [agents/docgen/generate_component.py, agents/docgen/generate-component.sh, tests/playwright/test_docs_generated_height.py, web/templates/docs_index.html]
 related_tasks: [T-2042, T-2045, T-2043]
 arc_id: watchtower-redesign
 created: 2026-05-25T14:53:15Z
-last_update: 2026-05-25T15:30:07Z
-date_finished:
+last_update: 2026-05-26T06:57:03Z
+date_finished: 2026-05-26T06:57:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -233,3 +233,20 @@ cd tests/playwright && python3 -m pytest test_docs_generated_height.py -q 2>&1 |
 
 ### 2026-05-25T15:30:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b999a2d8
+- **Timestamp:** 2026-05-26T06:57:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — `tests/playwright/test_docs_generated_height.py` added and passing (default-height bound + all-rows-present + scroll-container guards) — **3 passed**
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_docs_generated_height.py in: `tests/playwright/test_docs_generated_height.py` added and passing (default-height bound + all-rows-present + scroll-container guards) — **3 passed**`
+
+### 2026-05-26T06:57:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
