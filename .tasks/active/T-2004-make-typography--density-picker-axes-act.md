@@ -9,12 +9,12 @@ description: >
   Human chose make-them-work-now: self-host webfonts (no external CDN), apply --wt-font-head
   to headings, wire density to scale the UI. Found during T-2003 review.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [ux, css, fonts, render-surface]
-components: []
+components: [agents/ux-review/ux-review.py, web/static/css/foundations.css]
 related_tasks: [T-2003, T-2002, T-1991, T-1988]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -22,8 +22,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T14:48:39Z
-last_update: '2026-05-23T15:00:02Z'
-date_finished:
+last_update: 2026-05-26T06:50:32Z
+date_finished: 2026-05-26T06:50:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -260,3 +260,20 @@ right across pages.
 
 ### 2026-05-23T14:49:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-15341561
+- **Timestamp:** 2026-05-26T06:50:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — `fw ux-review --axes` smoke-tests the Type and Density axes individually (check_axes + --axes flag, agents/ux-review/ux-review.py). Verified: `bin/fw ux-review --axes` → **PASS** — Typography widths d
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/ux-review/ux-review.py in: `fw ux-review --axes` smoke-tests the Type and Density axes individually (check_axes + --axes flag, agents/ux-review/ux-review.py). Verified: `bin/fw `
+
+### 2026-05-26T06:50:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
