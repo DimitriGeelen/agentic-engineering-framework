@@ -7,17 +7,17 @@ description: >
   class (T-2042 probe). Shape needs investigation — likely per-stage collapse or scroll
   containers.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, perf, watchtower, graduation, ui, render-surface]
-components: []
+components: [tests/playwright/test_graduation_height.py, web/templates/graduation.html]
 related_tasks: [T-2042, T-2044, T-2045]
 arc_id: watchtower-redesign
 created: 2026-05-25T14:53:07Z
-last_update: 2026-05-25T15:36:05Z
-date_finished:
+last_update: 2026-05-26T06:56:30Z
+date_finished: 2026-05-26T06:56:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -236,3 +236,20 @@ cd tests/playwright && python3 -m pytest test_graduation_height.py -q 2>&1 | tai
 
 ### 2026-05-25T15:36:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-30312df1
+- **Timestamp:** 2026-05-26T06:56:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `tests/playwright/test_graduation_height.py` added and passing (height bound + rows-in-scroll-container guards) — **3 passed (incl. filtered-view guard)**
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_graduation_height.py in: `tests/playwright/test_graduation_height.py` added and passing (height bound + rows-in-scroll-container guards) — **3 passed (incl. filtered-view guar`
+
+### 2026-05-26T06:56:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
