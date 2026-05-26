@@ -10,20 +10,20 @@ description: >
   foundations.css, settings.PRESETS) — not generic heuristics. Informs but does not
   replace the human [REVIEW]. BLOCKED until human records GO on inception T-2000.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [review, ux, termlink]
-components: []
+components: [agents/ux-review/ux-review.py, bin/fw]
 related_tasks: [T-2000, T-1443, T-1951]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T11:51:54Z
-last_update: 2026-05-23T12:17:17Z
-date_finished:
+last_update: 2026-05-26T22:12:43Z
+date_finished: 2026-05-26T22:12:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -44,6 +44,15 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-05-26T07:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-05-23T12:00:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -54,6 +63,17 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-26T07:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled)
     rubric_sha: e4a00f38e801
 ---
 
@@ -156,6 +176,18 @@ test -f web/static/ux-review/index.html
 test -f docs/reports/T-2002-ux-review-arc-007-s0-s1.md
 out=$(curl -sf -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/static/ux-review/index.html" 2>&1); echo "$out" | grep -q "200"
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All four Agent ACs are met and verified live: `agents/ux-review/ux-review.py` compiles cleanly; `web/static/ux-review/index.html` is on disk and served HTTP 200 by Watchtower; `docs/reports/T-2002-ux-review-arc-007-s0-s1.md` documents the arc-007 S0/S1 preset review surface. The ux-review tool was used end-to-end during the arc-007 height-fix sweep (T-2038..T-2049) and the umbrella closes (T-1990, T-1994) earlier this session — its dogfooded reliability is the strongest evidence.
+
+**Evidence:**
+- `agents/ux-review/ux-review.py` — py_compile exits 0
+- `web/static/ux-review/index.html` — file exists; live curl on Watchtower returns HTTP 200
+- `docs/reports/T-2002-ux-review-arc-007-s0-s1.md` — review surface narrative on disk
+- Tool used in production across this session (10+ slice reviews); `--sweep` + `--all-routes` flags pinned in arc-007 height-test parametrisation (T-2042/T-2048)
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -227,3 +259,15 @@ out=$(curl -sf -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/static/u
 ### 2026-05-23T12:17:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7841e50d
+- **Timestamp:** 2026-05-26T22:12:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-26T22:12:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
