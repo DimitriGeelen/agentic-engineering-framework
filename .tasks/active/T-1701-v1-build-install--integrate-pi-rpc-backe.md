@@ -9,17 +9,17 @@ description: >
   path, induce 429 to verify retryable extraction. See T-1692 ## Recommendation for
   full 8-step scope.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [pi, subscription-llm]
-components: []
+components: [lib/pi_worker.py, lib/resolver.py, lib/spawn.py, tests/unit/test_pi_worker.py, tests/unit/test_resolver_run.py, tests/unit/test_spawn.py]
 related_tasks: [T-1692, T-1696, T-1693, T-1694]
 arc_id: orchestrator-rethink
 created: 2026-05-03T15:47:11Z
-last_update: '2026-05-19T21:45:02Z'
-date_finished:
+last_update: 2026-05-26T21:50:17Z
+date_finished: 2026-05-26T21:50:17Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -170,7 +170,8 @@ python3 -m pytest tests/unit/test_pi_worker.py -v
 # fw doctor warns when pi missing + workflow uses worker_kind=pi (host-scope WARN)
 { bin/fw doctor 2>&1 || true; } | grep -qE "pi not installed.*worker_kind: pi"
 # fw doctor still shows no FAIL lines (only WARNs are acceptable)
-{ bin/fw doctor 2>&1 || true; } | grep -E "^\s*FAIL" | wc -l | grep -q "^0$"
+# L-387 fix: avoid mid-pipe grep that exits 1 on no-match under pipefail
+bin/fw doctor > /tmp/.t1701-doctor 2>&1 || true; test "$(grep -cE '^\s*FAIL' /tmp/.t1701-doctor)" = "0"
 
 ## Recommendation
 
@@ -224,3 +225,15 @@ python3 -m pytest tests/unit/test_pi_worker.py -v
 ### 2026-05-06T18:40:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9e2b85c9
+- **Timestamp:** 2026-05-26T21:53:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-26T21:50:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
