@@ -6,17 +6,17 @@ description: >
   loop of article cards). 8th instance of the unbounded-page class (T-2042 probe).
   Fix: scroll-container for the table + collapse the article overflow.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, perf, watchtower, decisions, ui, render-surface]
-components: []
+components: [tests/playwright/test_decisions_height.py, tests/playwright/test_graduation_height.py, web/templates/decisions.html, web/templates/graduation.html]
 related_tasks: [T-2042, T-2044, T-2039]
 arc_id: watchtower-redesign
 created: 2026-05-25T14:52:59Z
-last_update: 2026-05-25T15:23:14Z
-date_finished:
+last_update: 2026-05-26T06:56:30Z
+date_finished: 2026-05-26T06:56:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -233,3 +233,20 @@ cd tests/playwright && python3 -m pytest test_decisions_height.py -q 2>&1 | tail
 
 ### 2026-05-25T15:23:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4eb87001
+- **Timestamp:** 2026-05-26T06:56:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — `tests/playwright/test_decisions_height.py` added and passing (height bound + rows-in-scroll-container guards) — **2 passed**
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_decisions_height.py in: `tests/playwright/test_decisions_height.py` added and passing (height bound + rows-in-scroll-container guards) — **2 passed**`
+
+### 2026-05-26T06:56:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
