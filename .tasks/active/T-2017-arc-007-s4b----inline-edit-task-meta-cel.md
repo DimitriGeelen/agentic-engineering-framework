@@ -4,17 +4,17 @@ name: "arc-007 S4b -- inline-edit task meta cells in the side panel"
 description: >
   arc-007 S4b -- inline-edit task meta cells in the side panel
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:watchtower-redesign, ui, watchtower]
-components: [web/templates/_task_panel.html, web/blueprints/tasks.py]
+components: [tests/playwright/test_task_panel_edit.py, tests/unit/test_task_panel_edit.py, web/blueprints/tasks.py, web/templates/base.html, web/templates/_task_panel.html]
 related_tasks: [T-1992, T-1987, T-2015]
 arc_id: watchtower-redesign
 created: 2026-05-24T09:05:47Z
-last_update: '2026-05-24T09:15:03Z'
-date_finished:
+last_update: 2026-05-26T06:49:02Z
+date_finished: 2026-05-26T06:49:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -265,9 +265,12 @@ interaction — which is sovereignty-reserved.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-982b20ae
-- **Timestamp:** 2026-05-24T09:19:50Z
+- **Scan ID:** R-5f2cad29
+- **Timestamp:** 2026-05-26T06:49:14Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-26T06:49:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
