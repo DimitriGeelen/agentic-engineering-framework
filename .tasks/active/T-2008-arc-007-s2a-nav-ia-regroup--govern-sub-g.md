@@ -4,21 +4,21 @@ name: "arc-007 S2a nav IA regroup + Govern sub-grouping (top-bar layout)"
 description: >
   arc-007 S2a nav IA regroup + Govern sub-grouping (top-bar layout)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, redesign, ui, nav]
 arc_id: watchtower-redesign
-components: []
+components: [tests/playwright/test_breadcrumb.py, tests/playwright/test_nav_subsections.py, tests/playwright/test_pins.py, tests/unit/test_breadcrumb.py, tests/unit/test_nav_subsections.py, web/shared.py, web/templates/base.html]
 related_tasks: [T-1989, T-1987]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T15:58:29Z
-last_update: '2026-05-23T16:00:02Z'
-date_finished:
+last_update: 2026-05-26T07:20:03Z
+date_finished: 2026-05-26T07:19:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -142,13 +142,16 @@ with S2d where there are multiple layouts to switch between — adding it now wo
 
 # NAV model imports and every leaf endpoint is non-empty (no broken url_for targets)
 python3 -c "from web.shared import NAV_GROUPS, NAV_ITEMS; assert all(ep for _,ep,_ in NAV_ITEMS), 'empty endpoint'; print(f'{len(NAV_ITEMS)} leaf items')"
-# Arcs is under Architecture (design IA), not Work
-python3 -c "from web.shared import nav_group_labels; assert 'Arcs' in nav_group_labels('Architecture'), 'Arcs not in Architecture'; assert 'Arcs' not in nav_group_labels('Work'), 'Arcs still in Work'; print('IA ok')"
+# Arcs nav IA — reconciled to T-2034 (Arcs moved back from Architecture to Work, human decision).
+# T-2008 originally placed Arcs under Architecture (AC #2); T-2034 (commit 1e1c30b5) reverted
+# after human review. Verification asserts the current/live IA, not T-2008-time IA.
+python3 -c "from web.shared import nav_group_labels; assert 'Arcs' in nav_group_labels('Work'), 'Arcs not in Work (T-2034 revert regressed?)'; assert 'Arcs' not in nav_group_labels('Architecture'), 'Arcs still in Architecture (T-2034 revert regressed?)'; print('IA ok (T-2034-reconciled)')"
 # nav + subsection unit tests pass
 python3 -m pytest web/test_app.py -k nav -q 2>&1 | tail -3
 python3 -m pytest tests/unit/test_nav_subsections.py -q 2>&1 | tail -3
-# rendered page returns 200 and DOM carries the 4 top-level groups
-out=$(curl -sf "$(bin/fw watchtower url)/" 2>&1); echo "$out" | grep -q "Govern" && echo "$out" | grep -q "Architecture"
+# rendered page returns 200 and DOM carries the 4 top-level groups + Govern.
+# L-387 fix: capture-then-grep on a file (echo|grep -q SIGPIPEs at >100KB output).
+out=$(curl -sf "$(bin/fw watchtower url)/" 2>&1); printf '%s' "$out" > /tmp/.t2008-out && grep -q "Govern" /tmp/.t2008-out && grep -q "Architecture" /tmp/.t2008-out
 
 ## RCA
 
@@ -220,6 +223,22 @@ out=$(curl -sf "$(bin/fw watchtower url)/" 2>&1); echo "$out" | grep -q "Govern"
   — the opened Govern dropdown showing all four subsections. Web path:
   `<watchtower-url>/static/ux-review/T-2008-govern-subsections.png`.
 
+### 2026-05-26 — IA reconciliation: T-2034 reverted Arcs-in-Architecture
+- **What changed:** The Arcs-moved-to-Architecture call (AC #2 here) was reverted by **T-2034**
+  (commit `1e1c30b5` — "move Arcs nav item from Architecture back to Work") after human
+  review. The Human [REVIEW] AC on "moving Arcs into Architecture reads correctly" was, in
+  effect, answered NO — the framework now ships Arcs back under Work.
+- **Plan impact:** T-2008's AC #2 was true-at-build-time but its Verification command (an
+  inline `python -c` assertion that `'Arcs' in nav_group_labels('Architecture')`) now asserts
+  the *old* contract. Reconciled by editing the Verification block to assert the *current*
+  IA (Arcs in Work, not in Architecture) with a comment pointing at T-2034.
+- **Also fixed (same edit):** the rendered-page DOM check was triggering L-387 SIGPIPE
+  (`echo "$out" | grep -q` on ~123KB curl output exited 141). Switched to capture-to-file
+  pattern (`printf '%s' "$out" > /tmp/.t2008-out && grep -q`) per L-387's safe form.
+- **Triggered:** none. Same pattern as **T-2056** (which reconciled T-2011 with T-2033's
+  preset/nav decouple) — surfaced by the L-434 sweep this session; L-434 is the systemic
+  cause (shipped-but-unclosed slices suppress regression detection in sibling code).
+
 ## Decisions
 
 ### 2026-05-23 — Govern subsection taxonomy (the [REVIEW] taste call)
@@ -283,3 +302,15 @@ out=$(curl -sf "$(bin/fw watchtower url)/" 2>&1); echo "$out" | grep -q "Govern"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2008-arc-007-s2a-nav-ia-regroup--govern-sub-g.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-74669538
+- **Timestamp:** 2026-05-26T07:19:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-26T07:19:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
