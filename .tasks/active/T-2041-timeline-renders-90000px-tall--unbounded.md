@@ -8,12 +8,12 @@ description: >
   collapse or a scroll container, keeping all events reachable. Render surface — needs
   [REVIEW]. Verify via tests/playwright (scrollHeight<8000) + sweep Capture full.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, perf, watchtower, timeline, ui, render-surface]
-components: []
+components: [agents/ux-review/ux-review.py, tests/playwright/test_timeline_height.py, tests/unit/test_ux_review_routes.py, web/templates/timeline.html]
 related_tasks: [T-2038, T-2039, T-2005]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -21,8 +21,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T13:52:08Z
-last_update: 2026-05-25T14:38:01Z
-date_finished:
+last_update: 2026-05-26T06:54:17Z
+date_finished: 2026-05-26T06:54:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -258,3 +258,25 @@ remains for human taste.
 
 ### 2026-05-25T14:38:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7d2ff650
+- **Timestamp:** 2026-05-26T06:54:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-playwright-test_timeline_height.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/tests-playwright-test_timeline_height.yaml in: New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-playwright-test_timeline_height.yaml``
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 19
+     - evidence: `curl -sf "$(bin/fw watchtower url)/timeline" >/dev/null`
+
+### 2026-05-26T06:54:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
