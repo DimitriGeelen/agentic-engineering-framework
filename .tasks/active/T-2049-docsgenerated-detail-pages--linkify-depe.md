@@ -17,17 +17,17 @@ description: >
   eyes-on verify the two example URLs. Distinct deliverable from T-2047 height fix
   (one-bug-one-task).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, watchtower, docs, docgen, ui]
-components: []
+components: [agents/docgen/generate_component.py, agents/docgen/generate-component.sh]
 related_tasks: [T-2047]
 arc_id: watchtower-redesign
 created: 2026-05-25T17:06:46Z
-last_update: 2026-05-25T17:27:16Z
-date_finished:
+last_update: 2026-05-26T06:57:36Z
+date_finished: 2026-05-26T06:57:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -265,3 +265,20 @@ pins the contract.
 
 ### 2026-05-25T17:26:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a67469ba
+- **Timestamp:** 2026-05-26T06:57:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Human)** — [REVIEW] Dependency links are clickable and descriptions readable on the example pages
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='name a' in Expected: every target is a clickable link to its component page, with a       human-readable name and a short description alongside — no bare `C-007``
+
+### 2026-05-26T06:57:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
