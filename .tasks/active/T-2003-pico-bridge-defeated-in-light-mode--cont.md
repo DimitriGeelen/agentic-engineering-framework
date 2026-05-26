@@ -8,12 +8,12 @@ description: >
   the selected accent. Dark mode works by source-order luck. Proven fix: raise bridge
   selector specificity.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, ux, css, render-surface]
-components: []
+components: [agents/ux-review/ux-review.py, web/static/css/foundations.css]
 related_tasks: [T-2002, T-1991, T-1988, T-1987]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -21,8 +21,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T12:34:14Z
-last_update: 2026-05-23T12:52:29Z
-date_finished:
+last_update: 2026-05-26T06:50:01Z
+date_finished: 2026-05-26T06:50:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -43,6 +43,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-23T13:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -266,3 +276,15 @@ now visually distinct, bone/paper `--pico-primary` now equals `--wt-accent`.
 
 ### 2026-05-23T12:52:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-98a84f36
+- **Timestamp:** 2026-05-26T06:50:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-26T06:50:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
