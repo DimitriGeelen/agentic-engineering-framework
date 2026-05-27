@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2036: completed-before-commit deadlock — work-on silently fails to reactivate completed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-27T22:11:48Z
+# ============================================================================
+
+task_id: T-2036
+task_name: "completed-before-commit deadlock — work-on silently fails to reactivate completed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-25T08:11:56Z
+completed: 2026-05-27T22:11:41Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-05-28T00:11:35+02:00
+last_commit: 2026-05-28T00:11:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refuse work-on on completed tasks with actionable recovery
+
+# Key outcomes
+outcomes:
+  - '`fw work-on T-XXX` on a `work-completed` task no longer prints false "Ready to work on" — it now refuses with exit 1 and an actionable message; the `2>/dev/null || true` swallow at bin/fw:4841 is gone (also pinned by regression test #4)'
+  - 'A supported recovery path exists for "completed before commit" — `work-on` detects the completed-file case and emits the exact `bin/fw work-on T-<other> && git add <files> && FW_SWITCH_FOCUS=1 git commit` unblock sequence plus the alternative "reopen-by-hand" path if the close was premature'
+  - 'Regression test pins the chosen behaviour (`tests/unit/test_work_on_completed_task.bats`, 4 tests: completed→refuse, missing→refuse, active→succeed, swallow-string-grep-marker)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-28 — Refuse vs. reopen'
+    chose: 'Refuse with actionable recovery (option A from the AC menu).'
+    rationale: 'Adding a `work-completed → started-work` reopen transition'
+    alternatives_rejected: ['Add a guarded reopen transition (option B). Would have']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.fabric/components/tests-unit-test_work_on_completed_task.yaml'
+  - '.tasks/active/T-2036-completed-before-commit-deadlock--work-o.md'
+  - 'tests/unit/test_work_on_completed_task.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T00:11:35"
+    action: "T-2036: refuse work-on on completed tasks with actionable recovery"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3719 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3719
+  commits: 1
+  files_changed: 4
+  lines_added: 249
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2036-completed-before-commit-deadlock--work-o.md
+generated_by: context-agent-hybrid

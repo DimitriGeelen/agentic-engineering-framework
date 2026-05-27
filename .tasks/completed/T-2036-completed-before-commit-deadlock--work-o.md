@@ -5,20 +5,20 @@ name: "completed-before-commit deadlock — work-on silently fails to reactivate
 description: >
   Framework gap (G-019 class) hit during T-2035.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, tests/unit/test_work_on_completed_task.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T08:11:56Z
-last_update: 2026-05-27T22:09:27Z
-date_finished:
+last_update: 2026-05-27T22:11:41Z
+date_finished: 2026-05-27T22:11:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -277,3 +277,15 @@ number, and lists the exact recovery commands.
 
 ### 2026-05-27T22:07:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-badfec59
+- **Timestamp:** 2026-05-27T22:11:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-27T22:11:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
