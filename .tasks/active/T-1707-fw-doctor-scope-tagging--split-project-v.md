@@ -105,7 +105,7 @@ Closes G-065 alongside T-1702 Pattern 4 (already shipped commit 91eeacdbb).
 bash -n bin/fw
 # Assert doctor produces the host-scope summary breakdown (T-1707's headline behaviour),
 # not just that it exits 0. Tag should appear when host findings exist.
-bin/fw doctor 2>&1 | grep -qE "warning\(s\) \([0-9]+ host-level\)"
+bin/fw doctor > /tmp/.t1707-doctor 2>&1 || true; grep -qE "warning\(s\) \([0-9]+ host-level\)" /tmp/.t1707-doctor
 bats tests/unit/test_doctor_scope_tags.bats
 
 ## Recommendation
