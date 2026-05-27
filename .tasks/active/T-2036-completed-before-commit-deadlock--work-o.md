@@ -5,7 +5,7 @@ name: "completed-before-commit deadlock — work-on silently fails to reactivate
 description: >
   Framework gap (G-019 class) hit during T-2035.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -17,7 +17,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T08:11:56Z
-last_update: '2026-05-25T08:15:03Z'
+last_update: 2026-05-27T22:09:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -79,9 +79,9 @@ success while doing nothing) at exactly the moment the agent needs a clear path.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw work-on T-XXX` on a `work-completed` task no longer prints false "Ready to work on" — it either reactivates cleanly or refuses with an actionable message (remove/replace the `2>/dev/null || true` swallow at bin/fw:4841)
-- [ ] A supported recovery path exists for "completed before commit" — either a guarded `work-completed → started-work` reopen transition, or `work-on` detecting the completed-file case and emitting the exact unblock command
-- [ ] Regression test pins the chosen behaviour (work-on on a completed task → expected exit code + message, or successful reactivation)
+- [x] `fw work-on T-XXX` on a `work-completed` task no longer prints false "Ready to work on" — it now refuses with exit 1 and an actionable message; the `2>/dev/null || true` swallow at bin/fw:4841 is gone (also pinned by regression test #4)
+- [x] A supported recovery path exists for "completed before commit" — `work-on` detects the completed-file case and emits the exact `bin/fw work-on T-<other> && git add <files> && FW_SWITCH_FOCUS=1 git commit` unblock sequence plus the alternative "reopen-by-hand" path if the close was premature
+- [x] Regression test pins the chosen behaviour (`tests/unit/test_work_on_completed_task.bats`, 4 tests: completed→refuse, missing→refuse, active→succeed, swallow-string-grep-marker)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,22 +140,88 @@ success while doing nothing) at exactly the moment the agent needs a clear path.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bats tests/unit/test_work_on_completed_task.bats
+bash -n bin/fw
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `bin/fw work-on T-XXX` on a `work-completed` task printed
+`Ready to work on T-XXX` (green, "success" tone) while the task stayed in
+`.tasks/completed/`. Focus remained nulled, `git add`/`git commit` continued
+to be blocked by the active-task PreToolUse hook. Agent assumed focus was
+restored; deadlock continued silently.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Two-stage:
+1. `work-completed` is a terminal lifecycle state in `lib/enums.sh` —
+   `VALID_TRANSITIONS` has no `work-completed → started-work` edge.
+2. `bin/fw` line 4841 invoked `update-task.sh ... --status started-work`
+   with `2>/dev/null || true` — so update-task's correct exit-1 refusal
+   was discarded, then `context.sh focus` ran (writes focus.yaml
+   pointing at a task that's no longer in active/), then the green
+   "Ready to work on" line printed. Three layers of false success.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** `2>/dev/null || true` is the canonical
+"swallow everything we don't care about" idiom; nothing forces the call
+site to distinguish "already-in-target-status idempotent re-run" (genuinely
+exit-0 from update-task) from "transition refused" (exit-1). The terminal
+status of `work-completed` plus the swallow conspired to turn a refusal
+into a printable success.
+
+**Prevention:**
+1. Pre-check: work-on now greps active/ and completed/ before calling
+   update-task — if the file is in completed/, print actionable recovery
+   options and exit 1 *before* update-task is invoked at all.
+2. Swallow removed: the `--status started-work` call is no longer
+   wrapped in `2>/dev/null || true`. Any update-task refusal surfaces
+   directly and aborts work-on with exit 1.
+3. Regression test `test_work_on_completed_task.bats` test #4 greps for
+   the swallow string and fails if it ever creeps back.
+
+## Decisions
+
+### 2026-05-28 — Refuse vs. reopen
+- **Chose:** Refuse with actionable recovery (option A from the AC menu).
+- **Why:** Adding a `work-completed → started-work` reopen transition
+  complicates the lifecycle (now "terminal" is no longer terminal),
+  weakens episodic memory guarantees, and risks masking real "I closed
+  too early" bugs by making the recovery feel routine. The deadlock is
+  rare enough (recovery is one extra anchor-switch); the existing
+  `FW_SWITCH_FOCUS=1 git commit` path is already documented and
+  Tier-2-logged. Printing the recovery path verbatim in the refusal
+  message gets the same speed-of-recovery as a reopen without the
+  lifecycle damage.
+- **Rejected:** Add a guarded reopen transition (option B). Would have
+  required new `--reopen` flag, fresh date_finished handling, audit
+  surface for "tasks that were closed and then reopened", and a clear
+  policy for whether episodic memory is regenerated on second close.
+  All scope creep for what is ultimately a recoverable footgun.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Bounded ~40-line edit to `bin/fw:4838-4886` (pre-check the
+file's location, removed swallow, surfaced real failures). Backed by 4-test
+regression bats (`tests/unit/test_work_on_completed_task.bats`): completed
+→ refuse, missing → refuse, active → succeed, swallow-string grep marker
+to prevent regression of the original idiom. Smoke-tested live against
+T-2058 (the task I just closed in this session), T-2036 (active), and
+T-9999 (non-existent) — all three paths behave as designed.
+
+Beneficial side effect: the original P-002 silent false-success pattern
+becomes self-documenting — every time an agent hits this deadlock from
+now on, the work-on output names the deadlock, references this task by
+number, and lists the exact recovery commands.
+
+**Evidence:**
+- Code: `bin/fw:4838-4886` (~40-line block, includes L-387-safe glob-loop
+  for active/completed file detection, drop of `2>/dev/null || true`
+  swallow, and the verbatim recovery message)
+- Tests: `tests/unit/test_work_on_completed_task.bats` — 4/4 green
+- L-387 self-application: my first attempt at file-detection used
+  `ls ... | head -1`, which immediately SIGPIPEd under pipefail. Fixed
+  in-place by switching to a bounded for-loop. T-2057's L-387 detector
+  (now decide-pending) would have caught this at filing.
 
 ## Evolution
 
@@ -208,3 +274,6 @@ success while doing nothing) at exactly the moment the agent needs a clear path.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2036-completed-before-commit-deadlock--work-o.md
 - **Context:** Initial task creation
+
+### 2026-05-27T22:07:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

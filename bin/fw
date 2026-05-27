@@ -4836,9 +4836,57 @@ PYREVQ
         fi
 
         if [[ "$wo_target" =~ ^T-[0-9]+$ ]]; then
+            # T-2036: Detect "completed before commit" deadlock before falling into
+            # the silent swallow. work-completed is a terminal lifecycle state
+            # (lib/enums.sh) — work-on cannot reopen it, so previously the
+            # update-task.sh call would fail invisibly (`2>/dev/null || true`),
+            # work-on would print "Ready to work on..." (false success), and the
+            # agent would assume focus was restored.
+            # L-387: no pipe — `ls ... | head -1` SIGPIPEs the upstream under
+            # `set -eo pipefail` when the glob misses. Use a bounded for-loop.
+            wo_active_file=""
+            for wo_glob in "$PROJECT_ROOT"/.tasks/active/"$wo_target"-*.md; do
+                if [ -e "$wo_glob" ]; then wo_active_file="$wo_glob"; break; fi
+            done
+            wo_completed_file=""
+            for wo_glob in "$PROJECT_ROOT"/.tasks/completed/"$wo_target"-*.md; do
+                if [ -e "$wo_glob" ]; then wo_completed_file="$wo_glob"; break; fi
+            done
+            unset wo_glob
+            if [ -z "$wo_active_file" ] && [ -n "$wo_completed_file" ]; then
+                echo -e "${RED}=== work-on refused: $wo_target is in .tasks/completed/ ===${NC}" >&2
+                echo "" >&2
+                echo "  File: $wo_completed_file" >&2
+                echo "  Status: work-completed (terminal — no transition back to started-work)" >&2
+                echo "" >&2
+                echo "  This is the T-2036 / P-002 'completed before commit' deadlock pattern:" >&2
+                echo "  the task was closed before its code was committed; focus is now nulled" >&2
+                echo "  and the active-task gate blocks Bash mutations." >&2
+                echo "" >&2
+                echo "  Recovery options:" >&2
+                echo "    1. Anchor on a DIFFERENT active task and commit the orphaned changes:" >&2
+                echo "         bin/fw work-on T-<other-active>" >&2
+                echo "         git add <files>" >&2
+                echo "         FW_SWITCH_FOCUS=1 git commit -m \"$wo_target: ...\"" >&2
+                echo "    2. If the close was premature (work not actually done), reopen by hand:" >&2
+                echo "         mv $wo_completed_file .tasks/active/" >&2
+                echo "         # edit frontmatter status: work-completed → started-work, clear date_finished" >&2
+                echo "" >&2
+                exit 1
+            fi
+            if [ -z "$wo_active_file" ] && [ -z "$wo_completed_file" ]; then
+                echo -e "${RED}work-on: task $wo_target not found in .tasks/active/ or .tasks/completed/${NC}" >&2
+                exit 1
+            fi
             # Resume existing task
             echo -e "${CYAN}=== Resuming $wo_target ===${NC}"
-            "$AGENTS_DIR/task-create/update-task.sh" "$wo_target" --status started-work 2>/dev/null || true
+            # T-2036: Surface real update-task.sh failures instead of swallowing them
+            # (legitimate idempotent re-resume — already started-work — exits 0 in
+            # update-task.sh, so we only swallow nothing critical here).
+            if ! "$AGENTS_DIR/task-create/update-task.sh" "$wo_target" --status started-work; then
+                echo -e "${YELLOW}work-on: status transition for $wo_target failed (see message above) — focus will NOT be set${NC}" >&2
+                exit 1
+            fi
             "$AGENTS_DIR/context/context.sh" focus "$wo_target"
             echo ""
             echo -e "${GREEN}Ready to work on $wo_target${NC}"
