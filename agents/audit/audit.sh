@@ -1366,6 +1366,15 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
             # Check if task file exists (active or completed)
             task_file=$(find "$TASKS_DIR" -name "${task_ref}-*.md" -type f 2>/dev/null | head -1)
             if [ -z "$task_file" ]; then
+                # T-2058: suppress WARN when a later commit explicitly reverted this task
+                # (deliberate orphan). Pattern: any commit message containing "revert ... T-NNNN".
+                # Capture-then-grep avoids SIGPIPE on truncation (L-387 safe pattern).
+                _revert_log=$(git -C "$PROJECT_ROOT" log --all --format=%s 2>/dev/null)
+                if echo "$_revert_log" | grep -qiE "revert[^A-Za-z0-9_].*${task_ref}([^0-9]|$)"; then
+                    # Revert-chain detected — task was intentionally removed from history
+                    continue
+                fi
+                unset _revert_log
                 if [ "$orphan_refs" -eq 0 ]; then
                     echo ""
                 fi
