@@ -1,13 +1,18 @@
 ---
 id: T-2055
-name: "Audit detector: completable-but-not-completed tasks (Agent ACs all ticked, status still started-work)"
+name: "Audit detector: completable-but-not-completed tasks (Agent ACs all ticked,
+  status still started-work)"
 description: >
-  L-434 prevention. Add a fw audit (and/or fw doctor) check that flags tasks whose Agent ACs are 100% ticked but status is still started-work/issues — shipped-but-unclosed work that never entered the review queue. Origin: 35 arc-007 child slices found stuck this way (S-2026-0526). Distinct from fw task stale (date-based). Emit WARN per task with the completion command.
+  L-434 prevention. Add a fw audit (and/or fw doctor) check that flags tasks whose
+  Agent ACs are 100% ticked but status is still started-work/issues — shipped-but-unclosed
+  work that never entered the review queue. Origin: 35 arc-007 child slices found
+  stuck this way (S-2026-0526). Distinct from fw task stale (date-based). Emit WARN
+  per task with the completion command.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -16,8 +21,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T22:45:57Z
-last_update: 2026-05-25T22:45:57Z
-date_finished: null
+last_update: 2026-05-27T22:15:13Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +33,60 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-25T23:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-25T23:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2055: Audit detector: completable-but-not-completed tasks (Agent ACs all ticked, status still started-work)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Active tasks where every Agent AC is `[x]` but `status:` is still
+`started-work` or `issues` are "shipped-but-unclosed" — the implementation
+work is finished but no one ran `fw task update --status work-completed`.
+This blocks partial-complete handover to the human (owner flips to human,
+file moves to completed/) and pollutes the active board with done work.
+
+The sibling check CTL-028 already catches the opposite drift (in
+completed/ but status=started-work). T-2055 is the active/-side mirror.
+
+**Heuristic:** parse `### Agent` block (between `### Agent` header and
+either `### Human` or next `## ` heading). Count `^- \[x\]` vs `^- \[ \]`.
+If all ticked AND status ∈ {started-work, issues} AND the body is not
+template-only (has real AC text), emit WARN.
+
+**False-positive guard:** if no `### Agent` header exists, treat all
+`^- \[ \]`/`^- \[x\]` lines under `## Acceptance Criteria` (before the
+next `## ` heading) as Agent ACs. Tasks without any ACs (placeholder-only
+or completely empty) are silent.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] New audit check in `agents/audit/audit.sh` (compliance section, alongside CTL-028) that scans `.tasks/active/T-*.md` and emits `WARN CTL-029: T-XXX has all Agent ACs ticked but status=started-work (run: bin/fw task update T-XXX --status work-completed)` for each completable-but-not-completed task
+- [x] AC parser handles three task shapes: (a) `### Agent` + `### Human` split — count Agent only; (b) `## Acceptance Criteria` with no sub-headers — count all `- [ ]`/`- [x]` lines; (c) placeholder/empty AC list — silent (no false WARN)
+- [x] Detector skips tasks where AC list is entirely template-only (the well-known template stub items the task-creation step ships unedited)
+- [x] Bats coverage in `tests/unit/test_audit_completable_not_completed.bats` proves four cases: (a) all-Agent-ticked started-work → WARN, (b) partial-ticked → silent, (c) no-split all-ticked → WARN, (d) placeholder-only → silent; plus two bonus tests: captured-with-pre-ticked-ACs → silent, all-clear → PASS line. 6/6 green. proves four cases: (a) all-Agent-ticked started-work → WARN, (b) partial-ticked → silent, (c) no-split all-ticked → WARN, (d) placeholder-only → silent
+- [x] All existing audit-related bats stay green (test_audit_cron_drift 5/5, test_audit_cron_registry_generated_drift 3/3, test_audit_revert_chain 4/4). `test_audit_watchdog_fd.bats` test 4 fails environmentally on this host (orphan watchdog sleeps from other consumers, pre-existing, documented in T-2058 close — unaffected by T-2055).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -100,6 +145,7 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bats tests/unit/test_audit_completable_not_completed.bats
 
 ## RCA
 
@@ -141,6 +187,47 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Bounded ~90-line addition to `agents/audit/audit.sh` (new
+CTL-029 block, placed adjacent to CTL-028 for symmetry: same trigger
+condition `compliance || oe-daily`, same shape as the desync detector but
+mirrored to active/-side). Inline Python parser handles the three AC shapes
+deterministically:
+- frontmatter parsed via `re.match` on the `---` block
+- `## Acceptance Criteria` section sliced via regex header lookup
+- HTML comment blocks (`<!-- ... -->`) stripped before scan so the Human
+  comment block's example ACs never bleed into the count
+- `### Agent` sub-section preferred when present; else whole AC block
+- placeholder lines `[First criterion]` etc. excluded
+- silent when no real ACs OR partial-ticked OR status ∉ {started-work, issues}
+
+Live scan finds 12 completable-but-not-completed tasks in the corpus (T-1062,
+T-1274, T-1542, T-1624, T-2056, T-332, T-334, T-464, T-544, T-801, T-802,
+T-803). These are exactly the class the detector targets — work shipped,
+close never run. CTL-028 was 4 tasks; CTL-029 finds the larger active-side
+shadow.
+
+Pinned by `tests/unit/test_audit_completable_not_completed.bats` — 6/6
+green, covering the four required shapes plus two edge cases
+(captured-with-pre-ticked-ACs is silent; PASS line emits when nothing to
+flag).
+
+**Evidence:**
+- Code: `agents/audit/audit.sh` CTL-029 block (~90 lines, adjacent to CTL-028)
+- Tests: `tests/unit/test_audit_completable_not_completed.bats` — 6/6 green
+- Adjacent audit bats remain green: cron-drift 5/5, cron-registry-generated
+  3/3, revert-chain 4/4
+- Live: 12 tasks flagged in the framework's own corpus
+
+**Why this matters now:** The 4 CTL-028 cases in current audit (T-1902,
+T-1901, T-1915, T-1905) are the *symptom*; the active-side mirror catches
+the *upstream* class — a task with all Agent ACs ticked but no close-run
+is exactly the state that ends up causing CTL-028 when someone eventually
+`git mv`s it without going through update-task.sh.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -168,3 +255,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2055-audit-detector-completable-but-not-compl.md
 - **Context:** Initial task creation
+
+### 2026-05-27T22:15:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

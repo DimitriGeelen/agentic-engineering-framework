@@ -2721,6 +2721,102 @@ for item in data.get('status_desync', []):
 fi
 
 # ============================================
+# CTL-029: completable-but-not-completed detection (T-2055)
+# Active-side mirror of CTL-028. Catches tasks where the agent finished the
+# work (all Agent ACs ticked) but never ran `--status work-completed`, so the
+# task lingers in active/ instead of partial-completing to the human or
+# archiving cleanly.
+# ============================================
+if should_run_section "compliance" || should_run_section "oe-daily"; then
+    completable_warn=0
+    if [ -d "$PROJECT_ROOT/.tasks/active" ]; then
+        while IFS='|' read -r task_id task_status; do
+            [ -z "$task_id" ] && continue
+            warn "CTL-029: $task_id has all Agent ACs ticked but status='$task_status' — completable, not closed" \
+                 "Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)" \
+                 "Run: bin/fw task update $task_id --status work-completed"
+            completable_warn=$((completable_warn + 1))
+        done < <(python3 - "$PROJECT_ROOT/.tasks/active" <<'PYEOF' 2>/dev/null
+import os, re, sys
+
+active_dir = sys.argv[1]
+if not os.path.isdir(active_dir):
+    sys.exit(0)
+
+PLACEHOLDER_PAT = re.compile(r"^\s*-\s*\[[ x]\]\s*\[(First|Second|Third|Fourth|Fifth)\s+criterion\]\s*$", re.IGNORECASE)
+AC_PAT = re.compile(r"^\s*-\s*\[([ x])\]")
+
+for fname in sorted(os.listdir(active_dir)):
+    if not fname.endswith(".md") or not fname.startswith("T-"):
+        continue
+    fpath = os.path.join(active_dir, fname)
+    try:
+        with open(fpath, encoding="utf-8") as fh:
+            text = fh.read()
+    except OSError:
+        continue
+
+    fm_match = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
+    if not fm_match:
+        continue
+    fm = fm_match.group(1)
+    task_id_m = re.search(r"^id:\s*(T-\d+)", fm, re.MULTILINE)
+    status_m = re.search(r"^status:\s*(\S+)", fm, re.MULTILINE)
+    if not task_id_m or not status_m:
+        continue
+    task_id = task_id_m.group(1)
+    status = status_m.group(1).strip()
+    if status not in ("started-work", "issues"):
+        continue
+
+    body = text[fm_match.end():]
+    ac_start = re.search(r"^## Acceptance Criteria\s*$", body, re.MULTILINE)
+    if not ac_start:
+        continue
+    after_ac = body[ac_start.end():]
+    next_h2 = re.search(r"^## ", after_ac, re.MULTILINE)
+    ac_block = after_ac[: next_h2.start()] if next_h2 else after_ac
+
+    # Strip HTML comment blocks before scanning (template examples live there)
+    ac_block = re.sub(r"<!--.*?-->", "", ac_block, flags=re.DOTALL)
+
+    # Prefer ### Agent sub-section if present; else use whole AC block
+    agent_h = re.search(r"^### Agent\s*$", ac_block, re.MULTILINE)
+    if agent_h:
+        rest = ac_block[agent_h.end():]
+        next_h3 = re.search(r"^### |^## ", rest, re.MULTILINE)
+        scan = rest[: next_h3.start()] if next_h3 else rest
+    else:
+        scan = ac_block
+
+    ticked = 0
+    unticked = 0
+    real_ac_count = 0
+    for line in scan.splitlines():
+        m = AC_PAT.match(line)
+        if not m:
+            continue
+        if PLACEHOLDER_PAT.match(line):
+            continue
+        real_ac_count += 1
+        if m.group(1) == "x":
+            ticked += 1
+        else:
+            unticked += 1
+
+    if real_ac_count == 0:
+        continue
+    if unticked == 0 and ticked > 0:
+        print(f"{task_id}|{status}")
+PYEOF
+)
+    fi
+    if [ "$completable_warn" -eq 0 ]; then
+        pass "CTL-029: No completable-but-not-completed active tasks"
+    fi
+fi
+
+# ============================================
 # CTL-012: AC-drift detection (T-955, AC-side twin of CTL-028)
 # Originally lived inside the oe-daily block (T-955); promoted by T-1883 to
 # fire on `compliance || oe-daily` so the pre-push audit catches completed
