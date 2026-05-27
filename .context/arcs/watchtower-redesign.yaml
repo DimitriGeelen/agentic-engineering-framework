@@ -5,7 +5,7 @@ description: "Replace ad-hoc PicoCSS scaffolding + 16-item Govern menu with a us
   \ system (6 palettes \xD7 light/dark, 6 type pairings, 3 nav layouts, 3 density\
   \ tiers) driven by a /settings/appearance screen. Source: Claude Design bundle 'agentic-framework'\
   \ chat 2026-05-13; design preserved at docs/design/watchtower-redesign-2026-05-13/."
-status: draft
+status: in-progress
 anchor_task: T-1987
 constituent_tasks: [T-1987]
 headline_mechanic: "User opens /settings/appearance \u2192 picks a preset (Calm/Editorial/Console/Paper/Bone/Midnight)\
@@ -21,4 +21,48 @@ decision: null
 # docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
 bvp_scores: {}
 scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
-proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
+# uncapped persistence (D7-reframe). Estimator may write here freely.
+# Agent-side proposals follow CLAUDE.md §Arc-Scoped Driver Suggestion Workflow.
+proposed_scoped_drivers:
+  - name: aesthetic-cohesion
+    weight: 5
+    rationale: >-
+      Distinguishes from D3 (Usability — joy-to-use/extend/debug, sensible
+      defaults, actionable errors): aesthetic cohesion is about visual rhythm,
+      typography spacing, palette contrast harmony, and restraint — qualities
+      that a CLI with perfect D3 has no concern for. arc-007 explicitly ships
+      6 palettes × light/dark + 6 type pairings + 3 density tiers as user
+      levers; scoring tasks against this driver captures whether each slice
+      actually advances the "looks right" axis vs merely the "works right"
+      axis. T-2004 (Typography & Density picker axes actually apply) and
+      T-2029 (S3b cockpit density spacing scale) score 5 here and 2 on D3.
+    source: agent
+    ts: '2026-05-28T00:50:00Z'
+  - name: render-fidelity
+    weight: 5
+    rationale: >-
+      Distinguishes from D2 (Reliability — predictable, observable, auditable
+      execution; no silent failures). D2 catches FUNCTIONAL failures (page
+      returns 200, JSON schema matches, route resolves). Render-fidelity
+      catches VISUAL failures that pass every functional check: accent-ink/
+      accent at 3.83:1 contrast (WCAG fail, T-2006), Pico-bridge bleed-through
+      in light mode (T-2003), unbounded-page-height degradation to 30-90kpx
+      (T-2038 through T-2047). Each shipped under green D2 verification
+      commands and was caught only by eyes-on review. Scoring this driver
+      makes the visual-but-not-functional axis legible.
+    source: agent
+    ts: '2026-05-28T00:50:00Z'
+  - name: theme-portability
+    weight: 4
+    rationale: >-
+      Distinguishes from D4 (Portability — no provider/language/environment
+      lock-in; prefer standards). D4 is about whether your code runs anywhere;
+      theme-portability is whether your preset applies uniformly to every
+      surface inside THIS app — the headline_mechanic's acid test. The arc's
+      promise is "user picks Editorial once → Cockpit/Tasks/Approvals/Fabric/
+      Arcs/Settings all re-theme without manual reapply". Tasks that close
+      that loop (T-2005 multi-page sweep, T-2007 palette-contrast lint,
+      T-2031 dark toggle) score 4-5 here; D4 sees these as no-ops because
+      no provider/env boundary moves.
+    source: agent
+    ts: '2026-05-28T00:50:00Z'
