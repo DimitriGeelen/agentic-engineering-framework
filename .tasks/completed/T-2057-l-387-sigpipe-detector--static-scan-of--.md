@@ -14,16 +14,16 @@ description: >
   update-task.sh lint at --status started-work time. Open question: which surface
   gives the right ergonomics? Decision: GO/NO-GO + which surface.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: claude
-horizon: next
+horizon: now
 tags: [L-387, reviewer, structural-detector, level-D]
-components: []
+components: [bin/fw, tests/unit/test_doctor_scope_tags.bats, tests/unit/test_work_on_completed_task.bats]
 related_tasks: []
 created: 2026-05-27T05:20:09Z
-last_update: '2026-05-27T05:30:02Z'
-date_finished:
+last_update: 2026-05-27T23:46:11Z
+date_finished: 2026-05-27T23:46:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 cost_estimate_proposed:
@@ -90,15 +90,15 @@ The class is fully detectable statically: a regex scan over `## Verification` bl
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -130,15 +130,24 @@ The class is fully detectable statically: a regex scan over `## Verification` bl
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** 7 captures of L-387 in two consecutive autonomous sessions
+(S-2026-0526..-0527). Class is statically detectable: refined heuristic
+distinguishes ~15 true positives from ~26 safe `out=$(cmd); echo "$out"
+| grep -q` cases in the 44-line risky candidate corpus. Detector cost
+bounded: reviewer pattern + `update-task.sh started-work` advisory is
+<1 day of build work. ≥3 statically-detectable repeats threshold (per
+L-364 / L-417) crossed by a wide margin.
+
+**Evidence:** See full spike report at
+[`docs/reports/T-2057-l-387-detector-spike.md`](../../docs/reports/T-2057-l-387-detector-spike.md)
+— anti-pattern signature, mechanism explanation, corpus scan, refined
+heuristic, 4 surface candidates with pro/con, build-slice scope.
+
+**Build slice (post-GO):** reviewer pattern `l387-sigpipe-risk` +
+`update-task.sh` started-work advisory (warn only, not block) + bats
+coverage against the 15 historical positives.
 
 ## Decisions
 
@@ -153,9 +162,70 @@ The class is fully detectable statically: a regex scan over `## Verification` bl
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: 7 captures of L-387 in two consecutive autonomous sessions
+(S-2026-0526..-0527). Class is statically detectable: refined heuristic
+distinguishes ~15 true positives from ~26 safe `out=$(cmd); echo "$out"
+| grep -q` cases in the 44-line risky candidate corpus. Detector cost
+bounded: reviewer pattern + `update-task.sh started-work` advisory is
+<1 day of build work. ≥3 statically-detectable repeats threshold (per
+L-364 / L-417) crossed by a wide margin.
+
+Evidence: See full spike report at
+[`docs/reports/T-2057-l-387-detector-spike.md`](../../docs/reports/T-2057-l-387-detector-spike.md)
+— anti-pattern signature, mechanism explanation, corpus scan, refined
+heuristic, 4 surface candidates with pro/con, build-slice scope.
+
+Build slice (post-GO): reviewer pattern `l387-sigpipe-risk` +
+`update-task.sh` started-work advisory (warn only, not block) + bats
+coverage against the 15 historical positives.
+
+**Date**: 2026-05-27T23:46:11Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-27T23:46:11Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: 7 captures of L-387 in two consecutive autonomous sessions
+(S-2026-0526..-0527). Class is statically detectable: refined heuristic
+distinguishes ~15 true positives from ~26 safe `out=$(cmd); echo "$out"
+| grep -q` cases in the 44-line risky candidate corpus. Detector cost
+bounded: reviewer pattern + `update-task.sh started-work` advisory is
+<1 day of build work. ≥3 statically-detectable repeats threshold (per
+L-364 / L-417) crossed by a wide margin.
+
+Evidence: See full spike report at
+[`docs/reports/T-2057-l-387-detector-spike.md`](../../docs/reports/T-2057-l-387-detector-spike.md)
+— anti-pattern signature, mechanism explanation, corpus scan, refined
+heuristic, 4 surface candidates with pro/con, build-slice scope.
+
+Build slice (post-GO): reviewer pattern `l387-sigpipe-risk` +
+`update-task.sh` started-work advisory (warn only, not block) + bats
+coverage against the 15 historical positives.
+
+### 2026-05-27T23:46:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-76fd22f1
+- **Timestamp:** 2026-05-27T23:46:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-27T23:46:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
