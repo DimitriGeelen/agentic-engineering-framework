@@ -12,17 +12,17 @@ description: >
   GO if approved. Sibling structural fix surfaced from T-1717 grill, not part of T-1717
   scope.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [structural-gate, T-1716-family, dogfood-prerequisite, §ACD-prevention]
-components: []
+components: [agents/task-create/update-task.sh, lib/evolution_log.sh, tests/unit/evolution_log_gate.bats]
 related_tasks: [T-1717, T-1550, T-1716, T-1671, T-1259, T-1260, G-062, G-066]
 arc_id: embeddings-strategy
 created: 2026-05-04T14:50:48Z
-last_update: '2026-05-19T21:45:02Z'
-date_finished:
+last_update: 2026-05-27T05:11:05Z
+date_finished: 2026-05-27T05:11:05Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -110,6 +110,20 @@ grep -q "^## Evolution" .tasks/templates/default.md
 grep -q "check_evolution_log" agents/task-create/update-task.sh
 grep -q "T-1718" lib/evolution_log.sh
 
+## Recommendation
+
+**Recommendation:** GO — slice 1 (opt-in backward-compatible Evolution-log gate) shipped and self-applies on this task.
+
+**Rationale:**
+The gate makes spec-mutation visible rather than silent: any arc-tagged build task that mutates the inception's intended scope must record the delta in a `## Evolution` section before `--status work-completed` accepts close. T-1718 itself carries an Evolution log (A5 — self-application), proving the gate runs and doesn't deadlock its own closure. Backward-compatibility (gate fires only on tasks that already contain `## Evolution`) means the 38 in-flight tasks at slice ship-time were not retroactively blocked — the gate ratchets up as new tasks adopt the section.
+
+**Evidence:**
+- `lib/evolution_log.sh:has_real_evolution_log()` exists and is registered in fabric (A1, A6).
+- `## Evolution` section landed in `.tasks/templates/default.md` (A2).
+- `agents/task-create/update-task.sh` wired with `check_evolution_log` invocation (A3).
+- `tests/unit/evolution_log_gate.bats` covers detect/refuse/accept paths (A4).
+- This task's own `## Evolution` block (lines 113-127) records slice 1 kickoff — self-application proof (A5).
+
 ## Evolution
 
 ### 2026-05-04 — Slice 1 kickoff
@@ -165,3 +179,15 @@ grep -q "T-1718" lib/evolution_log.sh
 ### 2026-05-04T15:19:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1de602b5
+- **Timestamp:** 2026-05-27T05:11:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-27T05:11:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
