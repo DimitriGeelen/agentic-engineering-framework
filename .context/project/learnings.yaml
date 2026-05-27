@@ -3343,3 +3343,10 @@ X'` returning empty group."
   date: 2026-05-25
   context: Added via context agent
   application: TBD
+- id: L-436
+  learning: "Self-applying an inception's target rule IN the inception's source code is the strongest GO signal for that inception. T-2036's first implementation used 'ls glob | head -1' — SIGPIPEd under pipefail — exactly the L-387 class T-2057 inception targets. The 8th L-387 capture (in T-2036 work itself) corroborates T-2057's GO recommendation more strongly than any external evidence collection."
+  source: P-001
+  task: T-1062
+  date: 2026-05-27
+  context: Added via context agent
+  application: TBD
