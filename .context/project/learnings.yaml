@@ -3350,3 +3350,10 @@ X'` returning empty group."
   date: 2026-05-27
   context: Added via context agent
   application: TBD
+- id: L-437
+  learning: "fw reviewer T-XXX --dispatch on a completed/ task re-writes the ## Reviewer Verdict block with a fresh scan_id + timestamp even when the verdict is unchanged (PASS → PASS, zero findings). This produces git noise on completed/ files (which per CLAUDE.md spirit should be immutable archives). Pattern: idempotent re-scans on completed/ should either skip the write or compare-and-skip when verdict semantics are identical to last scan. Workaround: 'git checkout' the touched files after dispatch when overall and findings are unchanged. Triggered while parallel-scanning T-2058/T-2036/T-2055 to accelerate human [REVIEW] queue (all 3 PASS, all 3 produced timestamp-only diffs)."
+  source: P-003
+  task: T-1062
+  date: 2026-05-27
+  context: Added via context agent
+  application: TBD
