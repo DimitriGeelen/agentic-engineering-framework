@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2055: Audit detector: completable-but-not-completed tasks (Agent ACs all ticked,
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-27T22:19:36Z
+# ============================================================================
+
+task_id: T-2055
+task_name: "Audit detector: completable-but-not-completed tasks (Agent ACs all ticked,"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-25T22:45:57Z
+completed: 2026-05-27T22:19:27Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-05-26T00:46:21+02:00
+last_commit: 2026-05-28T00:19:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file L-434 prevention — shipped-but-unclosed slice detector. CTL-029 detector — completable-but-not-completed tasks (active-side mirror of CTL-028)
+
+# Key outcomes
+outcomes:
+  - 'New audit check in `agents/audit/audit.sh` (compliance section, alongside CTL-028) that scans `.tasks/active/T-*.md` and emits `WARN CTL-029: T-XXX has all Agent ACs ticked but status=started-work (run: bin/fw task update T-XXX --status work-completed)` for each completable-but-not-completed task'
+  - 'AC parser handles three task shapes: (a) `### Agent` + `### Human` split — count Agent only; (b) `## Acceptance Criteria` with no sub-headers — count all `- [ ]`/`- [x]` lines; (c) placeholder/empty AC list — silent (no false WARN)'
+  - 'Detector skips tasks where AC list is entirely template-only (the well-known template stub items the task-creation step ships unedited)'
+  - 'Bats coverage in `tests/unit/test_audit_completable_not_completed.bats` proves four cases: (a) all-Agent-ticked started-work → WARN, (b) partial-ticked → silent, (c) no-split all-ticked → WARN, (d) placeholder-only → silent; plus two bonus tests: captured-with-pre-ticked-ACs → silent, all-clear → PASS line. 6/6 green. proves four cases: (a) all-Agent-ticked started-work → WARN, (b) partial-ticked → silent, (c) no-split all-ticked → WARN, (d) placeholder-only → silent'
+  - 'All existing audit-related bats stay green (test_audit_cron_drift 5/5, test_audit_cron_registry_generated_drift 3/3, test_audit_revert_chain 4/4). `test_audit_watchdog_fd.bats` test 4 fails environmentally on this host (orphan watchdog sleeps from other consumers, pre-existing, documented in T-2058 close — unaffected by T-2055).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.context/project/learnings.yaml'
+  - '.fabric/components/tests-unit-test_audit_completable_not_completed.yaml'
+  - '.tasks/active/T-2055-audit-detector-completable-but-not-compl.md'
+  - 'tests/unit/test_audit_completable_not_completed.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-26T00:46:21"
+    action: "T-2055: file L-434 prevention — shipped-but-unclosed slice detector"
+  - time: "2026-05-28T00:19:21"
+    action: "T-2055: CTL-029 detector — completable-but-not-completed tasks (active-side mirror of CTL-028)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2853 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2853
+  commits: 2
+  files_changed: 5
+  lines_added: 569
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2055-audit-detector-completable-but-not-compl.md
+generated_by: context-agent-hybrid

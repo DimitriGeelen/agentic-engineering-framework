@@ -9,20 +9,20 @@ description: >
   stuck this way (S-2026-0526). Distinct from fw task stale (date-based). Emit WARN
   per task with the completion command.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-004, tests/unit/test_audit_completable_not_completed.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T22:45:57Z
-last_update: 2026-05-27T22:15:13Z
-date_finished:
+last_update: 2026-05-27T22:19:27Z
+date_finished: 2026-05-27T22:19:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -259,3 +259,15 @@ is exactly the state that ends up causing CTL-028 when someone eventually
 ### 2026-05-27T22:15:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0533914a
+- **Timestamp:** 2026-05-27T22:19:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-27T22:19:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
