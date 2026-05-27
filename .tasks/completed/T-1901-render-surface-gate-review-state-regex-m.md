@@ -8,7 +8,7 @@ description: >
   Human blocks (template-comment + actual ACs) silently captured wrong block, gate
   returns 'empty' and never sees real [REVIEW] ACs
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -20,8 +20,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T17:40:49Z
-last_update: '2026-05-19T21:45:04Z'
-date_finished:
+last_update: '2026-05-28T00:30:00Z'
+date_finished: '2026-05-22T07:17:14Z'  # commit ad9b76bd batch-moved file to completed/ without --status work-completed; frontmatter drift fixed at audit time (T-2055 close session)
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 cost_estimate_proposed:
