@@ -2175,3 +2175,54 @@ concerns:
     Prevention: future stray markers are caught by `fw doctor` (loud WARN),
     and refactors reintroducing the unbounded climb fail the regression test.
     Learning: L-357 captures the bounded-walk principle for future routines.
+
+- id: G-070
+  type: gap
+  title: "Fabric drift resolver flags data-artifact edges as 'stale'"
+  description: |
+    `fw fabric drift` reports 20 stale edges, all targeting runtime data
+    artifacts that legitimately have no fabric card:
+      - .context/handovers/LATEST.md (symlink to the current handover)
+      - .tasks/active/, .tasks/completed/ (directories)
+      - .context/bus/blobs/ (blob staging dir)
+      - .context/working/{stop-guard.log,focus.yaml,*.cursor,*.log} (state)
+      - prompts/ (directory)
+      - subagent-returns.jsonl (runtime ledger)
+
+    The resolver treats "target has no fabric card registered" identically
+    to "target file does not exist" — both emit `unresolved`. Result: every
+    `fw fabric drift` and `fw audit` invocation reports 20 stale edges
+    that are actually correct dependencies. Real drift (a card pointing at
+    a deleted source file) is drowned in this noise.
+
+    Verified by spot-check: `ls -la .context/handovers/LATEST.md` shows
+    a real symlink, `ls -ld .tasks/active/ prompts/ .context/bus/blobs/`
+    confirms all four are real directories. The fabric system simply
+    doesn't model "this dependency targets a data/runtime artifact, not
+    a coded component."
+
+    Discovered 2026-05-28 during arc-007 wrap-up triage (S-2026-0528-0118)
+    while looking for bounded HV/LC autonomous work. The 20 stale-edge
+    signal had been WARN-noise in audit reports for an unknown duration.
+  spec_reference: "agents/audit/audit.sh (fabric drift section); fabric resolver in lib/ or agents/fabric/"
+  severity: low
+  trigger_fired: true
+  trigger_event: |
+    2026-05-28 — agent triaging audit WARNs for bounded fixes ran
+    `fw fabric drift` and found 20 stale edges, ALL on data/runtime
+    artifacts. Filed when no real drift was distinguishable in the noise.
+  resolution_path: |
+    1. Resolver should distinguish two failure modes:
+       (a) target file/dir EXISTS on disk but no card registered → silent
+           (or annotate "data-artifact dependency", not "stale").
+       (b) target file/dir does NOT exist on disk → STALE (real drift).
+    2. Optionally: support `type: reads_data` / `type: reads_runtime`
+       on fabric edges to opt out of card-resolution explicitly. Cards
+       declaring data-artifact deps would self-document the intent.
+    3. Regression test: card with `depends_on: .tasks/active/` (real dir,
+       no card) → silent in `fw fabric drift`. Card with
+       `depends_on: nonexistent/path.sh` → stale WARN.
+  status: watching
+  created: 2026-05-28
+  last_reviewed: 2026-05-28
+  related_task: T-1062
