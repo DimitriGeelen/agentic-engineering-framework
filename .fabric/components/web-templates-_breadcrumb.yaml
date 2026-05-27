@@ -4,17 +4,13 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_breadcrumb.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/templates/_star.html
+  type: includes
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/templates/_wrapper.html
+  type: included_by
 last_verified: 2026-05-23
 created_by: unknown
+last_enriched: '2026-05-27'

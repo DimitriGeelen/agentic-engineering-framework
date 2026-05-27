@@ -8,7 +8,11 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: bin/fw
   type: tests
+- target: lib/workflow_lint.py
+  type: calls
+- target: lib/workflow_lint.py
+  type: tests
 depended_by: []
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-05-27'

@@ -71,7 +71,7 @@ depends_on:
   type: registers
 last_verified: 2026-02-20
 created_by: T-227
-last_enriched: '2026-05-22'
+last_enriched: '2026-05-27'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -95,3 +95,55 @@ depended_by:
   type: called_by
 - target: tests/unit/test_render_surface_gate.bats
   type: tests_by
+- target: agents/ux-review/ux-review.py
+  type: called_by
+- target: lib/review_link_validator.py
+  type: called_by
+- target: tests/unit/test_approvals_content_tokens.py
+  type: called_by
+- target: tests/unit/test_approvals_style_tokens.py
+  type: called_by
+- target: tests/unit/test_arcs_pages_tokens.py
+  type: called_by
+- target: tests/unit/test_breadcrumb.py
+  type: called_by
+- target: tests/unit/test_bulk_actions.py
+  type: called_by
+- target: tests/unit/test_cockpit_activity.py
+  type: called_by
+- target: tests/unit/test_cockpit_density_spacing.py
+  type: called_by
+- target: tests/unit/test_cockpit_inline_tokens.py
+  type: called_by
+- target: tests/unit/test_cockpit_knowledge_counts.py
+  type: called_by
+- target: tests/unit/test_cockpit_status_pills.py
+  type: called_by
+- target: tests/unit/test_cockpit_traceability.py
+  type: called_by
+- target: tests/unit/test_command_palette.py
+  type: called_by
+- target: tests/unit/test_fabric_coupling_token.py
+  type: called_by
+- target: tests/unit/test_filter_chips.py
+  type: called_by
+- target: tests/unit/test_kanban_drag.py
+  type: called_by
+- target: tests/unit/test_nav_layout_polish.py
+  type: called_by
+- target: tests/unit/test_nav_layouts.py
+  type: called_by
+- target: tests/unit/test_nav_subsections.py
+  type: called_by
+- target: tests/unit/test_pins.py
+  type: called_by
+- target: tests/unit/test_settings_nav_link.py
+  type: called_by
+- target: tests/unit/test_shortcuts_overlay.py
+  type: called_by
+- target: tests/unit/test_task_panel.py
+  type: called_by
+- target: tests/unit/test_task_panel_edit.py
+  type: called_by
+- target: tests/unit/test_theme_toggle_contrast.py
+  type: called_by

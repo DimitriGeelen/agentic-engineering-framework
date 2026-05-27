@@ -8,9 +8,11 @@ purpose: 'Base layout wrapper: nav, header, footer, htmx/CSS includes'
 depends_on:
 - target: web/templates/base.html
   type: extends
+- target: web/templates/_breadcrumb.html
+  type: includes
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-05-27'
 depended_by:
 - target: web/templates/docs_detail.html
   type: wrapped_by_by

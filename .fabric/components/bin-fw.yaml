@@ -101,7 +101,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-22'
+last_enriched: '2026-05-27'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -530,4 +530,6 @@ depended_by:
 - target: web/blueprints/bvp.py
   type: called_by
 - target: lib/reviewer/dispatch_cli.py
+  type: called_by
+- target: agents/ux-review/ux-review.py
   type: called_by

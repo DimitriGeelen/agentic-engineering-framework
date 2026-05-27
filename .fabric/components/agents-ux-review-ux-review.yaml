@@ -4,17 +4,33 @@ type: script
 subsystem: unknown
 location: agents/ux-review/ux-review.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/app.py
+  type: calls
+- target: bin/fw
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/playwright/test_all_routes_height.py
+  type: called_by
+- target: tests/playwright/test_approvals_height.py
+  type: called_by
+- target: tests/playwright/test_decisions_height.py
+  type: called_by
+- target: tests/playwright/test_docs_generated_height.py
+  type: called_by
+- target: tests/playwright/test_fabric_height.py
+  type: called_by
+- target: tests/playwright/test_gaps_height.py
+  type: called_by
+- target: tests/playwright/test_graduation_height.py
+  type: called_by
+- target: tests/playwright/test_inception_height.py
+  type: called_by
+- target: tests/playwright/test_learnings_height.py
+  type: called_by
+- target: tests/playwright/test_timeline_height.py
+  type: called_by
 last_verified: 2026-05-23
 created_by: unknown
+last_enriched: '2026-05-27'

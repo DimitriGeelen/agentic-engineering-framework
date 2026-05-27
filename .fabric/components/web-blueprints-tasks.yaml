@@ -22,7 +22,7 @@ depends_on:
   type: registers
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-22'
+last_enriched: '2026-05-27'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -67,3 +67,7 @@ depended_by:
   type: rendered_by
 - target: web/blueprints/arcs.py
   type: called_by
+- target: tests/unit/test_filter_chips.py
+  type: called_by
+- target: tests/unit/test_filter_chips.py
+  type: registered_by

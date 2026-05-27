@@ -15,6 +15,10 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: web/blueprints/settings.py
+  type: calls
+- target: web/blueprints/settings.py
+  type: registers
 last_verified: 2026-02-20
 created_by: T-227
 depended_by:
@@ -132,4 +136,10 @@ depended_by:
   type: called_by
 - target: web/blueprints/bvp.py
   type: called_by
-last_enriched: '2026-05-20'
+- target: tests/unit/test_breadcrumb.py
+  type: called_by
+- target: tests/unit/test_nav_subsections.py
+  type: called_by
+- target: tests/unit/test_orchestrator_workflow_coverage.py
+  type: called_by
+last_enriched: '2026-05-27'

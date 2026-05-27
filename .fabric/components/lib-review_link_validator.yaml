@@ -4,17 +4,13 @@ type: script
 subsystem: framework-core
 location: lib/review_link_validator.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/app.py
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/test_review_link_validator.py
+  type: called_by
 last_verified: 2026-05-25
 created_by: unknown
+last_enriched: '2026-05-27'

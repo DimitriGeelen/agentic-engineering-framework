@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/watchtower.sh
 tags: []
-purpose: Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI
+purpose: Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the
+  web UI
 depends_on: []
 depended_by:
 - target: agents/context/check-tier0.sh
@@ -15,6 +16,8 @@ depended_by:
   type: called_by
 - target: lib/verify-acs.sh
   type: called_by
+- target: bin/watchtower.sh
+  type: called_by
 last_verified: 2026-04-12
 created_by: unknown
-last_enriched: '2026-04-13'
+last_enriched: '2026-05-27'

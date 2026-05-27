@@ -17,6 +17,10 @@ depended_by:
   type: called_by
 - target: tests/unit/safe_commands_env_prefix.bats
   type: tests_by
+- target: tests/unit/test_safe_commands_git_commit.bats
+  type: called_by
+- target: tests/unit/test_safe_commands_git_commit.bats
+  type: tests_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-05-27'

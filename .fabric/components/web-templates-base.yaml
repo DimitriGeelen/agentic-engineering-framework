@@ -5,7 +5,9 @@ subsystem: watchtower
 location: web/templates/base.html
 tags: []
 purpose: 'Template: {{ page_title | default("Watchtower") }} — Agentic Engineering Framework'
-depends_on: []
+depends_on:
+- target: web/templates/_pins.html
+  type: includes
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -29,4 +31,4 @@ depended_by:
   type: extended_by
 - target: web/templates/bvp.html
   type: extended_by
-last_enriched: '2026-05-20'
+last_enriched: '2026-05-27'
