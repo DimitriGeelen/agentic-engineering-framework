@@ -104,6 +104,8 @@ setup() {
     # T-1706 added ollama-loop to termlink dispatch but the workflow
     # schema validator rejected it until T-1707 pulled it in. Pin the
     # invariant so future edits don't drop ollama-loop again.
-    run grep -E "VALID_WORKER_KINDS = .*ollama-loop" "$FW_BIN"
+    # T-1946 extracted VALID_WORKER_KINDS from bin/fw to lib/workflow_lint.py
+    # (silent-corpus-migration class). Test target updated accordingly.
+    run grep -E "VALID_WORKER_KINDS\s*=.*ollama-loop" "$FRAMEWORK_ROOT/lib/workflow_lint.py"
     [ "$status" -eq 0 ]
 }
