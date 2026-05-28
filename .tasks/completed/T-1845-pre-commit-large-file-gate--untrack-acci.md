@@ -1,19 +1,7 @@
 ---
 id: T-1845
 name: "pre-commit large-file gate + untrack accidentally-tracked binaries (os 36MB, fw-vec-index.db 78MB) — sibling prevention to T-1844 secret-scan"
-description: >
-  T-1834 force-push surfaced two tracked binaries (os 36MB PostScript, fw-vec-index.db 78MB vector index) that GitHub flagged as oversized during the rewritten-history push. They are accidentally-committed runtime/output state, not source. Sibling prevention class to T-1844 (secret-scan) — a structural pre-commit gate that would have caught both files at the moment they were first staged.
-
-Deliverables:
-1. agents/git/lib/large-file-scan.sh — scan-staged + scan-tree modes, configurable threshold (default warn at 1MB, block at 10MB), allowlist file .large-file-allowlist for legitimate vendored cases (.agentic-framework/lib/ts/node_modules/ etc).
-2. Pre-commit hook wires the large-file scan after the secret scan (T-1844 hook).
-3. Untrack os, add /os to .gitignore.
-4. Untrack .context/working/fw-vec-index.db, add to .gitignore.
-5. .large-file-allowlist seeds with the vendored node_modules paths to suppress legitimate cases.
-6. fw doctor surfaces tracked-large-file count as a warning.
-
-Origin: T-1844 allowlist comment 'investigate why this is tracked — appears to be accidentally-committed print output, 36MB' — captured at the time but no follow-up task. Today's GitHub force-push warnings re-exposed it.
-
+description: "T-1834 force-push surfaced two tracked binaries (os 36MB PostScript, fw-vec-index.db 78MB vector index) that GitHub flagged as oversized during the rewritten-history push. They are accidentally-committed runtime/output state, not source. Sibling prevention class to T-1844 (secret-scan) — a structural pre-commit gate that would have caught both files at the moment they were first staged. Deliverables: (1) agents/git/lib/large-file-scan.sh scan-staged+scan-tree+allowlist, (2) pre-commit hook wires it after secret-scan, (3) untrack os + .gitignore /os, (4) untrack fw-vec-index.db + gitignore, (5) seed allowlist with vendored node_modules paths, (6) fw doctor surfaces tracked-large-file warn. Origin: T-1844 allowlist comment about the untracked 36MB file — captured at the time but no follow-up task."
 status: work-completed
 workflow_type: build
 owner: agent
