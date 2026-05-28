@@ -225,6 +225,42 @@ patterns:
       - "[REVIEW] Dashboard reads cleanly — Expected: layout feels intuitive (prefix is [REVIEW], not [REVIEWER])"
       - "[REVIEWER] Reviewer PASS — Expected: `bin/fw reviewer T-XXX 2>&1 | grep -q 'Overall:.*PASS'`"
 
+  - id: l387-sigpipe-risk
+    name: "L-387 SIGPIPE-prone pipe to terminal grep -q"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_l387_sigpipe_risk"
+    description: >
+      Verification command of the shape `<streaming-cmd> [...] | grep -q[E]? "..."`.
+      Under `set -eo pipefail` (the regime P-011 runs verification in), `grep -q`
+      exits 0 on first match and closes stdin; the upstream streaming command
+      (`bin/fw doctor`, `bin/fw audit`, `bats`, `find`, `ls *`, brace-pipelines)
+      receives SIGPIPE while still writing → exits 141. pipefail propagates 141
+      → P-011 records the verification as failed even though the pattern was
+      present. Verification block lies: green output reads "PATTERN matched" but
+      the gate refuses close. Captured 7+ times (T-1716, T-1838, T-1862, T-1863,
+      T-2008, T-1701, T-1707) across two sessions before being detected; spike
+      report at docs/reports/T-2057-l-387-detector-spike.md.
+
+      Safe form (~26 existing tasks): capture upstream first, then grep the
+      capture — `out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"` or
+      `cmd > /tmp/.out 2>&1; grep -q "PATTERN" /tmp/.out`.
+
+      Heuristic — false-positive class is `echo "$..."| grep -q` and
+      `printf "..."| grep -q` (finite, bounded upstream, no SIGPIPE risk).
+      The detector exempts those shapes explicitly.
+    examples_positive:
+      - 'bin/fw doctor 2>&1 | grep -q "All checks passed"'
+      - 'bats tests/unit/test_x.bats | grep -q "ok 5"'
+      - 'find .tasks/active -name "T-*.md" | grep -q "T-2059"'
+      - '{ bin/fw audit 2>&1; } | grep -qE "(FAIL|WARN)"'
+      - 'bin/fw doctor 2>&1 | grep -cE "FAIL" | grep -q "^0$"'
+    examples_negative:
+      - 'out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "OK"'
+      - 'bin/fw doctor 2>&1 > /tmp/d; grep -q "OK" /tmp/d'
+      - 'echo "yes" | grep -q "yes"'
+      - 'printf "ok\n" | grep -q "ok"'
+
   - id: AC-verify-mismatch
     name: "Checked AC names a file path the verification never touches"
     detection_confidence: heuristic

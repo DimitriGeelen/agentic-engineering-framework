@@ -1038,6 +1038,94 @@ def detect_reviewer_prose_mismatch(ac_section: str) -> list[Finding]:
     return findings
 
 
+# ───────────────── L-387 SIGPIPE detector (T-2059) ─────────────────
+#
+# Catches the verification anti-pattern `<streaming-cmd> | grep -q "PATTERN"`
+# which exits 141 under `set -eo pipefail` when grep matches early. Captured
+# 7+ times in S-2026-0526..-0527 (T-1716, T-1838, T-1862, T-1863, T-2008,
+# T-1701, T-1707) before T-2057 inception filed and T-2059 build shipped.
+# Spike: docs/reports/T-2057-l-387-detector-spike.md.
+
+# Terminal `| grep -q` (or `| grep -qE`, `| grep --quiet`) at end of line or
+# followed only by quoted/regex argument. Captures the upstream text in g1.
+_L387_TERMINAL_RE = re.compile(
+    r"^(.*?)\|\s*grep\s+(?:-\w*[qQ]\w*|--quiet)\s+",
+)
+
+# Upstream forms that are SIGPIPE-immune (finite, bounded output):
+#   - `echo "$..." | grep -q ...`       (already captured)
+#   - `printf "..." | grep -q ...`      (formatted, bounded)
+#   - `echo word | grep -q ...`         (literal word)
+#   - `cat file | grep -q ...`          (cat from disk file — finite & seekable)
+#   - leading `[`/`test`                — these are conditional, not pipelines
+# Detector exempts these as the "safe form" / "irrelevant form".
+_L387_SAFE_UPSTREAM_RE = re.compile(
+    r"(?:^|\|\s*)(?:echo|printf)\s",
+)
+
+
+def detect_l387_sigpipe_risk(verification_section: str) -> list[Finding]:
+    """L-387 SIGPIPE risk: streaming command piped into terminal `grep -q`.
+
+    Heuristic: a verification line contains `| grep -q[E]?` (terminal grep
+    silently-matching), AND the upstream of that pipe is NOT `echo`/`printf`
+    (the SIGPIPE-immune capture pattern). Flagged because under `set -eo
+    pipefail` the grep closing stdin propagates SIGPIPE → upstream exits 141
+    → pipefail fails the verification command even though the pattern matched.
+
+    Safe rewrite (documented in policy/anti-patterns.yaml description):
+        out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
+        # or
+        cmd > /tmp/.out 2>&1; grep -q "PATTERN" /tmp/.out
+
+    False-positive guard: lines starting with `#` (comments) and lines whose
+    upstream is `echo`/`printf` are exempted.
+    """
+    findings: list[Finding] = []
+    if not verification_section:
+        return findings
+    for lineno, raw in enumerate(verification_section.splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = _L387_TERMINAL_RE.search(line)
+        if not m:
+            continue
+        upstream = m.group(1).strip()
+        # The "upstream" here is everything to the left of the terminal
+        # `| grep -q`. Find the LAST stage of that pipeline — that is the
+        # actual stdout source for grep.
+        # Examples:
+        #   "out=$(cmd); echo \"$out\""  → last stage = `echo "$out"`  → safe
+        #   "bin/fw doctor 2>&1"          → last stage = `bin/fw doctor` → flag
+        #   "bin/fw doctor 2>&1 | wc -l"  → last stage = `wc -l`         → flag (wc still streams)
+        # Use the last `|` in the upstream to split, fall back to whole.
+        # Note: `;` separator means previous statement already ran; the actual
+        # upstream-of-grep is the part AFTER the last `;`.
+        last_stmt = re.split(r";\s*", upstream)[-1].strip()
+        # Last pipeline stage:
+        last_stage = re.split(r"\|\s*(?![^(]*\))", last_stmt)[-1].strip()
+        # Safe shapes — echo / printf last stage means grep reads a bounded buffer.
+        if re.match(r"^(echo|printf)\b", last_stage):
+            continue
+        findings.append(
+            Finding(
+                pattern_id="l387-sigpipe-risk",
+                pattern_name="L-387 SIGPIPE-prone pipe to terminal grep -q",
+                detection_confidence="heuristic",
+                # `partial` keeps the verdict at CONCERN, not FAIL. False-negative
+                # class: commands with short bounded output (`fw upgrade --help`)
+                # finish writing before grep closes stdin, so SIGPIPE never fires
+                # in practice. A FAIL on all 280 corpus-flagged lines would be
+                # too aggressive; CONCERN surfaces the risk without blocking close.
+                lie_severity="partial",
+                location=f"Verification:line {lineno}",
+                evidence=line[:200],
+            )
+        )
+    return findings
+
+
 def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> list[Finding]:
     """AC checked AND mentions a specific file path, but no verification line touches it.
 
@@ -1189,6 +1277,8 @@ def scan_task(
     findings.extend(detect_human_ac_mechanical_signal(ac_section))
     # v1.4 +1: T-1947 — [REVIEWER] prose-Expected catch (L-409, inverse of above)
     findings.extend(detect_reviewer_prose_mismatch(ac_section))
+    # v1.5 +1: T-2059 — L-387 SIGPIPE detector (closes 7+ historical captures)
+    findings.extend(detect_l387_sigpipe_risk(verif_section))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 

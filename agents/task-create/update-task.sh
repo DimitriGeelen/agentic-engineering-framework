@@ -1187,6 +1187,60 @@ if [ -n "$NEW_STATUS" ]; then
             fi
         fi
 
+        # === L-387 SIGPIPE Advisory at started-work (T-2059) ===
+        # Non-blocking heuristic: warn if the task's ## Verification block
+        # already contains a `<streaming-cmd> | grep -q "..."` shape. P-011
+        # runs verification under set -eo pipefail; SIGPIPE on grep early-match
+        # makes the upstream exit 141 → pipefail fails the verification even
+        # though the pattern was present. Captured 7+ times (T-1716, T-1838,
+        # T-1862, T-1863, T-2008, T-1701, T-1707). The safer form is documented
+        # in CLAUDE.md and policy/anti-patterns.yaml#l387-sigpipe-risk.
+        #
+        # Bypass: FW_SKIP_L387_ADVISORY=1 (advisory anyway — does NOT block).
+        # Skipping is logged Tier-2 only for tracking adoption; not punitive.
+        if [ "$NEW_STATUS" = "started-work" ] && [ -z "${FW_SKIP_L387_ADVISORY:-}" ]; then
+            if command -v python3 >/dev/null 2>&1; then
+                _l387_findings=$(python3 - "$TASK_FILE" 2>/dev/null <<'PY' || true
+import sys
+from pathlib import Path
+ROOT = Path(__file__).resolve()
+# Walk up from script dir to find lib/reviewer
+for parent in [Path(sys.argv[0]).resolve()] + list(Path(sys.argv[0]).resolve().parents):
+    if (parent / "lib" / "reviewer" / "static_scan.py").exists():
+        sys.path.insert(0, str(parent))
+        break
+else:
+    sys.exit(0)
+try:
+    from lib.reviewer import static_scan as ss
+except Exception:
+    sys.exit(0)
+tf = sys.argv[1]
+try:
+    text = Path(tf).read_text()
+except Exception:
+    sys.exit(0)
+verif = ss.extract_section(text, "Verification") or ""
+if not verif:
+    sys.exit(0)
+findings = ss.detect_l387_sigpipe_risk(verif)
+for f in findings:
+    print(f"  - {f.location}: {f.evidence}")
+PY
+                )
+                if [ -n "$_l387_findings" ]; then
+                    echo ""
+                    echo -e "${YELLOW}ADVISORY (L-387 SIGPIPE risk): Verification contains pipe-to-grep-q shape${NC}"
+                    echo "$_l387_findings"
+                    echo "  Safe pattern: out=\$(cmd 2>&1); echo \"\$out\" | grep -q \"PATTERN\""
+                    echo "  Or:           cmd > /tmp/.out 2>&1; grep -q \"PATTERN\" /tmp/.out"
+                    echo "  Suppress (does not block):  FW_SKIP_L387_ADVISORY=1 bin/fw task update ..."
+                    echo "  Reviewer pattern: l387-sigpipe-risk (policy/anti-patterns.yaml)"
+                    echo ""
+                fi
+            fi
+        fi
+
         # === BVP Estimator Trigger (T-1922) ===
         # On transition to started-work ("ready"), fire the BVP estimator
         # in the background. Heuristic engine is ~10ms so the update latency

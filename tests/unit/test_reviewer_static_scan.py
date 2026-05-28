@@ -748,3 +748,158 @@ def test_version_at_least_v13():
     # v1.3 introduced these fields; v1.4+ keeps them
     assert ss.VERSION >= "v1.3"
     assert ss.SCHEMA_VERSION >= 2
+
+
+# ───────────────── L-387 SIGPIPE detector (T-2059) ─────────────────
+#
+# Matrix from T-2057 spike: 15 positives drawn from historical L-387 captures
+# (T-1716, T-1838, T-1862, T-1863, T-2008, T-1701, T-1707) and corpus scan,
+# 26 negatives covering the safe `out=$(cmd); echo "$out" | grep -q` pattern,
+# tempfile + grep -q pattern, finite-upstream forms, and false-positive guards.
+
+L387_POSITIVES = [
+    # T-1716 origin shape
+    'bin/fw doctor 2>&1 | grep -q "All checks passed"',
+    # T-1838 — direct streaming command into terminal grep -q
+    'bin/fw doctor | grep -qE "Quick Reference coverage"',
+    # T-1862 — wc -l chained into grep -q (last stage still streams)
+    'bin/fw audit 2>&1 | grep -cE "FAIL" | grep -q "^0$"',
+    # T-1863 — brace-pipeline over fw audit
+    '{ bin/fw audit 2>&1; } | grep -q "PASS"',
+    # T-2008 — bats output
+    'bats tests/unit/test_x.bats | grep -q "ok 5"',
+    # T-1701 — fw doctor || true bracketed
+    '{ bin/fw doctor 2>&1 || true; } | grep -qE "Cron registry in sync"',
+    # T-1707 — fw doctor 2>&1 piped to qE
+    'bin/fw doctor 2>&1 | grep -qE "(Cron registry in sync|edited but not generated)"',
+    # find streaming
+    'find .tasks/active -name "T-*.md" | grep -q "T-2059"',
+    # ls glob
+    'ls /etc/cron.d/*agentic* | head -1 | grep -q agentic',
+    # fw fabric overview (streams)
+    'bin/fw fabric overview | grep -q "Subsystems"',
+    # fw cron status
+    'bin/fw cron status | grep -q registered',
+    # python -c emitting via subprocess
+    'python3 -m pytest tests/unit/test_x.py | grep -q "1 passed"',
+    # grep --quiet long form
+    'bin/fw doctor 2>&1 | grep --quiet "OK"',
+    # sed pipeline
+    'bin/fw fabric drift 2>&1 | sed -n "1,5p" | grep -q clean',
+    # awk pipeline
+    'bin/fw audit 2>&1 | awk "/PASS/" | grep -q PASS',
+]
+
+L387_NEGATIVES = [
+    # Safe form #1: capture-then-grep (the documented L-387 fix)
+    'out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "OK"',
+    'out=$(bin/fw audit 2>&1); echo "$out" | grep -qE "PASS|WARN"',
+    'out=$(bats tests/x.bats 2>&1); echo "$out" | grep -q "ok 1"',
+    # Safe form #2: tempfile redirect-then-grep
+    'bin/fw doctor 2>&1 > /tmp/d; grep -q "OK" /tmp/d',
+    'bin/fw audit > /tmp/a 2>&1 && grep -q "PASS" /tmp/a',
+    'cmd 2>&1 | tee /tmp/x > /dev/null; grep -q "X" /tmp/x',
+    # Bounded upstream — echo/printf are finite
+    'echo "yes" | grep -q "yes"',
+    'echo "OK" | grep -q OK',
+    'printf "ok\\n" | grep -q "ok"',
+    'printf "%s\\n" "$value" | grep -q expected',
+    # Comments (must be skipped)
+    '# bin/fw doctor 2>&1 | grep -q "hidden"',
+    '# Example: bin/fw audit | grep -q PASS',
+    '## bin/fw doctor | grep -q PATTERN  (illustrative, not a real check)',
+    # grep without -q (uses other modes)
+    'bin/fw doctor 2>&1 | grep "PATTERN"',
+    'bin/fw audit | grep -c "FAIL"',
+    'bin/fw doctor 2>&1 | grep -E "WARN"',
+    # No pipe at all
+    'grep -q "PATTERN" /etc/hosts',
+    'grep -q "X" file.txt',
+    # Test/conditional shapes — no terminal grep -q in pipe
+    'test "$(bin/fw doctor 2>&1 | wc -l)" -gt 0',
+    '[ -f /etc/passwd ] && grep -q root /etc/passwd',
+    # Capture-via-command-substitution then explicit assignment
+    'count=$(bin/fw doctor 2>&1 | grep -c FAIL); [ "$count" -eq 0 ]',
+    # Different terminator
+    'bin/fw doctor 2>&1 | head -1',
+    # Empty / whitespace-only
+    '',
+    '   ',
+    # Newline-only — must not crash
+    '\n',
+    # Lone EOF heredoc terminator should not trigger the detector
+    'EOF',
+]
+
+
+def test_l387_detector_all_positives_flagged():
+    """All 15 spike-corpus positives MUST be flagged."""
+    for line in L387_POSITIVES:
+        f = ss.detect_l387_sigpipe_risk(line + "\n")
+        assert f, f"L-387 positive not flagged: {line!r}"
+        assert f[0].pattern_id == "l387-sigpipe-risk"
+        # `partial` → CONCERN verdict (not FAIL). Bounded-upstream false-negative
+        # class makes severe too aggressive given 280+ corpus-flagged lines.
+        assert f[0].lie_severity == "partial"
+
+
+def test_l387_detector_all_negatives_silent():
+    """All 26 negatives MUST NOT be flagged."""
+    for line in L387_NEGATIVES:
+        f = ss.detect_l387_sigpipe_risk(line + "\n")
+        assert not f, f"L-387 negative false-positive: {line!r} → {f}"
+
+
+def test_l387_detector_positive_count_matches_spike_corpus():
+    """Matrix size invariant: 15 positives from spike + corpus survey."""
+    assert len(L387_POSITIVES) == 15
+
+
+def test_l387_detector_negative_matrix_minimum_size():
+    """At least 26 negatives covering the false-positive classes."""
+    assert len(L387_NEGATIVES) >= 26
+
+
+def test_l387_detector_multi_line_block():
+    """Block with mixed lines — flag only the genuine risk."""
+    block = (
+        "# verify doctor\n"
+        "out=$(bin/fw doctor 2>&1); echo \"$out\" | grep -q OK\n"
+        "bin/fw audit 2>&1 | grep -q PASS\n"  # ← only this should flag
+        "echo finished | grep -q finished\n"
+    )
+    f = ss.detect_l387_sigpipe_risk(block)
+    assert len(f) == 1
+    assert "bin/fw audit" in f[0].evidence
+
+
+def test_l387_detector_finding_location_carries_line_number():
+    block = "echo ok\nbin/fw doctor | grep -q OK\n"
+    f = ss.detect_l387_sigpipe_risk(block)
+    assert f and "line 2" in f[0].location
+
+
+def test_l387_detector_catalogue_registration():
+    """`l387-sigpipe-risk` must be in the catalogue, severity=partial→CONCERN."""
+    cat = ss.load_catalogue(CATALOGUE_PATH)
+    ids = {p["id"]: p for p in cat["patterns"]}
+    assert "l387-sigpipe-risk" in ids
+    assert ids["l387-sigpipe-risk"]["lie_severity"] == "partial"
+    assert ids["l387-sigpipe-risk"]["detection_confidence"] == "heuristic"
+
+
+def test_l387_detector_wired_into_scan_task(tmp_path):
+    """End-to-end: a task with L-387 in Verification surfaces the finding."""
+    task = tmp_path / "T-99387.md"
+    task.write_text(
+        "---\nid: T-99387\nstatus: started-work\nworkflow_type: build\n"
+        "owner: agent\nhorizon: now\nrelated_tasks: []\ntags: []\ncomponents: []\n"
+        "created: 2026-05-28T00:00:00Z\nlast_update: 2026-05-28T00:00:00Z\n"
+        "date_finished: null\n---\n\n"
+        "## Acceptance Criteria\n\n### Agent\n- [x] Some criterion\n\n"
+        "## Verification\n\nbin/fw doctor 2>&1 | grep -q \"OK\"\n"
+    )
+    cat = ss.load_catalogue(CATALOGUE_PATH)
+    v = ss.scan_task(task, cat)
+    ids = {f.pattern_id for f in v.findings}
+    assert "l387-sigpipe-risk" in ids
