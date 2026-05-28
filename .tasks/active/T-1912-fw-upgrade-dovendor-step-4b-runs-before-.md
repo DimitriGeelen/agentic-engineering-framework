@@ -191,6 +191,12 @@ bats tests/unit/upgrade_fresh_machine_simulation.bats
 
 ## Evolution
 
+### 2026-05-28 — half-guard symmetry rule extracted as L-441
+
+- **What changed:** Filing framed the bug as an ordering issue ("step 4b runs before step 9"). Implementation crystallised it as a *symmetry* issue: T-1839 added a direction-aware refusal at the LATEST validation site (pin write) when the EARLIEST mutation site (vendor copy) was the right checkpoint. Both halves are needed — but if you can only have one, the early one is more defensible because it leaves state untouched on refusal.
+- **Plan impact:** The original AC #6 (file learning) was filed as a side-deliverable. Implementation made clear the learning is the most generalisable artifact — any direction-aware guard in the framework (downgrade, deletion, revert, schema-rollback) should be audited under the L-441 symmetry rule. Filed as L-441 with broader phrasing than just upgrade.
+- **Triggered:** L-441 "Half-guards manufacture split-brain" — applies beyond `fw upgrade`. Future opportunity: audit `bin/fw task update --status work-completed`, `fw arc close`, and other multi-step refusal-bearing flows for the same shape.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
