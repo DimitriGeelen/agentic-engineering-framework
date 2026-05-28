@@ -4,7 +4,7 @@ name: "relocate 2 auto-deferred pickups (P-009 + P-041) whose blockers (T-1498 +
 description: >
   P-009 (status query, low priority) and P-041 (bugfix-fw-task-verify) sit in .context/pickup/auto-deferred/ blocked by T-1498 and T-1541 respectively. Both blockers shipped (work-completed in .tasks/completed/). The pickup pipeline has no auto-promotion mechanism for auto-deferred envelopes when their blockers complete — they sit indefinitely. Cleanup: relocate both envelopes (+ breadcrumb sidecars) from auto-deferred/ to processed/. RCA: note the missing promotion mechanism so a future task can ship it structurally.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +16,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T17:40:50Z
-last_update: 2026-05-28T17:40:50Z
-date_finished: null
+last_update: 2026-05-28T17:42:57Z
+date_finished: 2026-05-28T17:42:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -189,3 +189,15 @@ out=$(bin/fw pickup status 2>&1); echo "$out" | grep -q "Auto-deferred: *0"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2071-relocate-2-auto-deferred-pickups-p-009--.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d25f8a89
+- **Timestamp:** 2026-05-28T17:42:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-28T17:42:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
