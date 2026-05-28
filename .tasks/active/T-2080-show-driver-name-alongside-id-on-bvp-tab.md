@@ -4,20 +4,20 @@ name: "show driver name alongside id on /bvp tables and forms"
 description: >
   show driver name alongside id on /bvp tables and forms
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T20:42:59Z
-last_update: '2026-05-28T20:45:02Z'
-date_finished:
+last_update: 2026-05-28T20:47:41Z
+date_finished: 2026-05-28T20:47:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -133,8 +133,13 @@ cost_estimate_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# T-2080 — driver name visible alongside id (L-387 safe: capture, then grep).
-out=$(curl -sS "$(bin/fw watchtower url)/bvp" 2>&1); echo "$out" | grep -q "D1" && echo "$out" | grep -q "Antifragility"
+# T-2080 — driver name visible alongside id (L-387 safe: tempfile + grep -q -F file).
+# `echo "$out" | grep -q PATTERN` still hits SIGPIPE 141 under `set -eo pipefail`
+# when grep closes stdin before echo finishes (curl response is 50KB+).
+# Tempfile pattern sidesteps the pipe entirely.
+curl -sS "$(bin/fw watchtower url)/bvp" > /tmp/.t2080-bvp 2>&1
+grep -qF "D1" /tmp/.t2080-bvp
+grep -qF "Antifragility" /tmp/.t2080-bvp
 
 ## RCA
 
@@ -176,6 +181,21 @@ out=$(curl -sS "$(bin/fw watchtower url)/bvp" 2>&1); echo "$out" | grep -q "D1" 
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO (Human eyes-on the layout rhythm, then close)
+
+**Rationale:**
+
+Driver names from `policy/value-drivers.yaml` now render inline next to each driver code on `/bvp`. Sliders table shows `<code>D1</code> Antifragility` (id in code style + name in muted span); the Add-driver form's Drop `<select>` shows `F1 — Recall_Leverage` so the human picks by name, not by code. Missing-name fallback keeps the id rendering unchanged.
+
+**Evidence:**
+
+- `web/blueprints/bvp.py:_driver_names()` — new helper returning `{id: name}` for both protected and free drivers; passed to template.
+- `web/templates/bvp.html` — sliders table `<td>` now carries id + name span; Drop `<option>` now reads `id — name`.
+- Curl `/bvp` after restart: `D1` row carries `<span class="muted" …>Antifragility</span>` adjacent to `<code>D1</code>`.
+- Verification block (3 checks) passes: curl loads /bvp, grep -qF "D1" hits, grep -qF "Antifragility" hits.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -203,3 +223,24 @@ out=$(curl -sS "$(bin/fw watchtower url)/bvp" 2>&1); echo "$out" | grep -q "D1" 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2080-show-driver-name-alongside-id-on-bvp-tab.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4b7475a9
+- **Timestamp:** 2026-05-28T20:47:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/blueprints/bvp.py` — add `_driver_names(policy)` returning `{id: name}` for both `protected_drivers` and `free_drivers`; pass `driver_names=…` to `render_template` for `/bvp`.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/bvp.py in: `web/blueprints/bvp.py` — add `_driver_names(policy)` returning `{id: name}` for both `protected_drivers` and `free_drivers`; pass `driver_names=…` to`
+- **AC#2 (Agent)** — `web/templates/bvp.html` — sliders table renders the name adjacent to the id (`<code>D1</code> <span class="muted">Antifragility</span>`). Missing names fall back to id-only.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/bvp.html in: `web/templates/bvp.html` — sliders table renders the name adjacent to the id (`<code>D1</code> <span class="muted">Antifragility</span>`). Missing nam`
+- **AC#3 (Agent)** — `web/templates/bvp.html` — the add-driver form's "Drop" `<select>` option shows id + name (`F1 — Recall_Leverage`) so the human picks by name, not by code.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/bvp.html in: `web/templates/bvp.html` — the add-driver form's "Drop" `<select>` option shows id + name (`F1 — Recall_Leverage`) so the human picks by name, not by `
+
+### 2026-05-28T20:47:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
