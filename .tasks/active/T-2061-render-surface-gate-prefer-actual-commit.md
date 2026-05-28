@@ -133,54 +133,27 @@ out=$(bash -c 'source lib/render_surface.sh; task_touches_render_surface .tasks/
 
 ## Evolution
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+### 2026-05-28 — fixture id shape gotcha
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
-## Evolution
-
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** Initial bats fixtures used synthetic ids like `T-FP-1` / `T-TP-1` / `T-FILES-1` (kebab-suffixed for "false-positive", "true-positive", "files"). `_render_surface_extract_task_id` matches `T-[0-9]+` only — `T-FP-1` fails the regex, returns empty, and the predicate skips git evidence entirely. Two of three new tests failed silently for the wrong reason (the predicate falling back to body scan, which still matched the body's render-path mention).
+- **Plan impact:** Confirmed the gate's task-id contract is "T-NNNN" (digits-only) — matching the on-disk task filenames. Re-wrote fixtures to use `T-90061` / `T-90062` / `T-90063` (numeric, well outside the live range).
+- **Triggered:** Worth noting in the AGENT.md docstring of `_render_surface_extract_task_id` (already says "T-NNN") — no extra task needed. The hypothesis-driven debug cycle (extract_task_id returned empty → traced upstream) avoided shotgun-debugging a second round.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-28 — git-evidence as PRIMARY vs. supplement
+
+- **Chose:** Git evidence is the **sole** signal when present (commits matching task id). Body scan is fallback **only** when git evidence is empty.
+- **Why:** Halfway designs ("git AND body, with body filtered") still let body-text false-positives leak through whenever the agent's prose happens to mention a render path. Commits are unambiguous proof of modification — there is no honest false-positive case for a path that appears in the commit diff.
+- **Rejected:**
+  - "Body scan, supplemented by `git diff --quiet HEAD -- <path>` filter" — would unwind the whole body-scan signal for the L-435 class, but at the cost of N filesystem-touching git invocations per task. The branch-clean negative is identical to the simpler "use git history first" approach.
+  - "Inspect frontmatter `components:` only" — L-435 origin task (T-2056) had `components: []` empty, so this would have helped, but the contract that consumers update `components:` honestly is itself unenforced — a future task with a misdeclared `components:` would re-introduce false positives. Git diff is verifiable; declared components are not.
+
+### 2026-05-28 — fallback when git evidence is empty
+
+- **Chose:** Fall back to body+components scan when `git log --grep` returns no lines.
+- **Why:** Preserves backward-compatible behaviour for the test fixtures (synthetic ids not in git log) and for the legitimate first-close case (task being closed in its first commit, where the close itself isn't yet logged). Without this fallback, the 12 existing bats cases would all fail and the predicate would always return NO-TOUCH for any first-close task.
+- **Rejected:** "Hard error if git evidence empty" — would force a per-call double-commit cadence (commit work, then commit close). Friction without value.
 
 ## Decision
 
@@ -191,6 +164,19 @@ out=$(bash -c 'source lib/render_surface.sh; task_touches_render_surface .tasks/
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Recommendation
+
+**Recommendation:** GO (work-completed)
+
+**Rationale:** L-435 false-positive class fully closed for tasks with commits referencing their id. T-2056 — the canonical blocked task — now closes via the regular path (no `--skip-render-review`, no [REVIEW] AC added, reviewer R-adba2336 PASS). T-2060 (true-positive case, two committed render-surface templates) still trips the gate as designed. The fallback to body+components scan preserves the 12 existing bats cases. The new bats coverage (3 cases — false-positive rejection, true-positive preservation, files-in correctness) pins the contract for the next instance.
+
+**Evidence:**
+- `lib/render_surface.sh:67-180` — `task_touches_render_surface` + `render_surface_files_in` use new `_render_surface_extract_task_id` + `_render_surface_git_touched_paths` helpers, body-scan kept as fallback
+- `tests/unit/test_render_surface_gate.bats` — 15/15 green (12 original + 3 new T-2061)
+- `dc62ea37 T-2056: work-completed under new T-2061 render-surface predicate` — proof closure path
+- `b33581f9 T-2061: fix L-435 — render-surface gate prefers git evidence over body-text tokens` — implementation commit
+- `bin/fw doctor` — 0 failures (19 warnings, all pre-existing)
 
 ## Updates
 
