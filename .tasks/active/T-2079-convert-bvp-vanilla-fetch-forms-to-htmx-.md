@@ -4,20 +4,20 @@ name: "convert /bvp vanilla-fetch forms to htmx — eliminate native-submit-to-A
 description: >
   convert /bvp vanilla-fetch forms to htmx — eliminate native-submit-to-API-URL bug
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T20:18:42Z
-last_update: 2026-05-28T20:18:42Z
-date_finished: null
+last_update: 2026-05-28T20:29:30Z
+date_finished: 2026-05-28T20:29:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -214,3 +214,20 @@ CLI/API compatibility preserved: the three endpoints branch on `HX-Request` head
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2079-convert-bvp-vanilla-fetch-forms-to-htmx-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b790fd0e
+- **Timestamp:** 2026-05-28T20:29:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `web/blueprints/bvp.py` returns a small HTML fragment (success message) + `HX-Trigger: bvpReload` on 200 when `HX-Request` header is present, and returns plain-text error in body on 4xx so htmx render
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/bvp.py in: `web/blueprints/bvp.py` returns a small HTML fragment (success message) + `HX-Trigger: bvpReload` on 200 when `HX-Request` header is present, and retu`
+
+### 2026-05-28T20:29:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
