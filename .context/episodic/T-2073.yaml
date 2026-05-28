@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2073: orchestrator-mcp-baseline 168→242 — classify 74 new termlink_agent_*/channel_*/fleet_*/hub_* tools by naming convention (4th batch after T-1755/T-1760/T-1867)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-28T17:51:49Z
+# ============================================================================
+
+task_id: T-2073
+task_name: "orchestrator-mcp-baseline 168→242 — classify 74 new termlink_agent_*/channel_*/fleet_*/hub_* tools by naming convention (4th batch after T-1755/T-1760/T-1867)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-28T17:47:08Z
+completed: 2026-05-28T17:51:44Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-28T19:51:39+02:00
+last_commit: 2026-05-28T19:51:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  classify 78 new MCP tools (baseline 168 → 246) — 4th convention batch
+
+# Key outcomes
+outcomes:
+  - '`.context/audits/orchestrator-mcp-baseline.yaml` baseline_count updated to 246 (242 from initial + 4 follow-on tools that surfaced on re-run) with 2026-05-28 update comment blocks matching T-1867''s style.'
+  - '15 mutators added to `mutators_ungated` (11 channel-mutators + channel_poll_start + channel_poll_end + fleet_reauth + agent_send_auto_discover follow-on).'
+  - '61 read-shape tools added to `readonly_exempt` (58 initial + 3 follow-on: agent_listeners, agent_listeners_fleet, listener_heartbeat).'
+  - 'orchestrator-mcp-scan PASS — `Tools: 246 (baseline 246)`, 0 new unclassified.'
+  - 'baseline YAML parses cleanly — 246 unique tools verified via python3 + yaml.safe_load.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/audits/orchestrator-mcp-baseline.yaml'
+  - '.tasks/active/T-2073-orchestrator-mcp-baseline-168242--classi.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T19:51:39"
+    action: "T-2073: classify 78 new MCP tools (baseline 168 → 246) — 4th convention batch"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 3
+  lines_added: 295
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2073-orchestrator-mcp-baseline-168242--classi.md
+generated_by: context-agent-hybrid
