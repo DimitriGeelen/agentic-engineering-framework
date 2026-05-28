@@ -18,7 +18,7 @@ components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-2062, T-2063, T-2064, T-2065, T-1177, T-1391, T-1585]
 arc_id: watchtower-redesign
 created: 2026-05-28T13:38:00Z
-last_update: 2026-05-28T18:00:23Z
+last_update: '2026-05-28T22:54:12Z'
 date_finished: 2026-05-28T18:00:17Z
 cost_estimate_proposed:
   - ts: '2026-05-28T13:45:02Z'
@@ -41,6 +41,19 @@ bvp_scores_proposed:
     rationale: D1=1 (body:fix-without-learning); D2=5 
       (body:silent-class-removed); D3=3 (body:component-discoverability); D4=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 5
+      D3: 3
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=5 
+      (body:silent-class-removed); D3=3 (body:component-discoverability); D4=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

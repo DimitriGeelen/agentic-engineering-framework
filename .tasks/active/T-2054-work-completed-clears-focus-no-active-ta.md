@@ -21,14 +21,16 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [bug]
-components: [agents/context/check-active-task.sh, agents/context/lib/safe-commands.sh, tests/unit/context_safe_commands.bats, tests/unit/test_safe_commands_git_commit.bats]
+components: [agents/context/check-active-task.sh, 
+      agents/context/lib/safe-commands.sh, tests/unit/context_safe_commands.bats,
+  tests/unit/test_safe_commands_git_commit.bats]
 related_tasks: [T-2052]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T20:50:28Z
-last_update: 2026-05-26T22:06:29Z
+last_update: '2026-05-28T22:54:12Z'
 date_finished: 2026-05-26T22:06:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -69,6 +71,19 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

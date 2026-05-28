@@ -1,20 +1,37 @@
 ---
 id: T-1810
-name: "Watchtower paused-dispatch resolve form on /review/T-XXX — web parity for fw pause resolve"
+name: "Watchtower paused-dispatch resolve form on /review/T-XXX — web parity for fw
+  pause resolve"
 description: >
-  Watchtower paused-dispatch resolve form on /review/T-XXX — web parity for fw pause resolve
+  Watchtower paused-dispatch resolve form on /review/T-XXX — web parity for fw pause
+  resolve
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [watchtower, ui]
-components: [lib/dispatch_pause.py, tests/unit/test_review_paused_resolve.py, web/blueprints/review.py, web/templates/review.html]
+components: [lib/dispatch_pause.py, tests/unit/test_review_paused_resolve.py, 
+      web/blueprints/review.py, web/templates/review.html]
 related_tasks: [T-1808, T-1809]
 arc_id: dispatch-safety
 created: 2026-05-13T17:41:04Z
-last_update: 2026-05-13T17:47:22Z
+last_update: '2026-05-28T22:54:10Z'
 date_finished: 2026-05-13T17:47:22Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 3
+      D3: 0
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=3 
+      (body:component-silent-failure); D3=0 (no-signal); D4=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1810: Watchtower paused-dispatch resolve form on /review/T-XXX — web parity for fw pause resolve

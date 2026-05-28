@@ -19,7 +19,7 @@ components: [web/app.py, web/static/csrf-htmx.js, web/templates/_review_acs.html
 related_tasks: [T-1302, T-1306, T-1453, T-2060]
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: 2026-05-28T17:59:34Z
+last_update: '2026-05-28T22:54:12Z'
 date_finished: 2026-05-28T17:59:34Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -28,7 +28,7 @@ cost_estimate_proposed:
       blast_radius: 5
       tier: 4
       effort: 7
-    rationale: blast_radius=5 (no-signal); tier=4 (no-signal); effort=7
+    rationale: blast_radius=5 (no-signal); tier=4 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -39,9 +39,22 @@ bvp_scores_proposed:
       D2: 3
       D3: 3
       D4: 2
-    rationale: D1=3 (body:test-or-audit-check); D2=3
-      (body:component-silent-failure); D3=3 (body:component-discoverability);
+    rationale: D1=3 (body:test-or-audit-check); D2=3 
+      (body:component-silent-failure); D3=3 (body:component-discoverability); 
       D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

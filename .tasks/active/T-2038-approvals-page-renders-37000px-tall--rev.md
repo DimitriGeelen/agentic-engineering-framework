@@ -14,7 +14,14 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [arc-007, perf, watchtower, approvals, ui, render-surface]
-components: [agents/ux-review/ux-review.py, tests/playwright/test_approvals_height.py, tests/playwright/test_fabric_height.py, tests/playwright/test_inception_height.py, tests/playwright/test_timeline_height.py, tests/unit/test_ux_review_routes.py, web/templates/_approvals_content.html, web/templates/fabric.html, web/templates/inception.html, web/templates/timeline.html]
+components: [agents/ux-review/ux-review.py, 
+      tests/playwright/test_approvals_height.py, 
+      tests/playwright/test_fabric_height.py, 
+      tests/playwright/test_inception_height.py, 
+      tests/playwright/test_timeline_height.py, 
+      tests/unit/test_ux_review_routes.py, web/templates/_approvals_content.html,
+  web/templates/fabric.html, web/templates/inception.html, 
+      web/templates/timeline.html]
 related_tasks: [T-2005, T-2035]
 arc_id: watchtower-redesign
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -22,7 +29,7 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T09:59:50Z
-last_update: 2026-05-26T06:52:34Z
+last_update: '2026-05-28T22:54:11Z'
 date_finished: 2026-05-26T06:52:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -54,6 +61,18 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F1: 1
+      F2: 0
+    rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 (body:component-discoverability);
+      D4=2 (body:env-class-handled); F1=1 (body/tag hits for 'F1': 1); F2=0 (no-signal)"
     rubric_sha: e4a00f38e801
 ---
 

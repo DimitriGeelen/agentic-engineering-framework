@@ -17,11 +17,12 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [structural-gate, T-1716-family, dogfood-prerequisite, §ACD-prevention]
-components: [agents/task-create/update-task.sh, lib/evolution_log.sh, tests/unit/evolution_log_gate.bats]
+components: [agents/task-create/update-task.sh, lib/evolution_log.sh, 
+      tests/unit/evolution_log_gate.bats]
 related_tasks: [T-1717, T-1550, T-1716, T-1671, T-1259, T-1260, G-062, G-066]
 arc_id: embeddings-strategy
 created: 2026-05-04T14:50:48Z
-last_update: 2026-05-27T05:11:05Z
+last_update: '2026-05-28T22:54:09Z'
 date_finished: 2026-05-27T05:11:05Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -33,6 +34,19 @@ bvp_scores_proposed:
       D4: 0
     rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=1 
       (body:error-msg-improved); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 1
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=1 
+      (body:error-msg-improved); D4=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

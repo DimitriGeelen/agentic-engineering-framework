@@ -21,7 +21,7 @@ components: [docs/articles/deep-dives/02-tier0-protection.md,
       docs/articles/deep-dives/06-authority-model.md]
 related_tasks: [T-450, T-338, T-446]
 created: 2026-03-12T06:37:40Z
-last_update: '2026-05-19T21:45:02Z'
+last_update: '2026-05-28T22:54:12Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:46Z'
@@ -34,6 +34,29 @@ bvp_scores_proposed:
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T20:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F1: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -42,6 +65,15 @@ cost_estimate_proposed:
       tier: 3
       effort: 6
     rationale: blast_radius=5 (no-signal); tier=3 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-24T10:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 3
+      effort: 7
+    rationale: blast_radius=5 (no-signal); tier=3 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---
@@ -122,3 +154,42 @@ test -s docs/articles/deep-dives/06-authority-model.md
 
 ### 2026-03-27T17:34:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-05-24T09:16:36Z — status-update [task-update-agent]
+- **Change:** workflow_type: refactor → build
+
+### 2026-05-24T09:16:37Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → refactor
+
+### 2026-05-24T09:27:35Z — status-update [task-update-agent]
+- **Change:** horizon: next → next
+
+### 2026-05-24T09:28:46Z — status-update [task-update-agent]
+- **Change:** horizon: next → next
+
+### 2026-05-24T09:29:09Z — status-update [task-update-agent]
+- **Change:** workflow_type: refactor → build
+
+### 2026-05-24T09:29:10Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → refactor
+
+### 2026-05-24T09:54:36Z — status-update [task-update-agent]
+- **Change:** workflow_type: refactor → build
+
+### 2026-05-24T09:54:37Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → refactor
+
+### 2026-05-24T09:55:00Z — status-update [task-update-agent]
+- **Change:** horizon: next → next
+
+### 2026-05-25T22:04:42Z — status-update [task-update-agent]
+- **Change:** workflow_type: refactor → build
+
+### 2026-05-25T22:04:42Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → refactor
+
+### 2026-05-25T22:06:15Z — status-update [task-update-agent]
+- **Change:** horizon: next → next
+
+### 2026-05-25T22:09:37Z — status-update [task-update-agent]
+- **Change:** horizon: next → next

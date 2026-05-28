@@ -17,11 +17,12 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [watchtower, ui, arc]
-components: [tests/playwright/test_arc_page_parity.py, web/blueprints/arcs.py, web/templates/arc_detail.html, web/templates/arcs_index.html]
+components: [tests/playwright/test_arc_page_parity.py, web/blueprints/arcs.py, 
+      web/templates/arc_detail.html, web/templates/arcs_index.html]
 related_tasks: [T-1904, T-1905, T-1909, T-1902, T-1848, T-1849]
 arc_id: arc-005
 created: 2026-05-18T21:14:31Z
-last_update: 2026-05-20T14:31:22Z
+last_update: '2026-05-28T22:54:10Z'
 date_finished: 2026-05-20T14:31:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -35,6 +36,19 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+      F2: 1
+    rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 (body:default-change);
+      D4=2 (body:env-class-handled); F1=0 (no-signal); F2=1 (body/tag hits for 'F2':
+      1)"
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

@@ -17,11 +17,13 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [bvp, build, slice-7c, termlink, cost, arc-006]
-components: [agents/termlink/bvp-estimator/estimator.py, bin/fw, lib/bvp.sh, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, tests/unit/test_cron_registry_generated_drift.bats, web/blueprints/bvp.py]
+components: [agents/termlink/bvp-estimator/estimator.py, bin/fw, lib/bvp.sh, 
+      tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, 
+      tests/unit/test_cron_registry_generated_drift.bats, web/blueprints/bvp.py]
 related_tasks: [T-1915, T-1916, T-1922, T-1923, T-1934]
 arc_id: value-prioritisation
 created: 2026-05-19T19:01:40Z
-last_update: 2026-05-20T19:04:40Z
+last_update: '2026-05-28T22:54:10Z'
 date_finished: 2026-05-20T19:04:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,6 +45,18 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T19:08:39Z'

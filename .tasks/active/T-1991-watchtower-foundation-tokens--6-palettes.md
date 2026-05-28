@@ -19,14 +19,16 @@ owner: human
 horizon: now
 tags: [watchtower, redesign, ui, foundations]
 arc_id: watchtower-redesign
-components: [tests/unit/test_appearance_validation.py, web/blueprints/settings.py, web/static/css/foundations.css, web/templates/appearance.html, web/templates/base.html]
+components: [tests/unit/test_appearance_validation.py, 
+      web/blueprints/settings.py, web/static/css/foundations.css, 
+      web/templates/appearance.html, web/templates/base.html]
 related_tasks: [T-1987]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-22T19:04:24Z
+last_update: '2026-05-28T22:54:11Z'
 date_finished: 2026-05-22T19:04:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -58,6 +60,19 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 1
+      F2: 1
+    rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 (body:default-change);
+      D4=2 (body:env-class-handled); F1=1 (body/tag hits for 'F1': 1); F2=1 (body/tag
+      hits for 'F2': 1)"
     rubric_sha: e4a00f38e801
 ---
 

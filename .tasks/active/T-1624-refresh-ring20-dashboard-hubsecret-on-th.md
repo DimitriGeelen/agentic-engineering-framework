@@ -14,7 +14,7 @@ tags: [termlink, secret, fleet, security, from-g-045, t-1054-heal]
 components: []
 related_tasks: [T-1054, T-1055, T-1623]
 created: 2026-04-30T20:27:35Z
-last_update: '2026-05-19T21:45:02Z'
+last_update: '2026-05-28T22:54:09Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -26,6 +26,30 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
       (body:framework-level-ux); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T20:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 2
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=2 (body:env-class-handled); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

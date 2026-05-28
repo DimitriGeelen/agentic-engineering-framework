@@ -16,7 +16,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T20:42:59Z
-last_update: 2026-05-28T20:47:41Z
+last_update: '2026-05-28T22:54:12Z'
 date_finished: 2026-05-28T20:47:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -39,6 +39,19 @@ bvp_scores_proposed:
       F1: 1
     rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 (body:default-change);
       D4=2 (body:env-class-handled); F1=1 (body/tag hits for 'F1': 1)"
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F1: 1
+      F2: 1
+    rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 (body:component-discoverability);
+      D4=2 (body:env-class-handled); F1=1 (body/tag hits for 'F1': 1); F2=1 (body/tag
+      hits for 'F2': 1)"
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-28T20:45:02Z'

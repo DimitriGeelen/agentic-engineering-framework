@@ -1,8 +1,17 @@
 ---
 id: T-2014
-name: "Root-cause: extensionless ImageMagick exports land in repo root (sys, os — 2nd incident)"
+name: "Root-cause: extensionless ImageMagick exports land in repo root (sys, os —
+  2nd incident)"
 description: >
-  2nd incident of a large (10MB+) ImageMagick PostScript export written to PROJECT_ROOT with a bare extensionless filename: /os (36MB, T-1845, from T-1716) and now /sys (14MB, created 2026-05-16, found 2026-05-23). The large-file pre-commit gate blocks the COMMIT and both are now gitignored, but nothing prevents CREATION. Root cause: some convert/magick call writes a bare word as its output filename (ImageMagick treats an extensionless arg as an output path). Investigate which fw/agent codepath invokes convert/magick without an explicit output extension; fix it to write to a named/temp file. ~7-day detection blindness each time. G-019 candidate (creation un-prevented despite commit-gate).
+  2nd incident of a large (10MB+) ImageMagick PostScript export written to PROJECT_ROOT
+  with a bare extensionless filename: /os (36MB, T-1845, from T-1716) and now /sys
+  (14MB, created 2026-05-16, found 2026-05-23). The large-file pre-commit gate blocks
+  the COMMIT and both are now gitignored, but nothing prevents CREATION. Root cause:
+  some convert/magick call writes a bare word as its output filename (ImageMagick
+  treats an extensionless arg as an output path). Investigate which fw/agent codepath
+  invokes convert/magick without an explicit output extension; fix it to write to
+  a named/temp file. ~7-day detection blindness each time. G-019 candidate (creation
+  un-prevented despite commit-gate).
 
 status: captured
 workflow_type: build
@@ -16,8 +25,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T19:56:27Z
-last_update: 2026-05-23T19:56:27Z
-date_finished: null
+last_update: '2026-05-28T22:54:11Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +37,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-23T20:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-23T20:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T20:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2014: Root-cause: extensionless ImageMagick exports land in repo root (sys, os — 2nd incident)

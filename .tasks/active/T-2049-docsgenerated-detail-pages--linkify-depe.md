@@ -22,11 +22,12 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [arc-007, watchtower, docs, docgen, ui]
-components: [agents/docgen/generate_component.py, agents/docgen/generate-component.sh]
+components: [agents/docgen/generate_component.py, 
+      agents/docgen/generate-component.sh]
 related_tasks: [T-2047]
 arc_id: watchtower-redesign
 created: 2026-05-25T17:06:46Z
-last_update: 2026-05-26T06:57:36Z
+last_update: '2026-05-28T22:54:12Z'
 date_finished: 2026-05-26T06:57:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -58,6 +59,19 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

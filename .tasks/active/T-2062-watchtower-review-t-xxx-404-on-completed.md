@@ -17,7 +17,7 @@ components: [web/blueprints/review.py, web/templates/review.html]
 related_tasks: [T-2059, T-2061, T-2056, T-2060, T-679]
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: 2026-05-28T17:59:23Z
+last_update: '2026-05-28T22:54:12Z'
 date_finished: 2026-05-28T17:59:23Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -26,7 +26,7 @@ cost_estimate_proposed:
       blast_radius: 3
       tier: 4
       effort: 5
-    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=5
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=5 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -37,8 +37,20 @@ bvp_scores_proposed:
       D2: 0
       D3: 0
       D4: 0
-    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
       (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

@@ -1,20 +1,37 @@
 ---
 id: T-1808
-name: "Paused-dispatch surface — fw review-queue + Watchtower /approvals (dispatch-safety slice 4)"
+name: "Paused-dispatch surface — fw review-queue + Watchtower /approvals (dispatch-safety
+  slice 4)"
 description: >
-  Paused-dispatch surface — fw review-queue + Watchtower /approvals (dispatch-safety slice 4)
+  Paused-dispatch surface — fw review-queue + Watchtower /approvals (dispatch-safety
+  slice 4)
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [slice-4]
-components: [bin/fw, lib/dispatch_pause.py, tests/unit/test_dispatch_pause.py, web/blueprints/approvals.py, web/templates/_approvals_content.html]
+components: [bin/fw, lib/dispatch_pause.py, tests/unit/test_dispatch_pause.py, 
+      web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: [T-1805, T-1806, T-1807]
 arc_id: dispatch-safety
 created: 2026-05-13T16:04:06Z
-last_update: 2026-05-13T17:13:22Z
+last_update: '2026-05-28T22:54:10Z'
 date_finished: 2026-05-13T17:13:22Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1808: Paused-dispatch surface — fw review-queue + Watchtower /approvals (dispatch-safety slice 4)

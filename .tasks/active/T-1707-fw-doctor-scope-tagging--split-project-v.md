@@ -11,11 +11,15 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/context/check-project-boundary.sh, bin/fw, lib/verify-acs.sh, tests/unit/test_boundary_hook_arguments.bats, tests/unit/test_doctor_litellm_ollama.bats, tests/unit/test_doctor_scope_tags.bats, tests/unit/test_worker_kind_drift.bats]
+components: [agents/context/check-project-boundary.sh, bin/fw, lib/verify-acs.sh,
+  tests/unit/test_boundary_hook_arguments.bats, 
+      tests/unit/test_doctor_litellm_ollama.bats, 
+      tests/unit/test_doctor_scope_tags.bats, 
+      tests/unit/test_worker_kind_drift.bats]
 related_tasks: [T-1702]
 arc_id: orchestrator-rethink
 created: 2026-05-03T22:05:43Z
-last_update: 2026-05-27T05:51:09Z
+last_update: '2026-05-28T22:54:09Z'
 date_finished: 2026-05-27T05:51:09Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -27,6 +31,18 @@ bvp_scores_proposed:
       D4: 3
     rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=3
       (body:portability-abstraction)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 3
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=3
+      (body:portability-abstraction); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

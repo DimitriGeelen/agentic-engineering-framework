@@ -16,7 +16,7 @@ components: [040-ValueDrivers.md, FRAMEWORK.md]
 related_tasks: [T-1915, T-1916, T-1917, T-1920, T-1924, T-1926, T-1932]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: '2026-05-19T17:56:35Z'
+last_update: '2026-05-28T22:54:10Z'
 date_finished: 2026-05-19T13:46:56Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
@@ -28,6 +28,18 @@ bvp_scores_proposed:
       D4: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

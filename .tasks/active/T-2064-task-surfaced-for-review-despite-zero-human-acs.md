@@ -13,12 +13,12 @@ workflow_type: inception
 owner: human
 horizon: now
 tags: [bug, watchtower, review-queue, filter-gap, sovereignty]
-components: [web/blueprints/review.py, web/blueprints/approvals.py, bin/fw,
+components: [web/blueprints/review.py, web/blueprints/approvals.py, bin/fw, 
       agents/task-create/update-task.sh]
 related_tasks: [T-2056, T-2061, T-679, T-372, T-373]
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: 2026-05-28T17:59:50Z
+last_update: '2026-05-28T22:54:12Z'
 date_finished: 2026-05-28T17:59:50Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -27,7 +27,7 @@ cost_estimate_proposed:
       blast_radius: 5
       tier: 4
       effort: 6
-    rationale: blast_radius=5 (no-signal); tier=4 (no-signal); effort=6
+    rationale: blast_radius=5 (no-signal); tier=4 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -38,8 +38,20 @@ bvp_scores_proposed:
       D2: 0
       D3: 0
       D4: 0
-    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
       (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

@@ -1,8 +1,10 @@
 ---
 id: T-1796
-name: "Watchtower /orchestrator: add Outcome quality panel — verification pass/fail per task-type (CLI parity for --outcomes)"
+name: "Watchtower /orchestrator: add Outcome quality panel — verification pass/fail
+  per task-type (CLI parity for --outcomes)"
 description: >
-  Watchtower /orchestrator: add Outcome quality panel — verification pass/fail per task-type (CLI parity for --outcomes)
+  Watchtower /orchestrator: add Outcome quality panel — verification pass/fail per
+  task-type (CLI parity for --outcomes)
 
 status: work-completed
 workflow_type: build
@@ -13,8 +15,22 @@ components: []
 related_tasks: [T-1792, T-1794, T-1795, T-1749]
 arc_id: orchestrator-rethink
 created: 2026-05-12T21:32:28Z
-last_update: 2026-05-12T21:36:35Z
+last_update: '2026-05-28T22:54:09Z'
 date_finished: 2026-05-12T21:36:35Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 2
+      D3: 3
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F1=0 (no-signal); F2=0
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1796: Watchtower /orchestrator: add Outcome quality panel — verification pass/fail per task-type (CLI parity for --outcomes)

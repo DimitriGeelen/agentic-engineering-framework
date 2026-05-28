@@ -9,11 +9,13 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [arc:watchtower-redesign, ui, watchtower]
-components: [tests/playwright/test_bulk_actions.py, tests/unit/test_bulk_actions.py, web/static/bulk-actions.js, web/templates/base.html, web/templates/tasks.html]
+components: [tests/playwright/test_bulk_actions.py, 
+      tests/unit/test_bulk_actions.py, web/static/bulk-actions.js, 
+      web/templates/base.html, web/templates/tasks.html]
 related_tasks: [T-1992, T-1993, T-1987, T-2015]
 arc_id: watchtower-redesign
 created: 2026-05-24T09:22:27Z
-last_update: 2026-05-26T06:49:20Z
+last_update: '2026-05-28T22:54:11Z'
 date_finished: 2026-05-26T06:49:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -46,6 +48,19 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=3 
       (body:component-silent-failure); D3=2 (body:default-change); D4=2 
       (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 3
+      D3: 2
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=3 
+      (body:component-silent-failure); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

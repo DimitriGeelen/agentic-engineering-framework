@@ -1,20 +1,43 @@
 ---
 id: T-1773
-name: "spawn-side dispatch driver: read resolver envelope → spawn worker → stream events → emit outcome row"
+name: "spawn-side dispatch driver: read resolver envelope → spawn worker → stream
+  events → emit outcome row"
 description: >
-  T-1700 + T-1701 both shipped worker primitives (PiWorker for pi, ollama-loop env wiring for litellm) but stopped at the worker. The end-to-end mechanic (user submits task_type → resolver builds envelope → worker fires → events streamed to .context/dispatch-blobs/<id>/events.jsonl → outcome row appended to dispatches.jsonl) currently has no glue. Both v1 builds explicitly deferred this to a unified spawn driver once two consumers existed. They exist now. Build lib/spawn.py that consumes a dispatch envelope and routes by worker_kind to the appropriate primitive. Single-file design; no premature abstraction. Closes the orchestrator arc's headline mechanic.
+  T-1700 + T-1701 both shipped worker primitives (PiWorker for pi, ollama-loop env
+  wiring for litellm) but stopped at the worker. The end-to-end mechanic (user submits
+  task_type → resolver builds envelope → worker fires → events streamed to .context/dispatch-blobs/<id>/events.jsonl
+  → outcome row appended to dispatches.jsonl) currently has no glue. Both v1 builds
+  explicitly deferred this to a unified spawn driver once two consumers existed. They
+  exist now. Build lib/spawn.py that consumes a dispatch envelope and routes by worker_kind
+  to the appropriate primitive. Single-file design; no premature abstraction. Closes
+  the orchestrator arc's headline mechanic.
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [spawn, dispatch-driver]
-components: [lib/resolver.py, lib/spawn.py, tests/unit/test_resolver_run.py, tests/unit/test_spawn.py]
+components: [lib/resolver.py, lib/spawn.py, tests/unit/test_resolver_run.py, 
+      tests/unit/test_spawn.py]
 related_tasks: [T-1700, T-1701]
 arc_id: orchestrator-rethink
 created: 2026-05-06T18:52:51Z
-last_update: 2026-05-13T21:19:49Z
+last_update: '2026-05-28T22:54:09Z'
 date_finished: 2026-05-13T21:19:49Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1773: spawn-side dispatch driver: read resolver envelope → spawn worker → stream events → emit outcome row

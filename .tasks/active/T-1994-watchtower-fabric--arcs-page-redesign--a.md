@@ -14,14 +14,19 @@ owner: human
 horizon: now
 tags: [watchtower, redesign, ui, fabric, arcs]
 arc_id: watchtower-redesign
-components: [tests/playwright/test_arcs_pages_tokens.py, tests/playwright/test_fabric_coupling_token.py, tests/unit/test_arcs_pages_tokens.py, tests/unit/test_fabric_coupling_token.py, web/templates/arc_close.html, web/templates/arc_detail.html, web/templates/arc_review.html, web/templates/arcs_index.html, web/templates/fabric_detail.html]
+components: [tests/playwright/test_arcs_pages_tokens.py, 
+      tests/playwright/test_fabric_coupling_token.py, 
+      tests/unit/test_arcs_pages_tokens.py, 
+      tests/unit/test_fabric_coupling_token.py, web/templates/arc_close.html, 
+      web/templates/arc_detail.html, web/templates/arc_review.html, 
+      web/templates/arcs_index.html, web/templates/fabric_detail.html]
 related_tasks: [T-1987]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-22T10:06:08Z
-last_update: 2026-05-26T21:37:22Z
+last_update: '2026-05-28T22:54:11Z'
 date_finished: 2026-05-26T21:37:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -53,6 +58,19 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

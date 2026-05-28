@@ -14,12 +14,12 @@ workflow_type: inception
 owner: human
 horizon: now
 tags: [bug, arc, bvp, estimator, automation-gap, value-prioritisation]
-components: [bin/fw, lib/arc.sh, agents/termlink/bvp-estimator/bvp-estimator.sh,
+components: [bin/fw, lib/arc.sh, agents/termlink/bvp-estimator/bvp-estimator.sh, 
       .context/arcs/*.yaml]
 related_tasks: [T-1918, T-1922, T-1925, T-1926, T-1930, T-1934, T-1935]
 arc_id: value-prioritisation
 created: 2026-05-28T14:30:00Z
-last_update: 2026-05-28T18:00:00Z
+last_update: '2026-05-28T22:54:12Z'
 date_finished: 2026-05-28T18:00:00Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -28,7 +28,7 @@ cost_estimate_proposed:
       blast_radius: 5
       tier: 4
       effort: 6
-    rationale: blast_radius=5 (no-signal); tier=4 (no-signal); effort=6
+    rationale: blast_radius=5 (no-signal); tier=4 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -39,8 +39,21 @@ bvp_scores_proposed:
       D2: 2
       D3: 0
       D4: 0
-    rationale: D1=4 (body:structural-gate); D2=2
+    rationale: D1=4 (body:structural-gate); D2=2 
       (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

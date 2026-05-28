@@ -12,11 +12,12 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [arc-007, perf, watchtower, graduation, ui, render-surface]
-components: [tests/playwright/test_graduation_height.py, web/templates/graduation.html]
+components: [tests/playwright/test_graduation_height.py, 
+      web/templates/graduation.html]
 related_tasks: [T-2042, T-2044, T-2045]
 arc_id: watchtower-redesign
 created: 2026-05-25T14:53:07Z
-last_update: 2026-05-26T06:56:30Z
+last_update: '2026-05-28T22:54:12Z'
 date_finished: 2026-05-26T06:56:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -48,6 +49,18 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F1: 1
+      F2: 0
+    rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 (body:component-discoverability);
+      D4=2 (body:env-class-handled); F1=1 (body/tag hits for 'F1': 1); F2=0 (no-signal)"
     rubric_sha: e4a00f38e801
 ---
 

@@ -1,20 +1,37 @@
 ---
 id: T-1799
-name: "Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 audit check on web (matrix of workflow × worker_kind × routable)"
+name: "Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 audit
+  check on web (matrix of workflow × worker_kind × routable)"
 description: >
-  Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 audit check on web (matrix of workflow × worker_kind × routable)
+  Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 audit check
+  on web (matrix of workflow × worker_kind × routable)
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [web, observability]
-components: [tests/unit/test_orchestrator_workflow_coverage.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
+components: [tests/unit/test_orchestrator_workflow_coverage.py, 
+      web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: [T-1776, T-1797, T-1798]
 arc_id: orchestrator-rethink
 created: 2026-05-12T22:08:26Z
-last_update: 2026-05-12T22:11:39Z
+last_update: '2026-05-28T22:54:09Z'
 date_finished: 2026-05-12T22:11:39Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 4
+      D3: 5
+      D4: 0
+      F1: 1
+      F2: 0
+    rationale: "D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); D3=5
+      (body:new-collab-mode); D4=0 (no-signal); F1=1 (body/tag hits for 'F1': 1);
+      F2=0 (no-signal)"
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1799: Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 audit check on web (matrix of workflow × worker_kind × routable)

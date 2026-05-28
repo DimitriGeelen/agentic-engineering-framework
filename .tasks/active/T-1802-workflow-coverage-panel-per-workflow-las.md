@@ -1,20 +1,39 @@
 ---
 id: T-1802
-name: "Workflow coverage panel: per-workflow last-dispatch timestamp — surface deprecation candidates (T-1799 follow-up)"
+name: "Workflow coverage panel: per-workflow last-dispatch timestamp — surface deprecation
+  candidates (T-1799 follow-up)"
 description: >
-  Workflow coverage panel: per-workflow last-dispatch timestamp — surface deprecation candidates (T-1799 follow-up)
+  Workflow coverage panel: per-workflow last-dispatch timestamp — surface deprecation
+  candidates (T-1799 follow-up)
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [web, observability]
-components: [lib/workflow_coverage.py, tests/unit/test_orchestrator_workflow_coverage.py, tests/unit/test_workflow_coverage.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
+components: [lib/workflow_coverage.py, 
+      tests/unit/test_orchestrator_workflow_coverage.py, 
+      tests/unit/test_workflow_coverage.py, web/blueprints/orchestrator.py, 
+      web/templates/orchestrator.html]
 related_tasks: [T-1776, T-1797, T-1798, T-1799, T-1800, T-1801]
 arc_id: orchestrator-rethink
 created: 2026-05-13T06:35:00Z
-last_update: 2026-05-13T06:35:51Z
+last_update: '2026-05-28T22:54:09Z'
 date_finished: 2026-05-13T06:35:51Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 2
+      D3: 3
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1802: Workflow coverage panel: per-workflow last-dispatch timestamp — surface deprecation candidates (T-1799 follow-up)

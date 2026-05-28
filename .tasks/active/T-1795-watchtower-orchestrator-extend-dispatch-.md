@@ -1,6 +1,7 @@
 ---
 id: T-1795
-name: "Watchtower /orchestrator: extend Dispatch substrate panel with by_worker_kind breakdown"
+name: "Watchtower /orchestrator: extend Dispatch substrate panel with by_worker_kind
+  breakdown"
 description: >
   Watchtower /orchestrator: extend Dispatch substrate panel with by_worker_kind breakdown
 
@@ -13,8 +14,22 @@ components: []
 related_tasks: [T-1792, T-1794]
 arc_id: orchestrator-rethink
 created: 2026-05-12T21:28:40Z
-last_update: 2026-05-12T21:31:13Z
+last_update: '2026-05-28T22:54:09Z'
 date_finished: 2026-05-12T21:31:13Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 2
+      D3: 3
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1795: Watchtower /orchestrator: extend Dispatch substrate panel with by_worker_kind breakdown

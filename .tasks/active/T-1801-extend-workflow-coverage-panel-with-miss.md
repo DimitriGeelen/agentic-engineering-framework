@@ -1,20 +1,37 @@
 ---
 id: T-1801
-name: "extend Workflow coverage panel with missing-provider class — web parity for T-1800 (sibling to T-1799)"
+name: "extend Workflow coverage panel with missing-provider class — web parity for
+  T-1800 (sibling to T-1799)"
 description: >
-  extend Workflow coverage panel with missing-provider class — web parity for T-1800 (sibling to T-1799)
+  extend Workflow coverage panel with missing-provider class — web parity for T-1800
+  (sibling to T-1799)
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [web, observability]
-components: [tests/unit/test_orchestrator_workflow_coverage.py, web/templates/orchestrator.html]
+components: [tests/unit/test_orchestrator_workflow_coverage.py, 
+      web/templates/orchestrator.html]
 related_tasks: [T-1776, T-1797, T-1798, T-1799, T-1800]
 arc_id: orchestrator-rethink
 created: 2026-05-13T06:25:23Z
-last_update: 2026-05-13T06:29:52Z
+last_update: '2026-05-28T22:54:09Z'
 date_finished: 2026-05-13T06:29:52Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 4
+      D3: 3
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=4 (body:fw-audit-or-doctor);
+      D3=3 (body:component-discoverability); D4=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1801: extend Workflow coverage panel with missing-provider class — web parity for T-1800 (sibling to T-1799)

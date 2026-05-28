@@ -1,19 +1,46 @@
 ---
 id: T-1834
-name: "Purge MS_OAUTH client secret from framework git history — filter-repo commit 79e3361 (T-1828 follow-up, Tier 0)"
+name: "Purge MS_OAUTH client secret from framework git history — filter-repo commit
+  79e3361 (T-1828 follow-up, Tier 0)"
 description: >
-  Follow-up to T-1828 mirror-unstick. Secret (Azure AD OAuth client secret originally from 050-email-archive .env) is embedded in framework git history at commit 79e3361 (T-1736: Spike B), file .context/spikes/T-1736-prompts.jsonl line 1581. The file was removed from HEAD in commit 7fba568e7 but remains in history. GitHub secret-scanning blocks push of any commit range containing 79e3361. Plan: git filter-repo --invert-paths --path .context/spikes/T-1736-prompts.jsonl, then force-push to BOTH OneDev (origin) and GitHub. Tier 0 — requires explicit human approval before history rewrite. All framework consumers must re-clone or hard-reset after force-push. Sequence with: (a) verify MS_OAUTH_CLIENT_SECRET rotated in 050-email-archive Azure app first (b) snapshot current refs to .git/refs-backup (c) filter-repo (d) force-push origin (e) force-push github (f) notify consumers via framework:pickup. Blocks T-1828 closure.
+  Follow-up to T-1828 mirror-unstick. Secret (Azure AD OAuth client secret originally
+  from 050-email-archive .env) is embedded in framework git history at commit 79e3361
+  (T-1736: Spike B), file .context/spikes/T-1736-prompts.jsonl line 1581. The file
+  was removed from HEAD in commit 7fba568e7 but remains in history. GitHub secret-scanning
+  blocks push of any commit range containing 79e3361. Plan: git filter-repo --invert-paths
+  --path .context/spikes/T-1736-prompts.jsonl, then force-push to BOTH OneDev (origin)
+  and GitHub. Tier 0 — requires explicit human approval before history rewrite. All
+  framework consumers must re-clone or hard-reset after force-push. Sequence with:
+  (a) verify MS_OAUTH_CLIENT_SECRET rotated in 050-email-archive Azure app first (b)
+  snapshot current refs to .git/refs-backup (c) filter-repo (d) force-push origin
+  (e) force-push github (f) notify consumers via framework:pickup. Blocks T-1828 closure.
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [bug, fw-upgrade-incident-2026-05-14, security, tier0, git-history, follow-up]
-components: [agents/git/lib/hooks.sh, agents/git/lib/secret-scan.sh, tests/unit/test_secret_scan.bats]
+tags: [bug, fw-upgrade-incident-2026-05-14, security, tier0, git-history, 
+      follow-up]
+components: [agents/git/lib/hooks.sh, agents/git/lib/secret-scan.sh, 
+      tests/unit/test_secret_scan.bats]
 related_tasks: []
 created: 2026-05-14T20:42:14Z
-last_update: 2026-05-15T08:02:00Z
+last_update: '2026-05-28T22:54:10Z'
 date_finished: 2026-05-15T08:02:00Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 2
+      D3: 0
+      D4: 4
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1834: Purge MS_OAUTH client secret from framework git history — filter-repo commit 79e3361 (T-1828 follow-up, Tier 0)

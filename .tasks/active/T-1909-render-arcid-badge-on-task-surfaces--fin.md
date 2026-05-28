@@ -17,12 +17,18 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [watchtower, ui, arc]
-components: [lib/arc_membership.sh, lib/arc.sh, tests/playwright/test_arc_badge.py, tests/playwright/test_arc_page_parity.py, tests/unit/arc_membership_dual_id.bats, web/blueprints/arcs.py, web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/base.html, web/templates/_partials/arc_badge.html, web/templates/tasks.html]
+components: [lib/arc_membership.sh, lib/arc.sh, 
+      tests/playwright/test_arc_badge.py, 
+      tests/playwright/test_arc_page_parity.py, 
+      tests/unit/arc_membership_dual_id.bats, web/blueprints/arcs.py, 
+      web/templates/arc_detail.html, web/templates/arcs_index.html, 
+      web/templates/base.html, web/templates/_partials/arc_badge.html, 
+      web/templates/tasks.html]
 related_tasks: [T-1848, T-1849, T-1850, T-1874, T-1876, T-1879, T-1880, T-1904, 
       T-1905]
 arc_id: arc-005
 created: 2026-05-18T21:02:27Z
-last_update: 2026-05-20T14:29:10Z
+last_update: '2026-05-28T22:54:10Z'
 date_finished: 2026-05-20T14:29:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,6 +42,19 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

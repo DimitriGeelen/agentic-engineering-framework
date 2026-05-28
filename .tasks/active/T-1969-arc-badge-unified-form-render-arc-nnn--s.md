@@ -11,7 +11,9 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [ui, arc-badge, arc-display, arc:arc-grooming]
-components: [web/blueprints/arcs.py, web/app.py, web/templates/_partials/arc_badge.html, tests/unit/test_arc_display_helper.py, tests/playwright/test_arc_badge.py]
+components: [web/blueprints/arcs.py, web/app.py, 
+      web/templates/_partials/arc_badge.html, 
+      tests/unit/test_arc_display_helper.py, tests/playwright/test_arc_badge.py]
 related_tasks: [T-1849, T-1909, T-1968]
 arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,7 +21,7 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T21:19:52Z
-last_update: 2026-05-21T08:19:34Z
+last_update: '2026-05-28T22:54:10Z'
 date_finished: 2026-05-21T08:19:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -51,6 +53,19 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

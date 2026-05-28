@@ -16,11 +16,13 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [arc:watchtower-redesign, ui, watchtower, cockpit]
-components: [tests/playwright/test_cockpit_activity.py, tests/unit/test_cockpit_activity.py, web/blueprints/cockpit.py, web/templates/_cockpit_activity.html, web/templates/cockpit.html]
+components: [tests/playwright/test_cockpit_activity.py, 
+      tests/unit/test_cockpit_activity.py, web/blueprints/cockpit.py, 
+      web/templates/_cockpit_activity.html, web/templates/cockpit.html]
 related_tasks: [T-1993, T-1987, T-2012, T-2013]
 arc_id: watchtower-redesign
 created: 2026-05-24T10:02:00Z
-last_update: 2026-05-25T22:43:40Z
+last_update: '2026-05-28T22:54:11Z'
 date_finished: 2026-05-25T22:43:40Z
 cost_estimate_proposed:
   - ts: '2026-05-24T10:15:02Z'
@@ -42,6 +44,19 @@ bvp_scores_proposed:
       D4: 0
     rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 3
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F1=0 (no-signal); F2=0
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

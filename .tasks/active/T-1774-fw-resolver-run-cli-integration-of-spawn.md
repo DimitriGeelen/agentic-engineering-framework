@@ -1,8 +1,12 @@
 ---
 id: T-1774
-name: "fw resolver run: CLI integration of spawn driver — one-line dispatch+spawn end-to-end"
+name: "fw resolver run: CLI integration of spawn driver — one-line dispatch+spawn
+  end-to-end"
 description: >
-  T-1773 shipped lib/spawn.py callable from Python but the human-facing #H1 still requires a multi-line python one-liner. Add a  subcommand to lib/resolver.py that combines  +  into a single call. CLI-only — no new architecture, just glue. Replaces T-1773 #H1's python -c with .
+  T-1773 shipped lib/spawn.py callable from Python but the human-facing #H1 still
+  requires a multi-line python one-liner. Add a  subcommand to lib/resolver.py that
+  combines  +  into a single call. CLI-only — no new architecture, just glue. Replaces
+  T-1773 #H1's python -c with .
 
 status: work-completed
 workflow_type: build
@@ -13,8 +17,22 @@ components: [lib/resolver.py, tests/unit/test_resolver_run.py]
 related_tasks: [T-1773, T-1701]
 arc_id: orchestrator-rethink
 created: 2026-05-06T19:05:44Z
-last_update: 2026-05-13T21:20:14Z
+last_update: '2026-05-28T22:54:09Z'
 date_finished: 2026-05-13T21:20:14Z
+bvp_scores_proposed:
+  - ts: '2026-05-28T22:54:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1774: fw resolver run: CLI integration of spawn driver — one-line dispatch+spawn end-to-end

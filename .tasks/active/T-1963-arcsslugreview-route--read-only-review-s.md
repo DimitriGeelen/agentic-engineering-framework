@@ -12,14 +12,15 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [approval-ux, watchtower, arc, T-1959-followup, arc:arc-grooming]
-components: [tests/playwright/test_arc_review_route.py, web/blueprints/arcs.py, web/templates/_approvals_content.html, web/templates/arc_review.html]
+components: [tests/playwright/test_arc_review_route.py, web/blueprints/arcs.py, 
+      web/templates/_approvals_content.html, web/templates/arc_review.html]
 related_tasks: [T-1959, T-1960, T-1961, T-1962, T-1911]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T17:57:15Z
-last_update: 2026-05-21T17:51:33Z
+last_update: '2026-05-28T22:54:10Z'
 date_finished: 2026-05-21T17:51:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -51,6 +52,19 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-28T22:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+      F2: 1
+    rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 (body:default-change);
+      D4=2 (body:env-class-handled); F1=0 (no-signal); F2=1 (body/tag hits for 'F2':
+      1)"
     rubric_sha: e4a00f38e801
 ---
 
