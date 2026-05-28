@@ -978,6 +978,10 @@ Verbs:
                             Refused under \$CLAUDECODE=1 (§ACD, M6).
   show-suggestions <id>     T-1926: read-only render of proposed_scoped_drivers:
                             grouped by event timestamp.
+  rescore <id>              T-2076: re-run BVP estimator on every active member
+                            task of the arc. Auto-fired by approve-driver as a
+                            deterministic consequence of authorisation. Only
+                            updates bvp_scores_proposed: (sovereignty boundary).
   migrate <id> --anchor T-XXXX
                             Legacy verb: seed constituent_tasks from anchor's
                             related_tasks and legacy from-T-XXXX tags (idempotent).
@@ -1090,6 +1094,7 @@ arc_dispatch() {
         remove-driver)    arc_remove_driver    "$@";;   # T-1976 (arc-006)
         set-scoped-weight) arc_set_scoped_weight "$@";; # T-1977 (arc-006)
         show-suggestions) arc_show_suggestions "$@";;   # T-1926 (arc-006)
+        rescore)          arc_rescore          "$@";;   # T-2076 (T-2065 GO): re-estimate member BVP
         help|--help|-h) arc_help;;
         *) echo "Unknown verb: $verb" >&2; arc_help; return 2;;
     esac
@@ -1277,6 +1282,15 @@ PY
     local new_status
     new_status=$(awk -F': ' '/^status:/ {print $2; exit}' "$f" | tr -d ' ')
     [ "$new_status" = "in-progress" ] && echo "  Arc status: draft → in-progress (first driver decision)."
+
+    # T-2076 (T-2065 GO): deterministic-consequence rescore. Driver authorisation
+    # is the sovereign act; BVP re-estimation is its mechanical consequence — runs
+    # synchronously here so the constituent task scores reflect the new driver
+    # weight immediately. Failure surfaces a WARN but does NOT roll back the
+    # approval — sovereignty boundary is the approval, not the rescore.
+    if ! arc_rescore "$id"; then
+        echo "  WARN: rescore reported a failure (driver approval stands). Re-run: fw arc rescore $id" >&2
+    fi
     return 0
 }
 
@@ -1606,6 +1620,93 @@ else:
                 print(f"      → {r}")
 PY
     return 0
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-2076 (T-2065 GO scope): arc rescore — re-estimate BVP scores on every active
+# member task of an arc. Two callsites:
+#   1. Automatically invoked from arc_approve_driver as a deterministic
+#      consequence of authorisation — new scoped-driver weight propagates to
+#      member task scores immediately.
+#   2. Standalone `fw arc rescore <arc-id>` for ad-hoc recompute (e.g. after a
+#      bulk weight edit, recovery from a partial failure, or after the
+#      estimator rubric_sha changes).
+#
+# Membership: union of `arc_id:` frontmatter (slug OR arc-NNN form) + legacy
+# `arc:<slug>` tag — delegated to arc_tasks_for (lib/arc_membership.sh).
+# Skips members already in .tasks/completed/ (final scores don't move).
+#
+# Sovereignty rail: this is NOT a decision-emitting operation. It re-runs the
+# estimator (T-1922) which only writes bvp_scores_proposed: — never bvp_scores:.
+# Confirmation still requires `fw bvp confirm` (T-1924). Safe to re-run.
+#
+# Idempotency: rerunning on the same corpus produces the same proposed scores
+# (deterministic per rubric_sha) unless task body content changed.
+# ─────────────────────────────────────────────────────────────────────────────
+arc_rescore() {
+    local input="${1:-}"
+    if [ -z "$input" ] || [ "$input" = "--help" ] || [ "$input" = "-h" ]; then
+        echo "Usage:"
+        echo "  fw arc rescore <arc-id>"
+        echo ""
+        echo "  Re-run the BVP estimator on every active member task of the arc."
+        echo "  Updates bvp_scores_proposed: (advisory layer); never touches"
+        echo "  bvp_scores: (sovereignty boundary — confirm with fw bvp confirm)."
+        echo ""
+        echo "  Automatically fired by 'fw arc approve-driver' as a consequence"
+        echo "  of authorisation. Run standalone after bulk weight edits or"
+        echo "  estimator-rubric changes."
+        [ -z "$input" ] && return 2 || return 0
+    fi
+
+    input="$(_arc_normalize_input "$input")"
+    _arc_validate_id "$input" || return 2
+    _arc_exists "$input" || { echo "Error: arc '$input' not found" >&2; return 1; }
+
+    # Resolve to slug form for membership lookup (arc_tasks_for accepts either).
+    local members
+    members=$(arc_tasks_for "$input")
+    if [ -z "$members" ]; then
+        echo "  (no member tasks for arc '$input' — rescore skipped)"
+        return 0
+    fi
+
+    # Filter to active members only (completed-task scores are frozen).
+    local active_members=""
+    local tid
+    while IFS= read -r tid; do
+        [ -n "$tid" ] || continue
+        # arc_tasks_for already unioned active+completed; filter here.
+        if ls "$PROJECT_ROOT"/.tasks/active/"$tid"-*.md >/dev/null 2>&1; then
+            active_members="${active_members}${tid}"$'\n'
+        fi
+    done <<< "$members"
+
+    if [ -z "$active_members" ]; then
+        echo "  (no active member tasks for arc '$input' — rescore skipped)"
+        return 0
+    fi
+
+    local count=0 failed=0
+    echo "  Rescoring member tasks of arc '$input'..."
+    while IFS= read -r tid; do
+        [ -n "$tid" ] || continue
+        # fw bvp estimate writes to stderr on errors; we want a tidy summary.
+        if "${FW_BIN:-${PROJECT_ROOT}/bin/fw}" bvp estimate "$tid" >/dev/null 2>&1; then
+            count=$((count + 1))
+        else
+            failed=$((failed + 1))
+            echo "    WARN: estimator failed on $tid" >&2
+        fi
+    done <<< "$active_members"
+
+    if [ "$failed" -eq 0 ]; then
+        echo "  OK: rescored $count active member task(s)."
+        return 0
+    else
+        echo "  Rescored $count task(s), $failed failed. See stderr above." >&2
+        return 1
+    fi
 }
 
 _arc_approve_help() {

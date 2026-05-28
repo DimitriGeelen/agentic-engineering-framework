@@ -1,10 +1,20 @@
 ---
 id: T-2076
-name: "fw arc approve-driver triggers synchronous BVP rescore + standalone fw arc rescore verb (T-2065 GO scope)"
+name: "fw arc approve-driver triggers synchronous BVP rescore + standalone fw arc
+  rescore verb (T-2065 GO scope)"
 description: >
-  Implements T-2065 inception GO. Symptom: approving a new scoped driver on an arc (via fw arc approve-driver or Watchtower) updates scoped_drivers: on the arc YAML but does NOT trigger BVP re-estimation for the arc's constituent tasks. New driver weight sits unrealised until manual estimator run. Fix (combined a+d): (a) synchronous re-estimation inside approve_driver — deterministic consequence of authorisation; (d) standalone fw arc rescore <slug> verb for ad-hoc recompute. Sovereignty rail: human still authorises via approve-driver (§ACD-gated); rescore is a consequence, not a separate decision. ACs: approve_driver triggers rescore, rescore verb works standalone, both update bvp_scores_proposed/cost_estimate_proposed on member tasks, tests cover sync-path + standalone-path + idempotency.
+  Implements T-2065 inception GO. Symptom: approving a new scoped driver on an arc
+  (via fw arc approve-driver or Watchtower) updates scoped_drivers: on the arc YAML
+  but does NOT trigger BVP re-estimation for the arc's constituent tasks. New driver
+  weight sits unrealised until manual estimator run. Fix (combined a+d): (a) synchronous
+  re-estimation inside approve_driver — deterministic consequence of authorisation;
+  (d) standalone fw arc rescore <slug> verb for ad-hoc recompute. Sovereignty rail:
+  human still authorises via approve-driver (§ACD-gated); rescore is a consequence,
+  not a separate decision. ACs: approve_driver triggers rescore, rescore verb works
+  standalone, both update bvp_scores_proposed/cost_estimate_proposed on member tasks,
+  tests cover sync-path + standalone-path + idempotency.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +26,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T18:04:09Z
-last_update: 2026-05-28T18:04:09Z
-date_finished: null
+last_update: 2026-05-28T18:33:35Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +38,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-28T18:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-28T18:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2076: fw arc approve-driver triggers synchronous BVP rescore + standalone fw arc rescore verb (T-2065 GO scope)
@@ -40,41 +71,21 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `arc_rescore` function exists in `lib/arc.sh`, enumerates member tasks via `arc_tasks_for`, calls `fw bvp estimate <T-id>` per active member, echoes summary count.
+- [x] `arc_approve_driver` (normal path) calls `arc_rescore "$id"` after the YAML mutate succeeds and before the success echo. Rescore failure is reported but does NOT roll back driver approval (sovereignty: approval is the authorisation, rescore is the consequence).
+- [x] `fw arc rescore <arc-id>` standalone dispatcher wired in `lib/arc.sh` case statement (alongside `approve-driver)`). Accepts slug or arc-NNN. Help text in `arc_help`.
+- [x] Edge cases handled: arc with no active members emits "(no active member tasks — skipped)" + exit 0. Arc not found exits 1 with clear error.
+- [x] Bats test `tests/unit/arc_rescore.bats` exercises: (a) standalone rescore on a draft arc with 1 member, (b) `approve-driver` on a fresh arc triggers the rescore, (c) zero-member arc returns clean message + exit 0. Eight tests, all green.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+<!-- All criteria are agent-verifiable. This is a backend CLI verb + auto-fire
+     wiring with bats coverage; no render surface, no subjective judgment. -->
 
 ## Verification
+bash -n lib/arc.sh
+bats tests/unit/arc_rescore.bats
+out=$(bin/fw arc rescore 2>&1); echo "$out" | grep -q "Usage:"
+out=$(bin/fw arc rescore arc-nonexistent-xyz 2>&1); echo "$out" | grep -q "not found"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -168,3 +179,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2076-fw-arc-approve-driver-triggers-synchrono.md
 - **Context:** Initial task creation
+
+### 2026-05-28T18:33:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
