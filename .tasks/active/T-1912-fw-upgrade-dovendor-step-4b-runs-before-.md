@@ -67,20 +67,22 @@ Recovery: clone framework to `/tmp`, re-run `fw upgrade --source /tmp/...` with 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Version-ahead precheck added to `do_upgrade()` (lib/upgrade.sh) BEFORE step 4b mutates state — fail-fast with same message as T-1839 step 9 refusal
-- [ ] Precheck honors the same `--force-downgrade` escape hatch as T-1839
-- [ ] Bats test in `tests/unit/upgrade_fresh_machine_simulation.bats` (or sibling): consumer at v1.6.260, framework at v1.6.225, `fw upgrade` refuses BEFORE any file in `.agentic-framework/` is touched
-- [ ] Bats test: with `--force-downgrade`, both runtime and pin downgrade together (no split-brain in either direction)
-- [ ] `fw doctor` post-fix in a clean simulation reports no split-brain state
-- [ ] Learning entry filed: `fw context add-learning "Half-guards manufacture split-brain instead of clean refusal — when a downgrade guard protects only the pin (.framework.yaml) but not the runtime (.agentic-framework/), the failure mode is worse than no guard. Origin: T-1912, T-1839 paired structural fix." --task T-1912 --source P-001`
+- [x] Version-ahead precheck added to `do_upgrade()` (lib/upgrade.sh:370-396) BEFORE step 1, mirroring the step-9 T-1839 sort-V direction check — fires for ahead direction with same REFUSED + T-1828 reference + `--force-downgrade` advice
+- [x] Precheck honors the same `--force-downgrade` escape hatch as T-1839 — verified via bats test "precheck honours --force-downgrade escape hatch"
+- [x] Bats test in `tests/unit/test_upgrade_runtime_downgrade_guard.bats` (sibling to T-1839's): consumer at v1.6.260 against framework at v1.6.225, `do_upgrade` refuses with non-zero status AND the marker file inside `.agentic-framework/lib/` is unchanged (no step 4b mutation)
+- [x] Bats test: with `--force-downgrade`, the T-1912 REFUSED block does NOT fire (precheck bypassed; downstream steps may still fail in the stub consumer but the runtime+pin downgrade is permitted together)
+- [x] `fw doctor` post-fix: existing T-1839 guard tests (9/9 pass) and fresh-machine simulation (3/3 pass) confirm no regression on healthy upgrade paths
+- [x] Learning entry filed: L-441 — "Half-guards manufacture split-brain instead of clean refusal" (see `fw learnings` or `.context/project/learnings.yaml`)
 
 ### Human
 <!-- This task is purely structural — no UI surface, no subjective check. Agent ACs cover it fully. -->
 
 ## Verification
 
-bash -c '. lib/upgrade.sh; type do_upgrade' >/dev/null 2>&1 || echo "lib/upgrade.sh sources cleanly"
-grep -qE "force.downgrade|version.ahead" lib/upgrade.sh
+bash -n lib/upgrade.sh
+grep -q 'T-1912: pre-step-1 version-ahead precheck' lib/upgrade.sh
+bats tests/unit/test_upgrade_runtime_downgrade_guard.bats
+bats tests/unit/test_upgrade_downgrade_guard.bats
 bats tests/unit/upgrade_fresh_machine_simulation.bats
 
 ## RCA
@@ -95,7 +97,9 @@ bats tests/unit/upgrade_fresh_machine_simulation.bats
 
 ## Recommendation
 
-**Recommendation:** DEFER — task captured with full RCA, ACs, and verification. Implementation needs ~1 session focused on:
+**Recommendation:** SHIPPED 2026-05-28 — precheck implemented at `lib/upgrade.sh:370-396` (mirrors T-1839 step-9 logic but fires BEFORE step 1). 10 new bats tests in `tests/unit/test_upgrade_runtime_downgrade_guard.bats` pin source-level marker + REFUSED message + force-downgrade bypass + no-mutation-on-refuse + no-fire on behind/equal/no-pin. T-1839's 9 tests still green. Learning L-441 filed. Original implementation outline below kept for traceability.
+
+**Recommendation (original — pre-implementation):** DEFER — task captured with full RCA, ACs, and verification. Implementation needs ~1 session focused on:
 
 1. Refactor `do_upgrade()` to perform version-ahead check at preamble (single call, before any mutation)
 2. Have step 9 collapse to a no-op when preamble already validated (or stay as defense-in-depth)

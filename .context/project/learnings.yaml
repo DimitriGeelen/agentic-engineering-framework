@@ -3378,3 +3378,10 @@ X'` returning empty group."
   date: 2026-05-28
   context: Added via context agent
   application: TBD
+- id: L-441
+  learning: "Half-guards manufacture split-brain instead of clean refusal — when a downgrade guard protects only the pin (.framework.yaml) but not the runtime (.agentic-framework/), the failure mode is worse than no guard. The guard fires correctly on what it watches but watches the wrong checkpoint: by the time step 9 refuses the pin write, step 4b has already mutated the runtime. Symmetry rule: any direction-aware refusal must fire at the EARLIEST mutation site, not the latest validation site. Origin: T-1912 closes the runtime side of T-1839's pin-side guard. Field-reported (2026-05-18 dimitri-mint-dev: consumer v1.6.260 against framework v1.6.225 → split-brain runtime/pin)."
+  source: P-001
+  task: T-1912
+  date: 2026-05-28
+  context: Added via context agent
+  application: TBD

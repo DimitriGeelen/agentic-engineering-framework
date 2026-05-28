@@ -367,6 +367,35 @@ do_upgrade() {
     fi
     echo ""
 
+    # T-1912: pre-step-1 version-ahead precheck.
+    # Mirrors the step-9 T-1839 guard (lib/upgrade.sh:1100-1112) but fires
+    # BEFORE any mutation. The step-9 guard correctly protects the pinned
+    # version in .framework.yaml, but step 4b's do_vendor (line ~620) had
+    # already copied framework runtime files over the consumer's newer
+    # runtime by then — split-brain (runtime older, pin newer). Worked
+    # example: 2026-05-18 dimitri-mint-dev consumer at v1.6.260 against
+    # framework at v1.6.225. T-1839 closed the pin door; T-1912 closes
+    # the runtime door at the same checkpoint so the guard is complete.
+    if [ -n "$project_version" ] \
+       && [ "$project_version" != "$fw_version" ] \
+       && [ "$fw_version" != "unknown" ] \
+       && [ "$force_downgrade" != true ]; then
+        local _precheck_direction
+        if [ "$(printf '%s\n%s\n' "$project_version" "$fw_version" | sort -V | tail -1)" = "$project_version" ]; then
+            _precheck_direction="ahead"
+        else
+            _precheck_direction="behind"
+        fi
+        if [ "$_precheck_direction" = "ahead" ]; then
+            echo -e "${RED}REFUSED${NC}  Consumer v$project_version is AHEAD of framework v$fw_version." >&2
+            echo -e "          Running fw upgrade here would downgrade the runtime (.agentic-framework/)" >&2
+            echo -e "          AND the pinned version, creating a split-brain state (T-1912 class)." >&2
+            echo -e "          Framework VERSION likely rolled back (see T-1828)." >&2
+            echo -e "          To proceed anyway: re-run with ${BOLD}--force-downgrade${NC}." >&2
+            return 1
+        fi
+    fi
+
     # ── 1. CLAUDE.md — preserve project sections, update governance ──
     echo -e "${YELLOW}[1/10] CLAUDE.md governance sections${NC}"
 
