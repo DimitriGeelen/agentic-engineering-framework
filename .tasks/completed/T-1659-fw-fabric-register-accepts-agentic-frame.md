@@ -11,16 +11,16 @@ description: >
   derive filename robustly from full path (e.g. agentic-framework-lib-hook-telemetry.yaml).
   Not orchestrator-arc; framework hygiene.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/fabric/lib/register.sh, lib/review.sh, prompts/default.md, tests/unit/test_arc_parent_review_gate.py]
 related_tasks: []
 created: 2026-05-01T17:09:56Z
-last_update: 2026-05-28T19:40:43Z
-date_finished:
+last_update: 2026-05-28T19:44:24Z
+date_finished: 2026-05-28T19:44:24Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -143,3 +143,20 @@ out=$(bin/fw fabric register .agentic-framework/lib/hook-telemetry.sh 2>&1 || tr
 ### 2026-05-28T19:40:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e1c55468
+- **Timestamp:** 2026-05-28T19:44:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — `bats tests/unit/fabric_register_slug.bats` pins: (a) `.context/project/workflows/foo.yaml` → slug `context-project-workflows-foo`; (b) `.agentic-framework/lib/hook-telemetry.sh` → REJECT exit non-zer
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/workflows/foo.yaml in: `bats tests/unit/fabric_register_slug.bats` pins: (a) `.context/project/workflows/foo.yaml` → slug `context-project-workflows-foo`; (b) `.agentic-fram`
+
+### 2026-05-28T19:44:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

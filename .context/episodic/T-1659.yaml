@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1659: fw fabric register accepts .agentic-framework/ vendored paths and creates malformed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-28T19:44:30Z
+# ============================================================================
+
+task_id: T-1659
+task_name: "fw fabric register accepts .agentic-framework/ vendored paths and creates malformed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-01T17:09:56Z
+completed: 2026-05-28T19:44:24Z
+duration_days: 27
+updates_count: 3
+first_commit: 2026-05-01T19:10:33+02:00
+last_commit: 2026-05-28T21:44:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file fabric-register vendored-path bug (horizon: later). fw fabric register — reject vendored paths + robust slug derivation
+
+# Key outcomes
+outcomes:
+  - '`agents/fabric/lib/register.sh:_do_register_file()` rejects any `rel_path` beginning with `.agentic-framework/` with a hint to register the upstream framework file instead. Exit non-zero; print the upstream path the agent should register. (Bug 1 — vendored-copy detection.)'
+  - 'Slug derivation replaces the greedy `s|\..*$||` with `s|\.[^./-]*$||` (strip ONLY the trailing extension), so paths with dots earlier in the slugified name no longer collapse to an empty string. (Bug 2 — multi-slash + leading-dot.)'
+  - 'The same slug derivation pattern in `_register_directory()` (in the same file) is fixed in lockstep — both call sites use the identical sed. (L-441 symmetry — don''t fix half.)'
+  - '`bats tests/unit/fabric_register_slug.bats` pins: (a) `.context/project/workflows/foo.yaml` → slug `context-project-workflows-foo`; (b) `.agentic-framework/lib/hook-telemetry.sh` → REJECT exit non-zero with "register the upstream"; (c) `lib/pickup.sh` → slug `lib-pickup` (regression guard for normal path); (d) `bin/fw` (no extension) → slug `bin-fw` (no-extension regression guard). 6/6 green (2 extra regression cases also pinned).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file fabric-register vendored-path bug (horizon: later)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/fabric/lib/register.sh'
+  - '.tasks/active/T-1659-fw-fabric-register-accepts-agentic-frame.md'
+  - '.tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md'
+  - '.tasks/completed/T-1645-g-015-reframe--sub-agent-tmp-bypass-narr.md'
+  - '.tasks/completed/T-1653-arcs-as-first-class-entity-orchestrator-.md'
+  - 'tests/unit/fabric_register_slug.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-01T19:10:33"
+    action: "T-1659: file fabric-register vendored-path bug (horizon: later)"
+  - time: "2026-05-28T21:44:18"
+    action: "T-1659: fw fabric register — reject vendored paths + robust slug derivation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 39034 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 39034
+  commits: 2
+  files_changed: 4
+  lines_added: 237
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1659-fw-fabric-register-accepts-agentic-frame.md
+generated_by: context-agent-hybrid
