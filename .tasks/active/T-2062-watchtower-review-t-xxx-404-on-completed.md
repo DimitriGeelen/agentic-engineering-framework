@@ -17,7 +17,7 @@ components: [web/blueprints/review.py, web/templates/review.html]
 related_tasks: [T-2059, T-2061, T-2056, T-2060, T-679]
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: '2026-05-28T15:35:00Z'
+last_update: '2026-05-28T16:50:00Z'
 date_finished:
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -88,7 +88,7 @@ Why this matters: §Presenting Work for Human Review (CLAUDE.md T-679) makes `fw
 ### Agent
 - [x] Problem statement validated — user reported "404 task not found" on `/review/T-2061` + `/review/T-2059`; reproduced via curl (HTTP 404 on completed/, HTTP 200 on active/).
 - [x] Candidates enumerated with trade-offs — (a) 200 read-only render, (b) 301/302 redirect to `/tasks/T-XXX`, (c) keep 404 + update agent hand-off contract.
-- [x] Recommendation written with evidence — GO option (a), rationale grounded in hand-off-link rot UX.
+- [x] Recommendation written with evidence — NO-GO; sibling T-2067 shipped upstream root-cause fix (regex bug in update-task.sh, not /review/ route); all four originally-404 URLs now return 200.
 
 ### Human
 - [ ] [REVIEW] Confirm whether `/review/T-XXX` for completed tasks should render-200, redirect, or stay 404 — and that the agent's hand-off message updates accordingly.
@@ -118,18 +118,41 @@ Why this matters: §Presenting Work for Human Review (CLAUDE.md T-679) makes `fw
 
 ## Recommendation
 
-**Recommendation:** GO — candidate (a) HTTP 200 read-only render
+**Recommendation:** NO-GO — original symptom resolved by sibling T-2067; no separate route change needed.
 
-**Rationale:** The hand-off pattern the agent follows (`fw task review T-XXX` → clickable `/review/T-XXX`) is brittle if completed tasks 404 within minutes of closure. Redirect (b) is a half-measure (the surface name still implies "review pending"); a doc-only fix (c) requires the agent to predict whether the task will still be active by the time the human clicks, which it cannot. Option (a) — render the task body + Recommendation + Decision read-only on `/review/T-XXX` for completed tasks — preserves the canonical hand-off surface and matches user mental model ("review what shipped").
+**Rationale:** After this inception was filed, T-2067 (`fix update-task.sh components flow-style regex bug`) shipped the actual root cause and repaired the 4 corpus victims (T-2059, T-2060, T-2061, T-2018). The "404 on completed task" symptom was NOT a `/review/` route bug — it was upstream frontmatter mangling: `update-task.sh:1731`'s components-replacement regex only matched block-style continuation lines, so wrapped flow-style components produced an orphan `]` continuation line, made the YAML invalid, made `parse_frontmatter()` return False, and made `/review/T-XXX` render the "task not found" page (the route returns 200 for "completed" branch, 404 only for "not_found" / "invalid" — see `_render_review_404(reason)` whose name is misleading). With the regex fix shipped and the corpus repaired, all four URLs the user originally reported as 404 now return 200 (verified post-T-2067).
 
 **Evidence:**
-- `web/blueprints/review.py` has an explicit "completed" branch already; flipping it from 404 to a read-only render is a contained change.
-- T-2056 already renders 200 on `/review/`; the asymmetry shows the route can return 200 for completed-state — the question is only whether it should do so consistently.
-- The CLAUDE.md hand-off contract (§T-679) already says "the human is the decision-maker" — read-only-after-decision is a natural extension, not a re-scope.
+- T-2067 closed 2026-05-28 with regex fix at `agents/task-create/update-task.sh:1739-1748`, 6-case bats pinning shape coverage, and audit guard for the YAML-mangling class.
+- Post-fix curl verification: `/review/T-2059`, `/review/T-2060`, `/review/T-2061`, `/review/T-2056` all return HTTP 200.
+- Sovereignty: the agent did not invent a new route surface to "fix" a symptom whose root cause lived elsewhere; the correct discipline is NO-GO on this inception and trust the sibling's coverage.
+- Class precedent: this is the same shape as T-1469 (the original components-block regex) — a writer-side bug that masquerades as a renderer-side bug.
+
+**If the human wants the original (a) shape anyway** — render completed tasks read-only on `/review/T-XXX` instead of relying on `/tasks/T-XXX` — that is a separate UX call (extending the hand-off surface beyond decision time) and should be re-scoped as a fresh inception with that framing, not bundled under T-2062's "404 bug" framing.
 
 ## Decisions
 
-<!-- Filled when one of (a)/(b)/(c) is chosen. -->
+### 2026-05-28 — root cause empirically traced to T-2067, not /review/ route
+
+**Finding:** The 404 symptom on `/review/T-2061` and `/review/T-2059` was not produced by the `/review/` route's completed-task branch (that branch returns 200 with a friendly "Task Completed" page). It was produced by `parse_frontmatter()` returning False on those task files, which routed both through `_render_review_404("not_found")` — a 404 with a "task not found" body — making it look like a missing-route problem when the real cause was unparseable YAML.
+
+**Cause chain (verified):**
+1. `update-task.sh:1731` components-replacement regex was block-style-only: `^components:[^\n]*\n(?:[ \t]+-[^\n]*\n)*`.
+2. When the input had flow-style continuation (`components: [a, b,\n      c]`), the regex matched only line 1, leaving `      c]` as an orphan continuation when the replacement built `components: [new]` on top.
+3. Orphan `]` continuation → invalid YAML → `parse_frontmatter()` returns False → `/review/` returns 404 with reason="invalid" (or "not_found" depending on the load path).
+4. T-2056 returned 200 because its components: block was already flat single-line and the bug never triggered.
+
+**Resolution shipped under T-2067:**
+- Regex generalised to `^components:[^\n]*\n(?:[ \t]+(?!\w+:)[^\n]*\n)*` (matches both flow and block continuations; protects next-key with negative lookahead).
+- 4 corpus victims (T-2018, T-2059, T-2060, T-2061) repaired manually in same task.
+- bats `tests/unit/test_components_replacement_regex.bats` pins 6 historical shapes.
+- `agents/audit/audit.sh` parse-walk added for defence-in-depth.
+
+**Recommendation reversal:** This inception's original GO (option a — read-only 200 render on `/review/T-XXX` for completed tasks) is no longer the right intervention. The symptom is resolved; the route's existing completed-branch is already correct. Filed as NO-GO.
+
+### 2026-05-28 — separation principle preserved
+
+If a future inception genuinely wants the read-only-completed-on-/review/ UX (vs. /tasks/), it should be re-filed with that scope explicitly, not bundled with this 404-symptom framing. The 404 was a bug; "extend the hand-off surface lifetime" is a feature decision.
 
 ## Decision
 
@@ -146,3 +169,8 @@ Why this matters: §Presenting Work for Human Review (CLAUDE.md T-679) makes `fw
 - **Action:** Body remapped from bug-class RCA template (Context/RCA/AC) to inception template (Problem Statement / Exploration Plan / Scope Fence / Go/No-Go Criteria / Recommendation).
 - **Reason:** Watchtower `/inception/T-2062` rendered empty — `web/blueprints/inception.py` lists Context/RCA/AC/Verification/Decisions in `KNOWN_SECTIONS` (excluded from `extra_sections`) but never maps them into the Jinja render dict. The author-side fix is this refile; the structural fix is filed as T-2066.
 - **Output:** Same file path; content shape now matches the renderer's expectations.
+
+### 2026-05-28T16:50:00Z — recommendation reversed to NO-GO (root cause resolved by sibling T-2067)
+- **Action:** Recommendation block rewritten from GO option (a) read-only 200 render → NO-GO; Decisions block added with empirical cause-chain trace; Agent AC #3 updated to reflect new recommendation.
+- **Reason:** T-2067 (closed 2026-05-28) shipped the actual root cause: `update-task.sh:1731` components-replacement regex was block-style-only and mangled flow-style continuations. The 404 the user reported was not a `/review/` route bug but unparseable-YAML downstream of a writer-side regex bug. After T-2067's fix + corpus repair, `/review/T-2059`, `/review/T-2060`, `/review/T-2061`, `/review/T-2056` all return HTTP 200 (curl-verified).
+- **Sovereignty:** Decision left for human via `fw inception decide T-2062 no-go --rationale "..."` (§ACD-gated under `$CLAUDECODE=1`).
