@@ -4,7 +4,7 @@ name: "deep review fw upgrade reliability for field deployment"
 description: >
   Inception: deep review fw upgrade reliability for field deployment
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-28T19:57:46Z
-last_update: '2026-05-28T20:00:02Z'
-date_finished:
+last_update: 2026-05-28T20:08:42Z
+date_finished: 2026-05-28T20:08:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -86,15 +86,15 @@ Full findings written to **`docs/reports/T-2078-fw-upgrade-reliability-review.md
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -171,7 +171,40 @@ Antifragility framing (D1): every prior incident layered a guard onto upgrade.sh
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+15 reliability defects + 4 cross-cutting observations identified in `docs/reports/T-2078-fw-upgrade-reliability-review.md`. The load-bearing test gap (F3 — fresh-machine simulation only exercises the dry-run path, never the live mutation path) is the single highest-leverage fix and explicitly the gap T-1633 elevated to "the load-bearing piece". Four V1 slices each close one or more High/Medium severity findings under a regression-net; four V2 slices follow with the structural refactor once V1's safety net is green.
+
+Antifragility framing (D1): every prior incident layered a guard onto upgrade.sh. The result is 1265 lines that absorb individual incidents but did not strengthen the SHAPE of the flow. V1 stops the bleeding (correctness + observability); V2 restructures under the test net V1 establishes.
+
+Evidence:
+
+- `docs/reports/T-2078-fw-upgrade-reliability-review.md` — 15 numbered findings F1-F15 + 4 observations O1-O4, all with concrete line citations against `lib/upgrade.sh` at commit `ce010034`
+- T-1633 §3 "THE LOAD-BEARING PIECE" — the fresh-machine simulation gate's scope; F3 demonstrates the slim-slice ship missed the live path
+- T-1830 "boundary observability" meta-RCA — same antifragility frame applied to upgrade flow (O3)
+- T-2072 just shipped (this session): L-441 asymmetry closure pattern — F4 and F5 are L-441 instances on upgrade; same fix shape
+- `tests/unit/upgrade_fresh_machine_simulation.bats:112-117` — the commented-out gap (the bats file says it itself)
+
+V1 build slices (filed on GO):
+1. V1-a — Docker-based live-upgrade simulation gate (closes F3). Release-blocking.
+2. V1-b — Strict exit-code discipline + rollback on mid-upgrade failure (closes F4, F5, F6).
+3. V1-c — Pre-flight tooling check + post-upgrade `fw doctor` advisory (closes F8, F10).
+4. V1-d — Self-vendor extraction into a separate verb (closes F2).
+
+V2 build slices (after V1 green):
+1. V2-a — Step-driver refactor (closes F1, F13, F15)
+2. V2-b — Inline-python extraction → `lib/upgrade/.py` with unit tests (closes F9)
+3. V2-c — Field telemetry: upgrade outcome → `fw bus post` envelope (closes O3, F11)
+4. V2-d — `--only <subsystems>` selective refresh (closes F14)
+
+Open question for human decision (before GO):
+- Q1 in the report: `--from-upstream URL` accepting `file:///` paths in production. Recommendation: WARN outside `/tmp` paths; refuse without `--force` unless dry-run. Decide before V1 ships.
+
+**Date**: 2026-05-28T20:08:42Z
 
 ## Updates
 
@@ -180,3 +213,50 @@ Antifragility framing (D1): every prior incident layered a guard onto upgrade.sh
 
 ### 2026-05-28T19:58:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-28T20:08:42Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+15 reliability defects + 4 cross-cutting observations identified in `docs/reports/T-2078-fw-upgrade-reliability-review.md`. The load-bearing test gap (F3 — fresh-machine simulation only exercises the dry-run path, never the live mutation path) is the single highest-leverage fix and explicitly the gap T-1633 elevated to "the load-bearing piece". Four V1 slices each close one or more High/Medium severity findings under a regression-net; four V2 slices follow with the structural refactor once V1's safety net is green.
+
+Antifragility framing (D1): every prior incident layered a guard onto upgrade.sh. The result is 1265 lines that absorb individual incidents but did not strengthen the SHAPE of the flow. V1 stops the bleeding (correctness + observability); V2 restructures under the test net V1 establishes.
+
+Evidence:
+
+- `docs/reports/T-2078-fw-upgrade-reliability-review.md` — 15 numbered findings F1-F15 + 4 observations O1-O4, all with concrete line citations against `lib/upgrade.sh` at commit `ce010034`
+- T-1633 §3 "THE LOAD-BEARING PIECE" — the fresh-machine simulation gate's scope; F3 demonstrates the slim-slice ship missed the live path
+- T-1830 "boundary observability" meta-RCA — same antifragility frame applied to upgrade flow (O3)
+- T-2072 just shipped (this session): L-441 asymmetry closure pattern — F4 and F5 are L-441 instances on upgrade; same fix shape
+- `tests/unit/upgrade_fresh_machine_simulation.bats:112-117` — the commented-out gap (the bats file says it itself)
+
+V1 build slices (filed on GO):
+1. V1-a — Docker-based live-upgrade simulation gate (closes F3). Release-blocking.
+2. V1-b — Strict exit-code discipline + rollback on mid-upgrade failure (closes F4, F5, F6).
+3. V1-c — Pre-flight tooling check + post-upgrade `fw doctor` advisory (closes F8, F10).
+4. V1-d — Self-vendor extraction into a separate verb (closes F2).
+
+V2 build slices (after V1 green):
+1. V2-a — Step-driver refactor (closes F1, F13, F15)
+2. V2-b — Inline-python extraction → `lib/upgrade/.py` with unit tests (closes F9)
+3. V2-c — Field telemetry: upgrade outcome → `fw bus post` envelope (closes O3, F11)
+4. V2-d — `--only <subsystems>` selective refresh (closes F14)
+
+Open question for human decision (before GO):
+- Q1 in the report: `--from-upstream URL` accepting `file:///` paths in production. Recommendation: WARN outside `/tmp` paths; refuse without `--force` unless dry-run. Decide before V1 ships.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-61aacb95
+- **Timestamp:** 2026-05-28T20:08:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-28T20:08:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
