@@ -9,9 +9,9 @@ description: >
   responses without swap, so the user sees no toast, no error, no state
   change. The Complete control exists, the route exists, the handler exists
   — but the request never reaches the handler authenticated.
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [bug, watchtower, htmx, csrf, silent-fail, render-fidelity]
 components: [web/app.py, web/static/csrf-htmx.js, web/templates/_review_acs.html,
@@ -19,8 +19,8 @@ components: [web/app.py, web/static/csrf-htmx.js, web/templates/_review_acs.html
 related_tasks: [T-1302, T-1306, T-1453, T-2060]
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: '2026-05-28T15:35:00Z'
-date_finished:
+last_update: 2026-05-28T17:59:34Z
+date_finished: 2026-05-28T17:59:34Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -176,7 +176,20 @@ curl -s -X POST -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/api/
 
 ## Decision
 
-<!-- Filled by `fw inception decide T-2063 go|no-go|defer --rationale "..."` -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — sharpened candidate (b)' — extract toast handlers to `web/static/htmx-toast.js` and load from /review pages (close the silent-swallow class first); file (a)' as sibling for the residual CSRF-flow proximate cause.
+
+Rationale: Empirical exploration (see Decisions block) narrowed root cause to a STANDALONE-TEMPLATE class: `review.html` does NOT extend `base.html`, so the `htmx:responseError` + `htmx:sendError` toast handlers at `base.html:970-978` are never loaded on /review pages. csrf-htmx.js was already extracted (T-1453); the toast handler was not — that's the structural asymmetry. Cause-A (the 403 itself) needs browser-side evidence we don't have yet; closing cause-B first means the user can SEE the next 4xx instead of guessing why "nothing happens". This is the right ordering: visibility before diagnosis.
+
+Evidence:
+- `web/templates/review.html:4` opens with its own `<meta charset>` — standalone template, doesn't extend base.html.
+- `web/static/csrf-htmx.js` exists (39 lines) — precedent for static-file extraction of shared htmx wiring.
+- `web/templates/base.html:970-978` contains the toast handlers that should fire on non-2xx but don't reach /review.
+- `<meta name="csrf-token">` IS rendered on /review/T-2058 (curl confirmed: `content="49b417aa…"`) — so the wiring SHOULD work for a fresh-session browser; the 403 the user hit is a different layer.
+- Class precedent: T-2060 itself was a render-fidelity silent class (htmx polling chrome destruction). T-2063 extends the same lesson to error-handling silent class. T-1453 extracted the CSRF shim; this extracts the toast handler with the same shape.
+
+**Date**: 2026-05-28T17:59:33Z
 
 ## Updates
 
@@ -187,3 +200,30 @@ curl -s -X POST -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/api/
 ### 2026-05-28T15:35:00Z — refiled under canonical inception schema
 - **Action:** Body remapped from bug-class RCA template (Context/RCA/AC) to inception template (Problem Statement / Exploration Plan / Scope Fence / Go/No-Go / Recommendation).
 - **Reason:** Watchtower `/inception/T-2063` rendered empty — see T-2066 for the structural fix (KNOWN_SECTIONS filter without render-slot mapping).
+
+### 2026-05-28T17:59:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — sharpened candidate (b)' — extract toast handlers to `web/static/htmx-toast.js` and load from /review pages (close the silent-swallow class first); file (a)' as sibling for the residual CSRF-flow proximate cause.
+
+Rationale: Empirical exploration (see Decisions block) narrowed root cause to a STANDALONE-TEMPLATE class: `review.html` does NOT extend `base.html`, so the `htmx:responseError` + `htmx:sendError` toast handlers at `base.html:970-978` are never loaded on /review pages. csrf-htmx.js was already extracted (T-1453); the toast handler was not — that's the structural asymmetry. Cause-A (the 403 itself) needs browser-side evidence we don't have yet; closing cause-B first means the user can SEE the next 4xx instead of guessing why "nothing happens". This is the right ordering: visibility before diagnosis.
+
+Evidence:
+- `web/templates/review.html:4` opens with its own `<meta charset>` — standalone template, doesn't extend base.html.
+- `web/static/csrf-htmx.js` exists (39 lines) — precedent for static-file extraction of shared htmx wiring.
+- `web/templates/base.html:970-978` contains the toast handlers that should fire on non-2xx but don't reach /review.
+- `<meta name="csrf-token">` IS rendered on /review/T-2058 (curl confirmed: `content="49b417aa…"`) — so the wiring SHOULD work for a fresh-session browser; the 403 the user hit is a different layer.
+- Class precedent: T-2060 itself was a render-fidelity silent class (htmx polling chrome destruction). T-2063 extends the same lesson to error-handling silent class. T-1453 extracted the CSRF shim; this extracts the toast handler with the same shape.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6399b4aa
+- **Timestamp:** 2026-05-28T17:59:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-28T17:59:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

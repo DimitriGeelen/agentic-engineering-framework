@@ -9,17 +9,17 @@ description: >
   dict that inception_detail.html consumes. Net effect: silent drop.
   Any inception authored with bug-class RCA headings renders effectively
   empty. User hit this on T-2062..T-2065 batch ("all inception are empty").
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [bug, watchtower, inception, template, silent-drop, render-fidelity]
 components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-2062, T-2063, T-2064, T-2065, T-1177, T-1391, T-1585]
 arc_id: watchtower-redesign
 created: 2026-05-28T13:38:00Z
-last_update: '2026-05-28T13:45:03Z'
-date_finished:
+last_update: 2026-05-28T18:00:23Z
+date_finished: 2026-05-28T18:00:17Z
 cost_estimate_proposed:
   - ts: '2026-05-28T13:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -178,7 +178,18 @@ sections = {
 
 ## Decision
 
-<!-- Filled by `fw inception decide T-2066 go|no-go|defer --rationale "..."` -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — option (a) add render slots for Context / RCA / Acceptance Criteria / Verification / Decisions, plus matching Jinja blocks.
+
+Rationale: The filter set (KNOWN_SECTIONS) exists to prevent generic-section duplication when the renderer has structural rendering of its own — e.g. Reviewer Verdict (T-1585) is rendered via a dedicated extractor + block. Adding the 5 dropped sections as proper render slots matches that pattern (deliberate placement in the page flow, not at the bottom under `extra_sections`). Option (b) — letting them fall through to `extra_sections` — works but yields inconsistent layout (RCA appearing as a generic card at the bottom instead of near the Problem Statement, where the user's eye expects it).
+
+Evidence:
+- The fix surface is bounded — one Python file, one template.
+- Author-side friction observed in this very session: I filed 4 inceptions with bug-class headings because the RCA shape matched the user's request ("RCA + remediate"). The render-side accommodation closes the gap structurally instead of asking every author to remember the schema mismatch.
+- Adjacent precedent: T-1177 / T-1391 / T-1585 each added structural rendering for specific section classes; T-2066 continues that pattern for the 5 dropped headings.
+
+**Date**: 2026-05-28T18:00:23Z
 
 ## Updates
 
@@ -186,3 +197,45 @@ sections = {
 - **Action:** Filed via `fw inception start` after T-2062..T-2065 refile (bdf5ace5).
 - **Trigger:** User reported "all inception are empty !!! how is this possible" — diagnosis traced silent drop to KNOWN_SECTIONS filter + missing render-slot mappings in `web/blueprints/inception.py`.
 - **Sibling:** bdf5ace5 (T-2062..T-2065 author-side refile under canonical inception schema). This task is the structural fix so the silent-drop class can't recur.
+
+### 2026-05-28T18:00:16Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — option (a) add render slots for Context / RCA / Acceptance Criteria / Verification / Decisions, plus matching Jinja blocks.
+
+Rationale: The filter set (KNOWN_SECTIONS) exists to prevent generic-section duplication when the renderer has structural rendering of its own — e.g. Reviewer Verdict (T-1585) is rendered via a dedicated extractor + block. Adding the 5 dropped sections as proper render slots matches that pattern (deliberate placement in the page flow, not at the bottom under `extra_sections`). Option (b) — letting them fall through to `extra_sections` — works but yields inconsistent layout (RCA appearing as a generic card at the bottom instead of near the Problem Statement, where the user's eye expects it).
+
+Evidence:
+- The fix surface is bounded — one Python file, one template.
+- Author-side friction observed in this very session: I filed 4 inceptions with bug-class headings because the RCA shape matched the user's request ("RCA + remediate"). The render-side accommodation closes the gap structurally instead of asking every author to remember the schema mismatch.
+- Adjacent precedent: T-1177 / T-1391 / T-1585 each added structural rendering for specific section classes; T-2066 continues that pattern for the 5 dropped headings.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3e6c0d48
+- **Timestamp:** 2026-05-28T18:00:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Problem statement validated — read `web/blueprints/inception.py:339-373` confirms KNOWN_SECTIONS filter excludes 5 headings from `extra_sections` without mapping them into the `sections` dict; user hi
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: Problem statement validated — read `web/blueprints/inception.py:339-373` confirms KNOWN_SECTIONS filter excludes 5 headings from `extra_sections` with`
+
+### 2026-05-28T18:00:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-05-28T18:00:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — option (a) add render slots for Context / RCA / Acceptance Criteria / Verification / Decisions, plus matching Jinja blocks.
+
+Rationale: The filter set (KNOWN_SECTIONS) exists to prevent generic-section duplication when the renderer has structural rendering of its own — e.g. Reviewer Verdict (T-1585) is rendered via a dedicated extractor + block. Adding the 5 dropped sections as proper render slots matches that pattern (deliberate placement in the page flow, not at the bottom under `extra_sections`). Option (b) — letting them fall through to `extra_sections` — works but yields inconsistent layout (RCA appearing as a generic card at the bottom instead of near the Problem Statement, where the user's eye expects it).
+
+Evidence:
+- The fix surface is bounded — one Python file, one template.
+- Author-side friction observed in this very session: I filed 4 inceptions with bug-class headings because the RCA shape matched the user's request ("RCA + remediate"). The render-side accommodation closes the gap structurally instead of asking every author to remember the schema mismatch.
+- Adjacent precedent: T-1177 / T-1391 / T-1585 each added structural rendering for specific section classes; T-2066 continues that pattern for the 5 dropped headings.

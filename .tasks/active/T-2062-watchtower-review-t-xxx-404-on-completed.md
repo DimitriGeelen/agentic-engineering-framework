@@ -8,17 +8,17 @@ description: >
   that URL returns HTTP 404. The agent had handed off T-2059 + T-2061 with
   /review/ URLs ~10 minutes earlier; user clicks them, sees "404 task not
   found". Read-only review of recent closures is broken.
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [bug, watchtower, review-surface, hand-off, render-fidelity]
 components: [web/blueprints/review.py, web/templates/review.html]
 related_tasks: [T-2059, T-2061, T-2056, T-2060, T-679]
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: '2026-05-28T16:50:00Z'
-date_finished:
+last_update: 2026-05-28T17:59:23Z
+date_finished: 2026-05-28T17:59:23Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -156,7 +156,21 @@ If a future inception genuinely wants the read-only-completed-on-/review/ UX (vs
 
 ## Decision
 
-<!-- Filled by `fw inception decide T-2062 go|no-go|defer --rationale "..."` -->
+**Decision**: NO-GO
+
+**Rationale**: Recommendation: NO-GO — original symptom resolved by sibling T-2067; no separate route change needed.
+
+Rationale: After this inception was filed, T-2067 (`fix update-task.sh components flow-style regex bug`) shipped the actual root cause and repaired the 4 corpus victims (T-2059, T-2060, T-2061, T-2018). The "404 on completed task" symptom was NOT a `/review/` route bug — it was upstream frontmatter mangling: `update-task.sh:1731`'s components-replacement regex only matched block-style continuation lines, so wrapped flow-style components produced an orphan `]` continuation line, made the YAML invalid, made `parse_frontmatter()` return False, and made `/review/T-XXX` render the "task not found" page (the route returns 200 for "completed" branch, 404 only for "not_found" / "invalid" — see `_render_review_404(reason)` whose name is misleading). With the regex fix shipped and the corpus repaired, all four URLs the user originally reported as 404 now return 200 (verified post-T-2067).
+
+Evidence:
+- T-2067 closed 2026-05-28 with regex fix at `agents/task-create/update-task.sh:1739-1748`, 6-case bats pinning shape coverage, and audit guard for the YAML-mangling class.
+- Post-fix curl verification: `/review/T-2059`, `/review/T-2060`, `/review/T-2061`, `/review/T-2056` all return HTTP 200.
+- Sovereignty: the agent did not invent a new route surface to "fix" a symptom whose root cause lived elsewhere; the correct discipline is NO-GO on this inception and trust the sibling's coverage.
+- Class precedent: this is the same shape as T-1469 (the original components-block regex) — a writer-side bug that masquerades as a renderer-side bug.
+
+If the human wants the original (a) shape anyway — render completed tasks read-only on `/review/T-XXX` instead of relying on `/tasks/T-XXX` — that is a separate UX call (extending the hand-off surface beyond decision time) and should be re-scoped as a fresh inception with that framing, not bundled under T-2062's "404 bug" framing.
+
+**Date**: 2026-05-28T17:59:23Z
 
 ## Updates
 
@@ -174,3 +188,31 @@ If a future inception genuinely wants the read-only-completed-on-/review/ UX (vs
 - **Action:** Recommendation block rewritten from GO option (a) read-only 200 render → NO-GO; Decisions block added with empirical cause-chain trace; Agent AC #3 updated to reflect new recommendation.
 - **Reason:** T-2067 (closed 2026-05-28) shipped the actual root cause: `update-task.sh:1731` components-replacement regex was block-style-only and mangled flow-style continuations. The 404 the user reported was not a `/review/` route bug but unparseable-YAML downstream of a writer-side regex bug. After T-2067's fix + corpus repair, `/review/T-2059`, `/review/T-2060`, `/review/T-2061`, `/review/T-2056` all return HTTP 200 (curl-verified).
 - **Sovereignty:** Decision left for human via `fw inception decide T-2062 no-go --rationale "..."` (§ACD-gated under `$CLAUDECODE=1`).
+
+### 2026-05-28T17:59:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO — original symptom resolved by sibling T-2067; no separate route change needed.
+
+Rationale: After this inception was filed, T-2067 (`fix update-task.sh components flow-style regex bug`) shipped the actual root cause and repaired the 4 corpus victims (T-2059, T-2060, T-2061, T-2018). The "404 on completed task" symptom was NOT a `/review/` route bug — it was upstream frontmatter mangling: `update-task.sh:1731`'s components-replacement regex only matched block-style continuation lines, so wrapped flow-style components produced an orphan `]` continuation line, made the YAML invalid, made `parse_frontmatter()` return False, and made `/review/T-XXX` render the "task not found" page (the route returns 200 for "completed" branch, 404 only for "not_found" / "invalid" — see `_render_review_404(reason)` whose name is misleading). With the regex fix shipped and the corpus repaired, all four URLs the user originally reported as 404 now return 200 (verified post-T-2067).
+
+Evidence:
+- T-2067 closed 2026-05-28 with regex fix at `agents/task-create/update-task.sh:1739-1748`, 6-case bats pinning shape coverage, and audit guard for the YAML-mangling class.
+- Post-fix curl verification: `/review/T-2059`, `/review/T-2060`, `/review/T-2061`, `/review/T-2056` all return HTTP 200.
+- Sovereignty: the agent did not invent a new route surface to "fix" a symptom whose root cause lived elsewhere; the correct discipline is NO-GO on this inception and trust the sibling's coverage.
+- Class precedent: this is the same shape as T-1469 (the original components-block regex) — a writer-side bug that masquerades as a renderer-side bug.
+
+If the human wants the original (a) shape anyway — render completed tasks read-only on `/review/T-XXX` instead of relying on `/tasks/T-XXX` — that is a separate UX call (extending the hand-off surface beyond decision time) and should be re-scoped as a fresh inception with that framing, not bundled under T-2062's "404 bug" framing.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d8fb17ed
+- **Timestamp:** 2026-05-28T17:59:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-28T17:59:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO

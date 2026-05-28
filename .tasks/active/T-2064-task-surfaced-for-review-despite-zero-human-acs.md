@@ -8,9 +8,9 @@ description: >
   sees it surfaced in human-facing UI (HTTP 200 on /review/T-2056), asks
   "non an human ac, why surface to human ??". The review/approvals surface
   filters on owner or status but doesn't filter on "actually has Human ACs > 0".
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [bug, watchtower, review-queue, filter-gap, sovereignty]
 components: [web/blueprints/review.py, web/blueprints/approvals.py, bin/fw,
@@ -18,8 +18,8 @@ components: [web/blueprints/review.py, web/blueprints/approvals.py, bin/fw,
 related_tasks: [T-2056, T-2061, T-679, T-372, T-373]
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: '2026-05-28T15:35:00Z'
-date_finished:
+last_update: 2026-05-28T17:59:50Z
+date_finished: 2026-05-28T17:59:50Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -146,7 +146,18 @@ curl -s -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/review/T-205
 
 ## Decision
 
-<!-- Filled by `fw inception decide T-2064 go|no-go|defer --rationale "..."` -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — candidate (b) push the predicate to the queue-build layer (shared helper).
+
+Rationale: Filtering at the render-time edge (a) means three surfaces each maintain the same logic — drift-prone. Auto-ticking at completion (c) is sovereignty-risky (the agent should never tick `### Human` ACs). A shared helper `has_unfinished_human_work(task_file) -> bool` consumed by CLI queue builder, `/review/` route, and `/approvals/` route is the right shape — one definition, three call sites, single regression case.
+
+Evidence:
+- The CLAUDE.md rule "NEVER check a `### Human` AC" (sovereignty boundary) rules out candidate (c).
+- T-1985's auto-tick already exists for `[REVIEWER]`-prefixed ACs but explicitly stops at sovereignty for `[REVIEW]` — the auto-tick mechanism is not the right place to filter visibility.
+- `fw review-queue` and `/approvals` and `/review/` are three surfaces; one helper de-duplicates the predicate.
+
+**Date**: 2026-05-28T17:59:49Z
 
 ## Updates
 
@@ -157,3 +168,28 @@ curl -s -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/review/T-205
 ### 2026-05-28T15:35:00Z — refiled under canonical inception schema
 - **Action:** Body remapped from bug-class RCA template to inception template.
 - **Reason:** Watchtower `/inception/T-2064` rendered empty — see T-2066 for the structural fix.
+
+### 2026-05-28T17:59:49Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — candidate (b) push the predicate to the queue-build layer (shared helper).
+
+Rationale: Filtering at the render-time edge (a) means three surfaces each maintain the same logic — drift-prone. Auto-ticking at completion (c) is sovereignty-risky (the agent should never tick `### Human` ACs). A shared helper `has_unfinished_human_work(task_file) -> bool` consumed by CLI queue builder, `/review/` route, and `/approvals/` route is the right shape — one definition, three call sites, single regression case.
+
+Evidence:
+- The CLAUDE.md rule "NEVER check a `### Human` AC" (sovereignty boundary) rules out candidate (c).
+- T-1985's auto-tick already exists for `[REVIEWER]`-prefixed ACs but explicitly stops at sovereignty for `[REVIEW]` — the auto-tick mechanism is not the right place to filter visibility.
+- `fw review-queue` and `/approvals` and `/review/` are three surfaces; one helper de-duplicates the predicate.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-84880a65
+- **Timestamp:** 2026-05-28T17:59:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-28T17:59:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

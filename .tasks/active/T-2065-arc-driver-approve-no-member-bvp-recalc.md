@@ -9,9 +9,9 @@ description: >
   the new scoped driver gets zero coverage across the corpus. User: "arc-007
   drivers accepted, no automatically recaulation based on new drivers set
   takes place".
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [bug, arc, bvp, estimator, automation-gap, value-prioritisation]
 components: [bin/fw, lib/arc.sh, agents/termlink/bvp-estimator/bvp-estimator.sh,
@@ -19,8 +19,8 @@ components: [bin/fw, lib/arc.sh, agents/termlink/bvp-estimator/bvp-estimator.sh,
 related_tasks: [T-1918, T-1922, T-1925, T-1926, T-1930, T-1934, T-1935]
 arc_id: value-prioritisation
 created: 2026-05-28T14:30:00Z
-last_update: '2026-05-28T15:35:00Z'
-date_finished:
+last_update: 2026-05-28T18:00:00Z
+date_finished: 2026-05-28T18:00:00Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -144,7 +144,18 @@ Why this matters: the arc's whole point is "scoring tasks against THIS driver se
 
 ## Decision
 
-<!-- Filled by `fw inception decide T-2065 go|no-go|defer --rationale "..."` -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — combined (a)+(d): synchronous re-estimation in `approve_driver` AND a separate `fw arc rescore <slug>` verb.
+
+Rationale: The synchronous path is the right shape because (i) the human is at the prompt when `approve_driver` runs, so a 500ms blocking call is acceptable, (ii) the data invariant ("approved drivers are scored across the corpus") is best maintained at the mutation site, (iii) async/lazy paths create observability gaps where a "fresh" approval hasn't propagated yet — confusing the human or the BVP rank consumer. The separate `fw arc rescore` verb covers the recovery case (estimator config change, rubric update, batch import) and gives the human an explicit re-fire mechanism. Async (b) and lazy (c) are wrong because they trade correctness for premature optimisation.
+
+Evidence:
+- Benchmark target (A3): 46 tasks × 10ms ≈ 500ms — well under interactive latency budget.
+- The sovereignty boundary is preserved: human authorises the driver; the rescore runs as a deterministic consequence of that authorisation (not a separate decision).
+- Same pattern shape as T-1922 (estimator-on-task-create) — adding the dual hook at "driver-set change" is symmetric and easy to reason about.
+
+**Date**: 2026-05-28T18:00:00Z
 
 ## Updates
 
@@ -155,3 +166,28 @@ Why this matters: the arc's whole point is "scoring tasks against THIS driver se
 ### 2026-05-28T15:35:00Z — refiled under canonical inception schema
 - **Action:** Body remapped from bug-class RCA template to inception template.
 - **Reason:** Watchtower `/inception/T-2065` rendered empty — see T-2066 for the structural fix.
+
+### 2026-05-28T18:00:00Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — combined (a)+(d): synchronous re-estimation in `approve_driver` AND a separate `fw arc rescore <slug>` verb.
+
+Rationale: The synchronous path is the right shape because (i) the human is at the prompt when `approve_driver` runs, so a 500ms blocking call is acceptable, (ii) the data invariant ("approved drivers are scored across the corpus") is best maintained at the mutation site, (iii) async/lazy paths create observability gaps where a "fresh" approval hasn't propagated yet — confusing the human or the BVP rank consumer. The separate `fw arc rescore` verb covers the recovery case (estimator config change, rubric update, batch import) and gives the human an explicit re-fire mechanism. Async (b) and lazy (c) are wrong because they trade correctness for premature optimisation.
+
+Evidence:
+- Benchmark target (A3): 46 tasks × 10ms ≈ 500ms — well under interactive latency budget.
+- The sovereignty boundary is preserved: human authorises the driver; the rescore runs as a deterministic consequence of that authorisation (not a separate decision).
+- Same pattern shape as T-1922 (estimator-on-task-create) — adding the dual hook at "driver-set change" is symmetric and easy to reason about.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5ec6ba42
+- **Timestamp:** 2026-05-28T18:00:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-28T18:00:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
