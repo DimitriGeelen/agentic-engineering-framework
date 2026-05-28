@@ -13,7 +13,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-28T20:48:44Z
-last_update: 2026-05-28T20:49:07Z
+last_update: '2026-05-28T21:00:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +28,16 @@ bvp_scores_proposed:
       F1: 0
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-28T21:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -129,22 +139,77 @@ Time-boxed: ≤45 min for the spike, ≤15 min to write the recommendation.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO (spike done — root cause named, fix bounded to ~10 lines across one route + one template branch)
+
+## Spike Findings (2026-05-28)
+
+**H3 confirmed.** The `#ac-container` carries an `hx-trigger="every 5s"` poll at `web/templates/review.html:592-594`:
+
+```html
+<div id="ac-container"
+     hx-get="/review/{{ task_id }}/acs"
+     hx-trigger="every 5s">
+```
+
+The polling endpoint `web/blueprints/review.py:review_acs_fragment` (L252-298) re-renders `_review_acs.html` from the on-disk task. T-1575 added a `decision_recorded` guard (L278-284) so inceptions that have already had `fw inception decide` recorded don't have their "Decision recorded" panel wiped by the next poll. **There is no equivalent guard for non-inception completes.**
+
+After the Complete button is pressed on a build task:
+
+1. POST `/api/task/<id>/complete` → returns `<p>Task completed.</p>` + OOB swap (`web/blueprints/tasks.py:1029-1032`).
+2. Response is swapped into `#ac-container` → button gone.
+3. The poll timer was at some random position in its 5-second cycle when the click happened; within 1-5 seconds (mean ~2.5s — **matches user's "1-2 seconds" report**) it fires GET `/review/<id>/acs`.
+4. The GET re-reads the task (now in `completed/`), parses Human ACs, computes `all_checked=True`, `total_count > 0`. The template branch at L75-106 of `_review_acs.html` falls through to `{% elif all_checked and total_count > 0 %}` → renders the Complete button **again** because:
+   - `workflow_type` is not `inception` → falls past the inception-decide branch
+   - There's no `task_completed` guard branch matching the inception's `decision_recorded` branch
+5. Polled fragment overwrites `#ac-container` → **Complete button reappears**.
+
+**Empirical proof (this session):**
+- T-2079 is in `completed/` with `status: work-completed`.
+- `curl /review/T-2079/acs` → response **still contains** `<div class="complete-section">` with the Complete Task button (`grep -c "Complete Task" = 2`).
+- No "Decision recorded" rendering (it's a build task, not an inception, so the existing guard doesn't apply).
+
+**Origin:** T-1575 closed exactly this race for inceptions ("the 5-second htmx poll on #ac-container wipes the success message and re-renders the GO/NO-GO/DEFER form, making it look like the decision didn't take" — direct quote from `_review_acs.html:65-66`). The non-inception sibling case was never closed. L-441 class (sibling-occurrence sweep).
+
+## Fix Path (bounded, single PR)
+
+**~10 lines total**, split across one route + one template:
+
+1. `web/blueprints/review.py:review_acs_fragment` — compute `task_completed = fm.get("status") == "work-completed"`, pass to template.
+2. `web/templates/_review_acs.html` — add a guard branch mirroring `decision_recorded`:
+   ```jinja
+   {% if decision_recorded %}
+     ...existing inception-decide-recorded block...
+   {% elif task_completed %}
+     {# T-2081: non-inception sibling of T-1575 decision_recorded guard — without this,
+        the 5-second poll wipes the POST swap and re-renders the Complete button. #}
+     <div class="complete-section" id="task-completed-marker">
+         <p style="...">✓ Task completed. <a href="/review/{{ task_id }}">Reload page</a> for fresh view.</p>
+     </div>
+   {% elif all_checked and total_count > 0 %}
+     ...existing inception/build branch...
+   {% endif %}
+   ```
+3. Regression net: Playwright test asserts `GET /review/<task_id>/acs` on a `work-completed` build task does NOT contain `<button class="complete-btn">`. Mirrors `test_bvp_form_htmx.py` shape.
+
+## Open Sub-Question (resolvable inside the fix)
+
+When a task is partial-complete (work-completed + owner=human + some Human ACs unchecked), should the Complete button STILL render so the human can finalise? Currently it does, but the `all_checked` precondition means the button only ever appears when all Human ACs are ticked. Partial-complete with unchecked Human ACs falls through silently — no Complete button. So the fix's guard `task_completed` is safe: it can short-circuit unconditionally once status crosses `work-completed`.
 
 **Rationale:**
 
-User reports the Complete button on /review/T-XXX briefly reappears for ~1-2 seconds after a successful click, even though the task DOES correctly transition to work-completed. The completion mechanic is right; the UI re-render race is the bug. DEFER on a fix path until RCA names the structural cause (htmx swap ordering vs htmx polling vs explicit reload race) — premature symptom-patching here risks masking the real failure mode. One-question inception (per CLAUDE.md: 'one inception = one question').
+Spike done. Root cause = H3 confirmed: `#ac-container` carries a `hx-trigger="every 5s"` poll (`web/templates/review.html:592`); the polling GET `/review/<id>/acs` re-renders `_review_acs.html` from disk and the template branches to the Complete-button block whenever `all_checked && total_count > 0 && workflow_type != 'inception'`, regardless of whether the task is already `work-completed`. T-1575 closed this race for inceptions via a `decision_recorded` guard, but the non-inception sibling case (the build-task Complete button) was never closed — L-441 class. Direct empirical confirmation this session: T-2079 is in `completed/`; `curl /review/T-2079/acs` STILL returns `<button class="complete-btn">Complete Task</button>` (count=2 hits on "Complete Task").
 
-**Evidence (filing time — to be expanded during exploration):**
+Fix is bounded: ~10 LOC across `web/blueprints/review.py:review_acs_fragment` (compute `task_completed` flag) + `web/templates/_review_acs.html` (add guard branch mirroring `decision_recorded`). Regression-net is feasible: Playwright test asserts the poll endpoint on a completed task returns no Complete button.
 
-- `web/templates/_review_acs.html:102` — `<form hx-post="/api/task/{{ task_id }}/complete" hx-target="#ac-container" hx-swap="innerHTML">` is the Complete form. The intended swap target is `#ac-container`.
-- Symptom is reproducible (observed this session immediately after T-2079 close). NOT a one-off.
-- The task DOES transition correctly to `work-completed` — the underlying mechanic works; only the UI rendering races.
-- htmx is loaded at base.html; csrf-htmx.js injects the token automatically.
-- Related rendering surface tasks: T-1990 (cockpit + approvals redesign), T-2063 (Complete button silent-fail / CSRF). T-2063 closed a *different* failure on the same button — useful prior art for the render path.
+**Evidence (post-spike):**
 
-**Open question for the human (set before GO):**
-- Should I run the spike now and revise Recommendation → GO with findings? Or park until the symptom recurs in another session?
+- `web/templates/review.html:592-594` — `<div id="ac-container" hx-get="/review/{{ task_id }}/acs" hx-trigger="every 5s">`. The 5-second poll is the timer that races the POST swap.
+- `web/blueprints/review.py:252-298` — `review_acs_fragment` polling endpoint; has `decision_recorded` guard at L278-284 (T-1575) but no `task_completed` equivalent.
+- `web/blueprints/tasks.py:1013-1033` — `complete_task` POST handler returns `<p>Task completed.</p>` + OOB swap — does NOT cancel the polling on the surviving `#ac-container` element.
+- `web/templates/_review_acs.html:75-106` — template branch that re-renders the Complete button whenever `all_checked && total_count > 0 && workflow_type != 'inception'`, with no `task_completed` short-circuit.
+- **Empirical reproduction:** T-2079 is in `completed/` with `status: work-completed`. `curl http://192.168.10.107:3000/review/T-2079/acs` → response contains `<div class="complete-section">` and `<button class="complete-btn">Complete Task</button>` (grep counts 2 hits on "Complete Task"). The polling GET endpoint returns the Complete button HTML for a fully-completed task.
+- **L-441 sibling:** T-1575 closed this race for inceptions (`decision_recorded` guard). The non-inception sibling case was missed in that fix. Same pattern, same template, same fix shape.
+- Related rendering surface tasks: T-1990 (cockpit + approvals redesign), T-2063 (Complete button silent-fail / CSRF, different failure on same button — prior art for the render path).
 
 ## Decisions
 
