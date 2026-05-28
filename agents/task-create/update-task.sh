@@ -1734,8 +1734,14 @@ with open(path) as f:
 # '<word>:' at start). Stops at the next YAML key or blank line. Without
 # the flow-style branch, a pre-existing wrapped list left an orphan
 # closing-bracket continuation that produced invalid YAML — Watchtower
-# /review/T-XXX rendered "Task Not Found" because parse_frontmatter failed.
+# /review/T-XXX rendered the not-found page because parse_frontmatter failed.
 # 4 corpus victims repaired in 1e0c98b4 (T-2018, T-2059, T-2060, T-2061).
+# NOTE (T-2068): never embed the double-quote character (ASCII 0x22) in
+# this comment block. The surrounding python3 -c uses that character as
+# its bash string delimiter; an inline occurrence here prematurely
+# terminates the bash string at runtime and shifts argv positions.
+# Use single quotes or rephrase. bash -n does NOT catch this (syntax is
+# valid at parse time, only breaks at expansion).
 pattern = re.compile(
     r'^components:[^\n]*\n'              # the components: line
     r'(?:[ \t]+(?!\w+:)[^\n]*\n)*',       # indented continuation lines (not starting a new key)
