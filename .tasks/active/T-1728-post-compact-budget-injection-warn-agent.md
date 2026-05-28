@@ -10,9 +10,9 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
-components: []
-related_tasks: []
+tags: [post-compact, context-recovery, budget-gate]
+components: [agents/context/post-compact-resume.sh]
+related_tasks: [T-1087, T-1088, T-179, T-188, T-111]
 created: 2026-05-04T22:00:07Z
 last_update: '2026-05-19T21:45:02Z'
 date_finished:
@@ -43,14 +43,15 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+After /compact, the SessionStart:compact hook (`agents/context/post-compact-resume.sh`) injects handover content verbatim into the fresh session. The handover's Suggested First Action or narrative often contains budget-state assertions baked into it at handover time — e.g. "Budget at 92%, stopping new work" — which were TRUE at the moment the handover was written but are STALE the instant the new session starts (the budget gauge has been reset by the hook at line 47-49 to `{ok, 0, now}`). The agent reads the injected handover, sees the stale assertion, and may falsely defer to it ("the prior session said budget was 92%, I should stop"). T-1087 + T-1088 already fixed the cache-side of this class (seed `.budget-status` with `{ok,0,now}` + write fresh `.session-start-ts`); what's missing is a one-line note in the injected context that explicitly tells the agent "these prior budget statements are stale; consult the live gauge".
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `agents/context/post-compact-resume.sh` appends a Post-Compact Budget Note stanza to `$CONTEXT` that (a) tells the agent any prior-session budget assertions in the handover are stale, (b) cites `.context/working/.budget-status` as the live gauge, (c) cites `bin/fw doctor` and `./agents/context/checkpoint.sh status` as on-demand probes.
+- [x] The stanza is added unconditionally on every compact/resume fire (the cost is ~6 lines of injected context; the benefit is one explicit anti-misread cue).
+- [x] Existing hook output (handover, focus, arc, tasks, git, fabric, discoveries, broken-hook probe) preserved unchanged — the new stanza is additive.
+- [x] `bash -n agents/context/post-compact-resume.sh` passes; manual JSON-output dry-run shows valid JSON with new stanza inside `additionalContext`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -68,6 +69,9 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+bash -n agents/context/post-compact-resume.sh
+out=$(bash agents/context/post-compact-resume.sh 2>&1); echo "$out" > /tmp/.t1728-verify.json && python3 -c "import json; ctx=json.load(open('/tmp/.t1728-verify.json'))['hookSpecificOutput']['additionalContext']; assert 'Post-Compact Budget Note (T-1728)' in ctx; assert '.budget-status' in ctx; assert 'checkpoint.sh status' in ctx; assert 'fw doctor' in ctx"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

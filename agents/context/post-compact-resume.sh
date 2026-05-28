@@ -232,6 +232,14 @@ fi
 
 CONTEXT="${CONTEXT}
 
+## Post-Compact Budget Note (T-1728)
+
+Any budget assertion you see in the **handover narrative above** (e.g. \"Budget at 92%\", \"stopping new work\", \"context near critical\") was true at handover time but is **STALE in this resumed session**. The budget gauge was reset to {ok, 0, now} on resume (T-1087/T-1088). Do not defer to the prior session's budget statements when deciding whether to start new work.
+
+- **Live gauge (fast):** \`cat .context/working/.budget-status\` — current level, tokens, age (refreshed by PostToolUse).
+- **On-demand probe:** \`./agents/context/checkpoint.sh status\` — exact token count from session JSONL.
+- **Doctor surface:** \`bin/fw doctor\` — flags out-of-range budget alongside other health.
+
 ---
 *This context was auto-injected by the session resume hook (T-111/T-188). Run \`fw resume status\` for full details.*
 "
