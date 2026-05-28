@@ -30,7 +30,16 @@
           <td>
             {# T-1965 (T-1958 B): per-row Remove for free drivers only — D1-D4 are protected #}
             {% if not d_id.startswith('D') %}
+              {#- T-2079: htmx replaces the JS click handler. hx-prompt collects
+                  the rationale (sent as HX-Prompt header); driver id travels in
+                  the URL query. No vanilla fetch() path means no navigation
+                  surprises if JS errors elsewhere on the page. -#}
               <button type="button" class="dr-remove-btn" data-driver="{{ d_id }}"
+                      hx-post="/api/bvp/driver/remove?driver={{ d_id }}"
+                      hx-prompt="Rationale for removing {{ d_id }} (≥30 chars):"
+                      hx-target="#dr-remove-result"
+                      hx-swap="innerHTML"
+                      hx-on::after-request="if(event.detail.successful) setTimeout(()=>location.reload(),800)"
                       style="font-size:0.8rem; padding:0.2rem 0.5rem;">Remove</button>
             {% else %}
               <span class="muted" style="font-size:0.75rem;" title="D1-D4 are immutable in identity">protected</span>
@@ -40,8 +49,16 @@
         {% endfor %}
       </tbody>
     </table>
-    <form id="bvp-commit-form" method="POST" action="/api/bvp/commit-weights" style="margin-top: 0.8rem;">
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    {#- T-2079: htmx submits — native form action removed. The `changes` field
+        is computed from liveWeights and added to the request via the
+        `htmx:configRequest` listener below. Rationale + no-changes validation
+        runs in that listener and calls evt.preventDefault() on failure. -#}
+    <form id="bvp-commit-form"
+          hx-post="/api/bvp/commit-weights"
+          hx-target="#bvp-commit-result"
+          hx-swap="innerHTML"
+          hx-on::after-request="if(event.detail.successful) setTimeout(()=>location.reload(),800)"
+          style="margin-top: 0.8rem;">
       <label>Rationale (≥30 characters):
         <textarea name="rationale" rows="2" minlength="30" required style="width: 100%;"
                   placeholder="Why are you changing these weights? Cite evidence (incident, decision, periodic re-weighting cycle)."></textarea>
@@ -54,51 +71,8 @@
       <div id="bvp-commit-result" style="margin-top: 0.5rem;"></div>
     </form>
     <div id="dr-remove-result" style="margin-top: 0.5rem;"></div>
-    <script>
-      // T-1965 (T-1958 B): per-row Remove free driver. Click → prompt rationale →
-      // POST /api/bvp/driver/remove → reload on success.
-      (function() {
-        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        const csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
-        const result = document.getElementById('dr-remove-result');
-        document.querySelectorAll('.dr-remove-btn').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const driver = btn.getAttribute('data-driver');
-            if (!confirm(`Remove driver ${driver}? Free drivers only — D1-D4 cannot be removed.`)) return;
-            const rationale = prompt(`Rationale for removing ${driver} (≥30 chars):`, '');
-            if (rationale === null) return;
-            if (rationale.length < 30) {
-              result.textContent = `✗ Rationale must be ≥30 characters (got ${rationale.length}).`;
-              result.style.color = '#b00';
-              return;
-            }
-            result.textContent = `Removing ${driver}…`;
-            result.style.color = '';
-            try {
-              const fd = new FormData();
-              fd.append('_csrf_token', csrf);
-              fd.append('driver', driver);
-              fd.append('rationale', rationale);
-              const resp = await fetch('/api/bvp/driver/remove', { method: 'POST', body: fd });
-              const text = await resp.text();
-              if (resp.ok) {
-                let payload;
-                try { payload = JSON.parse(text); } catch { payload = { message: text }; }
-                result.textContent = '✓ ' + (payload.message || `Removed ${driver}.`) + ' Reloading…';
-                result.style.color = 'green';
-                setTimeout(() => window.location.reload(), 800);
-              } else {
-                result.textContent = '✗ ' + text;
-                result.style.color = '#b00';
-              }
-            } catch (e) {
-              result.textContent = '✗ Network error: ' + e.message;
-              result.style.color = '#b00';
-            }
-          });
-        });
-      })();
-    </script>
+    {#- T-2079: per-row Remove handler IIFE replaced by hx-post + hx-prompt on
+        each button. CSRF is auto-injected by web/static/csrf-htmx.js. -#}
   </section>
 
   {# ── T-1964 (T-1958 A): add free driver form ── #}
@@ -109,8 +83,15 @@
       At cap, you must <em>drop</em> an existing free driver to add a new one (add-one-drop-one).
       §ACD: posted via <code>fw bvp driver --add --from-watchtower</code>. Rationale ≥30 chars (R6).
     </p>
-    <form id="bvp-driver-add-form" method="POST" action="/api/bvp/driver/add">
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    {#- T-2079: htmx replaces native form submit so a JS error can't navigate
+        the browser to the JSON API URL (the prior failure mode where users saw
+        "Method Not Allowed" was a GET on /api/bvp/driver/add after native submit).
+        CSRF header injected automatically by web/static/csrf-htmx.js. -#}
+    <form id="bvp-driver-add-form"
+          hx-post="/api/bvp/driver/add"
+          hx-target="#da-result"
+          hx-swap="innerHTML"
+          hx-on::after-request="if(event.detail.successful) setTimeout(()=>location.reload(),800)">
       <table style="width:100%; max-width:48rem;">
         <tr>
           <td style="width:9rem;"><label for="da-name">Name (slug):</label></td>
@@ -159,36 +140,7 @@
         <span id="da-result" class="muted"></span>
       </div>
     </form>
-    <script>
-      (function() {
-        const form = document.getElementById('bvp-driver-add-form');
-        if (!form) return;
-        form.addEventListener('submit', async (ev) => {
-          ev.preventDefault();
-          const result = document.getElementById('da-result');
-          result.textContent = 'Adding…';
-          result.style.color = '';
-          try {
-            const fd = new FormData(form);
-            const resp = await fetch(form.action, { method: 'POST', body: fd });
-            const text = await resp.text();
-            if (resp.ok) {
-              let payload;
-              try { payload = JSON.parse(text); } catch { payload = { message: text }; }
-              result.textContent = '✓ ' + (payload.message || 'Driver added.') + ' Reloading…';
-              result.style.color = 'green';
-              setTimeout(() => window.location.reload(), 800);
-            } else {
-              result.textContent = '✗ ' + text;
-              result.style.color = '#b00';
-            }
-          } catch (e) {
-            result.textContent = '✗ Network error: ' + e.message;
-            result.style.color = '#b00';
-          }
-        });
-      })();
-    </script>
+    {#- T-2079: vanilla fetch() IIFE removed — htmx now drives the submit. -#}
   </section>
   {% endif %}
 
@@ -344,13 +296,16 @@
     document.getElementById("bvp-commit-result").innerHTML = "";
   });
 
-  // Commit posts: rationale + changed-only driver weights.
-  document.getElementById("bvp-commit-form").addEventListener("submit", async (evt) => {
-    evt.preventDefault();
+  // T-2079: commit form now driven by htmx. We hook htmx:configRequest to
+  // (a) inject the computed `changes` JSON into the request parameters and
+  // (b) run client-side rationale/no-change validation, calling
+  // evt.preventDefault() to surface the error inline without firing the POST.
+  document.getElementById("bvp-commit-form").addEventListener("htmx:configRequest", (evt) => {
     const result = document.getElementById("bvp-commit-result");
-    const rationale = evt.target.rationale.value.trim();
+    const rationale = (evt.detail.parameters.rationale || "").trim();
     if (rationale.length < 30) {
       result.innerHTML = '<p style="color: var(--pico-del-color);">Rationale must be ≥30 characters (R6).</p>';
+      evt.preventDefault();
       return;
     }
     const changes = [];
@@ -361,23 +316,10 @@
     }
     if (!changes.length) {
       result.innerHTML = '<p>No changes to commit.</p>';
+      evt.preventDefault();
       return;
     }
-    const fd = new FormData();
-    fd.append("rationale", rationale);
-    fd.append("changes", JSON.stringify(changes));
-    try {
-      const resp = await fetch(evt.target.action, {method: "POST", body: fd});
-      if (resp.ok) {
-        result.innerHTML = '<p style="color: var(--pico-ins-color);">Committed. Reloading…</p>';
-        setTimeout(() => location.reload(), 800);
-      } else {
-        const txt = await resp.text();
-        result.innerHTML = `<p style="color: var(--pico-del-color);">Commit failed: ${txt}</p>`;
-      }
-    } catch (e) {
-      result.innerHTML = `<p style="color: var(--pico-del-color);">Network error: ${e}</p>`;
-    }
+    evt.detail.parameters.changes = JSON.stringify(changes);
   });
 
   refreshLiveLabels();

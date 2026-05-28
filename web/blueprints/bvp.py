@@ -463,6 +463,16 @@ def bvp_commit_weights():
             first = err.splitlines()[0] if err else f"fw bvp weight exited {result.returncode}"
             return f"Commit failed at {driver}: {first}", 400
         results.append({"driver": driver, "weight": weight})
+    # T-2079: htmx clients get HTML fragment (rendered into target div); CLI/API
+    # callers continue to receive the JSON envelope. HX-Trigger on success fires
+    # a `bvp:reload` event the form's hx-on::after-request listens for.
+    if request.headers.get("HX-Request"):
+        summary = ", ".join(f"{r['driver']}={r['weight']}" for r in results)
+        return (
+            f'<p style="color: var(--pico-ins-color);">✓ Committed {len(results)} change(s) ({summary}). Reloading…</p>',
+            200,
+            {"Content-Type": "text/html", "HX-Trigger": "bvpReload"},
+        )
     return json.dumps({"committed": results, "count": len(results)}), 200, {"Content-Type": "application/json"}
 
 
@@ -518,6 +528,14 @@ def bvp_driver_add():
         first = err.splitlines()[0] if err else f"fw bvp driver --add exited {result.returncode}"
         return f"Add failed: {first}", 400
     out = (result.stdout or "").strip()
+    # T-2079: htmx clients get HTML fragment; CLI/API callers get JSON.
+    if request.headers.get("HX-Request"):
+        msg = out or f"Driver {name} added (weight {weight})."
+        return (
+            f'<span style="color: var(--pico-ins-color);">✓ {msg} Reloading…</span>',
+            200,
+            {"Content-Type": "text/html", "HX-Trigger": "bvpReload"},
+        )
     return json.dumps({"ok": True, "message": out, "name": name, "weight": weight, "dropped": drop_id}), 200, {"Content-Type": "application/json"}
 
 
@@ -532,8 +550,19 @@ def bvp_driver_remove():
     Server refuses D1-D4 (D1-D4 are immutable in identity, CLAUDE.md).
     §ACD authority + history audit stay in fw.
     """
-    driver_id = (request.form.get("driver") or "").strip()
-    rationale = (request.form.get("rationale") or "").strip()
+    # T-2079: htmx remove buttons send driver via query string (hx-post URL)
+    # and rationale via HX-Prompt header (browser prompt() result). Plain CLI/API
+    # callers continue to send both as form fields.
+    driver_id = (
+        request.args.get("driver")
+        or request.form.get("driver")
+        or ""
+    ).strip()
+    rationale = (
+        request.headers.get("HX-Prompt")
+        or request.form.get("rationale")
+        or ""
+    ).strip()
 
     if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", driver_id):
         return f"Bad driver id {driver_id!r}: must match [A-Za-z][A-Za-z0-9_-]*", 400
@@ -560,6 +589,14 @@ def bvp_driver_remove():
         first = err.splitlines()[0] if err else f"fw bvp driver --remove exited {result.returncode}"
         return f"Remove failed: {first}", 400
     out = (result.stdout or "").strip()
+    # T-2079: htmx clients get HTML fragment; CLI/API callers get JSON.
+    if request.headers.get("HX-Request"):
+        msg = out or f"Driver {driver_id} removed."
+        return (
+            f'<span style="color: var(--pico-ins-color);">✓ {msg} Reloading…</span>',
+            200,
+            {"Content-Type": "text/html", "HX-Trigger": "bvpReload"},
+        )
     return json.dumps({"ok": True, "message": out, "removed": driver_id}), 200, {"Content-Type": "application/json"}
 
 
