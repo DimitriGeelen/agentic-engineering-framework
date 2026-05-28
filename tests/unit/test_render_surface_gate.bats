@@ -84,6 +84,93 @@ EOF
     [ "$status" -eq 0 ]
 }
 
+# ---- T-2061: git-evidence-preferred over body-text path tokens (L-435 fix) ----
+#
+# When the task has commits in git history (`git log --grep TASK_ID`),
+# those commits are authoritative for what was actually modified. Body-text
+# mentions are ignored — they cannot distinguish "this task modifies X"
+# from "this task discusses X". When the task has NO commits (first-close,
+# test fixtures), the body+components scan is used as fallback.
+
+@test "T-2061/predicate: body mentions render path but commits touched only lib/ → returns 1 (false-positive fixed)" {
+    source "$FRAMEWORK_ROOT/lib/render_surface.sh"
+    # Set up a tiny git tree with a commit that touches ONLY a non-render file
+    # while a synthetic task body discusses a render path. Use numeric task
+    # ID (T-NNNN) — that's the real-world shape `_render_surface_extract_task_id`
+    # matches; non-numeric synthetic ids (T-FP-1 etc) fail the regex and fall
+    # back to body scan, which would re-introduce the false-positive in the
+    # test itself.
+    local proj="$TEST_TEMP_DIR/t2061-fp"
+    mkdir -p "$proj"
+    pushd "$proj" >/dev/null
+    git init -q >/dev/null 2>&1
+    git config user.email "t@t.t" && git config user.name "t"
+    mkdir -p lib tests
+    echo "stub" > lib/foo.sh
+    git add lib/foo.sh && git commit -qm "T-90061: edit lib/foo.sh (no render touch)"
+    local tf="$proj/T-90061.md"
+    cat > "$tf" <<'EOF'
+---
+id: T-90061
+---
+The whole point of this task is that web/blueprints/settings.py and
+web/templates/approvals.html are intentionally UNTOUCHED. settings.py
+remains as-is. We did NOT modify any template.
+EOF
+    run task_touches_render_surface "$tf"
+    popd >/dev/null
+    [ "$status" -ne 0 ]
+}
+
+@test "T-2061/predicate: body mentions render path AND commits touched it → returns 0 (true-positive preserved)" {
+    source "$FRAMEWORK_ROOT/lib/render_surface.sh"
+    local proj="$TEST_TEMP_DIR/t2061-tp"
+    mkdir -p "$proj"
+    pushd "$proj" >/dev/null
+    git init -q >/dev/null 2>&1
+    git config user.email "t@t.t" && git config user.name "t"
+    mkdir -p web/templates
+    echo "<html/>" > web/templates/foo.html
+    git add web/templates/foo.html && git commit -qm "T-90062: edit web/templates/foo.html"
+    local tf="$proj/T-90062.md"
+    cat > "$tf" <<'EOF'
+---
+id: T-90062
+---
+Modified web/templates/foo.html to fix something.
+EOF
+    run task_touches_render_surface "$tf"
+    popd >/dev/null
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2061/files: render_surface_files_in returns committed paths only when git history exists" {
+    source "$FRAMEWORK_ROOT/lib/render_surface.sh"
+    local proj="$TEST_TEMP_DIR/t2061-files"
+    mkdir -p "$proj"
+    pushd "$proj" >/dev/null
+    git init -q >/dev/null 2>&1
+    git config user.email "t@t.t" && git config user.name "t"
+    mkdir -p web/blueprints lib
+    echo "stub" > lib/foo.sh
+    echo "blueprint" > web/blueprints/tasks.py
+    git add lib/foo.sh web/blueprints/tasks.py
+    git commit -qm "T-90063: touch lib/foo.sh and web/blueprints/tasks.py"
+    local tf="$proj/T-90063.md"
+    cat > "$tf" <<'EOF'
+---
+id: T-90063
+---
+Body also mentions web/templates/never-touched.html for context only.
+EOF
+    run render_surface_files_in "$tf"
+    popd >/dev/null
+    # render_surface_files_in must report the committed blueprint, not the
+    # body-only-mentioned template
+    [[ "$output" == *"web/blueprints/tasks.py"* ]]
+    [[ "$output" != *"web/templates/never-touched.html"* ]]
+}
+
 # ---- Behavioural — gate firing ----
 # These are smoke-shape tests using a stub helper. They run the gate
 # function in isolation by sourcing it with NEW_STATUS / TASK_FILE / SKIP_*
