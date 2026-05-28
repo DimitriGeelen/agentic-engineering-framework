@@ -3385,3 +3385,10 @@ X'` returning empty group."
   date: 2026-05-28
   context: Added via context agent
   application: TBD
+- id: L-442
+  learning: "L-441 polling-race sibling sweep: /approvals/content has hx-trigger='every 10s' and includes a Complete Task button, but T-2075's needs_human_review filter excludes all-checked tasks from the queue, so the Complete-button-render-race code path is dead. /review/T-XXX (T-2082) was the only genuine sibling. Verified empirically by curling /approvals/content and confirming Complete Task text appears only in AC step descriptions, never in actual form buttons."
+  source: P-006
+  task: T-2082
+  date: 2026-05-28
+  context: Added via context agent
+  application: TBD
