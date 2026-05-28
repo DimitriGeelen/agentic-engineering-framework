@@ -1,10 +1,19 @@
 ---
 id: T-2074
-name: "extract htmx toast handlers to web/static/htmx-toast.js — load from /review (T-2063 GO scope)"
+name: "extract htmx toast handlers to web/static/htmx-toast.js — load from /review
+  (T-2063 GO scope)"
 description: >
-  Implements T-2063 inception GO. Symptom: /review/T-XXX Complete button silently fails because review.html doesn't extend base.html, so the base htmx:responseError/sendError toast handlers at base.html:970-978 are never loaded. Fix: extract those handlers into web/static/htmx-toast.js (parallel to T-1453's csrf-htmx.js extraction), then add a script tag to review.html. Visibility-before-diagnosis ordering — sibling task for the residual CSRF/403 cause-A follows after browser-side evidence surfaces. ACs: handler extracted, review.html loads it, manual smoke test confirms toast renders on intentional 4xx, no regression on base.html-extending pages. [REVIEW] AC required (render-surface gate T-1766 — touches web/static + web/templates).
+  Implements T-2063 inception GO. Symptom: /review/T-XXX Complete button silently
+  fails because review.html doesn't extend base.html, so the base htmx:responseError/sendError
+  toast handlers at base.html:970-978 are never loaded. Fix: extract those handlers
+  into web/static/htmx-toast.js (parallel to T-1453's csrf-htmx.js extraction), then
+  add a script tag to review.html. Visibility-before-diagnosis ordering — sibling
+  task for the residual CSRF/403 cause-A follows after browser-side evidence surfaces.
+  ACs: handler extracted, review.html loads it, manual smoke test confirms toast renders
+  on intentional 4xx, no regression on base.html-extending pages. [REVIEW] AC required
+  (render-surface gate T-1766 — touches web/static + web/templates).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +25,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T18:03:42Z
-last_update: 2026-05-28T18:03:42Z
-date_finished: null
+last_update: 2026-05-28T18:05:08Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +37,61 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-28T18:05:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2074: extract htmx toast handlers to web/static/htmx-toast.js — load from /review (T-2063 GO scope)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Implements T-2063 inception GO **with a scope correction** discovered on first build inspection (2026-05-28).
+
+**T-2063 inception body claimed:** *"/review pages have NO toast handler — so ANY non-2xx (CSRF 403, server 500, network error) silently swallows."*
+
+**Reality on inspection:** `review.html:611-634` contains an INLINE toast container + handler block (added during the T-1582 / T-1574 follow-up). The `base.html:970-978` handlers are not loaded on /review, but a parallel inline implementation IS present and IS wired to `htmx:responseError` and `htmx:sendError`.
+
+**Implication:** The "silent swallow" symptom the user reported is NOT explained by missing handlers. The inline handler should fire on the 403. Either (a) the handler IS firing but the toast is invisible (z-index, animation, container injection issue), or (b) htmx isn't dispatching the error event for some reason, or (c) something else (e.g., the request is succeeding from htmx's perspective and the 403 page swap doesn't trigger an error event).
+
+**Refined T-2074 scope** (refactor only, not symptom fix):
+- Extract the inline toast handler from `review.html` (lines 611-634) AND the parallel block in `base.html` (lines 956-978) into a single self-contained `web/static/htmx-toast.js`.
+- Both templates load the static file (parallels csrf-htmx.js / T-1453 pattern).
+- This is **DRY refactor + asymmetry repair**, NOT the symptom fix the inception promised.
+
+**The actual T-2063 symptom needs:** browser-side investigation (Chrome DevTools on /review/T-XXX, click Complete, observe Network + Console + DOM for toast injection). File this as a follow-up (T-2078 candidate) — same cause-A path the inception flagged for later.
+
+## Status
+
+**HOLD pending user direction.** Do not ship as scoped — the GO framing was wrong. Two paths:
+- **Path A:** Re-frame T-2074 as a refactor (above), ship it, file the real symptom as T-2078.
+- **Path B:** Pause T-2074, run cause-A investigation first, scope the real fix.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `web/static/htmx-toast.js` created — self-contained: declares its own `showToast()` + injects a `#toast-container` div if missing on DOMContentLoaded, then wires `htmx:responseError` + `htmx:sendError` listeners.
+- [ ] `base.html` updated — uses the new `htmx-toast.js` script instead of the inline handlers (the inline `showToast()` definition stays for non-htmx callers; only the error listeners move).
+- [ ] `review.html` updated — loads `htmx-toast.js` after `csrf-htmx.js` (`<script src="/static/htmx-toast.js"></script>`).
+- [ ] Both pages still pass HTTP smoke test (`curl -sf "$(bin/fw watchtower url)/review/T-2074"` and `curl -sf "$(bin/fw watchtower url)/"`).
+- [ ] Render-surface gate satisfied (Human [REVIEW] AC below covers visual confirmation that toast renders on intentional 4xx).
+
+### Human
+- [ ] [REVIEW] On /review/T-XXX, an intentional 4xx (e.g. clicking a stale Complete button) surfaces a red toast bottom-right with the error message — no longer silent.
+  **Steps:**
+  1. Open `/review/T-XXX` for any task with `started-work` status.
+  2. Click Complete.
+  3. Observe: toast appears if the server returns 4xx/5xx (which is now expected behaviour pending T-2063 cause-A fix).
+  **Expected:** Visible error toast, not silent failure.
+  **If not:** Check browser console for `htmx-toast.js` load error.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,3 +218,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2074-extract-htmx-toast-handlers-to-webstatic.md
 - **Context:** Initial task creation
+
+### 2026-05-28T18:05:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
