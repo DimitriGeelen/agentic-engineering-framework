@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1728: post-compact budget injection: warn agent that prior budget assertions are
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-28T15:22:20Z
+# ============================================================================
+
+task_id: T-1728
+task_name: "post-compact budget injection: warn agent that prior budget assertions are"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-04T22:00:07Z
+completed: 2026-05-28T15:22:07Z
+duration_days: 24
+updates_count: 1
+first_commit: 2026-05-28T17:22:02+02:00
+last_commit: 2026-05-28T17:22:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  append Post-Compact Budget Note stanza to session-resume injection
+
+# Key outcomes
+outcomes:
+  - '`agents/context/post-compact-resume.sh` appends a Post-Compact Budget Note stanza to `$CONTEXT` that (a) tells the agent any prior-session budget assertions in the handover are stale, (b) cites `.context/working/.budget-status` as the live gauge, (c) cites `bin/fw doctor` and `./agents/context/checkpoint.sh status` as on-demand probes.'
+  - 'The stanza is added unconditionally on every compact/resume fire (the cost is ~6 lines of injected context; the benefit is one explicit anti-misread cue).'
+  - 'Existing hook output (handover, focus, arc, tasks, git, fabric, discoveries, broken-hook probe) preserved unchanged — the new stanza is additive.'
+  - '`bash -n agents/context/post-compact-resume.sh` passes; manual JSON-output dry-run shows valid JSON with new stanza inside `additionalContext`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/post-compact-resume.sh'
+  - '.tasks/active/T-1728-post-compact-budget-injection-warn-agent.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T17:22:02"
+    action: "T-1728: append Post-Compact Budget Note stanza to session-resume injection"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 34162 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [post-compact, context-recovery, budget-gate]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 34162
+  commits: 1
+  files_changed: 2
+  lines_added: 19
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1728-post-compact-budget-injection-warn-agent.md
+generated_by: context-agent-hybrid

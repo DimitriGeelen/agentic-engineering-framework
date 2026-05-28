@@ -6,7 +6,7 @@ description: >
   post-compact budget injection: warn agent that prior budget assertions are stale
   + cite live gauge path
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -14,8 +14,8 @@ tags: [post-compact, context-recovery, budget-gate]
 components: [agents/context/post-compact-resume.sh]
 related_tasks: [T-1087, T-1088, T-179, T-188, T-111]
 created: 2026-05-04T22:00:07Z
-last_update: '2026-05-19T21:45:02Z'
-date_finished:
+last_update: 2026-05-28T15:22:07Z
+date_finished: 2026-05-28T15:22:07Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -139,3 +139,20 @@ out=$(bash agents/context/post-compact-resume.sh 2>&1); echo "$out" > /tmp/.t172
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1728-post-compact-budget-injection-warn-agent.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c6b673da
+- **Timestamp:** 2026-05-28T15:22:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `agents/context/post-compact-resume.sh` appends a Post-Compact Budget Note stanza to `$CONTEXT` that (a) tells the agent any prior-session budget assertions in the handover are stale, (b) cites `.cont
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/context/checkpoint.sh in: `agents/context/post-compact-resume.sh` appends a Post-Compact Budget Note stanza to `$CONTEXT` that (a) tells the agent any prior-session budget asse`
+
+### 2026-05-28T15:22:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
