@@ -1726,9 +1726,21 @@ resolved = sys.argv[1]
 path = sys.argv[2]
 with open(path) as f:
     content = f.read()
-# Match 'components:' line plus any block-style continuation lines that follow
-# (lines starting with whitespace + '-'). Stops at first non-list line.
-pattern = re.compile(r'^components:[^\n]*\n(?:[ \t]+-[^\n]*\n)*', re.MULTILINE)
+# Match 'components:' line plus any continuation lines that follow.
+# Two continuation shapes (T-2067, T-1469):
+#   - block-style: '  - item'  (lines starting whitespace + '-')
+#   - flow-style:  '  item]'    (indented continuation of a wrapped flow list)
+# A continuation is any indented line that isn't itself a YAML key (no
+# '<word>:' at start). Stops at the next YAML key or blank line. Without
+# the flow-style branch, a pre-existing wrapped list left an orphan
+# closing-bracket continuation that produced invalid YAML — Watchtower
+# /review/T-XXX rendered "Task Not Found" because parse_frontmatter failed.
+# 4 corpus victims repaired in 1e0c98b4 (T-2018, T-2059, T-2060, T-2061).
+pattern = re.compile(
+    r'^components:[^\n]*\n'              # the components: line
+    r'(?:[ \t]+(?!\w+:)[^\n]*\n)*',       # indented continuation lines (not starting a new key)
+    re.MULTILINE,
+)
 new_block = 'components: [' + resolved + ']\n'
 if pattern.search(content):
     content = pattern.sub(new_block, content, count=1)

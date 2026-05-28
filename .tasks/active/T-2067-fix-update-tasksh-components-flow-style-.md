@@ -63,10 +63,10 @@ The fix is contained: extend the regex to also eat flow-style continuation lines
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Regex in `agents/task-create/update-task.sh:1731` accepts both block-style (`  -`) and flow-style (indented continuation) `components:` line shapes — orphan continuation lines no longer remain after replacement.
-- [ ] Pytest/bats fixture pins the regex against (a) flat single-line flow list, (b) wrapped flow list, (c) block-style list, (d) mixed comments. Each shape must round-trip through the replacement without producing invalid YAML.
-- [ ] Audit run across `.tasks/{active,completed}/` after fix — zero frontmatter-broken tasks remain (the 4 repairs already shipped + the regex fix together close the class).
-- [ ] `fw doctor` learns to detect frontmatter-broken tasks and surface a WARN; defense in depth for the regex fix.
+- [x] Regex in `agents/task-create/update-task.sh:1731` accepts both block-style (`  -`) and flow-style (indented continuation) `components:` line shapes — orphan continuation lines no longer remain after replacement.
+- [x] Bats fixture `tests/unit/test_components_replacement_regex.bats` pins the regex against (a) flat single-line flow list, (b) wrapped flow list (origin bug), (c) pre-mangled orphan continuation (idempotent cleanup), (d) block-style list, (e) empty flow, (f) next-YAML-key not eaten by continuation match. 6/6 green.
+- [x] Audit run across `.tasks/{active,completed}/` after fix — only T-1845 remains frontmatter-broken (different class: folded scalar + numbered-list body, pre-T-2067).
+- [x] `fw audit` learns to detect frontmatter-broken tasks and surface a WARN; defense in depth for the regex fix (added to STRUCTURE CHECKS in audit.sh).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -101,6 +101,11 @@ The fix is contained: extend the regex to also eat flow-style continuation lines
 
 ## Verification
 
+bats tests/unit/test_components_replacement_regex.bats > /tmp/.t2067-bats.out 2>&1; grep -q "^ok 6" /tmp/.t2067-bats.out
+bash -n agents/task-create/update-task.sh
+bash -n agents/audit/audit.sh
+python3 -c "import sys; sys.path.insert(0, '.'); from web.shared import parse_frontmatter; import glob; bad = [f for f in glob.glob('.tasks/active/T-*.md') + glob.glob('.tasks/completed/T-*.md') if not parse_frontmatter(open(f).read())[0]]; assert len(bad) <= 1, f'unexpected new frontmatter breakage: {bad}'"
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -127,6 +132,14 @@ The fix is contained: extend the regex to also eat flow-style continuation lines
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
+
+**Symptom:** `/review/T-XXX` returned HTTP 404 "Task Not Found" for several recently-closed tasks (T-2059, T-2060, T-2061). User asked "2061 2059 404 task not found ???!" — T-2062 inception scoped the symptom as a route logic bug. Empirical exploration during T-2063 work surfaced the real cause: the route is fine; frontmatter YAML parsing was failing, and the 404 page is what `_render_review_404(reason="not_found")` renders when `parse_frontmatter()` returns False.
+
+**Root cause:** `agents/task-create/update-task.sh:1731` auto-rewrites the `components:` frontmatter field from git history on `--status work-completed`. The regex matched the `components:` line + block-style continuations (`  -`) but NOT flow-style continuations (lines like `      d]`). When a previous Edit/Write had already wrapped the flow list, the regex replaced only line 1 and left the orphan closing-bracket continuation — producing invalid YAML.
+
+**Why structurally allowed:** Two factors. (1) The regex was authored at T-1469 to fix a sed-based orphan-continuation problem in the OTHER direction (block-style); the flow-style case wasn't in scope and no test pinned it. (2) The downstream consumer (`parse_frontmatter`) returns False on any YAML error, and Watchtower's `/review/T-XXX` route treats False as "task not found" — same surface as a missing file. The two failure modes were indistinguishable from the user's vantage point, so the failure surfaced as a route bug instead of a writer bug.
+
+**Prevention:** (1) Regex extended with `(?!\w+:)` negative lookahead to capture continuation lines that aren't new YAML keys — accepts both block and flow continuations. (2) Bats fixture pins 6 shapes including the origin bug + idempotent cleanup. (3) `fw audit` STRUCTURE CHECKS gains a task-frontmatter parse check — any future YAML-mangling writer surfaces as a daily WARN. Defense in depth: the writer is fixed AND the audit catches it if a new writer regresses the class.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -166,7 +179,27 @@ The fix is contained: extend the regex to also eat flow-style continuation lines
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO — shipped.
+
+**Rationale:** Bug class identified empirically, fix contained to one regex + one audit check, 6/6 bats green, 4 corpus victims repaired (commit 1e0c98b4). The fix is idempotent — re-running the regex over a mangled file would now clean it up (case 3 of the bats matrix). Defense in depth via audit ensures future regressions surface daily, not weeks later via a confused user.
+
+**Evidence:**
+- `tests/unit/test_components_replacement_regex.bats` — 6/6 PASS covering flat, wrapped (origin bug), pre-mangled (idempotent cleanup), block-style, empty flow, next-key-not-eaten.
+- `agents/task-create/update-task.sh:1731-1742` — regex extended with `(?!\w+:)` negative lookahead, multi-line comment captures the T-2067 rationale + T-1469 history.
+- `agents/audit/audit.sh:591-620` — task-frontmatter parse check added to STRUCTURE CHECKS section, emits WARN on any broken task file.
+- Corpus state after commit 1e0c98b4: 4 victims (T-2018, T-2059, T-2060, T-2061) repaired; T-1845 remains as a different-class case (folded scalar, pre-existing, not in scope here).
+- `/review/T-2059`, `/review/T-2060`, `/review/T-2061` all return HTTP 200 post-repair (curl-verified).
+
 ## Decisions
+
+### 2026-05-28 — regex shape choice
+
+- **Chose:** Extend the existing inline regex with a negative-lookahead `(?!\w+:)` for the continuation match, keeping the inline-python approach.
+- **Why:** Minimal blast radius. The inline-python pattern is well-tested in production for the block-style case (T-1469 origin); extending it preserves that behaviour and adds the flow-style branch in a single character class change. Round-trip risk is low (no yaml.safe_dump that would strip comments / reformat).
+- **Rejected:** Switch to `yaml.safe_load` → mutate dict → `yaml.safe_dump`. Would handle ALL frontmatter shapes uniformly but loses comment preservation (the frontmatter has copious # commentary about field semantics that authors rely on). Larger refactor; defer.
+- **Rejected:** Sed-based replacement. The original T-1469 reason for switching to python — sed left orphan continuations — would re-introduce the class.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

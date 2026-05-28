@@ -588,6 +588,44 @@ if [ "$yaml_fail_count" -eq 0 ] && [ "$yaml_pass_count" -gt 0 ]; then
     pass "All $yaml_pass_count project YAML files parse correctly"
 fi
 
+# T-2067: task-frontmatter parse check.
+# A mangled `components:` list (or any other YAML break) in a task file
+# made Watchtower `/review/T-XXX` render the "Task Not Found" 404 page —
+# parse_frontmatter returns False, the route never reaches the
+# 200-for-completed branch. Origin: update-task.sh:1731 regex didn't
+# handle flow-style continuation lines; 4 corpus victims silently
+# accumulated (T-2018, T-2059, T-2060, T-2061). Audit now WARNs so a
+# future writer that breaks a frontmatter is caught daily.
+fm_fail_count=0
+fm_fail_list=""
+for tdir in "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed"; do
+    [ -d "$tdir" ] || continue
+    while IFS= read -r tf; do
+        [ -f "$tf" ] || continue
+        if ! python3 -c "
+import sys, os
+sys.path.insert(0, '$PROJECT_ROOT')
+try:
+    from web.shared import parse_frontmatter
+except ImportError:
+    sys.exit(0)  # web/ not present (consumer project) — skip silently
+with open(sys.argv[1]) as f:
+    content = f.read()
+fm, _ = parse_frontmatter(content)
+sys.exit(0 if fm else 2)
+" "$tf" 2>/dev/null; then
+            fm_fail_count=$((fm_fail_count + 1))
+            tf_rel="${tf#$PROJECT_ROOT/}"
+            fm_fail_list="$fm_fail_list\n  $tf_rel"
+        fi
+    done < <(find "$tdir" -maxdepth 1 -name 'T-*.md' -type f)
+done
+if [ "$fm_fail_count" -gt 0 ]; then
+    warn "Task frontmatter: $fm_fail_count task(s) have unparseable YAML" \
+         "Files: $(printf '%b' "$fm_fail_list")" \
+         "Inspect each — usually a wrapped 'components:' list left an orphan continuation, or a folded scalar swallowed structured body (T-2067 class)"
+fi
+
 # T-1856 (T-NEW-8): Anchor-task existence check.
 # Each .context/arcs/*.yaml may declare `anchor_task: T-XXX` — the originating
 # inception or build task. Symmetric to T-1849's arc_id validation (which
