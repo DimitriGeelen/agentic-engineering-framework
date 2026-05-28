@@ -22,7 +22,9 @@ depends_on:
   type: tests
 - target: bin/fw
   type: tests
+- target: web/blueprints/settings.py
+  type: tests
 depended_by: []
 last_verified: 2026-05-16
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-05-29'

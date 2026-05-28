@@ -101,7 +101,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-05-29'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -533,3 +533,9 @@ depended_by:
   type: called_by
 - target: agents/ux-review/ux-review.py
   type: called_by
+- target: tests/unit/test_audit_completable_not_completed.bats
+  type: tests_by
+- target: tests/unit/test_audit_revert_chain.bats
+  type: tests_by
+- target: tests/unit/test_work_on_completed_task.bats
+  type: tests_by
