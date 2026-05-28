@@ -3371,3 +3371,10 @@ X'` returning empty group."
   date: 2026-05-28
   context: Added via context agent
   application: TBD
+- id: L-440
+  learning: "bash double-quote in python3 -c \"...\" comment block: never embed literal \" inside the script string; bash terminates at first inline quote and shifts argv at runtime; bash -n does NOT catch because syntax is parse-time valid. Sibling of L-408 (bin/fw heredoc rule) but applies to any script with python3 -c \"...\" or perl -e \"...\" blocks."
+  source: P-001
+  task: T-2068
+  date: 2026-05-28
+  context: Added via context agent
+  application: TBD
