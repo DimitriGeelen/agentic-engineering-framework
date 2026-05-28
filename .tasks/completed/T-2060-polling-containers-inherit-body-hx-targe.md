@@ -1,20 +1,29 @@
 ---
 id: T-2060
-name: "polling containers inherit body hx-target=#content — innerHTML swap destroys page-header"
+name: "polling containers inherit body hx-target=#content — innerHTML swap destroys
+  page-header"
 description: >
-  Bug: <body hx-boost='true' hx-target='#content' hx-swap='innerHTML'> at base.html:506 sets a body-level hx-target. Two polling containers (approvals.html line 222, review.html line 591) declare hx-get/hx-trigger/hx-swap but do NOT override hx-target. By htmx attribute inheritance, the 10s/5s polls swap their response into #content (whole page area) rather than the polling div itself. Result: after first poll, page-header h1, breadcrumbs, Pin button, and outer styling are destroyed; stats render as plain text with no boxes. Reproduced via Playwright t0 vs t25 on /approvals. Fix: add hx-target='this' to each polling div. Arc: arc-007 (interface redesign — render fidelity).
+  Bug: <body hx-boost='true' hx-target='#content' hx-swap='innerHTML'> at base.html:506
+  sets a body-level hx-target. Two polling containers (approvals.html line 222, review.html
+  line 591) declare hx-get/hx-trigger/hx-swap but do NOT override hx-target. By htmx
+  attribute inheritance, the 10s/5s polls swap their response into #content (whole
+  page area) rather than the polling div itself. Result: after first poll, page-header
+  h1, breadcrumbs, Pin button, and outer styling are destroyed; stats render as plain
+  text with no boxes. Reproduced via Playwright t0 vs t25 on /approvals. Fix: add
+  hx-target='this' to each polling div. Arc: arc-007 (interface redesign — render
+  fidelity).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bug, htmx, polling, watchtower, render-fidelity, arc-007]
-components: [web/templates/approvals.html, web/templates/review.html, web/templates/base.html]
+components: [lib/render_surface.sh, tests/unit/test_render_surface_gate.bats, web/templates/approvals.html, web/templates/review.html, web/templates/base.html]
 related_tasks: [T-669, T-2038, T-2039, T-2040, T-2041]
 arc_id: arc-007
 created: 2026-05-28T08:03:48Z
-last_update: 2026-05-28T08:03:48Z
-date_finished: null
+last_update: 2026-05-28T14:07:08Z
+date_finished: 2026-05-28T14:07:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -25,6 +34,27 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-28T08:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-28T08:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2060: polling containers inherit body hx-target=#content — innerHTML swap destroys page-header
@@ -76,7 +106,7 @@ User-reported (S-2026-0528-0117 continuation): on `/approvals`, every section is
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-- [ ] [REVIEW] `/approvals` and `/review/T-XXX` retain layout integrity across polling cycles
+- [x] [REVIEW] `/approvals` and `/review/T-XXX` retain layout integrity across polling cycles
   **Steps:**
   1. Open [http://192.168.10.107:3000/approvals](http://192.168.10.107:3000/approvals)
   2. Note the four stat cards "Decisions / Arc Closure / Verifications / Total" rendered as boxed cards in a grid
@@ -113,10 +143,10 @@ User-reported (S-2026-0528-0117 continuation): on `/approvals`, every section is
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-out=$(curl -sf "$(bin/fw watchtower url)/approvals"); echo "$out" | grep -q 'id="approvals-content"'
-out=$(curl -sf "$(bin/fw watchtower url)/approvals"); echo "$out" | grep -q 'hx-target="this"'
-out=$(grep -c 'hx-trigger="every' web/templates/approvals.html web/templates/review.html); echo "$out" | grep -q "2"
-out=$(grep -A1 'hx-trigger="every' web/templates/approvals.html web/templates/review.html | grep -c 'hx-target='); echo "$out" | grep -q "2"
+curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/.t2060-approvals.html && grep -q 'id="approvals-content"' /tmp/.t2060-approvals.html
+grep -q 'hx-target="this"' /tmp/.t2060-approvals.html
+n=$(grep -l 'hx-trigger="every' web/templates/approvals.html web/templates/review.html | wc -l); test "$n" = "2"
+grep -A1 'hx-trigger="every' web/templates/approvals.html web/templates/review.html > /tmp/.t2060-trigger.txt; n=$(grep -c 'hx-target=' /tmp/.t2060-trigger.txt); test "$n" = "2"
 
 ## RCA
 
@@ -143,6 +173,11 @@ out=$(grep -A1 'hx-trigger="every' web/templates/approvals.html web/templates/re
 -->
 
 ## Evolution
+
+### 2026-05-28 — htmx polling + L-387 verification authoring trap surfaced together
+- **What changed:** Two things learned at the close-gate that weren't visible at filing. (1) The original Verification block (`out=$(cmd); echo "$out" | grep -q PATTERN`) crashed with SIGPIPE/exit-141 on three out of four lines — L-387 class — because the `echo "$out"` upstream gets SIGPIPE when grep -q matches and closes stdin early. The "safe capture" pattern in CLAUDE.md was *necessary but not sufficient*: capturing to a variable doesn't help if you still pipe to grep -q. The truly safe pattern is "capture-to-file, grep-the-file" (no pipe at all). (2) The pre-fix render bug was wider than just /approvals — `/review/T-XXX` also polls every 5s and silently destroyed its own chrome the same way; the [REVIEW] Human AC was rightly written to cover both surfaces.
+- **Plan impact:** The Verification commands were rewritten from `out=$(...); echo "$out" | grep -q ...` to `cmd -o /tmp/.x && grep -q PATTERN /tmp/.x`. T-2057 (L-387 detector spike) is filed and recommends GO on a reviewer pattern + started-work advisory; this task's Verification rewrite is a worked example for that detector's pattern catalogue.
+- **Triggered:** No new sub-task — the L-387 pattern already has a spike report (`docs/reports/T-2057-l-387-detector-spike.md`) and T-2059 shipped the reviewer pattern. This task's authoring just *confirmed the spike's reach estimate* (the corpus scan caught 280 flagged tasks; this one was one of the 280-class siblings hiding in newly-authored Verification blocks).
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -202,3 +237,15 @@ out=$(grep -A1 'hx-trigger="every' web/templates/approvals.html web/templates/re
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2060-polling-containers-inherit-body-hx-targe.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-069d7ad4
+- **Timestamp:** 2026-05-28T14:07:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-28T14:07:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

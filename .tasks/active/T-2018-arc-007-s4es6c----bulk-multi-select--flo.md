@@ -10,7 +10,6 @@ owner: human
 horizon: now
 tags: [arc:watchtower-redesign, ui, watchtower]
 components: [tests/playwright/test_bulk_actions.py, tests/unit/test_bulk_actions.py, web/static/bulk-actions.js, web/templates/base.html, web/templates/tasks.html]
-      web/templates/base.html]
 related_tasks: [T-1992, T-1993, T-1987, T-2015]
 arc_id: watchtower-redesign
 created: 2026-05-24T09:22:27Z
