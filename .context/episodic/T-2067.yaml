@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2067: fix update-task.sh components: flow-style continuation regex (T-2062 RCA outcome)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-28T16:49:23Z
+# ============================================================================
+
+task_id: T-2067
+task_name: "fix update-task.sh components: flow-style continuation regex (T-2062 RCA outcome)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-28T14:17:41Z
+completed: 2026-05-28T14:25:21Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-28T16:19:27+02:00
+last_commit: 2026-05-28T16:25:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  repair 4 YAML-mangled frontmatters + file regex fix task. fix components: flow-style continuation regex + audit guard
+
+# Key outcomes
+outcomes:
+  - 'Regex in `agents/task-create/update-task.sh:1731` accepts both block-style (`  -`) and flow-style (indented continuation) `components:` line shapes — orphan continuation lines no longer remain after replacement.'
+  - 'Bats fixture `tests/unit/test_components_replacement_regex.bats` pins the regex against (a) flat single-line flow list, (b) wrapped flow list (origin bug), (c) pre-mangled orphan continuation (idempotent cleanup), (d) block-style list, (e) empty flow, (f) next-YAML-key not eaten by continuation match. 6/6 green.'
+  - 'Audit run across `.tasks/{active,completed}/` after fix — only T-1845 remains frontmatter-broken (different class: folded scalar + numbered-list body, pre-T-2067).'
+  - '`fw audit` learns to detect frontmatter-broken tasks and surface a WARN; defense in depth for the regex fix (added to STRUCTURE CHECKS in audit.sh).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix components: flow-style continuation regex + audit guard'
+    source: git-mined
+  - description: 'repair 4 YAML-mangled frontmatters + file regex fix task'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-28 — regex shape choice'
+    chose: 'Extend the existing inline regex with a negative-lookahead `(?!\w+:)` for the continuation match, keeping the inline-python approach.'
+    rationale: 'Minimal blast radius. The inline-python pattern is well-tested in production for the block-style case (T-1469 origin); extending it preserves that behaviour and adds the flow-style branch in a single character class change. Round-trip risk is low (no yaml.safe_dump that would strip comments / reformat).'
+    alternatives_rejected: ['Switch to `yaml.safe_load` → mutate dict → `yaml.safe_dump`. Would handle ALL frontmatter shapes uniformly but loses comment preservation (the frontmatter has copious # commentary about field semantics that authors rely on). Larger refactor; defer.']
+    alternatives_rejected: ['Sed-based replacement. The original T-1469 reason for switching to python — sed left orphan continuations — would re-introduce the class.']
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.tasks/active/T-2018-arc-007-s4es6c----bulk-multi-select--flo.md'
+  - '.tasks/active/T-2067-fix-update-tasksh-components-flow-style-.md'
+  - '.tasks/completed/T-2059-l-387-sigpipe-detector--reviewer-pattern.md'
+  - '.tasks/completed/T-2060-polling-containers-inherit-body-hx-targe.md'
+  - '.tasks/completed/T-2061-render-surface-gate-prefer-actual-commit.md'
+  - 'tests/unit/test_components_replacement_regex.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T16:19:27"
+    action: "T-2067: repair 4 YAML-mangled frontmatters + file regex fix task"
+  - time: "2026-05-28T16:25:02"
+    action: "T-2067: fix components: flow-style continuation regex + audit guard"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, framework-tooling, yaml, frontmatter, regex, task-create]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 8
+  lines_added: 507
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2067-fix-update-tasksh-components-flow-style-.md
+generated_by: context-agent-hybrid
