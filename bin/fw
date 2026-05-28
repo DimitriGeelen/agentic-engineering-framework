@@ -4630,7 +4630,7 @@ from datetime import datetime
 # T-1533: shared helper. Robust to running from /opt/999-... where web/ is on the path.
 sys.path.insert(0, os.environ.get("PROJECT_ROOT", "."))
 try:
-    from web.shared import extract_recommendation_state
+    from web.shared import extract_recommendation_state, count_unchecked_human_acs
 except ImportError:
     # Inline fallback if web/ isn't importable (e.g. consumer project).
     # T-1576: emit NO-REC when section is missing/empty so callers can
@@ -4647,6 +4647,21 @@ except ImportError:
             return "NO-REC"
         v = re.search(r"\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b", body2, re.IGNORECASE)
         return v.group(1).upper() if v else "?"
+    # T-2075 (T-2064 GO) inline fallback — kept in sync with web.shared.count_unchecked_human_acs.
+    # Same predicate the queue uses; consumer projects without web/ get equivalent behaviour.
+    def count_unchecked_human_acs(body):
+        if not body:
+            return 0
+        ac_m = re.search(r"^## Acceptance Criteria\s*$(.*?)(?=^## |\Z)", body,
+                         re.MULTILINE | re.DOTALL)
+        if not ac_m:
+            return 0
+        human_m = re.search(r"^### Human\s*$(.*?)(?=^### |\Z)", ac_m.group(1),
+                            re.MULTILINE | re.DOTALL)
+        if not human_m:
+            return 0
+        human_text = re.sub(r"<!--.*?-->", "", human_m.group(1), flags=re.DOTALL)
+        return len(re.findall(r"^\s*-\s*\[ \]", human_text, re.MULTILINE))
 
 ROOT = Path(os.environ.get("PROJECT_ROOT", ".")).resolve()
 ACTIVE = ROOT / ".tasks" / "active"
@@ -4697,21 +4712,13 @@ for f in sorted(ACTIVE.glob("*.md")):
             d_verdict = extract_recommendation_state(text)
             decision_rows.append((d_verdict, d_age_days, tid_v, name))
 
-    # VERDICT pass — find ### Human section with unchecked ACs
-    ac_m = re.search(r"^## Acceptance Criteria\s*\n(.*?)(?=\n## |\Z)", text,
-                     re.MULTILINE | re.DOTALL)
-    if not ac_m:
-        continue
-    human_m = re.search(r"### Human\s*\n(.*?)(?=\n### |\Z)", ac_m.group(1), re.DOTALL)
-    if not human_m:
-        continue
-    # T-1581: strip HTML comments before the unchecked-AC count, otherwise the
-    # template's example AC (`- [ ] [REVIEW] Dashboard renders correctly` inside
-    # the placeholder `<!-- -->`) is counted as a real unchecked AC, falsely
-    # admitting template-only Human sections (T-1274, T-1542) into the queue.
-    # Mirror of L-298 — same class as the cockpit fix, different surface.
-    human_text = re.sub(r"<!--.*?-->", "", human_m.group(1), flags=re.DOTALL)
-    unchecked = len(re.findall(r"^\s*-\s*\[ \]", human_text, re.MULTILINE))
+    # VERDICT pass — find ### Human section with unchecked ACs.
+    # T-2075 (T-2064 GO): predicate now shared with /approvals via web.shared.
+    # The previous inline scan accumulated three drift-prone rules (HTML-comment
+    # strip, Human-subsection regex, unchecked-`[ ]` count) — each surface
+    # owned a copy. Centralised at the queue-build layer so both /approvals
+    # and `fw review-queue` see the same set of tasks.
+    unchecked = count_unchecked_human_acs(text)
     if unchecked == 0:
         continue
     # T-1540 iter1 originally filtered to (owner=human OR status=work-completed) so

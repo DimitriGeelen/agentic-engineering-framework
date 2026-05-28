@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 sys.path.insert(0, str(PROJECT_ROOT / "lib"))
@@ -274,12 +274,18 @@ def _load_pending_human_acs():
             continue
         _, body = parse_frontmatter(content)
 
+        # T-2075 (T-2064 GO): canonical predicate — shared with `fw review-queue`.
+        # Gate FIRST on the cheap predicate, then run the full per-AC parse for
+        # display detail. Previously this used `_parse_acceptance_criteria` →
+        # filter on `section == "human"` → filter on `not checked` — which
+        # drifted from the CLI's inline regex on tasks with HTML-commented
+        # template stubs. Centralising the predicate kills the drift class.
+        if not needs_human_review(body):
+            continue
+
         all_acs = _parse_acceptance_criteria(body)
         human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
         unchecked = [ac for ac in human_acs if not ac["checked"]]
-
-        if not unchecked:
-            continue
 
         # Calculate age from date_finished or last_update
         age_days = 0

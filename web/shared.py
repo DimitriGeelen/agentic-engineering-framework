@@ -682,6 +682,61 @@ def extract_recommendation_state(body: str) -> str:
     return rec["verdict"]
 
 
+def count_unchecked_human_acs(body: str) -> int:
+    """Count unchecked `- [ ]` AC lines inside the `### Human` block.
+
+    Returns 0 if no Human block exists, or if every Human AC is checked. This
+    is the canonical "needs human review" predicate (T-2075, T-2064 GO scope):
+    both `/approvals` (web) and `fw review-queue` (CLI) call this rather than
+    re-implement their own scan — otherwise the two surfaces silently drift.
+
+    Rules (must stay aligned with `_parse_acceptance_criteria` in tasks.py and
+    the inline CLI regex this replaces at bin/fw):
+
+    - Only `- [ ]` lines INSIDE the `### Human` subsection of `## Acceptance Criteria`
+      count. `### Agent` ACs, `## Verification`, and decorative checklists elsewhere
+      are ignored.
+    - HTML comment blocks (`<!-- ... -->`) are stripped before counting, so the
+      `[REVIEW] Voice/tone…` placeholder in the template comment never inflates
+      the count (T-1581 fix, also the L-298 cockpit class).
+    - Tasks where the `### Human` subsection is absent return 0.
+    - Empty `body` returns 0.
+
+    The predicate does NOT classify by `[REVIEW] / [REVIEWER] / [RUBBER-STAMP]`
+    confidence — that's a downstream display concern (verdict colour, sort
+    priority). The "show this task in the queue?" question is independent of
+    the prefix.
+    """
+    if not body:
+        return 0
+    ac_m = re_mod.search(
+        r"^## Acceptance Criteria\s*$(.*?)(?=^## |\Z)",
+        body, re_mod.MULTILINE | re_mod.DOTALL,
+    )
+    if not ac_m:
+        return 0
+    ac_block = ac_m.group(1)
+    human_m = re_mod.search(
+        r"^### Human\s*$(.*?)(?=^### |\Z)",
+        ac_block, re_mod.MULTILINE | re_mod.DOTALL,
+    )
+    if not human_m:
+        return 0
+    human_text = re_mod.sub(r"<!--.*?-->", "", human_m.group(1), flags=re_mod.DOTALL)
+    return len(re_mod.findall(r"^\s*-\s*\[ \]", human_text, re_mod.MULTILINE))
+
+
+def needs_human_review(body: str) -> bool:
+    """Boolean wrapper over `count_unchecked_human_acs`.
+
+    True iff the task body has ≥1 unchecked `### Human` acceptance criterion.
+    Use this in queue-build code paths (`_load_pending_human_acs`, `fw
+    review-queue`) to decide whether a task appears in the review queue at all.
+    See T-2075 / T-2064 GO scope.
+    """
+    return count_unchecked_human_acs(body) > 0
+
+
 def extract_reviewer_verdict(body: str) -> dict:
     """Extract the reviewer agent's verdict from `## Reviewer Verdict (vX.Y)`.
 

@@ -1,10 +1,18 @@
 ---
 id: T-2075
-name: "push 'needs human review' predicate to queue-build layer via shared helper (T-2064 GO scope)"
+name: "push 'needs human review' predicate to queue-build layer via shared helper
+  (T-2064 GO scope)"
 description: >
-  Implements T-2064 inception GO. Symptom: tasks appear in /approvals review queue despite zero unchecked Human ACs — per-surface predicate drift between /approvals (web) and fw review-queue (CLI). Fix: centralise the needs_human_review() predicate at queue-build time. Both surfaces consume the queue; render-time only displays what's there. ACs: shared helper added in web/shared.py or lib/, both surfaces refactored to use it, test pinned for zero-Human-AC case + checked-Human-AC case + unchecked-Human-AC case, no behavioural regression on the 20+ arc-007 partial-completes currently queued for human review.
+  Implements T-2064 inception GO. Symptom: tasks appear in /approvals review queue
+  despite zero unchecked Human ACs — per-surface predicate drift between /approvals
+  (web) and fw review-queue (CLI). Fix: centralise the needs_human_review() predicate
+  at queue-build time. Both surfaces consume the queue; render-time only displays
+  what's there. ACs: shared helper added in web/shared.py or lib/, both surfaces refactored
+  to use it, test pinned for zero-Human-AC case + checked-Human-AC case + unchecked-Human-AC
+  case, no behavioural regression on the 20+ arc-007 partial-completes currently queued
+  for human review.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +24,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T18:03:55Z
-last_update: 2026-05-28T18:03:55Z
-date_finished: null
+last_update: 2026-05-28T18:51:17Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,57 +36,65 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-28T18:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-28T18:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2075: push 'needs human review' predicate to queue-build layer via shared helper (T-2064 GO scope)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Implements T-2064 GO scope. The "needs human review?" predicate lived as two parallel implementations: `web/blueprints/approvals.py:_load_pending_human_acs()` used a `_parse_acceptance_criteria` → `section == "human"` → `not checked` chain; `bin/fw review-queue` used an inline regex (`## Acceptance Criteria` → `### Human` → comment-strip → count `- [ ]`). Either could drift independently — the L-298 / T-1581 HTML-comment-strip fix already had to be applied twice on the CLI side after the web side caught the same class. Centralised at the queue-build layer so both surfaces consume one helper. Downstream display (per-AC details, confidence prefix, sort priority) keeps its existing parse on the web side; the CLI never needed the detail.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `web/shared.py` exports `count_unchecked_human_acs(body) -> int` + `needs_human_review(body) -> bool`. Strips HTML comments (T-1581 class), matches `### Human` subsection of `## Acceptance Criteria` only — not `### Agent`, not `## Verification`.
+- [x] `web/blueprints/approvals.py:_load_pending_human_acs()` filters via the new helper for the queue-membership decision; downstream display-detail parse keeps using `_parse_acceptance_criteria`.
+- [x] `bin/fw review-queue` Python block replaced with a call to the shared helper (inline regex deleted). Plus the consumer-fallback inline definition for environments without `web/` on the path.
+- [x] pytest `tests/unit/test_count_unchecked_human_acs.py` — 6 tests covering the 5 inception fixtures plus the all-checked partial-complete case. All green.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+- [ ] [REVIEW] /approvals page shows the same set of partial-complete tasks as before the refactor — no regression in queue membership.
+  **Steps:**
+  1. Open http://192.168.10.107:3000/approvals
+  2. Scroll the "VERDICT — Human ACs awaiting verification" / "Awaiting Your Action" section.
+  3. Spot-check a few previously-queued tasks (e.g., T-1701, T-1947, T-1988) — confirm they still appear with their existing verdict prefixes.
+  4. Cross-reference with `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue` in a terminal — same task IDs should appear in both surfaces.
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+  **Expected:** Surface parity. Same task IDs appear in both web and CLI lists. No drift in counts beyond ±1 (live changes during the spot check).
 
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+  **If not:** Note the divergent task ID(s) and inspect their `### Human` block — the refactor should preserve every previously-queued task's eligibility.
 
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
+bash -n bin/fw
+python3 -c "import ast; ast.parse(open('web/shared.py').read()); ast.parse(open('web/blueprints/approvals.py').read())"
+out=$(python3 -m pytest tests/unit/test_count_unchecked_human_acs.py -q 2>&1); echo "$out" | tail -3 | grep -q "passed"
+out=$(bin/fw review-queue 2>&1 | head -5); echo "$out" | grep -q "VERDICT\|DECISIONS\|No tasks"
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
@@ -162,9 +178,23 @@ date_finished: null
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
-## Updates
+## Recommendation
+
+**Recommendation:** GO (complete)
+
+**Rationale:** Cleanly centralises the queue-membership predicate. Two parallel implementations are now one shared helper; the L-298 / T-1581 HTML-comment-strip fix can only be applied (or broken) in one place. Downstream display detail on the web side keeps its existing parse — no behavioural change beyond consistency. One [REVIEW] AC pending for surface parity (eyeball /approvals vs `fw review-queue` showing the same task IDs).
+
+**Evidence:**
+- `web/shared.py` gains `count_unchecked_human_acs(body)` + `needs_human_review(body)` — single-source predicate.
+- `web/blueprints/approvals.py:_load_pending_human_acs` gates on `needs_human_review(body)` first; full per-AC parse still runs for display detail.
+- `bin/fw review-queue` Python block replaced the 14-line inline scan with `count_unchecked_human_acs(text)`; consumer-fallback inline definition kept in lockstep for projects without `web/`.
+- `tests/unit/test_count_unchecked_human_acs.py`: 6 tests covering the five inception fixtures (a-e) + an all-checked partial-complete case. All green in 0.16s.
+- Live smoke: `fw review-queue` renders 124 VERDICT rows; `/approvals` renders cleanly. Bash + Python syntax checks both pass.
 
 ### 2026-05-28T18:03:55Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2075-push-needs-human-review-predicate-to-que.md
 - **Context:** Initial task creation
+
+### 2026-05-28T18:51:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
