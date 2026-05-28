@@ -4,7 +4,7 @@ name: "triage 3 stale sprechloop inbox observations from 2026-02-18 — verify G
 description: >
   3 observation items in .context/inbox/ from 2026-02-18 (sprechloop project, ~3 months stale). Each filed a gap: G-001 (hooks not propagated), G-002 (handover open questions lost), G-003 (test enforcement gap), G-004 (check-active-task scope validation). Many of these have likely been addressed by subsequent framework evolution (fw upgrade hook sync, fw gaps register, T-1730 focus-drift gate, P-011 verification gate). Verify each against current state, write triage report, move resolved items to .context/inbox/processed/, file remaining concerns into the gaps register.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -16,8 +16,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T17:35:51Z
-last_update: 2026-05-28T17:35:51Z
-date_finished: null
+last_update: 2026-05-28T17:38:27Z
+date_finished: 2026-05-28T17:38:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -194,3 +194,20 @@ Verified 2026-05-28 against current framework state. All four gaps shipped fixes
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2070-triage-3-stale-sprechloop-inbox-observat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2509c388
+- **Timestamp:** 2026-05-28T17:38:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — G-001 (hooks-not-propagated) verified against current `lib/init.sh` + `lib/upgrade.sh` — classified resolved with `lib/upgrade.sh:783-880` + `lib/init.sh:589-777` evidence.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/init.sh in: G-001 (hooks-not-propagated) verified against current `lib/init.sh` + `lib/upgrade.sh` — classified resolved with `lib/upgrade.sh:783-880` + `lib/init`
+
+### 2026-05-28T17:38:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
